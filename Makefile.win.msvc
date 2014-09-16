@@ -1,0 +1,107 @@
+# Copyright 2007 TeX Users Group.
+# Copyright 2014 Clerk Ma.
+#
+# You may freely use, modify and/or distribute this file.
+#
+# Makefile for pTeX-ng (MSVC, tested on VS 2012 and VS 2013)
+
+CC = cl
+LINK = link
+RC = rc
+
+CFLAGS=/nologo /c /MT /GF /Gy /W4 \
+	/I"kpathsea" /I"zlib" /I"libptexenc/ptexenc"
+
+LFLAGS=/NOLOGO /MAP
+
+objs = ptex.obj itex.obj openinou.obj subroute.obj local.obj \
+	tex0.obj tex1.obj tex2.obj tex3.obj tex4.obj \
+	tex5.obj tex6.obj tex7.obj tex8.obj tex9.obj \
+	pool.obj ptex.res utils.obj dpx.obj ptex-kanji.obj ptex-module.obj
+
+ptex.exe: $(objs)
+	$(LINK) $(LFLAGS) ptex itex openinou subroute local \
+	tex0 tex1 tex2 tex3 tex4 tex5 tex6 tex7 tex8 tex9 \
+	pool ptex.res utils dpx ptex-kanji ptex-module libptexenc\ptexenc.lib\
+	kpathsea\kpathsea.lib dvipdfmx\libdpx.lib libpng\libpng.lib zlib\zlib.lib
+	del ..\yandy\bin\ptex.exe
+	copy ptex.exe ..\ptex-ng\bin\ptex-ng.exe
+
+ptex.res: ptex.rc
+	$(RC) /nologo ptex.rc
+
+dpx.obj: dpx.c \
+	texd.h ptex.h dpx.h memory.h coerce.h macros.h
+	$(CC) $(CFLAGS) dpx.c
+
+ptex.obj: ptex.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+	$(CC) $(CFLAGS) ptex.c
+
+itex.obj: itex.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+	$(CC) $(CFLAGS) itex.c
+
+openinou.obj: openinou.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+	$(CC) $(CFLAGS) openinou.c
+
+subroute.obj: subroute.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+	$(CC) $(CFLAGS) subroute.c
+
+ptex-kanji.obj: ptex-kanji.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+	$(CC) $(CFLAGS) ptex-kanji.c
+
+ptex-module.obj: ptex-module.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+	$(CC) $(CFLAGS) ptex-module.c
+
+local.obj: local.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+	$(CC) $(CFLAGS) local.c
+
+tex0.obj: tex0.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+tex1.obj: tex1.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+tex2.obj: tex2.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+tex3.obj: tex3.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+tex4.obj: tex4.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+tex5.obj: tex5.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+tex6.obj: tex6.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+tex7.obj: tex7.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+tex8.obj: tex8.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+tex9.obj: tex9.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+pool.obj: pool.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+utils.obj: utils.c \
+	texd.h ptex.h memory.h coerce.h macros.h
+
+.SUFFIXES:
+.SUFFIXES: .obj .c
+
+c..obj:
+	$(CC) $(CFLAGS) $*.c
+
+

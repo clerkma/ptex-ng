@@ -1,0 +1,40 @@
+#! /bin/sh
+
+# Copyright (C) 2013, 2014 Peter Breitenlohner <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+TEXMFCNF=$srcdir/../kpathsea
+TEXFONTMAPS="$srcdir/tests;$srcdir/data"
+DVIPDFMXINPUTS="$srcdir/tests;$srcdir/data"
+TEXPICTS=$srcdir/tests
+TEXFONTS=$srcdir/tests
+PKFONTS=$srcdir/tests
+export TEXMFCNF TEXFONTMAPS DVIPDFMXINPUTS TEXPICTS TEXFONTS PKFONTS
+
+failed=
+
+echo "*** xdvipdfmx --version" \
+	&& ./xdvipdfmx --version \
+	&& echo && echo "xdvipdfmx-version tests OK" && echo \
+	|| failed="$failed xdvipdfmx-version"
+
+echo "*** xdvipdfmx --help" \
+	&& ./xdvipdfmx --help \
+	&& echo && echo "xdvipdfmx-help tests OK" && echo \
+	|| failed="$failed xdvipdfmx-help"
+
+echo "*** xdvipdfmx -v -o image2.pdf image" && echo \
+	&& ./xdvipdfmx -v -o image2.pdf $srcdir/tests/image \
+	&& echo && echo "xdvipdfmx-image tests OK" && echo \
+	|| failed="$failed xdvipdfmx-image"	
+
+echo "*** dvipdfmx -v -o xbmc2.pdf xbmc" && echo \
+	&& ./dvipdfmx -v -o xbmc2.pdf  $srcdir/tests/xbmc \
+	&& echo && echo "dvipdfmx-xbmc tests OK" && echo \
+	|| failed="$failed dvipdfmx-xbmc"
+
+test -z "$failed" && exit 0
+echo
+echo "failed tests:$failed"
+exit 1
+
