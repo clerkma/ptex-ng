@@ -592,21 +592,21 @@ reswitch:
 
   if (scan_keyword("width"))
   {
-    scan_dimen(false, false, false);
+    scan_normal_dimen();
     width(q) = cur_val;
     goto reswitch;
   }
 
   if (scan_keyword("height"))
   {
-    scan_dimen(false, false, false);
+    scan_normal_dimen();
     height(q) = cur_val;
     goto reswitch;
   }
 
   if (scan_keyword("depth"))
   {
-    scan_dimen(false, false, false);
+    scan_normal_dimen();
     depth(q) = cur_val;
     goto reswitch;
   }
@@ -1252,7 +1252,7 @@ void conditional (void)
         if (this_if == if_int_code)
           scan_int();
         else
-          scan_dimen(false, false, false);
+          scan_normal_dimen();
 
         n = cur_val;
         
@@ -1276,7 +1276,7 @@ void conditional (void)
         if (this_if == if_int_code)
           scan_int();
         else 
-          scan_dimen(false, false, false);
+          scan_normal_dimen();
 
         switch (r)
         {
@@ -1762,7 +1762,7 @@ void pack_job_name_(str_number s)
   cur_area = 335; /* "" */
   cur_ext  = s;
   cur_name = job_name;
-  pack_file_name(cur_name, cur_area, cur_ext);
+  pack_cur_name();
 }
 /* sec 0530 */
 void prompt_file_name_(const char * s, str_number e) 
@@ -1841,7 +1841,7 @@ done:
   if (cur_ext == 335) /* "" */
     cur_ext = e;      /* use default extension */
 
-  pack_file_name(cur_name, cur_area, cur_ext);
+  pack_cur_name();
 }
 /* sec 0534 */
 void open_log_file (void)
@@ -1929,13 +1929,13 @@ void open_log_file (void)
 void start_input (void)
 {
   scan_file_name();
-  pack_file_name(cur_name, cur_area, cur_ext); 
+  pack_cur_name(); 
 
   while (true)
   {
     begin_file_reading();
     
-    if (a_open_in(cur_file, kpse_tex_format))
+    if (a_open_in(cur_file))
       goto done;
 
     end_file_reading();

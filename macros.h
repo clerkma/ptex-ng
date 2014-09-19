@@ -17,8 +17,8 @@
    02110-1301 USA.
 */
 
-#ifndef _YANDYTEX_MACROS_H
-#define _YANDYTEX_MACROS_H
+#ifndef _PTEX_NG_MACROS_H
+#define _PTEX_NG_MACROS_H
 
 // predefined macro
 #define KANJI(x)   x
@@ -1000,6 +1000,8 @@ while (0)
 #define zero_token    (other_token  + '0') // 3120
 #define A_token       (letter_token + 'A') // 2881
 #define other_A_token (other_token  + 'A') // 3137
+/* sec 0448 */
+#define scan_normal_dimen() scan_dimen(false, false, false)
 /* sec 0458 */
 #define set_conversion(a, b)  \
   do                          \
@@ -1079,6 +1081,8 @@ do                              \
     name_of_file[k] = xchr[c];  \
 }                               \
 while (0)
+/* sec 0529 */
+#define pack_cur_name() pack_file_name(cur_name, cur_area, cur_ext)
 /* sec 0544 */
 #define yoko_jfm_id 11
 #define tate_jfm_id 9

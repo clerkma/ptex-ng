@@ -917,7 +917,7 @@ done:;
           error();
         }
 
-        scan_dimen(false, false, false);
+        scan_normal_dimen();
         cur_box = vsplit(n, cur_val);
       }
       break;

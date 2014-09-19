@@ -558,7 +558,7 @@ void out_what (pointer p)
             if (cur_ext == 335) /* "" */
               cur_ext = 785;    /* ".tex" */
 
-            pack_file_name(cur_name, cur_area, cur_ext);
+            pack_cur_name();
 
             while (!a_open_out(write_file[j]))
               prompt_file_name("output file name", ".tex");
@@ -610,7 +610,7 @@ void scan_spec (group_code c, boolean three_codes)
     goto found;
   }
 
-  scan_dimen(false, false, false);
+  scan_normal_dimen();
 
 found:
   if (three_codes)

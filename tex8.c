@@ -37,7 +37,7 @@ void math_fraction (void)
     }
 
     if (c % delimited_code == 0)
-      scan_dimen(false, false, false);
+      scan_normal_dimen();
 
     print_err("Ambiguous; you need another { and }");
     help3("I'm ignoring this fraction specification, since I don't",
@@ -67,7 +67,7 @@ void math_fraction (void)
     switch (c % delimited_code)
     {
       case above_code:
-        scan_dimen(false, false, false);
+        scan_normal_dimen();
         thickness(incompleat_noad) = cur_val;
         break;
 
@@ -554,7 +554,7 @@ found:
       if (p == int_val)
         scan_int();
       else
-        scan_dimen(false, false, false);
+        scan_normal_dimen();
 
       if (q == advance)
         cur_val = cur_val + eqtb[l].cint;
@@ -662,7 +662,7 @@ void alter_aux (void)
 
     if (c == vmode)
     {
-      scan_dimen(false, false, false);
+      scan_normal_dimen();
       prev_depth = cur_val;
     }
     else
@@ -714,7 +714,7 @@ void alter_page_so_far (void)
 
   c = cur_chr;
   scan_optional_equals();
-  scan_dimen(false, false, false);
+  scan_normal_dimen();
   page_so_far[c] = cur_val;
 }
 /* sec 1246 */
@@ -742,7 +742,7 @@ void alter_box_dimen (void)
   scan_eight_bit_int();
   b = cur_val;
   scan_optional_equals();
-  scan_dimen(false, false, false);
+  scan_normal_dimen();
 
   if (box(b) != null)
   {
@@ -812,7 +812,7 @@ void new_font (small_number a)
 
   if (scan_keyword("at"))
   {
-    scan_dimen(false, false, false);
+    scan_normal_dimen();
     s = cur_val; 
 
     if ((s <= 0) || (s >= 134217728L)) /* 2^27 */
@@ -973,23 +973,23 @@ void open_or_close_in (void)
   {
     scan_optional_equals();
     scan_file_name();
-    pack_file_name(cur_name, cur_area, cur_ext);
+    pack_cur_name();
 
-    if ((cur_ext != 335) && a_open_in(read_file[n], kpse_tex_format))
+    if ((cur_ext != 335) && a_open_in(read_file[n]))
       read_open[n] = 1;
     else if ((cur_ext != 785) && (name_length + 5 < file_name_size))
     {
       strncpy((char *) name_of_file + name_length + 1, ".tex ", 5);
       name_length = name_length + 4;
 
-      if (a_open_in(read_file[n], kpse_tex_format))
+      if (a_open_in(read_file[n]))
         read_open[n] = just_open;
       else
       {
         name_length = name_length - 4;
         name_of_file[name_length + 1] = ' ';
 
-        if ((cur_ext == 335) && a_open_in(read_file[n], kpse_tex_format))
+        if ((cur_ext == 335) && a_open_in(read_file[n]))
           read_open[n] = just_open;
       }
     }
@@ -1814,7 +1814,7 @@ reswitch:
     case mmode + vmove:
       {
         t = cur_chr;
-        scan_dimen(false, false, false);
+        scan_normal_dimen();
 
         if (t == 0)
           scan_box(cur_val);

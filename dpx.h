@@ -17,8 +17,8 @@
    02110-1301 USA.
 */
 
-#ifndef _YANDYTEX_DPX_H
-#define _YANDYTEX_DPX_H
+#ifndef _DPX_H
+#define _DPX_H
 
 extern void pdf_init_fontmaps(void);
 extern void pdf_close_fontmaps(void);
@@ -59,8 +59,6 @@ extern void pdf_dev_set_string (spt_t xpos,
                                 int font_id,
                                 int ctype);
 extern void read_config_file (const char *config);
-extern void pdf_hlist_out (void);
-extern void pdf_vlist_out (void);
 extern void pdf_synch_h (void);
 extern void pdf_synch_h (void);
 typedef struct pdf_rect
@@ -72,5 +70,5 @@ extern void pdf_dev_set_rect (pdf_rect *rect,
                   spt_t width,  spt_t height, spt_t depth);
 extern void pdf_doc_expand_box (const pdf_rect *rect);
 extern void pdf_dev_set_dirmode(int dir_mode);
-extern int pdf_dev_locate_font(const char *font_name, spt_t ptsize);
+extern int vf_locate_font(const char *tex_name, spt_t ptsize);
 #endif

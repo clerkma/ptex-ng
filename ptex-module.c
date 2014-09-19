@@ -663,7 +663,7 @@ void print_direction(integer d)
   prints(" direction");
 }
 /* sec 1465 */
-void pdf_dir_out(void)
+void dir_out(void)
 {
   pointer this_box;
 
@@ -729,9 +729,9 @@ void pdf_dir_out(void)
   cur_dir_hv = box_dir(temp_ptr);
 
   if (type(temp_ptr) == vlist_node)
-    pdf_vlist_out();
+    vlist_out();
   else
-    pdf_hlist_out();
+    hlist_out();
 }
 /* sec 1468 */
 void set_math_kchar(integer c)

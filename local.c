@@ -2799,10 +2799,8 @@ int main_init (int ac, char ** av)
   if (sizeof(memory_word) != sizeof(halfword) * 2)
     printf("ERROR: Bad word size %ld!\n", sizeof(memory_word));
 
-  start_time = clock();
-  main_time  = start_time;
-
-/* reset all allocatable memory pointers to NULL - in case we drop out */
+  start_time  = clock();
+  main_time   = start_time;
   main_memory = NULL;
   font_info   = NULL;
   str_pool    = NULL;

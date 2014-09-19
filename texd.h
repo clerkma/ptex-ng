@@ -17,8 +17,8 @@
    02110-1301 USA.
 */
 
-#ifndef _YANDYTEX_TEXD_H
-#define _YANDYTEX_TEXD_H
+#ifndef _PTEX_NG_TEXD_H
+#define _PTEX_NG_TEXD_H
 /* headers and pragmas */
 
 #ifdef _WIN32
@@ -107,7 +107,7 @@ EXTERN int check_fclose    (FILE * f);
 EXTERN boolean input_line (FILE * f);
 #define input_ln(stream, flag) input_line(stream)
 /* sec 0027 */
-#define a_open_in(f, p) open_input  (&(f), p, FOPEN_R_MODE)
+#define a_open_in(f)    open_input  (&(f), kpse_tex_format, FOPEN_R_MODE)
 #define a_open_out(f)   open_output (&(f), FOPEN_W_MODE)
 #define b_open_in(f)    open_input  (&(f), kpse_tfm_format, FOPEN_RBIN_MODE)
 #define b_open_out(f)   open_output (&(f), FOPEN_WBIN_MODE)
@@ -136,15 +136,12 @@ EXTERN int do_undump(char * p, int item_size, int nitems, FILE * out_file);
 #define dump_file fmt_file
 #endif
 
-#define dumpthings(base, len)           \
-  do_dump   ((char *) &(base), sizeof (base), (int) (len), dump_file)
-
-#define undumpthings(base, len)         \
-  do_undump ((char *) &(base), sizeof (base), (int) (len), dump_file)
+#define dump_things(base, len)    do_dump  ((char *) &(base), sizeof (base), (int) (len), dump_file)
+#define undump_things(base, len)  do_undump((char *) &(base), sizeof (base), (int) (len), dump_file)
 
 /* Use the above for all the other dumping and undumping. */
-#define generic_dump(x)   dumpthings(x, 1)
-#define generic_undump(x) undumpthings(x, 1)
+#define generic_dump(x)   dump_things(x, 1)
+#define generic_undump(x) undump_things(x, 1)
 
 #define dump_wd     generic_dump
 #define undump_wd   generic_undump
@@ -180,6 +177,8 @@ do                                                              \
     arg4 = x;                                                   \
 }                                                               \
 while (0)
+
+// pTeX-ng's macros and functions
 
 #define Hi(x) (((x) >> 8) & 0xff)
 #define Lo(x) ((x) & 0xff)

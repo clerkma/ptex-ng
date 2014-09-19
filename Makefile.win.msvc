@@ -25,7 +25,7 @@ ptex.exe: $(objs)
 	pool ptex.res utils dpx ptex-kanji ptex-module libptexenc\ptexenc.lib\
 	kpathsea\kpathsea.lib dvipdfmx\libdpx.lib libpng\libpng.lib zlib\zlib.lib
 	del ..\yandy\bin\ptex.exe
-	copy ptex.exe ..\ptex-ng\bin\ptex-ng.exe
+	copy ptex.exe ..\yandy\bin\ptex-ng.exe
 
 ptex.res: ptex.rc
 	$(RC) /nologo ptex.rc

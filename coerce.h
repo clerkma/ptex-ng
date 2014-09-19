@@ -18,8 +18,8 @@
    02110-1301 USA.
 */
 
-#ifndef _YANDYTEX_COERCE_H
-#define _YANDYTEX_COERCE_H
+#ifndef _PTEX_NG_COERCE_H
+#define _PTEX_NG_COERCE_H
 
 void initialize (void);
 void print_ln (void);
@@ -428,7 +428,7 @@ boolean check_box(pointer box_p);
 void adjust_hlist(pointer p, boolean pf);
 void print_dir(eight_bits dir);
 void print_direction(integer d);
-void pdf_dir_out(void);
+void dir_out(void);
 void set_math_kchar(integer c);
 void print_kanji(KANJI_code s);
 

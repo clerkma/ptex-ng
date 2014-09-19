@@ -153,13 +153,13 @@ void pdf_ship_out (pointer p)
   switch (type(p))
   {
     case hlist_node:
-      pdf_hlist_out();
+      hlist_out();
       break;
     case vlist_node:
-      pdf_vlist_out();
+      vlist_out();
       break;
     case dir_node:
-      pdf_dir_out();
+      dir_out();
       break;
   }
 
@@ -222,14 +222,12 @@ int pdf_get_font_id (internal_font_number f)
   memcpy(sbuf, str_pool + str_start[font_name[f]], length(font_name[f]));
   id = dvi_locate_font(sbuf, font_size[f]);
   //id = pdf_dev_locate_font(sbuf, font_size[f]);
-  printf("(fontid:%s:%d:%d:%d)", sbuf, id,
-    pdf_dev_locate_font(sbuf, font_size[f]),
-    vf_locate_font(sbuf, font_size[f]));
   free(sbuf);
 
   return id;
 }
 
+// TODO: too simple
 static int number_of_fonts = -1;
 
 int pdf_get_font_id_nat (internal_font_number f)
@@ -260,22 +258,108 @@ void pdf_out_char (internal_font_number f, ASCII_code c)
   pdf_doc_expand_box(&rect);
 }
 
-void pdf_out_kanji(internal_font_number f, KANJI_code k)
+#define jfm_zw(f) char_width(f, char_info(f, 0))
+
+void mojikumi_before_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
+{
+  switch (k)
+  {
+    case 0x214a: /* £¨ */
+    case 0x214c: /* ¡² */
+    case 0x214e: /* £Û */
+    case 0x2150: /* £û */
+    case 0x2152: /* ¡´ */
+    case 0x2154: /* ¡¶ */
+    case 0x2156: /* ¡¸ */
+    case 0x2158: /* ¡º */
+    case 0x215a: /* ¡¾ */
+      cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d)));
+      break;
+    case 0x2121: /* spc */
+    case 0x2122: /* ¡¢ */
+    case 0x2123: /* ¡£ */
+    case 0x2124: /* £¬ */
+    case 0x2125: /* £® */
+    case 0x212b: /* ©a */
+    case 0x212c: /* ©b */
+    case 0x214b: /* £© */
+    case 0x214d: /* ¡³ */
+    case 0x214f: /* £Ý */
+    case 0x2151: /* £ý */
+    case 0x2153: /* ¡µ */
+    case 0x2155: /* ¡· */
+    case 0x2157: /* ¡¹ */
+    case 0x2159: /* ¡» */
+    case 0x215b: /* ¡¿ */
+    case 0x216b: /* ¡ã */
+    case 0x216c: /* ¡ä */
+    case 0x216d: /* ¡å */
+      break;
+    default:
+      if (jfm_zw(f) != char_width(f, char_info(f, d)))
+        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
+      break;
+  }
+}
+
+void mojikumi_after_kanji  (internal_font_number f, KANJI_code k, ASCII_code d)
+{
+  switch (k)
+  {
+    case 0x214a: /* £¨ */
+    case 0x214c: /* ¡² */
+    case 0x214e: /* £Û */
+    case 0x2150: /* £û */
+    case 0x2152: /* ¡´ */
+    case 0x2154: /* ¡¶ */
+    case 0x2156: /* ¡¸ */
+    case 0x2158: /* ¡º */
+    case 0x215a: /* ¡¾ */
+      cur_h = cur_h + char_width(f, char_info(f, c));
+      break;
+    case 0x2121: /* spc */
+    case 0x2122: /* ¡¢ */
+    case 0x2123: /* ¡£ */
+    case 0x2124: /* £¬ */
+    case 0x2125: /* £® */
+    case 0x212b: /* ©a */
+    case 0x212c: /* ©b */
+    case 0x214b: /* £© */
+    case 0x214d: /* ¡³ */
+    case 0x214f: /* £Ý */
+    case 0x2151: /* £ý */
+    case 0x2153: /* ¡µ */
+    case 0x2155: /* ¡· */
+    case 0x2157: /* ¡¹ */
+    case 0x2159: /* ¡» */
+    case 0x215b: /* ¡¿ */
+    case 0x216b: /* ¡ã */
+    case 0x216c: /* ¡ä */
+    case 0x216d: /* ¡å */
+      cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, get_jfm_pos(k, f))));
+      break;
+    default:
+      if (jfm_zw(f) != char_width(f, char_info(f, d)))
+        cur_h = cur_h + (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
+      break;
+  }
+}
+
+void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
 {
   pdf_rect rect;
   char cbuf[2];
   cbuf[0] = Hi(k);
   cbuf[1] = Lo(k);
-  char c = get_jfm_pos(KANJI(k), f);
-  pdf_dev_set_string(cur_h, -cur_v, cbuf, 2, char_width(f, char_info(f, c)), font_id[f], 2);
+  pdf_dev_set_string(cur_h, -cur_v, cbuf, 2, char_width(f, char_info(f, get_jfm_pos(k, f))), font_id[f], 2);
   pdf_dev_set_rect(&rect, cur_h, -cur_v,
-    char_width(f, char_info(f, c)),
-    char_height(f, height_depth(char_info(f, c))),
-    char_depth(f, height_depth(char_info(f, c))));
+    char_width(f, char_info(f, d)),
+    char_height(f, height_depth(char_info(f, d))),
+    char_depth(f, height_depth(char_info(f, d))));
   pdf_doc_expand_box(&rect);
 }
 
-void pdf_hlist_out (void)
+void hlist_out (void)
 {
   scaled base_line;
   scaled disp;
@@ -375,8 +459,10 @@ reswitch:
 
         p = link(p);
         jc = toDVI(KANJI(info(p)));
-        pdf_out_kanji(dvi_f, jc); 
+        mojikumi_before_kanji(f, jc, c);
+        pdf_out_kanji(f, jc, c);
         cur_h = cur_h + char_width(f, char_info(f, c));
+        mojikumi_after_kanji(f, jc, c);
       }
 
       dvi_h = cur_h;
@@ -406,13 +492,13 @@ reswitch:
           switch (type(p))
           {
             case hlist_node:
-              pdf_hlist_out();
+              hlist_out();
               break;
             case vlist_node:
-              pdf_vlist_out();
+              vlist_out();
               break;
             case dir_node:
-              pdf_dir_out();
+              dir_out();
               break;
           }
 
@@ -525,13 +611,13 @@ reswitch:
                 switch (type(p))
                 {
                   case hlist_node:
-                    pdf_hlist_out();
+                    hlist_out();
                     break;
                   case vlist_node:
-                    pdf_vlist_out();
+                    vlist_out();
                     break;
                   case dir_node:
-                    pdf_dir_out();
+                    dir_out();
                     break;
                 }
 
@@ -603,7 +689,7 @@ next_p:
   decr(cur_s);
 }
 
-void pdf_vlist_out (void)
+void vlist_out (void)
 {
   scaled left_edge;
   scaled top_edge;
@@ -671,13 +757,13 @@ void pdf_vlist_out (void)
             switch (type(p))
             {
               case hlist_node:
-                pdf_hlist_out();
+                hlist_out();
                 break;
               case vlist_node:
-                pdf_vlist_out();
+                vlist_out();
                 break;
               case dir_node:
-                pdf_dir_out();
+                dir_out();
                 break;
             }
 
@@ -786,13 +872,13 @@ void pdf_vlist_out (void)
                   switch (type(p))
                   {
                     case hlist_node:
-                      pdf_hlist_out();
+                      hlist_out();
                       break;
                     case vlist_node:
-                      pdf_vlist_out();
+                      vlist_out();
                       break;
                     case dir_node:
-                      pdf_dir_out();
+                      dir_out();
                       break;
                   }
 

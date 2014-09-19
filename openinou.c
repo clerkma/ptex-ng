@@ -168,12 +168,6 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
   boolean openable = false;
   char * file_name = NULL;
 
-#if defined (FUNNY_CORE_DUMP) && !defined (BibTeX)
-  if (file_fmt == kpse_tex_format &&
-    strncmp(name_of_file + 1, "HackyInputFileNameForCoreDump.tex", 33) == 0)
-    funny_core_dump();
-#endif
-
   if (return_flag)
   {
     if (strcmp(fopen_mode, "r") == 0)

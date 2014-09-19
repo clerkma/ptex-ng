@@ -1890,7 +1890,6 @@ pointer vsplit (eight_bits n, scaled h)
 done:
   q = prune_page_top(q);
   p = list_ptr(v);
-  free_node(v, box_node_size);
  
   if (q == 0)
     box(n) = 0;

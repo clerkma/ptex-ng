@@ -591,7 +591,7 @@ void line_break (integer final_widow_penalty)
               if (font_dir[post_f] != dir_default)
                 try_break(0, unhyphenated);
             }
-;
+
             cur_p = post_p;
           }
         while (!(!is_char_node(cur_p)));
@@ -1428,7 +1428,7 @@ void prefixed_command (void)
       {
         p = cur_chr;
         scan_optional_equals();
-        scan_dimen(false, false, false);
+        scan_normal_dimen();
         word_define(p, cur_val);
       }
       break;
@@ -1599,9 +1599,9 @@ void prefixed_command (void)
 
           for (j = 1; j <= n; j++)
           {
-            scan_dimen(false, false, false);
+            scan_normal_dimen();
             mem[p + 2 * j - 1].cint = cur_val;
-            scan_dimen(false, false, false);
+            scan_normal_dimen();
             mem[p + 2 * j].cint = cur_val;
           }
         }
@@ -1644,7 +1644,7 @@ void prefixed_command (void)
         find_font_dimen(true);
         k = cur_val;
         scan_optional_equals();
-        scan_dimen(false, false, false);
+        scan_normal_dimen();
         font_info[k].cint = cur_val;
       }
       break;
@@ -1930,8 +1930,8 @@ boolean load_fmt_file (void)
       str_ptr = x;
   }
 
-  undumpthings(str_start[0], str_ptr + 1);
-  undumpthings(str_pool[0], pool_ptr);
+  undump_things(str_start[0], str_ptr + 1);
+  undump_things(str_pool[0], pool_ptr);
   init_str_ptr = str_ptr;
   init_pool_ptr = pool_ptr;
   undump(lo_mem_stat_max + 1000, hi_mem_stat_min - 1, lo_mem_max);
@@ -1941,7 +1941,7 @@ boolean load_fmt_file (void)
 
   do
     {
-      if (undumpthings(mem[p], q + 2 - p))
+      if (undump_things(mem[p], q + 2 - p))
         return -1;
 
       p = q + node_size(q);
@@ -1953,7 +1953,7 @@ boolean load_fmt_file (void)
     }
   while (!(q == rover));
 
-  if (undumpthings(mem[p], lo_mem_max + 1 - p))
+  if (undump_things(mem[p], lo_mem_max + 1 - p))
     return -1;
 
   if (mem_min < mem_bot - 2)
@@ -1978,7 +1978,7 @@ boolean load_fmt_file (void)
   undump(mem_bot, mem_top, avail);
   mem_end = mem_top;
 
-  if (undumpthings(mem[hi_mem_min], mem_end + 1 - hi_mem_min))
+  if (undump_things(mem[hi_mem_min], mem_end + 1 - hi_mem_min))
     return -1;
 
   undump_int(var_used);
@@ -1993,7 +1993,7 @@ boolean load_fmt_file (void)
       if ((x < 1) || (k + x > (eqtb_size + 1)))
         goto bad_fmt;
 
-      if (undumpthings(eqtb[k], x))
+      if (undump_things(eqtb[k], x))
         return -1;
 
       k = k + x;
@@ -2023,7 +2023,7 @@ boolean load_fmt_file (void)
     }
   while (!(p == hash_used));
 
-  if (undumpthings(hash[hash_used + 1], undefined_control_sequence - 1 - hash_used))
+  if (undump_things(hash[hash_used + 1], undefined_control_sequence - 1 - hash_used))
     return -1;
 
   undump_int(cs_count);
@@ -2062,35 +2062,35 @@ boolean load_fmt_file (void)
   }
 
   {
-    undumpthings(font_info[0], fmem_ptr);
+    undump_things(font_info[0], fmem_ptr);
     undump_size(font_base, font_max, "font max", font_ptr);
     frozen_font_ptr = font_ptr;
-    undumpthings(font_dir[null_font], font_ptr + 1);
-    undumpthings(font_num_ext[null_font], font_ptr + 1);
-    undumpthings(font_check[0], font_ptr + 1);
-    undumpthings(font_size[0], font_ptr + 1);
-    undumpthings(font_dsize[0], font_ptr + 1);
-    undumpthings(font_params[0], font_ptr + 1);
-    undumpthings(hyphen_char[0], font_ptr + 1);
-    undumpthings(skew_char[0], font_ptr + 1);
-    undumpthings(font_name[0], font_ptr + 1);
-    undumpthings(font_area[0], font_ptr + 1);
-    undumpthings(font_bc[0], font_ptr + 1);
-    undumpthings(font_ec[0], font_ptr + 1);
-    undumpthings(ctype_base[null_font], font_ptr + 1);
-    undumpthings(char_base[0], font_ptr + 1);
-    undumpthings(width_base[0], font_ptr + 1);
-    undumpthings(height_base[0], font_ptr + 1);
-    undumpthings(depth_base[0], font_ptr + 1);
-    undumpthings(italic_base[0], font_ptr + 1);
-    undumpthings(lig_kern_base[0], font_ptr + 1);
-    undumpthings(kern_base[0], font_ptr + 1);
-    undumpthings(exten_base[0], font_ptr + 1);
-    undumpthings(param_base[0], font_ptr + 1);
-    undumpthings(font_glue[0], font_ptr + 1);
-    undumpthings(bchar_label[0], font_ptr + 1);
-    undumpthings(font_bchar[0], font_ptr + 1);
-    undumpthings(font_false_bchar[0], font_ptr + 1);
+    undump_things(font_dir[null_font], font_ptr + 1);
+    undump_things(font_num_ext[null_font], font_ptr + 1);
+    undump_things(font_check[null_font], font_ptr + 1);
+    undump_things(font_size[null_font], font_ptr + 1);
+    undump_things(font_dsize[null_font], font_ptr + 1);
+    undump_things(font_params[null_font], font_ptr + 1);
+    undump_things(hyphen_char[null_font], font_ptr + 1);
+    undump_things(skew_char[null_font], font_ptr + 1);
+    undump_things(font_name[null_font], font_ptr + 1);
+    undump_things(font_area[null_font], font_ptr + 1);
+    undump_things(font_bc[null_font], font_ptr + 1);
+    undump_things(font_ec[null_font], font_ptr + 1);
+    undump_things(ctype_base[null_font], font_ptr + 1);
+    undump_things(char_base[null_font], font_ptr + 1);
+    undump_things(width_base[null_font], font_ptr + 1);
+    undump_things(height_base[null_font], font_ptr + 1);
+    undump_things(depth_base[null_font], font_ptr + 1);
+    undump_things(italic_base[null_font], font_ptr + 1);
+    undump_things(lig_kern_base[null_font], font_ptr + 1);
+    undump_things(kern_base[null_font], font_ptr + 1);
+    undump_things(exten_base[null_font], font_ptr + 1);
+    undump_things(param_base[null_font], font_ptr + 1);
+    undump_things(font_glue[null_font], font_ptr + 1);
+    undump_things(bchar_label[null_font], font_ptr + 1);
+    undump_things(font_bchar[null_font], font_ptr + 1);
+    undump_things(font_false_bchar[null_font], font_ptr + 1);
   }
 
 /* log not opened yet, so can't show fonts frozen into format */
@@ -2174,9 +2174,9 @@ boolean load_fmt_file (void)
     trie_max = j;
 #endif
 
-  undumpthings(trie_trl[0], j + 1);
-  undumpthings(trie_tro[0], j + 1);
-  undumpthings(trie_trc[0], j + 1);
+  undump_things(trie_trl[0], j + 1);
+  undump_things(trie_tro[0], j + 1);
+  undump_things(trie_trc[0], j + 1);
   undump_size(0, trie_op_size, "trie op size", j);
 
 #ifdef INITEX
@@ -2184,9 +2184,9 @@ boolean load_fmt_file (void)
     trie_op_ptr = j;
 #endif
   
-  undumpthings(hyf_distance[1], j);
-  undumpthings(hyf_num[1], j);
-  undumpthings(hyf_next[1], j);
+  undump_things(hyf_distance[1], j);
+  undump_things(hyf_num[1], j);
+  undump_things(hyf_next[1], j);
 
 #ifdef INITEX
   if (is_initex)
@@ -3594,8 +3594,8 @@ void store_fmt_file (void)
   dump_int(hyphen_prime);
   dump_int(pool_ptr);
   dump_int(str_ptr);
-  dumpthings(str_start[0], str_ptr + 1);
-  dumpthings(str_pool[0], pool_ptr);
+  dump_things(str_start[0], str_ptr + 1);
+  dump_things(str_pool[0], pool_ptr);
   print_ln();
   print_int(str_ptr);
   prints(" strings of total length ");
@@ -3611,7 +3611,7 @@ void store_fmt_file (void)
 
   do
     {
-      if (dumpthings(mem[p], q + 2 - p))
+      if (dump_things(mem[p], q + 2 - p))
         return;
 
       x = x + q + 2 - p;
@@ -3624,14 +3624,14 @@ void store_fmt_file (void)
   var_used = var_used + lo_mem_max - p;
   dyn_used = mem_end + 1 - hi_mem_min;
 
-  if (dumpthings(mem[p], lo_mem_max + 1 - p))
+  if (dump_things(mem[p], lo_mem_max + 1 - p))
     return;
 
   x = x + lo_mem_max + 1 - p;
   dump_int(hi_mem_min);
   dump_int(avail); 
 
-  if (dumpthings(mem[hi_mem_min], mem_end + 1 - hi_mem_min))
+  if (dump_things(mem[hi_mem_min], mem_end + 1 - hi_mem_min))
     return;
 
   x = x + mem_end + 1 - hi_mem_min;
@@ -3688,7 +3688,7 @@ found1:
 done1:
       dump_int(l - k);
 
-      if (dumpthings(eqtb[k], l - k))
+      if (dump_things(eqtb[k], l - k))
         return;
 
       k = j + 1;
@@ -3726,7 +3726,7 @@ found2:
 done2:
       dump_int(l - k);
 
-      if (dumpthings(eqtb[k], l - k))
+      if (dump_things(eqtb[k], l - k))
         return;
 
       k = j + 1;
@@ -3757,7 +3757,7 @@ done2:
     }
   }
 
-  if (dumpthings(hash[hash_used + 1], undefined_control_sequence - 1 - hash_used))
+  if (dump_things(hash[hash_used + 1], undefined_control_sequence - 1 - hash_used))
     return;
 
   dump_int(cs_count);
@@ -3768,34 +3768,34 @@ done2:
   dump_int(fmem_ptr);
 
   {
-    dumpthings(font_info[0], fmem_ptr);
+    dump_things(font_info[0], fmem_ptr);
     dump_int(font_ptr);
-    dumpthings(font_dir[null_font], font_ptr + 1);
-    dumpthings(font_num_ext[null_font], font_ptr + 1);
-    dumpthings(font_check[0], font_ptr + 1);
-    dumpthings(font_size[0], font_ptr + 1);
-    dumpthings(font_dsize[0], font_ptr + 1);
-    dumpthings(font_params[0], font_ptr + 1);
-    dumpthings(hyphen_char[0], font_ptr + 1);
-    dumpthings(skew_char[0], font_ptr + 1);
-    dumpthings(font_name[0], font_ptr + 1);
-    dumpthings(font_area[0], font_ptr + 1);
-    dumpthings(font_bc[0], font_ptr + 1);
-    dumpthings(font_ec[0], font_ptr + 1);
-    dumpthings(ctype_base[null_font], font_ptr + 1);
-    dumpthings(char_base[0], font_ptr + 1);
-    dumpthings(width_base[0], font_ptr + 1);
-    dumpthings(height_base[0], font_ptr + 1);
-    dumpthings(depth_base[0], font_ptr + 1);
-    dumpthings(italic_base[0], font_ptr + 1);
-    dumpthings(lig_kern_base[0], font_ptr + 1);
-    dumpthings(kern_base[0], font_ptr + 1);
-    dumpthings(exten_base[0], font_ptr + 1);
-    dumpthings(param_base[0], font_ptr + 1);
-    dumpthings(font_glue[0], font_ptr + 1);
-    dumpthings(bchar_label[0], font_ptr + 1);
-    dumpthings(font_bchar[0], font_ptr + 1);
-    dumpthings(font_false_bchar[0], font_ptr + 1);
+    dump_things(font_dir[null_font], font_ptr + 1);
+    dump_things(font_num_ext[null_font], font_ptr + 1);
+    dump_things(font_check[null_font], font_ptr + 1);
+    dump_things(font_size[null_font], font_ptr + 1);
+    dump_things(font_dsize[null_font], font_ptr + 1);
+    dump_things(font_params[null_font], font_ptr + 1);
+    dump_things(hyphen_char[null_font], font_ptr + 1);
+    dump_things(skew_char[null_font], font_ptr + 1);
+    dump_things(font_name[null_font], font_ptr + 1);
+    dump_things(font_area[null_font], font_ptr + 1);
+    dump_things(font_bc[null_font], font_ptr + 1);
+    dump_things(font_ec[null_font], font_ptr + 1);
+    dump_things(ctype_base[null_font], font_ptr + 1);
+    dump_things(char_base[null_font], font_ptr + 1);
+    dump_things(width_base[null_font], font_ptr + 1);
+    dump_things(height_base[null_font], font_ptr + 1);
+    dump_things(depth_base[null_font], font_ptr + 1);
+    dump_things(italic_base[null_font], font_ptr + 1);
+    dump_things(lig_kern_base[null_font], font_ptr + 1);
+    dump_things(kern_base[null_font], font_ptr + 1);
+    dump_things(exten_base[null_font], font_ptr + 1);
+    dump_things(param_base[null_font], font_ptr + 1);
+    dump_things(font_glue[null_font], font_ptr + 1);
+    dump_things(bchar_label[null_font], font_ptr + 1);
+    dump_things(font_bchar[null_font], font_ptr + 1);
+    dump_things(font_false_bchar[null_font], font_ptr + 1);
 
     for (k = 0; k <= font_ptr; k++)
     {
@@ -3846,13 +3846,13 @@ done2:
     init_trie();
 
   dump_int(trie_max);
-  dumpthings(trie_trl[0], trie_max + 1);
-  dumpthings(trie_tro[0], trie_max + 1);
-  dumpthings(trie_trc[0], trie_max + 1);
+  dump_things(trie_trl[0], trie_max + 1);
+  dump_things(trie_tro[0], trie_max + 1);
+  dump_things(trie_trc[0], trie_max + 1);
   dump_int(trie_op_ptr);
-  dumpthings(hyf_distance[1], trie_op_ptr);
-  dumpthings(hyf_num[1], trie_op_ptr);
-  dumpthings(hyf_next[1], trie_op_ptr);
+  dump_things(hyf_distance[1], trie_op_ptr);
+  dump_things(hyf_num[1], trie_op_ptr);
+  dump_things(hyf_next[1], trie_op_ptr);
   print_nl("Hyphenation trie of length ");
   print_int(trie_max);
   prints(" has ");
