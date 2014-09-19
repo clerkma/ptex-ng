@@ -115,7 +115,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../../m4/kpse-common.m4 \
 	$(top_srcdir)/../../m4/ltsugar.m4 \
 	$(top_srcdir)/../../m4/ltversion.m4 \
 	$(top_srcdir)/../../m4/lt~obsolete.m4 \
-	$(top_srcdir)/ac/dvipdfm-x.ac $(top_srcdir)/configure.ac
+	$(top_srcdir)/ac/libdpx.ac $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -459,14 +459,14 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/clerk/dev/texlive-20140523-source/build-aux/missing aclocal-1.14
+ACLOCAL = ${SHELL} /home/clerk/dev/source/build-aux/missing aclocal-1.14
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
 AS = as
-AUTOCONF = ${SHELL} /home/clerk/dev/texlive-20140523-source/build-aux/missing autoconf
-AUTOHEADER = ${SHELL} /home/clerk/dev/texlive-20140523-source/build-aux/missing autoheader
-AUTOMAKE = ${SHELL} /home/clerk/dev/texlive-20140523-source/build-aux/missing automake-1.14
+AUTOCONF = ${SHELL} /home/clerk/dev/source/build-aux/missing autoconf
+AUTOHEADER = ${SHELL} /home/clerk/dev/source/build-aux/missing autoheader
+AUTOMAKE = ${SHELL} /home/clerk/dev/source/build-aux/missing automake-1.14
 AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -485,10 +485,6 @@ ECHO_T =
 EGREP = /bin/grep -E
 EXEEXT = 
 FGREP = /bin/grep -F
-FREETYPE2_DEPEND = ${top_builddir}/../../libs/freetype2/libfreetype.a
-FREETYPE2_INCLUDES = -I/home/clerk/dev/texlive-20140523-source/libs/freetype2/freetype2
-FREETYPE2_LIBS = /home/clerk/dev/texlive-20140523-source/libs/freetype2/libfreetype.a
-FT2_CONFIG = 
 GREP = /bin/grep
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
@@ -496,24 +492,21 @@ INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 KPATHSEA_DEPEND = ${top_builddir}/../kpathsea/libkpathsea.la
-KPATHSEA_INCLUDES = -I/home/clerk/dev/texlive-20140523-source/texk -I/home/clerk/dev/texlive-20140523-source/texk
-KPATHSEA_LIBS = /home/clerk/dev/texlive-20140523-source/texk/kpathsea/libkpathsea.la
+KPATHSEA_INCLUDES = -I/home/clerk/dev/source/texk -I/home/clerk/dev/source/texk
+KPATHSEA_LIBS = /home/clerk/dev/source/texk/kpathsea/libkpathsea.la
 LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS = 
 LIBOBJS = 
-LIBPAPER_DEPEND = ${top_builddir}/../../libs/libpaper/libpaper.a
-LIBPAPER_INCLUDES = -I/home/clerk/dev/texlive-20140523-source/libs/libpaper/include
-LIBPAPER_LIBS = /home/clerk/dev/texlive-20140523-source/libs/libpaper/libpaper.a
 LIBPNG_DEPEND = ${top_builddir}/../../libs/libpng/libpng.a
-LIBPNG_INCLUDES = -I/home/clerk/dev/texlive-20140523-source/libs/libpng/include
-LIBPNG_LIBS = /home/clerk/dev/texlive-20140523-source/libs/libpng/libpng.a
+LIBPNG_INCLUDES = -I/home/clerk/dev/source/libs/libpng/include
+LIBPNG_LIBS = /home/clerk/dev/source/libs/libpng/libpng.a
 LIBS = -lm 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
 MAINT = #
-MAKEINFO = ${SHELL} /home/clerk/dev/texlive-20140523-source/build-aux/missing makeinfo
+MAKEINFO = ${SHELL} /home/clerk/dev/source/build-aux/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
 NM = /usr/bin/nm -B
@@ -539,12 +532,12 @@ STRIP = strip
 VERSION = 20140317
 WARNING_CFLAGS = -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas
 ZLIB_DEPEND = ${top_builddir}/../../libs/zlib/libz.a
-ZLIB_INCLUDES = -I/home/clerk/dev/texlive-20140523-source/libs/zlib/include
-ZLIB_LIBS = /home/clerk/dev/texlive-20140523-source/libs/zlib/libz.a
-abs_builddir = /home/clerk/dev/texlive-20140523-source/texk/dvipdfmx
-abs_srcdir = /home/clerk/dev/texlive-20140523-source/texk/dvipdfmx
-abs_top_builddir = /home/clerk/dev/texlive-20140523-source/texk/dvipdfmx
-abs_top_srcdir = /home/clerk/dev/texlive-20140523-source/texk/dvipdfmx
+ZLIB_INCLUDES = -I/home/clerk/dev/source/libs/zlib/include
+ZLIB_LIBS = /home/clerk/dev/source/libs/zlib/libz.a
+abs_builddir = /home/clerk/dev/source/texk/libdpx
+abs_srcdir = /home/clerk/dev/source/texk/libdpx
+abs_top_builddir = /home/clerk/dev/source/texk/libdpx
+abs_top_srcdir = /home/clerk/dev/source/texk/libdpx
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
@@ -573,7 +566,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/clerk/dev/texlive-20140523-source/build-aux/install-sh
+install_sh = ${SHELL} /home/clerk/dev/source/build-aux/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -593,7 +586,7 @@ target_alias =
 top_build_prefix = 
 top_builddir = .
 top_srcdir = .
-AM_CPPFLAGS = $(KPATHSEA_INCLUDES) $(LIBPNG_INCLUDES) $(ZLIB_INCLUDES) $(LIBPAPER_INCLUDES)
+AM_CPPFLAGS = $(KPATHSEA_INCLUDES) $(LIBPNG_INCLUDES) $(ZLIB_INCLUDES)
 AM_CFLAGS = $(WARNING_CFLAGS)
 lib_LIBRARIES = libdpx.a
 libdpx_a_CPPFLAGS = $(AM_CPPFLAGS)
@@ -2620,11 +2613,6 @@ $(ZLIB_DEPEND): ${top_builddir}/../../libs/zlib/include/zconf.h
 	cd ${top_builddir}/../../libs/zlib && $(MAKE) $(AM_MAKEFLAGS) rebuild
 ${top_builddir}/../../libs/zlib/include/zconf.h:
 	cd ${top_builddir}/../../libs/zlib && $(MAKE) $(AM_MAKEFLAGS) rebuild
-# Rebuild libpaper
-$(LIBPAPER_DEPEND): ${top_builddir}/../../libs/libpaper/include/paper.h
-	cd ${top_builddir}/../../libs/libpaper && $(MAKE) $(AM_MAKEFLAGS) rebuild
-${top_builddir}/../../libs/libpaper/include/paper.h:
-	cd ${top_builddir}/../../libs/libpaper && $(MAKE) $(AM_MAKEFLAGS) rebuild
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

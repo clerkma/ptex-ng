@@ -4,7 +4,7 @@
 ## You may freely use, modify and/or distribute this file.
 ##
 
-AM_CPPFLAGS = $(KPATHSEA_INCLUDES) $(LIBPNG_INCLUDES) $(ZLIB_INCLUDES) $(LIBPAPER_INCLUDES)
+AM_CPPFLAGS = $(KPATHSEA_INCLUDES) $(LIBPNG_INCLUDES) $(ZLIB_INCLUDES)
 AM_CFLAGS = $(WARNING_CFLAGS)
 
 lib_LIBRARIES = libdpx.a
@@ -203,8 +203,6 @@ DISTCLEANFILES = config.force
 @LIBPNG_RULE@
 ## Rebuild libz
 @ZLIB_RULE@
-## Rebuild libpaper
-@LIBPAPER_RULE@
 
 ## Tests
 ##

@@ -115,7 +115,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../../m4/kpse-common.m4 \
 	$(top_srcdir)/../../m4/ltsugar.m4 \
 	$(top_srcdir)/../../m4/ltversion.m4 \
 	$(top_srcdir)/../../m4/lt~obsolete.m4 \
-	$(top_srcdir)/ac/dvipdfm-x.ac $(top_srcdir)/configure.ac
+	$(top_srcdir)/ac/libdpx.ac $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -485,10 +485,6 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
-FREETYPE2_DEPEND = @FREETYPE2_DEPEND@
-FREETYPE2_INCLUDES = @FREETYPE2_INCLUDES@
-FREETYPE2_LIBS = @FREETYPE2_LIBS@
-FT2_CONFIG = @FT2_CONFIG@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -501,9 +497,6 @@ KPATHSEA_LIBS = @KPATHSEA_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
-LIBPAPER_DEPEND = @LIBPAPER_DEPEND@
-LIBPAPER_INCLUDES = @LIBPAPER_INCLUDES@
-LIBPAPER_LIBS = @LIBPAPER_LIBS@
 LIBPNG_DEPEND = @LIBPNG_DEPEND@
 LIBPNG_INCLUDES = @LIBPNG_INCLUDES@
 LIBPNG_LIBS = @LIBPNG_LIBS@
@@ -593,7 +586,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = $(KPATHSEA_INCLUDES) $(LIBPNG_INCLUDES) $(ZLIB_INCLUDES) $(LIBPAPER_INCLUDES)
+AM_CPPFLAGS = $(KPATHSEA_INCLUDES) $(LIBPNG_INCLUDES) $(ZLIB_INCLUDES)
 AM_CFLAGS = $(WARNING_CFLAGS)
 lib_LIBRARIES = libdpx.a
 libdpx_a_CPPFLAGS = $(AM_CPPFLAGS)
@@ -2608,7 +2601,6 @@ config.force: $(ZLIB_DEPEND) $(LIBPNG_DEPEND) $(KPATHSEA_DEPEND) $(LIBPAPER_DEPE
 @KPATHSEA_RULE@
 @LIBPNG_RULE@
 @ZLIB_RULE@
-@LIBPAPER_RULE@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

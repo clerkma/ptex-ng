@@ -45,6 +45,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
+/* Define if you have libpaper. */
+/* #undef HAVE_LIBPAPER */
+
 /* Define if you have libpng and its headers. */
 #define HAVE_LIBPNG 1
 
@@ -59,6 +62,12 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
+
+/* Define to 1 if you have the `mkstemp' function. */
+#define HAVE_MKSTEMP 1
+
+/* Define to 1 if you have the `mktemp' function. */
+#define HAVE_MKTEMP 1
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
@@ -128,6 +137,9 @@
 /* Define if <time.h> has timezone as an external variable. */
 #define HAVE_TIMEZONE 1
 
+/* Define if struct tm has tm_gmtoff as a member. */
+#define HAVE_TM_GMTOFF 1
+
 /* Define to 1 if your `struct tm' has `tm_zone'. Deprecated, use
    `HAVE_STRUCT_TM_TM_ZONE' instead. */
 #define HAVE_TM_ZONE 1
@@ -135,6 +147,9 @@
 /* Define to 1 if you don't have `tm_zone' but do have the external array
    `tzname'. */
 /* #undef HAVE_TZNAME */
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#define HAVE_UNISTD_H 1
 
 /* Define if you have zlib and its headers. */
 #define HAVE_ZLIB 1

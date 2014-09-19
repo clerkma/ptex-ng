@@ -15,7 +15,7 @@ AC_CONFIG_MACRO_DIR([../../m4])
 dnl Common code for all programs using libkpathsea.
 KPSE_COMMON([dvipdfm-x])
 
-m4_include([ac/dvipdfm-x.ac])
+m4_include([ac/libdpx.ac])
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -53,9 +53,6 @@ AC_SEARCH_LIBS([pow], [m])
 KPSE_KPATHSEA_FLAGS
 KPSE_ZLIB_FLAGS
 KPSE_LIBPNG_FLAGS
-KPSE_FREETYPE2_FLAGS
-KPSE_LIBPAPER_FLAGS
-AC_DEFINE([HAVE_LIBPAPER], [1], [Define if you have libpaper.])
 
 KPSE_SAVE_FLAGS
 
@@ -92,7 +89,6 @@ AC_DEFINE([HAVE_LIBPNG], 1, [Define if you have libpng and its headers.])
 KPSE_WIN32_CALL
 
 AM_CONDITIONAL([DVIPDFMX], [test "x$enable_dvipdfmx" != xno])
-AM_CONDITIONAL([XDVIPDFMX], [test "x$enable_xdvipdfmx" != xno])
 
 AC_CONFIG_FILES([Makefile])
 

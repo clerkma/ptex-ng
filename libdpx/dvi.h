@@ -67,7 +67,7 @@ extern void dvi_y     (SIGNED_QUAD ch);
 extern void dvi_y0    (void);
 extern void dvi_z     (SIGNED_QUAD ch);
 extern void dvi_z0    (void);
-extern void dvi_dir_dpx   (UNSIGNED_BYTE dir);
+extern void dvi_dir_dpx (UNSIGNED_BYTE dir);
 
 extern void  dvi_do_page  (double paper_height, double x_offset, double y_offset);
 extern void  dvi_scan_specials (long page_no,

@@ -1305,7 +1305,7 @@ void
 dvi_dir_dpx (UNSIGNED_BYTE dir)
 {
   if (verbose)
-    fprintf(stderr, "  > dvi_dir_dpx %d\n", dir);
+    fprintf(stderr, "  > dvi_dir %d\n", dir);
   dvi_state.d = dir;
   pdf_dev_set_dirmode(dvi_state.d); /* 0: horizontal, 1,3: vertical */
 }
