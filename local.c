@@ -89,7 +89,7 @@ boolean reorder_arg_flag  = true;  /* put command line flags/arguments first */
 void show_usage (void)
 {
   printf("\n"
-      "Useage: ptex [OPTION]... [+format_file] [file]\n\n"
+      "Useage: ptex-ng [OPTION]... [+format_file] [file]\n\n"
       "--help       -?  show this usage summary\n"
       "--initex     -i  start up as initex (create format file)\n"
       "--verbose    -v  be verbose (show implementation version number)\n"
@@ -102,9 +102,7 @@ void show_usage (void)
       "--main-mem   -m  initial main memory size in kilo words (initex only)\n"
       "--hyph-size  -e  hyphenation exception dictionary size (initex only)\n"
       "--trie-size  -h  hyphenation pattern trie size (initex only)\n"
-      "--xchr-file  -x  use `non ASCII' character mapping (xchr[]) defined in file\n"
-      "--key-file   -k  use `key replacement' defined in file\n"
-      "--dvi-dir    -o  write DVI file in specified directory (default '.')\n"
+      "--pdf-dir    -o  write PDF file in specified directory (default '.')\n"
       "--log-dir    -l  write LOG file in specified directory (default '.')\n"
       "--aux-dir    -a  write AUX file in specified directory (default '.')\n");
   uexit(EXIT_FAILURE);

@@ -19,8 +19,8 @@
 
 #ifndef _PTEX_NG_TEXD_H
 #define _PTEX_NG_TEXD_H
-/* headers and pragmas */
 
+/* headers and pragmas */
 #ifdef _WIN32
   #pragma warning(disable:4201) // nameless struct/union
   #pragma warning(disable:4267)
@@ -30,14 +30,16 @@
   #pragma warning(disable:4127) // conditional expression is constant
 #else
   #pragma GCC diagnostic ignored "-Wunused-result"
+  #pragma GCC diagnostic ignored "-Wdangling-else"
+  #pragma GCC diagnostic ignored "-Wunused-result"
 #endif
-
+// standard C headers
 #include <stdarg.h>
 #include <setjmp.h>
 #include <time.h>
 #include <math.h>
 #include <signal.h>
-
+// TeX Live's kpathsea and ptexenc
 #include <kpathsea/c-auto.h>
 #include <kpathsea/c-std.h>
 #include <kpathsea/c-pathmx.h>
@@ -61,7 +63,7 @@
   #include <kpathsea/knj.h>
 #endif
 #include "zlib.h"
-
+// typedefs
 typedef long long integer;
 typedef double    glue_ratio;
 typedef double    real;

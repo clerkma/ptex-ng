@@ -1,0 +1,86 @@
+#
+# Copyright (c) 2014 Clerk Ma
+#
+# You may freely use, modify and/or distribute this file.
+#
+# Makefile for Mac OS X + Xcode.
+#
+
+CC = gcc
+CFLAGS = -c -O2 -I/Users/maqiyuan/dev/extra/include
+LDFLAGS = libdpx.a libpng.a libz.a libptexenc.a libkpathsea.a -lm
+
+objects = ptex.o itex.o openinou.o subroute.o local.o \
+	tex0.o tex1.o tex2.o tex3.o tex4.o \
+	tex5.o tex6.o tex7.o tex8.o tex9.o \
+	pool.o utils.o dpx.o ptex-kanji.o ptex-module.o
+
+headers = ptex.h texd.h coerce.h macros.h memory.h
+
+ptex-ng: $(objects)
+	$(CC) -o ptex-ng $(objects) $(LDFLAGS)
+
+ptex.o: ptex.c $(headers)
+	$(CC) $(CFLAGS) ptex.c
+
+dpx.o: dpx.c $(headers)
+	$(CC) $(CFLAGS) dpx.c
+
+ptex-kanji.o: ptex-kanji.c $(headers)
+	$(CC) $(CFLAGS) ptex-kanji.c
+	
+ptex-module.o: ptex-module.c $(headers)
+	$(CC) $(CFLAGS) ptex-module.c
+
+itex.o: itex.c $(headers)
+	$(CC) $(CFLAGS) itex.c
+
+openinou.o: openinou.c $(headers)
+	$(CC) $(CFLAGS) openinou.c
+
+subroute.o: subroute.c $(headers)
+	$(CC) $(CFLAGS) subroute.c
+
+local.o: local.c $(headers)
+	$(CC) $(CFLAGS) local.c
+
+tex0.o: tex0.c $(headers)
+	$(CC) $(CFLAGS) tex0.c
+
+tex1.o: tex1.c $(headers)
+	$(CC) $(CFLAGS) tex1.c
+
+tex2.o: tex2.c $(headers)
+	$(CC) $(CFLAGS) tex2.c
+
+tex3.o: tex3.c $(headers)
+	$(CC) $(CFLAGS) tex3.c
+
+tex4.o: tex4.c $(headers)
+	$(CC) $(CFLAGS) tex4.c
+
+tex5.o: tex5.c $(headers)
+	$(CC) $(CFLAGS) tex5.c
+
+tex6.o: tex6.c $(headers)
+	$(CC) $(CFLAGS) tex6.c
+
+tex7.o: tex7.c $(headers)
+	$(CC) $(CFLAGS) tex7.c
+
+tex8.o: tex8.c $(headers)
+	$(CC) $(CFLAGS) tex8.c
+
+tex9.o: tex9.c $(headers)
+	$(CC) $(CFLAGS) tex9.c
+
+pool.o: pool.c $(headers)
+	$(CC) $(CFLAGS) pool.c
+
+utils.o: utils.c $(headers)
+	$(CC) $(CFLAGS) utils.c
+
+.PHONY: clean
+
+clean:
+	rm ptex-ng *.o
