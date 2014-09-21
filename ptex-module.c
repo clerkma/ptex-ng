@@ -288,7 +288,7 @@ void pdf_synch_dir(void)
           case dir_tate:
             {
               tmp = cur_h;
-              cur_h = - cur_v;
+              cur_h = -cur_v;
               cur_v = tmp;
             }
             break;

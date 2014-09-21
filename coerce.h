@@ -417,7 +417,6 @@ void final_cleanup (void);
 void init_prim (void);
 void debug_help (void);
 void fix_date_and_time (void);
-void print_banner (void);
 pointer new_dir_node(pointer b, eight_bits dir);
 eight_bits get_jfm_pos(KANJI_code kcode, internal_font_number f);
 void print_kansuji(integer n);

@@ -273,7 +273,8 @@ void mojikumi_before_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
     case 0x2156: /* ¡¸ */
     case 0x2158: /* ¡º */
     case 0x215a: /* ¡¾ */
-      cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d)));
+      if (font_dir[f] == dir_yoko)
+        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d)));
       break;
     case 0x2121: /* spc */
     case 0x2122: /* ¡¢ */
@@ -296,8 +297,9 @@ void mojikumi_before_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
     case 0x216d: /* ¡å */
       break;
     default:
-      if (jfm_zw(f) != char_width(f, char_info(f, d)))
-        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
+      if (font_dir[f] == dir_yoko)
+        if (jfm_zw(f) != char_width(f, char_info(f, d)))
+          cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
       break;
   }
 }
@@ -315,7 +317,8 @@ void mojikumi_after_kanji  (internal_font_number f, KANJI_code k, ASCII_code d)
     case 0x2156: /* ¡¸ */
     case 0x2158: /* ¡º */
     case 0x215a: /* ¡¾ */
-      cur_h = cur_h + char_width(f, char_info(f, c));
+      if (font_dir[f] == dir_yoko)
+        cur_h = cur_h + char_width(f, char_info(f, c));
       break;
     case 0x2121: /* spc */
     case 0x2122: /* ¡¢ */
@@ -336,10 +339,12 @@ void mojikumi_after_kanji  (internal_font_number f, KANJI_code k, ASCII_code d)
     case 0x216b: /* ¡ã */
     case 0x216c: /* ¡ä */
     case 0x216d: /* ¡å */
-      cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, get_jfm_pos(k, f))));
+      if (font_dir[f] == dir_yoko)
+        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, get_jfm_pos(k, f))));
       break;
     default:
-      if (jfm_zw(f) != char_width(f, char_info(f, d)))
+      if (font_dir[f] == dir_yoko)
+        if (jfm_zw(f) != char_width(f, char_info(f, d)))
         cur_h = cur_h + (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
       break;
   }

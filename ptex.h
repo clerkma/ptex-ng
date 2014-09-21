@@ -803,7 +803,6 @@ extern int current_param_size;
 extern int current_buf_size;
 extern const char * banner;
 extern const char * application;
-extern const char * yandyversion;
 extern char log_line[256];
 extern char * dvi_directory;
 extern char * log_directory;

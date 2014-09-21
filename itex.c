@@ -2450,7 +2450,7 @@ start_of_TEX:
   file_offset = 0;
   kcode_pos = 0;
 
-  print_banner();
+  prints(banner);
 
   if (format_ident == 0)
   {

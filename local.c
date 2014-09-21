@@ -63,14 +63,8 @@ const char * dist = "Unknown";
 
 const char * compiletime  = __TIME__;
 const char * compiledate  = __DATE__;
-const char * yandyversion = "2.3.0";
-const char * application  = "pTeX";
+const char * application  = "pTeX-ng";
 const char * banner       = "This is pTeX-ng, Version 3.14159265";
-
-void print_banner (void)
-{
-  prints(banner);
-}
 
 clock_t start_time, main_time, finish_time;
 
@@ -135,8 +129,8 @@ void stamp_it (char * s)
 
   strcpy(date, compiledate);
   scivilize(date);
-  sprintf(s, "%s %s (compiled time: %s %s with %s/%s)",
-    application, yandyversion, date, compiletime, dist, compiler);
+  sprintf(s, "%s (compiled time: %s %s with %s/%s)",
+    application, date, compiletime, dist, compiler);
   s += strlen(s);
 }
 

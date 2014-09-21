@@ -27,29 +27,8 @@
 #define PATH_SEP        '/'
 #define PATH_SEP_STRING "/"
 
-#define BUILDNAMEDIRECT
-
 extern int shorten_file_name;
 
-#ifdef BUILDNAMEDIRECT
-char * xconcat (char * buffer, char * s1, char * s2)
-{
-  int n1 = strlen(s1);
-  int n2 = strlen(s2);
-
-  if (buffer == s2)
-  {
-    memmove(buffer + n1, buffer, n2 + 1);
-    strncpy(buffer, s1, n1);
-  }
-  else
-  {
-    strcpy(buffer, s1);
-    strcat(buffer + n1, s2);
-  }
-
-  return buffer;
-}
 char * xconcat3 (char *buffer, char *s1, char *s2, char *s3)
 {
   int n1 = strlen(s1);
@@ -71,7 +50,6 @@ char * xconcat3 (char *buffer, char *s1, char *s2, char *s3)
 
   return buffer;
 }
-#endif
 
 void patch_in_path (ASCII_code * buffer, ASCII_code *name, ASCII_code * path)
 {
@@ -346,12 +324,8 @@ boolean open_output (FILE ** f, const char * fopen_mode)
 
     if (temp_dir != NULL)
     {
-#ifdef BUILDNAMEDIRECT
       unsigned char temp_name[file_name_size];
       xconcat3((char *) temp_name, temp_dir, PATH_SEP_STRING, (char *) name_of_file + 1);
-#else
-      string temp_name = concat3(temp_dir, PATH_SEP_STRING, name_of_file + 1);
-#endif
 
       if (deslash)
         unixify((char *) temp_name);
@@ -361,10 +335,6 @@ boolean open_output (FILE ** f, const char * fopen_mode)
       /* If this succeeded, change name_of_file accordingly. */
       if (*f)
         strcpy((char *) name_of_file + 1, (char *) temp_name);
-
-#ifndef BUILDNAMEDIRECT
-      free (temp_name);
-#endif
     }
   }
 

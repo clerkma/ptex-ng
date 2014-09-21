@@ -412,13 +412,10 @@ void debug_help (void)
   integer k, l, m, n;
 
   while (true)
-  { 
+  {
+    wake_up_terminal();
     print_nl(" debug # (-1 to exit):");
-
-#ifndef _WINDOWS
-    fflush(stdout); 
-#endif
-
+    update_terminal();
     read(stdin, m);  // ???
 
     if (m < 0)
@@ -436,11 +433,11 @@ void debug_help (void)
           break;
 
         case 2:
-          print_int(mem[n].hh.lh);
+          print_int(info(n));
           break;
           
         case 3:
-          print_int(mem[n].hh.rh);
+          print_int(link(n));
           break;
         
         case 4:

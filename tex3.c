@@ -1870,7 +1870,7 @@ void open_log_file (void)
   log_opened = true;
 
   {
-    log_printf("%s (%s %s)", banner, application, yandyversion);
+    log_printf("%s", banner);
 
     if (format_ident > 0)
       slow_print(format_ident);

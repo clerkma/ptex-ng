@@ -28,10 +28,14 @@
   #pragma warning(disable:4701) // potentially uninitialized local variable 'name' used
   #pragma warning(disable:4135) // conversion between different integral types
   #pragma warning(disable:4127) // conditional expression is constant
-#else
+#endif
+// for GCC
+#ifdef __GNUC__
   #pragma GCC diagnostic ignored "-Wunused-result"
-  #pragma GCC diagnostic ignored "-Wdangling-else"
-  #pragma GCC diagnostic ignored "-Wunused-result"
+#endif
+// for Clang
+#ifdef __clang__
+  #pragma clang diagnostic ignored "-Wdangling-else"
 #endif
 // standard C headers
 #include <stdarg.h>
