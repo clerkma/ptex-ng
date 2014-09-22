@@ -61,6 +61,7 @@
 #include <kpathsea/variable.h>
 #include <kpathsea/absolute.h>
 #include <ptexenc/ptexenc.h>
+#include <ptexenc/unicode.h>
 #ifdef _WIN32
   #include <kpathsea/win32lib.h>
   #include <kpathsea/concatn.h>
@@ -75,7 +76,7 @@ typedef FILE * alpha_file;
 typedef FILE * byte_file;
 typedef FILE * word_file;
 typedef unsigned char  ASCII_code;
-typedef unsigned short KANJI_code;
+typedef int32_t        KANJI_code;
 typedef unsigned char  eight_bits;
 typedef unsigned short sixteen_bits;
 typedef integer pool_pointer;
@@ -186,8 +187,10 @@ while (0)
 
 // pTeX-ng's macros and functions
 
-#define Hi(x) (((x) >> 8) & 0xff)
-#define Lo(x) ((x) & 0xff)
+#define XXHi(x) BYTE1(x)
+#define XHi(x)  BYTE2(x)
+#define Hi(x)   BYTE3(x)
+#define Lo(x)   BYTE4(x)
 
 extern boolean check_kanji  (integer c);
 extern boolean is_char_ascii(integer c);
@@ -195,7 +198,10 @@ extern boolean is_char_kanji(integer c);
 extern boolean ismultiprn   (integer c);
 extern integer calc_pos     (integer c);
 extern integer kcatcodekey  (integer c);
+extern integer multilenbuffchar(integer c);
 extern void init_default_kanji(const_string file_str, const_string internal_str);
-#define init_kanji() init_default_kanji(NULL, "sjis")
+#define init_kanji() init_default_kanji("utf8", "uptex")
+#define nrestmultichr(x)  ( (x)!=0 ? ((x) / 8) + 2 - ((x) % 8) : -1 )
+#define max_cjk_val 0x1000000
 
 #endif

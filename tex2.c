@@ -360,7 +360,7 @@ void show_context (void)
               {
                 cur_input = input_stack[base_ptr - 1];
                 s = get_avail();
-                info(s) = Lo(info(loc));
+                info(s) = (info(loc) % max_char_val);
                 cur_input = input_stack[base_ptr];
                 link(start) = s;
                 show_token_list(start, loc, 100000L);
@@ -420,10 +420,11 @@ done1:;
         else
           p = first_count +(error_line - n - 3);
 
-        if (trick_buf2[(p - 1) % error_line] == 1)
-        {
-          p = p - 1;
-        }
+        kcp = trick_buf2[(p - 1) % error_line];
+
+        if (((kcp % 010) > 0) && (nrestmultichr(kcp) > 0))
+          p = p - (kcp % 010);
+
 
         for (q = first_count; q <= p - 1; q++)
           print_char(trick_buf[q % error_line]);
@@ -763,10 +764,10 @@ void get_token (void)
 
   if (cur_cs == 0)
   {
-    if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
-      cur_tok = cur_chr;
+    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+      cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
     else
-      cur_tok = (cur_cmd * 256) + cur_chr;
+      cur_tok = (cur_cmd * max_char_val) + cur_chr;
   }
   else
   {
@@ -1200,13 +1201,20 @@ void expand (void)
 
           if (check_kanji(info(p)))
           {
-            buffer[j] = Hi(info(p));
+            t = toBUFF(info(p) % max_cjk_val);
+            if (BYTE1(t) != 0) { buffer[j] = BYTE1(t); incr(j); };
+            if (BYTE2(t) != 0) { buffer[j] = BYTE2(t); incr(j); };
+            if (BYTE3(t) != 0) { buffer[j] = BYTE3(t); incr(j); };
+            buffer[j] = BYTE4(t); incr(j);
+            p = link(p);
+          }
+          else
+          {
+            buffer[j] = info(p) % max_char_val;
             incr(j);
+            p = link(p);
           }
 
-          buffer[j] = Lo(info(p));
-          incr(j);
-          p = link(p);
         }
 
         if (j > first + 1)
@@ -1332,10 +1340,10 @@ restart:
 done:
   if (cur_cs == 0)
   {
-    if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
-      cur_tok = cur_chr;
+    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+      cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
     else
-      cur_tok = (cur_cmd * 256) + cur_chr;
+      cur_tok = (cur_cmd * max_char_val) + cur_chr;
   }
   else
   {
@@ -1353,10 +1361,10 @@ void x_token (void)
 
   if (cur_cs == 0)
   {
-    if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
-      cur_tok = cur_chr;
+    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+      cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
     else
-      cur_tok = (cur_cmd * 256) + cur_chr;
+      cur_tok = (cur_cmd * max_char_val) + cur_chr;
   }
   else
   {
@@ -1833,6 +1841,7 @@ void scan_something_internal (small_number level, boolean negative)
       }
       break;
 
+    case kchar_given:
     case char_given:
     case math_given:
       scanned_result(cur_chr, int_val);
@@ -2008,20 +2017,24 @@ restart:
 lab_switch:
     if (loc <= limit)
     {
-      cur_chr = buffer[loc];
-      incr(loc);
+      cur_chr = fromBUFF(buffer, limit, loc);
+      cur_cmd = kcat_code(kcatcodekey(cur_chr));
 
-      if (multistrlen(buffer, limit + 1, loc - 1) == 2)
+      if ((multistrlen(buffer, limit, loc) > 1) && check_kcat_code(cur_cmd))
       {
-        cur_chr = fromBUFF(buffer, limit + 1, loc - 1);
-        cur_cmd = kcat_code(kcatcodekey(cur_chr));
-        incr(loc);
+        if (cur_cmd == not_cjk)
+          cur_cmd = other_kchar;
+
+        loc = loc + multistrlen(buffer, limit, loc);
       }
       else
       {
+        cur_chr = buffer[loc];
+        incr(loc);
 reswitch:
         cur_cmd = cat_code(cur_chr);
-      }
+      };
+
 
       switch (state + cur_cmd)
       {
@@ -2038,18 +2051,24 @@ reswitch:
             else
             {
               k = loc;
-              cur_chr = buffer[k];
-              incr(k);
+              cur_chr = fromBUFF(buffer, limit, k);
+              cat = kcat_code(kcatcodekey(cur_chr));
 
-              if (multistrlen(buffer, limit + 1, k - 1) == 2)
+              if ((multistrlen(buffer, limit, k) > 1) && check_kcat_code(cat))
               {
-                cat = kcat_code(kcatcodekey(fromBUFF(buffer, limit + 1, k - 1)));
-                incr(k);
+                if (cat == not_cjk)
+                  cat = other_kchar;
+                k = k + multistrlen(buffer, limit, k);
               }
               else
+              {
+                cur_chr = buffer[k];
                 cat = cat_code(cur_chr);
+                incr(k);
+              };
+
 start_cs:
-              if ((cat == letter) || (cat == kanji) || (cat == kana))
+              if ((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul))
                 state = skip_blanks;
               else if (cat == spacer)
                 state = skip_blanks;
@@ -2062,19 +2081,25 @@ start_cs:
                 loc = k;
                 goto found;
               }
-              else if (((cat == letter) || (cat == kanji) || (cat == kana)) && (k <= limit))
+              else if (((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)) && (k <= limit))
               {
                 do {
-                  cur_chr = buffer[k];
-                  incr(k);
+                  cur_chr = fromBUFF(buffer, limit, k);
+                  cat = kcat_code(kcatcodekey(cur_chr));
 
-                  if (multistrlen(buffer, limit + 1, k - 1) == 2)
+                  if ((multistrlen(buffer, limit, k)>1) && check_kcat_code(cat))
                   {
-                    cat = kcat_code(kcatcodekey(fromBUFF(buffer, limit + 1, k - 1)));
-                    incr(k);
+                    if (cat == not_cjk)
+                      cat = other_kchar;
+                    k = k + multistrlen(buffer, limit, k);
                   }
                   else
+                  {
+                    cur_chr = buffer[k];
                     cat = cat_code(cur_chr);
+                    incr(k);
+                  }
+
                   
                   while ((buffer[k] == cur_chr) && (cat == sup_mark) && (k < limit))
                   {
@@ -2120,13 +2145,13 @@ start_cs:
                     }
                   }
                 }
-                while (!(!((cat == letter) || (cat == kanji) || (cat == kana)) || (k > limit)));
+                while (!(!((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)) || (k > limit)));
 
-                if (!((cat == letter) || (cat == kanji) || (cat == kana)))
+                if (!((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)))
                   decr(k);
 
                 if (cat == other_kchar)
-                  decr(k);
+                  k = k - multilenbuffchar(cur_chr) + 1;
 
                 if (k > loc + 1)
                 {
@@ -2344,6 +2369,12 @@ found:
           state = mid_kanji;
           break;
 
+        case hangul_code(skip_blanks):
+        case hangul_code(new_line):
+        case hangul_code(mid_kanji):
+          state = mid_line;
+          break;
+
         default:
           break;
       }
@@ -2466,13 +2497,13 @@ found:
     }
     else if (check_kanji(t))
     {
-      cur_chr = t;
-      cur_cmd = kcat_code(kcatcodekey(t));
+      cur_cmd = t / max_cjk_val;
+      cur_chr = t % max_cjk_val;
     }
     else
     {
-      cur_cmd = Hi(t);
-      cur_chr = Lo(t);
+      cur_cmd = t / max_char_val;
+      cur_chr = t % max_char_val;
 
       switch (cur_cmd)
       {

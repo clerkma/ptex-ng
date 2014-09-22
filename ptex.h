@@ -216,6 +216,7 @@ EXTERN integer file_offset;
 EXTERN ASCII_code trick_buf[error_line + 1];
 EXTERN ASCII_code trick_buf2[error_line + 1];
 EXTERN ASCII_code kcode_pos;
+EXTERN ASCII_code kcp;
 EXTERN ASCII_code prev_char;
 EXTERN integer trick_count;
 EXTERN integer first_count;

@@ -1273,6 +1273,13 @@ void prefixed_command (void)
             }
             break;
 
+          case kchar_def_code:
+            {
+              scan_char_num();
+              define(p, kchar_given, cur_val);
+            }
+            break;
+
           case math_char_def_code:
             {
               scan_fifteen_bit_int();
@@ -1451,7 +1458,7 @@ void prefixed_command (void)
     case def_code:
       {
         if (cur_chr == kcat_code_base)
-          m = kanji;
+          m = not_cjk;
         else
           m = 0;
 
@@ -1715,6 +1722,10 @@ void prefixed_command (void)
         
         define(p, data, cur_chr);
       }
+      break;
+
+    case set_enable_cjk_token:
+      define(enable_cjk_token_code, data, cur_chr);
       break;
 
     case assign_inhibit_xsp_code:
@@ -2766,6 +2777,7 @@ void do_initex (void)
 
   eqtb[auto_spacing_code] = eqtb[cat_code_base];
   eqtb[auto_xspacing_code] = eqtb[cat_code_base];
+  eqtb[enable_cjk_token_code] = eqtb[cat_code_base];
 
   for (k = 0; k <= 255; k++)
   {
@@ -2819,17 +2831,40 @@ void do_initex (void)
     sf_code(k) = 999;
   }
 
-  kcat_code(0x20 + 1) = other_kchar;
-  kcat_code(0x20 + 2) = other_kchar;
-  
-  for (k = 3; k <= 6; k++)
-    kcat_code(0x20 + k) = kana;
+  if (is_internalUPTEX())
+  {
+    //{ default: other_kchar }
+    kcat_code(0x0) = not_cjk;
+    kcat_code(0x23) = hangul; // { Hangul Jamo }
+    for (k = 0x63; k <= 0x65; k++) kcat_code(k) = kanji; // { CJK Radicals Supplement .. Ideographic Description Characters }
+    for (k = 0x67; k <= 0x68; k++) kcat_code(k) = kana; // { Hiragana, Katakana }
+    kcat_code(0x69) = kanji; // { Bopomofo }
+    kcat_code(0x6A) = hangul; // { Hangul Compatibility Jamo }
+    for (k = 0x6B; k <= 0x6D; k++) kcat_code(k) = kanji; // { Kanbun .. CJK Strokes }
+    kcat_code(0x6E) = kana; // { Katakana Phonetic Extensions }
+    kcat_code(0x71) = kanji; // { CJK Unified Ideographs Extension A }
+    kcat_code(0x73) = kanji; // { CJK Unified Ideographs }
+    kcat_code(0x83) = hangul; // { Hangul Jamo Ext}ed-A }
+    kcat_code(0x8B) = hangul; // { Hangul Syllables }
+    kcat_code(0x8C) = hangul; // { Hangul Jamo Ext}ed-B }
+    kcat_code(0x91) = kanji; // { CJK Compatibility Ideographs }
+    //{ kcat_code(0x9A) = other_kchar; Halfwidth and Fullwidth Forms }
+    kcat_code(0xC3) = kana; // { Kana Supplement }
+    for (k = 0xD4; k <= 0xD7; k++) kcat_code(k) = kanji; // { CJK Unified Ideographs Extension B .. CJK Compatibility Ideographs Supplement }
+    kcat_code(0xFE) = kana; // { Fullwidth digit and latin alphabet }
+    kcat_code(0xFF) = kana; // { Halfwidth katakana }
+  }
+  else
+  {
+    kcat_code(0x20 + 1) = other_kchar; // {1 ku}
+    kcat_code(0x20 + 2) = other_kchar; // {2 ku}
+    for (k = 3; k <= 6; k++) kcat_code(0x20 + k) = kana; // {3 ku ... 6 ku}
+    for (k = 7; k <= 13; k++) kcat_code(0x20 + k) = other_kchar; // {7 ku ... 13 ku}
+    for (k = 14; k <= 120; k++) kcat_code(0x20 + k) = kanji; // {14 ku ... 120 ku}
+    //{ $\.{@0x20}+|k| = |kcatcodekey|(|fromKUTEN|(|HILO|(k,1))$ }
+    for (k = 16; k <= 94; k++) kcat_code(0xA0 + k) = kanji; // {2 men 16 ku ... 94 ku}
+  };
 
-  for (k = 7; k <= 8; k++)
-    kcat_code(0x20 + k) = other_kchar;
-
-  for (k = 16; k <= 84; k++)
-    kcat_code(0x20 + k) = kanji;
 
   for (k = int_base; k <= del_code_base - 1; k++)
     eqtb[k].cint = 0;
@@ -4015,6 +4050,7 @@ void init_prim (void)
   primitive("aftergroup", after_group, 0);
   primitive("begingroup", begin_group, 0);
   primitive("char", char_num, 0);
+  primitive("kchar", kchar_num, 0);
   primitive("csname", cs_name, 0);
   primitive("delimiter", delim_num, 0);
   primitive("divide", divide, 0);
@@ -4092,6 +4128,7 @@ void init_prim (void)
   primitive("sjis", convert, sjis_code);
   primitive("jis", convert, jis_code);
   primitive("kuten", convert, kuten_code);
+  primitive("ucs", convert, ucs_code);
   primitive("jobname", convert, job_name_code);
   primitive("if", if_test, if_char_code);
   primitive("ifcat", if_test, if_cat_code);
@@ -4228,6 +4265,7 @@ void init_prim (void)
   primitive("let", let, normal);
   primitive("futurelet", let, normal + 1);
   primitive("chardef", shorthand_def, char_def_code);
+  primitive("kchardef", shorthand_def, kchar_def_code);
   primitive("mathchardef", shorthand_def, math_char_def_code);
   primitive("countdef", shorthand_def, count_def_code);
   primitive("dimendef", shorthand_def, dimen_def_code);
@@ -4276,6 +4314,9 @@ void init_prim (void)
   primitive("noautospacing", set_auto_spacing, reset_auto_spacing_code);
   primitive("autoxspacing", set_auto_spacing, set_auto_xspacing_code);
   primitive("noautoxspacing", set_auto_spacing, reset_auto_xspacing_code);
+  primitive("enablecjktoken", set_enable_cjk_token, reset_enable_cjk_token_code);
+  primitive("disablecjktoken", set_enable_cjk_token, set_enable_cjk_token_code);
+  primitive("forcecjktoken", set_enable_cjk_token, set_force_cjk_token_code);
   primitive("inhibitglue", inhibit_glue, 0);
   primitive("inhibitxspcode", assign_inhibit_xsp_code, inhibit_xsp_code_base);
   primitive("prebreakpenalty", assign_kinsoku, pre_break_penalty_code);

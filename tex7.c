@@ -1483,7 +1483,7 @@ void make_accent (void)
 
   scan_char_num();
 
-  if (!is_char_ascii(cur_val))
+  if (check_echar_range(cur_val) == 0)
   {
     KANJI(cx) = cur_val;
 
@@ -1497,7 +1497,7 @@ void make_accent (void)
     if (p != null)
     {
       link(p) = get_avail();
-      info(link(p)) = KANJI(cx);
+      info(link(p)) = KANJI(cx) + kcat_code(kcatcodekey(cx)) * max_cjk_val;
     }
   }
   else
@@ -1518,7 +1518,7 @@ void make_accent (void)
 
     if ((cur_cmd == letter) || (cur_cmd == other_char))
       q = new_character(f, cur_chr);
-    else if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
+    else if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
     {
       if (direction == dir_tate)
         f = cur_tfont;
@@ -1529,7 +1529,7 @@ void make_accent (void)
     }
     else if (cur_cmd == char_given)
     {
-      if (is_char_ascii(cur_chr))
+      if (check_echar_range(cur_chr))
         q = new_character(f, cur_chr);
       else
       {
@@ -1545,7 +1545,7 @@ void make_accent (void)
     {
       scan_char_num();
 
-      if (is_char_ascii(cur_val))
+      if (check_echar_range(cur_val))
         q = new_character(f, cur_val);
       else
       {
@@ -1556,6 +1556,24 @@ void make_accent (void)
 
         KANJI(cx) = cur_chr;
       }
+    }
+    else if (cur_cmd == kchar_given)
+    {
+      if (direction == dir_tate)
+        f = cur_tfont;
+      else
+        f = cur_jfont;
+      KANJI(cx) = cur_chr;
+    }
+    else if (cur_cmd == kchar_num)
+    {
+      scan_char_num();
+
+      if (direction == dir_tate)
+        f = cur_tfont;
+      else
+        f = cur_jfont;
+      KANJI(cx) = cur_val;
     }
     else
       back_input();
@@ -1585,7 +1603,7 @@ void make_accent (void)
     {
       q = new_character(f, get_jfm_pos(KANJI(cx), f));
       link(q) = get_avail();
-      info(link(q)) = KANJI(cx);
+      info(link(q)) = KANJI(cx) + kcat_code(kcatcodekey(cx)) * max_cjk_val;
       last_jchr = q;
     }
 
@@ -1967,7 +1985,7 @@ reswitch:
     case letter:
     case other_char:
     case char_given:
-      if (is_char_ascii(cur_chr) || (cur_chr == 256))
+      if ((cur_chr >= 0) || (cur_chr <= 256))
       {
         c = math_code(cur_chr);
 
@@ -1988,6 +2006,10 @@ reswitch:
       {
         KANJI(cx) = cur_chr;
       }
+      break;
+
+    case kchar_given:
+      KANJI(cx) = cur_chr;
       break;
 
     case kanji:
@@ -2065,7 +2087,7 @@ reswitch:
     math_type(p) = math_jchar;
     fam(p) = cur_jfam;
     character(p) = 0;
-    math_kcode(p - 1) = KANJI(cx);
+    math_kcode(p - 1) = KANJI(cx) + kcat_code(kcatcodekey(cx)) * max_cjk_val;
 
     if (font_dir[fam_fnt(fam(p) + cur_size)] == dir_default)
     {

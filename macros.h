@@ -308,10 +308,12 @@ while (0)
 #define stop          14
 #define invalid_char  15
 #define delim_num     15
+#define not_cjk       15
 #define kanji         16
 #define kana          17
 #define other_kchar   18
-#define max_char_code 18
+#define hangul        19
+#define max_char_code 19
 /* sec 0208 */
 #define char_num          (max_char_code + 1)
 #define math_char_num     (char_num + 1)
@@ -347,7 +349,8 @@ while (0)
 #define discretionary     (math_accent + 1)
 #define eq_no             (discretionary + 1)
 #define left_right        (eq_no + 1)
-#define math_comp         (left_right + 1)
+#define kchar_num         (left_right + 1)
+#define math_comp         (kchar_num + 1)
 #define limit_switch      (math_comp + 1)
 #define above             (limit_switch + 1)
 #define math_style        (above + 1)
@@ -367,7 +370,8 @@ while (0)
 #define end_cs_name       (radical + 1)
 #define min_internal      (end_cs_name + 1)
 #define char_given        (min_internal + 1)
-#define math_given        (char_given + 1)
+#define kchar_given       (char_given + 1)
+#define math_given        (kchar_given + 1)
 #define last_item         (math_given + 1)
 #define inhibit_glue      (last_item + 1)
 #define chg_dir           (inhibit_glue + 1)
@@ -410,7 +414,8 @@ while (0)
 #define hyph_data               (set_box + 1)
 #define set_interaction         (hyph_data + 1)
 #define set_auto_spacing        (set_interaction + 1)
-#define max_command             set_auto_spacing
+#define set_enable_cjk_token    (set_auto_spacing + 1)
+#define max_command             set_enable_cjk_token
 /* sec 0210 */
 #define undefined_cs    (max_command + 1 )
 #define expand_after    (max_command + 2 )
@@ -552,7 +557,8 @@ while (0)
 #define cur_tfont_loc                 (cur_jfont_loc + 1)
 #define auto_spacing_code             (cur_tfont_loc + 1)
 #define auto_xspacing_code            (auto_spacing_code + 1)
-#define cat_code_base                 (auto_xspacing_code + 1)
+#define enable_cjk_token_code         (auto_xspacing_code + 1)
+#define cat_code_base                 (enable_cjk_token_code + 1)
 #define kcat_code_base                (cat_code_base + 256)
 #define auto_xsp_code_base            (kcat_code_base + 256)
 #define inhibit_xsp_code_base         (auto_xsp_code_base + 256)
@@ -582,6 +588,7 @@ while (0)
 #define cur_tfont                     equiv(cur_tfont_loc)
 #define auto_spacing                  equiv(auto_spacing_code)
 #define auto_xspacing                 equiv(auto_xspacing_code)
+#define enable_cjk_token              equiv(enable_cjk_token_code)
 #define kcat_code(a)                  equiv(kcat_code_base + a)
 #define auto_xsp_code(a)              equiv(auto_xsp_code_base + a)
 #define inhibit_xsp_type(a)           eq_type(inhibit_xsp_code_base + a)
@@ -810,19 +817,20 @@ while (0)
 /* sec 0274 */
 #define saved(a) save_stack[save_ptr + (a)].cint
 /* sec 0289 */
-#define cs_token_flag     0xFFFF
-#define left_brace_token  0400  // 256  = 2^8 * left_brace
-#define left_brace_limit  01000 // 512  = 2^8 * (left_brace + 1)
-#define right_brace_token 01000 // 512  = 2^8 * right_brace
-#define right_brace_limit 01400 // 768  = 2^8 * (right_brace + 1)
-#define math_shift_token  01400 // 768  = 2^8 * math_shift
-#define tab_token         02000 // 1024 = 2^8 * tab_mark
-#define out_param_token   02400 // 1280 = 2^8 * out_param
-#define space_token       05040 // 2592 = 2^8 * spacer + ' '
-#define letter_token      05400 // 2816 = 2^8 * letter
-#define other_token       06000 // 3072 = 2^8 * other_char
-#define match_token       06400 // 3328 = 2^8 * match
-#define end_match_token   07000 // 3584 = 2^8 * end_match
+#define cs_token_flag     0x1FFFFFFF
+#define max_char_val      0x100
+#define left_brace_token  0x100
+#define left_brace_limit  0x200
+#define right_brace_token 0x200
+#define right_brace_limit 0x300
+#define math_shift_token  0x300
+#define tab_token         0x400
+#define out_param_token   0x500
+#define space_token       0xA20
+#define letter_token      0xB00
+#define other_token       0xC00
+#define match_token       0xD00
+#define end_match_token   0xE00
 /* sec 0298 */
 #define chr_cmd(s)  \
 do                  \
@@ -881,19 +889,19 @@ do                          \
   trick_count = 1000000L;   \
 }                           \
 while (0)
-#define set_trick_count()                                                     \
-do                                                                            \
-{                                                                             \
-  first_count = tally;                                                        \
-                                                                              \
-  if ((first_count > 0) && (trick_buf2[(first_count - 1) % error_line] == 1)) \
-    incr(first_count);                                                        \
-                                                                              \
-  trick_count = first_count + 1 + error_line - half_error_line;               \
-                                                                              \
-  if (trick_count < error_line)                                               \
-    trick_count = error_line;                                                 \
-}                                                                             \
+#define set_trick_count()                                       \
+do                                                              \
+{                                                               \
+  first_count = tally;                                          \
+  kcp = trick_buf2[(first_count - 1) % error_line];             \
+  if ((first_count > 0) && (kcp > 0))                           \
+    first_count = first_count + nrestmultichr(kcp);             \
+                                                                \
+  trick_count = first_count + 1 + error_line - half_error_line; \
+                                                                \
+  if (trick_count < error_line)                                 \
+    trick_count = error_line;                                   \
+}                                                               \
 while (0)
 /* sec 0322 */
 /* sec 0323 */
@@ -918,6 +926,8 @@ while (0)
   (a) + kanji:           \
   case (a) + kana:       \
   case (a) + other_kchar
+#define hangul_code(a)  \
+  (a) + hangul
 /* sec 0352 */
 #define is_hex(a) \
   (((a >= '0') && (a <= '9')) || ((a >= 'a') && (a <= 'f')))
@@ -1020,7 +1030,8 @@ while (0)
 #define sjis_code          7
 #define jis_code           8
 #define kuten_code         9
-#define job_name_code      10
+#define ucs_code           10
+#define job_name_code      11
 /* sec 0480 */
 #define closed    2
 #define just_open 1
@@ -1170,6 +1181,18 @@ do                      \
     a = fbyte;          \
                         \
     if (a > 127)        \
+      goto bad_tfm;     \
+                        \
+    fget();             \
+    a = a * 256 + fbyte;\
+  }                     \
+while (0)
+#define read_sixteenx(a) \
+do                      \
+  {                     \
+    a = fbyte;          \
+                        \
+    if (a > 255)        \
       goto bad_tfm;     \
                         \
     fget();             \
@@ -1748,6 +1771,7 @@ while (0)
 #define skip_def_code      4
 #define mu_skip_def_code   5
 #define toks_def_code      6
+#define kchar_def_code     7
 /* sec 1290 */
 #define show_code     0
 #define show_box_code 1
@@ -1932,6 +1956,10 @@ while (0)
 #define reset_auto_xspacing_code  2
 #define set_auto_xspacing_code    3
 
+#define reset_enable_cjk_token_code 0
+#define set_enable_cjk_token_code   1
+#define set_force_cjk_token_code    2
+
 #define inhibit_both      0
 #define inhibit_previous  1
 #define inhibit_after     2
@@ -1954,7 +1982,7 @@ while (0)
 do {                                    \
   if (font_dir[font(p)] != dir_default) \
   {                                     \
-    KANJI(cx) = info(link(p));          \
+    KANJI(cx) = info(link(p)) % max_cjk_val;          \
     if (insert_skip == after_schar)     \
       insert_ascii_kanji_spacing();     \
     p = link(p);                        \
@@ -2004,7 +2032,7 @@ do {                                                  \
   }                                                   \
   else if (font_dir[font(first_char)] != dir_default) \
   {                                                   \
-    KANJI(cx) = info(link(first_char));               \
+    KANJI(cx) = info(link(first_char)) % max_cjk_val; \
     if (insert_skip == after_schar)                   \
       insert_ascii_kanji_spacing();                   \
     if (insert_skip == after_wchar)                   \
@@ -2093,7 +2121,7 @@ do {                                                  \
     q = p; p = link(p);                               \
     if (font_dir[font(p)] != dir_default)             \
     {                                                 \
-      KANJI(cx) = info(link(p));                      \
+      KANJI(cx) = info(link(p)) % max_cjk_val;        \
       if (insert_skip == after_schar)                 \
         insert_ascii_kanji_spacing();                 \
       else if (insert_skip == after_wchar)            \
@@ -2210,9 +2238,9 @@ do {                                            \
     {                                           \
       if (font_dir[font(p)] != dir_default)     \
       {                                         \
-        KANJI(cx) = info(link(p));              \
-        i = kcat_code(kcatcodekey(cx)); k = 0;  \
-        if ((i == kanji) || (i == kana))        \
+        KANJI(cx) = info(link(p)) % max_cjk_val;              \
+        i = info(link(p)) / max_cjk_val; k = 0;  \
+        if ((i == kanji) || (i == kana) || (i == hangul))        \
         {                                       \
           t = q; s = p;                         \
         }                                       \
@@ -2344,7 +2372,7 @@ main_loop_j_1:                                          \
     character(main_p) = cur_l; link(tail) = main_p;     \
     tail = main_p; last_jchr = tail;                    \
     fast_get_avail(main_p);                             \
-    info(main_p) = KANJI(cur_chr);                      \
+    info(main_p) = KANJI(cur_chr) + cur_cmd * max_cjk_val;  \
     link(tail) = main_p; tail = main_p;                 \
     cx = cur_chr;                                       \
     insert_kinsoku_penalty();                           \
@@ -2355,7 +2383,7 @@ again_2:                                                \
   main_i = char_info(main_f, cur_l);                    \
   switch (cur_cmd)                                      \
   {                                                     \
-    case kanji: case kana: case other_kchar:            \
+    case kanji: case kana: case other_kchar: case hangul: \
       {                                                 \
         cur_l = get_jfm_pos(KANJI(cur_chr), main_f);    \
         goto main_loop_j_3;                             \
@@ -2371,7 +2399,7 @@ again_2:                                                \
   x_token();                                            \
   switch (cur_cmd)                                      \
   {                                                     \
-    case kanji: case kana: case other_kchar:            \
+    case kanji: case kana: case other_kchar: case hangul: \
       cur_l = get_jfm_pos(KANJI(cur_chr), main_f);      \
       break;                                            \
     case letter: case other_char:                       \
@@ -2379,7 +2407,7 @@ again_2:                                                \
       break;                                            \
     case char_given:                                    \
       {                                                 \
-        if (is_char_ascii(cur_chr))                     \
+        if (check_echar_range(cur_chr))                     \
         {                                               \
           ins_kp = true; cur_l = 0;                     \
         }                                               \
@@ -2390,12 +2418,23 @@ again_2:                                                \
     case char_num:                                      \
       {                                                 \
         scan_char_num(); cur_chr = cur_val;             \
-        if (is_char_ascii(cur_chr))                     \
+        if (check_echar_range(cur_chr))                 \
         {                                               \
           ins_kp = true; cur_l = 0;                     \
         }                                               \
         else                                            \
           cur_l = get_jfm_pos(KANJI(cur_chr), main_f);  \
+      }                                                 \
+      break;                                            \
+    case kchar_given:                                   \
+      {                                                 \
+        cur_l = (get_jfm_pos(KANJI(cur_chr), main_f));  \
+      }                                                 \
+      break;                                            \
+    case kchar_num:                                     \
+      {                                                 \
+        scan_char_num(); cur_chr = cur_val;            \
+        cur_l = (get_jfm_pos(KANJI(cur_chr), main_f));  \
       }                                                 \
       break;                                            \
     case inhibit_glue:                                  \

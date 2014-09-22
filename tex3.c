@@ -54,7 +54,7 @@ void scan_int (void)
     get_token();
 
     if (cur_tok < cs_token_flag)
-      if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
+      if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
       {
         skip_mode = false;
         cur_val = tonum(cur_chr);
@@ -620,6 +620,7 @@ pointer str_toks (pool_pointer b)
   pointer q;
   halfword t;
   pool_pointer k;
+  int cc;
 
   str_room(1);
   p = temp_head;
@@ -628,17 +629,27 @@ pointer str_toks (pool_pointer b)
 
   while (k < pool_ptr)
   {
-    t = str_pool[k];
+    t = fromBUFF(str_pool, pool_ptr, k);
+    cc = kcat_code(kcatcodekey(t));
 
-    if (multistrlen(str_pool, pool_ptr, k) == 2)
+    if ((multistrlen(str_pool, pool_ptr, k)>1) && check_kcat_code(cc))
     {
-      t = fromBUFF(str_pool, pool_ptr, k);
-      incr(k);
+      if (cc == not_cjk)
+        cc = other_kchar;
+
+      t = t + cc * max_cjk_val;
+      k = k + multistrlen(str_pool, pool_ptr, k) - 1;
     }
-    else if (t == ' ')
-      t = space_token;
+
     else
-      t = other_token + t;
+    {
+      t = str_pool[k];
+
+      if (t == ' ')
+        t = space_token;
+      else
+        t = other_token + t;
+    }
 
     fast_store_new_token(t);
     incr(k);
@@ -742,6 +753,7 @@ void conv_toks (void)
     case sjis_code:
     case jis_code:
     case kuten_code:
+    case ucs_code:
       scan_int();
       break;
 
@@ -751,7 +763,7 @@ void conv_toks (void)
       scanner_status = normal;
       get_token();
 
-      if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
+      if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
       {
         KANJI(cx) = cur_tok;
       }
@@ -797,6 +809,10 @@ void conv_toks (void)
 
     case kuten_code:
       print_int(fromKUTEN(cur_val));
+      break;
+
+    case ucs_code:
+      print_int(fromUCS(cur_val));
       break;
 
     case kansuji_code:
@@ -1211,7 +1227,7 @@ void conditional (void)
       {
         get_x_token_or_active_char();
 
-        if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
+        if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
         {
           m = cur_cmd;
           n = cur_chr;
@@ -1229,7 +1245,7 @@ void conditional (void)
 
         get_x_token_or_active_char();
 
-        if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
+        if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
         {
           cur_cmd = cur_cmd;
         }
@@ -1733,11 +1749,14 @@ void scan_file_name (void)
 
   while (true)
   {
-    if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
+    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
     {
-      str_room(2);
-      append_char(Hi(cur_chr));
-      append_char(Lo(cur_chr));
+      str_room(4);
+      cur_chr = toBUFF(cur_chr);
+      if (BYTE1(cur_chr) != 0) append_char(BYTE1(cur_chr));
+      if (BYTE2(cur_chr) != 0) append_char(BYTE2(cur_chr));
+      if (BYTE3(cur_chr) != 0) append_char(BYTE3(cur_chr));
+      append_char(BYTE4(cur_chr));
     }
     else if ((cur_cmd > other_char) || (cur_chr > 255)) 
     {
@@ -2174,7 +2193,7 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
     for (k = ctype_base[f]; k <= ctype_base[f] + nt - 1; k++)
     {
       fget();
-      read_sixteen(cx);
+      read_sixteenx(cx);
       font_info[k].hh.rh = tokanji(cx);
       fget();
       read_sixteen(cx);

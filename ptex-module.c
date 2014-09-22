@@ -759,11 +759,25 @@ void set_math_kchar(integer c)
 /* sec 1473 */
 void print_kanji(KANJI_code s)
 {
-  if (s > 255)
-  {
-    print_char(Hi(s));
-    print_char(Lo(s));
-  }
+  s = toBUFF(s % max_cjk_val);
+  if (BYTE1(s) != 0) print_char(BYTE1(s));
+  if (BYTE2(s) != 0) print_char(BYTE2(s));
+  if (BYTE3(s) != 0) print_char(BYTE3(s));
+  print_char(BYTE4(s));
+}
+
+integer check_kcat_code(integer ct)
+{
+  if (((ct >= kanji) && (enable_cjk_token == 0)) || (enable_cjk_token == 2))
+    return 1;
   else
-    print_char(s);
+  return 0;
+}
+
+integer check_echar_range(integer c)
+{
+  if ((c >= 0) && (c < 256))
+    return 1;
+  else
+    return 0;
 }

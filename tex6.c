@@ -1467,6 +1467,7 @@ reswitch:
       case letter:
       case other_char:
       case char_given:
+      case kchar_given:
         if (cur_chr == '-')
         {
           if (n < 63)
@@ -1495,6 +1496,7 @@ reswitch:
         break;
 
       case char_num:
+      case kchar_num:
         {
           scan_char_num();
           cur_chr = cur_val;

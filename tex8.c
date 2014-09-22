@@ -1066,7 +1066,7 @@ void shift_case (void)
 
     if ((t < cs_token_flag + single_base) && !check_kanji(t))
     {
-      c = t % 256;
+      c = t % max_char_val;
 
       if (equiv(b + c) != 0)
         info(p) = t - c + equiv(b + c);
@@ -1655,12 +1655,14 @@ reswitch:
     case hmode + kanji:
     case hmode + kana:
     case hmode + other_kchar:
+    case hmode + hangul:
+    case hmode + kchar_given:
       goto main_loop_j;
       break;
 
     case hmode + char_given:
       {
-        if (is_char_ascii(cur_chr))
+        if (check_echar_range(cur_chr))
           goto main_loop;
         else
           goto main_loop_j;
@@ -1672,7 +1674,7 @@ reswitch:
         scan_char_num();
         cur_chr = cur_val;
 
-        if (is_char_ascii(cur_chr))
+        if (check_echar_range(cur_chr))
           goto main_loop;
         else
           goto main_loop_j;
@@ -1684,8 +1686,9 @@ reswitch:
         get_x_token();
 
         if ((cur_cmd == letter) || (cur_cmd == other_char) ||
-          (cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar) ||
-          (cur_cmd == char_given) || (cur_cmd == char_num))
+          ((cur_cmd >= kanji) && (cur_cmd <= hangul)) ||
+          (cur_cmd == char_given) || (cur_cmd == char_num) ||
+          (cur_cmd == kchar_given) || (cur_cmd == kchar_num))
           cancel_boundary = true;
 
         goto reswitch;
@@ -1870,6 +1873,8 @@ reswitch:
     case vmode + other_char:
     case vmode + char_num:
     case vmode + char_given:
+    case vmode + kchar_num:
+    case vmode + kchar_given:
     case vmode + math_shift:
     case vmode + un_hbox:
     case vmode + vrule:
@@ -1880,6 +1885,7 @@ reswitch:
     case vmode + kanji:
     case vmode + kana:
     case vmode + other_kchar:
+    case vmode + hangul:
     case vmode + ex_space:
     case vmode + no_boundary:
       {
@@ -2021,7 +2027,7 @@ reswitch:
     case mmode + letter:
     case mmode + other_char:
     case mmode + char_given:
-      if (is_char_ascii(cur_chr))
+      if (check_echar_range(cur_chr))
         if (cur_chr < 128)
           set_math_char(math_code(cur_chr));
         else
@@ -2033,6 +2039,7 @@ reswitch:
     case mmode + kanji:
     case mmode + kana:
     case mmode + other_kchar:
+    case mmode + hangul:
       {
         cx = cur_chr;
         set_math_kchar(KANJI(cx));
@@ -2044,7 +2051,7 @@ reswitch:
         scan_char_num();
         cur_chr = cur_val;
 
-        if (is_char_ascii(cur_chr))
+        if (check_echar_range(cur_chr))
           if (cur_chr < 128)
             set_math_char(math_code(cur_chr));
           else
@@ -2053,6 +2060,18 @@ reswitch:
           set_math_kchar(cur_chr);
       }
       break;
+
+      case mmode + kchar_given:
+        set_math_kchar(cur_chr);
+        break;
+
+      case mmode + kchar_num: 
+        {
+          scan_char_num();
+          cur_chr = cur_val;
+          set_math_kchar(cur_chr);
+        }
+        break;
 
     case mmode + math_char_num:
       {
@@ -2145,6 +2164,7 @@ reswitch:
     case any_mode(assign_kinsoku):
     case any_mode(assign_inhibit_xsp_code):
     case any_mode(set_auto_spacing):
+    case any_mode(set_enable_cjk_token):
     case any_mode(set_kansuji_char):
     case any_mode(toks_register):
     case any_mode(assign_toks):
@@ -2307,7 +2327,7 @@ main_loop_lookahead:
   if (cur_cmd == letter)
     goto main_loop_lookahead_1;
 
-  if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
+  if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
   {
     goto_main_lig_loop();
   }
@@ -2317,7 +2337,7 @@ main_loop_lookahead:
 
   if (cur_cmd == char_given)
   {
-    if (is_char_ascii(cur_chr))
+    if (check_echar_range(cur_chr))
       goto main_loop_lookahead_1;
     else
       goto_main_lig_loop();
@@ -2328,7 +2348,7 @@ main_loop_lookahead:
   if (cur_cmd == letter)
     goto main_loop_lookahead_1;
 
-  if ((cur_cmd == kanji) || (cur_cmd == kana) || (cur_cmd == other_kchar))
+  if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
   {
     goto_main_lig_loop();
   }
@@ -2338,7 +2358,7 @@ main_loop_lookahead:
 
   if (cur_cmd == char_given)
   {
-    if (is_char_ascii(cur_chr))
+    if (check_echar_range(cur_chr))
       goto main_loop_lookahead_1;
     else
       goto_main_lig_loop();
@@ -2349,10 +2369,17 @@ main_loop_lookahead:
     scan_char_num();
     cur_chr = cur_val;
 
-    if (is_char_ascii(cur_chr))
+    if (check_echar_range(cur_chr))
       goto main_loop_lookahead_1;
     else
       goto_main_lig_loop();
+  }
+
+  if (cur_cmd == kchar_num)
+  {
+    scan_char_num();
+    cur_chr = cur_val;
+    goto_main_lig_loop();
   }
 
   if (cur_cmd == inhibit_glue)

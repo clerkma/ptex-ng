@@ -1071,7 +1071,9 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
     case kanji:
     case kana:
     case other_kchar:
-      chr_cmd("kanji character ");
+    case hangul:
+      prints("kanji character ");
+      print_kanji(KANJI(chr_code));
       break;
 
     case assign_glue:
@@ -1249,6 +1251,10 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
 
     case ital_corr:
       print_esc("/");
+      break;
+
+    case kchar_num:
+      print_esc("kchar");
       break;
 
     case mark:
@@ -1475,6 +1481,10 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
         
         case kuten_code:
           print_esc("kuten");
+          break;
+
+        case ucs_code:
+          print_esc("ucs");
           break;
 
         default:
@@ -1961,6 +1971,10 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
           print_esc("chardef");
           break;
 
+        case kchar_def_code:
+          print_esc("kchardef");
+          break;
+
         case math_char_def_code:
           print_esc("mathchardef");
           break;
@@ -1989,6 +2003,11 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
 
     case char_given:
       print_esc("char");
+      print_hex(chr_code);
+      break;
+
+    case kchar_given:
+      print_esc("kchar");
       print_hex(chr_code);
       break;
 
@@ -2186,6 +2205,19 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
           prints("spacing");
         else
           prints("xspacing");
+      }
+      break;
+
+    case set_enable_cjk_token:
+      {
+      if (chr_code == 0)
+        print_esc("enable");
+      else if (chr_code == 1)
+        print_esc("disable");
+      else
+        print_esc("force");
+
+      prints("cjktoken");
       }
       break;
 

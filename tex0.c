@@ -23,14 +23,17 @@
 /* sec 0058 */
 void print_ln (void)
 {
+  integer ii;
+
   switch (selector)
   {
     case term_and_log:
-      if (kcode_pos == 1)
-      {
-        wterm(' ');
-        wlog(' ');
-      }
+      if (nrestmultichr(kcode_pos) > 0)
+        for (ii = 0; ii <= nrestmultichr(kcode_pos) - 1; ii++)
+        {
+          wterm(' ');
+          wlog(' ');
+        }
       wterm_cr();
       term_offset = 0;
       wlog_cr();
@@ -38,19 +41,21 @@ void print_ln (void)
       break;
 
     case log_only:
-      if (kcode_pos == 1)
-      {
-        wlog(' ');
-      }
+      if (nrestmultichr(kcode_pos) > 0)
+        for (ii = 0; ii <= nrestmultichr(kcode_pos) - 1; ii++)
+        {
+          wlog(' ');
+        }
       wlog_cr();
       file_offset = 0;
       break;
 
     case term_only:
-      if (kcode_pos == 1)
-      {
-        wterm(' ');
-      }
+      if (nrestmultichr(kcode_pos) > 0)
+        for (ii = 0; ii <= nrestmultichr(kcode_pos) - 1; ii++)
+        {
+          wterm(' ');
+        }
       wterm_cr();
       term_offset = 0;
       break;
@@ -78,17 +83,22 @@ void print_char_ (ASCII_code s)
       return;
     }
 
-  if (kcode_pos == 1)
-  {
-    kcode_pos = 2;
-  }
+  if ((kcode_pos == 1) ||
+    ((kcode_pos >= 011) && (kcode_pos <= 012)) ||
+    ((kcode_pos >= 021) && (kcode_pos <= 023)))
+    incr(kcode_pos);
   else if (iskanji1(xchr[s]))
   {
-    kcode_pos = 1;
+    if (ismultichr(4, 1, xchr[s]))
+      kcode_pos = 021;
+    else if (ismultichr(3, 1, xchr[s]))
+      kcode_pos = 011;
+    else
+      kcode_pos = 1;
 
     if ((selector == term_and_log) || (selector == log_only))
     {
-      if (file_offset >= max_print_line - 1)
+      if (file_offset >= max_print_line - nrestmultichr(kcode_pos))
       {
         wlog_cr();
         file_offset = 0;
@@ -97,7 +107,7 @@ void print_char_ (ASCII_code s)
 
     if ((selector == term_and_log) || (selector == term_only))
     {
-      if (term_offset >= max_print_line - 1)
+      if (term_offset >= max_print_line - nrestmultichr(kcode_pos))
       {
         wterm_cr();
         term_offset = 0;
@@ -1227,13 +1237,13 @@ void show_token_list_(integer p, integer q, integer l)
     {
       if (check_kanji(info(p)))
       {
-        m = kcat_code(kcatcodekey(info(p)));
-        c = info(p);
+        m = info(p) / max_cjk_val;
+        c = info(p) % max_cjk_val;
       }
       else
       {
-        m = Hi(info(p));
-        c = Lo(info(p));
+        m = info(p) / max_char_val;
+        c = info(p) % max_char_val;
       }
 
       if ((m < kanji) && (c > 256))
@@ -1243,6 +1253,7 @@ void show_token_list_(integer p, integer q, integer l)
         case kanji:
         case kana:
         case other_kchar:
+        case hangul:
           print_kanji(KANJI(c));
           break;
 

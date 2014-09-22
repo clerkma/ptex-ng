@@ -123,7 +123,6 @@ void pdf_ship_out (pointer p)
   dvi_v = 0;
   cur_h = h_offset;
   dvi_f = null_font;
-  font_id[null_font] = 0;
   dvi_dir = dir_yoko;
   cur_dir_hv = dvi_dir;
   ensure_pdf_open();
@@ -214,43 +213,28 @@ void pdf_synch_v (void)
     dvi_v = cur_v;
 }
 
-int pdf_get_font_id (internal_font_number f)
-{
-  char * sbuf = malloc(length(font_name[f]) + 1);
-  int id;
-  memset(sbuf, 0, length(font_name[f]) + 1);
-  memcpy(sbuf, str_pool + str_start[font_name[f]], length(font_name[f]));
-  id = dvi_locate_font(sbuf, font_size[f]);
-  //id = pdf_dev_locate_font(sbuf, font_size[f]);
-  free(sbuf);
-
-  return id;
-}
-
-// TODO: too simple
 static int number_of_fonts = -1;
 
-int pdf_get_font_id_nat (internal_font_number f)
+void pdf_get_font_id (internal_font_number f)
 {
   char * sbuf = malloc(length(font_name[f]) + 1);
-  int nat_id, vir_id, id;
   memset(sbuf, 0, length(font_name[f]) + 1);
   memcpy(sbuf, str_pool + str_start[font_name[f]], length(font_name[f]));
-  nat_id = pdf_dev_locate_font(sbuf, font_size[f]);
-  vir_id = vf_locate_font(sbuf, font_size[f]);
-  if (nat_id != -1) id = number_of_fonts + 1;
-  if (vir_id != -1) id = number_of_fonts + 1;
-  number_of_fonts++;
+
+  if (pdf_dev_locate_font(sbuf, font_size[f]) >= 0)
+  {
+    number_of_fonts += 1;
+    font_id[f] = number_of_fonts;
+  }
+
   free(sbuf);
-  return id;
 }
 
 void pdf_out_char (internal_font_number f, ASCII_code c)
 {
   pdf_rect rect;
   char cbuf[2];
-  cbuf[0] = c;
-  cbuf[1] = 0;
+  cbuf[0] = c; cbuf[1] = 0;
   pdf_dev_set_string(cur_h, -cur_v, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
   pdf_dev_set_rect(&rect, cur_h, -cur_v, char_width(f, char_info(f, c)),
       char_height(f, height_depth(char_info(f, c))),
@@ -264,42 +248,48 @@ void mojikumi_before_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
 {
   switch (k)
   {
-    case 0x214a: /* （ */
-    case 0x214c: /* 〔 */
-    case 0x214e: /* ［ */
-    case 0x2150: /* ｛ */
-    case 0x2152: /* 〈 */
-    case 0x2154: /* 《 */
-    case 0x2156: /* 「 */
-    case 0x2158: /* 『 */
-    case 0x215a: /* 【 */
-      if (font_dir[f] == dir_yoko)
-        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d)));
+    case 0xFF08: /* （ */
+    case 0x3014: /* 〔 */
+    case 0xFF3B: /* ［ */
+    case 0xFF5B: /* ｛ */
+    case 0x3008: /* 〈 */
+    case 0x300A: /* 《 */
+    case 0x300C: /* 「 */
+    case 0x300E: /* 『 */
+    case 0x3010: /* 【 */
+    case 0xFF5F: /* JIS X 0213  1-02-54 始め二重バーレーン */
+    case 0x3018: /* JIS X 0213  1-02-56 始め二重亀甲括弧 */
+    case 0x3016: /* JIS X 0213  1-02-58 始めすみ付き括弧(白) */
+    case 0x301D: /* JIS X 0213  1-13-64 始めダブルミニュート */
+      cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d)));
       break;
-    case 0x2121: /* spc */
-    case 0x2122: /* 、 */
-    case 0x2123: /* 。 */
-    case 0x2124: /* ， */
-    case 0x2125: /* ． */
-    case 0x212b: /* ゛ */
-    case 0x212c: /* ゜ */
-    case 0x214b: /* ） */
-    case 0x214d: /* 〕 */
-    case 0x214f: /* ］ */
-    case 0x2151: /* ｝ */
-    case 0x2153: /* 〉 */
-    case 0x2155: /* 》 */
-    case 0x2157: /* 」 */
-    case 0x2159: /* 』 */
-    case 0x215b: /* 】 */
-    case 0x216b: /* ° */
-    case 0x216c: /* ′ */
-    case 0x216d: /* ″ */
+    case 0x3000: /* spc */
+    case 0x3001: /* 、 */
+    case 0x3002: /* 。 */
+    case 0xFF0C: /* ， */
+    case 0xFF0E: /* ． */
+    case 0x309B: /* ゛ */
+    case 0x309C: /* ゜ */
+    case 0xFF09: /* ） */
+    case 0x3015: /* 〕 */
+    case 0xFF3D: /* ］ */
+    case 0xFF5D: /* ｝ */
+    case 0x3009: /* 〉 */
+    case 0x300B: /* 》 */
+    case 0x300D: /* 」 */
+    case 0x300F: /* 』 */
+    case 0x3011: /* 】 */
+    case 0xFF60: /* JIS X 0213  1-02-55 終わり二重バーレーン */
+    case 0x3019: /* JIS X 0213  1-02-57 終わり二重亀甲括弧 */
+    case 0x3017: /* JIS X 0213  1-02-59 終わりすみ付き括弧(白) */
+    case 0x301F: /* JIS X 0213  1-13-65 終わりダブルミニュート */
+    case 0x00B0: /* ° */
+    case 0x2032: /* ′ */
+    case 0x2033: /* ″ */
       break;
     default:
-      if (font_dir[f] == dir_yoko)
-        if (jfm_zw(f) != char_width(f, char_info(f, d)))
-          cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
+      if (jfm_zw(f) != char_width(f, char_info(f, d)))
+        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
       break;
   }
 }
@@ -308,44 +298,49 @@ void mojikumi_after_kanji  (internal_font_number f, KANJI_code k, ASCII_code d)
 {
   switch (k)
   {
-    case 0x214a: /* （ */
-    case 0x214c: /* 〔 */
-    case 0x214e: /* ［ */
-    case 0x2150: /* ｛ */
-    case 0x2152: /* 〈 */
-    case 0x2154: /* 《 */
-    case 0x2156: /* 「 */
-    case 0x2158: /* 『 */
-    case 0x215a: /* 【 */
-      if (font_dir[f] == dir_yoko)
-        cur_h = cur_h + char_width(f, char_info(f, c));
+    case 0xFF08: /* （ */
+    case 0x3014: /* 〔 */
+    case 0xFF3B: /* ［ */
+    case 0xFF5B: /* ｛ */
+    case 0x3008: /* 〈 */
+    case 0x300A: /* 《 */
+    case 0x300C: /* 「 */
+    case 0x300E: /* 『 */
+    case 0x3010: /* 【 */
+    case 0xFF5F: /* JIS X 0213  1-02-54 始め二重バーレーン */
+    case 0x3018: /* JIS X 0213  1-02-56 始め二重亀甲括弧 */
+    case 0x3016: /* JIS X 0213  1-02-58 始めすみ付き括弧(白) */
+    case 0x301D: /* JIS X 0213  1-13-64 始めダブルミニュート */
+      cur_h = cur_h + char_width(f, char_info(f, d));
       break;
-    case 0x2121: /* spc */
-    case 0x2122: /* 、 */
-    case 0x2123: /* 。 */
-    case 0x2124: /* ， */
-    case 0x2125: /* ． */
-    case 0x212b: /* ゛ */
-    case 0x212c: /* ゜ */
-    case 0x214b: /* ） */
-    case 0x214d: /* 〕 */
-    case 0x214f: /* ］ */
-    case 0x2151: /* ｝ */
-    case 0x2153: /* 〉 */
-    case 0x2155: /* 》 */
-    case 0x2157: /* 」 */
-    case 0x2159: /* 』 */
-    case 0x215b: /* 】 */
-    case 0x216b: /* ° */
-    case 0x216c: /* ′ */
-    case 0x216d: /* ″ */
-      if (font_dir[f] == dir_yoko)
-        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, get_jfm_pos(k, f))));
+    case 0x3000: /* spc */
+    case 0x3001: /* 、 */
+    case 0x3002: /* 。 */
+    case 0xFF0C: /* ， */
+    case 0xFF0E: /* ． */
+    case 0x309B: /* ゛ */
+    case 0x309C: /* ゜ */
+    case 0xFF09: /* ） */
+    case 0x3015: /* 〕 */
+    case 0xFF3D: /* ］ */
+    case 0xFF5D: /* ｝ */
+    case 0x3009: /* 〉 */
+    case 0x300B: /* 》 */
+    case 0x300D: /* 」 */
+    case 0x300F: /* 』 */
+    case 0x3011: /* 】 */
+    case 0xFF60: /* JIS X 0213  1-02-55 終わり二重バーレーン */
+    case 0x3019: /* JIS X 0213  1-02-57 終わり二重亀甲括弧 */
+    case 0x3017: /* JIS X 0213  1-02-59 終わりすみ付き括弧(白) */
+    case 0x301F: /* JIS X 0213  1-13-65 終わりダブルミニュート */
+    case 0x00B0: /* ° */
+    case 0x2032: /* ′ */
+    case 0x2033: /* ″ */
+      //cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d)));
       break;
     default:
-      if (font_dir[f] == dir_yoko)
-        if (jfm_zw(f) != char_width(f, char_info(f, d)))
-        cur_h = cur_h + (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
+      if (jfm_zw(f) != char_width(f, char_info(f, d)))
+        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
       break;
   }
 }
@@ -353,10 +348,23 @@ void mojikumi_after_kanji  (internal_font_number f, KANJI_code k, ASCII_code d)
 void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
 {
   pdf_rect rect;
-  char cbuf[2];
-  cbuf[0] = Hi(k);
-  cbuf[1] = Lo(k);
-  pdf_dev_set_string(cur_h, -cur_v, cbuf, 2, char_width(f, char_info(f, get_jfm_pos(k, f))), font_id[f], 2);
+  char cbuf[4];
+
+  if (k < 0x10000)
+  {
+    cbuf[0] = Hi(k);
+    cbuf[1] = Lo(k);
+    pdf_dev_set_string(cur_h, -cur_v, cbuf, 2, jfm_zw(f), font_id[f], 2);
+  }
+  else
+  {
+    cbuf[0] = (UTF32toUTF16HS(k) >> 8) & 0xff;
+    cbuf[1] = UTF32toUTF16HS(k)        & 0xff;
+    cbuf[2] = (UTF32toUTF16LS(k) >> 8) & 0xff;
+    cbuf[3] = UTF32toUTF16LS(k)        & 0xff;
+    pdf_dev_set_string(cur_h, -cur_v, cbuf, 4, jfm_zw(f), font_id[f], 2);
+  }
+
   pdf_dev_set_rect(&rect, cur_h, -cur_v,
     char_width(f, char_info(f, d)),
     char_height(f, height_depth(char_info(f, d))),
@@ -424,8 +432,8 @@ reswitch:
       {
         if (!font_used[f])
         {
+          pdf_get_font_id(f);
           font_used[f] = true;
-          font_id[f]   = pdf_get_font_id_nat(f);
         }
 
         dvi_f = f;
@@ -463,7 +471,7 @@ reswitch:
         }
 
         p = link(p);
-        jc = toDVI(KANJI(info(p)));
+        jc = toDVI(KANJI(info(p)) % max_cjk_val);
         mojikumi_before_kanji(f, jc, c);
         pdf_out_kanji(f, jc, c);
         cur_h = cur_h + char_width(f, char_info(f, c));

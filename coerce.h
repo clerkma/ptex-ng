@@ -430,6 +430,8 @@ void print_direction(integer d);
 void dir_out(void);
 void set_math_kchar(integer c);
 void print_kanji(KANJI_code s);
+integer check_kcat_code(integer ct);
+integer check_echar_range(integer c);
 
 void pdf_synch_h(void);
 void pdf_synch_v(void);
