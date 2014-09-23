@@ -1978,38 +1978,41 @@ while (0)
 #define after_schar 1
 #define after_wchar 2
 
-#define insert_space_around_char()      \
-do {                                    \
-  if (font_dir[font(p)] != dir_default) \
-  {                                     \
-    KANJI(cx) = info(link(p)) % max_cjk_val;          \
-    if (insert_skip == after_schar)     \
-      insert_ascii_kanji_spacing();     \
-    p = link(p);                        \
-    insert_skip = after_wchar;          \
-  }                                     \
-  else                                  \
-  {                                     \
-    ax = character(p);                  \
-    if (insert_skip == after_wchar)     \
-      insert_kanji_ascii_spacing();     \
-    if (auto_xsp_code(ax) > 2)          \
-      insert_skip = after_schar;        \
-    else                                \
-      insert_skip = no_skip;            \
-  }                                     \
+#define insert_space_around_char()            \
+do {                                          \
+  if (font_dir[font(p)] != dir_default)       \
+  {                                           \
+    KANJI(cx) = info(link(p)) % max_cjk_val;  \
+    if (insert_skip == after_schar)           \
+      insert_ascii_kanji_spacing();           \
+    p = link(p);                              \
+    insert_skip = after_wchar;                \
+  }                                           \
+  else                                        \
+  {                                           \
+    ax = character(p);                        \
+    if (insert_skip == after_wchar)           \
+      insert_kanji_ascii_spacing();           \
+    if (auto_xsp_code(ax) >= 2)               \
+      insert_skip = after_schar;              \
+    else                                      \
+      insert_skip = no_skip;                  \
+  }                                           \
 } while (0)
 
 #define insert_hbox_surround_spacing()    \
 do {                                      \
   find_first_char = true;                 \
-  first_char = null; last_char = null;    \
+  first_char = null;                      \
+  last_char = null;                       \
+                                          \
   if (shift_amount(p) == 0)               \
   {                                       \
     if (check_box(list_ptr(p)))           \
     {                                     \
       if (first_char != null)             \
         insert_space_before_first_char(); \
+                                          \
       if (last_char != null)              \
         insert_space_after_last_char();   \
       else                                \
@@ -2027,20 +2030,23 @@ do {                                                  \
   if (type(first_char) == math_node)                  \
   {                                                   \
     ax = '0';                                         \
+                                                      \
     if (insert_skip == after_wchar)                   \
       insert_kanji_ascii_spacing();                   \
   }                                                   \
   else if (font_dir[font(first_char)] != dir_default) \
   {                                                   \
     KANJI(cx) = info(link(first_char)) % max_cjk_val; \
+                                                      \
     if (insert_skip == after_schar)                   \
       insert_ascii_kanji_spacing();                   \
-    if (insert_skip == after_wchar)                   \
+    else if (insert_skip == after_wchar)              \
       insert_kanji_kanji_spacing();                   \
   }                                                   \
   else                                                \
   {                                                   \
     ax = character(first_char);                       \
+                                                      \
     if (insert_skip == after_wchar)                   \
       insert_kanji_ascii_spacing();                   \
   }                                                   \
@@ -2051,6 +2057,7 @@ do {                                                  \
   if (type(last_char) == math_node)                   \
   {                                                   \
     ax = '0';                                         \
+                                                      \
     if (auto_xsp_code(ax) >= 2)                       \
       insert_skip = after_schar;                      \
     else                                              \
@@ -2060,6 +2067,7 @@ do {                                                  \
   {                                                   \
     insert_skip = after_wchar;                        \
     KANJI(cx) = info(link(last_char));                \
+                                                      \
     if (is_char_node(link(p)) &&                      \
       (font_dir[font(link(p))] != dir_default))       \
     {                                                 \
@@ -2070,6 +2078,7 @@ do {                                                  \
   else                                                \
   {                                                   \
     ax = character(last_char);                        \
+                                                      \
     if (auto_xsp_code(ax) >= 2)                       \
       insert_skip = after_schar;                      \
     else                                              \
@@ -2081,14 +2090,18 @@ do {                                                  \
 do {                                                          \
   if ((subtype(p) == before) && (insert_skip == after_wchar)) \
   {                                                           \
-    ax = '0'; insert_kanji_ascii_spacing();                   \
+    ax = '0';                                                 \
+    insert_kanji_ascii_spacing();                             \
     insert_skip = no_skip;                                    \
   }                                                           \
   else if (subtype(p) == after)                               \
   {                                                           \
     ax = '0';                                                 \
-    if (auto_xsp_code(ax) >= 2) insert_skip = after_schar;    \
-    else insert_skip = no_skip;                               \
+                                                              \
+    if (auto_xsp_code(ax) >= 2)                               \
+      insert_skip = after_schar;                              \
+    else                                                      \
+      insert_skip = no_skip;                                  \
   }                                                           \
   else                                                        \
     insert_skip = no_skip;                                    \
@@ -2097,15 +2110,21 @@ do {                                                          \
 #define insert_ligature_surround_spacing()  \
 do {                                        \
   t = lig_ptr(p);                           \
+                                            \
   if (is_char_node(t))                      \
   {                                         \
     ax = character(t);                      \
+                                            \
     if (insert_skip == after_wchar)         \
       insert_kanji_ascii_spacing();         \
-    while (link(t) != null) {t = link(t);}  \
+                                            \
+    while (link(t) != null)                 \
+      t = link(t);                          \
+                                            \
     if (is_char_node(t))                    \
     {                                       \
       ax = character(t);                    \
+                                            \
       if (auto_xsp_code(ax) >= 2)           \
         insert_skip = after_schar;          \
       else                                  \
@@ -2118,26 +2137,33 @@ do {                                        \
 do {                                                  \
   if (is_char_node(link(p)))                          \
   {                                                   \
-    q = p; p = link(p);                               \
+    q = p;                                            \
+    p = link(p);                                      \
+                                                      \
     if (font_dir[font(p)] != dir_default)             \
     {                                                 \
       KANJI(cx) = info(link(p)) % max_cjk_val;        \
+                                                      \
       if (insert_skip == after_schar)                 \
         insert_ascii_kanji_spacing();                 \
       else if (insert_skip == after_wchar)            \
         insert_kanji_kanji_spacing();                 \
-      p = link(p); insert_skip = after_wchar;         \
+                                                      \
+      p = link(p);                                    \
+      insert_skip = after_wchar;                      \
     }                                                 \
-  }                                                   \
-  else                                                \
-  {                                                   \
-    ax = character(p);                                \
-    if (insert_skip == after_wchar)                   \
-      insert_kanji_ascii_spacing();                   \
-    if (auto_xsp_code(ax) >= 2)                       \
-      insert_skip = after_schar;                      \
     else                                              \
-      insert_skip = no_skip;                          \
+    {                                                 \
+      ax = character(p);                              \
+                                                      \
+      if (insert_skip == after_wchar)                 \
+        insert_kanji_ascii_spacing();                 \
+                                                      \
+      if (auto_xsp_code(ax) >= 2)                     \
+        insert_skip = after_schar;                    \
+      else                                            \
+        insert_skip = no_skip;                        \
+    }                                                 \
   }                                                   \
 } while (0)
 
@@ -2145,6 +2171,7 @@ do {                                                  \
 do {                                                \
   {                                                 \
     x = get_inhibit_pos(cx, cur_pos);               \
+                                                    \
     if (x != no_entry)                              \
       if ((inhibit_xsp_type(x) == inhibit_both) ||  \
         (inhibit_xsp_type(x) == inhibit_previous))  \
@@ -2154,12 +2181,14 @@ do {                                                \
     else                                            \
       do_ins = true;                                \
   }                                                 \
+                                                    \
   if (do_ins)                                       \
   {                                                 \
     z = new_glue(s);                                \
     subtype(z) = xkanji_skip_code + 1;              \
     link(z) = link(q);                              \
-    link(q) = z; q = z;                             \
+    link(q) = z;                                    \
+    q = z;                                          \
   }                                                 \
 } while (0)
 
@@ -2168,6 +2197,7 @@ do {                                                \
   if ((auto_xsp_code(ax) % 2) == 1)                 \
   {                                                 \
     x = get_inhibit_pos(cx, cur_pos);               \
+                                                    \
     if (x != no_entry)                              \
       if ((inhibit_xsp_type(x) == inhibit_both) ||  \
         (inhibit_xsp_type(x) == inhibit_after))     \
@@ -2179,103 +2209,145 @@ do {                                                \
   }                                                 \
   else                                              \
     do_ins = false;                                 \
+                                                    \
   if (do_ins)                                       \
   {                                                 \
     z = new_glue(s);                                \
     subtype(z) = xkanji_skip_code + 1;              \
-    link(z) = link(q); link(q) = z; q = z;          \
+    link(z) = link(q);                              \
+    link(q) = z;                                    \
+    q = z;                                          \
   }                                                 \
 } while (0)
 
-#define insert_kanji_kanji_spacing()                  \
-do {                                                  \
-  z = new_glue(u); subtype(z) = kanji_skip_code + 1;  \
-  link(z) = link(q); link(q) = z; q = z;              \
+#define insert_kanji_kanji_spacing()  \
+do {                                  \
+  z = new_glue(u);                    \
+  subtype(z) = kanji_skip_code + 1;   \
+  link(z) = link(q);                  \
+  link(q) = z;                        \
+  q = z;                              \
 } while (0)
 
-#define append_kanji_kanji_spacing()                  \
-do {                                                  \
-  z = new_glue(u); subtype(z) = kanji_skip_code + 1;  \
-  link(z) = link(p); link(p) = z; p = link(z); q = z; \
+#define append_kanji_kanji_spacing()  \
+do {                                  \
+  z = new_glue(u);                    \
+  subtype(z) = kanji_skip_code + 1;   \
+  link(z) = link(p);                  \
+  link(p) = z;                        \
+  p = link(z);                        \
+  q = z;                              \
 } while (0)
 
 #define make_jchr_widow_penalty_node()                        \
 do {                                                          \
-  q = v; p = link(v);                                         \
+  q = v;                                                      \
+  p = link(v);                                                \
+                                                              \
   if (is_char_node(v) && (font_dir[font(v)] != dir_default))  \
   {                                                           \
-    q = p; p = link(p);                                       \
+    q = p;                                                    \
+    p = link(p);                                              \
   }                                                           \
-  t = q; s = null;                                            \
+                                                              \
+  t = q;                                                      \
+  s = null;                                                   \
   seek_list_and_make();                                       \
+                                                              \
   if (s != null)                                              \
   {                                                           \
     s = link(t);                                              \
+                                                              \
     if (!is_char_node(s) && (type(s) == penalty_node))        \
       penalty(s) = penalty(s) + jchr_widow_penalty;           \
     else if (jchr_widow_penalty != 0)                         \
     {                                                         \
       s = new_penalty(jchr_widow_penalty);                    \
       subtype(s) = widow_pena;                                \
-      link(s) = link(t); link(t) = s; t = link(s);            \
+      link(s) = link(t);                                      \
+      link(t) = s;                                            \
+      t = link(s);                                            \
+                                                              \
       while (!is_char_node(t))                                \
       {                                                       \
         if ((type(t) == glue_node) || (type(t) == kern_node)) \
           goto exit;                                          \
+                                                              \
         t = link(t);                                          \
       }                                                       \
-      z = new_glue(u); subtype(z) = kanji_skip_code + 1;      \
-      link(z) = link(s); link(s) = z;                         \
+                                                              \
+      z = new_glue(u);                                        \
+      subtype(z) = kanji_skip_code + 1;                       \
+      link(z) = link(s);                                      \
+      link(s) = z;                                            \
     }                                                         \
   }                                                           \
 } while (0)
 
-#define seek_list_and_make()                    \
-do {                                            \
-  while (p != null)                             \
-  {                                             \
-    if (is_char_node(p))                        \
-    {                                           \
-      if (font_dir[font(p)] != dir_default)     \
-      {                                         \
-        KANJI(cx) = info(link(p)) % max_cjk_val;              \
-        i = info(link(p)) / max_cjk_val; k = 0;  \
-        if ((i == kanji) || (i == kana) || (i == hangul))        \
-        {                                       \
-          t = q; s = p;                         \
-        }                                       \
-        p = link(p); q = p;                     \
-      }                                         \
-      else                                      \
-      {                                         \
-        k = k + 1;                              \
-        if (k > 1) {q = p; s = null;}           \
-      }                                         \
-    }                                           \
-    else                                        \
-    {                                           \
-      switch (type(p))                          \
-      {                                         \
-        case penalty_node: case mark_node:      \
-        case adjust_node: case whatsit_node:    \
-        case glue_node: case kern_node:         \
-        case math_node: case disp_node:         \
-          do_nothing();                         \
-          break;                                \
-        default:                                \
-          {                                     \
-            q = p; s = null;                    \
-          }                                     \
-          break;                                \
-      }                                         \
-    }                                           \
-    p = link(p);                                \
-  }                                             \
+#define seek_list_and_make()                              \
+do {                                                      \
+  while (p != null)                                       \
+  {                                                       \
+    if (is_char_node(p))                                  \
+    {                                                     \
+      if (font_dir[font(p)] != dir_default)               \
+      {                                                   \
+        KANJI(cx) = info(link(p)) % max_cjk_val;          \
+        i = info(link(p)) / max_cjk_val;                  \
+        k = 0;                                            \
+                                                          \
+        if ((i == kanji) || (i == kana) || (i == hangul)) \
+        {                                                 \
+          t = q;                                          \
+          s = p;                                          \
+        }                                                 \
+                                                          \
+        p = link(p);                                      \
+        q = p;                                            \
+      }                                                   \
+      else                                                \
+      {                                                   \
+        k = k + 1;                                        \
+                                                          \
+        if (k > 1)                                        \
+        {                                                 \
+          q = p;                                          \
+          s = null;                                       \
+        }                                                 \
+      }                                                   \
+    }                                                     \
+    else                                                  \
+    {                                                     \
+      switch (type(p))                                    \
+      {                                                   \
+        case penalty_node:                                \
+        case mark_node:                                   \
+        case adjust_node:                                 \
+        case whatsit_node:                                \
+        case glue_node:                                   \
+        case kern_node:                                   \
+        case math_node:                                   \
+        case disp_node:                                   \
+          do_nothing();                                   \
+          break;                                          \
+                                                          \
+        default:                                          \
+          {                                               \
+            q = p;                                        \
+            s = null;                                     \
+          }                                               \
+          break;                                          \
+      }                                                   \
+    }                                                     \
+                                                          \
+    p = link(p);                                          \
+  }                                                       \
 } while (0)
 
 #define insert_kinsoku_penalty()                                \
 do {                                                            \
   kp = get_kinsoku_pos(cx, cur_pos);                            \
+                                                                \
   if (kp != no_entry)                                           \
   {                                                             \
     if (kinsoku_type(kp) == pre_break_penalty_code)             \
@@ -2298,25 +2370,27 @@ do {                                                            \
   }                                                             \
 } while (0)
 
-#define insert_pre_break_penalty()                            \
-do {                                                          \
-  kp = get_kinsoku_pos(cur_chr, cur_pos);                     \
-  if (kp != no_entry)                                         \
-  {                                                           \
-    if (kinsoku_type(kp) == pre_break_penalty_code)           \
-      if (!is_char_node(tail) && (type(tail) == penalty_node))\
-        penalty(tail) = penalty(tail) + kinsoku_penalty(kp);  \
-      else                                                    \
-      {                                                       \
-        tail_append(new_penalty(kinsoku_penalty(kp)));        \
-        subtype(tail) = kinsoku_pena;                         \
-      }                                                       \
-  }                                                           \
+#define insert_pre_break_penalty()                              \
+do {                                                            \
+  kp = get_kinsoku_pos(cur_chr, cur_pos);                       \
+                                                                \
+  if (kp != no_entry)                                           \
+  {                                                             \
+    if (kinsoku_type(kp) == pre_break_penalty_code)             \
+      if (!is_char_node(tail) && (type(tail) == penalty_node))  \
+        penalty(tail) = penalty(tail) + kinsoku_penalty(kp);    \
+      else                                                      \
+      {                                                         \
+        tail_append(new_penalty(kinsoku_penalty(kp)));          \
+        subtype(tail) = kinsoku_pena;                           \
+      }                                                         \
+  }                                                             \
 } while (0)
 
 #define insert_post_break_penalty()                           \
 do {                                                          \
   kp = get_kinsoku_pos(cx, cur_pos);                          \
+                                                              \
   if (kp != no_entry)                                         \
   {                                                           \
     if (kinsoku_type(kp) == post_break_penalty_code)          \
@@ -2339,6 +2413,7 @@ do {                                                    \
     cx = character(lig_char(tail));                     \
     insert_post_break_penalty();                        \
   }                                                     \
+                                                        \
   if (direction == dir_tate)                            \
   {                                                     \
     if (font_dir[main_f] == dir_tate)                   \
@@ -2347,6 +2422,7 @@ do {                                                    \
       disp = t_baseline_shift - y_baseline_shift;       \
     else                                                \
       disp = t_baseline_shift;                          \
+                                                        \
     main_f = cur_tfont;                                 \
   }                                                     \
   else                                                  \
@@ -2357,86 +2433,123 @@ do {                                                    \
       disp = y_baseline_shift - t_baseline_shift;       \
     else                                                \
       disp = y_baseline_shift;                          \
+                                                        \
     main_f = cur_jfont;                                 \
   }                                                     \
+                                                        \
   append_disp_node_at_end();                            \
-  ins_kp = false; ligature_present = false;             \
+  ins_kp = false;                                       \
+  ligature_present = false;                             \
   cur_l = get_jfm_pos(KANJI(cur_chr), main_f);          \
   main_i = char_info(main_f, 0);                        \
   goto main_loop_j_3;                                   \
+                                                        \
 main_loop_j_1:                                          \
   space_factor = 1000;                                  \
+                                                        \
   if (main_f != null_font)                              \
   {                                                     \
-    fast_get_avail(main_p); font(main_p) = main_f;      \
-    character(main_p) = cur_l; link(tail) = main_p;     \
-    tail = main_p; last_jchr = tail;                    \
     fast_get_avail(main_p);                             \
-    info(main_p) = KANJI(cur_chr) + cur_cmd * max_cjk_val;  \
-    link(tail) = main_p; tail = main_p;                 \
+    font(main_p) = main_f;                              \
+    character(main_p) = cur_l;                          \
+    link(tail) = main_p;                                \
+    tail = main_p;                                      \
+    last_jchr = tail;                                   \
+    fast_get_avail(main_p);                             \
+    info(main_p) =                                      \
+      KANJI(cur_chr) + cur_cmd * max_cjk_val;           \
+    link(tail) = main_p;                                \
+    tail = main_p;                                      \
     cx = cur_chr;                                       \
     insert_kinsoku_penalty();                           \
   }                                                     \
   ins_kp = false;                                       \
+                                                        \
 again_2:                                                \
   get_next();                                           \
   main_i = char_info(main_f, cur_l);                    \
+                                                        \
   switch (cur_cmd)                                      \
   {                                                     \
-    case kanji: case kana: case other_kchar: case hangul: \
+    case kanji:                                         \
+    case kana:                                          \
+    case other_kchar:                                   \
+    case hangul:                                        \
       {                                                 \
         cur_l = get_jfm_pos(KANJI(cur_chr), main_f);    \
         goto main_loop_j_3;                             \
       }                                                 \
       break;                                            \
-    case letter: case other_char:                       \
+                                                        \
+    case letter:                                        \
+    case other_char:                                    \
       {                                                 \
         ins_kp = true; cur_l = 0;                       \
         goto main_loop_j_3;                             \
       }                                                 \
       break;                                            \
   }                                                     \
+                                                        \
   x_token();                                            \
+                                                        \
   switch (cur_cmd)                                      \
   {                                                     \
-    case kanji: case kana: case other_kchar: case hangul: \
+    case kanji:                                         \
+    case kana:                                          \
+    case other_kchar:                                   \
+    case hangul:                                        \
       cur_l = get_jfm_pos(KANJI(cur_chr), main_f);      \
       break;                                            \
-    case letter: case other_char:                       \
-      {ins_kp = true; cur_l = 0;}                       \
+                                                        \
+    case letter:                                        \
+    case other_char:                                    \
+      {                                                 \
+        ins_kp = true;                                  \
+        cur_l = 0;                                      \
+      }                                                 \
       break;                                            \
+                                                        \
     case char_given:                                    \
       {                                                 \
-        if (check_echar_range(cur_chr))                     \
-        {                                               \
-          ins_kp = true; cur_l = 0;                     \
-        }                                               \
-        else                                            \
-          cur_l = get_jfm_pos(KANJI(cur_chr), main_f);  \
-      }                                                 \
-      break;                                            \
-    case char_num:                                      \
-      {                                                 \
-        scan_char_num(); cur_chr = cur_val;             \
         if (check_echar_range(cur_chr))                 \
         {                                               \
-          ins_kp = true; cur_l = 0;                     \
+          ins_kp = true;                                \
+          cur_l = 0;                                    \
         }                                               \
         else                                            \
           cur_l = get_jfm_pos(KANJI(cur_chr), main_f);  \
       }                                                 \
       break;                                            \
+                                                        \
+    case char_num:                                      \
+      {                                                 \
+        scan_char_num();                                \
+        cur_chr = cur_val;                              \
+                                                        \
+        if (check_echar_range(cur_chr))                 \
+        {                                               \
+          ins_kp = true;                                \
+          cur_l = 0;                                    \
+        }                                               \
+        else                                            \
+          cur_l = get_jfm_pos(KANJI(cur_chr), main_f);  \
+      }                                                 \
+      break;                                            \
+                                                        \
     case kchar_given:                                   \
       {                                                 \
         cur_l = (get_jfm_pos(KANJI(cur_chr), main_f));  \
       }                                                 \
       break;                                            \
+                                                        \
     case kchar_num:                                     \
       {                                                 \
-        scan_char_num(); cur_chr = cur_val;            \
+        scan_char_num();                                \
+        cur_chr = cur_val;                              \
         cur_l = (get_jfm_pos(KANJI(cur_chr), main_f));  \
       }                                                 \
       break;                                            \
+                                                        \
     case inhibit_glue:                                  \
       {                                                 \
         inhibit_glue_flag = true; goto again_2;         \
@@ -2449,14 +2562,25 @@ again_2:                                                \
       }                                                 \
       break;                                            \
   }                                                     \
+                                                        \
 main_loop_j_3:                                          \
-  if (ins_kp == true) insert_pre_break_penalty();       \
-  if (main_f != null_font) look_ahead_for_gk();         \
-  else inhibit_glue_flag = false;                       \
-  if (ins_kp == false) goto main_loop_j_1;              \
+  if (ins_kp == true)                                   \
+    insert_pre_break_penalty();                         \
+                                                        \
+  if (main_f != null_font)                              \
+    look_ahead_for_gk();                                \
+  else                                                  \
+    inhibit_glue_flag = false;                          \
+                                                        \
+  if (ins_kp == false)                                  \
+    goto main_loop_j_1;                                 \
   else if (ins_kp == true)                              \
-  {ins_kp = false; goto main_loop;}                     \
-  else {goto reswitch;}                                 \
+  {                                                     \
+    ins_kp = false;                                     \
+    goto main_loop;                                     \
+  }                                                     \
+  else                                                  \
+    goto reswitch;                                      \
 } while (0)
 
 #define append_disp_node_at_begin()                     \

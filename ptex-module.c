@@ -544,13 +544,16 @@ void adjust_hlist(pointer p, boolean pf)
         case hlist_node:
           insert_hbox_surround_spacing();
           break;
+
         case ligature_node:
           insert_ligature_surround_spacing();
           break;
+
         case penalty_node:
         case disp_node:
           insert_penalty_or_displace_surround_spacing();
           break;
+
         case kern_node:
           if (subtype(p) == explicit)
             insert_skip = no_skip;
@@ -605,15 +608,18 @@ void adjust_hlist(pointer p, boolean pf)
             }
           }
           break;
+
         case math_node:
           insert_math_surround_spacing();
           break;
+
         case mark_node:
         case adjust_node:
         case ins_node:
         case whatsit_node:
           do_nothing();
           break;
+
         default:
           insert_skip = no_skip;
           break;

@@ -1653,6 +1653,7 @@ void make_accent (void)
       tail = link(p);
     else
       tail = p;
+
     append_disp_node_at_end();
     space_factor = 1000;
   }

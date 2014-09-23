@@ -19,11 +19,11 @@ objs = ptex.obj itex.obj openinou.obj subroute.obj local.obj \
 	tex5.obj tex6.obj tex7.obj tex8.obj tex9.obj \
 	pool.obj ptex.res utils.obj dpx.obj ptex-kanji.obj ptex-module.obj
 
-ptex.exe: $(objs)
+ptex.exe: $(objs) libdpx\libdpx.lib
 	$(LINK) $(LFLAGS) ptex itex openinou subroute local \
 	tex0 tex1 tex2 tex3 tex4 tex5 tex6 tex7 tex8 tex9 \
 	pool ptex.res utils dpx ptex-kanji ptex-module libptexenc\ptexenc.lib\
-	kpathsea\kpathsea.lib dvipdfmx\libdpx.lib libpng\libpng.lib zlib\zlib.lib
+	kpathsea\kpathsea.lib libdpx\libdpx.lib libpng\libpng.lib zlib\zlib.lib
 	del ..\yandy\bin\ptex.exe
 	copy ptex.exe ..\yandy\bin\ptex-ng.exe
 
