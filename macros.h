@@ -2568,7 +2568,7 @@ main_loop_j_3:                                          \
     insert_pre_break_penalty();                         \
                                                         \
   if (main_f != null_font)                              \
-    look_ahead_for_gk();                                \
+    look_ahead_for_glue_or_kerning();                   \
   else                                                  \
     inhibit_glue_flag = false;                          \
                                                         \
@@ -2614,49 +2614,57 @@ do {                                                      \
     {                                                     \
       disp_dimen(tail) = 0;                               \
     }                                                     \
-  }                                                       \
-  else                                                    \
-  {                                                       \
-    prev_node = tail;                                     \
-    tail_append(get_node(small_node_size));               \
-    type(tail) = disp_node;                               \
-    disp_dimen(tail) = 0;                                 \
-    prev_disp = disp;                                     \
+    else                                                  \
+    {                                                     \
+      prev_node = tail;                                   \
+      tail_append(get_node(small_node_size));             \
+      type(tail) = disp_node;                             \
+      disp_dimen(tail) = 0;                               \
+      prev_disp = disp;                                   \
+    }                                                     \
   }                                                       \
 } while (0)
 
-#define look_ahead_for_gk()                                     \
+#define look_ahead_for_glue_or_kerning()                        \
 do {                                                            \
   cur_q = tail;                                                 \
+                                                                \
   if (inhibit_glue_flag != true)                                \
   {                                                             \
     if (char_tag(main_i) == gk_tag)                             \
     {                                                           \
       main_k = glue_kern_start(main_f, main_i);                 \
+                                                                \
       do {                                                      \
         main_j = font_info[main_k].qqqq;                        \
+                                                                \
         if (next_char(main_j) == cur_l)                         \
         {                                                       \
           if (op_byte(main_j) < kern_flag)                      \
           {                                                     \
             gp = font_glue[main_f];                             \
             cur_r = rem_byte(main_j);                           \
+                                                                \
             if (gp != null)                                     \
             {                                                   \
               while ((type(gp) != cur_r) && (link(gp) != null)) \
               {                                                 \
                 gp = link(gp);                                  \
               }                                                 \
+                                                                \
               gq = glue_ptr(gp);                                \
             }                                                   \
             else                                                \
             {                                                   \
               gp = get_node(small_node_size);                   \
-              font_glue[main_f] = gp; gq = null;                \
+              font_glue[main_f] = gp;                           \
+              gq = null;                                        \
             }                                                   \
+                                                                \
             if (gq == null)                                     \
             {                                                   \
-              type(gp) = cur_r; gq = new_spec(zero_glue);       \
+              type(gp) = cur_r;                                 \
+              gq = new_spec(zero_glue);                         \
               glue_ptr(gp) = gq;                                \
               main_k = exten_base[main_f] + (cur_r * 3);        \
               width(gq) = font_info[main_k].cint;               \
@@ -2664,9 +2672,11 @@ do {                                                            \
               shrink(gq) = font_info[main_k + 2].cint;          \
               add_glue_ref(gq);                                 \
               link(gp) = get_node(small_node_size);             \
-              gp = link(gp); glue_ptr(gp) = null;               \
+              gp = link(gp);                                    \
+              glue_ptr(gp) = null;                              \
               link(gp) = null;                                  \
             }                                                   \
+                                                                \
             tail_append(new_glue(gq));                          \
             subtype(tail) = jfm_skip + 1;                       \
             goto skip_loop;                                     \
@@ -2677,6 +2687,7 @@ do {                                                            \
             goto skip_loop;                                     \
           }                                                     \
         }                                                       \
+                                                                \
         incr(main_k);                                           \
       } while (!(skip_byte(main_j) >= stop_flag));              \
     }                                                           \

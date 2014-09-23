@@ -215,7 +215,7 @@ void pdf_synch_v (void)
 
 static int number_of_fonts = -1;
 
-void pdf_get_font_id (internal_font_number f)
+void pdf_get_font (internal_font_number f)
 {
   char * sbuf = malloc(length(font_name[f]) + 1);
   memset(sbuf, 0, length(font_name[f]) + 1);
@@ -432,7 +432,7 @@ reswitch:
       {
         if (!font_used[f])
         {
-          pdf_get_font_id(f);
+          pdf_get_font(f);
           font_used[f] = true;
         }
 

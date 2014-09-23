@@ -2058,6 +2058,7 @@ reswitch:
               {
                 if (cat == not_cjk)
                   cat = other_kchar;
+
                 k = k + multistrlen(buffer, limit, k);
               }
               else
