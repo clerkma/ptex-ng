@@ -69,6 +69,7 @@ extern void pdf_dev_set_rect (pdf_rect *rect,
                   spt_t x_user, spt_t y_user,
                   spt_t width,  spt_t height, spt_t depth);
 extern void pdf_doc_expand_box (const pdf_rect *rect);
+extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
 extern void pdf_dev_set_dirmode(int dir_mode);
 extern int vf_locate_font(const char *tex_name, spt_t ptsize);
 #endif

@@ -40,6 +40,7 @@ void pdf_ship_out (pointer p)
 {
   integer page_loc;
   pointer del_node;
+  pdf_rect mediabox;
   char j, k;
 
   if (tracing_output > 0)
@@ -142,7 +143,22 @@ void pdf_ship_out (pointer p)
   }
 
   page_loc = dvi_offset + dvi_ptr;
-  pdf_doc_begin_page(1.0, 72.0, 770.0);
+
+  mediabox.llx = 0.0;
+  mediabox.lly = 0.0;
+
+  if (pdf_page_width != 0)
+    mediabox.urx = pdf_page_width / 65536.0;
+  else
+    mediabox.urx = (width(p) + 2 * (pdf_h_origin + h_offset + 4736286)) / 65536.0;
+
+  if (pdf_page_height != 0)
+    mediabox.ury = pdf_page_height / 65536.0;
+  else
+    mediabox.ury = (height(p) + depth(p) + 2 * (pdf_v_origin + v_offset + 4736286)) / 65536.0;
+
+  pdf_doc_set_mediabox(total_pages + 1, &mediabox);
+  pdf_doc_begin_page(1.0, pdf_h_origin / 65536.0, mediabox.ury - pdf_v_origin / 65536.0);
   spc_exec_at_begin_page();
 
   last_bop = page_loc;
@@ -225,6 +241,10 @@ void pdf_get_font (internal_font_number f)
   {
     number_of_fonts += 1;
     font_id[f] = number_of_fonts;
+  }
+  else
+  {
+    font_id[f] = -1;
   }
 
   free(sbuf);
@@ -340,7 +360,7 @@ void mojikumi_after_kanji  (internal_font_number f, KANJI_code k, ASCII_code d)
       break;
     default:
       if (jfm_zw(f) != char_width(f, char_info(f, d)))
-        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
+        cur_h = cur_h + (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
       break;
   }
 }
@@ -354,7 +374,8 @@ void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
   {
     cbuf[0] = Hi(k);
     cbuf[1] = Lo(k);
-    pdf_dev_set_string(cur_h, -cur_v, cbuf, 2, jfm_zw(f), font_id[f], 2);
+    if (font_id[f] >= 0)
+      pdf_dev_set_string(cur_h, -cur_v, cbuf, 2, jfm_zw(f), font_id[f], 2);
   }
   else
   {
@@ -362,7 +383,8 @@ void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
     cbuf[1] = UTF32toUTF16HS(k)        & 0xff;
     cbuf[2] = (UTF32toUTF16LS(k) >> 8) & 0xff;
     cbuf[3] = UTF32toUTF16LS(k)        & 0xff;
-    pdf_dev_set_string(cur_h, -cur_v, cbuf, 4, jfm_zw(f), font_id[f], 2);
+    if (font_id[f] >= 0)
+      pdf_dev_set_string(cur_h, -cur_v, cbuf, 4, jfm_zw(f), font_id[f], 2);
   }
 
   pdf_dev_set_rect(&rect, cur_h, -cur_v,

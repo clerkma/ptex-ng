@@ -1018,6 +1018,22 @@ void print_length_param_ (integer n)
       print_esc("emergencystretch");
       break;
 
+    case pdf_h_origin_code:
+      print_esc("pdfhorigin");
+      break;
+
+    case pdf_v_origin_code:
+      print_esc("pdfvorigin");
+      break;
+
+    case pdf_page_width_code:
+      print_esc("pdfpagewidth");
+      break;
+
+    case pdf_page_height_code:
+      print_esc("pdfpageheight");
+      break;
+
     default:
       prints("[unknown dimen parameter!]");
       break;

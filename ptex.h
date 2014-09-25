@@ -202,11 +202,6 @@ EXTERN pool_pointer pool_ptr;
 EXTERN str_number   str_ptr;
 EXTERN pool_pointer init_pool_ptr;
 EXTERN str_number   init_str_ptr;
-
-#ifdef INITEX
-  EXTERN alpha_file pool_file; 
-#endif
-
 EXTERN alpha_file log_file; 
 EXTERN int selector;
 EXTERN char dig[23 + 1];
@@ -454,7 +449,7 @@ EXTERN internal_font_number frozen_font_ptr;
 EXTERN four_quarters font_check[font_max + 1];
 EXTERN eight_bits font_dir[font_max + 1];
 EXTERN integer font_num_ext[font_max + 1];
-EXTERN int    font_id[font_max + 1];
+EXTERN integer font_id[font_max + 1];
 EXTERN scaled font_size[font_max + 1];
 EXTERN scaled font_dsize[font_max + 1];
 EXTERN font_index font_params[font_max + 1];

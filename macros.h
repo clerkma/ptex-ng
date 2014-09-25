@@ -751,7 +751,11 @@ while (0)
 #define emergency_stretch_code        20 // 3750
 #define t_baseline_shift_code         21
 #define y_baseline_shift_code         22
-#define dimen_pars                    23
+#define pdf_h_origin_code             23
+#define pdf_v_origin_code             24
+#define pdf_page_width_code           25
+#define pdf_page_height_code          26
+#define dimen_pars                    27
 #define scaled_base                   (dimen_base + dimen_pars) // 3751
 #define kinsoku_penalty_base          (scaled_base + 256)
 #define eqtb_size                     (kinsoku_penalty_base + 255) // 4006
@@ -782,6 +786,10 @@ while (0)
 #define t_baseline_shift              dimen_par(t_baseline_shift_code)
 #define y_baseline_shift              dimen_par(y_baseline_shift_code)
 #define emergency_stretch             dimen_par(emergency_stretch_code)
+#define pdf_h_origin                  dimen_par(pdf_h_origin_code)
+#define pdf_v_origin                  dimen_par(pdf_v_origin_code)
+#define pdf_page_width                dimen_par(pdf_page_width_code)
+#define pdf_page_height               dimen_par(pdf_page_height_code)
 /* sec 0256 */
 #define text(a)         hash[a].rh
 #define next(a)         hash[a].lh

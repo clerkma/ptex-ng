@@ -4041,6 +4041,10 @@ void init_prim (void)
   primitive("voffset", assign_dimen, dimen_base + v_offset_code);
   primitive("tbaselineshift", assign_dimen, dimen_base + t_baseline_shift_code);
   primitive("ybaselineshift", assign_dimen, dimen_base + y_baseline_shift_code);
+  primitive("pdfhorigin", assign_dimen, dimen_base + pdf_h_origin_code);
+  primitive("pdfvorigin", assign_dimen, dimen_base + pdf_v_origin_code);
+  primitive("pdfpagewidth", assign_dimen, dimen_base + pdf_page_width_code);
+  primitive("pdfpageheight", assign_dimen, dimen_base + pdf_page_height_code);
   primitive("emergencystretch", assign_dimen, dimen_base + emergency_stretch_code);
   primitive(" ", ex_space, 0);
   primitive("/", ital_corr, 0);
