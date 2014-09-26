@@ -280,7 +280,6 @@ void pdf_synch_dir(void)
       {
         pdf_synch_h();
         pdf_synch_v();
-        pdf_dev_set_dirmode(dvi_yoko);
         dir_used = true;
 
         switch (dvi_dir)
@@ -311,7 +310,6 @@ void pdf_synch_dir(void)
       {
         pdf_synch_h();
         pdf_synch_v();
-        pdf_dev_set_dirmode(dvi_tate);
         dir_used = true;
 
         switch (dvi_dir)
@@ -341,7 +339,6 @@ void pdf_synch_dir(void)
       {
         pdf_synch_h();
         pdf_synch_v();
-        pdf_dev_set_dirmode(dvi_dtou);
         dir_used = true;
 
         switch (dvi_dir)

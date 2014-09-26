@@ -20,6 +20,10 @@
 #define EXTERN extern
 #include "ptex.h"
 
+static const double sp2bp = 0.000015202;
+static scaled cur_page_width;
+static scaled cur_page_height;
+
 void ensure_pdf_open(void)
 {
   if (output_file_name == 0)
@@ -36,11 +40,21 @@ void ensure_pdf_open(void)
   }
 }
 
+void pdf_set_cur_page(scaled cur_wd, scaled cur_ht)
+{
+  pdf_rect mediabox;
+
+  mediabox.llx = 0.0;
+  mediabox.lly = 0.0;
+  mediabox.urx = cur_wd * sp2bp;
+  mediabox.ury = cur_ht * sp2bp;
+  pdf_doc_set_mediabox(total_pages + 1, &mediabox);
+}
+
 void pdf_ship_out (pointer p)
 {
   integer page_loc;
   pointer del_node;
-  pdf_rect mediabox;
   char j, k;
 
   if (tracing_output > 0)
@@ -133,34 +147,32 @@ void pdf_ship_out (pointer p)
     pdf_set_version(5);
     pdf_set_compression(9);
     pdf_init_fontmaps();
-    read_config_file("dvipdfmx.cfg");
+    pdf_load_fontmap_file("pdftex.map", '+');
+    pdf_load_fontmap_file("kanjix.map", '+');
+    pdf_load_fontmap_file("ckx.map", '+');
     pdf_doc_set_producer("pTeX-ng@2014");
     pdf_doc_set_creator("pTeX-ng");
     pdf_files_init();
-    pdf_init_device(0.000015202, 2, 0);
+    pdf_init_device(sp2bp, 2, 0);
     pdf_open_document(pdf_file_name, 0, 595.0, 842.0, 0, 0, (1 << 4));
     spc_exec_at_begin_document();
   }
 
   page_loc = dvi_offset + dvi_ptr;
 
-  mediabox.llx = 0.0;
-  mediabox.lly = 0.0;
-
   if (pdf_page_width != 0)
-    mediabox.urx = pdf_page_width / 65536.0;
+    cur_page_width = pdf_page_width;
   else
-    mediabox.urx = (width(p) + 2 * (pdf_h_origin + h_offset + 4736286)) / 65536.0;
+    cur_page_width = width(p) + 2 * (pdf_h_origin + h_offset + 4736286);
 
   if (pdf_page_height != 0)
-    mediabox.ury = pdf_page_height / 65536.0;
+    cur_page_height = pdf_page_height;
   else
-    mediabox.ury = (height(p) + depth(p) + 2 * (pdf_v_origin + v_offset + 4736286)) / 65536.0;
+    cur_page_height = height(p) + depth(p) + 2 * (pdf_v_origin + v_offset + 4736286);
 
-  pdf_doc_set_mediabox(total_pages + 1, &mediabox);
-  pdf_doc_begin_page(1.0, pdf_h_origin / 65536.0, mediabox.ury - pdf_v_origin / 65536.0);
+  pdf_set_cur_page(cur_page_width, cur_page_height);
+  pdf_doc_begin_page(1.0, pdf_h_origin * sp2bp, (cur_page_height - pdf_v_origin) * sp2bp);
   spc_exec_at_begin_page();
-
   last_bop = page_loc;
   cur_v = height(p) + v_offset;
   temp_ptr = p;
@@ -255,7 +267,24 @@ void pdf_out_char (internal_font_number f, ASCII_code c)
   pdf_rect rect;
   char cbuf[2];
   cbuf[0] = c; cbuf[1] = 0;
-  pdf_dev_set_string(cur_h, -cur_v, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      pdf_dev_set_dirmode(dvi_yoko);
+      pdf_dev_set_string(cur_h, -cur_v, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
+      break;
+    case dir_tate:
+      pdf_dev_set_dirmode(dvi_tate);
+      pdf_dev_set_string(-cur_v, -cur_h, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
+      break;
+    case dir_dtou:
+      pdf_dev_set_dirmode(dvi_dtou);
+      pdf_dev_set_string(cur_v, cur_h, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
+      break;
+  }
+
+  //else
+  //pdf_dev_set_string(-cur_v, -cur_h, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
   pdf_dev_set_rect(&rect, cur_h, -cur_v, char_width(f, char_info(f, c)),
       char_height(f, height_depth(char_info(f, c))),
       char_depth(f, height_depth(char_info(f, c))));
@@ -314,7 +343,7 @@ void mojikumi_before_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
   }
 }
 
-void mojikumi_after_kanji  (internal_font_number f, KANJI_code k, ASCII_code d)
+void mojikumi_after_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
 {
   switch (k)
   {
@@ -370,12 +399,31 @@ void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
   pdf_rect rect;
   char cbuf[4];
 
+  mojikumi_before_kanji(f, k, d);
+
   if (k < 0x10000)
   {
     cbuf[0] = Hi(k);
     cbuf[1] = Lo(k);
+
     if (font_id[f] >= 0)
-      pdf_dev_set_string(cur_h, -cur_v, cbuf, 2, jfm_zw(f), font_id[f], 2);
+    {
+      switch (cur_dir_hv)
+      {
+        case dir_yoko:
+          pdf_dev_set_dirmode(dvi_yoko);
+          pdf_dev_set_string(cur_h, -cur_v, cbuf, 2, jfm_zw(f), font_id[f], 2);
+          break;
+        case dir_tate:
+          pdf_dev_set_dirmode(dvi_tate);
+          pdf_dev_set_string(-cur_v, -cur_h, cbuf, 2, jfm_zw(f), font_id[f], 2);
+          break;
+        case dir_dtou:
+          pdf_dev_set_dirmode(dvi_dtou);
+          pdf_dev_set_string(cur_v, cur_h, cbuf, 2, jfm_zw(f), font_id[f], 2);
+          break;
+      }
+    }
   }
   else
   {
@@ -384,7 +432,23 @@ void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
     cbuf[2] = (UTF32toUTF16LS(k) >> 8) & 0xff;
     cbuf[3] = UTF32toUTF16LS(k)        & 0xff;
     if (font_id[f] >= 0)
-      pdf_dev_set_string(cur_h, -cur_v, cbuf, 4, jfm_zw(f), font_id[f], 2);
+    {
+      switch (cur_dir_hv)
+      {
+        case dir_yoko:
+          pdf_dev_set_dirmode(dvi_yoko);
+          pdf_dev_set_string(cur_h, -cur_v, cbuf, 4, jfm_zw(f), font_id[f], 2);
+          break;
+        case dir_tate:
+          pdf_dev_set_dirmode(dvi_tate);
+          pdf_dev_set_string(-cur_v, -cur_h, cbuf, 4, jfm_zw(f), font_id[f], 2);
+          break;
+        case dir_dtou:
+          pdf_dev_set_dirmode(dvi_dtou);
+          pdf_dev_set_string(-cur_v, -cur_h, cbuf, 4, jfm_zw(f), font_id[f], 2);
+          break;
+      }
+    }
   }
 
   pdf_dev_set_rect(&rect, cur_h, -cur_v,
@@ -392,6 +456,23 @@ void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
     char_height(f, height_depth(char_info(f, d))),
     char_depth(f, height_depth(char_info(f, d))));
   pdf_doc_expand_box(&rect);
+  mojikumi_after_kanji(f, k, d);
+}
+
+void pdf_output_rule(scaled rule_wd, scaled rule_ht)
+{
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      pdf_dev_set_rule(cur_h, -cur_v, rule_wd, rule_ht);
+      break;
+    case dir_tate:
+      pdf_dev_set_rule(-cur_v, -cur_h - rule_wd, rule_ht, rule_wd);
+      break;
+    case dir_dtou:
+      pdf_dev_set_rule(cur_v, cur_h, rule_ht, rule_wd);
+      break;
+  }
 }
 
 void hlist_out (void)
@@ -494,10 +575,8 @@ reswitch:
 
         p = link(p);
         jc = toDVI(KANJI(info(p)) % max_cjk_val);
-        mojikumi_before_kanji(f, jc, c);
         pdf_out_kanji(f, jc, c);
         cur_h = cur_h + char_width(f, char_info(f, c));
-        mojikumi_after_kanji(f, jc, c);
       }
 
       dvi_h = cur_h;
@@ -708,7 +787,7 @@ fin_rule:
       pdf_synch_h();
       cur_v = base_line + rule_dp;
       pdf_synch_v();
-      pdf_dev_set_rule(dvi_h, -dvi_v, rule_wd, rule_ht);
+      pdf_output_rule(rule_wd, rule_ht);
       cur_v = base_line;
       dvi_h = dvi_h + rule_wd;
     }
@@ -840,7 +919,7 @@ void vlist_out (void)
                   cur_g = round(glue_temp);
                 }
               }
-              else if (shrink_order(g) == g_order)   /* BUG FIX !!! */
+              else if (shrink_order(g) == g_order)
               {
                 cur_glue = cur_glue - shrink(g);
                 vet_glue(glue_set(this_box) * cur_glue);
@@ -956,7 +1035,7 @@ fin_rule:
       {
         pdf_synch_h();
         pdf_synch_v();
-        pdf_dev_set_rule(dvi_h, -dvi_v, rule_wd, rule_ht);
+        pdf_output_rule(rule_wd, rule_ht);
       }
 
       goto next_p;
