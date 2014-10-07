@@ -26,7 +26,7 @@
 #endif
 
 #define EXTERN extern
-#include "ptex.h"
+#include "ptex-ng.h"
 
 #define USEOUREALLOC
 #define USEMEMSET

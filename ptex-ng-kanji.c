@@ -18,7 +18,7 @@
 */
 
 #define EXTERN extern
-#include "ptex.h"
+#include "ptex-ng.h"
 
 #define CJK_TOKEN_FLAG  0xFFFFFF
 

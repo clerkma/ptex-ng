@@ -18,7 +18,7 @@
  */
 
 #define EXTERN extern
-#include "ptex.h"
+#include "ptex-ng.h"
 
 static const char * pool_file_arr[] =
 {

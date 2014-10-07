@@ -18,7 +18,7 @@
 */
 
 #define EXTERN extern
-#include "ptex.h"
+#include "ptex-ng.h"
 
 /* sec 0016 */
 void do_nothing(void)

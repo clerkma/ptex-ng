@@ -18,7 +18,7 @@
 */
 
 #define EXTERN extern
-#include "ptex.h"
+#include "ptex-ng.h"
 
 static const double sp2bp = 0.000015202;
 static scaled cur_page_width;
@@ -148,8 +148,8 @@ void pdf_ship_out (pointer p)
     pdf_set_compression(9);
     pdf_init_fontmaps();
     pdf_load_fontmap_file("pdftex.map", '+');
-    pdf_load_fontmap_file("kanjix.map", '+');
-    pdf_load_fontmap_file("ckx.map", '+');
+    //pdf_load_fontmap_file("kanjix.map", '+');
+    //pdf_load_fontmap_file("ckx.map", '+');
     pdf_doc_set_producer("pTeX-ng@2014");
     pdf_doc_set_creator("pTeX-ng");
     pdf_files_init();
@@ -534,7 +534,7 @@ void hlist_out (void)
 
   if (eTeX_ex)
   {
-    initialize_the_LR_stack();
+    put_LR(before);
   
     if (box_lr(this_box) == dlist)
       if (cur_dir == right_to_left)

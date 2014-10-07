@@ -18,7 +18,7 @@
 */
 
 #define EXTERN extern
-#include "ptex.h"
+#include "ptex-ng.h"
 
 pointer new_dir_node(pointer b, eight_bits dir)
 {

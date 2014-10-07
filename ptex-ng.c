@@ -21,7 +21,7 @@
 
 #define EXTERN
 
-#include "ptex.h"
+#include "ptex-ng.h"
 
 #define dump_ext_length 4
 #define edit_value      tex_edit_value

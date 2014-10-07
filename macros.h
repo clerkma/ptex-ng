@@ -2940,26 +2940,32 @@ if (((g_sign == stretching) && (stretch_order(g) == g_order)) ||\
 }\
 } while (0)
 
-#define report_LR_problems() \
-do {\
-  print_ln(); print_nl("\\endL or \\endR problem (");\
-  print_int(LR_problems / 10000); prints(" missing, ");\
-  print_int(LR_problems % 10000); prints(" extra"); \
-  LR_problems = 0;\
+#define report_LR_problems()              \
+do {                                      \
+  print_ln();                             \
+  print_nl("\\endL or \\endR problem ("); \
+  print_int(LR_problems / 10000);         \
+  prints(" missing, ");                   \
+  print_int(LR_problems % 10000);         \
+  prints(" extra");                       \
+  LR_problems = 0;                        \
 } while (0)
 
-#define put_LR(a) \
-do {\
-  temp_ptr = get_avail(); info(temp_ptr) = a;\
-  link(temp_ptr) = LR_ptr; LR_ptr = temp_ptr;\
+#define put_LR(a)         \
+do {                      \
+  temp_ptr = get_avail(); \
+  info(temp_ptr) = a;     \
+  link(temp_ptr) = LR_ptr;\
+  LR_ptr = temp_ptr;      \
 } while (0)
 
 #define push_LR(a) put_LR(end_LR_type(a))
 
-#define pop_LR() \
-do {\
-  temp_ptr = LR_ptr; LR_ptr = link(temp_ptr);\
-  free_avail(temp_ptr);\
+#define pop_LR()          \
+do {                      \
+  temp_ptr = LR_ptr;      \
+  LR_ptr = link(temp_ptr);\
+  free_avail(temp_ptr);   \
 } while (0)
 
 #define LR_dir(a) (subtype(a) / R_code)
@@ -2967,11 +2973,6 @@ do {\
 #define edge_node       style_node
 #define edge_node_size  style_node_size
 #define edge_dist(a)    depth(a)
-
-#define initialize_the_LR_stack() \
-do {                              \
-  put_LR(before);                 \
-} while (0)
 
 #define adjust_the_LR_stack_p()           \
 do {                                      \
@@ -3045,12 +3046,16 @@ do {                                  \
 #define segment_first(a)  info(a+2)
 #define segment_last(a)   link(a+2)
 
-#define cancel_glue(a,b,c,d,e)  \
-do {\
-j = new_skip_param(a); link(b) = j; link(j) = c; j = glue_ptr(d);\
-stretch_order(temp_ptr) = stretch_order(j);\
-shrink_order(temp_ptr) = shrink_order(j); width(temp_ptr) = e - width(j);\
-stretch(temp_ptr) = -stretch(j); shrink(temp_ptr) = -shrink(j);\
+#define cancel_glue(a,b,c,d,e)                \
+do {                                          \
+  j = new_skip_param(a);                      \
+  link(b) = j; link(j) = c;                   \
+  j = glue_ptr(d);                            \
+  stretch_order(temp_ptr) = stretch_order(j); \
+  shrink_order(temp_ptr) = shrink_order(j);   \
+  width(temp_ptr) = e - width(j);             \
+  stretch(temp_ptr) = -stretch(j);            \
+  shrink(temp_ptr) = -shrink(j);              \
 } while (0)
 
 #define expr_none   0
@@ -3070,15 +3075,19 @@ do {  \
   arith_error = true; a = 0;\
 } while (0)
 
-#define glue_error(a) \
-do {  \
-  arith_error = true; delete_glue_ref(a); a = new_spec(zero_glue);  \
+#define glue_error(a)     \
+do {                      \
+  arith_error = true;     \
+  delete_glue_ref(a);     \
+  a = new_spec(zero_glue);\
 } while (0)
 
-#define normalize_glue(a) \
-do {  \
-  if (stretch(a) == 0) stretch_order(a) = normal;\
-  if (shrink(a) == 0) shrink_order(a) = normal;\
+#define normalize_glue(a)     \
+do {                          \
+  if (stretch(a) == 0)        \
+    stretch_order(a) = normal;\
+  if (shrink(a) == 0)         \
+    shrink_order(a) = normal; \
 } while (0)
 
 #define expr_add_sub(a,b,c) add_or_sub(a, b, c, r==expr_sub)
@@ -3103,12 +3112,12 @@ do {  \
 #define sa_mark sa_root[mark_val]
 //
 #define if_cur_ptr_is_null_then_return_or_goto(a) \
-do {  \
+do {                    \
   if (cur_ptr == null)  \
-    if (w)\
-      goto a;\
-    else\
-      return;\
+    if (w)              \
+      goto a;           \
+    else                \
+      return;           \
 } while (0)
 //
 #define hex_dig1(a) (a / 4096)

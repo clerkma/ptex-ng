@@ -21,7 +21,7 @@
 
 #define EXTERN extern
 
-#include "ptex.h"
+#include "ptex-ng.h"
 #undef name
 
 #define PATH_SEP        '/'

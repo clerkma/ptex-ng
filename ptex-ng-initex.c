@@ -18,7 +18,7 @@
 */
 
 #define EXTERN extern
-#include "ptex.h"
+#include "ptex-ng.h"
 
 #define BEGINFMTCHECKSUM 367403084L
 #define ENDFMTCHECKSUM   69069L
@@ -1976,7 +1976,7 @@ boolean load_fmt_file (void)
   if (x != BEGINFMTCHECKSUM)
     goto bad_fmt;
 
-  undump_int(eTeX_mode);
+  undump(0, 1, eTeX_mode);
 
   if (eTeX_ex)
   {
@@ -2169,7 +2169,7 @@ boolean load_fmt_file (void)
 
       k = k + x;
     }
-  while (!(k > eqtb_size));
+    while (!(k > eqtb_size));
 
   undump(hash_base, frozen_control_sequence, par_loc);
   par_token = cs_token_flag + par_loc;
@@ -2336,6 +2336,7 @@ boolean load_fmt_file (void)
     trie_max = j;
 #endif
 
+  undump(0, j, hyph_start);
   undump_things(trie_trl[0], j + 1);
   undump_things(trie_tro[0], j + 1);
   undump_things(trie_trc[0], j + 1);
@@ -2346,7 +2347,6 @@ boolean load_fmt_file (void)
     trie_op_ptr = j;
 #endif
   
-  undump(0, j, hyph_start);
   undump_things(hyf_distance[1], j);
   undump_things(hyf_num[1], j);
   undump_things(hyf_next[1], j);
@@ -2687,7 +2687,7 @@ start_of_TEX:
 
     if (is_initex)
     {
-      //if (true || ((buffer[loc] == '*') && (format_ident == 1251)))
+      if (true || ((buffer[loc] == '*') && (format_ident == 1251)))
       {
         no_new_control_sequence = false;
         primitive("lastnodetype", last_item, last_node_type_code);
@@ -2756,7 +2756,10 @@ start_of_TEX:
         primitive("clubpenalties", set_shape, club_penalties_loc);
         primitive("widowpenalties", set_shape, widow_penalties_loc);
         primitive("displaywidowpenalties", set_shape, display_widow_penalties_loc);
-        incr(loc);
+
+        if (buffer[loc] == '*')
+          incr(loc);
+
         eTeX_mode = true;
         max_reg_num = 32767;
         max_reg_help_line = "A register number must be between 0 and 32767.";
@@ -2794,7 +2797,7 @@ start_of_TEX:
     }
 
     if (eTeX_ex)
-      printf("\nentering extended mode");
+      printf("entering extended mode\n");
 
     if (end_line_char_inactive())
       decr(limit);

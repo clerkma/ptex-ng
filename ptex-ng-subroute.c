@@ -19,7 +19,7 @@
 */
 
 #define EXTERN extern
-#include "ptex.h"
+#include "ptex-ng.h"
 
 // texk/web2c/lib/uexit.c
 void uexit (int unix_code)

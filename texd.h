@@ -64,12 +64,9 @@
 #include <ptexenc/unicode.h>
 #include "zlib.h"
 // typedefs
-typedef long long integer;
+typedef int64_t integer;
 typedef double    glue_ratio;
 typedef double    real;
-typedef FILE * alpha_file;
-typedef FILE * byte_file;
-typedef FILE * word_file;
 typedef unsigned char  ASCII_code;
 typedef int32_t        KANJI_code;
 typedef unsigned char  eight_bits;
@@ -79,6 +76,10 @@ typedef unsigned char packed_ASCII_code;
 typedef integer scaled;
 typedef integer nonnegative_integer;
 typedef unsigned char small_number;
+
+typedef FILE * alpha_file;
+typedef FILE * byte_file;
+typedef FILE * word_file;
 
 #ifdef link
   #undef link

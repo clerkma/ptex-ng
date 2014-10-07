@@ -147,7 +147,40 @@ typedef halfword pointer;
 typedef char two_choices;
 typedef char four_choices;
 /* sec 0113 */
-#include "memory.h"
+typedef struct
+{
+#ifdef WORDS_BIGENDIAN
+  halfword rh;
+
+  union
+  {
+    halfword lh;
+
+    struct
+    {
+      quarterword b0, b1;
+    };
+  };
+#endif
+} two_halves;
+
+typedef struct
+{
+#ifdef WORDS_BIGENDIAN
+  quarterword b0, b1, b2, b3;
+#else
+  quarterword b3, b2, b1, b0;
+#endif
+} four_quarters;
+
+typedef union
+{
+  glue_ratio gr;
+  two_halves hh;
+  integer cint;
+  four_quarters qqqq;
+} memory_word;
+
 #include "macros.h"
 /* sec 0150 */
 typedef char glue_ord; 

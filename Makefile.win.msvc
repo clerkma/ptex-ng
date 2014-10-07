@@ -14,89 +14,65 @@ CFLAGS=/nologo /c /MT /GF /Gy /W4 \
 
 LFLAGS=/NOLOGO /MAP
 
-objs = ptex.obj itex.obj openinou.obj subroute.obj local.obj \
-	tex0.obj tex1.obj tex2.obj tex3.obj tex4.obj \
-	tex5.obj tex6.obj tex7.obj tex8.obj tex9.obj \
-	pool.obj ptex.res utils.obj dpx.obj ptex-kanji.obj ptex-module.obj
+objs = \
+	ptex-ng.obj\
+	ptex-ng-initex.obj\
+	ptex-ng-io.obj\
+	ptex-ng-subroute.obj\
+	ptex-ng-local.obj\
+	ptex-ng-src.obj\
+	ptex-ng-pool.obj\
+	ptex-ng.res\
+	ptex-ng-utils.obj\
+	ptex-ng-pdf-backend.obj\
+	ptex-ng-kanji.obj\
+	ptex-ng-module.obj
 
-ptex.exe: $(objs) libdpx\libdpx.lib
-	$(LINK) $(LFLAGS) ptex itex openinou subroute local \
-	tex0 tex1 tex2 tex3 tex4 tex5 tex6 tex7 tex8 tex9 \
-	pool ptex.res utils dpx ptex-kanji ptex-module libptexenc\ptexenc.lib\
-	kpathsea\kpathsea.lib libdpx\libdpx.lib libpng\libpng.lib zlib\zlib.lib
-	del ..\yandy\bin\ptex.exe
-	copy ptex.exe ..\yandy\bin\ptex-ng.exe
+ptex-ng.exe: $(objs) libdpx\libdpx.lib
+	$(LINK) $(LFLAGS) $(objs) \
+	libptexenc\ptexenc.lib \
+	kpathsea\kpathsea.lib \
+	libdpx\libdpx.lib \
+	libpng\libpng.lib \
+	zlib\zlib.lib
+	del ..\yandy\bin\ptex-ng.exe
+	copy ptex-ng.exe ..\yandy\bin\ptex-ng.exe
 
-ptex.res: ptex.rc
-	$(RC) /nologo ptex.rc
+ptex-ng.res: ptex-ng.rc
+	$(RC) /nologo ptex-ng.rc
 
-dpx.obj: dpx.c \
-	texd.h ptex.h dpx.h memory.h coerce.h macros.h
-	$(CC) $(CFLAGS) dpx.c
+ptex-ng-pdf-backend.obj: ptex-ng-pdf-backend.c \
+	texd.h ptex-ng.h dpx.h coerce.h macros.h
 
-ptex.obj: ptex.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-	$(CC) $(CFLAGS) ptex.c
+ptex-ng.obj: ptex-ng.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
-itex.obj: itex.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-	$(CC) $(CFLAGS) itex.c
+ptex-ng-initex.obj: ptex-ng-initex.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
-openinou.obj: openinou.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-	$(CC) $(CFLAGS) openinou.c
+ptex-ng-io.obj: ptex-ng-io.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
-subroute.obj: subroute.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-	$(CC) $(CFLAGS) subroute.c
+ptex-ng-subroute.obj: ptex-ng-subroute.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
-ptex-kanji.obj: ptex-kanji.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-	$(CC) $(CFLAGS) ptex-kanji.c
+ptex-ng-kanji.obj: ptex-ng-kanji.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
-ptex-module.obj: ptex-module.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-	$(CC) $(CFLAGS) ptex-module.c
+ptex-ng-module.obj: ptex-ng-module.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
-local.obj: local.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-	$(CC) $(CFLAGS) local.c
+ptex-ng-local.obj: ptex-ng-local.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
-tex0.obj: tex0.c \
-	texd.h ptex.h memory.h coerce.h macros.h
+ptex-ng-src.obj: ptex-ng-src.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
-tex1.obj: tex1.c \
-	texd.h ptex.h memory.h coerce.h macros.h
+ptex-ng-pool.obj: ptex-ng-pool.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
-tex2.obj: tex2.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-
-tex3.obj: tex3.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-
-tex4.obj: tex4.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-
-tex5.obj: tex5.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-
-tex6.obj: tex6.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-
-tex7.obj: tex7.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-
-tex8.obj: tex8.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-
-tex9.obj: tex9.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-
-pool.obj: pool.c \
-	texd.h ptex.h memory.h coerce.h macros.h
-
-utils.obj: utils.c \
-	texd.h ptex.h memory.h coerce.h macros.h
+ptex-ng-utils.obj: ptex-ng-utils.c \
+	texd.h ptex-ng.h coerce.h macros.h
 
 .SUFFIXES:
 .SUFFIXES: .obj .c
