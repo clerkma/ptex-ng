@@ -20,7 +20,6 @@
 #define EXTERN extern
 #include "ptex.h"
 
-#define CJK_CHAR_LIMIT  0x1000000
 #define CJK_TOKEN_FLAG  0xFFFFFF
 
 boolean check_kanji(integer c)
@@ -41,7 +40,7 @@ boolean is_char_ascii (integer c)
 boolean is_char_kanji(integer c)
 {
   if (is_internalUPTEX())
-    return (c >= 0 && (c & CJK_TOKEN_FLAG) < CJK_CHAR_LIMIT);
+    return (c >= 0 && (c & CJK_TOKEN_FLAG) < max_cjk_val);
   else
     return iskanji1(Hi(c)) && iskanji2(Lo(c));
 }
@@ -327,7 +326,7 @@ static long ucs_range[] = {
   0x200000, // Reserved
   0x210000, // Reserved
   0x220000, // Reserved 0xf8
-  CJK_CHAR_LIMIT
+  max_cjk_val
 };
 
 #define NUCS_RANGE (sizeof(ucs_range)/sizeof(ucs_range[0]))
@@ -392,8 +391,12 @@ integer multilenbuffchar(integer c)
   return 0;
 }
 
-void initkanji(const_string file_str, const_string internal_str)
+void init_default_kanji(const_string file_str, const_string internal_str)
 {
+  char *p;
+
+  enable_UPTEX(true);
+
   if (!set_enc_string(file_str, internal_str))
   {
     fprintf(stderr, "Bad kanji encoding \"%s\" or \"%s\".\n",
@@ -401,15 +404,6 @@ void initkanji(const_string file_str, const_string internal_str)
       internal_str ? internal_str : "NULL");
     uexit(1);
   }
-}
-
-void init_default_kanji(const_string file_str, const_string internal_str)
-{
-  char *p;
-
-  enable_UPTEX(true);
-
-  initkanji(file_str, internal_str);
 
   p = getenv("PTEX_KANJI_ENC");
 

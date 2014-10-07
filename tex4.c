@@ -24,9 +24,15 @@
 void char_warning_(internal_font_number f, eight_bits c)
 {
   ASCII_code l;
+  integer old_setting;
 
   if (tracing_lost_chars > 0)
   {
+    old_setting = tracing_online;
+
+    if (eTeX_ex && (tracing_lost_chars > 1))
+      tracing_online = 1;
+
     if (show_missing == 0)
       begin_diagnostic();
 
@@ -93,6 +99,7 @@ void char_warning_(internal_font_number f, eight_bits c)
       end_diagnostic(false);
 
     missing_characters++;
+    tracing_online = old_setting;
   }
 }
 /* sec 0582 */
@@ -666,6 +673,11 @@ pointer hpack_(pointer p, scaled w, small_number m)
   total_shrink[filll] = 0;
   disp = 0;
 
+  if (TeXXeT_en)
+  {
+    initialize_the_LR_stack();
+  }
+
   while (p != 0)
   {
 reswitch:
@@ -768,6 +780,7 @@ reswitch:
 
         case disp_node:
           disp = disp_dimen(p);
+          revdisp = disp;
           break;
 
         case glue_node:
@@ -793,8 +806,21 @@ reswitch:
           break;
 
         case kern_node:
-        case math_node:
           x = x + width(p);
+          break;
+
+        case math_node:
+          if (end_LR(p))
+            if (info(LR_ptr) == end_LR_type(p))
+              pop_LR();
+            else
+            {
+              incr(LR_problems);
+              type(p) = kern_node;
+              subtype(p) = explicit;
+            }
+          else
+            push_LR(p);
           break;
 
         case ligature_node:
@@ -976,6 +1002,32 @@ common_ending:
 
 exit:
   last_disp = disp;
+
+  if (TeXXeT_en)
+  {
+    if (info(LR_ptr) != before)
+    {
+      while (link(q) != null)
+        q = link(q);
+
+      do {
+        temp_ptr = q; q = new_math(0, info(LR_ptr)); link(temp_ptr) = q;
+        LR_problems = LR_problems + 10000; pop_LR();
+      } while (!(info(LR_ptr) == before));
+    }
+
+    if (LR_problems>0)
+    {
+      report_LR_problems();
+      goto common_ending;
+    }
+
+    pop_LR();
+
+    if (LR_ptr != null)
+      confusion("LR1");
+  }
+
   return r;
 }
 /* sec 0668 */

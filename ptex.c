@@ -26,7 +26,6 @@
 #define dump_ext_length 4
 #define edit_value      tex_edit_value
 
-extern char * replacement[];
 int    gargc;
 char **gargv;
 
@@ -107,12 +106,6 @@ void t_open_in (void)
     do_nothing();
 
   last++;
-
-  if (non_ascii)
-  {
-    for (i = first; i < last; i++)
-      buffer[i] = xord[buffer[i]];
-  }
 }
 
 static void catch_interrupt (int err)
@@ -302,24 +295,16 @@ boolean input_line_finish (void)
     }
   }
 
-  if (non_ascii)
-  {
-    for (i = first; i <= last; i++)
-      buffer[i] = xord[buffer[i]];
-  }
-
   return true;
 }
 /* sec 0031 */
 boolean input_line (FILE * f)
 {
-  char * u;        /* 1994/July/3 for key_replace */
   int i = '\0';
 
   last = first;
-/*  following is new version with tab expansion and key replacement */
-/*  may want to expand out separately for speed 1994/July/3 */
-/*  different versions depending on return_flag / tabexpand / key_replace */
+
+/*  different versions depending on return_flag / tabexpand */
 /*  while (last < buf_size && (i = getc (f)) != EOF)  */
 #ifdef ALLOCATEBUFFER
   for ( ; ; ) 
@@ -371,28 +356,6 @@ boolean input_line (FILE * f)
       }
     }
 
-    if (key_replace && (u = replacement[i]) != NULL)
-    {
-#ifdef ALLOCATEBUFFER
-      while (*u != '\0') 
-#else
-      while (last < buf_size && *u != '\0')  
-#endif
-      {
-        buffer[last++] = (ASCII_code) *u++;
-
-#ifdef ALLOCATEBUFFER
-        if (last >= current_buf_size)
-        {
-          buffer = realloc_buffer(increment_buf_size);
-
-          if (last >= current_buf_size)
-            break;
-        }
-#endif
-      }
-    }
-    else       /* normal case */
     {
       buffer[last++] = (ASCII_code) i;
 

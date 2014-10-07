@@ -32,13 +32,11 @@ void initialize (void)
 {
   integer i;
   integer k;
-  integer flag;
 
 #ifndef ALLOCATEHYPHEN
   hyph_pointer z;
 #endif
 
-  if (!non_ascii)
   {
     for (i = 0; i <= 255; i++)
       xchr[i] = (char) i;
@@ -93,29 +91,6 @@ void initialize (void)
 
   xord[127] = 127;
 
-  flag = 0;
-
-  if (trace_flag != 0)
-  {
-    for (k = 0; k < 256; k++)
-      if (xord[k] != k)
-      {
-        flag = 1;
-        break;
-      }
-
-    if (flag)
-    {
-      puts("Inverted mapping xord[] pairs:");
-
-      for (k = 0; k < 256; k++)
-      {
-        if (xord[k] != 127)
-          printf("%lld => %d\n", k, xord[k]);
-      }
-    }
-  }
-
   if (interaction < batch_mode)
     interaction = error_stop_mode;
 
@@ -139,6 +114,7 @@ void initialize (void)
   mode = vmode;
   head = contrib_head;
   tail = contrib_head;
+  eTeX_aux = 0;
   prev_node = tail;
   direction = dir_yoko;
   adjust_dir = direction;
@@ -159,6 +135,7 @@ void initialize (void)
   last_glue = max_halfword;
   last_penalty = 0;
   last_kern = 0;
+  last_node_type = -1;
   page_depth = 0;
   page_max_depth = 0;
 
@@ -262,6 +239,13 @@ void initialize (void)
   for (k = 0; k <= 17; k++)
     write_open[k] = false;
 
+  LR_ptr = null;
+  LR_problems = 0;
+  cur_dir = left_to_right;
+  pseudo_files = null;
+  sa_mark = null; sa_null.hh.lh = null; sa_null.hh.rh = null;
+  sa_chain = null; sa_level = level_zero;
+  page_disc = null; split_disc = null;
   inhibit_glue_flag = false;
   page_dir = dir_yoko;
   edit_name_start = 0;
@@ -290,6 +274,7 @@ void initialize_aux (void)
   mode = vmode;
   head = contrib_head;
   tail = contrib_head;
+  eTeX_aux = 0;
   prev_node = tail;
   direction = dir_yoko;
   adjust_dir = direction;
@@ -305,7 +290,7 @@ void initialize_aux (void)
 }
 #endif
 /* sec 0815 */
-void line_break (integer final_widow_penalty)
+void line_break (boolean d)
 {
   boolean auto_breaking;
   pointer prev_p;
@@ -350,6 +335,7 @@ void line_break (integer final_widow_penalty)
   }
 
   link(tail) = new_param_glue(par_fill_skip_code);
+  last_line_fill = link(tail);
   init_cur_lang = prev_graf % 65536L;
   init_l_hyf = prev_graf / 4194304L; /* 2^22 */
   init_r_hyf = (prev_graf / 65536L) % 64;
@@ -367,6 +353,25 @@ void line_break (integer final_widow_penalty)
   background[2 + stretch_order(q)] = stretch(q);
   background[2 + stretch_order(r)] = background[2 + stretch_order(r)] + stretch(r);
   background[6] = shrink(q) + shrink(r);
+  do_last_line_fit = false;
+  active_node_size = active_node_size_normal;
+
+  if (last_line_fit>0)
+  {
+    q = glue_ptr(last_line_fill);
+
+    if ((stretch(q)>0) && (stretch_order(q)>normal))
+      if ((background[3] == 0) && (background[4] == 0) && (background[5] == 0))
+      {
+        do_last_line_fit = true;
+        active_node_size = active_node_size_extended;
+        fill_width[0] = 0;
+        fill_width[1] = 0;
+        fill_width[2] = 0;
+        fill_width[stretch_order(q) - 1] = stretch(q);
+      }
+  }
+
   minimum_demerits = awful_bad;
   minimal_demerits[tight_fit] = awful_bad;
   minimal_demerits[decent_fit] = awful_bad;
@@ -466,6 +471,7 @@ void line_break (integer final_widow_penalty)
       cur_lang = init_cur_lang;
       l_hyf = init_l_hyf;
       r_hyf = init_r_hyf;
+      set_hyph_index();
     }
 
     q = get_node(active_node_size);
@@ -476,6 +482,13 @@ void line_break (integer final_widow_penalty)
     line_number(q) = prev_graf + 1;
     total_demerits(q) = 0;
     link(active) = q;
+
+    if (do_last_line_fit)
+    {
+      active_short(q) = 0;
+      active_glue(q) = 0;
+    }
+
     act_width = background[1];
     do_all_six(store_background);
     passive = 0;
@@ -612,6 +625,7 @@ void line_break (integer final_widow_penalty)
             cur_lang = what_lang(cur_p);
             l_hyf = what_lhm(cur_p);
             r_hyf = what_rhm(cur_p);
+            set_hyph_index();
           }
           break;
 
@@ -676,6 +690,8 @@ void line_break (integer final_widow_penalty)
                     }
                   else if ((type(s) == kern_node) && (subtype(s) == normal))
                     goto continu;
+                  else if ((type(s) == math_node) && (subtype(s) >= L_code))
+                    goto continu;
                   else if (type(s) == whatsit_node)
                   {
                     if (subtype(s) == language_node)
@@ -683,14 +699,17 @@ void line_break (integer final_widow_penalty)
                       cur_lang = what_lang(s);
                       l_hyf = what_lhm(s);
                       r_hyf = what_rhm(s);
+                      set_hyph_index();
                     }
                     goto continu;
                   }
                   else
                     goto done1;
 
-                  if (lc_code(c) != 0)
-                    if ((lc_code(c) == (halfword) c) || (uc_hyph > 0))
+                  set_lc_code(c);
+
+                  if (hc[0] != 0)
+                    if ((hc[0] == (halfword) c) || (uc_hyph > 0))
                       goto done2;
                     else
                       goto done1;
@@ -724,8 +743,9 @@ done2:
                     hyf_bchar = character(s);
 
                     c = hyf_bchar;
+                    set_lc_code(c);
 
-                    if (lc_code(c) == 0)
+                    if (hc[0] == 0)
                       goto done3;
 
                     if (hn == 63)
@@ -734,7 +754,7 @@ done2:
                     hb = s;
                     incr(hn);
                     hu[hn] = c;
-                    hc[hn]= lc_code(c);
+                    hc[hn]= hc[0];
                     hyf_bchar = non_char;
                   }
                   else if (type(s) == ligature_node)
@@ -751,8 +771,9 @@ done2:
                     while (q != 0)
                     {
                       c = character(q);
+                      set_lc_code(c);
 
-                      if (lc_code(c) == 0)
+                      if (hc[0] == 0)
                         goto done3;
 
                       if (j == 63)
@@ -760,7 +781,7 @@ done2:
 
                       incr(j);
                       hu[j] = c;
-                      hc[j] = lc_code(c);
+                      hc[j] = hc[0];
                       q = link(q);
                     }
 
@@ -810,6 +831,13 @@ done3:
                       case adjust_node:
                       case mark_node:
                         goto done4;
+                        break;
+
+                      case math_node:
+                        if (subtype(s) >= L_code)
+                          goto done4;
+                        else
+                          goto done1;
                         break;
 
                       default:
@@ -951,7 +979,8 @@ done1:;
 
         case math_node:
           {
-            auto_breaking = (subtype(cur_p) == after);
+            if (subtype(cur_p) < L_code)
+              auto_breaking = odd(subtype(cur_p));
             kern_break();
           }
           break;
@@ -1106,7 +1135,18 @@ done:
   }
 #endif
 
-  post_line_break(final_widow_penalty);
+  if (do_last_line_fit)
+    if (active_short(best_bet) == 0)
+      do_last_line_fit = false;
+    else
+    {
+      q = new_spec(glue_ptr(last_line_fill));
+      delete_glue_ref(glue_ptr(last_line_fill));
+      width(q) = width(q) + active_short(best_bet) - active_glue(best_bet);
+      stretch(q) = 0; glue_ptr(last_line_fill) = q;
+    }
+
+  post_line_break(d);
   q = link(active);
 
   while (q != active)
@@ -1163,10 +1203,25 @@ void prefixed_command (void)
       print_cmd_chr(cur_cmd, cur_chr);
       print_char('\'');
       help1("I'll pretend you didn't say \\long or \\outer or \\global.");
+
+      if (eTeX_ex)
+        help_line[0] = "I'll pretend you didn't say \\long or \\outer \\global or \\protected.";
+
       back_error();
       return;
     }
+
+    if (tracing_commands > 2)
+      if (eTeX_ex)
+        show_cur_cmd_chr();
   }
+
+  if (a >= 8)
+  {
+    j = protected_token;
+    a = a - 8;
+  }
+  else j = 0;
 
   if ((cur_cmd != def) && (a % 4 != 0))
   {
@@ -1174,10 +1229,18 @@ void prefixed_command (void)
     print_esc("long");
     prints("' or `");
     print_esc("outer");
+    help1("I'll pretend you didn't say \\long or \\outer here.");
+
+    if (eTeX_ex)
+    {
+      help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\protected here.";
+      prints("' or `");
+      print_esc("protected");
+    }
+
     prints("' with `");
     print_cmd_chr(cur_cmd, cur_chr);
     print_char('\'');
-    help1("I'll pretend you didn't say \\long or \\outer here.");
     error();
   }
 
@@ -1213,6 +1276,15 @@ void prefixed_command (void)
         get_r_token();
         p = cur_cs;
         q = scan_toks(true, e);
+
+        if (j != 0)
+        {
+          q = get_avail();
+          info(q) = j;
+          link(q) = link(def_ref);
+          link(def_ref) = q;
+        }
+
         define(p, call + (a % 4), def_ref);
       }
       break;
@@ -1251,6 +1323,9 @@ void prefixed_command (void)
 
         if (cur_cmd >= call)
           add_token_ref(cur_chr);
+        else if ((cur_cmd == tex_register) || (cur_cmd == toks_register))
+          if ((cur_chr < mem_bot) || (cur_chr > lo_mem_stat_max))
+            add_sa_ref(cur_chr);
 
         define(p, cur_cmd, cur_chr);
       }
@@ -1289,9 +1364,26 @@ void prefixed_command (void)
 
           default:
             {
-              scan_eight_bit_int();
+              scan_register_num();
 
-              switch (n)
+              if (cur_val>255)
+              {
+                j = n - count_def_code;
+
+                if (j>mu_val)
+                  j = tok_val;
+
+                find_sa_element(j, cur_val, true);
+                add_sa_ref(cur_ptr);
+
+                if (j == tok_val)
+                  j = toks_register;
+                else
+                  j = tex_register;
+
+                define(p, j, cur_ptr);
+              }
+              else switch (n)
               {
                 case count_def_code:
                   define(p, assign_int, count_base + cur_val);
@@ -1321,6 +1413,7 @@ void prefixed_command (void)
 
     case read_to_cs:
       {
+        j = cur_chr;
         scan_int();
         n = cur_val;
 
@@ -1334,7 +1427,7 @@ void prefixed_command (void)
 
         get_r_token();
         p = cur_cs;
-        read_toks(n, p);
+        read_toks(n, p, j);
         define(p, call, cur_val);
       }
       break;
@@ -1343,15 +1436,25 @@ void prefixed_command (void)
     case assign_toks:
       {
         q = cur_cs;
+        e = false;
 
         if (cur_cmd == toks_register)
-        {
-          scan_eight_bit_int();
-          p = toks_base + cur_val;
-        }
-        else
-          p = cur_chr;
+          if (cur_chr == mem_bot)
+          {
+            scan_register_num();
 
+            if (cur_val>255)
+            {
+              find_sa_element(tok_val, cur_val, true);
+              cur_chr = cur_ptr; e = true;
+            }
+            else
+              cur_chr = toks_base + cur_val;
+          }
+          else
+            e = true;
+
+        p = cur_chr;
         scan_optional_equals();
 
         do
@@ -1362,24 +1465,38 @@ void prefixed_command (void)
 
         if (cur_cmd != left_brace)
         {
-          if (cur_cmd == toks_register)
+          if ((cur_cmd == toks_register) || (cur_cmd == assign_toks))
           {
-            scan_eight_bit_int();
-            cur_cmd = assign_toks;
-            cur_chr = toks_base + cur_val;
-          }
+            if (cur_cmd == toks_register)
+              if (cur_chr == mem_bot)
+              {
+                scan_register_num();
 
-          if (cur_cmd == assign_toks)
-          {
-            q = equiv(cur_chr);
+                if (cur_val<256)
+                  q = equiv(toks_base + cur_val);
+                else
+                {
+                  find_sa_element(tok_val, cur_val, false);
 
-            if (q == 0)
-              define(p, undefined_cs, 0);
+                  if (cur_ptr == null)
+                    q = null;
+                  else
+                    q = sa_ptr(cur_ptr);
+                }
+              }
+              else
+                q = sa_ptr(cur_chr);
+            else
+              q = equiv(cur_chr);
+
+            if (q == null)
+              sa_define(p, null, p, undefined_cs, null);
             else
             {
               add_token_ref(q);
-              define(p, call, q);
+              sa_define(p, q, p, call, q);
             }
+
             goto done;
           }
         }
@@ -1390,12 +1507,12 @@ void prefixed_command (void)
 
         if (link(def_ref) == 0)
         {
-          define(p, undefined_cs, 0);
+          sa_define(p, null, p, undefined_cs, 0);
           free_avail(def_ref);
         }
         else
         {
-          if (p == output_routine_loc)
+          if ((p == output_routine_loc) && !e)
           {
             link(q) = get_avail();
             q = link(q);
@@ -1406,7 +1523,7 @@ void prefixed_command (void)
             link(def_ref) = q;
           }
 
-          define(p, call, def_ref);
+          sa_define(p, def_ref, p, call, def_ref);
         }
       }
       break;
@@ -1547,17 +1664,17 @@ void prefixed_command (void)
 
     case set_box:
       {
-        scan_eight_bit_int();
+        scan_register_num();
 
-        if ((a >= 4))
-          n = 256 + cur_val;
+        if (a >= 4)
+          n = global_box_flag + cur_val;
         else
-          n = cur_val;
+          n = box_flag + cur_val;
 
         scan_optional_equals();
 
         if (set_box_allowed)
-          scan_box(box_flag + n);
+          scan_box(n);
         else
         {
           print_err("Improper ");
@@ -1591,12 +1708,30 @@ void prefixed_command (void)
 
     case set_shape:
       {
+        q = cur_chr;
         scan_optional_equals();
         scan_int();
         n = cur_val;
 
         if (n <= 0)
-          p = 0;
+          p = null;
+        else if (q>par_shape_loc)
+        {
+          n = (cur_val / 2) + 1;
+          p = get_node(2 * n + 1);
+          info(p) = n;
+          n = cur_val;
+          mem[p + 1].cint = n;
+
+          for (j = p + 2; j <= p + n + 1; ++j)
+          {
+            scan_int();
+            mem[j].cint = cur_val;
+          }
+
+          if (!odd(n))
+            mem[p + n + 2].cint = 0;
+        }
         else
         {
           p = get_node(2 * n + 1);
@@ -1611,7 +1746,7 @@ void prefixed_command (void)
           }
         }
 
-        define(par_shape_loc, shape_ref, p);
+        define(q, shape_ref, p);
       }
       break;
 
@@ -1841,6 +1976,19 @@ boolean load_fmt_file (void)
   if (x != BEGINFMTCHECKSUM)
     goto bad_fmt;
 
+  undump_int(eTeX_mode);
+
+  if (eTeX_ex)
+  {
+    max_reg_num = 32767;
+    max_reg_help_line = "A register number must be between 0 and 32767.";
+  }
+  else
+  {
+    max_reg_num = 255;
+    max_reg_help_line = "A register number must be between 0 and 255.";
+  }
+
   undump_int(x); /* mem_bot */
 
   if (x != mem_bot)
@@ -1945,6 +2093,11 @@ boolean load_fmt_file (void)
   init_pool_ptr = pool_ptr;
   undump(lo_mem_stat_max + 1000, hi_mem_stat_min - 1, lo_mem_max);
   undump(lo_mem_stat_max + 1, lo_mem_max, rover);
+
+  if (eTeX_ex)
+    for (k = int_val; k <= tok_val; ++k)
+      undump(0, lo_mem_max, sa_root[k]);
+
   p = mem_bot;
   q = rover;
 
@@ -2193,6 +2346,7 @@ boolean load_fmt_file (void)
     trie_op_ptr = j;
 #endif
   
+  undump(0, j, hyph_start);
   undump_things(hyf_distance[1], j);
   undump_things(hyf_num[1], j);
   undump_things(hyf_next[1], j);
@@ -2270,8 +2424,11 @@ void final_cleanup (void)
     print_nl("(");
     print_esc("end occurred ");
     prints("inside a group at level ");
-    print_int(cur_level - 1);
+    print_int(cur_level - level_one);
     print_char(')');
+
+    if (eTeX_ex)
+      show_save_groups();
   }
 
   while (cond_ptr != 0)
@@ -2312,6 +2469,13 @@ void final_cleanup (void)
       for (c = 0; c <= 4; c++)
         if (cur_mark[c] != 0)
           delete_token_ref(cur_mark[c]);
+
+      if (sa_mark != null)
+        if (do_marks(destroy_marks, 0, sa_mark))
+          sa_mark = null;
+
+      for (c = last_box_code; c <= vsplit_code; ++c)
+        flush_node_list(disc_ptr[c]);
 
       if (last_glue != max_halfword)
         delete_glue_ref(last_glue);
@@ -2491,6 +2655,8 @@ start_of_TEX:
       open_parens = 0;
       max_open_parens = 0;
       max_buf_stack = 0;
+      grp_stack[0] = 0;
+      if_stack[0] = null;
       param_ptr = 0;
       max_param_stack = 0;
 
@@ -2518,8 +2684,88 @@ start_of_TEX:
       limit = last;
       first = last + 1;
     }
-    
-    if ((format_ident == 0) || (buffer[loc] == '&') || (buffer[loc] == '+'))
+
+    if (is_initex)
+    {
+      //if (true || ((buffer[loc] == '*') && (format_ident == 1251)))
+      {
+        no_new_control_sequence = false;
+        primitive("lastnodetype", last_item, last_node_type_code);
+        primitive("eTeXversion", last_item, eTeX_version_code);
+        primitive("eTeXrevision", convert, eTeX_revision_code);
+        primitive("everyeof", assign_toks, every_eof_loc);
+        primitive("tracingassigns", assign_int, int_base + tracing_assigns_code);
+        primitive("tracinggroups", assign_int, int_base + tracing_groups_code);
+        primitive("tracingifs", assign_int, int_base + tracing_ifs_code);
+        primitive("tracingscantokens", assign_int, int_base + tracing_scan_tokens_code);
+        primitive("tracingnesting", assign_int, int_base + tracing_nesting_code);
+        primitive("predisplaydirection", assign_int, int_base + pre_display_direction_code);
+        primitive("lastlinefit", assign_int, int_base + last_line_fit_code);
+        primitive("savingvdiscards", assign_int, int_base + saving_vdiscards_code);
+        primitive("savinghyphcodes", assign_int, int_base + saving_hyph_codes_code);
+        primitive("currentgrouplevel", last_item, current_group_level_code);
+        primitive("currentgrouptype", last_item, current_group_type_code);
+        primitive("currentiflevel", last_item, current_if_level_code);
+        primitive("currentiftype", last_item, current_if_type_code);
+        primitive("currentifbranch", last_item, current_if_branch_code);
+        primitive("fontcharwd", last_item, font_char_wd_code);
+        primitive("fontcharht", last_item, font_char_ht_code);
+        primitive("fontchardp", last_item, font_char_dp_code);
+        primitive("fontcharic", last_item, font_char_ic_code);
+        primitive("parshapelength", last_item, par_shape_length_code);
+        primitive("parshapeindent", last_item, par_shape_indent_code);
+        primitive("parshapedimen", last_item, par_shape_dimen_code);
+        primitive("showgroups", xray, show_groups);
+        primitive("showtokens", xray, show_tokens);
+        primitive("unexpanded", the, 1);
+        primitive("detokenize", the, show_tokens);
+        primitive("showifs", xray, show_ifs);
+        primitive("interactionmode", set_page_int, 2);
+        primitive("middle", left_right, middle_noad);
+        primitive("TeXXeTstate", assign_int, eTeX_state_base + TeXXeT_code);
+        primitive("beginL", valign, begin_L_code);
+        primitive("endL", valign, end_L_code);
+        primitive("beginR", valign, begin_R_code);
+        primitive("endR", valign, end_R_code);
+        primitive("scantokens", input, 2);
+        primitive("readline", read_to_cs, 1);
+        primitive("unless", expand_after, 1);
+        primitive("ifdefined", if_test, if_def_code);
+        primitive("ifcsname", if_test, if_cs_code);
+        primitive("iffontchar", if_test, if_font_char_code);
+        primitive("protected", prefix, 8);
+        primitive("numexpr", last_item, eTeX_expr - int_val + int_val);
+        primitive("dimexpr", last_item, eTeX_expr - int_val + dimen_val);
+        primitive("glueexpr", last_item, eTeX_expr - int_val + glue_val);
+        primitive("muexpr", last_item, eTeX_expr - int_val + mu_val);
+        primitive("gluestretchorder", last_item, glue_stretch_order_code);
+        primitive("glueshrinkorder", last_item, glue_shrink_order_code);
+        primitive("gluestretch", last_item, glue_stretch_code);
+        primitive("glueshrink", last_item, glue_shrink_code);
+        primitive("mutoglue", last_item, mu_to_glue_code);
+        primitive("gluetomu", last_item, glue_to_mu_code);
+        primitive("marks", mark, marks_code);
+        primitive("topmarks", top_bot_mark, top_mark_code + marks_code);
+        primitive("firstmarks", top_bot_mark, first_mark_code + marks_code);
+        primitive("botmarks", top_bot_mark, bot_mark_code + marks_code);
+        primitive("splitfirstmarks", top_bot_mark, split_first_mark_code + marks_code);
+        primitive("splitbotmarks", top_bot_mark, split_bot_mark_code + marks_code);
+        primitive("pagediscards", un_vbox, last_box_code);
+        primitive("splitdiscards", un_vbox, vsplit_code);
+        primitive("interlinepenalties", set_shape, inter_line_penalties_loc);
+        primitive("clubpenalties", set_shape, club_penalties_loc);
+        primitive("widowpenalties", set_shape, widow_penalties_loc);
+        primitive("displaywidowpenalties", set_shape, display_widow_penalties_loc);
+        incr(loc);
+        eTeX_mode = true;
+        max_reg_num = 32767;
+        max_reg_help_line = "A register number must be between 0 and 32767.";
+      }
+    }
+
+    if (!no_new_control_sequence)
+      no_new_control_sequence = true;
+    else if ((format_ident == 0) || (buffer[loc] == '&') || (buffer[loc] == '+'))
     {
       if (format_ident != 0)
         initialize();
@@ -2546,6 +2792,9 @@ start_of_TEX:
       while ((loc < limit) && (buffer[loc] == ' '))
         incr(loc);
     }
+
+    if (eTeX_ex)
+      printf("\nentering extended mode");
 
     if (end_line_char_inactive())
       decr(limit);
@@ -2649,7 +2898,7 @@ void reset_trie (void)
   max_op_used = min_trie_op;
   trie_op_ptr = 0;
   trie_not_ready = true;
-  trie_l[0] = 0;
+  trie_root = 0;
   trie_c[0] = 0;
   trie_ptr = 0;
   trie_not_ready = true;
@@ -2670,7 +2919,7 @@ void reset_hyphen(void)
 /* split out to allow optimize for space, not time */
 void do_initex (void)
 {
-  /* integer i; */
+  integer i;
   integer k;
   /* hyph_pointer z; */
 
@@ -2744,6 +2993,9 @@ void do_initex (void)
   par_shape_ptr = 0;
   eq_type(par_shape_loc) = shape_ref;
   eq_level(par_shape_loc) = level_one;
+
+  for (k = etex_pen_base; k <= etex_pens - 1; k++)
+    eqtb[k] = eqtb[par_shape_loc];
 
   for (k = output_routine_loc; k <= toks_base + 255; k++)
     eqtb[k] = eqtb[undefined_control_sequence];
@@ -2931,6 +3183,14 @@ void do_initex (void)
   eq_level(end_write) = level_one;
   eq_type(end_write) = outer_call;
   equiv(end_write) = 0;
+  eTeX_mode = false;
+  max_reg_num = 255;
+  max_reg_help_line = "A register number must be between 0 and 255.";
+
+  for (i = int_val; i <= tok_val; ++i)
+    sa_root[i] = null;
+
+  hyph_root = 0; hyph_start = 0;
 }
 #endif
 
@@ -3033,7 +3293,7 @@ void sort_avail (void)
 void primitive_ (str_number s, quarterword c, halfword o)
 { 
   pool_pointer k;
-  small_number j;
+  int j;
   /* small_number l; */
   int l;
 
@@ -3044,10 +3304,27 @@ void primitive_ (str_number s, quarterword c, halfword o)
     k = str_start[s];
     l = str_start[s + 1] - k;
 
-    for (j = 0; j <= l - 1; j++)
-      buffer[j] = str_pool[k + j];
+#ifdef ALLOCATEBUFFER
+    if (first + l > current_buf_size + 1)
+      buffer = realloc_buffer(increment_buf_size);
 
-    cur_val = id_lookup(0, l);
+    if (first + l > current_buf_size + 1)
+    {
+      overflow("buffer size", current_buf_size);
+      return;
+    }
+#else
+    if (first + l > buf_size + 1)
+    {
+      overflow("buffer size", buf_size);
+      return;
+    }
+#endif
+
+    for (j = 0; j <= l - 1; j++)
+      buffer[first + j] = str_pool[k + j];
+
+    cur_val = id_lookup(first, l);
     flush_string();
     text(cur_val) = s;
   }
@@ -3427,7 +3704,7 @@ done1:
                     trie_r[q] = p;
 
                   trie_c[p] = c;
-                  trie_o[p] = min_trie_op;
+                  trie_o[p] = min_quarterword;
                 }
 
                 q = p;
@@ -3461,7 +3738,81 @@ done1:
           break;
       }
     }
-done:;
+done:
+    if (saving_hyph_codes > 0)
+    {
+      c = cur_lang;
+      first_child = false;
+      p = 0;
+
+      do {
+        q = p; p = trie_r[q];
+      } while (!((p == 0) || (c <= trie_c[p])));
+
+      if ((p == 0) || (c < trie_c[p]))
+      {
+        if (trie_ptr == trie_size)
+        {
+          overflow("pattern memory", trie_size);
+          return;
+        }
+
+        incr(trie_ptr);
+        trie_r[trie_ptr] = p;
+        p = trie_ptr;
+        trie_l[p] = 0;
+
+        if (first_child)
+          trie_l[q] = p;
+        else
+          trie_r[q] = p;
+
+        trie_c[p] = c;
+        trie_o[p] = min_quarterword;
+      }
+
+      q = p;
+      p = trie_l[q];
+      first_child = true;
+
+      for (c = 0; c <= 255; ++c)
+        if ((lc_code(c) > 0) || ((c == 255) && first_child))
+        {
+          if (p == 0)
+          {
+            if (trie_ptr == trie_size)
+            {
+              overflow("pattern memory", trie_size);
+              return;
+            }
+
+            incr(trie_ptr);
+            trie_r[trie_ptr] = p;
+            p = trie_ptr;
+            trie_l[p] = 0;
+
+            if (first_child)
+              trie_l[q] = p;
+            else
+              trie_r[q] = p;
+
+            trie_c[p] = c;
+            trie_o[p] = min_quarterword;
+          }
+          else
+            trie_c[p] = c;
+
+          trie_o[p] = lc_code(c);
+          q = p;
+          p = trie_r[q];
+          first_child = false;
+        }
+      if (first_child)
+        trie_l[q] = 0;
+      else
+        trie_r[q] = 0;
+    }
+
   }
   else
   {
@@ -3512,7 +3863,8 @@ void init_trie (void)
   for (p = 0; p <= trie_size; p++)
     trie_hash[p] = 0;
 
-  trie_l[0] = compress_trie(trie_l[0]);
+  hyph_root = compress_trie(hyph_root);
+  trie_root = compress_trie(trie_root);
 
   for (p = 0; p <= trie_ptr; p++)
     trie_hash[p] = 0;
@@ -3523,13 +3875,24 @@ void init_trie (void)
   trie_trl[0] = 1;
   trie_max = 0;
 
-  if (trie_l[0] != 0)
+  if (trie_root != 0)
   {
-    first_fit(trie_l[0]);
-    trie_pack(trie_l[0]);
+    first_fit(trie_root);
+    trie_pack(trie_root);
   }
 
-  if (trie_l[0] == 0)
+  if (hyph_root > 0)
+  {
+    if (trie_root == 0)
+      for (p = 0; p <= 255; ++p)
+        trie_min[p] = p + 2;
+
+    first_fit(hyph_root);
+    trie_pack(hyph_root);
+    hyph_start = trie_hash[hyph_root];
+  }
+
+  if (trie_max == 0)
   {
     for (r = 0; r <= 256; r++)
     {
@@ -3542,7 +3905,12 @@ void init_trie (void)
   }
   else
   {
-    trie_fix(trie_l[0]);
+    if (hyph_root > 0)
+      trie_fix(hyph_root);
+
+    if (trie_root > 0)
+      trie_fix(trie_root);
+
     r = 0;
 
     do
@@ -3620,6 +3988,9 @@ void store_fmt_file (void)
   slow_print(format_ident);
 
   dump_int(BEGINFMTCHECKSUM);
+  while (pseudo_files != null) pseudo_close();
+  dump_int(eTeX_mode);
+  eTeX_state(0) = 0;
   dump_int(mem_bot);
   dump_int(mem_top);
   dump_int(eqtb_size);
@@ -3638,6 +4009,11 @@ void store_fmt_file (void)
   var_used = 0;
   dump_int(lo_mem_max);
   dump_int(rover);
+
+  if (eTeX_ex)
+    for (k = int_val; k <= tok_val; ++k)
+      dump_int(sa_root[k]);
+
   p = 0;
   q = rover;
   x = 0;
@@ -3879,6 +4255,7 @@ done2:
     init_trie();
 
   dump_int(trie_max);
+  dump_int(hyph_start);
   dump_things(trie_trl[0], trie_max + 1);
   dump_things(trie_tro[0], trie_max + 1);
   dump_things(trie_trc[0], trie_max + 1);
@@ -3929,6 +4306,7 @@ done2:
 void init_prim (void)
 {
   no_new_control_sequence = false;
+  first = 0;
   /* sec 0266 */
   primitive("lineskip", assign_glue, glue_base + line_skip_code);
   primitive("baselineskip", assign_glue, glue_base + baseline_skip_code);
@@ -4081,7 +4459,7 @@ void init_prim (void)
   primitive("noexpand", no_expand, 0);
   primitive("nonscript", non_script, 0);
   primitive("omit", omit, 0);
-  primitive("parshape", set_shape, 0);
+  primitive("parshape", set_shape, par_shape_loc);
   primitive("penalty", break_penalty, 0);
   primitive("prevgraf", set_prev_graf, 0);
   primitive("radical", radical, 0);
@@ -4091,7 +4469,7 @@ void init_prim (void)
   eqtb[frozen_relax] = eqtb[cur_val];
   primitive("setbox", set_box, 0);
   primitive("the", the, 0);
-  primitive("toks", toks_register, 0);
+  primitive("toks", toks_register, mem_bot);
   primitive("vadjust", vadjust, 0);
   primitive("valign", valign, 0);
   primitive("vcenter", vcenter, 0);
@@ -4106,10 +4484,10 @@ void init_prim (void)
   primitive("botmark", top_bot_mark, bot_mark_code);
   primitive("splitfirstmark", top_bot_mark, split_first_mark_code);
   primitive("splitbotmark", top_bot_mark, split_bot_mark_code);
-  primitive("count", tex_register, int_val);
-  primitive("dimen", tex_register, dimen_val);
-  primitive("skip", tex_register, glue_val);
-  primitive("muskip", tex_register, mu_val);
+  primitive("count", tex_register, mem_bot + int_val);
+  primitive("dimen", tex_register, mem_bot + dimen_val);
+  primitive("skip", tex_register, mem_bot + glue_val);
+  primitive("muskip", tex_register, mem_bot + mu_val);
   primitive("spacefactor", set_aux, hmode);
   primitive("prevdepth", set_aux, vmode);
   primitive("deadcycles", set_page_int, 0);

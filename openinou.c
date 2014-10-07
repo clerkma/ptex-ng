@@ -253,14 +253,6 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
   return openable;
 }
 
-/* At least check for I/O error (such as disk full) when closing */
-/* Would be better to check while writing - but this is better than nothing */
-/* This is used for both input and output files, but never mind ... */
-
-/* now a_close returns -1 on error --- which could be used by caller */
-/* probably want to ignore on input files ... */
-
-// check_fclose not used by anything
 int check_fclose (FILE * f)
 {
   if (f == NULL)
@@ -287,6 +279,7 @@ char * xstrdup_name (void)
 
   strcat(log_line, (char *) name_of_file + 1);
   unixify(log_line);
+
   return xstrdup(log_line);
 }
 
@@ -330,9 +323,8 @@ boolean open_output (FILE ** f, const char * fopen_mode)
       if (deslash)
         unixify((char *) temp_name);
       
-      /* but we can assume this is opening here for *output* */
       *f = fopen((char *) temp_name, fopen_mode);
-      /* If this succeeded, change name_of_file accordingly. */
+
       if (*f)
         strcpy((char *) name_of_file + 1, (char *) temp_name);
     }

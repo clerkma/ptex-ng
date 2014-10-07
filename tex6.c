@@ -28,14 +28,13 @@ restart:
 
   do
     {
-      get_x_token();
+      get_x_or_protected();
     }
   while (!(cur_cmd != spacer));
 
   if (cur_cmd == no_align)
   {
     scan_left_brace();
-
     new_save_level(no_align_group);
 
     if (mode == -vmode)
@@ -96,6 +95,7 @@ void try_break (integer pi, small_number break_type)
   boolean artificial_demerits;
   pointer save_link;
   scaled shortfall;
+  scaled g;
 
   if (abs(pi) >= inf_penalty)
     if (pi > 0)
@@ -327,6 +327,13 @@ done:;
               fitness(q) = fit_class;
               type(q) = break_type;
               total_demerits(q) = minimal_demerits[fit_class];
+
+              if (do_last_line_fit)
+              {
+                active_short(q) = best_pl_short[fit_class];
+                active_glue(q) = best_pl_glue[fit_class];
+              }
+
               link(q) = r;
               link(prev_r) = q;
               prev_r = q;
@@ -345,6 +352,20 @@ done:;
 
                 prints(" t=");
                 print_int(total_demerits(q));
+
+                if (do_last_line_fit)
+                {
+                  prints(" s=");
+                  print_scaled(active_short(q));
+
+                  if (cur_p == null)
+                    prints(" a=");
+                  else
+                    prints(" g=");
+
+                  print_scaled(active_glue(q));
+                }
+
                 prints(" -> @@");
 
                 if (prev_break(passive) == 0)
@@ -402,6 +423,87 @@ done:;
       if (shortfall > 0)
         if ((cur_active_width[3] != 0) || (cur_active_width[4] != 0) || (cur_active_width[5] != 0))
         {
+          if (do_last_line_fit)
+          {
+            if (do_last_line_fit)
+              if (cur_p == null)
+              {
+                {
+                  if ((active_short(r) == 0) || (active_glue(r) <= 0))
+                    goto not_found;
+
+                  if ((cur_active_width[3] != fill_width[0]) ||
+                    (cur_active_width[4] != fill_width[1]) ||
+                    (cur_active_width[5] != fill_width[2]))
+                    goto not_found;
+
+                  if (active_short(r) > 0)
+                    g = cur_active_width[2];
+                  else
+                    g = cur_active_width[6];
+
+                  if (g <= 0)
+                    goto not_found;
+
+                  arith_error = false;
+                  g = fract(g, active_short(r), active_glue(r), max_dimen);
+
+                  if (last_line_fit < 1000)
+                    g = fract(g, last_line_fit, 1000, max_dimen);
+
+                  if (arith_error)
+                    if (active_short(r)>0)
+                      g = max_dimen;
+                    else
+                      g = -max_dimen;
+
+                  if (g>0)
+                  {
+                    if (g > shortfall)
+                      g = shortfall;
+
+                    if (g>7230584) if (cur_active_width[2]<1663497)
+                    {
+                      b = inf_bad;
+                      fit_class = very_loose_fit;
+                      goto found;
+                    }
+
+                    b = badness(g, cur_active_width[2]);
+
+                    if (b>12)
+                      if (b>99)
+                        fit_class = very_loose_fit;
+                      else
+                        fit_class = loose_fit;
+                    else
+                      fit_class = decent_fit;
+
+                    goto found;
+                  }
+                  else if (g<0)
+                  {
+                    if (-g>cur_active_width[6])
+                      g = -cur_active_width[6];
+
+                    b = badness(-g, cur_active_width[6]);
+
+                    if (b>12)
+                      fit_class = tight_fit;
+                    else
+                      fit_class = decent_fit;
+
+                    goto found;
+                  }
+
+not_found:;
+                }
+
+                shortfall = 0;
+              }
+
+          }
+
           b = 0;
           fit_class = decent_fit;
         }
@@ -439,6 +541,20 @@ done1:;
           fit_class = decent_fit;
       }
 
+      if (do_last_line_fit)
+      {
+        if (cur_p == null)
+          shortfall = 0;
+
+        if (shortfall > 0)
+          g = cur_active_width[2];
+        else if (shortfall < 0)
+          g = cur_active_width[6];
+        else
+          g = 0;
+      }
+
+found:
       if ((b > inf_bad) || (pi == eject_penalty))
       {
         if (final_pass && (minimum_demerits == awful_bad) && (link(r) == active) && (prev_r == active))
@@ -555,6 +671,12 @@ done1:;
         best_place[fit_class] = break_node(r);
         best_pl_line[fit_class] = l;
 
+        if (do_last_line_fit)
+        {
+          best_pl_short[fit_class] = shortfall;
+          best_pl_glue[fit_class] = g;
+        }
+
         if (d < minimum_demerits)
           minimum_demerits = d;
       }
@@ -617,7 +739,7 @@ exit:;
 #endif
 }
 /* sec 0877 */
-void post_line_break (integer final_widow_penalty)
+void post_line_break (boolean d)
 {
   pointer q, r, s;
   boolean disc_break;
@@ -627,7 +749,9 @@ void post_line_break (integer final_widow_penalty)
   quarterword t;
   integer pen;
   halfword cur_line;
+  pointer LR_ptr;
 
+  LR_ptr = LR_save;
   q = break_node(best_bet);
   cur_p = 0;
 
@@ -645,6 +769,30 @@ void post_line_break (integer final_widow_penalty)
 
   do
     {
+      if (TeXXeT_en)
+      {
+        q = link(temp_head);
+
+        if (LR_ptr != null)
+        {
+          temp_ptr = LR_ptr; r = q;
+          do {
+            s = new_math(0, begin_LR_type(info(temp_ptr))); link(s) = r; r = s;
+            temp_ptr = link(temp_ptr);
+          } while (!(temp_ptr == null));
+          link(temp_head) = r;
+        }
+
+        while (q != cur_break(cur_p))
+        {
+          if (!is_char_node(q))
+            if (type(q) == math_node)
+              adjust_the_LR_stack_p();
+
+          q = link(q);
+        }
+      }
+
       q = cur_break(cur_p);
       disc_break = false;
       post_disc_break = false;
@@ -713,8 +861,15 @@ void post_line_break (integer final_widow_penalty)
               link(q) = r;
               disc_break = true;
             }
-            else if ((type(q) == math_node) || (type(q) == kern_node))
+            else if (type(q) == kern_node)
               width(q) = 0;
+            else if (type(q) == math_node)
+            {
+              width(q) = 0;
+
+              if (TeXXeT_en)
+                adjust_the_LR_stack_p();
+            }
           }
       }
       else
@@ -731,6 +886,28 @@ void post_line_break (integer final_widow_penalty)
       q = r;
 
 done:
+      if (TeXXeT_en)
+        if (LR_ptr != null)
+        {
+          s = temp_head;
+          r = link(s);
+
+          while (r != q)
+          {
+            s = r;
+            r = link(s);
+          }
+
+          r = LR_ptr;
+
+          while (r != null)
+          {
+            temp_ptr = new_math(0, info(r));
+            link(s) = temp_ptr; s = temp_ptr; r = link(r);
+          }
+
+          link(s) = q;
+        }
 
       r = link(q);
       link(q) = 0;
@@ -784,13 +961,53 @@ done:
 
       if (cur_line + 1 != best_line)
       {
-        pen = inter_line_penalty;
+        q = inter_line_penalties_ptr;
 
-        if (cur_line == prev_graf + 1)
+        if (q != null)
+        {
+          r = cur_line;
+
+          if (r > penalty(q))
+            r = penalty(q);
+
+          pen = penalty(q + r);
+        }
+        else
+          pen = inter_line_penalty;
+
+        q = club_penalties_ptr;
+
+        if (q != null)
+        {
+          r = cur_line - prev_graf;
+
+          if (r>penalty(q))
+            r = penalty(q);
+
+          pen = pen + penalty(q + r);
+        }
+        else if (cur_line == prev_graf + 1)
           pen = pen + club_penalty;
 
-        if (cur_line + 2 == best_line)
-          pen = pen + final_widow_penalty;
+        if (d)
+          q = display_widow_penalties_ptr;
+        else
+          q = widow_penalties_ptr;
+
+        if (q != null)
+        {
+          r = best_line - cur_line - 1;
+
+          if (r>penalty(q))
+            r = penalty(q);
+
+          pen = pen + penalty(q + r);
+        }
+        else if (cur_line + 2 == best_line)
+          if (d)
+            pen = pen + display_widow_penalty;
+          else
+            pen = pen + widow_penalty;
 
         if (disc_break)
           pen = pen + broken_penalty;
@@ -829,6 +1046,12 @@ done:
                 goto done1;
 
             r = q;
+
+            if (type(q) == math_node)
+              if (TeXXeT_en)
+              {
+                adjust_the_LR_stack_p();
+              }
           }
 done1:
           if (r != temp_head)
@@ -848,6 +1071,7 @@ done1:
   }
 
   prev_graf = best_line - 1;
+  LR_save = LR_ptr;
 }
 /* sec 0906 */
 small_number reconstitute (small_number j, small_number n, halfword bchar, halfword hchar)
@@ -1454,6 +1678,15 @@ void new_hyph_exceptions (void)
 
   scan_left_brace();
   set_cur_lang();
+
+  if (is_initex)
+  {
+    hyph_index = 0;
+    goto not_found1;
+  }
+
+  set_hyph_index();
+not_found1:
   n = 0;
   p = 0;
 
@@ -1480,7 +1713,9 @@ reswitch:
         }
         else
         {
-          if (lc_code(cur_chr) == 0)
+          set_lc_code(cur_chr);
+
+          if (hc[0] == 0)
           {
             print_err("Not a letter");
             help2("Letters in \\hyphenation words must have \\lccode>0.",
@@ -1490,7 +1725,7 @@ reswitch:
           else if (n < 63)
           {
             incr(n);
-            hc[n] = lc_code(cur_chr);
+            hc[n] = hc[0];
           }
         }
         break;
@@ -1598,10 +1833,10 @@ not_found:
   }
 }
 /* sec 0968 */
-pointer prune_page_top (pointer p)
+pointer prune_page_top (pointer p, boolean s)
 {
   pointer prev_p;
-  pointer q;
+  pointer q, r;
 
   prev_p = temp_head;
   link(temp_head) = p;
@@ -1644,7 +1879,19 @@ pointer prune_page_top (pointer p)
           p = link(q);
           link(q) = 0;
           link(prev_p) = p;
-          flush_node_list(q);
+
+          if (s)
+          {
+            if (split_disc == null)
+              split_disc = q;
+            else
+              link(r) = q;
+
+            r = q;
+
+          }
+          else
+            flush_node_list(q);
         }
         break;
 
@@ -1814,14 +2061,21 @@ done:
   return best_place;
 }
 /* sec 0977 */
-pointer vsplit (eight_bits n, scaled h)
+pointer vsplit (halfword n, scaled h)
 {
   pointer v;
   pointer w;
   pointer p;
   pointer q;
 
-  v = box(n);
+  cur_val = n;
+  fetch_box(v);
+  flush_node_list(split_disc);
+  split_disc = null;
+
+  if (sa_mark != null)
+    if (do_marks(vsplit_init, 0, sa_mark))
+      sa_mark = null;
 
   if (split_first_mark != 0)
   {
@@ -1867,7 +2121,22 @@ pointer vsplit (eight_bits n, scaled h)
   else while (true)
   {
     if (type(p) == mark_node)
-      if (split_first_mark == 0)
+      if (mark_class(p) != 0)
+      {
+        find_sa_element(mark_val, mark_class(p), true);
+
+        if (sa_split_first_mark(cur_ptr) == null)
+        {
+          sa_split_first_mark(cur_ptr) = mark_ptr(p);
+          add_token_ref(mark_ptr(p));
+        }
+        else
+          delete_token_ref(sa_split_bot_mark(cur_ptr));
+
+        sa_split_bot_mark(cur_ptr) = mark_ptr(p);
+        add_token_ref(mark_ptr(p));
+      }
+      else if (split_first_mark == 0)
       {
         split_first_mark = mark_ptr(p);
         split_bot_mark = split_first_mark;
@@ -1890,17 +2159,16 @@ pointer vsplit (eight_bits n, scaled h)
   }
 
 done:
-  q = prune_page_top(q);
+  q = prune_page_top(q, saving_vdiscards > 0);
   p = list_ptr(v);
  
-  if (q == 0)
-    box(n) = 0;
-  else
+  if (q != 0)
   {
-    box(n) = vpackage(q, 0, 1, max_dimen);
-    set_box_dir(box(n), box_dir(v));
+    q = vpackage(q, 0, 1, max_dimen);
+    set_box_dir(q, box_dir(v));
   }
 
+  change_box(q);
   q = vpackage(p, h, exactly, split_max_depth);
   set_box_dir(q, box_dir(v));
   delete_glue_ref(space_ptr(v));
@@ -2003,6 +2271,10 @@ void fire_up (pointer c)
   }
   else
     geq_word_define(int_base + output_penalty_code, inf_penalty);
+
+  if (sa_mark != null)
+    if (do_marks(fire_up_init, 0, sa_mark))
+      sa_mark = null;
 
   if (bot_mark != 0)
   {
@@ -2112,7 +2384,7 @@ void fire_up (pointer c)
 
                 link(s) = 0;
                 split_top_skip = split_top_ptr(p);
-                ins_ptr(p) = prune_page_top(broken_ptr(r));
+                ins_ptr(p) = prune_page_top(broken_ptr(r), false);
 
                 if (ins_ptr(p) != 0)
                 {
@@ -2163,19 +2435,36 @@ void fire_up (pointer c)
       }
     }
     else if (type(p) == mark_node)
-    {
-      if (first_mark == 0)
+      if (mark_class(p) != 0)
       {
-        first_mark = mark_ptr(p);
-        add_token_ref(first_mark);
+        find_sa_element(mark_val, mark_class(p), true);
+
+        if (sa_first_mark(cur_ptr) == null)
+        {
+          sa_first_mark(cur_ptr) = mark_ptr(p);
+          add_token_ref(mark_ptr(p));
+        }
+
+        if (sa_bot_mark(cur_ptr) != null)
+          delete_token_ref(sa_bot_mark(cur_ptr));
+
+        sa_bot_mark(cur_ptr) = mark_ptr(p);
+        add_token_ref(mark_ptr(p));
       }
+      else
+      {
+        if (first_mark == 0)
+        {
+          first_mark = mark_ptr(p);
+          add_token_ref(first_mark);
+        }
 
-      if (bot_mark != 0)
-        delete_token_ref(bot_mark);
+        if (bot_mark != 0)
+          delete_token_ref(bot_mark);
 
-      bot_mark = mark_ptr(p);
-      add_token_ref(bot_mark);
-    }
+        bot_mark = mark_ptr(p);
+        add_token_ref(bot_mark);
+      }
 
     prev_p = p;
     p = link(prev_p);
@@ -2234,6 +2523,10 @@ void fire_up (pointer c)
  
   link(page_ins_head) = page_ins_head;
 
+  if (sa_mark != null)
+    if (do_marks(fire_up_done, 0, sa_mark))
+      sa_mark = null;
+
   if ((top_mark != 0) && (first_mark == 0))
   {
     first_mark = top_mark;
@@ -2282,6 +2575,8 @@ void fire_up (pointer c)
       page_tail = page_head;
     }
 
+    flush_node_list(page_disc);
+    page_disc = null;
     ship_out(box(255));
     box(255) = 0;
   }

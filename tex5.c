@@ -755,10 +755,16 @@ small_number make_left_right (pointer q, small_number style, scaled max_d, scale
 {
   scaled delta, delta1, delta2;
 
-  if (style < script_style)
-    cur_size = text_size;
-  else
-    cur_size = 16 * ((style - text_style) / 2);
+  cur_style = style;
+
+  {
+    if (cur_style < script_style)
+      cur_size = text_size;
+    else
+      cur_size = 16 * ((cur_style - text_style) / 2);
+
+    cur_mu = x_over_n(math_quad(cur_size), 18);
+  }
 
   delta2 = max_d + axis_height(cur_size);
   delta1 = max_h + max_d - delta2;
@@ -1132,6 +1138,21 @@ done_with_noad:
     r = q;
     r_type = type(r);
 
+    if (r_type == right_noad)
+    {
+      r_type = left_noad;
+      cur_style = style;
+
+      {
+        if (cur_style < script_style)
+          cur_size = text_size;
+        else
+          cur_size = 16 * ((cur_style - text_style) / 2);
+
+        cur_mu = x_over_n(math_quad(cur_size), 18);
+      }
+    }
+
 done_with_node:
     q = link(q);
   }
@@ -1342,6 +1363,9 @@ done_with_node:
               p = z;
             }
         }
+
+    if (type(q) == right_noad)
+      t = open_noad;
 
     r_type = t;
 
@@ -1806,6 +1830,9 @@ void fin_align (void)
         {
           type(q) = hlist_node;
           width(q) = width(p);
+
+          if (nest[nest_ptr - 1].mode_field == mmode)
+            set_box_lr(q, dlist);
         }
         else
         {
@@ -1827,6 +1854,7 @@ void fin_align (void)
             t = width(s);
             w = t;
             u = hold_head;
+            set_box_lr(r, 0);
 
             while (n > min_quarterword)
             {
@@ -2010,6 +2038,7 @@ void fin_align (void)
       }
     }
 
+    flush_node_list(LR_box);
     pop_nest();
     tail_append(new_penalty(pre_display_penalty));
     tail_append(new_param_glue(above_display_skip_code));
@@ -2227,7 +2256,7 @@ boolean fin_col (void)
 
   do
     {
-      get_x_token();
+      get_x_or_protected();
     }
   while (!(cur_cmd != spacer));
 

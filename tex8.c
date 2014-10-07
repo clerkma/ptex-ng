@@ -86,18 +86,29 @@ void math_left_right (void)
 {
   small_number t;
   pointer p;
+  pointer q;
 
   t = cur_chr;
   inhibit_glue_flag = false;
 
-  if ((t == right_noad) && (cur_group != math_left_group))
+  if ((t != left_noad) && (cur_group != math_left_group))
   {
     if (cur_group == math_shift_group)
     {
       scan_delimiter(garbage, false);
       print_err("Extra ");
-      print_esc("right");
-      help1("I'm ignoring a \\right that had no matching \\left.");
+
+      if (t == middle_noad)
+      {
+        print_esc("middle");
+        help1("I'm ignoring a \\middle that had no matching \\left.");
+      }
+      else
+      {
+        print_esc("right");
+        help1("I'm ignoring a \\right that had no matching \\left.");
+      }
+
       error();
     }
     else
@@ -109,20 +120,33 @@ void math_left_right (void)
     type(p) = t;
     scan_delimiter(delimiter(p), false);
 
-    if (t == left_noad)
+    if (t == middle_noad)
     {
-      push_math(math_left_group);
-      link(tail) = p;
-      tail = p;
+      type(p) = right_noad;
+      subtype(p) = middle_noad;
     }
+
+    if (t == left_noad)
+      q = p;
     else
     {
       p = fin_mlist(p);
       unsave();
+    }
+
+    if (t != right_noad)
+    {
+      push_math(math_left_group);
+      link(head) =  q;
+      tail = p;
+      delim_ptr = p;
+    }
+    else
+    {
       tail_append(new_noad());
       type(tail) = inner_noad;
       math_type(nucleus(tail)) = sub_mlist;
-      info(nucleus(tail)) = p;
+      info(nucleus(tail)) = q;
     }
   }
 }
@@ -145,8 +169,12 @@ void after_math (void)
   small_number g1, g2;
   pointer r;
   pointer t;
+  pointer j;
 
   danger = false;
+
+  if (mode == mmode)
+    j = LR_box;
   
   if ((font_params[fam_fnt(2 + text_size)] < total_mathsy_params) ||
     (font_params[fam_fnt(2 + script_size)] < total_mathsy_params) ||
@@ -211,6 +239,7 @@ void after_math (void)
     mlist_penalties = false;
     mlist_to_hlist();
     a = hpack(link(temp_head), 0, 1);
+    set_box_lr(a, dlist);
     unsave();
     decr(save_ptr);
 
@@ -218,6 +247,9 @@ void after_math (void)
       l = true;
 
     danger = false;
+
+    if (mode == mmode)
+      j = LR_box;
 
     if ((font_params[fam_fnt(2 + text_size)] < total_mathsy_params) ||
       (font_params[fam_fnt(2 + script_size)] < total_mathsy_params) ||
@@ -302,6 +334,9 @@ void after_math (void)
     z = display_width;
     s = display_indent;
 
+    if (pre_display_direction < 0)
+      s = -s - z;
+
     if ((a == 0) || danger)
     {
       e = 0;
@@ -338,6 +373,7 @@ void after_math (void)
       w = width(b);
     }
 
+    set_box_lr(b, dlist);
     d = half(z - w);
 
     if ((e > 0) && (d < 2 * e))
@@ -364,8 +400,7 @@ void after_math (void)
     }
     if (l && (e == 0))
     {
-      shift_amount(a) = s;
-      append_to_vlist(a);
+      app_display(j, a, 0);
       tail_append(new_penalty(10000));
     }
     else
@@ -392,14 +427,12 @@ void after_math (void)
       b = hpack(b, 0, 1);
     }
 
-    shift_amount(b) = s + d;
-    append_to_vlist(b);
+    app_display(j, b, d);
 
     if ((a != 0) && (e == 0) && !l)
     {
       tail_append(new_penalty(10000));
-      shift_amount(a) = s + z - width(a);
-      append_to_vlist(a);
+      app_display(j, a, z - width(a));
       g2 = 0;
     }
 
@@ -417,6 +450,7 @@ void after_math (void)
     }
 
     resume_after_display();
+    flush_node_list(j);
   }
 }
 /* sec 1200 */
@@ -490,7 +524,10 @@ void do_register_command (small_number a)
 {
   pointer l, q, r, s;
   char p;
+  boolean e;
+  integer w;
 
+  e = false;
   q = cur_cmd;
 
   {
@@ -517,30 +554,54 @@ void do_register_command (small_number a)
       }
     }
 
-    p = cur_chr;
-    scan_eight_bit_int();
-
-    switch (p)
+    if ((cur_chr<mem_bot) || (cur_chr>lo_mem_stat_max))
     {
-      case int_val:
-        l = cur_val + count_base;
-        break;
+      l = cur_chr;
+      p = sa_type(l);
+      e = true;
+    }
+    else
+    {
+      p = cur_chr - mem_bot;
+      scan_register_num();
 
-      case dimen_val:
-        l = cur_val + scaled_base;
-        break;
+      if (cur_val>255)
+      {
+        find_sa_element(p, cur_val, true);
+        l = cur_ptr; e = true;
+      }
+      else switch (p)
+      {
+        case int_val:
+          l = cur_val + count_base;
+          break;
 
-      case glue_val:
-        l = cur_val + skip_base;
-        break;
+        case dimen_val:
+          l = cur_val + scaled_base;
+          break;
 
-      case mu_val:
-        l = cur_val + mu_skip_base;
-        break;
+        case glue_val:
+          l = cur_val + skip_base;
+          break;
+
+        case mu_val:
+          l = cur_val + mu_skip_base;
+          break;
+      }
     }
   }
 
 found:
+  if (p<glue_val)
+    if (e)
+      w = sa_int(l);
+    else
+      w = eqtb[l].cint;
+  else if (e)
+    s = sa_ptr(l);
+  else
+    s = equiv(l);
+
   if (q == tex_register)
     scan_optional_equals();
   else if (scan_keyword("by"))
@@ -557,7 +618,7 @@ found:
         scan_normal_dimen();
 
       if (q == advance)
-        cur_val = cur_val + eqtb[l].cint;
+        cur_val = cur_val + w;
     }
     else
     {
@@ -566,7 +627,7 @@ found:
       if (q == advance)
       {
         q = new_spec(cur_val);
-        r = equiv(l);
+        r = s;
         delete_glue_ref(cur_val);
         width(q) = width(q) + width(r);
 
@@ -601,14 +662,13 @@ found:
     if (p < glue_val)
       if (q == multiply)
         if (p == int_val)
-          cur_val = mult_integers(eqtb[l].cint, cur_val);
+          cur_val = mult_integers(w, cur_val);
         else
-          cur_val = nx_plus_y(eqtb[l].cint, cur_val, 0);
+          cur_val = nx_plus_y(w, cur_val, 0);
       else
-        cur_val = x_over_n(eqtb[l].cint, cur_val);
+        cur_val = x_over_n(w, cur_val);
     else
     {
-      s = equiv(l);
       r = new_spec(s);
 
       if (q == multiply)
@@ -641,11 +701,11 @@ found:
   }
 
   if (p < glue_val)
-    word_define(l, cur_val);
+    sa_word_define(l, cur_val);
   else
   {
     trap_zero_glue();
-    define(l, glue_ref, cur_val);
+    sa_define(l, cur_val, l, glue_ref, cur_val);
   }
 }
 /* sec 1243 */
@@ -720,7 +780,7 @@ void alter_page_so_far (void)
 /* sec 1246 */
 void alter_integer (void)
 {
-  char c;
+  small_number c;
 
   c = cur_chr;
   scan_optional_equals();
@@ -728,6 +788,21 @@ void alter_integer (void)
 
   if (c == 0)
     dead_cycles = cur_val;
+  else if (c == 2)
+  {
+    if ((cur_val<batch_mode) || (cur_val>error_stop_mode))
+    {
+      print_err("Bad interaction mode");
+      help2("Modes are 0=batch, 1=nonstop, 2=scroll, and",
+        "3=errorstop. Proceed, and I'll ignore this case.");
+      int_error(cur_val);
+    }
+    else
+    {
+      cur_chr = cur_val;
+      new_interaction();
+    }
+  }
   else
     insert_penalties = cur_val;
 }
@@ -736,17 +811,17 @@ void alter_box_dimen (void)
 {
   small_number c;
   pointer p, q;
-  eight_bits b;
+  pointer b;
 
   c = cur_chr;
-  scan_eight_bit_int();
-  b = cur_val;
+  scan_register_num();
+  fetch_box(b);
   scan_optional_equals();
   scan_normal_dimen();
 
-  if (box(b) != null)
+  if (b != null)
   {
-    q = box(b);
+    q = b;
     p = link(q);
 
     while (p != null)
@@ -759,12 +834,12 @@ void alter_box_dimen (void)
 
     if (box_dir(q) != abs(direction))
     {
-      p = link(box(b));
-      link(box(b)) = null;
+      p = link(b);
+      link(b) = null;
       q = new_dir_node(q, abs(direction));
       list_ptr(q) = null;
       link(q) = p;
-      link(box(b)) = q;
+      link(b) = q;
     }
 
     mem[q + c].cint = cur_val;
@@ -807,7 +882,6 @@ void new_font (small_number a)
   define(u, set_font, null_font);
   scan_optional_equals();
   scan_file_name();
-
   name_in_progress = true;
 
   if (scan_keyword("at"))
@@ -843,34 +917,7 @@ void new_font (small_number a)
     s = -1000;
 
   name_in_progress = false;
-
   flushable_string = str_ptr - 1;
-
-  if (trace_flag)
-  {
-    int i, k1, k2, l1, l2;
-    char *sch = log_line;
-    k1 = str_start[cur_area];
-    k2 = str_start[cur_name];
-    l1 = length(cur_area);
-    l2 = length(cur_name);
-    wterm_cr();
-    puts("FONT ");
-
-    for (i = 0; i < l1; i++)
-    {
-      *sch++ = str_pool[i + k1];
-    }
-
-    for (i = 0; i < l2; i++)
-    {
-      *sch++ = str_pool[i + k2];
-    }
-
-    *sch++ = ' ';
-    *sch++ = '\0';
-    show_line(log_line, 0);
-  }
 
   for (f = font_base + 1; f < font_ptr; f++)
   {
@@ -916,7 +963,7 @@ common_ending:
   if (trace_flag)
     printf("NEW FONT %lld ", f);
 
-  equiv(u) = f;
+  define(u, set_font, f);
   eqtb[font_id_base + f] = eqtb[u];
   font_id_text(f) = t;
 }
@@ -1082,6 +1129,10 @@ void shift_case (void)
 void show_whatever (void)
 {
   pointer p;
+  small_number t;
+  int m;
+  integer l;
+  integer n;
 
   switch (cur_chr)
   {
@@ -1094,16 +1145,17 @@ void show_whatever (void)
 
     case show_box_code:
       {
-        scan_eight_bit_int();
+        scan_register_num();
+        fetch_box(p);
         begin_diagnostic();
         print_nl("> \\box");
         print_int(cur_val);
         print_char('=');
 
-        if (box(cur_val) == 0)
+        if (p == 0)
           prints("void");
         else
-          show_box(box(cur_val));
+          show_box(p);
       }
       break;
 
@@ -1144,6 +1196,53 @@ void show_whatever (void)
           prints("no auto xspacing mode; ");
 
         goto common_ending;
+      }
+      break;
+
+    case show_groups:
+      {
+        begin_diagnostic();
+        show_save_groups();
+      }
+      break;
+
+    case show_ifs:
+      {
+        begin_diagnostic();
+        print_nl("");
+        print_ln();
+
+        if (cond_ptr == null)
+        {
+          print_nl("### ");
+          prints("no active conditionals");
+        }
+        else
+        {
+          p = cond_ptr;
+          n = 0;
+
+          do {
+            incr(n); p = link(p);
+          } while (!(p == null));
+
+          p = cond_ptr;
+          t = cur_if;
+          l = if_line;
+          m = if_limit;
+
+          do {
+            print_nl("### level ");
+            print_int(n); prints(": ");
+            print_cmd_chr(if_test, t);
+
+            if (m == fi_code)
+              print_esc("else");
+
+            print_if_line(l);
+            decr(n); t = subtype(p); l = if_line_field(p); m = type(p); p = link(p);
+          } while (!(p == null));
+        }
       }
       break;
 
@@ -1379,7 +1478,7 @@ void handle_right_brace (void)
       }
       break;
 
-    case adjust_hbox_group:
+    case adjusted_hbox_group:
       {
         adjust_hlist(head, false);
         adjust_tail = adjust_head;
@@ -1514,6 +1613,8 @@ void handle_right_brace (void)
           page_tail = page_head;
         }
 
+        flush_node_list(page_disc);
+        page_disc = null;
         pop_nest();
         build_page();
       }
@@ -1983,8 +2084,17 @@ reswitch:
       break;
 
     case vmode + halign:
-    case hmode + valign:
       init_align();
+      break;
+
+    case hmode + valign:
+      if (cur_chr > 0)
+      {
+        if (eTeX_enabled(TeXXeT_en, cur_cmd, cur_chr))
+          tail_append(new_math(0, cur_chr));
+      }
+      else
+        init_align();
       break;
 
     case mmode + halign:

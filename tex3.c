@@ -666,6 +666,28 @@ pointer the_toks (void)
   pointer p, q, r;
   pool_pointer b;
 
+  if odd(cur_chr)
+  {
+    c = cur_chr;
+    scan_general_text();
+
+    if (c == 1)
+      return cur_val;
+    else
+    {
+      old_setting = selector;
+      selector = new_string;
+      b = pool_ptr;
+      p = get_avail();
+      link(p) = link(temp_head);
+      token_show(p);
+      flush_list(p);
+      selector = old_setting;
+      return str_toks(b);
+    }
+  }
+
+
   get_x_token();
   scan_something_internal(tok_val, false);
 
@@ -775,6 +797,10 @@ void conv_toks (void)
       scan_font_ident();
       break;
 
+    case eTeX_revision_code:
+      do_nothing();
+      break;
+
     case job_name_code:
       if (job_name == 0)
         open_log_file();
@@ -841,6 +867,10 @@ void conv_toks (void)
         print_scaled(font_size[cur_val]);
         prints("pt");
       }
+      break;
+
+    case eTeX_revision_code:
+      prints(eTeX_revision);
       break;
 
     case job_name_code:
@@ -950,6 +980,13 @@ done:;
       {
         get_next();
 
+        if (cur_cmd >= call)
+          if (info(link(cur_chr)) == protected_token)
+          {
+            cur_cmd = relax;
+            cur_chr = no_expand_flag;
+          }
+
         if (cur_cmd <= max_command)
           goto done2;
 
@@ -1021,7 +1058,7 @@ found:
   return p;
 }
 /* sec 0482 */
-void read_toks (integer n, pointer r)
+void read_toks (integer n, pointer r, halfword j)
 {
   pointer p;
   pointer q;
@@ -1104,6 +1141,25 @@ void read_toks (integer n, pointer r)
       loc = start;
       state = new_line;
 
+      if (j == 1)
+      {
+        while (loc <= limit)
+        {
+          cur_chr = buffer[loc];
+          incr(loc);
+
+          if (cur_chr == ' ')
+            cur_tok = space_token;
+          else
+            cur_tok = cur_chr + other_token;
+
+          store_new_token(cur_tok);
+        }
+
+        goto done;
+      }
+
+
       while (true)
       {
         get_token();
@@ -1164,6 +1220,9 @@ void pass_text (void)
 
 done:
   scanner_status = save_scanner_status;
+
+  if (tracing_ifs > 0)
+    show_cur_cmd_chr();
 }
 /* sec 0497 */
 void change_if_limit (small_number l, pointer p)
@@ -1204,6 +1263,11 @@ void conditional (void)
   small_number save_scanner_status;
   pointer save_cond_ptr;
   small_number this_if;
+  boolean is_unless;
+
+  if (tracing_ifs > 0)
+    if (tracing_commands <= 1)
+      show_cur_cmd_chr();
 
   {
     p = get_node(if_node_size);
@@ -1218,7 +1282,8 @@ void conditional (void)
   }
 
   save_cond_ptr = cond_ptr;
-  this_if = cur_chr;
+  is_unless = (cur_chr >= unless_code);
+  this_if = cur_chr % unless_code;
 
   switch (this_if)
   {
@@ -1355,8 +1420,8 @@ void conditional (void)
     case if_ybox_code:
     case if_dbox_code:
       {
-        scan_eight_bit_int();
-        p = box(cur_val);
+        scan_register_num();
+        fetch_box(p);
 
         if (this_if == if_void_code)
           b = (p == 0);
@@ -1436,6 +1501,115 @@ void conditional (void)
       b = false;
       break;
 
+    case if_def_code:
+    {
+      save_scanner_status = scanner_status;
+      scanner_status = normal;
+      get_next();
+      b = (cur_cmd != undefined_cs);
+      scanner_status = save_scanner_status;
+    }
+      break;
+
+    case if_cs_code:
+    {
+      n = get_avail();
+      p = n;
+
+      do {
+        get_x_token();
+
+        if (cur_cs == 0)
+          store_new_token(cur_tok);
+      } while (!(cur_cs != 0));
+
+      if (cur_cmd != end_cs_name)
+      {
+        print_err("Missing ");
+        print_esc("endcsname");
+        print(" inserted");
+        help2("The control sequence marked <to be read again> should",
+          "not appear between \\csname and \\endcsname.");
+        back_error();
+      }
+
+      m = first;
+      p = link(n);
+
+      while (p != null)
+      {
+        if (m >= max_buf_stack)
+        {
+          max_buf_stack = m + 1;
+
+#ifdef ALLOCATEBUFFER
+          if (max_buf_stack == current_buf_size)
+            buffer = realloc_buffer(increment_buf_size);
+
+          if (max_buf_stack == current_buf_size)
+          {
+            overflow("buffer size", current_buf_size);
+            return;
+          }
+#else
+          if (max_buf_stack == buf_size)
+          {
+            overflow("buffer size", buf_size);
+            return;
+          }
+#endif
+        }
+
+        if (check_kanji(info(p)))
+        {
+          if (BYTE1(toBUFF(info(p) % max_cjk_val)) != 0)
+          {
+            buffer[m] = BYTE1(toBUFF(info(p) % max_cjk_val)); incr(m);
+          }
+          if (BYTE2(toBUFF(info(p) % max_cjk_val)) != 0)
+          {
+            buffer[m] = BYTE2(toBUFF(info(p) % max_cjk_val)); incr(m);
+          }
+          if (BYTE3(toBUFF(info(p) % max_cjk_val)) != 0)
+          {
+            buffer[m] = BYTE3(toBUFF(info(p) % max_cjk_val)); incr(m);
+          }
+          
+          buffer[m] = BYTE4(toBUFF(info(p) % max_cjk_val)); incr(m);
+          p = link(p);
+        }
+        else
+        {
+          buffer[m] = info(p) % max_char_val; incr(m); p = link(p);
+        }
+      }
+
+      if (m>first + 1)
+        cur_cs = id_lookup(first, m - first);
+      else if (m == first)
+        cur_cs = null_cs;
+      else
+        cur_cs = single_base + buffer[first];
+
+      flush_list(n);
+      b = (eq_type(cur_cs) != undefined_cs);
+    }
+      break;
+
+    case if_font_char_code:
+    {
+      scan_font_ident();
+      n = cur_val;
+      scan_char_num();
+
+      if ((font_bc[n] <= cur_val) && (font_ec[n] >= cur_val))
+        b = char_exists(char_info(n, cur_val));
+      else
+        b = false;
+    }
+      break;
+
+
     case if_case_code:
       {
         scan_int();
@@ -1461,6 +1635,9 @@ void conditional (void)
               goto common_ending;
           else if (cur_chr == fi_code)
           {
+            if (if_stack[in_open] == cond_ptr)
+              if_warning();
+
             p = cond_ptr;
             if_line = if_line_field(p);
             cur_if = subtype(p);
@@ -1475,6 +1652,9 @@ void conditional (void)
       }
       break;
   }
+
+  if (is_unless)
+    b = !b;
 
   if (tracing_commands > 1)
   {
@@ -1510,6 +1690,9 @@ void conditional (void)
     }
     else if (cur_chr == fi_code)
     {
+      if (if_stack[in_open] == cond_ptr)
+        if_warning();
+
       p = cond_ptr;
       if_line = if_line_field(p);
       cur_if = subtype(p);
@@ -1522,6 +1705,9 @@ void conditional (void)
 common_ending:
   if (cur_chr == fi_code)
   {
+    if (if_stack[in_open] == cond_ptr)
+      if_warning();
+
     p = cond_ptr;
     if_line = if_line_field(p);
     cur_if = subtype(p);
@@ -1542,12 +1728,12 @@ void begin_name (void)
 /* sec 0516 */
 boolean more_name (ASCII_code c)
 {
-  if (quoted_file_name == false && c == ' ')
+  if (!quoted_file_name && c == ' ')
     return false;
-  else if (quoted_file_name != false && c == '"')
+  else if (quoted_file_name && c == '"')
   {
-    quoted_file_name = false; /* catch next space character */
-    return true;     /* accept ending quote, but throw away */
+    quoted_file_name = false; // catch next space character 
+    return true;     // accept ending quote, but throw away
   }
   else
   {   
@@ -1587,8 +1773,8 @@ void end_name (void)
   }
 #endif
 
-  if (area_delimiter == 0) // no area delimiter ':' '/' or '\' found
-    cur_area = 335;        // "" default area 
+  if (area_delimiter == 0)
+    cur_area = 335;
   else
   {
     cur_area = str_ptr;
@@ -1596,9 +1782,9 @@ void end_name (void)
     incr(str_ptr);
   }
 
-  if (ext_delimiter == 0) // no extension delimiter '.' found
+  if (ext_delimiter == 0)
   {
-    cur_ext = 335;        // "" default extension 
+    cur_ext = 335;
     cur_name = make_string();
   } 
   else
@@ -1636,15 +1822,6 @@ void pack_file_name (str_number n, str_number a, str_number e)
     name_of_file[k] = ' ';
 
   name_of_file[file_name_size] = '\0';
-
-  {
-    name_of_file [name_length + 1] = '\0';
-
-    if (trace_flag)
-      printf(" pack_file_name -> `%s' (%lld) ", name_of_file + 1, name_length);
-
-    name_of_file [name_length + 1] = ' ';
-  }
 }
 /* sec 0523 */
 void pack_buffered_name_(small_number n, integer a, integer b)
@@ -1774,7 +1951,6 @@ done:
   name_in_progress = false;
   skip_mode = true;
 }
-/* argument is string .fmt, .log, .pdf, or .dvi */
 /* sec 0529 */
 void pack_job_name_(str_number s)
 {
@@ -1803,7 +1979,7 @@ void prompt_file_name_(const char * s, str_number e)
     show_context();
 
   print_nl("Please type another ");
-  prints(s); 
+  prints(s);
 
   if (interaction < scroll_mode)
   {
@@ -1825,7 +2001,7 @@ void prompt_file_name_(const char * s, str_number e)
 
     quoted_file_name = false;
 
-    if (allow_quoted_names && k < last) /* check whether quoted name */
+    if (allow_quoted_names && k < last)
     {
       if (buffer[k]== '"')
       {
@@ -1874,7 +2050,6 @@ void open_log_file (void)
 
   if (job_name == 0)
     job_name = get_job_name(790);
-    //job_name = 790;
 
   pack_job_name(".log");
 
@@ -1905,7 +2080,7 @@ void open_log_file (void)
     months = " JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
 
     for (k = 3 * month - 2; k <= 3 * month; k++)
-      putc(months[k], log_file);
+      wlog(months[k]);
 
     print_char(' ');
 
@@ -1918,6 +2093,12 @@ void open_log_file (void)
     print_two(tex_time / 60);
     print_char(':');
     print_two(tex_time % 60);
+
+    if (eTeX_ex)
+    {
+      wlog_cr();
+      fputs("entering extended mode", log_file);
+    }
   }
 
   input_stack[input_ptr] = cur_input;
@@ -1967,7 +2148,6 @@ done:
   if (job_name == 0)
   {
     job_name = get_job_name(cur_name);
-    //job_name = cur_name;
     open_log_file();
   }
 

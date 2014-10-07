@@ -20,7 +20,7 @@
 */
 
 /*
-  meaning      structure                      TeX                 Y&Y TeX
+  meaning      structure                      TeX                 pTeX-ng
                ----------------------------------------------------------------------
   integer      |            int            || 4: long           | 8: long long      | min_quarterword 0
                ---------------------------------------------------------------------- max_quarterword FFFF
@@ -35,6 +35,7 @@
   quarter      |  b0  |  b1  |  b2  |  b3  || 1: unsigned char  | 2: unsigned short |
                ----------------------------------------------------------------------
 */
+
 #ifndef _YANDYTEX_MEMORY_H
 #define _YANDYTEX_MEMORY_H
 

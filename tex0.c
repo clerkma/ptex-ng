@@ -1297,7 +1297,8 @@ void show_token_list_(integer p, integer q, integer l)
           break;
         
         case end_match:
-          prints("->");
+          if (c == 0)
+            prints("->");
           break;
         
         default:
@@ -1980,7 +1981,10 @@ void short_display_(integer p)
         break;
 
       case math_node:
-        print_char('$');
+        if (subtype(p) >= L_code)
+          prints("[]");
+        else
+          print_char('$');
         break;
 
       case ligature_node:
@@ -2414,10 +2418,13 @@ void show_node_list_(integer p)
               print_scaled(shift_amount(p));
             }
 
+            if (eTeX_ex)
+              if ((type(p) == hlist_node) && (box_lr(p) == dlist))
+                prints(", display");
+
             if (box_dir(p) != dir_default)
             {
-              prints(", ");
-              print_direction(box_dir(p));
+              print_direction_alt(box_dir(p));
             }
           }
 
@@ -2572,6 +2579,21 @@ void show_node_list_(integer p)
         break;
 
       case math_node:
+        if (subtype(p) > after)
+        {
+          if (end_LR(p))
+            print_esc("end");
+          else
+            print_esc("begin");
+          
+          if (subtype(p) > R_code)
+            print_char('R');
+          else if (subtype(p) > L_code)
+            print_char('L');
+          else
+            print_char('M');
+        }
+        else
         {
           print_esc("math");
 
@@ -2638,6 +2660,13 @@ void show_node_list_(integer p)
       case mark_node:
         {
           print_esc("mark");
+
+          if (mark_class(p) != 0)
+          {
+            print_char('s');
+            print_int(mark_class(p));
+          }
+
           print_mark(mark_ptr(p));
         }
         break;
@@ -2756,20 +2785,26 @@ void show_node_list_(integer p)
 
             case right_noad:
               {
-                print_esc("right");
+                if (subtype(p) == normal)
+                  print_esc("right");
+                else
+                  print_esc("middle");
+
                 print_delimiter(delimiter(p));
               }
               break;
           }
 
-          if (subtype(p) != normal)
-            if (subtype(p) == limits)
-              print_esc("limits");
-            else
-              print_esc("nolimits");
-
           if (type(p) < left_noad)
+          {
+            if (subtype(p) != normal)
+              if (subtype(p) == limits)
+                print_esc("limits");
+              else
+                print_esc("nolimits");
+
             print_subsidiary_data(nucleus(p), '.');
+          }
 
           print_subsidiary_data(supscr(p), '^');
           print_subsidiary_data(subscr(p), '_');

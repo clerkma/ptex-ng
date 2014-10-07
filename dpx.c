@@ -195,6 +195,19 @@ void pdf_ship_out (pointer p)
   incr(total_pages);
   cur_s = -1;
 
+  if (eTeX_ex)
+  {
+    if (LR_problems > 0)
+    {
+      report_LR_problems();
+      print_char(')');
+      print_ln();
+    }
+
+    if ((LR_ptr != null) || (cur_dir != left_to_right))
+      confusion("LR3");
+  }
+
 done:
   if (tracing_output <= 0)
     print_char(']');
@@ -283,8 +296,6 @@ void pdf_out_char (internal_font_number f, ASCII_code c)
       break;
   }
 
-  //else
-  //pdf_dev_set_string(-cur_v, -cur_h, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
   pdf_dev_set_rect(&rect, cur_h, -cur_v, char_width(f, char_info(f, c)),
       char_height(f, height_depth(char_info(f, c))),
       char_depth(f, height_depth(char_info(f, c))));
@@ -431,6 +442,7 @@ void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
     cbuf[1] = UTF32toUTF16HS(k)        & 0xff;
     cbuf[2] = (UTF32toUTF16LS(k) >> 8) & 0xff;
     cbuf[3] = UTF32toUTF16LS(k)        & 0xff;
+
     if (font_id[f] >= 0)
     {
       switch (cur_dir_hv)
@@ -496,6 +508,7 @@ void hlist_out (void)
   scaled lx;
   boolean outer_doing_leaders;
   scaled edge;
+  pointer prev_p;
   real glue_temp;
   real cur_glue;
   scaled cur_g;
@@ -515,8 +528,32 @@ void hlist_out (void)
   save_loc = dvi_offset + dvi_ptr;
   pdf_synch_dir();
   base_line = cur_v;
-  left_edge = cur_h;
   disp = 0;
+  revdisp = 0;
+  prev_p = this_box + list_offset;
+
+  if (eTeX_ex)
+  {
+    initialize_the_LR_stack();
+  
+    if (box_lr(this_box) == dlist)
+      if (cur_dir == right_to_left)
+      {
+        cur_dir = left_to_right;
+        cur_h = cur_h - width(this_box);
+      }
+      else
+        set_box_lr(this_box, 0);
+      
+      if ((cur_dir == right_to_left) && (box_lr(this_box) != reversed))
+      {
+        save_h = cur_h; temp_ptr = p; p = new_kern(0); link(prev_p) = p;
+        cur_h = 0; link(p) = reverse(this_box, null, cur_g, cur_glue); width(p) = -cur_h;
+        cur_h = save_h; set_box_lr(this_box, reversed);
+      }
+  }
+
+  left_edge = cur_h;
 
   while (p != 0)
 reswitch:
@@ -580,6 +617,7 @@ reswitch:
       }
 
       dvi_h = cur_h;
+      prev_p = link(prev_p);
       p = link(p);
     } while (!(!is_char_node(p)));
 
@@ -601,7 +639,10 @@ reswitch:
           save_dir = dvi_dir;
           cur_v = base_line + disp + shift_amount(p);
           temp_ptr = p;
-          edge = cur_h;
+          edge = cur_h + width(p);
+
+          if (cur_dir == right_to_left)
+            cur_h = edge;
 
           switch (type(p))
           {
@@ -619,7 +660,7 @@ reswitch:
           dvi_h = save_h;
           dvi_v = save_v;
           dvi_dir = save_dir;
-          cur_h = edge + width(p);
+          cur_h = edge;
           cur_v = base_line + disp;
           cur_dir_hv = save_dir;
         }
@@ -640,34 +681,16 @@ reswitch:
 
       case disp_node:
         disp = disp_dimen(p);
+        revdisp = disp;
         cur_v = base_line + disp;
         break;
 
       case glue_node:
         {
-          g = glue_ptr(p);
-          rule_wd = width(g) - cur_g;
+          round_glue();
 
-          if (g_sign != normal)
-          {
-            if (g_sign == stretching)
-            {
-              if (stretch_order(g) == g_order)
-              {
-                cur_glue = cur_glue + stretch(g);
-                vet_glue(glue_set(this_box) * cur_glue);
-                cur_g = round(glue_temp);
-              }
-            }
-            else if (shrink_order(g) == g_order)
-            {
-              cur_glue = cur_glue - shrink(g);
-              vet_glue(glue_set(this_box) * cur_glue);
-              cur_g = round(glue_temp);
-            }
-          }
-
-          rule_wd = rule_wd + cur_g;
+          if (eTeX_ex)
+            handle_a_glue_node();
 
           if (subtype(p) >= a_leaders)
           {
@@ -685,6 +708,10 @@ reswitch:
             if ((leader_wd > 0) && (rule_wd > 0))
             {
               rule_wd = rule_wd + 10;
+
+              if (cur_dir == right_to_left)
+                cur_h = cur_h - 10;
+
               edge = cur_h + rule_wd;
               lx = 0;
 
@@ -719,6 +746,10 @@ reswitch:
                 save_h = dvi_h;
                 save_dir = dvi_dir;
                 temp_ptr = leader_box;
+
+                if (cur_dir == right_to_left)
+                  cur_h = cur_h + leader_wd;
+
                 outer_doing_leaders = doing_leaders;
                 doing_leaders = true;
 
@@ -744,7 +775,11 @@ reswitch:
                 cur_dir_hv = save_dir;
               }
 
-              cur_h = edge - 10;
+              if (cur_dir == right_to_left)
+                cur_h = edge;
+              else
+                cur_h = edge - 10;
+
               goto next_p;
             }
           }
@@ -754,8 +789,48 @@ reswitch:
         break;
 
       case kern_node:
-      case math_node:
         cur_h = cur_h + width(p);
+        break;
+
+      case math_node:
+        {
+          if (eTeX_ex)
+          {
+            if (end_LR(p))
+              if (info(LR_ptr) == end_LR_type(p))
+                pop_LR();
+              else
+              {
+                if (subtype(p)>L_code)
+                  incr(LR_problems);
+              }
+            else
+            {
+              push_LR(p);
+
+              if (LR_dir(p) != cur_dir)
+              {
+                save_h = cur_h;
+                temp_ptr = link(p);
+                rule_wd = width(p);
+                free_node(p, small_node_size);
+                cur_dir = reflected;
+                p = new_edge(cur_dir, rule_wd);
+                link(prev_p) = p;
+                cur_h = cur_h - left_edge + rule_wd;
+                link(p) = reverse(this_box, new_edge(reflected, 0), cur_g, cur_glue);
+                edge_dist(p) = cur_h;
+                cur_dir = reflected;
+                cur_h = save_h;
+                goto reswitch;
+              }
+            }
+
+            type(p) = kern_node;
+          }
+
+          cur_h = cur_h + width(p);
+        }
         break;
 
       case ligature_node:
@@ -767,7 +842,15 @@ reswitch:
         }
         break;
 
+      case edge_node:
+        {
+          cur_h = cur_h + width(p);
+          left_edge = cur_h + edge_dist(p);
+          cur_dir = subtype(p);
+        }
+
       default:
+        do_nothing();
         break;
     }
 
@@ -796,7 +879,26 @@ move_past:
     cur_h = cur_h + rule_wd;
 
 next_p:
+    prev_p = p;
     p = link(p);
+  }
+
+  if (eTeX_ex)
+  {
+    {
+      while (info(LR_ptr) != before)
+      {
+        if (info(LR_ptr) > L_code)
+          LR_problems = LR_problems + 10000;
+
+        pop_LR();
+      }
+
+      pop_LR();
+    }
+
+    if (box_lr(this_box) == dlist)
+      cur_dir = right_to_left;
   }
 
   prune_movements(save_loc);
@@ -865,7 +967,12 @@ void vlist_out (void)
             save_h = dvi_h;
             save_v = dvi_v;
             save_dir = dvi_dir;
-            cur_h = left_edge + shift_amount(p);
+
+            if (cur_dir == right_to_left)
+              cur_h = left_edge - shift_amount(p);
+            else
+              cur_h = left_edge + shift_amount(p);
+
             temp_ptr = p;
 
             switch (type(p))
@@ -972,7 +1079,11 @@ void vlist_out (void)
 
                 while (cur_v + leader_ht <= edge)
                 {
-                  cur_h = left_edge + shift_amount(leader_box);
+                  if (cur_dir == right_to_left)
+                    cur_h = left_edge - shift_amount(leader_box);
+                  else
+                    cur_h = left_edge + shift_amount(leader_box);
+
                   pdf_synch_h();
                   save_h = dvi_h;
                   cur_v = cur_v + height(leader_box);
@@ -1033,9 +1144,13 @@ fin_rule:
 
       if ((rule_ht > 0) && (rule_wd > 0))
       {
+        if (cur_dir == right_to_left)
+          cur_h = cur_h - rule_wd;
+
         pdf_synch_h();
         pdf_synch_v();
         pdf_output_rule(rule_wd, rule_ht);
+        cur_h = left_edge;
       }
 
       goto next_p;

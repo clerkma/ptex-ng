@@ -45,6 +45,11 @@ continu:
       last_penalty = 0;
       last_kern = 0;
 
+      if (type(p) < dir_node) last_node_type = type(p) + 1;
+      else if (type(p) == dir_node) last_node_type = type(list_ptr(p)) + 1;
+      else if (type(p) < disp_node) last_node_type = type(p);
+      else last_node_type = type(p) - 1;
+
       if (type(p) == glue_node)
       {
         last_glue = glue_ptr(p);
@@ -401,7 +406,17 @@ contribute:
 done1:
       link(contrib_head) = link(p);
       link(p) = 0;
-      flush_node_list(p);
+
+      if (saving_vdiscards > 0)
+      {
+        if (page_disc == null)
+          page_disc = p;
+        else
+          link(tail_page_disc) = p;
+
+        tail_page_disc = p;
+      }
+      else flush_node_list(p);
 done:;
     }
   while (!(link(contrib_head) == 0));
@@ -689,11 +704,15 @@ void normal_paragraph (void)
 
   if (par_shape_ptr != 0)
     eq_define(par_shape_loc, shape_ref, 0);
+
+  if (inter_line_penalties_ptr != 0)
+    eq_define(inter_line_penalties_loc, shape_ref, null);
 }
 /* sec 1075 */
 void box_end (integer box_context)
 {
   pointer p;
+  small_number a;
   pointer q;
 
   if (box_context < box_flag)
@@ -765,10 +784,23 @@ void box_end (integer box_context)
     }
   }
   else if (box_context < ship_out_flag)
-    if (box_context < (box_flag + 256))
-      eq_define((box_base - box_flag) + box_context, box_ref, cur_box);
+  {
+    if (box_context < global_box_flag)
+    {
+      cur_val = box_context - box_flag;
+      a = 0;
+    }
     else
-      geq_define((box_base - box_flag - 256) + box_context, box_ref, cur_box);
+    {
+      cur_val = box_context - global_box_flag;
+      a = 4;
+    }
+
+    if (cur_val < 256)
+      define(box_base + cur_val, box_ref, cur_box);
+    else
+      sa_def_box();
+  }
   else if (cur_box != 0)
     if (box_context > ship_out_flag)
     {
@@ -834,28 +866,33 @@ void begin_box (integer box_context)
 {
   pointer p, q;
   pointer r;
-  boolean fd;
+  pointer s;
+  pointer t;
+  integer fm;
+  integer gm;
+  boolean fd, gd;
   scaled disp, pdisp;
   eight_bits a_dir;
   pointer tx;
   quarterword m;
   halfword k;
-  eight_bits n;
+  halfword n;
 
   switch (cur_chr)
   {
     case box_code:
       {
-        scan_eight_bit_int();
-        cur_box = box(cur_val);
-        box(cur_val) = 0;
+        scan_register_num();
+        fetch_box(cur_box);
+        change_box(null);
       }
       break;
 
     case copy_code:
       {
-        scan_eight_bit_int();
-        cur_box = copy_node_list(box(cur_val));
+        scan_register_num();
+        fetch_box(q);
+        cur_box = copy_node_list(q);
       }
       break;
 
@@ -906,7 +943,7 @@ done:;
 
     case vsplit_code:
       {
-        scan_eight_bit_int();
+        scan_register_num();
         n = cur_val;
 
         if (!scan_keyword("to"))
@@ -932,7 +969,7 @@ done:;
           if ((box_context < box_flag) && (abs(mode) == vmode))
           {
             a_dir = abs(direction);
-            scan_spec(adjust_hbox_group, true);
+            scan_spec(adjusted_hbox_group, true);
           }
           else
             scan_spec(hbox_group, true);
@@ -1100,7 +1137,13 @@ void end_graf (void)
     else
     {
       adjust_hlist(head, true);
-      line_break(widow_penalty);
+      line_break(false);
+    }
+
+    if (LR_save != null)
+    {
+      flush_list(LR_save);
+      LR_save = null;
     }
 
     normal_paragraph();
@@ -1141,9 +1184,19 @@ void begin_insert_or_adjust (void)
 void make_mark (void)
 {
   pointer p;
+  halfword c;
+
+  if (cur_chr == 0)
+    c = 0;
+  else
+  {
+    scan_register_num();
+    c = cur_val;
+  }
 
   p = scan_toks(false, true);
   p = get_node(small_node_size);
+  mark_class(p) = c;
   type(p) = mark_node;
   subtype(p) = 0;
   mark_ptr(p) = def_ref;
@@ -1171,7 +1224,11 @@ void delete_last (void)
 {
   pointer p, q;
   pointer r;
-  boolean fd;
+  pointer s;
+  pointer t;
+  integer fm;
+  integer gm;
+  boolean fd, gd;
   scaled disp, pdisp;
   pointer tx;
   quarterword m;
@@ -1210,9 +1267,16 @@ void unpackage (void)
   char c;
   scaled disp;
 
+  if (cur_chr > copy_code)
+  {
+    link(tail) = disc_ptr[cur_chr];
+    disc_ptr[cur_chr] = null;
+    goto done;
+  }
+
   c = cur_chr;
-  scan_eight_bit_int();
-  p = box(cur_val);
+  scan_register_num();
+  fetch_box(p);
 
   if (p == 0)
     return;
@@ -1251,21 +1315,22 @@ void unpackage (void)
     link(tail) = copy_node_list(list_ptr(p));
   else
   {
-    if (type(box(cur_val)) == dir_node)
+    if (type(p) == dir_node)
     {
-      delete_glue_ref(space_ptr(box(cur_val)));
-      delete_glue_ref(xspace_ptr(box(cur_val)));
-      free_node(box(cur_val), box_node_size);
+      delete_glue_ref(space_ptr(p));
+      delete_glue_ref(xspace_ptr(p));
+      free_node(p, box_node_size);
     }
 
     flush_node_list(link(p));
     link(tail) = list_ptr(p);
-    box(cur_val) = 0;
+    change_box(null);
     delete_glue_ref(space_ptr(p));
     delete_glue_ref(xspace_ptr(p));
     free_node(p, box_node_size);
   }
 
+done:
   while (link(tail) != 0)
   {
     p = tail;
@@ -1773,6 +1838,8 @@ void push_math (group_code c)
 void init_math (void)
 {
   scaled w;
+  pointer j;
+  integer x;
   scaled l;
   scaled s;
   pointer p;
@@ -1786,18 +1853,54 @@ void init_math (void)
 
   if ((cur_cmd == math_shift) && (mode > 0))
   {
+    j = null;
+    w = -max_dimen;
+
     if (head == tail)
     {
       pop_nest();
-      w = -max_dimen;
+      set_value_of_x();
     }
     else
     {
       adjust_hlist(head, true);
-      line_break(display_widow_penalty);
-      v = shift_amount(just_box) + 2 * quad(cur_font);
-      w = -max_dimen;
-      p = list_ptr(just_box);
+      line_break(true);
+
+      if (eTeX_ex)
+      {
+        if (right_skip == zero_glue) j = new_kern(0);
+        else j = new_param_glue(right_skip_code);
+
+        if (left_skip == zero_glue) p = new_kern(0);
+        else p = new_param_glue(left_skip_code);
+
+        link(p) = j; j = new_null_box(); width(j) = width(just_box);
+        shift_amount(j) = shift_amount(just_box); list_ptr(j) = p;
+        glue_order(j) = glue_order(just_box); glue_sign(j) = glue_sign(just_box);
+        glue_set(j) = glue_set(just_box);
+      }
+
+      v = shift_amount(just_box);
+      set_value_of_x();
+
+      if (x >= 0)
+      {
+        p = list_ptr(just_box);
+        link(temp_head) = null;
+      }
+      else
+      {
+        v = -v - width(just_box);
+        p = new_math(0, begin_L_code);
+        link(temp_head) = p;
+        just_copy(list_ptr(just_box), p, new_math(0, end_L_code));
+        cur_dir = right_to_left;
+      }
+
+      v = v + 2 * quad(cur_font);
+
+      if (TeXXeT_en)
+        initialize_the_LR_stack();
 
       while (p != 0)
       {
@@ -1835,8 +1938,47 @@ reswitch:
             break;
 
           case kern_node:
-          case math_node:
             d = width(p);
+            break;
+
+          case math_node:
+            {
+              d = width(p);
+
+              if (TeXXeT_en)
+                if (end_LR(p))
+                {
+                  if (info(LR_ptr) == end_LR_type(p))
+                    pop_LR();
+                  else if (subtype(p)>L_code)
+                  {
+                    w = max_dimen;
+                    goto done;
+                  }
+                }
+                else
+                {
+                  push_LR(p);
+
+                  if (LR_dir(p) != cur_dir)
+                  {
+                    just_reverse(p);
+                    p = temp_head;
+                  }
+                }
+              else if (subtype(p) >= L_code)
+              {
+                w = max_dimen;
+                goto done;
+              }
+            }
+            break;
+
+          case edge_node:
+            {
+              d = width(p);
+              cur_dir = subtype(p);
+            }
             break;
 
           case glue_node:
@@ -1889,7 +2031,21 @@ found:
 not_found:
         p = link(p);
       }
-done:;
+done:
+      if (TeXXeT_en)
+      {
+        while (LR_ptr != null)
+          pop_LR();
+
+        if (LR_problems != 0)
+        {
+          w = max_dimen;
+          LR_problems = 0;
+        }
+      }
+
+      cur_dir = left_to_right;
+      flush_node_list(link(temp_head));
     }
 
     if (par_shape_ptr == 0)
@@ -1925,6 +2081,8 @@ done:;
     mode = mmode;
     eq_word_define(int_base + cur_fam_code, -1);
     eq_word_define(dimen_base + pre_display_size_code, w);
+    LR_box = j;
+    if (eTeX_ex) eq_word_define(int_base + pre_display_direction_code, x);
     eq_word_define(dimen_base + display_width_code, l);
     eq_word_define(dimen_base + display_indent_code, s);
 
@@ -2270,14 +2428,14 @@ pointer fin_mlist (pointer p)
     {
       q = info(numerator(incompleat_noad));
 
-      if (type(q) != left_noad)
+      if ((type(q) != left_noad) || (delim_ptr == null))
       {
         confusion("right");
         return 0;
       }
 
-      info(numerator(incompleat_noad)) = link(q);
-      link(q) = incompleat_noad;
+      info(numerator(incompleat_noad)) = link(delim_ptr);
+      link(delim_ptr) = incompleat_noad;
       link(incompleat_noad) = p;
     }
   }

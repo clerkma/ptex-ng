@@ -1,7 +1,7 @@
 #ifndef _PTEX_H
 #define _PTEX_H
 
-#define ALLOCATEINI        /* allocate iniTeX (550 k) trie_c, trie_o, trie_l, trie_r, trie_hash, trie_taken */
+#define ALLOCATEINI
 #define ALLOCATEMAIN       /* allocate main memory for TeX (2 Meg) */
 #define ALLOCATEFONT       /* allocate font_info (800 k) (dynamically now) */
 #define ALLOCATETRIES      /* allocate hyphenation trie stuff (270 k) trie_trl, trie_tro, trie_trc */
@@ -158,6 +158,7 @@ typedef struct
   int dir_field, adj_dir_field;
   scaled pdisp_field;
   pointer head_field, tail_field, pnode_field, last_jchr_field;
+  pointer eTeX_aux_field;
   integer pg_field, ml_field;
   memory_word aux_field;
 } list_state_record;
@@ -223,7 +224,7 @@ EXTERN int error_count;
 EXTERN char * help_line[6];
 EXTERN int help_ptr;
 EXTERN boolean use_err_help;
-EXTERN volatile integer interrupt;
+EXTERN integer interrupt;
 EXTERN boolean OK_to_interrupt;
 EXTERN boolean arith_error;
 EXTERN scaled tex_remainder;
@@ -450,6 +451,8 @@ EXTERN four_quarters font_check[font_max + 1];
 EXTERN eight_bits font_dir[font_max + 1];
 EXTERN integer font_num_ext[font_max + 1];
 EXTERN integer font_id[font_max + 1];
+EXTERN str_number font_cmap[font_max + 1];
+EXTERN str_number font_psname[font_max + 1];
 EXTERN scaled font_size[font_max + 1];
 EXTERN scaled font_dsize[font_max + 1];
 EXTERN font_index font_params[font_max + 1];
@@ -644,51 +647,6 @@ EXTERN trie_op_code max_op_used;
 EXTERN scaled best_height_plus_depth;
 EXTERN pointer page_tail;
 EXTERN int page_contents;
-
-#if (half_error_line < 30) || (half_error_line > error_line - 15)
-  #error ERROR: (half_error_line < 30) || (half_error_line > error_line - 15) BAD 1
-#endif
-
-#if (max_print_line < 60)
-  #error ERROR: (max_print_line < 60) BAD 2
-#endif
-
-#if (hash_prime > hash_size)
-  #error ERROR: (hash_prime > hash_size) BAD 5
-#endif
-
-#if (max_in_open > 127)
-  #error ERROR: (max_in_open > 127) BAD 6
-#endif
-
-#if (min_quarterword > 0) || (max_quarterword < 127)
-  #error ERROR: (min_quarterword > 0) || (max_quarterword < 127) BAD 11
-#endif
-
-#if (min_halfword > 0) || (max_halfword < 32767)
-  #error ERROR:  (min_halfword > 0) || (max_halfword < 32767) BAD 12
-#endif
-
-#if (min_quarterword < min_halfword) || (max_quarterword > max_halfword)
-  #error ERROR: (min_quarterword < min_halfword) || (max_quarterword > max_halfword) BAD 13
-#endif
-
-#if (font_max > max_quarterword)
-  #error ERROR: (font_max > max_quarterword) BAD 15
-#endif
-
-#if (save_size > max_halfword)
-  #error ERROR: (save_size > max_halfword) BAD 17
-#endif
-
-#if (buf_size > max_halfword)
-  #error ERROR:  (buf_size > max_halfword) BAD 18
-#endif
-
-#if (max_quarterword - min_quarterword) < 255
-  #error (max_quarterword - min_quarterword) < 255 BAD 19
-#endif
-
 EXTERN scaled page_max_depth;
 EXTERN pointer best_page_break;
 EXTERN integer least_page_cost;
@@ -697,6 +655,7 @@ EXTERN scaled page_so_far[8];
 EXTERN pointer last_glue;
 EXTERN integer last_penalty;
 EXTERN scaled last_kern;
+EXTERN integer last_node_type;
 EXTERN integer insert_penalties;
 EXTERN boolean output_active;
 /* sec 1032 */
@@ -734,6 +693,32 @@ EXTERN boolean find_first_char;
 EXTERN pool_pointer edit_name_start;
 EXTERN integer edit_name_length, edit_line;
 EXTERN int fbyte;
+//eTeX
+EXTERN boolean eTeX_mode;
+EXTERN boolean eof_seen[max_in_open + 1];
+EXTERN pointer LR_ptr;
+EXTERN scaled revdisp;
+EXTERN integer LR_problems;
+EXTERN small_number cur_dir;
+EXTERN pointer pseudo_files;
+EXTERN pointer grp_stack[max_in_open + 1];
+EXTERN pointer if_stack[max_in_open + 1];
+EXTERN halfword max_reg_num;
+EXTERN const char * max_reg_help_line;
+EXTERN pointer sa_root[7];
+EXTERN pointer cur_ptr;
+EXTERN memory_word sa_null;
+EXTERN pointer sa_chain;
+EXTERN quarterword sa_level;
+EXTERN pointer last_line_fill;
+EXTERN boolean do_last_line_fit;
+EXTERN small_number active_node_size;
+EXTERN scaled fill_width[3];
+EXTERN scaled best_pl_short[4];
+EXTERN scaled best_pl_glue[4];
+EXTERN trie_pointer hyph_start;
+EXTERN trie_pointer hyph_index;
+EXTERN pointer disc_ptr[4];
 /* new variables defined in local.c */
 EXTERN boolean is_initex;
 EXTERN boolean verbose_flag;
@@ -741,8 +726,6 @@ EXTERN boolean trace_flag;
 EXTERN boolean open_trace_flag;
 EXTERN boolean knuth_flag;
 EXTERN boolean c_style_flag;
-EXTERN boolean non_ascii;
-EXTERN boolean key_replace;
 EXTERN boolean deslash;
 EXTERN boolean trimeof;
 EXTERN boolean allow_patterns;

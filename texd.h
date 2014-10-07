@@ -62,11 +62,6 @@
 #include <kpathsea/absolute.h>
 #include <ptexenc/ptexenc.h>
 #include <ptexenc/unicode.h>
-#ifdef _WIN32
-  #include <kpathsea/win32lib.h>
-  #include <kpathsea/concatn.h>
-  #include <kpathsea/knj.h>
-#endif
 #include "zlib.h"
 // typedefs
 typedef long long integer;
@@ -78,7 +73,6 @@ typedef FILE * word_file;
 typedef unsigned char  ASCII_code;
 typedef int32_t        KANJI_code;
 typedef unsigned char  eight_bits;
-typedef unsigned short sixteen_bits;
 typedef integer pool_pointer;
 typedef integer str_number;
 typedef unsigned char packed_ASCII_code;
@@ -92,12 +86,13 @@ typedef unsigned char small_number;
 
 //#define abs(x)   ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
 //#define fabs(x)  ((x) >= 0.0 ? (x) : -(x))
-#define chr(x)   (x)
-#define odd(x)   ((x) % 2)
-#define round(x) web2c_round((double) (x))
-#define decr(x)  --(x)
-#define incr(x)  ++(x)
-#define toint(x) ((integer) (x))
+#define chr(x)    (x)
+#define odd(x)    ((x) % 2)
+#define round(x)  web2c_round((double) (x))
+#define decr(x)   --(x)
+#define incr(x)   ++(x)
+#define negate(x) x = -x
+#define toint(x)  ((integer) (x))
 
 EXTERN integer web2c_round (double r);
 EXTERN boolean open_input  (FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
@@ -203,5 +198,13 @@ extern void init_default_kanji(const_string file_str, const_string internal_str)
 #define init_kanji() init_default_kanji("utf8", "uptex")
 #define nrestmultichr(x)  ( (x)!=0 ? ((x) / 8) + 2 - ((x) % 8) : -1 )
 #define max_cjk_val 0x1000000
+
+// eTeX's macros and functions
+#define eTeX_version        2
+#define eTeX_revision       ".6"
+#define eTeX_version_string "-2.6"
+#define TeXXeT_code         0
+#define eTeX_states         1
+#define eTeX_ex             (eTeX_mode == true)
 
 #endif

@@ -149,16 +149,16 @@ void check_full_save_stack(void)
     max_save_stack = save_ptr;
 
 #ifdef ALLOCATESAVESTACK
-    if (max_save_stack > current_save_size - 6)
+    if (max_save_stack > current_save_size - 7)
       save_stack = realloc_save_stack(increment_save_size);
 
-    if (max_save_stack > current_save_size - 6)
+    if (max_save_stack > current_save_size - 7)
     {
       overflow("save size", current_save_size);
       return;
     }
 #else
-    if (max_save_stack > save_size - 6)
+    if (max_save_stack > save_size - 7)
     {
       overflow("save size", save_size);
       return;
@@ -273,5 +273,14 @@ void print_plus (int i, const char * s)
     prints(" plus ");
     print_scaled(page_so_far[i]);
     prints(s);
+  }
+}
+// eTeX
+void print_if_line(integer val)
+{
+  if (val != 0)
+  {
+    prints(" entered on line ");
+    print_int(val);
   }
 }

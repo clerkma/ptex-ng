@@ -33,6 +33,11 @@ void restore_trace (pointer p, const char * s)
   print_char('}');
   end_diagnostic(false);
 }
+void assign_trace (pointer p, const char * s)
+{
+  if (tracing_assigns > 0)
+    restore_trace(p, s);
+}
 #endif
 /* sec 0281 */
 void unsave (void)
@@ -40,6 +45,9 @@ void unsave (void)
   pointer p;
   quarterword l;
   halfword t;
+  boolean a;
+
+  a = false;
 
   if (cur_level > level_one)
   {
@@ -58,8 +66,35 @@ void unsave (void)
       {
         t = cur_tok;
         cur_tok = p;
-        back_input();
+
+        if (a)
+        {
+          p = get_avail();
+          info(p) = cur_tok;
+          link(p) = loc;
+          loc = p;
+          start = p;
+
+          if (cur_tok < right_brace_limit)
+            if (cur_tok < left_brace_limit)
+              decr(align_state);
+            else
+              incr(align_state);
+        }
+        else
+        {
+          back_input();
+          a = eTeX_ex;
+        };
+
+
         cur_tok = t;
+      }
+      else if (save_type(save_ptr) == restore_sa)
+      {
+        sa_restore();
+        sa_chain = p;
+        sa_level = save_level(save_ptr);
       }
       else
       {
@@ -109,8 +144,19 @@ void unsave (void)
     }
 
 done:
+#ifdef STAT
+    if (tracing_groups > 0)
+      group_trace(true);
+#endif
+
+    if (grp_stack[in_open] == cur_boundary)
+      group_warning();
+
     cur_group = save_level(save_ptr);
     cur_boundary = save_index(save_ptr);
+
+    if (eTeX_ex)
+      decr(save_ptr);
   }
   else
   {
@@ -160,7 +206,7 @@ void print_meaning (void)
     print_ln();
     token_show(cur_chr);
   }
-  else if (cur_cmd == top_bot_mark)
+  else if ((cur_cmd == top_bot_mark) && (cur_chr < marks_code))
   {
     print_char(':');
     print_ln();
@@ -169,7 +215,11 @@ void print_meaning (void)
 }
 /* sec 0299 */
 void show_cur_cmd_chr (void)
-{ 
+{
+  integer n;
+  integer l;
+  pointer p;
+
   begin_diagnostic();
   print_nl("{");
 
@@ -181,6 +231,41 @@ void show_cur_cmd_chr (void)
   }
 
   print_cmd_chr(cur_cmd, cur_chr);
+
+  if (tracing_ifs > 0)
+    if (cur_cmd >= if_test)
+      if (cur_cmd <= fi_or_else)
+      {
+        prints(": ");
+
+        if (cur_cmd == fi_or_else)
+        {
+          print_cmd_chr(if_test, cur_if);
+          print_char(' ');
+          n = 0;
+          l = if_line;
+        }
+        else
+        {
+          n = 1;
+          l = line;
+        }
+
+        p = cond_ptr;
+
+        while (p != 0)
+        {
+          incr(n);
+          p = link(p);
+        }
+
+        prints("(level ");
+        print_int(n);
+        print_char(')');
+        print_if_line(l);
+      }
+
+
   print_char('}');
   end_diagnostic(false);
 }
@@ -209,7 +294,7 @@ void show_context (void)
     cur_input = input_stack[base_ptr];
 
     if ((state != token_list))
-      if ((name > 17) || (base_ptr == 0))
+      if ((name > 19) || (base_ptr == 0))
         bottom_line = true;
 
     if ((base_ptr == input_ptr) || bottom_line || (nn < error_context_lines))
@@ -255,7 +340,10 @@ void show_context (void)
             else
             {
               print_nl("l.");
-              print_int(line);
+              if (index == in_open)
+                print_int(line);
+              else
+                print_int(line_stack[index + 1]);
             }
           }
 
@@ -339,6 +427,10 @@ void show_context (void)
 
             case mark_text:
               print_nl("<mark> ");
+              break;
+
+            case every_eof_text:
+              print_nl("<everyeof> ");
               break;
 
             case write_text:
@@ -603,6 +695,9 @@ void begin_file_reading (void)
 
   push_input();
   index = in_open;
+  eof_seen[index] = false;
+  grp_stack[index] = cur_boundary;
+  if_stack[index] = cond_ptr;
   line_stack[index] = line;
   start = first;
   state = mid_line;
@@ -614,7 +709,9 @@ void end_file_reading (void)
   first = start;
   line = line_stack[index];
 
-  if (name > 17)
+  if ((name == 18) || (name == 19))
+    pseudo_close();
+  else if (name > 17)
     a_close(cur_file);
 
   pop_input();
@@ -807,6 +904,9 @@ void macro_call (void)
     token_show(ref_count);
     end_diagnostic(false);
   }
+
+  if (info(r) == protected_token)
+    r = link(r);
 
   if (info(r) != end_match_token)
   {
@@ -1105,6 +1205,7 @@ void expand (void)
   co_backup = cur_order;
   backup_backup = link(backup_head);
 
+reswitch:
   if (cur_cmd < call)
   {
     if (tracing_commands > 1)
@@ -1113,22 +1214,66 @@ void expand (void)
     switch (cur_cmd)
     {
       case top_bot_mark:
-        if (cur_mark[cur_chr] != 0)
-          begin_token_list(cur_mark[cur_chr], mark_text);
+        {
+          t = cur_chr % marks_code;
+
+          if (cur_chr >= marks_code)
+            scan_register_num();
+          else
+            cur_val = 0;
+
+          if (cur_val == 0)
+            cur_ptr = cur_mark[t];
+          else
+          {
+            find_sa_element(mark_val, cur_val, false);
+
+            if (cur_ptr != 0)
+              if (odd(t))
+                cur_ptr = link(cur_ptr + (t / 2) + 1);
+              else
+                cur_ptr = info(cur_ptr + (t / 2) + 1);
+          }
+
+          if (cur_ptr != 0)
+            begin_token_list(cur_ptr, mark_text);
+        }
         break;
 
       case expand_after:
-        get_token();
-        t = cur_tok;
-        get_token();
+        if (cur_chr == 0)
+        {
+          get_token();
+          t = cur_tok;
+          get_token();
 
-        if (cur_cmd > max_command)
-          expand();
-        else
+          if (cur_cmd > max_command)
+            expand();
+          else
+            back_input();
+
+          cur_tok = t;
           back_input();
+        }
+        else
+        {
+          get_token();
 
-        cur_tok = t;
-        back_input();
+          if ((cur_cmd == if_test) && (cur_chr != if_case_code))
+          {
+            cur_chr = cur_chr + unless_code;
+            goto reswitch;
+          }
+
+          print_err("You can't use `");
+          print_esc("unless");
+          print("' before `");
+          print_cmd_chr(cur_cmd, cur_chr);
+          print_char('\'');
+          help1("Continue, and I'll forget that it ever happened.");
+          back_error();
+        }
+
         break;
 
       case no_expand:
@@ -1252,6 +1397,10 @@ void expand (void)
         break;
 
       case fi_or_else:
+        if (tracing_ifs>0)
+          if (tracing_commands <= 1)
+            show_cur_cmd_chr();
+
         if (cur_chr > if_limit)
           if (if_limit == if_code)
             insert_relax();
@@ -1268,6 +1417,9 @@ void expand (void)
             pass_text();
 
           {
+            if (if_stack[in_open] == cond_ptr)
+              if_warning();
+
             p = cond_ptr;
             if_line = if_line_field(p);
             cur_if = subtype(p);
@@ -1279,8 +1431,10 @@ void expand (void)
         break;
 
       case input:
-        if (cur_chr > 0)
+        if (cur_chr == 1)
           force_eof = true;
+        else if (cur_chr == 2)
+          pseudo_start();
         else if (name_in_progress)
           insert_relax();
         else
@@ -1629,6 +1783,7 @@ void scan_something_internal (small_number level, boolean negative)
   halfword m;
   pointer tx;
   halfword qx;
+  four_quarters i;
   integer p;
   pointer q, r;
 
@@ -1702,10 +1857,29 @@ void scan_something_internal (small_number level, boolean negative)
       else if (cur_cmd <= assign_toks)
       {
         if (cur_cmd < assign_toks)
-        {
-          scan_eight_bit_int();
-          m = toks_base + cur_val;
-        }
+          if (m == mem_bot)
+          {
+            scan_register_num();
+
+            if (cur_val < 256)
+              cur_val = equiv(toks_base + cur_val);
+            else
+            {
+              find_sa_element(tok_val, cur_val, false);
+
+              if (cur_ptr == null)
+                cur_val = null;
+              else
+                cur_val = sa_ptr(cur_ptr);
+            }
+          }
+          else
+            cur_val = sa_ptr(m);
+        else
+          cur_val = equiv(m);
+
+        cur_val_level = tok_val;
+
 
         scanned_result(equiv(m), tok_val);
       }
@@ -1773,7 +1947,9 @@ void scan_something_internal (small_number level, boolean negative)
     case set_page_int:
       {
         if (m == 0)
-          cur_val = dead_cycles; 
+          cur_val = dead_cycles;
+        else if (m == 2)
+          cur_val = interaction;
         else
           cur_val = insert_penalties;
 
@@ -1797,8 +1973,22 @@ void scan_something_internal (small_number level, boolean negative)
 
     case set_shape:
       {
-        if (par_shape_ptr == 0)
-          cur_val = 0; 
+        if (m > par_shape_loc)
+        {
+          scan_int();
+
+          if ((equiv(m) == null) || (cur_val < 0))
+            cur_val = 0;
+          else
+          {
+            if (cur_val > penalty(equiv(m)))
+              cur_val = penalty(equiv(m));
+
+            cur_val = penalty(equiv(m) + cur_val);
+          }
+        }
+        else if (par_shape_ptr == 0)
+          cur_val = 0;
         else
           cur_val = info(par_shape_ptr);
 
@@ -1808,8 +1998,8 @@ void scan_something_internal (small_number level, boolean negative)
 
     case set_box_dimen:
       {
-        scan_eight_bit_int();
-        q = box(cur_val);
+        scan_register_num();
+        fetch_box(q);
 
         if (q == 0)
           cur_val = 0;
@@ -1868,38 +2058,263 @@ void scan_something_internal (small_number level, boolean negative)
 
     case tex_register:
       {
-        scan_eight_bit_int();
-
-        switch (m)
+        if ((m < mem_bot) || (m > lo_mem_stat_max))
         {
-          case int_val:
-            cur_val = count(cur_val);
-            break;
+          cur_val_level = sa_type(m);
 
-          case dimen_val:
-            cur_val = dimen(cur_val);
-            break;
-
-          case glue_val:
-            cur_val = skip(cur_val);
-            break;
-
-          case mu_val:
-            cur_val = mu_skip(cur_val);
-            break;
+          if (cur_val_level<glue_val)
+            cur_val = sa_int(m);
+          else
+            cur_val = sa_ptr(m);
         }
-        
-        cur_val_level = m;
+        else
+        {
+          scan_register_num();
+          cur_val_level = m - mem_bot;
+
+          if (cur_val > 255)
+          {
+            find_sa_element(cur_val_level, cur_val, false);
+
+            if (cur_ptr == null)
+              if (cur_val_level<glue_val)
+                cur_val = 0;
+              else
+                cur_val = zero_glue;
+            else if (cur_val_level < glue_val)
+              cur_val = sa_int(cur_ptr);
+            else
+              cur_val = sa_ptr(cur_ptr);
+          }
+          else switch (cur_val_level)
+          {
+            case int_val:
+              cur_val = count(cur_val);
+              break;
+
+            case dimen_val:
+              cur_val = dimen(cur_val);
+              break;
+
+            case glue_val:
+              cur_val = skip(cur_val);
+              break;
+
+            case mu_val:
+              cur_val = mu_skip(cur_val);
+              break;
+          }
+        }
       }
       break;
 
     case last_item:
-      if (cur_chr > glue_val)
+      if (cur_chr >= input_line_no_code)
       {
-        if (cur_chr == input_line_no_code)
-          cur_val = line;
+        if (m > eTeX_glue)
+        {
+          if (m<eTeX_mu)
+          {
+            switch (m)
+            {
+              case mu_to_glue_code:
+                scan_mu_glue();
+                break;
+            }
+
+            cur_val_level = glue_val;
+          }
+          else if (m<eTeX_expr)
+          {
+            switch (m)
+            {
+              case glue_to_mu_code:
+                scan_normal_glue();
+                break;
+            }
+
+            cur_val_level = mu_val;
+          }
+          else
+          {
+            cur_val_level = m - eTeX_expr + int_val;
+            scan_expr();
+          }
+
+          while (cur_val_level>level)
+          {
+            if (cur_val_level == glue_val)
+            {
+              m = cur_val;
+              cur_val = width(m);
+              delete_glue_ref(m);
+            }
+            else if (cur_val_level == mu_val)
+              mu_error();
+
+            decr(cur_val_level);
+          }
+
+          if (negative)
+            if (cur_val_level >= glue_val)
+            {
+              m = cur_val;
+              cur_val = new_spec(m);
+              delete_glue_ref(m);
+
+              {
+                width(cur_val) = -width(cur_val);
+                stretch(cur_val) = -stretch(cur_val);
+                shrink(cur_val) = -shrink(cur_val);
+              }
+            }
+            else
+              cur_val = -cur_val;
+
+          return;
+        }
+        else if (m >= eTeX_glue)
+        {
+          switch (m)
+          {
+            case font_char_wd_code:
+            case font_char_ht_code:
+            case font_char_dp_code:
+            case font_char_ic_code:
+              {
+                scan_font_ident();
+                q = cur_val;
+                scan_char_num();
+
+                if ((font_bc[q] <= cur_val) && (font_ec[q] >= cur_val))
+                {
+                  i = char_info(q, cur_val);
+
+                  switch (m)
+                  {
+                    case font_char_wd_code:
+                      cur_val = char_width(q, i);
+                      break;
+                    case font_char_ht_code:
+                      cur_val = char_height(q, height_depth(i));
+                      break;
+                    case font_char_dp_code:
+                      cur_val = char_depth(q, height_depth(i));
+                      break;
+                    case font_char_ic_code:
+                      cur_val = char_italic(q, i);
+                      break;
+                  }
+                }
+                else
+                  cur_val = 0;
+              }
+              break;
+
+            case par_shape_length_code:
+            case par_shape_indent_code:
+            case par_shape_dimen_code:
+              {
+                q = cur_chr - par_shape_length_code;
+                scan_int();
+
+                if ((par_shape_ptr == null) || (cur_val <= 0))
+                  cur_val = 0;
+                else
+                {
+                  if (q == 2)
+                  {
+                    q = cur_val % 2;
+                    cur_val = (cur_val + q) / 2;
+                  }
+
+                  if (cur_val > info(par_shape_ptr))
+                    cur_val = info(par_shape_ptr);
+
+                  cur_val = mem[par_shape_ptr + 2 * cur_val - q].cint;
+                }
+
+                cur_val_level = dimen_val;
+              }
+              break;
+
+            case glue_stretch_code:
+            case glue_shrink_code:
+              {
+               scan_normal_glue();
+                q = cur_val;
+
+                if (m == glue_stretch_code)
+                  cur_val = stretch(q);
+                else
+                  cur_val = shrink(q);
+
+                delete_glue_ref(q);
+              }
+              break;
+          }
+          
+          cur_val_level = dimen_val;
+        }
         else
-          cur_val = last_badness;
+        {
+          switch (m)
+          {
+            case input_line_no_code: cur_val = line; break;
+            case badness_code: cur_val = last_badness; break;
+            case eTeX_version_code:
+              cur_val = eTeX_version;
+              break;
+            case current_group_level_code:
+              cur_val = cur_level - level_one;
+              break;
+            case current_group_type_code:
+              cur_val = cur_group;
+              break;
+            case current_if_level_code:
+              {
+                q = cond_ptr;
+                cur_val = 0;
+
+                while (q != null)
+                {
+                  incr(cur_val);
+                  q = link(q);
+                }
+              }
+              break;
+            case current_if_type_code:
+              if (cond_ptr == null)
+                cur_val = 0;
+              else if (cur_if < unless_code)
+                cur_val = cur_if + 1;
+              else
+                cur_val = -(cur_if - unless_code + 1);
+              break;
+            case current_if_branch_code:
+              if ((if_limit == or_code) || (if_limit == else_code))
+                cur_val = 1;
+              else if (if_limit == fi_code)
+                cur_val = -1;
+              else
+                cur_val = 0;
+              break;
+            case glue_stretch_order_code:
+            case glue_shrink_order_code:
+              {
+                scan_normal_glue();
+                q = cur_val;
+
+                if (m == glue_stretch_order_code)
+                  cur_val = stretch_order(q);
+                else
+                  cur_val = shrink_order(q);
+
+                delete_glue_ref(q);
+              }
+              break;
+          }
+        }
 
         cur_val_level = int_val;
       }
@@ -1911,7 +2326,16 @@ void scan_something_internal (small_number level, boolean negative)
           cur_val = 0;
 
         find_effective_tail();
-        cur_val_level = cur_chr;
+
+        if (cur_chr == last_node_type_code)
+        {
+          cur_val_level = int_val;
+
+          if ((tx == head) || (mode == 0))
+            cur_val = -1;
+        }
+        else
+          cur_val_level = cur_chr;
 
         if (!is_char_node(tx) && (tx != head) && (mode != 0))
           switch (cur_chr)
@@ -1935,6 +2359,23 @@ void scan_something_internal (small_number level, boolean negative)
                   cur_val_level = mu_val;
               }
               break;
+
+            case last_node_type_code:
+              if (type(tx) <= unset_node)
+              {
+                if (type(tx) == dir_node)
+                  tx = list_ptr(tx);
+
+                cur_val = type(tx);
+
+                if (cur_val < dir_node)
+                  cur_val = cur_val + 1;
+                else if (cur_val > disp_node)
+                  cur_val = cur_val - 1;
+              }
+              else
+                cur_val = unset_node;
+              break;
           }
         else if ((mode == vmode) && (tx == head))
           switch (cur_chr)
@@ -1948,8 +2389,12 @@ void scan_something_internal (small_number level, boolean negative)
               break;
 
             case glue_val:
-              if (last_glue != empty_flag)
+              if (last_glue != max_halfword)
                 cur_val = last_glue;
+              break;
+
+            case last_node_type_code:
+              cur_val = last_node_type;
               break;
           }
       }
@@ -2390,18 +2835,48 @@ found:
         first = start;
 
         if (!force_eof)
-        {
-          if (input_ln(cur_file, true))
-            firm_up_the_line();
+          if (name <= 19)
+          {
+            if (pseudo_input())
+              firm_up_the_line();
+            else if ((every_eof != null) && !eof_seen[index])
+            {
+              limit = first - 1;
+              eof_seen[index] = true;
+              begin_token_list(every_eof, every_eof_text);
+              goto restart;
+            }
+            else
+              force_eof = true;
+          }
           else
-            force_eof = true;
-        }
+          {
+            if (input_ln(cur_file, true))
+              firm_up_the_line();
+            else if ((every_eof != null) && !eof_seen[index])
+            {
+              limit = first - 1;
+              eof_seen[index] = true;
+              begin_token_list(every_eof, every_eof_text);
+              goto restart;
+            }
+            else
+              force_eof = true;
+          }
 
         if (force_eof)
         {
-          print_char(')');
-          decr(open_parens);
-          update_terminal();
+          if (tracing_nesting>0)
+            if ((grp_stack[in_open] != cur_boundary) || (if_stack[in_open] != cond_ptr))
+              file_warning();
+
+          if (name >= 19)
+          {
+            print_char(')');
+            decr(open_parens);
+            update_terminal();
+          }
+
           force_eof = false;
           end_file_reading();
           check_outer_validity();

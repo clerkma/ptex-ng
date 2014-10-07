@@ -497,6 +497,7 @@ void push_nest (void)
   prev_disp = 0;
   last_jchr = null;
   mode_line = line;
+  eTeX_aux = 0;
 }
 /* sec 0217 */
 void pop_nest (void) 
@@ -893,6 +894,46 @@ void print_param_(integer n)
       print_esc("jcharwidowpenalty");
       break;
 
+    case tracing_assigns_code:
+      print_esc("tracingassigns");
+      break;
+
+    case tracing_groups_code:
+      print_esc("tracinggroups");
+      break;
+
+    case tracing_ifs_code:
+      print_esc("tracingifs");
+      break;
+    
+    case tracing_scan_tokens_code:
+      print_esc("tracingscantokens");
+      break;
+    
+    case tracing_nesting_code:
+      print_esc("tracingnesting");
+      break;
+    
+    case pre_display_direction_code:
+      print_esc("predisplaydirection");
+      break;
+
+    case last_line_fit_code:
+      print_esc("lastlinefit");
+      break;
+
+    case saving_vdiscards_code:
+      print_esc("savingvdiscards");
+      break;
+    
+    case saving_hyph_codes_code:
+      print_esc("savinghyphcodes");
+      break;
+
+    case eTeX_state_code + TeXXeT_code:
+      print_esc("TeXXeTstate");
+      break;
+
     default:
       prints("[unknown integer parameter!]");
       break;
@@ -1042,6 +1083,8 @@ void print_length_param_ (integer n)
 /* sec 0298 */
 void print_cmd_chr_ (quarterword cmd, halfword chr_code)
 {
+  integer n;
+
   switch (cmd)
   {
     case left_brace:
@@ -1150,6 +1193,10 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
             print_esc("everycr");
             break;
 
+          case every_eof_loc:
+            print_esc("everyeof");
+            break;
+
           default:
             print_esc("errhelp");
             break;
@@ -1246,7 +1293,10 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
       break;
 
     case expand_after:
-      print_esc("expandafter");
+      if (chr_code == 0)
+        print_esc("expandafter");
+      else
+        print_esc("unless");
       break;
 
     case halign:
@@ -1275,6 +1325,9 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
 
     case mark:
       print_esc("mark");
+
+      if (chr_code > 0)
+        print_char('s');
       break;
 
     case math_accent:
@@ -1318,7 +1371,8 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
       break;
 
     case read_to_cs:
-      print_esc("read");
+      if (chr_code == 0)
+        print_esc("read");
       break;
 
     case relax:
@@ -1334,15 +1388,42 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
       break;
 
     case set_shape:
-      print_esc("parshape");
+      switch (chr_code)
+      {
+        case par_shape_loc:
+          print_esc("parshape");
+          break;
+        case inter_line_penalties_loc:
+          print_esc("interlinepenalties");
+          break;
+        case club_penalties_loc:
+          print_esc("clubpenalties");
+          break;
+        case widow_penalties_loc:
+          print_esc("widowpenalties");
+          break;
+        case display_widow_penalties_loc:
+          print_esc("displaywidowpenalties");
+          break;
+      }
       break;
 
     case the:
-      print_esc("the");
+      if (chr_code == 0)
+        print_esc("the");
+      else if (chr_code == 1)
+        print_esc("unexpanded");
+      else
+        print_esc("detokenize");
       break;
 
     case toks_register:
-      print_esc("toks");
+      {
+        print_esc("toks");
+      
+        if (chr_code != mem_bot)
+          print_sa_num(chr_code);
+      }
       break;
 
     case vadjust:
@@ -1350,7 +1431,18 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
       break;
 
     case valign:
-      print_esc("valign");
+      if (chr_code == 0)
+        print_esc("valign");
+      else
+      {
+        switch (chr_code)
+        {
+          case begin_L_code: print_esc("beginL"); break;
+          case end_L_code: print_esc("endL"); break;
+          case begin_R_code: print_esc("beginR"); break;
+          default: print_esc("endR"); break;
+        }
+      }
       break;
 
     case vcenter:
@@ -1368,12 +1460,14 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
     case input:
       if (chr_code == 0)
         print_esc("input");
+      else if (chr_code == 2)
+        print_esc("scantokens");
       else
         print_esc("endinput");
       break;
 
     case top_bot_mark:
-      switch (chr_code)
+      switch (chr_code % marks_code)
       {
         case first_mark_code:
           print_esc("firstmark");
@@ -1395,17 +1489,33 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
           print_esc("topmark");
           break;
       }
+
+      if (chr_code >= marks_code)
+        print_char('s');
       break;
 
     case tex_register:
-      if (chr_code == int_val)
-        print_esc("count");
-      else if (chr_code == dimen_val)
-        print_esc("dimen");
-      else if (chr_code == glue_val)
-        print_esc("skip");
-      else
-        print_esc("muskip");
+      {
+        if ((chr_code<mem_bot) || (chr_code>lo_mem_stat_max))
+          cmd = sa_type(chr_code);
+        else
+        {
+          cmd = chr_code - mem_bot;
+          chr_code = null;
+        }
+
+        if (cmd == int_val)
+          print_esc("count");
+        else if (cmd == dimen_val)
+          print_esc("dimen");
+        else if (cmd == glue_val)
+          print_esc("skip");
+        else
+          print_esc("muskip");
+
+        if (chr_code != 0)
+          print_sa_num(chr_code);
+      }
       break;
 
     case set_aux:
@@ -1418,6 +1528,8 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
     case set_page_int:
       if (chr_code == 0)
         print_esc("deadcycles");
+      else if (chr_code == 2)
+        print_esc("interactionmode");
       else
         print_esc("insertpenalties");
       break;
@@ -1450,6 +1562,30 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
           print_esc("inputlineno");
           break;
 
+        case last_node_type_code: print_esc("lastnodetype"); break;
+        case eTeX_version_code: print_esc("eTeXversion"); break;
+        case current_group_level_code: print_esc("currentgrouplevel"); break;
+        case current_group_type_code: print_esc("currentgrouptype"); break;
+        case current_if_level_code: print_esc("currentiflevel"); break;
+        case current_if_type_code: print_esc("currentiftype"); break;
+        case current_if_branch_code: print_esc("currentifbranch"); break;
+        case font_char_wd_code: print_esc("fontcharwd"); break;
+        case font_char_ht_code: print_esc("fontcharht"); break;
+        case font_char_dp_code: print_esc("fontchardp"); break;
+        case font_char_ic_code: print_esc("fontcharic"); break;
+        case par_shape_length_code: print_esc("parshapelength"); break;
+        case par_shape_indent_code: print_esc("parshapeindent"); break;
+        case par_shape_dimen_code: print_esc("parshapedimen"); break;
+        case eTeX_expr - int_val + int_val: print_esc("numexpr"); break;
+        case eTeX_expr - int_val + dimen_val: print_esc("dimexpr"); break;
+        case eTeX_expr - int_val + glue_val: print_esc("glueexpr"); break;
+        case eTeX_expr - int_val + mu_val: print_esc("muexpr"); break;
+        case glue_stretch_order_code: print_esc("gluestretchorder"); break;
+        case glue_shrink_order_code: print_esc("glueshrinkorder"); break;
+        case glue_stretch_code: print_esc("gluestretch"); break;
+        case glue_shrink_code: print_esc("glueshrink"); break;
+        case mu_to_glue_code: print_esc("mutoglue"); break;
+        case glue_to_mu_code: print_esc("gluetomu"); break;
         default:
           print_esc("badness");
           break;
@@ -1503,6 +1639,10 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
           print_esc("ucs");
           break;
 
+        case eTeX_revision_code:
+          print_esc("eTeXrevision");
+          break;
+
         default:
           print_esc("jobname");
           break;
@@ -1510,7 +1650,10 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
       break;
 
     case if_test:
-      switch (chr_code)
+      if (chr_code >= unless_code)
+        print_esc("unless");
+
+      switch (chr_code % unless_code)
       {
         case if_cat_code:
           print_esc("ifcat");
@@ -1602,6 +1745,18 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
 
         case if_dbox_code:
           print_esc("ifdbox");
+          break;
+          
+        case if_def_code:
+          print_esc("ifdefined");
+          break;
+
+        case if_cs_code:
+          print_esc("ifcsname");
+          break;
+
+        case if_font_char_code:
+          print_esc("iffontchar");
           break;
 
         default:
@@ -1841,6 +1996,10 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
     case un_vbox:
       if (chr_code == copy_code)
         print_esc("unvcopy");
+      else if (chr_code == last_box_code)
+        print_esc("pagediscards");
+      else if (chr_code == vsplit_code)
+        print_esc("splitdiscards");
       else
         print_esc("unvbox");
       break;
@@ -1949,6 +2108,8 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
     case left_right:
       if (chr_code == left_noad)
         print_esc("left");
+      else if (chr_code == middle_noad)
+        print_esc("middle");
       else
         print_esc("right");
       break;
@@ -1958,6 +2119,8 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
         print_esc("long");
       else if (chr_code == 2)
         print_esc("outer");
+      else if (chr_code == 8)
+        print_esc("protected");
       else
         print_esc("global");
       break;
@@ -2138,6 +2301,18 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
           print_esc("showlists");
           break;
 
+        case show_groups:
+          print_esc("showgroups");
+          break;
+
+        case show_tokens:
+          print_esc("showtokens");
+          break;
+
+        case show_ifs:
+          print_esc("showifs");
+          break;
+
         case show_mode:
           print_esc("showmode");
           break;
@@ -2153,20 +2328,18 @@ void print_cmd_chr_ (quarterword cmd, halfword chr_code)
       break;
 
     case call:
-      prints("macro");
-      break;
-
     case long_call:
-      print_esc("long macro");
-      break;
-
     case outer_call:
-      print_esc("outer macro");
-      break;
-
     case long_outer_call:
-      print_esc("long");
-      print_esc("outer macro");
+      {
+        n = cmd - call;
+        if (info(link(chr_code)) == protected_token) n = n + 4;
+        if (odd(n / 4)) print_esc("protected");
+        if (odd(n)) print_esc("long");
+        if (odd(n / 2)) print_esc("outer");
+        if (n>0) print_char(' ');
+        prints("macro");
+      }
       break;
 
     case end_template:
@@ -2306,13 +2479,22 @@ void show_eqtb (pointer n)
       print_spec(equiv(n), "mu");
     }
   else if (n < int_base)
-    if (n == par_shape_loc)
+    if ((n == par_shape_loc) || ((n >= etex_pen_base) && (n < etex_pens)))
     {
-      print_esc("parshape");
+      print_cmd_chr(set_shape, n);
       print_char('=');
-      
-      if (par_shape_ptr == 0)
+
+      if (equiv(n) == 0)
         print_char('0');
+      else if (n > par_shape_loc)
+      {
+        print_int(penalty(equiv(n)));
+        print_char(' ');
+        print_int(penalty(equiv(n) + 1));
+        
+        if (penalty(equiv(n)) > 1)
+          print_esc("ETC.");
+      }
       else
         print_int(info(par_shape_ptr));
     }
@@ -2563,6 +2745,13 @@ found:
 void new_save_level (group_code c)
 {
   check_full_save_stack();
+
+  if (eTeX_ex)
+  {
+    saved(0) = line;
+    incr(save_ptr);
+  }
+
   save_type(save_ptr) = level_boundary;
   save_level(save_ptr) = (quarterword) cur_group; 
   save_index(save_ptr) = cur_boundary;
@@ -2574,9 +2763,9 @@ void new_save_level (group_code c)
   }
 
   cur_boundary = save_ptr;
+  cur_group = c;
   incr(cur_level);
   incr(save_ptr);
-  cur_group = c;
 }
 /* sec 0275 */
 void eq_destroy (memory_word w)
@@ -2607,7 +2796,13 @@ void eq_destroy (memory_word w)
       flush_node_list(equiv_field(w));
       break;
 
+    case toks_register:
+    case tex_register:
+      if ((equiv_field(w) < mem_bot) || (equiv_field(w) > lo_mem_stat_max))
+        delete_sa_ref(equiv_field(w));
+
     default:
+      do_nothing();
       break;
   }
 }
@@ -2632,6 +2827,15 @@ void eq_save (pointer p, quarterword l)
 /* sec 0277 */
 void eq_define_(pointer p, quarterword t, halfword e)
 {
+  if (eTeX_ex  && (eq_type(p) == t) && (equiv(p) == e))
+  {
+    assign_trace(p, "reassigning");
+    eq_destroy(eqtb[p]);
+    return;
+  }
+
+  assign_trace(p, "changing");
+
   if (eq_level(p) == cur_level)
     eq_destroy(eqtb[p]);
   else if (cur_level > level_one)
@@ -2640,10 +2844,19 @@ void eq_define_(pointer p, quarterword t, halfword e)
   eq_level(p) = cur_level;
   eq_type(p) = t;
   equiv(p) = e;
+  assign_trace(p, "into");
 }
 /* sec 0278 */
 void eq_word_define_(pointer p, integer w)
 {
+  if (eTeX_ex && (eqtb[p].cint == w))
+  {
+    assign_trace(p, "reassigning");
+    return;
+  }
+
+  assign_trace(p, "changing");
+
   if (xeq_level[p] != cur_level)
   {
     eq_save(p, xeq_level[p]);
@@ -2651,20 +2864,25 @@ void eq_word_define_(pointer p, integer w)
   }
 
   eqtb[p].cint = w;
+  assign_trace(p, "into");
 }
 /* sec 0279 */
 void geq_define_(pointer p, quarterword t, halfword e)
 {
+  assign_trace(p, "globally changing");
   eq_destroy(eqtb[p]);
   eq_level(p) = level_one;
   eq_type(p) = t;
   equiv(p) = e;
+  assign_trace(p, "into");
 }
 /* sec 0279 */
 void geq_word_define_(pointer p, integer w)
 {
+  assign_trace(p, "globally changing");
   eqtb[p].cint = w;
   xeq_level[p]= level_one;
+  assign_trace(p, "into");
 }
 /* sec 0280 */
 void save_for_after (halfword t)

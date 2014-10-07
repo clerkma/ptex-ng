@@ -651,6 +651,45 @@ void print_dir(eight_bits dir)
   else if (dir == dir_dtou)
     print_char('D');
 }
+
+void print_direction_alt(integer d)
+{
+  boolean x;
+
+  x = false;
+
+  switch (abs(d))
+  {
+    case dir_yoko:
+      {
+        prints(", yoko");
+        x = true;
+      }
+      break;
+    case dir_tate:
+      {
+        prints(", tate");
+        x = true;
+      }
+      break;
+    case dir_dtou:
+      {
+        prints(", dtou");
+        x = true;
+      }
+      break;
+  }
+
+  if (x)
+  {
+    if (d < 0)
+      prints("(math)");
+
+    prints(" direction");
+  }
+}
+
+
 void print_direction(integer d)
 {
   switch (abs(d))
