@@ -1,3 +1,22 @@
+/*
+   Copyright 2014 Clerk Ma
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301 USA.
+*/
+
 #ifndef _PTEX_H
 #define _PTEX_H
 
@@ -21,7 +40,7 @@
 #define INITEX             /* invoke initex */
 #define WORDS_BIGENDIAN 0  /* about format file */
 
-#include "dpx.h"
+//#include "dpx.h"
 #include "texd.h"
 
 #define file_name_size PATH_MAX
@@ -106,14 +125,14 @@ EXTERN integer max_buf_stack;
 
 #ifdef VARIABLETRIESIZE
   EXTERN integer trie_size;
-  #define default_trie_size 60000
+  #define default_trie_size 1000000 // 60000
 #else
   #define trie_size 30000
 #endif
 
 #ifdef INCREASETRIEOP
-  #define trie_op_size      3001
-  #define neg_trie_op_size -3001
+  #define trie_op_size      35111 //  3001
+  #define neg_trie_op_size -35111 // -3001
   #define min_trie_op       0
   #define max_trie_op       1000
 #else
@@ -180,6 +199,8 @@ typedef union
   integer cint;
   four_quarters qqqq;
 } memory_word;
+
+#define sc cint
 
 #include "macros.h"
 /* sec 0150 */

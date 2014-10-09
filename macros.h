@@ -20,6 +20,15 @@
 #ifndef _PTEX_NG_MACROS_H
 #define _PTEX_NG_MACROS_H
 
+#define eTeX_version        2
+#define eTeX_revision       ".6"
+#define eTeX_version_string "-2.6"
+
+#define TeXXeT_code         0
+#define eTeX_states         1
+
+#define eTeX_ex             (eTeX_mode == true)
+
 // predefined macro
 #define KANJI(x)   x
 #define tokanji(x) x
@@ -36,6 +45,7 @@
 #define length(s) (str_start[(s) + 1] - str_start[(s)])
 /* sec 0041 */
 #define cur_length (pool_ptr - str_start[str_ptr])
+#define flush_char()  decr(pool_ptr)
 /* sec 0054 */
 enum 
 {
@@ -86,7 +96,7 @@ while (0)
 #define nx_plus_y(a, b, c)  mult_and_add(a, b, c, 07777777777L)
 #define mult_integers(a, b) mult_and_add(a, b, 0, 017777777777L)
 /* sec 0108 */
-#define inf_bad 10000L
+#define inf_bad 10000
 /* sec 0109 */
 #define set_glue_ratio_zero(a) (a) = 0.0
 #define set_glue_ratio_one(a)  (a) = 1.0
@@ -220,12 +230,12 @@ while (0)
 #define M_code    2
 #define L_code    4
 #define R_code    8
-#define begin_M_code      (M_code + before)
-#define end_M_code        (M_code + after)
-#define begin_L_code      (L_code + begin_M_code)
-#define end_L_code        (L_code + end_M_code)
-#define begin_R_code      (R_code + begin_M_code)
-#define end_R_code        (R_code + end_M_code)
+#define begin_M_code      (M_code + before) // 2
+#define end_M_code        (M_code + after) // 3
+#define begin_L_code      (L_code + begin_M_code) // 6
+#define end_L_code        (L_code + end_M_code) // 7
+#define begin_R_code      (R_code + begin_M_code) // 10
+#define end_R_code        (R_code + end_M_code) // 11
 #define end_LR(a)         odd(subtype(a))
 #define end_LR_type(a)    (L_code * (subtype(a) / L_code) + end_M_code)
 #define begin_LR_type(a)  (a - after + before)
@@ -952,7 +962,7 @@ do                          \
   tally = 0;                \
   selector = pseudo;        \
   kcode_pos = 0;            \
-  trick_count = 1000000L;   \
+  trick_count = 1000000;    \
 }                           \
 while (0)
 #define set_trick_count()                                       \
@@ -1758,6 +1768,8 @@ while (0)
 #define page_depth  page_so_far[7]
 /* sec 0987 */
 #define set_page_so_far_zero(a) page_so_far[(a)] = 0
+/* sec 0995 */
+#define contrib_tail nest[0].tail_field
 /* sec 1034 */
 #define adjust_space_factor()   \
 do                              \
@@ -1845,6 +1857,8 @@ while (0)
 #define last_box_code 2
 #define vsplit_code   3
 #define vtop_code     4
+/* sec 1151 */
+#define fam_in_range ((cur_fam >= 0) && (cur_fam < 16))
 /* sec 1178 */
 #define above_code     0
 #define over_code      1
@@ -3137,14 +3151,16 @@ do {\
   else info(q + (i / 2) + 1) = a;\
 } while (0)
 
-#define add_sa_ptr()  \
-do {\
-  put_sa_ptr(cur_ptr); incr(sa_used(q));\
+#define add_sa_ptr()    \
+do {                    \
+  put_sa_ptr(cur_ptr);  \
+  incr(sa_used(q));     \
 } while (0)
  
 #define delete_sa_ptr() \
-do {\
-  put_sa_ptr(null); decr(sa_used(q));\
+do {                    \
+  put_sa_ptr(null);     \
+  decr(sa_used(q));     \
 } while (0)
 //
 #define sa_lev            sa_used
@@ -3160,30 +3176,39 @@ do {\
 //
 #define mark_class_node_size 4
 //
-#define fetch_box(a)\
-do {\
-  if (cur_val < 256) a = box(cur_val); \
-  else \
-  { \
+#define fetch_box(a)                          \
+do {                                          \
+  if (cur_val < 256)                          \
+    a = box(cur_val);                         \
+  else                                        \
+  {                                           \
     find_sa_element(box_val, cur_val, false); \
-    if (cur_ptr == null) a = null; else a = sa_ptr(cur_ptr); \
-  }\
+    if (cur_ptr == null)                      \
+      a = null;                               \
+   else                                       \
+      a = sa_ptr(cur_ptr);                    \
+  }                                           \
 } while (0)
 //
 #define add_sa_ref(a) incr(sa_ref(a))
 //
 #define change_box(a) \
-do {  \
-  if (cur_val<256) box(cur_val) = a; else set_sa_box(a);\
+do {                  \
+  if (cur_val<256)    \
+    box(cur_val) = a; \
+  else                \
+    set_sa_box(a);    \
 } while (0)
 
-#define set_sa_box(a) \
-do {\
-  find_sa_element(box_val,cur_val,false);\
-  if (cur_ptr != null) \
-  { \
-    sa_ptr(cur_ptr) = a; add_sa_ref(cur_ptr); delete_sa_ref(cur_ptr); \
-  } \
+#define set_sa_box(a)                     \
+do {                                      \
+  find_sa_element(box_val,cur_val,false); \
+  if (cur_ptr != null)                    \
+  {                                       \
+    sa_ptr(cur_ptr) = a;                  \
+    add_sa_ref(cur_ptr);                  \
+    delete_sa_ref(cur_ptr);               \
+  }                                       \
 } while (0)
 //
 #define vsplit_init   0
@@ -3191,11 +3216,11 @@ do {\
 #define fire_up_done  2
 #define destroy_marks 3
 //
-#define sa_top_mark(a)          info(a+1)
-#define sa_first_mark(a)        link(a+1)
-#define sa_bot_mark(a)          info(a+2)
-#define sa_split_first_mark(a)  link(a+2)
-#define sa_split_bot_mark(a)    info(a+3)
+#define sa_top_mark(a)          info(a + 1)
+#define sa_first_mark(a)        link(a + 1)
+#define sa_bot_mark(a)          info(a + 2)
+#define sa_split_first_mark(a)  link(a + 2)
+#define sa_split_bot_mark(a)    info(a + 3)
 //
 #define sa_loc sa_ref
 //
@@ -3206,35 +3231,45 @@ do {  \
   else define(a3, a4, a5);\
 } while (0)
 //
-#define sa_def_box()  \
-do {  \
-  find_sa_element(box_val,cur_val,true);\
-  if (a >= 4) gsa_def(cur_ptr,cur_box); else sa_def(cur_ptr,cur_box);\
+#define sa_def_box()                      \
+do {                                      \
+  find_sa_element(box_val, cur_val, true);\
+  if (a >= 4)                             \
+    gsa_def(cur_ptr,cur_box);             \
+ else                                     \
+   sa_def(cur_ptr,cur_box);               \
 } while (0)
 //
-#define sa_word_define(a1,a2)  \
-do {  \
-  if (e)  \
-    if (a >= 4) gsa_w_def(a1, a2); else sa_w_def(a1, a2); \
-  else word_define(a1, a2); \
+#define sa_word_define(a1,a2) \
+do {                          \
+  if (e)                      \
+    if (a >= 4)               \
+      gsa_w_def(a1, a2);      \
+    else                      \
+      sa_w_def(a1, a2);       \
+  else word_define(a1, a2);   \
 } while (0)
 //
 #define trie_link(a) trie_trl[a]
 #define trie_char(a) trie_trc[a]
 #define trie_op(a)   trie_tro[a]
 
-#define set_hyph_index()  \
-do {  \
+#define set_hyph_index()                            \
+do {                                                \
   if (trie_char(hyph_start + cur_lang) != cur_lang) \
-    hyph_index = 0; \
-  else hyph_index = trie_link(hyph_start+cur_lang);  \
+    hyph_index = 0;                                 \
+  else                                              \
+    hyph_index = trie_link(hyph_start+cur_lang);    \
 } while (0)
 
-#define set_lc_code(a)  \
-do {  \
-  if (hyph_index==0) hc[0] = lc_code(a);  \
-  else if (trie_char(hyph_index + a) != a) hc[0] = 0; \
-  else hc[0] = trie_op(hyph_index + a); \
+#define set_lc_code(a)                      \
+do {                                        \
+  if (hyph_index == 0)                      \
+    hc[0] = lc_code(a);                     \
+  else if (trie_char(hyph_index + a) != a)  \
+    hc[0] = 0;                              \
+  else                                      \
+    hc[0] = trie_op(hyph_index + a);        \
 } while (0)
 
 #define hyph_root       trie_r[0]

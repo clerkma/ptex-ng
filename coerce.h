@@ -23,8 +23,7 @@
 
 void initialize (void);
 void print_ln (void);
-void print_char_(ASCII_code s);
-#define print_char(s) print_char_((ASCII_code) (s))
+void print_char (ASCII_code s);
 void print_(integer s);
 #define print(s) print_((integer) (s))
 void prints_(const char * s);
@@ -51,29 +50,21 @@ void overflow_(const char * s, integer n);
 void confusion (const char * s);
 boolean init_terminal (void);
 str_number make_string (void);
-boolean str_eq_buf_(str_number s, integer k);
-#define str_eq_buf(s, k) str_eq_buf_((str_number) (s), (integer) (k))
-boolean str_eq_str_(str_number s, str_number t);
-#define str_eq_str(s, t) str_eq_str_((str_number) (s), (str_number) (t))
+boolean str_eq_buf (str_number s, integer k);
+boolean str_eq_str (str_number s, str_number t);
 boolean get_strings_started (void);
-void print_two_(integer n);
-#define print_two(n) print_two_((integer) (n))
+void print_two (integer n);
 void print_hex_(integer n);
 #define print_hex(n) print_hex_((integer) (n))
-void print_roman_int_(integer n);
-#define print_roman_int(n) print_roman_int_((integer) (n))
+void print_roman_int (integer n);
 void print_current_string (void);
 void term_input (void);
-void int_error_(integer n);
-#define int_error(n) int_error_((integer) (n))
+void int_error (integer n);
 void normalize_selector (void);
 void pause_for_instructions (void);
-integer half_(integer x);
-#define half(x) half_((integer) (x))
+integer half (integer x);
 scaled round_decimals_(small_number k);
-#define round_decimals(k) round_decimals_((small_number) (k))
-void print_scaled_(scaled s);
-#define print_scaled(s) print_scaled_((scaled) (s))
+void print_scaled (scaled s);
 scaled mult_and_add_(integer n, scaled x, scaled y, scaled max_answer);
 #define mult_and_add(n, x, y, max_answer) mult_and_add_((integer) (n), (scaled) (x), (scaled) (y), (scaled) (max_answer))
 scaled x_over_n_(scaled x, integer n);
@@ -87,8 +78,7 @@ void show_token_list_(integer p, integer q, integer l);
 #define show_token_list(p, q, l) show_token_list_((integer) (p), (integer) (q), (integer) (l))
 void runaway (void);
 pointer get_avail (void);
-void flush_list_(pointer p);
-#define flush_list(p) flush_list_((pointer) (p))
+void flush_list (pointer p);
 pointer get_node (integer s);
 void free_node (pointer p, halfword s);
 void sort_avail (void);
@@ -115,10 +105,8 @@ void short_display_(integer p);
 void print_font_and_char(integer p);
 void print_mark (integer p);
 void print_rule_dimen (scaled d);
-void print_glue_(scaled d, integer order, const char * s);
-#define print_glue(d, order, s) print_glue_((scaled) (d), (integer) (order), (const char *) (s))
-void print_spec_(integer p, const char * s);
-#define print_spec(p, s) print_spec_((integer) (p), (const char *) (s))
+void print_glue (scaled d, integer order, const char * s);
+void print_spec (integer p, const char * s);
 void print_fam_and_char_(pointer p, small_number t);
 #define print_fam_and_char(p, t) print_fam_and_char_((pointer) (p), (small_number) t)
 void print_delimiter_(pointer p);
@@ -156,8 +144,7 @@ void print_length_param_(integer n);
 void print_cmd_chr_(quarterword cmd, halfword chr_code);
 #define print_cmd_chr(cmd, chr_code) print_cmd_chr_((quarterword) (cmd), (halfword) (chr_code))
 void show_eqtb (pointer n);
-pointer id_lookup_(integer j, integer l);
-#define id_lookup(j, l) id_lookup_((integer) (j), (integer) (l))
+pointer id_lookup (integer j, integer l);
 void primitive_(str_number s, quarterword c, halfword o);
 #define primitive(s, c, o) primitive_(make_string_pool((const char *) s), (quarterword) (c), (halfword) (o))
 void new_save_level (group_code c);
@@ -363,7 +350,7 @@ void append_discretionary (void);
 void build_discretionary (void);
 void make_accent (void);
 void align_error (void);
-void noalign_error (void);
+void no_align_error (void);
 void omit_error (void);
 void do_endv (void);
 void cs_error (void);
@@ -480,4 +467,56 @@ void pdf_synch_v(void);
 int main_program (void);
 int main_init (int ac, char ** av);
 
+// for pdf backend.
+extern void pdf_init_fontmaps(void);
+extern void pdf_close_fontmaps(void);
+extern void pdf_doc_set_creator(const char * creator);
+extern void pdf_doc_set_producer(const char * producer);
+extern void pdf_set_version(unsigned version);
+extern void pdf_set_compression(int level);
+extern void pdf_files_init(void);
+extern void pdf_files_close(void);
+extern void graphics_mode (void);
+extern long pdf_output_stats (void);
+extern void pdf_init_device(double dvi2pts, int precision, int black_and_white);
+extern void pdf_close_device(void);
+extern void pdf_open_document(const char *filename,
+                              int do_encryption,
+                              double media_width,
+                              double media_height,
+                              double annot_grow_amount,
+                              int bookmark_open_depth,
+                              int check_gotos);
+extern void pdf_close_document(void);
+extern void pdf_doc_begin_page(double scale, double x_origin, double y_origin);
+extern void pdf_doc_end_page(void);
+extern int spc_exec_at_begin_document(void);
+extern int spc_exec_at_end_document(void);
+extern int spc_exec_at_begin_page(void);
+extern int spc_exec_at_end_page(void);
+typedef signed long spt_t;
+extern int spc_exec_special (const char *buffer, long size, double x_user, double y_user, double dpx_mag);
+extern int  pdf_dev_locate_font(const char *font_name, spt_t ptsize);
+extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
+extern void pdf_dev_set_string (spt_t xpos,
+                                spt_t ypos,
+                                const void *instr_ptr,
+                                int instr_len,
+                                spt_t width,
+                                int font_id,
+                                int ctype);
+extern void pdf_synch_h (void);
+extern void pdf_synch_h (void);
+typedef struct pdf_rect
+{
+  double llx, lly, urx, ury;
+} pdf_rect;
+extern void pdf_dev_set_rect (pdf_rect *rect,
+                  spt_t x_user, spt_t y_user,
+                  spt_t width,  spt_t height, spt_t depth);
+extern void pdf_doc_expand_box (const pdf_rect *rect);
+extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
+extern void pdf_enc_compute_id_string(char *dviname, char *pdfname);
+extern void pdf_dev_set_dirmode(int dir_mode);
+extern int pdf_load_fontmap_file(const char *filename, int map_mode);
 #endif

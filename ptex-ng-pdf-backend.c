@@ -144,17 +144,16 @@ void pdf_ship_out (pointer p)
 
   if (total_pages == 0)
   {
+    pdf_enc_compute_id_string(pdf_file_name, pdf_file_name);
     pdf_set_version(5);
     pdf_set_compression(9);
     pdf_init_fontmaps();
     pdf_load_fontmap_file("pdftex.map", '+');
-    //pdf_load_fontmap_file("kanjix.map", '+');
-    //pdf_load_fontmap_file("ckx.map", '+');
     pdf_doc_set_producer("pTeX-ng@2014");
     pdf_doc_set_creator("pTeX-ng");
     pdf_files_init();
     pdf_init_device(sp2bp, 2, 0);
-    pdf_open_document(pdf_file_name, 0, 595.0, 842.0, 0, 0, (1 << 4));
+    pdf_open_document(pdf_file_name, 0, 595.0, 842.0, 0, 0, !(1 << 4));
     spc_exec_at_begin_document();
   }
 

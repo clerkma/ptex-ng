@@ -336,9 +336,9 @@ void line_break (boolean d)
 
   link(tail) = new_param_glue(par_fill_skip_code);
   last_line_fill = link(tail);
-  init_cur_lang = prev_graf % 65536L;
-  init_l_hyf = prev_graf / 4194304L; /* 2^22 */
-  init_r_hyf = (prev_graf / 65536L) % 64;
+  init_cur_lang = prev_graf % 65536;
+  init_l_hyf = prev_graf / 4194304; /* 2^22 */
+  init_r_hyf = (prev_graf / 65536) % 64;
   pop_nest();
   no_shrink_error_yet = true;
   check_shrinkage(left_skip);
@@ -356,7 +356,7 @@ void line_break (boolean d)
   do_last_line_fit = false;
   active_node_size = active_node_size_normal;
 
-  if (last_line_fit>0)
+  if (last_line_fit > 0)
   {
     q = glue_ptr(last_line_fill);
 
@@ -523,6 +523,7 @@ void line_break (boolean d)
                   cur_p = link(cur_p);
                 }
                 break;
+
               default:
                 do_nothing();
                 break;
@@ -572,6 +573,7 @@ void line_break (boolean d)
                   case math_node:
                     try_break(0, unhyphenated);
                     break;
+
                   default:
                     do_nothing();
                     break;
@@ -3469,7 +3471,7 @@ void first_fit (trie_pointer p)
         {
           incr(trie_max);
           trie_taken[trie_max] = false;
-          trie_trl[trie_max] = trie_max + 1;
+          trie_link(trie_max) = trie_max + 1;
           trie_tro[trie_max] = trie_max - 1;
         }
       while (!(trie_max == h + 256));
@@ -3482,7 +3484,7 @@ void first_fit (trie_pointer p)
 
     while (q > 0)
     {
-      if (trie_trl[h + trie_c[q]] == 0)
+      if (trie_link(h + trie_c[q]) == 0)
         goto not_found;
 
       q = trie_r[q];
@@ -3491,7 +3493,7 @@ void first_fit (trie_pointer p)
     goto found;
 
 not_found:
-    z = trie_trl[z];
+    z = trie_link(z);
   }
 
 found:
@@ -3503,10 +3505,10 @@ found:
     {
       z = h + trie_c[q];
       l = trie_tro[z];
-      r = trie_trl[z];
+      r = trie_link(z);
       trie_tro[r] = l;
-      trie_trl[l] = r;
-      trie_trl[z] = 0;
+      trie_link(l) = r;
+      trie_link(z) = 0;
 
       if (l < 256)
       {
@@ -3555,20 +3557,18 @@ void trie_fix (trie_pointer p)
 
   z = trie_hash[p];
 
-  do
-    {
-      q = trie_l[p];
-      c = trie_c[p];
-      trie_trl[z + c] = trie_hash[q];
-      trie_trc[z + c] = c;
-      trie_tro[z + c] = trie_o[p];
+  do {
+    q = trie_l[p];
+    c = trie_c[p];
+    trie_link(z + c) = trie_hash[q];
+    trie_char(z + c) = c;
+    trie_op(z + c) = trie_o[p];
 
-      if (q > 0)
-        trie_fix(q);
+    if (q > 0)
+      trie_fix(q);
 
-      p = trie_r[p];
-    }
-  while (!(p == 0));
+    p = trie_r[p];
+  } while (!(p == 0));
 }
 /* sec 0960 */
 void new_patterns (void)
@@ -3646,6 +3646,7 @@ void new_patterns (void)
             digit_sensed = true;
           }
           break;
+
         case spacer:
         case right_brace:
           {
@@ -3731,6 +3732,7 @@ done1:
             digit_sensed = false;
           }
           break;
+
         default:
           {
             print_err("Bad ");
@@ -3741,6 +3743,7 @@ done1:
           break;
       }
     }
+
 done:
     if (saving_hyph_codes > 0)
     {
@@ -3831,12 +3834,10 @@ done:
 void init_trie (void)
 {
   trie_pointer p;
-  /* integer j, k, t; */
-  integer j, k;
-  int t;
+  integer j, k, t;
   trie_pointer r, s;
 
-  op_start[0] = - (integer) min_trie_op;
+  op_start[0] = -min_trie_op;
 
   for (j = 1; j <= 255; j++)
     op_start[j] = op_start[j - 1] + trie_used[j - 1];
@@ -3875,7 +3876,7 @@ void init_trie (void)
   for (p = 0; p <= 255; p++)
     trie_min[p] = p + 1;
 
-  trie_trl[0] = 1;
+  trie_link(0) = 1;
   trie_max = 0;
 
   if (trie_root != 0)
@@ -3899,9 +3900,9 @@ void init_trie (void)
   {
     for (r = 0; r <= 256; r++)
     {
-      trie_trl[r] = 0;
-      trie_tro[r] = min_trie_op;
-      trie_trc[r] = 0;
+      trie_link(r) = 0;
+      trie_op(r) = min_trie_op;
+      trie_char(r) = min_quarterword;
     }
 
     trie_max = 256;
@@ -3918,12 +3919,12 @@ void init_trie (void)
 
     do
       {
-        s = trie_trl[r];
+        s = trie_link(r);
 
         {
-          trie_trl[r] = 0;
-          trie_tro[r] = min_trie_op;
-          trie_trc[r] = 0;
+          trie_link(r) = 0;
+          trie_op(r) = min_trie_op;
+          trie_char(r) = min_quarterword;
         }
 
         r = s;
@@ -3931,7 +3932,7 @@ void init_trie (void)
     while (!(r > trie_max));
   }
 
-  trie_trc[0] = 63;
+  trie_char(0) = '?';
   trie_not_ready = false;
 }
 #endif
@@ -3991,7 +3992,10 @@ void store_fmt_file (void)
   slow_print(format_ident);
 
   dump_int(BEGINFMTCHECKSUM);
-  while (pseudo_files != null) pseudo_close();
+
+  while (pseudo_files != null)
+    pseudo_close();
+
   dump_int(eTeX_mode);
   eTeX_state(0) = 0;
   dump_int(mem_bot);

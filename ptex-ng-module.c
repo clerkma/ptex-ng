@@ -432,6 +432,7 @@ boolean check_box(pointer box_p)
       case penalty_node:
         do_nothing();
         break;
+
       case math_node:
         if ((subtype(p) == before) || (subtype(p) == after))
         {
@@ -447,6 +448,7 @@ boolean check_box(pointer box_p)
         else
           do_nothing();
         break;
+
       default:
         {
           flag = true;

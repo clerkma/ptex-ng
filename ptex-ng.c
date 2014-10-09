@@ -20,7 +20,6 @@
 */
 
 #define EXTERN
-
 #include "ptex-ng.h"
 
 #define dump_ext_length 4

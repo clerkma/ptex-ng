@@ -1480,7 +1480,7 @@ integer add_or_sub(integer x, integer y, integer max_answer, boolean negative)
   integer a;
 
   if (negative)
-    y = -y;
+    negate(y);
 
   if (x >= 0)
     if (y <= max_answer - x)
@@ -1508,13 +1508,13 @@ integer quotient(integer n, integer d)
       negative = false;
     else
     {
-      d = -d;
+      negate(d);
       negative = true;
     }
 
     if (n < 0)
     {
-      n = -n;
+      negate(n);
       negative = !negative;
     }
 
@@ -1524,7 +1524,7 @@ integer quotient(integer n, integer d)
       incr(a);
 
     if (negative)
-      a = -a;;
+      negate(a);;
   }
 
   return a;

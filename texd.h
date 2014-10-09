@@ -45,38 +45,31 @@
 #include <signal.h>
 // TeX Live's kpathsea and ptexenc
 #include <kpathsea/c-auto.h>
-#include <kpathsea/c-std.h>
-#include <kpathsea/c-pathmx.h>
-#include <kpathsea/c-pathch.h>
-#include <kpathsea/c-fopen.h>
-#include <kpathsea/c-ctype.h>
-#include <kpathsea/c-proto.h>
+#include <kpathsea/c-pathmx.h> // PATH_MAX
+#include <kpathsea/c-pathch.h> // IS_DIR_SEP
+#include <kpathsea/c-fopen.h>  // FOPEN_WBIN_MODE
 #include <kpathsea/config.h>
-#include <kpathsea/getopt.h>
-#include <kpathsea/lib.h>
-#include <kpathsea/line.h>
-#include <kpathsea/readable.h>
-#include <kpathsea/types.h>
-#include <kpathsea/tex-file.h>
-#include <kpathsea/variable.h>
-#include <kpathsea/absolute.h>
+#include <kpathsea/getopt.h>   // get_opt
+#include <kpathsea/tex-file.h> // kpse_find_file
+#include <kpathsea/variable.h> // kpse_var_value
+//
 #include <ptexenc/ptexenc.h>
 #include <ptexenc/unicode.h>
 #include "zlib.h"
-// typedefs
-typedef int64_t integer;
-typedef double    glue_ratio;
-typedef double    real;
-typedef unsigned char  ASCII_code;
-typedef int32_t        KANJI_code;
-typedef unsigned char  eight_bits;
+// integers
+typedef long long integer;
+typedef double  glue_ratio;
+typedef double  real;
+typedef uint8_t ASCII_code;
+typedef int32_t KANJI_code;
+typedef uint8_t eight_bits;
 typedef integer pool_pointer;
 typedef integer str_number;
-typedef unsigned char packed_ASCII_code;
+typedef uint8_t packed_ASCII_code;
 typedef integer scaled;
 typedef integer nonnegative_integer;
-typedef unsigned char small_number;
-
+typedef uint8_t small_number;
+// files
 typedef FILE * alpha_file;
 typedef FILE * byte_file;
 typedef FILE * word_file;
@@ -125,7 +118,7 @@ EXTERN boolean input_line (FILE * f);
 to read and write the output files; also, be able to make a core dump. */
 #ifndef unix
   #define dumpcore() exit(1)
-#else /* unix */
+#else
   #define dumpcore abort
 #endif
 
@@ -196,16 +189,8 @@ extern integer calc_pos     (integer c);
 extern integer kcatcodekey  (integer c);
 extern integer multilenbuffchar(integer c);
 extern void init_default_kanji(const_string file_str, const_string internal_str);
-#define init_kanji() init_default_kanji("utf8", "uptex")
-#define nrestmultichr(x)  ( (x)!=0 ? ((x) / 8) + 2 - ((x) % 8) : -1 )
+#define init_kanji()      init_default_kanji("utf8", "uptex")
+#define nrestmultichr(x)  ((x)!=0 ? ((x) / 8) + 2 - ((x) % 8) : -1)
 #define max_cjk_val 0x1000000
-
-// eTeX's macros and functions
-#define eTeX_version        2
-#define eTeX_revision       ".6"
-#define eTeX_version_string "-2.6"
-#define TeXXeT_code         0
-#define eTeX_states         1
-#define eTeX_ex             (eTeX_mode == true)
 
 #endif

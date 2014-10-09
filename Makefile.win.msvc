@@ -42,7 +42,7 @@ ptex-ng.res: ptex-ng.rc
 	$(RC) /nologo ptex-ng.rc
 
 ptex-ng-pdf-backend.obj: ptex-ng-pdf-backend.c \
-	texd.h ptex-ng.h dpx.h coerce.h macros.h
+	texd.h ptex-ng.h coerce.h macros.h
 
 ptex-ng.obj: ptex-ng.c \
 	texd.h ptex-ng.h coerce.h macros.h
