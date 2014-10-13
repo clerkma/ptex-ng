@@ -86,7 +86,7 @@ char * unixify (char * t)
   return t;
 }
 // for eTeX
-boolean eTeX_enabled(boolean b, quarterword j, halfword k)
+boolean eTeX_enabled (boolean b, quarterword j, halfword k)
 {
   if (!b)
   {
@@ -99,7 +99,7 @@ boolean eTeX_enabled(boolean b, quarterword j, halfword k)
   return b;
 }
 
-void print_group(boolean e)
+void print_group (boolean e)
 {
   switch (cur_group)
   {
@@ -115,6 +115,7 @@ void print_group(boolean e)
       {
         if (cur_group == semi_simple_group)
           prints("semi ");
+
         prints("simple");
       }
       break;
@@ -124,6 +125,7 @@ void print_group(boolean e)
       {
         if (cur_group == adjusted_hbox_group)
           prints("adjusted ");
+
         prints("hbox");
       }
       break;
@@ -141,6 +143,7 @@ void print_group(boolean e)
       {
         if (cur_group == no_align_group)
           prints("no ");
+
         prints("align");
       }
       break;
@@ -167,9 +170,13 @@ void print_group(boolean e)
     case math_left_group:
       {
         prints("math");
-        if (cur_group == math_choice_group) prints(" choice");
-        else if (cur_group == math_shift_group) prints(" shift");
-        else if (cur_group == math_left_group) prints(" left");
+
+        if (cur_group == math_choice_group)
+          prints(" choice");
+        else if (cur_group == math_shift_group)
+          prints(" shift");
+        else if (cur_group == math_left_group)
+          prints(" left");
       }
       break;
   }
@@ -190,7 +197,7 @@ void print_group(boolean e)
 }
 
 #ifdef STAT
-void group_trace(boolean e)
+void group_trace (boolean e)
 {
   begin_diagnostic();
   print_char('{');
@@ -206,7 +213,7 @@ void group_trace(boolean e)
 }
 #endif
 
-void show_save_groups(void)
+void show_save_groups (void)
 {
   int p;
   int m;
@@ -216,7 +223,7 @@ void show_save_groups(void)
   int a;
   integer i;
   quarterword j;
-  char *s;
+  const char * s;
 
   p = nest_ptr;
   nest[p] = cur_list;
@@ -265,13 +272,15 @@ void show_save_groups(void)
       case vbox_group:
         s = "vbox";
         break;
+
       case vtop_group:
         s = "vtop";
         break;
+
       case align_group:
         if (a == 0)
         {
-          if (m==-vmode)
+          if (m == -vmode)
             s = "halign";
           else
             s = "valign";
@@ -286,22 +295,27 @@ void show_save_groups(void)
           else
             print_esc("cr");
 
-          if (p>=a)
-            p = p-a;
+          if (p >= a)
+            p = p - a;
 
-          a = 0; goto found;
+          a = 0;
+          goto found;
         }
         break;
 
       case no_align_group:
         {
-          incr(p); a = -1; print_esc("noalign"); goto found2;
+          incr(p);
+          a = -1;
+          print_esc("noalign");
+          goto found2;
         }
         break;
 
       case output_group:
         {
-          print_esc("output"); goto found;
+          print_esc("output");
+          goto found;
         }
         break;
     
@@ -318,7 +332,7 @@ void show_save_groups(void)
             print_esc("mathchoice");
 
           for (i = 1; i <= 3; ++i)
-            if (i<=saved(-2))
+            if (i <= saved(-2))
               prints("{}");
       
           goto found2;
@@ -327,7 +341,7 @@ void show_save_groups(void)
 
       case insert_group:
         {
-          if (saved(-2)==255)
+          if (saved(-2) == 255)
             print_esc("vadjust");
           else
           {
@@ -347,7 +361,9 @@ void show_save_groups(void)
     
       case semi_simple_group:
         {
-          incr(p); print_esc("begingroup"); goto found;
+          incr(p);
+          print_esc("begingroup");
+          goto found;
         }
         break;
         
@@ -355,58 +371,62 @@ void show_save_groups(void)
         {
           if (m ==mmode)
             print_char('$');
-          else if (nest[p].mode_field==mmode)
+          else if (nest[p].mode_field == mmode)
           {
-            print_cmd_chr(eq_no,saved(-2)); goto found;
+            print_cmd_chr(eq_no,saved(-2));
+            goto found;
           }
   
-          print_char('$'); goto found;
+          print_char('$');
+          goto found;
         }
         break;
 
       case math_left_group:
         {
-          if (type(nest[p+1].eTeX_aux_field)==left_noad)
+          if (type(nest[p+1].eTeX_aux_field) == left_noad)
             print_esc("left");
           else
             print_esc("middle");
+
           goto found;
         }
         break;
     }
   }
 
-i = saved(-4);
-if (i != 0)
-  if (i<box_flag)
-  {
-    if (abs(nest[p].mode_field) == vmode)
-      j = hmove;
-    else
-      j = vmove;
-    
-    if (i>0)
-      print_cmd_chr(j,0);
-    else
-      print_cmd_chr(j,1);
-    
-    print_scaled(abs(i));
-    prints("pt");
-  }
-  else if (i < ship_out_flag)
-  {
-    if (i>=global_box_flag)
-    {
-      print_esc("global");
-      i = i-(global_box_flag-box_flag);
-    }
+  i = saved(-4);
 
-    print_esc("setbox");
-    print_int(i-box_flag);
-    print_char('=');
-  }
-  else
-    print_cmd_chr(leader_ship,i-(leader_flag-a_leaders));
+  if (i != 0)
+    if (i < box_flag)
+    {
+      if (abs(nest[p].mode_field) == vmode)
+        j = hmove;
+      else
+        j = vmove;
+    
+      if (i > 0)
+        print_cmd_chr(j, 0);
+      else
+        print_cmd_chr(j, 1);
+    
+      print_scaled(abs(i));
+      prints("pt");
+    }
+    else if (i < ship_out_flag)
+    {
+      if (i >= global_box_flag)
+      {
+        print_esc("global");
+        i = i - (global_box_flag - box_flag);
+      }
+
+      print_esc("setbox");
+      print_int(i - box_flag);
+      print_char('=');
+    }
+    else
+      print_cmd_chr(leader_ship,i - (leader_flag - a_leaders));
 
 found1:
   print_esc(s);
@@ -415,7 +435,7 @@ found1:
   {
     print_char(' ');
 
-    if (saved(-3)==exactly)
+    if (saved(-3) == exactly)
       prints("to");
     else
       prints("spread");
@@ -439,7 +459,7 @@ done:
   cur_group = c;
 }
 
-void scan_general_text(void)
+void scan_general_text (void)
 {
   int s;
   pointer w;
@@ -448,9 +468,14 @@ void scan_general_text(void)
   pointer q;
   halfword unbalance;
 
-  s = scanner_status; w = warning_index; d = def_ref;
-  scanner_status = absorbing; warning_index = cur_cs;
-  def_ref = get_avail(); token_ref_count(def_ref) = null; p = def_ref;
+  s = scanner_status;
+  w = warning_index;
+  d = def_ref;
+  scanner_status = absorbing;
+  warning_index = cur_cs;
+  def_ref = get_avail();
+  token_ref_count(def_ref) = null;
+  p = def_ref;
   scan_left_brace();
   unbalance = 1;
 
@@ -486,8 +511,8 @@ found:
   warning_index = w;
   def_ref = d;
 }
-
-pointer new_edge(small_number s, scaled w)
+// create an edge nod
+pointer new_edge (small_number s, scaled w)
 {
   pointer p;
 
@@ -499,7 +524,7 @@ pointer new_edge(small_number s, scaled w)
   return p;
 }
 
-pointer reverse(pointer this_box, pointer t, scaled cur_g, real cur_glue)
+pointer reverse (pointer this_box, pointer t, scaled cur_g, real cur_glue)
 {
   pointer l, la;
   scaled disp, disp2;
@@ -513,8 +538,12 @@ pointer reverse(pointer this_box, pointer t, scaled cur_g, real cur_glue)
 
   g_order = glue_order(this_box);
   g_sign = glue_sign(this_box);
-  disp = revdisp; disped = false;
-  l = t; p = temp_ptr; m = min_halfword; n = min_halfword;
+  disp = revdisp;
+  disped = false;
+  l = t;
+  p = temp_ptr;
+  m = min_halfword;
+  n = min_halfword;
 
   while (true)
   {
@@ -522,16 +551,24 @@ pointer reverse(pointer this_box, pointer t, scaled cur_g, real cur_glue)
 reswitch:
     if (is_char_node(p))
       do {
-        f = font(p); c = character(p);
+        f = font(p);
+        c = character(p);
         cur_h = cur_h + char_width(f, char_info(f, c));
 
         if (font_dir[f] != dir_default)
         {
-          q = link(p); la = l; l = p; p = link(q); link(q) = la;
+          q = link(p);
+          la = l;
+          l = p;
+          p = link(q);
+          link(q) = la;
         }
         else
         {
-          q = link(p); link(p) = l; l = p; p = q;
+          q = link(p);
+          link(p) = l;
+          l = p;
+          p = q;
         }
       } while (!(!is_char_node(p)));
     else
@@ -589,7 +626,7 @@ reswitch:
                 {
                   type(p) = kern_node;
 
-                  if (m>min_halfword)
+                  if (m > min_halfword)
                     decr(m);
                   else
                   {
@@ -605,7 +642,7 @@ reswitch:
             {
               push_LR(p);
 
-              if ((n>min_halfword) || (LR_dir(p) != cur_dir))
+              if ((n > min_halfword) || (LR_dir(p) != cur_dir))
               {
                 incr(n);
                 incr(subtype(p));
@@ -640,6 +677,7 @@ reswitch:
       }
 
       cur_h = cur_h + rule_wd;
+
 next_p:
       link(p) = l;
 
@@ -664,14 +702,17 @@ next_p:
 done:
   if ((l != null) && (type(l) != disp_node))
   {
-    p = get_node(small_node_size); type(p) = disp_node;
-    disp_dimen(p) = disp; link(p) = l; return p;
+    p = get_node(small_node_size);
+    type(p) = disp_node;
+    disp_dimen(p) = disp;
+    link(p) = l;
+    return p;
   }
   else
     return l;
 }
-
-pointer new_segment(small_number s, pointer f)
+// create a segment node
+pointer new_segment (small_number s, pointer f)
 {
   pointer p;
 
@@ -685,7 +726,7 @@ pointer new_segment(small_number s, pointer f)
   return p;
 }
 
-void just_copy(pointer p, pointer h, pointer t)
+void just_copy (pointer p, pointer h, pointer t)
 {
   pointer r;
   int words;
@@ -783,7 +824,7 @@ void just_copy(pointer p, pointer h, pointer t)
         break;
     }
 
-    while (words>0)
+    while (words > 0)
     {
       decr(words);
       mem[r + words] = mem[p + words];
@@ -792,6 +833,7 @@ void just_copy(pointer p, pointer h, pointer t)
 found:
     link(h) = r;
     h = r;
+
 not_found:
     p = link(p);
   }
@@ -799,7 +841,7 @@ not_found:
   link(h) = t;
 }
 
-void just_reverse(pointer p)
+void just_reverse (pointer p)
 {
   pointer l;
   pointer t;
@@ -828,28 +870,35 @@ void just_reverse(pointer p)
   while (q != null)
     if (is_char_node(q))
       do {
-        p = q; q = link(p); link(p) = l; l = p;
+        p = q;
+        q = link(p);
+        link(p) = l;
+        l = p;
       } while (!(!is_char_node(q)));
     else
     {
-      p = q; q = link(p);
+      p = q;
+      q = link(p);
 
       if (type(p) == math_node)
         adjust_the_LR_stack_j();
 
-      link(p) = l; l = p;
+      link(p) = l;
+      l = p;
     }
 
   goto done;
 
 found:
-  width(t) = width(p); link(t) = q;
+  width(t) = width(p);
+  link(t) = q;
   free_node(p, small_node_size);
+
 done:
   link(temp_head) = l;
 }
 
-void app_display(pointer j, pointer b, scaled d)
+void app_display (pointer j, pointer b, scaled d)
 {
   scaled z;
   scaled s;
@@ -864,9 +913,10 @@ void app_display(pointer j, pointer b, scaled d)
     shift_amount(b) = s + d;
   else
   {
-    z = display_width; p = b;
+    z = display_width;
+    p = b;
 
-    if (x>0)
+    if (x > 0)
       e = z - d - width(p);
     else
     {
@@ -879,7 +929,9 @@ void app_display(pointer j, pointer b, scaled d)
       b = copy_node_list(j);
       height(b) = height(p);
       depth(b) = depth(p);
-      s = s - shift_amount(b); d = d + s; e = e + width(b) - z - s;
+      s = s - shift_amount(b);
+      d = d + s;
+      e = e + width(b) - z - s;
     }
 
     if (box_lr(p) == dlist)
@@ -891,20 +943,25 @@ void app_display(pointer j, pointer b, scaled d)
       if (r == null)
         confusion("LR4");
 
-      if (x>0)
+      if (x > 0)
       {
         p = r;
 
         do {
-          q = r; r = link(r);
+          q = r;
+          r = link(r);
         } while (!(r == null));
       }
       else
       {
-        p = null; q = r;
+        p = null;
+        q = r;
 
         do {
-          t = link(r); link(r) = p; p = r; r = t;
+          t = link(r);
+          link(r) = p;
+          p = r;
+          r = t;
         } while (!(r == null));
       }
     }
@@ -959,7 +1016,7 @@ void app_display(pointer j, pointer b, scaled d)
   append_to_vlist(b);
 }
 
-void pseudo_start(void)
+void pseudo_start (void)
 {
   int old_setting;
   str_number s;
@@ -980,7 +1037,7 @@ void pseudo_start(void)
   nl = new_line_char;
   p = get_avail(); q = p;
 
-  while (l<pool_ptr)
+  while (l < pool_ptr)
   {
     m = l;
 
@@ -997,29 +1054,36 @@ void pseudo_start(void)
     q = r;
     info(q) = sz;
 
-    while (sz>2)
+    while (sz > 2)
     {
-      decr(sz); incr(r);
-      w.b0 = str_pool[m]; w.b1 = str_pool[m + 1];
-      w.b2 = str_pool[m + 2]; w.b3 = str_pool[m + 3];
-      mem[r].qqqq = w; m = m + 4;
+      decr(sz);
+      incr(r);
+      w.b0 = str_pool[m];
+      w.b1 = str_pool[m + 1];
+      w.b2 = str_pool[m + 2];
+      w.b3 = str_pool[m + 3];
+      mem[r].qqqq = w;
+      m = m + 4;
     }
 
-    w.b0 = ' '; w.b1 = ' '; w.b2 = ' '; w.b3 = ' ';
+    w.b0 = ' ';
+    w.b1 = ' ';
+    w.b2 = ' ';
+    w.b3 = ' ';
 
-    if (l>m)
+    if (l > m)
     {
       w.b0 = str_pool[m];
 
-      if (l>m + 1)
+      if (l > m + 1)
       {
         w.b1 = str_pool[m + 1];
 
-        if (l>m + 2)
+        if (l > m + 2)
         {
           w.b2 = str_pool[m + 2];
 
-          if (l>m + 3)
+          if (l > m + 3)
             w.b3 = str_pool[m + 3];
         }
       }
@@ -1036,23 +1100,26 @@ void pseudo_start(void)
   pseudo_files = p;
   flush_string();
   begin_file_reading();
-  line = 0; limit = start; loc = limit + 1;
+  line = 0; limit = start;
+  loc = limit + 1;
 
-  if (tracing_scan_tokens>0)
+  if (tracing_scan_tokens > 0)
   {
-    if (term_offset>max_print_line - 3)
+    if (term_offset > max_print_line - 3)
       print_ln();
     else if ((term_offset>0) || (file_offset>0))
       print_char(' ');
 
-    name = 19; prints("( "); incr(open_parens);
+    name = 19;
+    prints("( ");
+    incr(open_parens);
     update_terminal();
   }
   else
     name = 18;
 }
 
-boolean pseudo_input()
+boolean pseudo_input (void)
 {
   pointer p;
   integer sz;
@@ -1104,11 +1171,13 @@ void pseudo_close(void)
 
   while (q != null)
   {
-    p = q; q = link(p); free_node(p, info(p));
+    p = q;
+    q = link(p);
+    free_node(p, info(p));
   }
 }
 
-void get_x_or_protected(void)
+void get_x_or_protected (void)
 {
   while (true)
   {
@@ -1125,7 +1194,7 @@ void get_x_or_protected(void)
   }
 }
 
-void group_warning(void)
+void group_warning (void)
 {
   int i;
   boolean w;
@@ -1134,7 +1203,7 @@ void group_warning(void)
   input_stack[base_ptr] = cur_input;
   i = in_open; w = false;
 
-  while ((grp_stack[i] == cur_boundary) && (i>0))
+  while ((grp_stack[i] == cur_boundary) && (i > 0))
   {
     if (tracing_nesting>0)
     {
@@ -1165,7 +1234,7 @@ void group_warning(void)
   }
 }
 
-void if_warning(void)
+void if_warning (void)
 {
   int i;
   boolean w;
@@ -1176,13 +1245,13 @@ void if_warning(void)
 
   while (if_stack[i] == cond_ptr)
   {
-    if (tracing_nesting>0)
+    if (tracing_nesting > 0)
     {
       while ((input_stack[base_ptr].state_field == token_list) ||
-        (input_stack[base_ptr].index_field>i))
+        (input_stack[base_ptr].index_field > i))
         decr(base_ptr);
 
-      if (input_stack[base_ptr].name_field>17)
+      if (input_stack[base_ptr].name_field > 17)
         w = true;
     }
 
@@ -1219,12 +1288,19 @@ void file_warning(void)
   {
     decr(cur_level);
     print_nl("Warning: end of file when ");
-    print_group(true); prints(" is incomplete");
-    cur_group = save_level(save_ptr); save_ptr = save_index(save_ptr);
+    print_group(true);
+    prints(" is incomplete");
+    cur_group = save_level(save_ptr);
+    save_ptr = save_index(save_ptr);
   }
 
-  save_ptr = p; cur_level = l; cur_group = c;
-  p = cond_ptr; l = if_limit; c = cur_if; i = if_line;
+  save_ptr = p;
+  cur_level = l;
+  cur_group = c;
+  p = cond_ptr;
+  l = if_limit;
+  c = cur_if;
+  i = if_line;
 
   while (if_stack[in_open] != cond_ptr)
   {
@@ -1234,12 +1310,18 @@ void file_warning(void)
     if (if_limit == fi_code)
       print_esc("else");
 
-    print_if_line(if_line); prints(" is incomplete");
-    if_line = if_line_field(cond_ptr); cur_if = subtype(cond_ptr);
-    if_limit = type(cond_ptr); cond_ptr = link(cond_ptr);
+    print_if_line(if_line);
+    prints(" is incomplete");
+    if_line = if_line_field(cond_ptr);
+    cur_if = subtype(cond_ptr);
+    if_limit = type(cond_ptr);
+    cond_ptr = link(cond_ptr);
   }
 
-  cond_ptr = p; if_limit = l; cur_if = c; if_line = i;
+  cond_ptr = p;
+  if_limit = l;
+  cur_if = c;
+  if_line = i;
   print_ln();
 
   if (tracing_nesting>1)
@@ -1249,7 +1331,7 @@ void file_warning(void)
     history = warning_issued;
 }
 
-void scan_expr(void)
+void scan_expr (void)
 {
   boolean a, b;
   small_number l;
@@ -1263,46 +1345,68 @@ void scan_expr(void)
   pointer p;
   pointer q;
 
-  l = cur_val_level; a = arith_error; b = false; p = null;
+  l = cur_val_level;
+  a = arith_error;
+  b = false;
+  p = null;
 
 restart:
-  r = expr_none; e = 0; s = expr_none; t = 0; n = 0;
+  r = expr_none;
+  e = 0;
+  s = expr_none;
+  t = 0;
+  n = 0;
 
 continu:
-  if (s == expr_none) o = l; else o = int_val;
+  if (s == expr_none)
+    o = l;
+  else
+    o = int_val;
 
-  do
-  {
+  do {
     get_x_token();
   } while (!(cur_cmd != spacer));
 
   if (cur_tok == other_token + '(')
   {
-    q = get_node(expr_node_size); link(q) = p; type(q) = l;
+    q = get_node(expr_node_size);
+    link(q) = p;
+    type(q) = l;
     subtype(q) = 4 * s + r;
-    expr_e_field(q) = e; expr_t_field(q) = t; expr_n_field(q) = n;
-    p = q; l = o; goto restart;
+    expr_e_field(q) = e;
+    expr_t_field(q) = t;
+    expr_n_field(q) = n;
+    p = q;
+    l = o;
+    goto restart;
   }
 
   back_input();
 
-  if (o == int_val) scan_int();
-  else if (o == dimen_val) scan_normal_dimen();
-  else if (o == glue_val) scan_normal_glue();
-  else scan_mu_glue();
+  if (o == int_val)
+    scan_int();
+  else if (o == dimen_val)
+    scan_normal_dimen();
+  else if (o == glue_val)
+    scan_normal_glue();
+  else
+    scan_mu_glue();
 
   f = cur_val;
 
 found:
-  do
-  {
+  do {
     get_x_token();
   } while (!(cur_cmd != spacer));
 
-  if (cur_tok == other_token + '+') o = expr_add;
-  else if (cur_tok == other_token + '-') o = expr_sub;
-  else if (cur_tok == other_token + '*') o = expr_mult;
-  else if (cur_tok == other_token + '/') o = expr_div;
+  if (cur_tok == other_token + '+')
+    o = expr_add;
+  else if (cur_tok == other_token + '-')
+    o = expr_sub;
+  else if (cur_tok == other_token + '*')
+    o = expr_mult;
+  else if (cur_tok == other_token + '/')
+    o = expr_div;
   else
   {
     o = expr_none;
@@ -1324,19 +1428,19 @@ found:
 
   if ((l == int_val) || (s > expr_sub))
   {
-    if ((f>infinity) || (f<-infinity))
+    if ((f > infinity) || (f < -infinity))
       num_error(f);
   }
   else if (l == dimen_val)
   {
-    if (abs(f)>max_dimen)
+    if (abs(f) > max_dimen)
       num_error(f);
   }
   else
   {
-    if ((abs(width(f))>max_dimen) ||
-      (abs(stretch(f))>max_dimen) ||
-      (abs(shrink(f))>max_dimen))
+    if ((abs(width(f)) > max_dimen) ||
+      (abs(stretch(f)) > max_dimen) ||
+      (abs(shrink(f)) > max_dimen))
       glue_error(f);
   }
 
@@ -1396,15 +1500,18 @@ found:
       break;
   }
 
-  if (o>expr_sub)
+  if (o > expr_sub)
     s = o;
   else
   {
     s = expr_none;
 
-    if (r == expr_none) e = t;
-    else if (l == int_val) e = expr_add_sub(e, t, infinity);
-    else if (l == dimen_val) e = expr_a(e, t);
+    if (r == expr_none)
+      e = t;
+    else if (l == int_val)
+      e = expr_add_sub(e, t, infinity);
+    else if (l == dimen_val)
+      e = expr_a(e, t);
     else
     {
       width(e) = expr_a(width(e), width(t));
@@ -1440,9 +1547,14 @@ found:
   if (p != null)
   {
     f = e; q = p;
-    e = expr_e_field(q); t = expr_t_field(q); n = expr_n_field(q);
-    s = subtype(q) / 4; r = subtype(q) % 4;
-    l = type(q); p = link(q); free_node(q, expr_node_size);
+    e = expr_e_field(q);
+    t = expr_t_field(q);
+    n = expr_n_field(q);
+    s = subtype(q) / 4;
+    r = subtype(q) % 4;
+    l = type(q);
+    p = link(q);
+    free_node(q, expr_node_size);
     goto found;
   }
 
@@ -1462,15 +1574,17 @@ found:
       e = 0;
   }
 
-  arith_error = a; cur_val = e; cur_val_level = l;
+  arith_error = a;
+  cur_val = e;
+  cur_val_level = l;
 }
 
-void scan_normal_glue(void)
+void scan_normal_glue (void)
 {
   scan_glue(glue_val);
 }
 
-void scan_mu_glue(void)
+void scan_mu_glue (void)
 {
   scan_glue(mu_val);
 }
@@ -1495,7 +1609,7 @@ integer add_or_sub(integer x, integer y, integer max_answer, boolean negative)
   return a;
 }
 
-integer quotient(integer n, integer d)
+integer quotient (integer n, integer d)
 {
   boolean negative;
   integer a;
@@ -1518,19 +1632,21 @@ integer quotient(integer n, integer d)
       negative = !negative;
     }
 
-    a = n / d; n = n - a * d; d = n - d;
+    a = n / d;
+    n = n - a * d;
+    d = n - d;
 
     if (d + n >= 0)
       incr(a);
 
     if (negative)
-      negate(a);;
+      negate(a);
   }
 
   return a;
 }
 
-integer fract(integer x, integer n, integer d, integer max_answer)
+integer fract (integer x, integer n, integer d, integer max_answer)
 {
   boolean negative;
   integer a;
@@ -1548,19 +1664,22 @@ integer fract(integer x, integer n, integer d, integer max_answer)
     negative = false;
   else
   {
-    negate(d); negative = true;
+    negate(d);
+    negative = true;
   }
 
   if (x < 0)
   {
-    negate(x); negative = !negative;
+    negate(x);
+    negative = !negative;
   }
   else if (x == 0)
     goto done;
 
   if (n < 0)
   {
-    negate(n); negative = !negative;
+    negate(n);
+    negative = !negative;
   }
 
   t = n / d;
@@ -1568,27 +1687,33 @@ integer fract(integer x, integer n, integer d, integer max_answer)
   if (t > max_answer / x)
     goto too_big;
 
-  a = t*x; n = n - t*d;
+  a = t * x;
+  n = n - t * d;
 
   if (n == 0)
     goto found;
 
   t = x / d;
 
-  if (t>(max_answer - a) / n)
+  if (t > (max_answer - a) / n)
     goto too_big;
 
-  a = a + t*n; x = x - t*d;
+  a = a + t * n;
+  x = x - t * d;
 
   if (x == 0)
     goto found;
 
   if (x < n)
   {
-    t = x; x = n; n = t;
+    t = x;
+    x = n;
+    n = t;
   }
 
-  f = 0; r = (d / 2) - d; h = -r;
+  f = 0;
+  r = (d / 2) - d;
+  h = -r;
 
   while (true)
   {
@@ -1598,7 +1723,8 @@ integer fract(integer x, integer n, integer d, integer max_answer)
 
       if (r >= 0)
       {
-        r = r - d; incr(f);
+        r = r - d;
+        incr(f);
       }
     }
 
@@ -1611,14 +1737,18 @@ integer fract(integer x, integer n, integer d, integer max_answer)
       x = x + x;
     else
     {
-      t = x - d; x = t + x; f = f + n;
+      t = x - d;
+      x = t + x;
+      f = f + n;
 
       if (x < n)
       {
         if (x == 0)
           goto found1;
 
-        t = x; x = n; n = t;
+        t = x;
+        x = n;
+        n = t;
       }
     }
   }
@@ -1628,13 +1758,16 @@ found1:
     goto too_big;
 
   a = a + f;
+
 found:
   if (negative)
     negate(a);
 
   goto done;
+
 too_big:
   num_error(a);
+
 done:
   return a;
 }
@@ -1643,15 +1776,16 @@ void scan_register_num(void)
 {
   scan_int();
 
-  if ((cur_val<0) || (cur_val>max_reg_num))
+  if ((cur_val < 0) || (cur_val > max_reg_num))
   {
     print_err("Bad register code");
     help2(max_reg_help_line, "I changed this one to zero.");
-    int_error(cur_val); cur_val = 0;
+    int_error(cur_val);
+    cur_val = 0;
   }
 }
 
-void new_index(quarterword i, pointer q)
+void new_index (quarterword i, pointer q)
 {
   small_number k;
 

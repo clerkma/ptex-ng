@@ -11147,7 +11147,9 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
 
   g = null_font;
   file_opened = false;
-  pack_file_name(nom, aire, 805); /* .tfm */
+
+  if (!pack_json_name(nom, aire))
+    pack_file_name(nom, aire, 805); /* .tfm */
 
   if (!b_open_in(tfm_file))
     goto bad_tfm;
@@ -11264,6 +11266,8 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
   font_dir[f] = jfm_flag;
   font_num_ext[f] = nt;
   ctype_base[f] = fmem_ptr;
+  font_cmap[f] = cur_cmap;
+  font_spec[f] = cur_spec;
   char_base[f] = ctype_base[f] + nt - bc;
   width_base[f] = char_base[f] + ec + 1;
   height_base[f] = width_base[f] + nw;
@@ -11991,8 +11995,24 @@ void special_out (pointer p)
   selector = old_setting;
   str_room(1);
   graphics_mode();
-  spc_exec_special((const char *) str_pool + str_start[str_ptr], cur_length,
-    cur_h * 0.000015202, -cur_v * 0.000015202, 1.0);
+
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      spc_exec_special((const char *) str_pool + str_start[str_ptr], cur_length,
+        cur_h * 0.000015202, -cur_v * 0.000015202, 1.0);
+      break;
+
+    case dir_tate:
+      spc_exec_special((const char *)str_pool + str_start[str_ptr], cur_length,
+        -cur_v * 0.000015202, -cur_h * 0.000015202, 1.0);
+      break;
+
+    case dir_dtou:
+      spc_exec_special((const char *)str_pool + str_start[str_ptr], cur_length,
+        cur_v * 0.000015202, cur_h * 0.000015202, 1.0);
+      break;
+  }
 /*
   if (cur_length < 256)
   {

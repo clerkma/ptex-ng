@@ -84,21 +84,19 @@ void show_usage (void)
 {
   printf("\n"
       "Useage: ptex-ng [OPTION]... [+format_file] [file]\n\n"
-      "--help       -?  show this usage summary\n"
-      "--initex     -i  start up as initex (create format file)\n"
-      "--verbose    -v  be verbose (show implementation version number)\n"
-      "--ascii      -n  do not allow `non ASCII' characters in input files\n"
-      "                    (complain instead)\n"
-      "--showhex    -w  do not show `non ASCII' characters in hexadecimal\n"
-      "                    (show as is)\n"
-      "--patterns   -p  allow use of \\patterns after loading format (initex only)\n"
-      "--knuthify   -K  disable all extensions to basic TeX\n"
-      "--main-mem   -m  initial main memory size in kilo words (initex only)\n"
-      "--hyph-size  -e  hyphenation exception dictionary size (initex only)\n"
-      "--trie-size  -h  hyphenation pattern trie size (initex only)\n"
-      "--pdf-dir    -o  write PDF file in specified directory (default '.')\n"
-      "--log-dir    -l  write LOG file in specified directory (default '.')\n"
-      "--aux-dir    -a  write AUX file in specified directory (default '.')\n");
+      " --help         show this usage summary\n"
+      " --initex       start up as initex (create format file)\n"
+      " --verbose      be verbose (show implementation version number)\n"
+      " --showhex      do not show `non ASCII' characters in hexadecimal\n"
+      "                   (show as is)\n"
+      " --patterns     allow use of \\patterns after loading format (initex only)\n"
+      " --knuthify     disable all extensions to basic TeX\n"
+      " --main-mem     initial main memory size in kilo words (initex only)\n"
+      " --hyph-size    hyphenation exception dictionary size (initex only)\n"
+      " --trie-size    hyphenation pattern trie size (initex only)\n"
+      " --pdf-dir      write PDF file in specified directory (default '.')\n"
+      " --log-dir      write LOG file in specified directory (default '.')\n"
+      " --aux-dir      write AUX file in specified directory (default '.')\n");
   uexit(EXIT_FAILURE);
 }
 
@@ -1857,7 +1855,6 @@ void flush_trailing_slash (char * directory)
 
 void knuthify (void)
 {
-  restrict_to_ascii     = false; /* don't complain non ASCII */
   allow_patterns        = false; /* don't allow pattern redefinition */
   show_in_hex           = true;  /* show character code in hex */
   show_numeric          = false; /* don't show character code decimal */
@@ -1881,40 +1878,31 @@ void knuthify (void)
   knuth_flag            = true;  /* so other code can know about this */
 }
 
-/* following made global so analyze_flag can be made separate procedure */
-
-char * xchr_file = NULL;
-char * repl_file = NULL;
-
-const char * short_options = "m:e:h:0:H:g:P:o:l:a:r:kwvpiKLZMd2t?u";
-
 static struct option long_options[] =
 {
-  {"main-memory",   required_argument, NULL, 'm'},
-  {"hyph-size",     required_argument, NULL, 'e'},
-  {"trie-size",     required_argument, NULL, 'h'},
-  {"backend",       required_argument, NULL, '0'},
-  {"tab-step",      required_argument, NULL, 'H'},
-  {"percent-grow",  required_argument, NULL, 'g'},
-  {"default-rule",  required_argument, NULL, 'P'},
-  {"dvi-dir",       required_argument, NULL, 'o'},
-  {"log-dir",       required_argument, NULL, 'l'},
-  {"aux-dir",       required_argument, NULL, 'a'},
-  {"key-file",      required_argument, NULL, 'k'},
-  {"jobname",       required_argument, NULL, 'r'},
-  {"showhex",       no_argument,       NULL, 'w'},
-  {"verbose",       no_argument,       NULL, 'v'},
-  {"patterns",      no_argument,       NULL, 'p'},
-  {"initex",        no_argument,       NULL, 'i'},
-  {"knuthify",      no_argument,       NULL, 'K'},
-  {"cstyle",        no_argument,       NULL, 'L'},
-  {"showtfm",       no_argument,       NULL, 'Z'},
-  {"showmissing",   no_argument,       NULL, 'M'},
-  {"deslash",       no_argument,       NULL, 'd'},
-  {"suppressflig",  no_argument,       NULL, '2'},
-  {"trace",         no_argument,       NULL, 't'},
-  {"help",          no_argument,       NULL, '?'},
-  {"usage",         no_argument,       NULL, 'u'},
+  {"main-memory",   required_argument, NULL, 0},
+  {"hyph-size",     required_argument, NULL, 0},
+  {"trie-size",     required_argument, NULL, 0},
+  {"tab-step",      required_argument, NULL, 0},
+  {"percent-grow",  required_argument, NULL, 0},
+  {"default-rule",  required_argument, NULL, 0},
+  {"dvi-dir",       required_argument, NULL, 0},
+  {"log-dir",       required_argument, NULL, 0},
+  {"aux-dir",       required_argument, NULL, 0},
+  {"progname",      required_argument, NULL, 0},
+  {"jobname",       required_argument, NULL, 0},
+  {"verbose",       no_argument,       NULL, 0},
+  {"patterns",      no_argument,       NULL, 0},
+  {"ini",           no_argument,       NULL, 0},
+  {"knuthify",      no_argument,       NULL, 0},
+  {"cstyle",        no_argument,       NULL, 0},
+  {"showtfm",       no_argument,       NULL, 0},
+  {"showmissing",   no_argument,       NULL, 0},
+  {"deslash",       no_argument,       NULL, 0},
+  {"suppressfligs", no_argument,       NULL, 0},
+  {"trace",         no_argument,       NULL, 0},
+  {"help",          no_argument,       NULL, 0},
+  {"usage",         no_argument,       NULL, 0},
   {NULL,            0, 0, 0}
 };
 
@@ -1922,143 +1910,72 @@ int analyze_flag (int c, char * optarg)
 {
   switch (c)
   {
-    case 'r':
-      c_job_name = optarg;
-      break;
-    case 'v':
-      verbose_flag = true;
-      break;
-    case 'i':
-      is_initex = true;
-      break;
     case 'Q':
       interaction = batch_mode;
       break;
+
     case 'R':
       interaction = nonstop_mode;
       break;
+
     case 'S':
       interaction = scroll_mode;
       break;
+
     case 'T':
       interaction = error_stop_mode;
       break;
-    case 'K':
-      knuthify();
-      break;
-    case 'L':
-      c_style_flag = true;
-      break;
-    case 'Z':
-      show_tfm_flag = true;
-      break;
-    case 'M':
-      show_missing = false;
-      break;
-    case 'd':
-      deslash = false;
-      break;
-    case 'p':
-      allow_patterns = true;
-      break;
+
     case 'w':
       show_in_hex = true;
       break;
-    case 'n':
-      restrict_to_ascii = true; /* 0 - 127 1994/Jan/21 */
-      break;
+
     case 'f':
       show_fonts_used = false;
       break;
+
     case '8':
       shorten_file_name = true;
       break;
+
     case '9':
       show_cs_names = true;
       break;
+
     case '4':
       ignore_frozen = true;
       break;
+
     case 'J':
       show_line_break_stats = false; /* 96/Feb/8 */
       break;
+
     case 'O':
       show_fmt_flag = false; /* 94/Jun/21 */
       break;
-    case '2':
-      suppress_f_ligs = true; /* 99/Jan/5 f-lig */
-      break;
+
     case 'z':
       full_file_name_flag = false; // 00 Jun 18
       break;
-    case 't':
-      trace_flag = true;
-      break;
-/* The following are really obscure and should not be advertized */
+
     case 's':
       show_current = false;
       break;
+
     case 'N':
       show_numeric = false;
       break;
+
     case 'A':
       civilize_flag = false;
       break; 
+
     case 'B':
       open_trace_flag = true;
       break;
+
     case 'Y':
-      reorder_arg_flag = false; /* local */
-      break;
-
-    case 'm':
-      if (optarg == 0)
-        mem_initex = mem_top;
-      else
-        mem_initex = atoi(optarg) * 1024;
-
-      if (mem_initex == 0)
-        complainarg(c, optarg);
-
-      mem_spec_flag = true;
-      break;
-
-#ifdef VARIABLETRIESIZE
-    case 'h':
-      if (optarg == 0)
-      {
-        //trie_size = atoi(kpse_var_value("trie_size"));
-        trie_size = default_trie_size;
-      }
-      else
-        trie_size = atoi(optarg);
-
-      if (trie_size == 0)
-        complainarg(c, optarg);
-      break;
-#endif
-
-#ifdef ALLOCATEHYPHEN
-    case 'e':
-      if (optarg == 0)
-        new_hyphen_prime = hyphen_prime * 2;
-      else
-        new_hyphen_prime = atoi(optarg);
-
-      if (new_hyphen_prime == 0)
-        complainarg(c, optarg);
-
-      break;
-#endif
-    case 'g':
-      if (optarg == 0)
-        percent_grow = 62;
-      else
-        percent_grow = atoi(optarg);
-
-      if (percent_grow == 0)
-        complainarg(c, optarg);
-
+      reorder_arg_flag = false;
       break;
 
     case 'U':
@@ -2074,88 +1991,8 @@ int analyze_flag (int c, char * optarg)
 
       break;
 
-    case 'H':
-      if (optarg == 0)
-        tab_step = 8;
-      else
-        tab_step = atoi(optarg);
-      if (tab_step == 0)
-        complainarg(c, optarg);
-      break;
-
-    case 'x':
-      if (optarg == 0)
-        xchr_file = xstrdup("xchr.map");
-      else
-        xchr_file = xstrdup(optarg);
-
-      if (xchr_file == NULL || *xchr_file == '\0')
-        complainarg(c, optarg);
-      break;
-
-    case 'k':
-      if (optarg == 0)
-        repl_file = xstrdup("repl.key");
-      else
-        repl_file = xstrdup(optarg);
-
-      if (repl_file == NULL || *repl_file == '\0')
-        complainarg(c, optarg);
-      break;
-
-    case 'P':
-      if (optarg == 0)
-        default_rule = 26214;
-      else
-        default_rule = atoi(optarg);
-
-      if (default_rule == 0)
-        complainarg(c, optarg);
-      break;
-
-    case 'E':
-      if (optarg != 0)
-        putenv(optarg);
-      else
-        complainarg(c, optarg);
-      break;
-
-    case 'o':
-      if (optarg == 0)
-        dvi_directory = "";
-      else
-        dvi_directory = xstrdup(optarg);
-
-      if (strcmp(dvi_directory, "") == 0)
-        complainarg(c, optarg);
-
-      break;
-
-    case 'l':
-      if (optarg == 0)
-        log_directory = "";
-      else
-        log_directory = xstrdup(optarg);
-
-      if (strcmp(log_directory, "") == 0)
-        complainarg(c, optarg);
-
-      break;
-
-    case 'a':
-      if (optarg == 0)
-        aux_directory = "";
-      else
-        aux_directory = xstrdup(optarg);
-
-      if (strcmp(aux_directory, "") == 0)
-        complainarg(c, optarg);
-
-      break;
-
     case '?':
     default:
-      show_use = true;
       return -1;
       break;
   }
@@ -2179,6 +2016,9 @@ void strip_name (char *pathname)
   *s = '\0';
 }
 
+#undef name
+#define ARGUMENT_IS(a) !strcmp(long_options[option_idx].name, a)
+
 int read_command_line (int ac, char **av)
 { 
   int c;
@@ -2188,23 +2028,143 @@ int read_command_line (int ac, char **av)
   if (ac < 2)
     return 0;
 
-  while ((c = getopt_long_only(ac, av, short_options, long_options, &option_idx)) != EOF)
+  while ((c = getopt_long_only(ac, av, "+", long_options, &option_idx)) != EOF)
   {
     if (optarg != 0 && *optarg == '=')
       optargnew = optarg + 1;
     else
       optargnew = optarg;
 
-    analyze_flag(c, optargnew);
-  }
+    if (ARGUMENT_IS("progname"))
+      kpse_reset_program_name(optarg);
+    else if (ARGUMENT_IS("jobname"))
+      c_job_name = optarg;
+    else if (ARGUMENT_IS("verbose"))
+      verbose_flag = true;
+    else if (ARGUMENT_IS("ini"))
+      is_initex = true;
+    else if (ARGUMENT_IS("knuthify"))
+      knuthify();
+    else if (ARGUMENT_IS("cstyle"))
+      c_style_flag = true;
+    else if (ARGUMENT_IS("showtfm"))
+      show_tfm_flag = true;
+    else if (ARGUMENT_IS("showmissing"))
+      show_missing = false;
+    else if (ARGUMENT_IS("deslash"))
+      deslash = false;
+    else if (ARGUMENT_IS("suppressfligs"))
+      suppress_f_ligs = true;
+    else if (ARGUMENT_IS("patterns"))
+      allow_patterns = true;
+    else if (ARGUMENT_IS("trace"))
+      trace_flag = true;
+    else if (ARGUMENT_IS("dvi-dir"))
+    {
+      if (optarg == 0)
+        dvi_directory = "";
+      else
+        dvi_directory = xstrdup(optarg);
 
-  if (show_use)
-  {
-    stamp_it(log_line);
-    strcat(log_line, "\n");
-    show_line(log_line, 0);
-    show_usage();
-    return -1; // failure
+      if (strcmp(dvi_directory, "") == 0)
+        complainarg(c, optarg);
+    }
+    else if (ARGUMENT_IS("log-dir"))
+    {
+      if (optarg == 0)
+        log_directory = "";
+      else
+        log_directory = xstrdup(optarg);
+
+      if (strcmp(log_directory, "") == 0)
+        complainarg(c, optarg);
+    }
+    else if (ARGUMENT_IS("aux-dir"))
+    {
+      if (optarg == 0)
+        aux_directory = "";
+      else
+        aux_directory = xstrdup(optarg);
+
+      if (strcmp(aux_directory, "") == 0)
+        complainarg(c, optarg);
+    }
+    else if (ARGUMENT_IS("trie-size"))
+    {
+#ifdef VARIABLETRIESIZE
+      if (optarg == 0)
+        trie_size = default_trie_size;
+      else
+        trie_size = atoi(optarg);
+
+      if (trie_size == 0)
+        complainarg(c, optarg);
+#endif
+    }
+    else if (ARGUMENT_IS("hyph-size"))
+    {
+#ifdef ALLOCATEHYPHEN
+      if (optarg == 0)
+        new_hyphen_prime = hyphen_prime * 2;
+      else
+        new_hyphen_prime = atoi(optarg);
+
+      if (new_hyphen_prime == 0)
+        complainarg(c, optarg);
+#endif
+    }
+    else if (ARGUMENT_IS("main-memory"))
+    {
+      if (optarg == 0)
+        mem_initex = mem_top;
+      else
+        mem_initex = atoi(optarg) * 1024;
+
+      if (mem_initex == 0)
+        complainarg(c, optarg);
+
+      mem_spec_flag = true;
+    }
+    else if (ARGUMENT_IS("default-rule"))
+    {
+      if (optarg == 0)
+        default_rule = 26214;
+      else
+        default_rule = atoi(optarg);
+
+      if (default_rule == 0)
+        complainarg(c, optarg);
+    }
+    else if (ARGUMENT_IS("percent-grow"))
+    {
+      if (optarg == 0)
+        percent_grow = 62;
+      else
+        percent_grow = atoi(optarg);
+
+      if (percent_grow == 0)
+        complainarg(c, optarg);
+    }
+    else if (ARGUMENT_IS("tab-step"))
+    {
+      if (optarg == 0)
+        tab_step = 8;
+      else
+        tab_step = atoi(optarg);
+
+      if (tab_step == 0)
+        complainarg(c, optarg);
+    }
+    else if (ARGUMENT_IS("help"))
+    {
+      stamp_it(log_line);
+      strcat(log_line, "\n");
+      show_line(log_line, 0);
+      show_usage();
+      return -1; // failure
+    }
+    else
+      analyze_flag(c, optargnew);
   }
 
   return 0;
@@ -2218,7 +2178,6 @@ int init_commands (int ac, char **av)
   open_trace_flag       = false;
   trace_flag            = false;
   verbose_flag          = false;
-  restrict_to_ascii     = false;
   show_in_hex           = false; /* default is not to show as hex code ^^ 00/Jun/18 */
   return_flag           = true;  // hard wired now
   trimeof               = true;  // hard wired now
@@ -2485,7 +2444,7 @@ void deslash_all (int ac, char **av)
 int main_init (int ac, char ** av)
 {
   kpse_set_program_name(av[0], NULL);
-  init_kanji();
+  init_default_kanji("utf8", "uptex");
   xputenv("engine", "ptex-ng");
 
   if (sizeof(memory_word) != sizeof(halfword) * 2)
@@ -2523,7 +2482,7 @@ int main_init (int ac, char ** av)
   log_opened          = false;  /* so can tell whether opened */
   interaction         = -1;     /* default state => 3 */
   missing_characters  = 0;      /* none yet! */
-  ignore_frozen       = false;  /* default is not to ignore 98/Oct/5 */
+  ignore_frozen       = false;  /* default is not to ignore */
   suppress_f_ligs     = false;  /* default is not to ignore f-ligs */
 
   if (ac > 1 && !strncmp(av[1], "-Y", 2))
@@ -2554,7 +2513,7 @@ int main_init (int ac, char ** av)
   underfull_vbox    = 0;
 
   if (trace_flag)
-    puts("Entering main_init() (local.c).");
+    puts("Entering main_init().");
 
   probe_memory();
   ini_max_address = max_address;
@@ -2574,7 +2533,7 @@ int main_init (int ac, char ** av)
   check_alloc_align(trace_flag);
 
   if (trace_flag)
-    puts("Leaving main_init() (local.c).");
+    puts("Leaving main_init().");
 
   return 0;
 }

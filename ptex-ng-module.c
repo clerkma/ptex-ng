@@ -20,7 +20,7 @@
 #define EXTERN extern
 #include "ptex-ng.h"
 
-pointer new_dir_node(pointer b, eight_bits dir)
+pointer new_dir_node (pointer b, eight_bits dir)
 {
   pointer p;
 
@@ -125,7 +125,6 @@ void prev_append_(pointer val)
   link(link(prev_node)) = tail;
   prev_node = link(prev_node);
 }
-
 /* sec 1416 */
 eight_bits get_jfm_pos(KANJI_code kcode, internal_font_number f)
 {
@@ -161,7 +160,7 @@ eight_bits get_jfm_pos(KANJI_code kcode, internal_font_number f)
   return kchar_type(f, 0);
 }
 /* sec 1425 */
-void print_kansuji(integer n)
+void print_kansuji (integer n)
 {
   char k;
   KANJI_code cx;
@@ -185,7 +184,7 @@ void print_kansuji(integer n)
   }
 }
 /* sec 1435 */
-pointer get_inhibit_pos(KANJI_code c, small_number n)
+pointer get_inhibit_pos (KANJI_code c, small_number n)
 {
   pointer p, s;
 
@@ -220,19 +219,35 @@ pointer get_inhibit_pos(KANJI_code c, small_number n)
       if (p > 255)
         p = 0;
     } while (!(s == p));
+
 done1:
     p = no_entry;
   }
+
 done:
   return p;
 }
 /* sec 1440 */
-pointer get_kinsoku_pos(KANJI_code c, small_number n)
+pointer get_kinsoku_pos (KANJI_code c, small_number n)
 {
   pointer p, s;
 
   s = calc_pos(c);
   p = s;
+
+#ifdef DEBUG
+  print_ln();
+  prints("c:=");
+  print_int(c);
+  prints(", p:=");
+  print_int(s);
+
+  if (p + kinsoku_base < 0)
+  {
+    prints("p is negative value");
+    print_ln();
+  }
+#endif
 
   if (n == new_pos)
   {
@@ -262,14 +277,16 @@ pointer get_kinsoku_pos(KANJI_code c, small_number n)
       if (p > 255)
         p = 0;
     } while (!(s == p));
+
 done1:
     p = no_entry;
   }
+
 done:
   return p;
 }
 /* sec 1448 */
-void pdf_synch_dir(void)
+void pdf_synch_dir (void)
 {
   scaled tmp;
 
@@ -280,7 +297,6 @@ void pdf_synch_dir(void)
       {
         pdf_synch_h();
         pdf_synch_v();
-        dir_used = true;
 
         switch (dvi_dir)
         {
@@ -291,6 +307,7 @@ void pdf_synch_dir(void)
               cur_v = tmp;
             }
             break;
+
           case dir_dtou:
             {
               tmp = cur_h;
@@ -305,12 +322,12 @@ void pdf_synch_dir(void)
         dvi_dir = cur_dir_hv;
       }
       break;
+
     case dir_tate:
       if (dvi_dir != cur_dir_hv)
       {
         pdf_synch_h();
         pdf_synch_v();
-        dir_used = true;
 
         switch (dvi_dir)
         {
@@ -321,6 +338,7 @@ void pdf_synch_dir(void)
               cur_v = -tmp;
             }
             break;
+
           case dir_dtou:
             {
               cur_h = -cur_h;
@@ -334,12 +352,12 @@ void pdf_synch_dir(void)
         dvi_dir = cur_dir_hv;
       }
       break;
+
     case dir_dtou:
       if (dvi_dir != cur_dir_hv)
       {
         pdf_synch_h();
         pdf_synch_v();
-        dir_used = true;
 
         switch (dvi_dir)
         {
@@ -352,8 +370,8 @@ void pdf_synch_dir(void)
             break;
           case dir_tate:
             {
-              cur_h = -cur_h;
               cur_v = -cur_v;
+              cur_h = -cur_h;
             }
             break;
         }
@@ -363,13 +381,14 @@ void pdf_synch_dir(void)
         dvi_dir = cur_dir_hv;
       }
       break;
+
     default:
       confusion("synch_dir");
       break;
   }
 }
 /* sec 1450 */
-boolean check_box(pointer box_p)
+boolean check_box (pointer box_p)
 {
   pointer p;
   boolean flag;
@@ -381,8 +400,7 @@ boolean check_box(pointer box_p)
   {
     if (is_char_node(p))
     {
-      do
-      {
+      do {
         if (find_first_char)
         {
           first_char = p;
@@ -399,8 +417,7 @@ boolean check_box(pointer box_p)
 
         if (p == null)
           goto done;
-      }
-      while (!(!is_char_node(p)));
+      } while (!(!is_char_node(p)));
     }
 
     switch (type(p))
@@ -420,10 +437,12 @@ boolean check_box(pointer box_p)
             last_char = null;
         }
         break;
+
       case ligature_node:
         if (check_box(lig_ptr(p)))
           flag = true;
         break;
+
       case ins_node:
       case disp_node:
       case mark_node:
@@ -463,11 +482,12 @@ boolean check_box(pointer box_p)
 
     p = link(p);
   }
+
 done:
   return flag;
 }
 /* sec 1451 */
-void adjust_hlist(pointer p, boolean pf)
+void adjust_hlist (pointer p, boolean pf)
 {
   pointer q, s, t, u, v, x, z;
   halfword i, k;
@@ -518,8 +538,7 @@ void adjust_hlist(pointer p, boolean pf)
   {
     if (is_char_node(p))
     {
-      do 
-      {
+      do {
         insert_space_around_char();
         q = p;
         p = link(p);
@@ -533,8 +552,7 @@ void adjust_hlist(pointer p, boolean pf)
 
           v = link(v);
         }
-      }
-      while (!(!is_char_node(p)));
+      } while (!(!is_char_node(p)));
     }
     else
     {
@@ -629,7 +647,8 @@ void adjust_hlist(pointer p, boolean pf)
     }
   }
 
-  if (!is_char_node(q) && (type(q) == glue_node) && (subtype(q) == jfm_skip + 1))
+  if (!is_char_node(q) && (type(q) == glue_node) &&
+    (subtype(q) == jfm_skip + 1))
   {
     fast_delete_glue_ref(glue_ptr(q));
     glue_ptr(q) = zero_glue;
@@ -644,7 +663,8 @@ void adjust_hlist(pointer p, boolean pf)
 exit:;
 }
 /* sec 1467 */
-void print_dir(eight_bits dir)
+// prints |dir| data
+void print_dir (eight_bits dir)
 {
   if (dir == dir_yoko)
     print_char('Y');
@@ -654,7 +674,7 @@ void print_dir(eight_bits dir)
     print_char('D');
 }
 
-void print_direction_alt(integer d)
+void print_direction_alt (integer d)
 {
   boolean x;
 
@@ -668,12 +688,14 @@ void print_direction_alt(integer d)
         x = true;
       }
       break;
+
     case dir_tate:
       {
         prints(", tate");
         x = true;
       }
       break;
+
     case dir_dtou:
       {
         prints(", dtou");
@@ -690,15 +712,22 @@ void print_direction_alt(integer d)
     prints(" direction");
   }
 }
-
-
-void print_direction(integer d)
+// print the direction represented by d
+void print_direction (integer d)
 {
   switch (abs(d))
   {
-    case dir_yoko: prints("yoko"); break;
-    case dir_tate: prints("tate"); break;
-    case dir_dtou: prints("dtou"); break;
+    case dir_yoko:
+      prints("yoko");
+      break;
+
+    case dir_tate:
+      prints("tate");
+      break;
+
+    case dir_dtou:
+      prints("dtou");
+      break;
   }
 
   if (d < 0)
@@ -706,79 +735,8 @@ void print_direction(integer d)
 
   prints(" direction");
 }
-/* sec 1465 */
-void dir_out(void)
-{
-  pointer this_box;
-
-  this_box = temp_ptr;
-  temp_ptr = list_ptr(this_box);
-
-  if ((type(temp_ptr) != hlist_node) && (type(temp_ptr) != vlist_node))
-    confusion("dir_out");
-
-  switch (box_dir(this_box))
-  {
-    case dir_yoko:
-      switch (box_dir(temp_ptr))
-      {
-        case dir_tate:
-          {
-            cur_v = cur_v - height(this_box);
-            cur_h = cur_h + depth(temp_ptr);
-          }
-          break;
-        case dir_dtou:
-          {
-            cur_v = cur_v + depth(this_box);
-            cur_h = cur_h + height(temp_ptr);
-          }
-          break;
-      }
-      break;
-    case dir_tate:
-      switch (box_dir(temp_ptr))
-      {
-        case dir_yoko:
-          {
-            cur_v = cur_v + depth(this_box);
-            cur_h = cur_h + height(temp_ptr);
-          }
-          break;
-        case dir_dtou:
-          {
-            cur_v = cur_v + depth(this_box) - height(temp_ptr);
-            cur_h = cur_h + width(temp_ptr);
-          }
-          break;
-      }
-    case dir_dtou:
-      switch (box_dir(temp_ptr))
-      {
-        case dir_yoko:
-          {
-            cur_v = cur_v - height(this_box);
-            cur_h = cur_h + depth(temp_ptr);
-          }
-          break;
-        case dir_tate:
-          {
-            cur_v = cur_v + depth(this_box) - height(temp_ptr);
-            cur_h = cur_h + width(temp_ptr);
-          }
-          break;
-      }
-  }
-
-  cur_dir_hv = box_dir(temp_ptr);
-
-  if (type(temp_ptr) == vlist_node)
-    vlist_out();
-  else
-    hlist_out();
-}
 /* sec 1468 */
-void set_math_kchar(integer c)
+void set_math_kchar (integer c)
 {
   pointer p;
 
@@ -801,12 +759,20 @@ void set_math_kchar(integer c)
   tail = p;
 }
 /* sec 1473 */
-void print_kanji(KANJI_code s)
+// prints a single character
+void print_kanji (KANJI_code s)
 {
   s = toBUFF(s % max_cjk_val);
-  if (BYTE1(s) != 0) print_char(BYTE1(s));
-  if (BYTE2(s) != 0) print_char(BYTE2(s));
-  if (BYTE3(s) != 0) print_char(BYTE3(s));
+
+  if (BYTE1(s) != 0)
+    print_char(BYTE1(s));
+
+  if (BYTE2(s) != 0)
+    print_char(BYTE2(s));
+
+  if (BYTE3(s) != 0)
+    print_char(BYTE3(s));
+
   print_char(BYTE4(s));
 }
 
@@ -815,7 +781,7 @@ integer check_kcat_code(integer ct)
   if (((ct >= kanji) && (enable_cjk_token == 0)) || (enable_cjk_token == 2))
     return 1;
   else
-  return 0;
+    return 0;
 }
 
 integer check_echar_range(integer c)

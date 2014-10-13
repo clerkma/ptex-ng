@@ -350,3 +350,37 @@ boolean open_output (FILE ** f, const char * fopen_mode)
   
   return (*f != NULL);
 }
+
+boolean pack_json_name (str_number nom, str_number aire)
+{
+  JSON_Value  * json_font;
+  JSON_Object * json_spec;
+  char * temp_json_name = (char *)malloc(length(nom) + 6);
+  char * temp_file_name;
+
+  strncpy(temp_json_name, (const char *) (str_pool + str_start[nom]), length(nom));
+  strncpy(temp_json_name + length(nom), ".json", 6);
+  temp_file_name = kpse_find_file((const_string)temp_json_name, kpse_miscfonts_format, false);
+  free(temp_json_name);
+
+  cur_cmap = 0;
+  cur_spec = 0;
+
+  if (temp_file_name != NULL)
+  {
+    json_font = json_parse_file(temp_file_name);
+
+    if (json_value_get_type(json_font) != JSONObject)
+      return false;
+
+    json_spec = json_value_get_object(json_font);
+    pack_file_name(make_string_pool(json_object_get_string(json_spec, "metric")), aire, 805);
+    cur_cmap = make_string_pool(json_object_get_string(json_spec, "cmap"));
+    cur_spec = make_string_pool(json_object_get_string(json_spec, "spec"));
+    json_value_free(json_font);
+
+    return true;
+  }
+  else
+    return false;
+}

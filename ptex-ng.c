@@ -22,9 +22,6 @@
 #define EXTERN
 #include "ptex-ng.h"
 
-#define dump_ext_length 4
-#define edit_value      tex_edit_value
-
 int    gargc;
 char **gargv;
 
@@ -59,7 +56,7 @@ int main (int ac, char *av[])
   else
   {
     if (trace_flag)
-      printf("EXITING at %s: flag = %d, ret = %d, jump_used =  %d\n", "jump_out", flag, ret, jump_used);
+      printf("EXITING at %s: flag = %d, ret = %d, jump_used = %d\n", "jump_out", flag, ret, jump_used);
   }
 
   if (endit(flag) != 0)
@@ -70,7 +67,6 @@ int main (int ac, char *av[])
   else
     exit (flag);
 }
-
 /* texk/web2c/lib/texmfmp.c */
 void t_open_in (void)
 {
@@ -247,7 +243,6 @@ void show_bad_line (FILE * output, int first, int last)
 boolean input_line_finish (void)
 {
   int i = '\0';
-  int ch, flag;
 
   buffer[last] = ' ';
 
@@ -262,36 +257,6 @@ boolean input_line_finish (void)
       --last;
     else
       break;
-  }
-
-  if (restrict_to_ascii)
-  {
-    flag = 0;
-
-    for (i = first; i <= last; i++)
-    {
-      ch = buffer[i];
-
-      if (ch > 126 ||  (ch < ' ' && ch != '\t' && ch != '\f' && ch != '\r' && ch != '\n'))
-      {
-        sprintf(log_line, "\n! non ASCII char (%d) in line: ", ch);
-        show_line(log_line, 1);
-
-        if (log_opened)
-          fprintf(log_file, "\n! non ASCII char (%d) in line: ", ch);
-
-        flag = 1;
-        break;
-      }
-    }
-
-    if (flag)
-    {
-      show_bad_line(errout, first, last);
-
-      if (log_opened)
-        show_bad_line(log_file, first, last);
-    }
   }
 
   return true;
@@ -446,11 +411,7 @@ void call_edit (ASCII_code * filename, pool_pointer fnstart, integer fnlength, i
 
   /* Close any open input files, since we're going to kill the job. */
   for (i = 1; i <= in_open; i++)
-#ifdef XeTeX
-    xfclose(input_file[i]->f, "inputfile");
-#else
     xfclose(input_file[i], "inputfile");
-#endif
 
   /* Replace the default with the value of the appropriate environment
      variable or config file value, if it's set.  */

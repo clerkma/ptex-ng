@@ -1512,3 +1512,23 @@ test_fontmap_main (int argc, char *argv[])
   return  0;
 }
 #endif /* DPXTEST */
+
+int
+pdf_insert_ng_fontmap (const char * fnt_name, const char * fnt_cmap, const char * fnt_spec, int fnt_idx)
+{
+  fontmap_rec *mrec;
+
+  mrec  = NEW(1, fontmap_rec);
+  pdf_init_fontmap_record(mrec);
+
+  mrec->map_name  = mstrdup(fnt_name);
+  mrec->enc_name  = mstrdup(fnt_cmap);
+  mrec->font_name = mstrdup(fnt_spec);
+  mrec->opt.index = fnt_idx;
+  fill_in_defaults(mrec, fnt_name);
+  pdf_insert_fontmap_record(mrec->map_name, mrec);
+  pdf_clear_fontmap_record(mrec);
+  RELEASE(mrec);
+
+  return 0;
+}

@@ -63,7 +63,9 @@ integer calc_pos(integer c)
 {
   unsigned char c1, c2;
 
-  if (c >= 0 && c <= 255) return(c);
+  if (c >= 0 && c <= 255)
+    return(c);
+
   c1 = Hi(c);
   c2 = Lo(c);
 
@@ -332,7 +334,7 @@ static long ucs_range[] = {
 #define NUCS_RANGE (sizeof(ucs_range)/sizeof(ucs_range[0]))
 
 static int
-binary_search(long x, long *a, int left, int right)
+binary_search (long x, long *a, int left, int right)
 {
   right++;
 
@@ -393,8 +395,6 @@ integer multilenbuffchar(integer c)
 
 void init_default_kanji(const_string file_str, const_string internal_str)
 {
-  char *p;
-
   enable_UPTEX(true);
 
   if (!set_enc_string(file_str, internal_str))
@@ -403,13 +403,5 @@ void init_default_kanji(const_string file_str, const_string internal_str)
       file_str ? file_str : "NULL",
       internal_str ? internal_str : "NULL");
     uexit(1);
-  }
-
-  p = getenv("PTEX_KANJI_ENC");
-
-  if (p)
-  {
-    if (!set_enc_string(p, NULL))
-      fprintf(stderr, "Ignoring bad kanji encoding \"%s\".\n", p);
   }
 }

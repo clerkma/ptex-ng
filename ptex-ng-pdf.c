@@ -1,4 +1,4 @@
-/*
+Ôªø/*
    Copyright 2014 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 static const double sp2bp = 0.000015202;
 static scaled cur_page_width;
 static scaled cur_page_height;
+static scaled pdf_h, pdf_v;
 
 void ensure_pdf_open(void)
 {
@@ -149,6 +150,8 @@ void pdf_ship_out (pointer p)
     pdf_set_compression(9);
     pdf_init_fontmaps();
     pdf_load_fontmap_file("pdftex.map", '+');
+    pdf_load_fontmap_file("kanjix.map", '+');
+    pdf_load_fontmap_file("ckx.map",    '+');
     pdf_doc_set_producer("pTeX-ng@2014");
     pdf_doc_set_creator("pTeX-ng");
     pdf_files_init();
@@ -181,9 +184,11 @@ void pdf_ship_out (pointer p)
     case hlist_node:
       hlist_out();
       break;
+
     case vlist_node:
       vlist_out();
       break;
+
     case dir_node:
       dir_out();
       break;
@@ -253,49 +258,79 @@ void pdf_synch_v (void)
     dvi_v = cur_v;
 }
 
-static int number_of_fonts = -1;
+#define get_str_string(a, b)                                      \
+do {                                                              \
+  strncpy(a, (const char *)(str_pool + str_start[b]), length(b)); \
+  a[length(b)] = '\0';                                            \
+} while (0)
+
+void pdf_map_font (internal_font_number f)
+{
+  if ((font_cmap[f] == 0) || (font_spec[f] == 0))
+    return;
+
+  char * fnt_name = malloc(length(font_name[f]) + 1);
+  get_str_string(fnt_name, font_name[f]);
+  char * fnt_cmap = malloc(length(font_cmap[f]) + 1);
+  get_str_string(fnt_cmap, font_cmap[f]);
+  char * fnt_spec = malloc(length(font_spec[f]) + 1);
+  get_str_string(fnt_spec, font_spec[f]);
+  pdf_insert_ng_fontmap(fnt_name, fnt_cmap, fnt_spec, 0);
+  free(fnt_name);
+  free(fnt_cmap);
+  free(fnt_spec);
+}
 
 void pdf_get_font (internal_font_number f)
 {
   char * sbuf = malloc(length(font_name[f]) + 1);
-  memset(sbuf, 0, length(font_name[f]) + 1);
-  memcpy(sbuf, str_pool + str_start[font_name[f]], length(font_name[f]));
+  get_str_string(sbuf, font_name[f]);
+  int pdf_font_id = pdf_dev_locate_font(sbuf, font_size[f]);
 
-  if (pdf_dev_locate_font(sbuf, font_size[f]) >= 0)
-  {
-    number_of_fonts += 1;
-    font_id[f] = number_of_fonts;
-  }
+  if (pdf_font_id >= 0)
+    font_id[f] = pdf_font_id;
   else
-  {
     font_id[f] = -1;
-  }
 
   free(sbuf);
+}
+
+static void pdf_adjust_dir (scaled x, scaled y)
+{
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      pdf_dev_set_dirmode(dvi_yoko);
+      pdf_h = x;
+      pdf_v = -y;
+      break;
+
+    case dir_tate:
+      pdf_dev_set_dirmode(dvi_tate);
+      pdf_h = -y;
+      pdf_v = -x;
+      break;
+
+    case dir_dtou:
+      pdf_dev_set_dirmode(dvi_dtou);
+      pdf_h = y;
+      pdf_v = x;
+      break;
+  }
 }
 
 void pdf_out_char (internal_font_number f, ASCII_code c)
 {
   pdf_rect rect;
   char cbuf[2];
-  cbuf[0] = c; cbuf[1] = 0;
-  switch (cur_dir_hv)
-  {
-    case dir_yoko:
-      pdf_dev_set_dirmode(dvi_yoko);
-      pdf_dev_set_string(cur_h, -cur_v, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
-      break;
-    case dir_tate:
-      pdf_dev_set_dirmode(dvi_tate);
-      pdf_dev_set_string(-cur_v, -cur_h, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
-      break;
-    case dir_dtou:
-      pdf_dev_set_dirmode(dvi_dtou);
-      pdf_dev_set_string(cur_v, cur_h, cbuf, 1, char_width(f, char_info(f, c)), font_id[f], 1);
-      break;
-  }
 
-  pdf_dev_set_rect(&rect, cur_h, -cur_v, char_width(f, char_info(f, c)),
+  cbuf[0] = c;
+  cbuf[1] = 0;
+
+  pdf_adjust_dir(cur_h, cur_v);
+  pdf_dev_set_string(pdf_h, pdf_v, cbuf, 1,
+    char_width(f, char_info(f, c)), font_id[f], 1);
+  pdf_dev_set_rect(&rect, pdf_h, pdf_v, char_width(f, char_info(f, c)),
       char_height(f, height_depth(char_info(f, c))),
       char_depth(f, height_depth(char_info(f, c))));
   pdf_doc_expand_box(&rect);
@@ -303,137 +338,84 @@ void pdf_out_char (internal_font_number f, ASCII_code c)
 
 #define jfm_zw(f) char_width(f, char_info(f, 0))
 
-void mojikumi_before_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
+scaled adjust_kanji (internal_font_number f, KANJI_code k)
 {
+  scaled adjust_pos;
+  // physical width, char class 0
+  scaled kanji_pwd = char_width(f, char_info(f, 0));
+  // logical or overloaded width
+  scaled kanji_lwd = char_width(f, char_info(f, get_jfm_pos(k, f)));
+
   switch (k)
   {
-    case 0xFF08: /* £® */
-    case 0x3014: /* °≤ */
-    case 0xFF3B: /* £€ */
-    case 0xFF5B: /* £˚ */
-    case 0x3008: /* °¥ */
-    case 0x300A: /* °∂ */
-    case 0x300C: /* °∏ */
-    case 0x300E: /* °∫ */
-    case 0x3010: /* °æ */
-    case 0xFF5F: /* JIS X 0213  1-02-54  º§·∂˛÷ÿ•–©`•Ï©`•Û */
-    case 0x3018: /* JIS X 0213  1-02-56  º§·∂˛÷ÿÅwº◊¿®ª° */
-    case 0x3016: /* JIS X 0213  1-02-58  º§·§π§ﬂ∏∂§≠¿®ª°(∞◊) */
-    case 0x301D: /* JIS X 0213  1-13-64  º§·•¿•÷•Î•ﬂ•À•Â©`•» */
-      cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d)));
+    case 0xFF08: /* Ôºà */
+    case 0x3014: /* „Äî */
+    case 0xFF3B: /* Ôºª */
+    case 0xFF5B: /* ÔΩõ */
+    case 0x3008: /* „Äà */
+    case 0x300A: /* „Ää */
+    case 0x300C: /* „Äå */
+    case 0x300E: /* „Äé */
+    case 0x3010: /* „Äê */
+    case 0xFF5F: /* JIS X 0213  1-02-54 Âßã„ÇÅ‰∫åÈáç„Éê„Éº„É¨„Éº„É≥ */
+    case 0x3018: /* JIS X 0213  1-02-56 Âßã„ÇÅ‰∫åÈáç‰∫ÄÁî≤Êã¨Âºß */
+    case 0x3016: /* JIS X 0213  1-02-58 Âßã„ÇÅ„Åô„Åø‰ªò„ÅçÊã¨Âºß(ÁôΩ) */
+    case 0x301D: /* JIS X 0213  1-13-64 Âßã„ÇÅ„ÉÄ„Éñ„É´„Éü„Éã„É•„Éº„Éà */
+      adjust_pos = -(kanji_pwd - kanji_lwd);
       break;
+
     case 0x3000: /* spc */
-    case 0x3001: /* °¢ */
-    case 0x3002: /* °£ */
-    case 0xFF0C: /* £¨ */
-    case 0xFF0E: /* £Æ */
-    case 0x309B: /* ©a */
-    case 0x309C: /* ©b */
-    case 0xFF09: /* £© */
-    case 0x3015: /* °≥ */
-    case 0xFF3D: /* £› */
-    case 0xFF5D: /* £˝ */
-    case 0x3009: /* °µ */
-    case 0x300B: /* °∑ */
-    case 0x300D: /* °π */
-    case 0x300F: /* °ª */
-    case 0x3011: /* °ø */
-    case 0xFF60: /* JIS X 0213  1-02-55 ΩK§Ô§Í∂˛÷ÿ•–©`•Ï©`•Û */
-    case 0x3019: /* JIS X 0213  1-02-57 ΩK§Ô§Í∂˛÷ÿÅwº◊¿®ª° */
-    case 0x3017: /* JIS X 0213  1-02-59 ΩK§Ô§Í§π§ﬂ∏∂§≠¿®ª°(∞◊) */
-    case 0x301F: /* JIS X 0213  1-13-65 ΩK§Ô§Í•¿•÷•Î•ﬂ•À•Â©`•» */
-    case 0x00B0: /* °„ */
-    case 0x2032: /* °‰ */
-    case 0x2033: /* °Â */
+    case 0x3001: /* „ÄÅ */
+    case 0x3002: /* „ÄÇ */
+    case 0xFF0C: /* Ôºå */
+    case 0xFF0E: /* Ôºé */
+    case 0x309B: /* „Çõ */
+    case 0x309C: /* „Çú */
+    case 0xFF09: /* Ôºâ */
+    case 0x3015: /* „Äï */
+    case 0xFF3D: /* ÔºΩ */
+    case 0xFF5D: /* ÔΩù */
+    case 0x3009: /* „Äâ */
+    case 0x300B: /* „Äã */
+    case 0x300D: /* „Äç */
+    case 0x300F: /* „Äè */
+    case 0x3011: /* „Äë */
+    case 0xFF60: /* JIS X 0213  1-02-55 ÁµÇ„Çè„Çä‰∫åÈáç„Éê„Éº„É¨„Éº„É≥ */
+    case 0x3019: /* JIS X 0213  1-02-57 ÁµÇ„Çè„Çä‰∫åÈáç‰∫ÄÁî≤Êã¨Âºß */
+    case 0x3017: /* JIS X 0213  1-02-59 ÁµÇ„Çè„Çä„Åô„Åø‰ªò„ÅçÊã¨Âºß(ÁôΩ) */
+    case 0x301F: /* JIS X 0213  1-13-65 ÁµÇ„Çè„Çä„ÉÄ„Éñ„É´„Éü„Éã„É•„Éº„Éà */
+    case 0x00B0: /* ¬∞ */
+    case 0x2032: /* ‚Ä≤ */
+    case 0x2033: /* ‚Ä≥ */
+      adjust_pos = 0;
       break;
+
     default:
-      if (jfm_zw(f) != char_width(f, char_info(f, d)))
-        cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
+      if (kanji_pwd != kanji_lwd)
+        adjust_pos = -(kanji_pwd - kanji_lwd) / 2;
+      else
+        adjust_pos = 0;
       break;
   }
+
+  return adjust_pos;
 }
 
-void mojikumi_after_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
-{
-  switch (k)
-  {
-    case 0xFF08: /* £® */
-    case 0x3014: /* °≤ */
-    case 0xFF3B: /* £€ */
-    case 0xFF5B: /* £˚ */
-    case 0x3008: /* °¥ */
-    case 0x300A: /* °∂ */
-    case 0x300C: /* °∏ */
-    case 0x300E: /* °∫ */
-    case 0x3010: /* °æ */
-    case 0xFF5F: /* JIS X 0213  1-02-54  º§·∂˛÷ÿ•–©`•Ï©`•Û */
-    case 0x3018: /* JIS X 0213  1-02-56  º§·∂˛÷ÿÅwº◊¿®ª° */
-    case 0x3016: /* JIS X 0213  1-02-58  º§·§π§ﬂ∏∂§≠¿®ª°(∞◊) */
-    case 0x301D: /* JIS X 0213  1-13-64  º§·•¿•÷•Î•ﬂ•À•Â©`•» */
-      cur_h = cur_h + char_width(f, char_info(f, d));
-      break;
-    case 0x3000: /* spc */
-    case 0x3001: /* °¢ */
-    case 0x3002: /* °£ */
-    case 0xFF0C: /* £¨ */
-    case 0xFF0E: /* £Æ */
-    case 0x309B: /* ©a */
-    case 0x309C: /* ©b */
-    case 0xFF09: /* £© */
-    case 0x3015: /* °≥ */
-    case 0xFF3D: /* £› */
-    case 0xFF5D: /* £˝ */
-    case 0x3009: /* °µ */
-    case 0x300B: /* °∑ */
-    case 0x300D: /* °π */
-    case 0x300F: /* °ª */
-    case 0x3011: /* °ø */
-    case 0xFF60: /* JIS X 0213  1-02-55 ΩK§Ô§Í∂˛÷ÿ•–©`•Ï©`•Û */
-    case 0x3019: /* JIS X 0213  1-02-57 ΩK§Ô§Í∂˛÷ÿÅwº◊¿®ª° */
-    case 0x3017: /* JIS X 0213  1-02-59 ΩK§Ô§Í§π§ﬂ∏∂§≠¿®ª°(∞◊) */
-    case 0x301F: /* JIS X 0213  1-13-65 ΩK§Ô§Í•¿•÷•Î•ﬂ•À•Â©`•» */
-    case 0x00B0: /* °„ */
-    case 0x2032: /* °‰ */
-    case 0x2033: /* °Â */
-      //cur_h = cur_h - (jfm_zw(f) - char_width(f, char_info(f, d)));
-      break;
-    default:
-      if (jfm_zw(f) != char_width(f, char_info(f, d)))
-        cur_h = cur_h + (jfm_zw(f) - char_width(f, char_info(f, d))) / 2;
-      break;
-  }
-}
-
-void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
+void pdf_out_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
 {
   pdf_rect rect;
   char cbuf[4];
+  int cbuf_len;
 
-  mojikumi_before_kanji(f, k, d);
+  pdf_adjust_dir (cur_h + adjust_kanji(f, k), cur_v);
 
   if (k < 0x10000)
   {
     cbuf[0] = Hi(k);
     cbuf[1] = Lo(k);
-
-    if (font_id[f] >= 0)
-    {
-      switch (cur_dir_hv)
-      {
-        case dir_yoko:
-          pdf_dev_set_dirmode(dvi_yoko);
-          pdf_dev_set_string(cur_h, -cur_v, cbuf, 2, jfm_zw(f), font_id[f], 2);
-          break;
-        case dir_tate:
-          pdf_dev_set_dirmode(dvi_tate);
-          pdf_dev_set_string(-cur_v, -cur_h, cbuf, 2, jfm_zw(f), font_id[f], 2);
-          break;
-        case dir_dtou:
-          pdf_dev_set_dirmode(dvi_dtou);
-          pdf_dev_set_string(cur_v, cur_h, cbuf, 2, jfm_zw(f), font_id[f], 2);
-          break;
-      }
-    }
+    cbuf[2] = 0;
+    cbuf[3] = 0;
+    cbuf_len = 2;
   }
   else
   {
@@ -441,51 +423,38 @@ void pdf_out_kanji(internal_font_number f, KANJI_code k, ASCII_code d)
     cbuf[1] = UTF32toUTF16HS(k)        & 0xff;
     cbuf[2] = (UTF32toUTF16LS(k) >> 8) & 0xff;
     cbuf[3] = UTF32toUTF16LS(k)        & 0xff;
-
-    if (font_id[f] >= 0)
-    {
-      switch (cur_dir_hv)
-      {
-        case dir_yoko:
-          pdf_dev_set_dirmode(dvi_yoko);
-          pdf_dev_set_string(cur_h, -cur_v, cbuf, 4, jfm_zw(f), font_id[f], 2);
-          break;
-        case dir_tate:
-          pdf_dev_set_dirmode(dvi_tate);
-          pdf_dev_set_string(-cur_v, -cur_h, cbuf, 4, jfm_zw(f), font_id[f], 2);
-          break;
-        case dir_dtou:
-          pdf_dev_set_dirmode(dvi_dtou);
-          pdf_dev_set_string(-cur_v, -cur_h, cbuf, 4, jfm_zw(f), font_id[f], 2);
-          break;
-      }
-    }
+    cbuf_len = 4;
   }
 
-  pdf_dev_set_rect(&rect, cur_h, -cur_v,
+  if (font_id[f] >= 0)
+    pdf_dev_set_string(pdf_h, pdf_v, cbuf, cbuf_len, jfm_zw(f), font_id[f], 2);
+
+  pdf_dev_set_rect(&rect, pdf_h, pdf_v,
     char_width(f, char_info(f, d)),
     char_height(f, height_depth(char_info(f, d))),
     char_depth(f, height_depth(char_info(f, d))));
   pdf_doc_expand_box(&rect);
-  mojikumi_after_kanji(f, k, d);
 }
 
-void pdf_output_rule(scaled rule_wd, scaled rule_ht)
+void pdf_output_rule (scaled rule_wd, scaled rule_ht)
 {
   switch (cur_dir_hv)
   {
     case dir_yoko:
       pdf_dev_set_rule(cur_h, -cur_v, rule_wd, rule_ht);
       break;
+
     case dir_tate:
       pdf_dev_set_rule(-cur_v, -cur_h - rule_wd, rule_ht, rule_wd);
       break;
+
     case dir_dtou:
       pdf_dev_set_rule(cur_v, cur_h, rule_ht, rule_wd);
       break;
   }
 }
 
+// output an |hlist_node| box
 void hlist_out (void)
 {
   scaled base_line;
@@ -562,8 +531,7 @@ reswitch:
     pdf_synch_v();
     chain = false;
 
-    do
-    {
+    do {
       f = font(p);
       c = character(p);
 
@@ -571,6 +539,7 @@ reswitch:
       {
         if (!font_used[f])
         {
+          pdf_map_font(f);
           pdf_get_font(f);
           font_used[f] = true;
         }
@@ -904,6 +873,7 @@ next_p:
   decr(cur_s);
 }
 
+// output an |vlist_node| box
 void vlist_out (void)
 {
   scaled left_edge;
@@ -1164,4 +1134,80 @@ next_p:
 
   prune_movements(save_loc);
   decr(cur_s);
+}
+
+void dir_out (void)
+{
+  pointer this_box;
+
+  this_box = temp_ptr;
+  temp_ptr = list_ptr(this_box);
+
+  if ((type(temp_ptr) != hlist_node) && (type(temp_ptr) != vlist_node))
+    confusion("dir_out");
+
+  switch (box_dir(this_box))
+  {
+    case dir_yoko:
+      switch (box_dir(temp_ptr))
+      {
+        case dir_tate:
+          {
+            cur_v = cur_v - height(this_box);
+            cur_h = cur_h + depth(temp_ptr);
+          }
+          break;
+
+        case dir_dtou:
+          {
+            cur_v = cur_v + depth(this_box);
+            cur_h = cur_h + height(temp_ptr);
+          }
+          break;
+      }
+      break;
+
+    case dir_tate:
+      switch (box_dir(temp_ptr))
+      {
+        case dir_yoko:
+          {
+            cur_v = cur_v + depth(this_box);
+            cur_h = cur_h + height(temp_ptr);
+          }
+          break;
+
+        case dir_dtou:
+          {
+            cur_v = cur_v + depth(this_box) - height(temp_ptr);
+            cur_h = cur_h + width(temp_ptr);
+          }
+          break;
+      }
+
+    case dir_dtou:
+      switch (box_dir(temp_ptr))
+      {
+        case dir_yoko:
+          {
+            cur_v = cur_v - height(this_box);
+            cur_h = cur_h + depth(temp_ptr);
+          }
+          break;
+
+        case dir_tate:
+          {
+            cur_v = cur_v + depth(this_box) - height(temp_ptr);
+            cur_h = cur_h + width(temp_ptr);
+          }
+          break;
+      }
+  }
+
+  cur_dir_hv = box_dir(temp_ptr);
+
+  if (type(temp_ptr) == vlist_node)
+    vlist_out();
+  else
+    hlist_out();
 }

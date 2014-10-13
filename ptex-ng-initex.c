@@ -37,43 +37,41 @@ void initialize (void)
   hyph_pointer z;
 #endif
 
-  {
-    for (i = 0; i <= 255; i++)
-      xchr[i] = (char) i;
+  for (i = 0; i <= 255; i++)
+    xchr[i] = (char) i;
 
 #ifdef JOKE
-    xchr[32] = ' ';  xchr[33] = '!';  xchr[34] = '"';  xchr[35] = '#';
-    xchr[36] = '$';  xchr[37] = '%';  xchr[38] = '&';  xchr[39] = '\'';
-    xchr[40] = '(';  xchr[41] = ')';  xchr[42] = '*';  xchr[43] = '+';
-    xchr[44] = ',';  xchr[45] = '-';  xchr[46] = '.';  xchr[47] = '/';
-    xchr[48] = '0';  xchr[49] = '1';  xchr[50] = '2';  xchr[51] = '3';
-    xchr[52] = '4';  xchr[53] = '5';  xchr[54] = '6';  xchr[55] = '7';
-    xchr[56] = '8';  xchr[57] = '9';  xchr[58] = ':';  xchr[59] = ';';
-    xchr[60] = '<';  xchr[61] = '=';  xchr[62] = '>';  xchr[63] = '?';
-    xchr[64] = '@';  xchr[65] = 'A';  xchr[66] = 'B';  xchr[67] = 'C';
-    xchr[68] = 'D';  xchr[69] = 'E';  xchr[70] = 'F';  xchr[71] = 'G';
-    xchr[72] = 'H';  xchr[73] = 'I';  xchr[74] = 'J';  xchr[75] = 'K';
-    xchr[76] = 'L';  xchr[77] = 'M';  xchr[78] = 'N';  xchr[79] = 'O';
-    xchr[80] = 'P';  xchr[81] = 'Q';  xchr[82] = 'R';  xchr[83] = 'S';
-    xchr[84] = 'T';  xchr[85] = 'U';  xchr[86] = 'V';  xchr[87] = 'W';
-    xchr[88] = 'X';  xchr[89] = 'Y';  xchr[90] = 'Z';  xchr[91] = '[';
-    xchr[92] = '\\'; xchr[93] = ']';  xchr[94] = '^';  xchr[95] = '_';
-    xchr[96] = '`';  xchr[97] = 'a';  xchr[98] = 'b';  xchr[99] = 'c';
-    xchr[100] = 'd'; xchr[101] = 'e'; xchr[102] = 'f'; xchr[103] = 'g';
-    xchr[104] = 'h'; xchr[105] = 'i'; xchr[106] = 'j'; xchr[107] = 'k';
-    xchr[108] = 'l'; xchr[109] = 'm'; xchr[110] = 'n'; xchr[111] = 'o';
-    xchr[112] = 'p'; xchr[113] = 'q'; xchr[114] = 'r'; xchr[115] = 's';
-    xchr[116] = 't'; xchr[117] = 'u'; xchr[118] = 'v'; xchr[119] = 'w';
-    xchr[120] = 'x'; xchr[121] = 'y'; xchr[122] = 'z'; xchr[123] = '{';
-    xchr[124] = '|'; xchr[125] = '}'; xchr[126] = '~';
+  xchr[32] = ' ';  xchr[33] = '!';  xchr[34] = '"';  xchr[35] = '#';
+  xchr[36] = '$';  xchr[37] = '%';  xchr[38] = '&';  xchr[39] = '\'';
+  xchr[40] = '(';  xchr[41] = ')';  xchr[42] = '*';  xchr[43] = '+';
+  xchr[44] = ',';  xchr[45] = '-';  xchr[46] = '.';  xchr[47] = '/';
+  xchr[48] = '0';  xchr[49] = '1';  xchr[50] = '2';  xchr[51] = '3';
+  xchr[52] = '4';  xchr[53] = '5';  xchr[54] = '6';  xchr[55] = '7';
+  xchr[56] = '8';  xchr[57] = '9';  xchr[58] = ':';  xchr[59] = ';';
+  xchr[60] = '<';  xchr[61] = '=';  xchr[62] = '>';  xchr[63] = '?';
+  xchr[64] = '@';  xchr[65] = 'A';  xchr[66] = 'B';  xchr[67] = 'C';
+  xchr[68] = 'D';  xchr[69] = 'E';  xchr[70] = 'F';  xchr[71] = 'G';
+  xchr[72] = 'H';  xchr[73] = 'I';  xchr[74] = 'J';  xchr[75] = 'K';
+  xchr[76] = 'L';  xchr[77] = 'M';  xchr[78] = 'N';  xchr[79] = 'O';
+  xchr[80] = 'P';  xchr[81] = 'Q';  xchr[82] = 'R';  xchr[83] = 'S';
+  xchr[84] = 'T';  xchr[85] = 'U';  xchr[86] = 'V';  xchr[87] = 'W';
+  xchr[88] = 'X';  xchr[89] = 'Y';  xchr[90] = 'Z';  xchr[91] = '[';
+  xchr[92] = '\\'; xchr[93] = ']';  xchr[94] = '^';  xchr[95] = '_';
+  xchr[96] = '`';  xchr[97] = 'a';  xchr[98] = 'b';  xchr[99] = 'c';
+  xchr[100] = 'd'; xchr[101] = 'e'; xchr[102] = 'f'; xchr[103] = 'g';
+  xchr[104] = 'h'; xchr[105] = 'i'; xchr[106] = 'j'; xchr[107] = 'k';
+  xchr[108] = 'l'; xchr[109] = 'm'; xchr[110] = 'n'; xchr[111] = 'o';
+  xchr[112] = 'p'; xchr[113] = 'q'; xchr[114] = 'r'; xchr[115] = 's';
+  xchr[116] = 't'; xchr[117] = 'u'; xchr[118] = 'v'; xchr[119] = 'w';
+  xchr[120] = 'x'; xchr[121] = 'y'; xchr[122] = 'z'; xchr[123] = '{';
+  xchr[124] = '|'; xchr[125] = '}'; xchr[126] = '~';
 
-    for (i = 0; i <= 31; i++)
-      xchr[i] = chr(i);
+  for (i = 0; i <= 31; i++)
+    xchr[i] = chr(i);
 
-    for (i = 127; i <= 255; i++)
-      xchr[i]= chr(i);
+  for (i = 127; i <= 255; i++)
+    xchr[i]= chr(i);
 #endif
-  }
 
   for (i = 0; i <= 255; i++)
     xord[chr(i)] = invalid_code;
@@ -150,17 +148,17 @@ void initialize (void)
     hash[k] = hash[hash_base];
 
   save_ptr = 0;
-  cur_level = 1;
-  cur_group = 0;
+  cur_level = level_one;
+  cur_group = bottom_level;
   cur_boundary = 0;
   max_save_stack = 0;
   mag_set = 0;
   skip_mode = true;
-  cur_mark[0] = 0;
-  cur_mark[1] = 0;
-  cur_mark[2] = 0;
-  cur_mark[3] = 0;
-  cur_mark[4] = 0;
+  top_mark = 0;
+  first_mark = 0;
+  bot_mark = 0;
+  split_first_mark = 0;
+  split_bot_mark = 0;
   cur_val = 0;
   cur_val_level = int_val;
   radix = 0;
@@ -174,7 +172,7 @@ void initialize (void)
   cur_if = 0;
   if_line = 0;
 
-  for (k = 0; k <= font_max; k++)
+  for (k = font_base; k <= font_max; k++)
     font_used[k] = false;
 
   null_character.b0 = min_quarterword;
@@ -189,7 +187,6 @@ void initialize (void)
   doing_leaders = false;
   dead_cycles = 0;
   cur_s = -1;
-  dir_used = false;
   half_buf = dvi_buf_size / 2;
   dvi_limit = dvi_buf_size;
   dvi_ptr = 0;
@@ -243,9 +240,13 @@ void initialize (void)
   LR_problems = 0;
   cur_dir = left_to_right;
   pseudo_files = null;
-  sa_mark = null; sa_null.hh.lh = null; sa_null.hh.rh = null;
-  sa_chain = null; sa_level = level_zero;
-  page_disc = null; split_disc = null;
+  sa_mark = null;
+  sa_null.hh.lh = null;
+  sa_null.hh.rh = null;
+  sa_chain = null;
+  sa_level = level_zero;
+  page_disc = null;
+  split_disc = null;
   inhibit_glue_flag = false;
   page_dir = dir_yoko;
   edit_name_start = 0;
@@ -2242,6 +2243,8 @@ boolean load_fmt_file (void)
     undump_things(font_bc[null_font], font_ptr + 1);
     undump_things(font_ec[null_font], font_ptr + 1);
     undump_things(ctype_base[null_font], font_ptr + 1);
+    undump_things(font_cmap[null_font], font_ptr + 1);
+    undump_things(font_spec[null_font], font_ptr + 1);
     undump_things(char_base[null_font], font_ptr + 1);
     undump_things(width_base[null_font], font_ptr + 1);
     undump_things(height_base[null_font], font_ptr + 1);
@@ -2926,7 +2929,6 @@ void do_initex (void)
 {
   integer i;
   integer k;
-  /* hyph_pointer z; */
 
   for (k = mem_bot + 1; k <= lo_mem_stat_max; k++)
     mem[k].cint = 0;
@@ -3090,36 +3092,71 @@ void do_initex (void)
 
   if (is_internalUPTEX())
   {
-    //{ default: other_kchar }
+    // { default: other_kchar }
     kcat_code(0x0) = not_cjk;
-    kcat_code(0x23) = hangul; // { Hangul Jamo }
-    for (k = 0x63; k <= 0x65; k++) kcat_code(k) = kanji; // { CJK Radicals Supplement .. Ideographic Description Characters }
-    for (k = 0x67; k <= 0x68; k++) kcat_code(k) = kana; // { Hiragana, Katakana }
-    kcat_code(0x69) = kanji; // { Bopomofo }
-    kcat_code(0x6A) = hangul; // { Hangul Compatibility Jamo }
-    for (k = 0x6B; k <= 0x6D; k++) kcat_code(k) = kanji; // { Kanbun .. CJK Strokes }
-    kcat_code(0x6E) = kana; // { Katakana Phonetic Extensions }
-    kcat_code(0x71) = kanji; // { CJK Unified Ideographs Extension A }
-    kcat_code(0x73) = kanji; // { CJK Unified Ideographs }
-    kcat_code(0x83) = hangul; // { Hangul Jamo Ext}ed-A }
-    kcat_code(0x8B) = hangul; // { Hangul Syllables }
-    kcat_code(0x8C) = hangul; // { Hangul Jamo Ext}ed-B }
-    kcat_code(0x91) = kanji; // { CJK Compatibility Ideographs }
-    //{ kcat_code(0x9A) = other_kchar; Halfwidth and Fullwidth Forms }
-    kcat_code(0xC3) = kana; // { Kana Supplement }
-    for (k = 0xD4; k <= 0xD7; k++) kcat_code(k) = kanji; // { CJK Unified Ideographs Extension B .. CJK Compatibility Ideographs Supplement }
-    kcat_code(0xFE) = kana; // { Fullwidth digit and latin alphabet }
-    kcat_code(0xFF) = kana; // { Halfwidth katakana }
+    // { Hangul Jamo }
+    kcat_code(0x23) = hangul;
+
+    // { CJK Radicals Supplement .. Ideographic Description Characters }
+    for (k = 0x63; k <= 0x65; k++)
+      kcat_code(k) = kanji;
+
+    // { Hiragana, Katakana }
+    for (k = 0x67; k <= 0x68; k++)
+      kcat_code(k) = kana;
+
+    // { Bopomofo }
+    kcat_code(0x69) = kanji;
+    // { Hangul Compatibility Jamo }
+    kcat_code(0x6A) = hangul;
+
+    // { Kanbun .. CJK Strokes }
+    for (k = 0x6B; k <= 0x6D; k++)
+      kcat_code(k) = kanji;
+
+    // { Katakana Phonetic Extensions }
+    kcat_code(0x6E) = kana;
+    // { CJK Unified Ideographs Extension A }
+    kcat_code(0x71) = kanji;
+    // { CJK Unified Ideographs }
+    kcat_code(0x73) = kanji;
+    // { Hangul Jamo Extended-A }
+    kcat_code(0x83) = hangul;
+    // { Hangul Syllables }
+    kcat_code(0x8B) = hangul;
+    // { Hangul Jamo Extended-B }
+    kcat_code(0x8C) = hangul;
+    // { CJK Compatibility Ideographs }
+    kcat_code(0x91) = kanji;
+    // { kcat_code(0x9A) = other_kchar; Halfwidth and Fullwidth Forms }
+    // { Kana Supplement }
+    kcat_code(0xC3) = kana;
+
+    // { CJK Unified Ideographs Extension B .. CJK Compatibility Ideographs Supplement }
+    for (k = 0xD4; k <= 0xD7; k++)
+      kcat_code(k) = kanji;
+
+    // { Fullwidth digit and latin alphabet }
+    kcat_code(0xFE) = kana;
+    // { Halfwidth katakana }
+    kcat_code(0xFF) = kana;
   }
   else
   {
     kcat_code(0x20 + 1) = other_kchar; // {1 ku}
     kcat_code(0x20 + 2) = other_kchar; // {2 ku}
-    for (k = 3; k <= 6; k++) kcat_code(0x20 + k) = kana; // {3 ku ... 6 ku}
-    for (k = 7; k <= 13; k++) kcat_code(0x20 + k) = other_kchar; // {7 ku ... 13 ku}
-    for (k = 14; k <= 120; k++) kcat_code(0x20 + k) = kanji; // {14 ku ... 120 ku}
+
+    for (k = 3; k <= 6; k++)
+      kcat_code(0x20 + k) = kana; // {3 ku ... 6 ku}
+
+    for (k = 7; k <= 13; k++)
+      kcat_code(0x20 + k) = other_kchar; // {7 ku ... 13 ku}
+
+    for (k = 14; k <= 120; k++)
+      kcat_code(0x20 + k) = kanji; // {14 ku ... 120 ku}
     //{ $\.{@0x20}+|k| = |kcatcodekey|(|fromKUTEN|(|HILO|(k,1))$ }
-    for (k = 16; k <= 94; k++) kcat_code(0xA0 + k) = kanji; // {2 men 16 ku ... 94 ku}
+    for (k = 16; k <= 94; k++)
+      kcat_code(0xA0 + k) = kanji; // {2 men 16 ku ... 94 ku}
   };
 
 
@@ -3195,7 +3232,8 @@ void do_initex (void)
   for (i = int_val; i <= tok_val; ++i)
     sa_root[i] = null;
 
-  hyph_root = 0; hyph_start = 0;
+  hyph_root = 0;
+  hyph_start = 0;
 }
 #endif
 
@@ -3386,12 +3424,13 @@ trie_op_code new_trie_op (small_number d, small_number n, trie_op_code v)
       return u;
     }
 
-    if ((hyf_distance[l] == d) && (hyf_num[l] == n) && (hyf_next[l] == v) && (trie_op_lang[l] == cur_lang))
+    if ((hyf_distance[l] == d) && (hyf_num[l] == n) &&
+      (hyf_next[l] == v) && (trie_op_lang[l] == cur_lang))
     {
       return trie_op_val[l];
     }
 
-    if (h > - (integer) trie_op_size)
+    if (h > -trie_op_size)
       decr(h);
     else
       h = trie_op_size;
@@ -3467,14 +3506,12 @@ void first_fit (trie_pointer p)
         return;
       }
 
-      do
-        {
-          incr(trie_max);
-          trie_taken[trie_max] = false;
-          trie_link(trie_max) = trie_max + 1;
-          trie_tro[trie_max] = trie_max - 1;
-        }
-      while (!(trie_max == h + 256));
+      do {
+        incr(trie_max);
+        trie_taken[trie_max] = false;
+        trie_link(trie_max) = trie_max + 1;
+        trie_tro[trie_max] = trie_max - 1;
+      } while (!(trie_max == h + 256));
     }
 
     if (trie_taken[h])
@@ -3534,19 +3571,17 @@ void trie_pack (trie_pointer p)
 {
   trie_pointer q;
 
-  do
+  do {
+    q = trie_l[p];
+
+    if ((q > 0) && (trie_hash[q]== 0))
     {
-      q = trie_l[p];
-
-      if ((q > 0) && (trie_hash[q]== 0))
-      {
-        first_fit(q);
-        trie_pack(q);
-      }
-
-      p = trie_r[p];
+      first_fit(q);
+      trie_pack(q);
     }
-  while (!(p == 0));
+
+    p = trie_r[p];
+  } while (!(p == 0));
 }
 /* sec 0959 */
 void trie_fix (trie_pointer p)
@@ -3950,7 +3985,7 @@ void store_fmt_file (void)
     puts("! \\dump is performed only by INITEX");
 
     if (!knuth_flag)
-      puts("  (Use -i on the command line)");
+      puts("  (Use -ini on the command line)");
 
     return;
   }
@@ -4199,6 +4234,8 @@ done2:
     dump_things(font_bc[null_font], font_ptr + 1);
     dump_things(font_ec[null_font], font_ptr + 1);
     dump_things(ctype_base[null_font], font_ptr + 1);
+    dump_things(font_cmap[null_font], font_ptr + 1);
+    dump_things(font_spec[null_font], font_ptr + 1);
     dump_things(char_base[null_font], font_ptr + 1);
     dump_things(width_base[null_font], font_ptr + 1);
     dump_things(height_base[null_font], font_ptr + 1);

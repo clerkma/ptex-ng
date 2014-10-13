@@ -10,7 +10,7 @@ LINK = link
 RC = rc
 
 CFLAGS=/nologo /c /MT /GF /Gy /W4 \
-	/I"kpathsea" /I"zlib" /I"libptexenc/ptexenc"
+	/I"kpathsea" /I"zlib" /I"libptexenc/ptexenc" /I"parson"
 
 LFLAGS=/NOLOGO /MAP
 
@@ -24,12 +24,12 @@ objs = \
 	ptex-ng-pool.obj\
 	ptex-ng.res\
 	ptex-ng-utils.obj\
-	ptex-ng-pdf-backend.obj\
+	ptex-ng-pdf.obj\
 	ptex-ng-kanji.obj\
 	ptex-ng-module.obj
 
 ptex-ng.exe: $(objs) libdpx\libdpx.lib
-	$(LINK) $(LFLAGS) $(objs) \
+	$(LINK) $(LFLAGS) $(objs) parson\parson.obj \
 	libptexenc\ptexenc.lib \
 	kpathsea\kpathsea.lib \
 	libdpx\libdpx.lib \
@@ -41,7 +41,7 @@ ptex-ng.exe: $(objs) libdpx\libdpx.lib
 ptex-ng.res: ptex-ng.rc
 	$(RC) /nologo ptex-ng.rc
 
-ptex-ng-pdf-backend.obj: ptex-ng-pdf-backend.c \
+ptex-ng-pdf.obj: ptex-ng-pdf.c \
 	texd.h ptex-ng.h coerce.h macros.h
 
 ptex-ng.obj: ptex-ng.c \

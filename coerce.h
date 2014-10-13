@@ -519,4 +519,5 @@ extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
 extern void pdf_enc_compute_id_string(char *dviname, char *pdfname);
 extern void pdf_dev_set_dirmode(int dir_mode);
 extern int pdf_load_fontmap_file(const char *filename, int map_mode);
+extern int pdf_insert_ng_fontmap(const char * fnt_name, const char * fnt_cmap, const char * fnt_spec, int fnt_idx);
 #endif
