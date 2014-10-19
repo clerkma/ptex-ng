@@ -1446,7 +1446,7 @@ void prefixed_command (void)
           {
             scan_register_num();
 
-            if (cur_val>255)
+            if (cur_val > 255)
             {
               find_sa_element(tok_val, cur_val, true);
               cur_chr = cur_ptr; e = true;
@@ -1587,11 +1587,11 @@ void prefixed_command (void)
         else if (cur_chr == kcat_code_base)
           n = max_char_code;
         else if (cur_chr == math_code_base)
-          n = 32768L; /* 2^15 */
+          n = 32768; /* 2^15 */
         else if (cur_chr == sf_code_base)
           n = 32767; /* 2^15 - 1*/
         else if (cur_chr == del_code_base)
-          n = 16777215L; /* 2^24 - 1 */
+          n = 16777215; /* 2^24 - 1 */
         else
           n = 255;
 
@@ -2518,7 +2518,7 @@ int main_program (void)
 {
   history = fatal_error_stop;
 
-  if (ready_already == 314159L)
+  if (ready_already == 314159)
     goto start_of_TEX;
 
   bad = 0;
@@ -2621,7 +2621,7 @@ int main_program (void)
   }
 #endif
 
-  ready_already = 314159L;
+  ready_already = 314159;
 
 start_of_TEX:
   selector = term_only;
@@ -2629,7 +2629,6 @@ start_of_TEX:
   term_offset = 0;
   file_offset = 0;
   kcode_pos = 0;
-
   prints(banner);
 
   if (format_ident == 0)
@@ -2681,7 +2680,7 @@ start_of_TEX:
       line = 0;
       name = 0;
       force_eof = false;
-      align_state = 1000000L;
+      align_state = 1000000;
 
       if (!init_terminal())
         goto final_end;
@@ -2839,19 +2838,7 @@ start_of_TEX:
   close_files_and_terminate();
 
 final_end:
-  {
-    int code;
-
-    update_terminal();
-    ready_already = 0;
-
-    if ((history != spotless) && (history != warning_issued))
-      code = 1;
-    else
-      code = 0;
-
-    return code;
-  }
+  return do_final_end();
 }
 
 #ifdef ALLOCATEMAIN

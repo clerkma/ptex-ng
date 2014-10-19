@@ -284,3 +284,18 @@ void print_if_line(integer val)
     print_int(val);
   }
 }
+//
+int do_final_end (void)
+{
+  int code;
+
+  update_terminal();
+  ready_already = 0;
+
+  if ((history != spotless) && (history != warning_issued))
+    code = 1;
+  else
+    code = 0;
+
+  return code;
+}

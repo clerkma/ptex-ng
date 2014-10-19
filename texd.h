@@ -43,6 +43,8 @@
 #include <time.h>
 #include <math.h>
 #include <signal.h>
+// JSON Parser
+#include <parson.h>
 // TeX Live's kpathsea and ptexenc
 #include <kpathsea/c-auto.h>
 #include <kpathsea/c-pathmx.h> // PATH_MAX
@@ -189,8 +191,8 @@ extern integer calc_pos     (integer c);
 extern integer kcatcodekey  (integer c);
 extern integer multilenbuffchar(integer c);
 extern void init_default_kanji(const_string file_str, const_string internal_str);
-#define init_kanji()      init_default_kanji("utf8", "uptex")
 #define nrestmultichr(x)  ((x)!=0 ? ((x) / 8) + 2 - ((x) % 8) : -1)
 #define max_cjk_val 0x1000000
+extern boolean pack_json_name(str_number nom, str_number aire);
 
 #endif

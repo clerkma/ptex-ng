@@ -401,13 +401,15 @@ scaled adjust_kanji (internal_font_number f, KANJI_code k)
   return adjust_pos;
 }
 
-void pdf_out_kanji (internal_font_number f, KANJI_code k, ASCII_code d)
+void pdf_out_kanji (internal_font_number f, KANJI_code k)
 {
   pdf_rect rect;
   char cbuf[4];
   int cbuf_len;
+  ASCII_code d;
 
-  pdf_adjust_dir (cur_h + adjust_kanji(f, k), cur_v);
+  d = get_jfm_pos(KANJI(k), f);
+  pdf_adjust_dir(cur_h + adjust_kanji(f, k), cur_v);
 
   if (k < 0x10000)
   {
@@ -580,7 +582,7 @@ reswitch:
 
         p = link(p);
         jc = toDVI(KANJI(info(p)) % max_cjk_val);
-        pdf_out_kanji(f, jc, c);
+        pdf_out_kanji(f, jc);
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
 

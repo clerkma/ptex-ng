@@ -28,11 +28,11 @@ VS_VERSION_INFO VERSIONINFO
     BLOCK "040904b0"
     {
       VALUE "CompanyName",        "Project Fandol.\0"
-      VALUE "FileDescription",    "pTeX base on Y&Y TeX 2.3.0 (WIN32)\0"
+      VALUE "FileDescription",    "pTeX-ng base on Y&Y TeX 2.3.0\0"
       VALUE "FileVersion",        "0.3.0.0\0"
       VALUE "LegalCopyright",     "(C) 2014 Clerk Ma.\0"
-      VALUE "OriginalFilename",   "yandytex.exe\0"
-      VALUE "ProductName",        "Y&Y TeX\0"
+      VALUE "OriginalFilename",   "ptex-ng.exe\0"
+      VALUE "ProductName",        "pTeX-ng\0"
       VALUE "ProductVersion",     "2.3.0.0\0"
     }
   }

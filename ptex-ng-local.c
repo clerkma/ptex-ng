@@ -674,9 +674,8 @@ packed_ASCII_code * realloc_str_pool (int size)
 
   if (current_pool_size == pool_size)
   {
-/*    memory_error ("string pool", (pool_size + 1) * sizeof(packed_ASCII_code)); */
-/*    exit (1); */
-    return str_pool;   /* pass it back to TeX 99/Fabe/4 */
+    /* memory_error ("string pool", (pool_size + 1) * sizeof(packed_ASCII_code)); */
+    return str_pool;
   }
 
   min_size =  current_pool_size / 100 * percent_grow;
@@ -745,8 +744,7 @@ pool_pointer * realloc_str_start (int size)
 
   if (current_max_strings == max_strings)
   {
-/*    memory_error ("string pointer", (max_strings + 1) * sizeof(pool_pointer)); */
-/*    exit (1); */
+    /* memory_error ("string pointer", (max_strings + 1) * sizeof(pool_pointer)); */
     return str_start;    /* pass it back to TeX 99/Fabe/4 */
   }
 
@@ -2588,11 +2586,11 @@ int endit (int flag)
   if (free_memory() != 0)
     flag++;
 
-  if (verbose_flag)
+  if (!is_initex)
   {
     printf("Total ");
     show_inter_val(finish_time - start_time);
-    printf(" sec (");
+    printf("s (");
     show_inter_val(main_time - start_time);
     printf(" format load + ");
     show_inter_val(finish_time - main_time);
@@ -2601,7 +2599,7 @@ int endit (int flag)
     if (total_pages > 0)
     {
       show_inter_val((finish_time - main_time) / total_pages);
-      printf(" sec per page.\n");
+      printf("s per page.\n");
     }
   }
 

@@ -464,6 +464,7 @@ void sa_restore(void);
 void pdf_synch_h(void);
 void pdf_synch_v(void);
 
+int do_final_end (void);
 int main_program (void);
 int main_init (int ac, char ** av);
 

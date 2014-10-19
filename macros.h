@@ -869,24 +869,24 @@ while (0)
 #define level_boundary    3
 #define restore_sa        4
 /* sec 0269 */
-#define bottom_level      0
-#define simple_group      1
-#define hbox_group        2
+#define bottom_level        0
+#define simple_group        1
+#define hbox_group          2
 #define adjusted_hbox_group 3
-#define vbox_group        4
-#define vtop_group        5
-#define align_group       6
-#define no_align_group    7
-#define output_group      8
-#define math_group        9
-#define disc_group        10
-#define insert_group      11
-#define vcenter_group     12
-#define math_choice_group 13
-#define semi_simple_group 14
-#define math_shift_group  15
-#define math_left_group   16
-#define max_group_code    16
+#define vbox_group          4
+#define vtop_group          5
+#define align_group         6
+#define no_align_group      7
+#define output_group        8
+#define math_group          9
+#define disc_group          10
+#define insert_group        11
+#define vcenter_group       12
+#define math_choice_group   13
+#define semi_simple_group   14
+#define math_shift_group    15
+#define math_left_group     16
+#define max_group_code      16
 /* sec 0274 */
 #define saved(a) save_stack[save_ptr + (a)].cint
 /* sec 0289 */
@@ -1921,14 +1921,14 @@ while (0)
 #define close_node      2
 #define special_node    3
 #define language_node   4
-#define what_lang(s)    link(s+1)
-#define what_lhm(s)     type(s+1)
-#define what_rhm(s)     subtype(s+1)
-#define write_tokens(s) link(s+1)
-#define write_stream(s) info(s+1)
-#define open_name(s)    link(s+1)
-#define open_area(s)    info(s+2)
-#define open_ext(s)     link(s+2)
+#define what_lang(s)    link(s + 1)
+#define what_lhm(s)     type(s + 1)
+#define what_rhm(s)     subtype(s + 1)
+#define write_tokens(s) link(s + 1)
+#define write_stream(s) info(s + 1)
+#define open_name(s)    link(s + 1)
+#define open_area(s)    info(s + 2)
+#define open_ext(s)     link(s + 2)
 /* sec 1344 */
 #define immediate_code    4
 #define set_language_code 5
@@ -2929,29 +2929,29 @@ do{                                               \
   rule_wd = rule_wd + cur_g;                      \
 } while (0)
 
-#define handle_a_glue_node()\
-do {\
-if (((g_sign == stretching) && (stretch_order(g) == g_order)) ||\
-  ((g_sign == shrinking) && (shrink_order(g) == g_order)))\
-{\
-  fast_delete_glue_ref(g);\
-  \
-  if (subtype(p)<a_leaders)\
-  {\
-    type(p) = kern_node;\
-    width(p) = rule_wd;\
-  }\
-  else\
-  {\
-    g = get_node(glue_spec_size);\
-    stretch_order(g) = filll + 1;\
-    shrink_order(g) = filll + 1;\
-    width(g) = rule_wd;\
-    stretch(g) = 0;\
-    shrink(g) = 0;\
-    glue_ptr(p) = g;\
-  }\
-}\
+#define handle_a_glue_node()                                      \
+do {                                                              \
+  if (((g_sign == stretching) && (stretch_order(g) == g_order)) ||\
+    ((g_sign == shrinking) && (shrink_order(g) == g_order)))      \
+  {                                                               \
+    fast_delete_glue_ref(g);                                      \
+                                                                  \
+    if (subtype(p) < a_leaders)                                   \
+    {                                                             \
+      type(p) = kern_node;                                        \
+      width(p) = rule_wd;                                         \
+    }                                                             \
+    else                                                          \
+    {                                                             \
+      g = get_node(glue_spec_size);                               \
+      stretch_order(g) = filll + 1;                               \
+      shrink_order(g) = filll + 1;                                \
+      width(g) = rule_wd;                                         \
+      stretch(g) = 0;                                             \
+      shrink(g) = 0;                                              \
+      glue_ptr(p) = g;                                            \
+    }                                                             \
+  }                                                               \
 } while (0)
 
 #define report_LR_problems()              \
@@ -3085,8 +3085,9 @@ do {                                          \
 #define expr_n_field(a) mem[a + 3].cint
 
 #define num_error(a)  \
-do {  \
-  arith_error = true; a = 0;\
+do {                  \
+  arith_error = true; \
+  a = 0;              \
 } while (0)
 
 #define glue_error(a)     \
@@ -3106,7 +3107,7 @@ do {                          \
 
 #define expr_add_sub(a,b,c) add_or_sub(a, b, c, r==expr_sub)
 #define expr_a(a,b)         expr_add_sub(a,b, max_dimen)
-#define expr_m(a)           a = nx_plus_y(a,f,0)
+#define expr_m(a)           a = nx_plus_y(a, f, 0)
 #define expr_d(a)           a = quotient(a, f)
 #define expr_s(a)           a = fract(a, n, f, max_dimen)
 
@@ -3139,16 +3140,20 @@ do {                    \
 #define hex_dig3(a) (a / 16) % 16
 #define hex_dig4(a) (a % 16)
 //
-#define get_sa_ptr()  \
-do {\
-  if odd(i) cur_ptr = link(q + (i / 2) + 1);\
-  else cur_ptr = info(q + (i / 2) + 1);\
+#define get_sa_ptr()                \
+do {                                \
+  if odd(i)                         \
+    cur_ptr = link(q + (i / 2) + 1);\
+  else                              \
+    cur_ptr = info(q + (i / 2) + 1);\
 } while (0)
 
-#define put_sa_ptr(a) \
-do {\
-  if odd(i) link(q + (i / 2) + 1) = a;\
-  else info(q + (i / 2) + 1) = a;\
+#define put_sa_ptr(a)           \
+do {                            \
+  if odd(i)                     \
+    link(q + (i / 2) + 1) = a;  \
+  else                          \
+    info(q + (i / 2) + 1) = a;  \
 } while (0)
 
 #define add_sa_ptr()    \
@@ -3185,7 +3190,7 @@ do {                                          \
     find_sa_element(box_val, cur_val, false); \
     if (cur_ptr == null)                      \
       a = null;                               \
-   else                                       \
+    else                                      \
       a = sa_ptr(cur_ptr);                    \
   }                                           \
 } while (0)
@@ -3225,10 +3230,14 @@ do {                                      \
 #define sa_loc sa_ref
 //
 #define sa_define(a1,a2,a3,a4,a5) \
-do {  \
-  if (e)  \
-    if (a >= 4) gsa_def(a1, a2); else sa_def(a1, a2); \
-  else define(a3, a4, a5);\
+do {                    \
+  if (e)                \
+    if (a >= 4)         \
+      gsa_def(a1, a2);  \
+    else                \
+      sa_def(a1, a2);   \
+  else                  \
+    define(a3, a4, a5); \
 } while (0)
 //
 #define sa_def_box()                      \
@@ -3236,8 +3245,8 @@ do {                                      \
   find_sa_element(box_val, cur_val, true);\
   if (a >= 4)                             \
     gsa_def(cur_ptr,cur_box);             \
- else                                     \
-   sa_def(cur_ptr,cur_box);               \
+  else                                    \
+    sa_def(cur_ptr,cur_box);              \
 } while (0)
 //
 #define sa_word_define(a1,a2) \

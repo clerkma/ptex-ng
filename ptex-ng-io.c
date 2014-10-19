@@ -202,7 +202,7 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
         format_file = xstrdup((char *) name_of_file + 1);
 
 #ifdef COMPACTFORMAT
-      gz_fmt_file = gzdopen(fileno(*f), "rb9");
+      gz_fmt_file = gzdopen(fileno(*f), FOPEN_RBIN_MODE);
 #endif
     }
     else if (strstr((char *) name_of_file + 1, ".tfm") != NULL)
@@ -332,7 +332,7 @@ boolean open_output (FILE ** f, const char * fopen_mode)
 
 #ifdef COMPACTFORMAT
   if (strstr((char *) name_of_file + 1, ".fmt") != NULL)
-    gz_fmt_file = gzdopen(fileno(*f), "wb9");
+    gz_fmt_file = gzdopen(fileno(*f), FOPEN_WBIN_MODE);
 #endif
 
   if (strstr((char *) name_of_file + 1, ".dvi") != NULL)
@@ -355,12 +355,12 @@ boolean pack_json_name (str_number nom, str_number aire)
 {
   JSON_Value  * json_font;
   JSON_Object * json_spec;
-  char * temp_json_name = (char *)malloc(length(nom) + 6);
+  char * temp_json_name = (char *) malloc(length(nom) + 6);
   char * temp_file_name;
 
   strncpy(temp_json_name, (const char *) (str_pool + str_start[nom]), length(nom));
   strncpy(temp_json_name + length(nom), ".json", 6);
-  temp_file_name = kpse_find_file((const_string)temp_json_name, kpse_miscfonts_format, false);
+  temp_file_name = kpse_find_file((const_string) temp_json_name, kpse_miscfonts_format, false);
   free(temp_json_name);
 
   cur_cmap = 0;

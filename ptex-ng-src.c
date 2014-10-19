@@ -443,18 +443,10 @@ void jump_out (void)
 {
   close_files_and_terminate();
 
-  {
-    update_terminal(); 
-    ready_already = 0;
+  if (trace_flag)
+    puts("Exiting at jump_out().");
 
-    if (trace_flag)
-      puts("Exiting at jump_out().");
-
-    if ((history != spotless) && (history != warning_issued))
-      uexit(1);
-    else
-      uexit(0);
-  }
+  exit(do_final_end());
 }
 /* sec 0082 */
 // completes the job of error reporting
@@ -6678,7 +6670,7 @@ void check_outer_validity (void)
             p = get_avail();
             link(p) = q;
             info(p) = cs_token_flag + frozen_cr;
-            align_state = -1000000L;
+            align_state = -1000000;
           }
           break;
 
@@ -8966,7 +8958,7 @@ found:
         else
           begin_token_list(v_part(cur_align), v_template);
 
-        align_state = 1000000L;
+        align_state = 1000000;
         goto restart;
       }
 }
@@ -9050,13 +9042,13 @@ void scan_int (void)
     if (cur_tok == octal_token)
     {
       radix = 8;
-      m = 268435456L;   /* 2^28 */
+      m = 268435456;   /* 2^28 */
       get_x_token();
     }
     else if (cur_tok == hex_token)
     {
       radix = 16;
-      m = 134217728L;   /* 2^27 8000000 hex */
+      m = 134217728;   /* 2^27 8000000 hex */
       get_x_token();
     }
 
@@ -9359,9 +9351,9 @@ not_found:
     if (mag != 1000)
     {
       cur_val = xn_over_d(cur_val, 1000, mag);
-      f = (1000 * f + 65536L * tex_remainder) / mag;
-      cur_val = cur_val + (f / 65536L);
-      f = f % 65536L;
+      f = (1000 * f + 65536 * tex_remainder) / mag;
+      cur_val = cur_val + (f / 65536);
+      f = f % 65536;
     }
   }
 
@@ -13218,13 +13210,13 @@ pointer math_glue (pointer g, scaled m)
   integer n;
   scaled f;
 
-  n = x_over_n(m, 65536L);
+  n = x_over_n(m, 65536);
   f = tex_remainder;
 
   if (f < 0)
   {
     decr(n);
-    f = f + 65536L;
+    f = f + 65536;
   }
 
   p = get_node(glue_spec_size);
@@ -13253,13 +13245,13 @@ void math_kern (pointer p, scaled m)
 
   if (subtype(p) == mu_glue)
   {
-    n = x_over_n(m, 65536L);
+    n = x_over_n(m, 65536);
     f = tex_remainder;
 
     if (f < 0)
     {
       decr(n);
-      f = f + 65536L;
+      f = f + 65536;
     }
 
     width(p) = mu_mult(width(p));

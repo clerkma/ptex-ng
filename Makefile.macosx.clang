@@ -7,7 +7,7 @@
 #
 
 CC = gcc
-CFLAGS = -c -O2 -I/Users/maqiyuan/dev/extra/include
+CFLAGS = -c -O2 -I/Users/maqiyuan/dev/extra/include -I./parson
 LDFLAGS = libdpx.a libpng.a libz.a libptexenc.a libkpathsea.a -lm
 
 objects = \
@@ -21,7 +21,8 @@ objects = \
 	ptex-ng-utils.o\
 	ptex-ng-pdf-backend.o\
 	ptex-ng-kanji.o\
-	ptex-ng-module.o
+	ptex-ng-module.o\
+	parson.o
 
 headers = ptex-ng.h texd.h coerce.h macros.h
 
@@ -60,6 +61,9 @@ ptex-ng-pool.o: ptex-ng-pool.c $(headers)
 
 ptex-ng-utils.o: ptex-ng-utils.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-utils.c
+
+parson.o: parson/parson.c
+	$(CC) $(CFLAGS) parson/parson.c
 
 .PHONY: clean
 

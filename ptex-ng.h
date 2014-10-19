@@ -40,7 +40,6 @@
 #define INITEX             /* invoke initex */
 #define WORDS_BIGENDIAN 0  /* about format file */
 
-//#include "dpx.h"
 #include "texd.h"
 
 #define file_name_size PATH_MAX
@@ -180,6 +179,18 @@ typedef struct
       quarterword b0, b1;
     };
   };
+#else
+  union
+  {
+    struct
+    {
+      quarterword b1, b0;
+    };
+
+    halfword lh;
+  };
+
+  halfword rh;
 #endif
 } two_halves;
 

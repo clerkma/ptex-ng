@@ -262,16 +262,15 @@ boolean input_line_finish (void)
   return true;
 }
 /* sec 0031 */
+// inputs the next line or returns |false|
 boolean input_line (FILE * f)
 {
   int i = '\0';
 
   last = first;
 
-/*  different versions depending on return_flag / tabexpand */
-/*  while (last < buf_size && (i = getc (f)) != EOF)  */
 #ifdef ALLOCATEBUFFER
-  for ( ; ; ) 
+  while (true) 
 #else
   while (last < buf_size) 
 #endif

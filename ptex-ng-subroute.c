@@ -1772,7 +1772,7 @@ done:
   return a;
 }
 
-void scan_register_num(void)
+void scan_register_num (void)
 {
   scan_int();
 
@@ -1794,24 +1794,32 @@ void new_index (quarterword i, pointer q)
   sa_used(cur_ptr) = 0;
   link(cur_ptr) = q;
 
-  for (k = 1; k <= index_node_size - 1; ++k)
+  for (k = 1; k <= index_node_size - 1; k++)
     mem[cur_ptr + k] = sa_null;
 }
 
-void find_sa_element(small_number t, halfword n, boolean w)
+void find_sa_element (small_number t, halfword n, boolean w)
 {
   pointer q;
   small_number i;
 
   cur_ptr = sa_root[t];
   if_cur_ptr_is_null_then_return_or_goto(not_found);
-  q = cur_ptr; i = hex_dig1(n); get_sa_ptr();
+  q = cur_ptr;
+  i = hex_dig1(n);
+  get_sa_ptr();
   if_cur_ptr_is_null_then_return_or_goto(not_found1);
-  q = cur_ptr; i = hex_dig2(n); get_sa_ptr();
+  q = cur_ptr;
+  i = hex_dig2(n);
+  get_sa_ptr();
   if_cur_ptr_is_null_then_return_or_goto(not_found2);
-  q = cur_ptr; i = hex_dig3(n); get_sa_ptr();
+  q = cur_ptr;
+  i = hex_dig3(n);
+  get_sa_ptr();
   if_cur_ptr_is_null_then_return_or_goto(not_found3);
-  q = cur_ptr; i = hex_dig4(n); get_sa_ptr();
+  q = cur_ptr;
+  i = hex_dig4(n);
+  get_sa_ptr();
 
   if ((cur_ptr == null) && w)
     goto not_found4;
@@ -1820,31 +1828,42 @@ void find_sa_element(small_number t, halfword n, boolean w)
 
 not_found:
   new_index(t, null);
-  sa_root[t] = cur_ptr; q = cur_ptr; i = hex_dig1(n);
+  sa_root[t] = cur_ptr;
+  q = cur_ptr;
+  i = hex_dig1(n);
 
 not_found1:
   new_index(i, q);
-  add_sa_ptr(); q = cur_ptr; i = hex_dig2(n);
+  add_sa_ptr();
+  q = cur_ptr;
+  i = hex_dig2(n);
 
 not_found2:
   new_index(i, q);
-  add_sa_ptr(); q = cur_ptr; i = hex_dig3(n);
+  add_sa_ptr();
+  q = cur_ptr;
+  i = hex_dig3(n);
 
 not_found3:
   new_index(i, q);
-  add_sa_ptr(); q = cur_ptr; i = hex_dig4(n);
+  add_sa_ptr();
+  q = cur_ptr;
+  i = hex_dig4(n);
 
 not_found4:
   if (t == mark_val)
   {
     cur_ptr = get_node(mark_class_node_size);
-    mem[cur_ptr + 1] = sa_null; mem[cur_ptr + 2] = sa_null; mem[cur_ptr + 3] = sa_null;
+    mem[cur_ptr + 1] = sa_null;
+    mem[cur_ptr + 2] = sa_null;
+    mem[cur_ptr + 3] = sa_null;
   }
   else
   {
     if (t <= dimen_val)
     {
-      cur_ptr = get_node(word_node_size); sa_int(cur_ptr) = 0;
+      cur_ptr = get_node(word_node_size);
+      sa_int(cur_ptr) = 0;
       sa_num(cur_ptr) = n;
     }
     else
@@ -1853,20 +1872,24 @@ not_found4:
 
       if (t <= mu_val)
       {
-        sa_ptr(cur_ptr) = zero_glue; add_glue_ref(zero_glue);
+        sa_ptr(cur_ptr) = zero_glue;
+        add_glue_ref(zero_glue);
       }
-      else sa_ptr(cur_ptr) = null;
+      else
+        sa_ptr(cur_ptr) = null;
     }
 
     sa_ref(cur_ptr) = null;
   }
 
-  sa_index(cur_ptr) = 16 * t + i; sa_lev(cur_ptr) = level_one;
-  link(cur_ptr) = q; add_sa_ptr();
+  sa_index(cur_ptr) = 16 * t + i;
+  sa_lev(cur_ptr) = level_one;
+  link(cur_ptr) = q;
+  add_sa_ptr();
 exit:;
 }
 
-void delete_sa_ref(pointer q)
+void delete_sa_ref (pointer q)
 {
   pointer p;
   small_number i;
@@ -1897,7 +1920,9 @@ void delete_sa_ref(pointer q)
 
   do {
     i = hex_dig4(sa_index(q));
-    p = q; q = link(p); free_node(p, s);
+    p = q;
+    q = link(p);
+    free_node(p, s);
 
     if (q == null)
     {
@@ -1909,27 +1934,33 @@ void delete_sa_ref(pointer q)
   } while (!(sa_used(q) > 0));
 }
 
-void print_sa_num(pointer q)
+void print_sa_num (pointer q)
 {
   halfword n;
 
-  if (sa_index(q)<dimen_val_limit)
+  if (sa_index(q) < dimen_val_limit)
     n = sa_num(q);
   else
   {
-    n = hex_dig4(sa_index(q)); q = link(q); n = n + 16 * sa_index(q);
-    q = link(q); n = n + 256 * (sa_index(q) + 16 * sa_index(link(q)));
+    n = hex_dig4(sa_index(q));
+    q = link(q);
+    n = n + 16 * sa_index(q);
+    q = link(q);
+    n = n + 256 * (sa_index(q) + 16 * sa_index(link(q)));
   }
 
   print_int(n);
 }
 
 #ifdef STAT
-void show_sa(pointer p, const char * s)
+void show_sa (pointer p, const char * s)
 {
   small_number t;
 
-  begin_diagnostic(); print_char('{'); prints(s); print_char(' ');
+  begin_diagnostic();
+  print_char('{');
+  prints(s);
+  print_char(' ');
 
   if (p == null)
     print_char('?');
@@ -1941,7 +1972,8 @@ void show_sa(pointer p, const char * s)
       print_cmd_chr(tex_register, p);
     else if (t == box_val)
     {
-      print_esc("box"); print_sa_num(p);
+      print_esc("box");
+      print_sa_num(p);
     }
     else if (t == tok_val)
       print_cmd_chr(toks_register, p);
@@ -1954,14 +1986,17 @@ void show_sa(pointer p, const char * s)
       print_int(sa_int(p));
     else if (t == dimen_val)
     {
-      print_scaled(sa_dim(p)); prints("pt");
+      print_scaled(sa_dim(p));
+      prints("pt");
     }
     else
     {
       p = sa_ptr(p);
 
-      if (t == glue_val) print_spec(p, "pt");
-      else if (t == mu_val) print_spec(p, "mu");
+      if (t == glue_val)
+        print_spec(p, "pt");
+      else if (t == mu_val)
+        print_spec(p, "mu");
       else if (t == box_val)
         if (p == null)
           prints("void");
@@ -1976,7 +2011,8 @@ void show_sa(pointer p, const char * s)
         if (p != null)
           show_token_list(link(p), null, 32);
       }
-      else print_char('?');
+      else
+        print_char('?');
     }
   }
 
@@ -1985,7 +2021,7 @@ void show_sa(pointer p, const char * s)
 }
 #endif
 
-boolean do_marks(small_number a, small_number l, pointer q)
+boolean do_marks (small_number a, small_number l, pointer q)
 {
   small_number i;
 
@@ -2024,7 +2060,9 @@ boolean do_marks(small_number a, small_number l, pointer q)
             delete_token_ref(sa_bot_mark(q));
             sa_bot_mark(q) = null;
           }
-          else add_token_ref(sa_bot_mark(q));
+          else
+            add_token_ref(sa_bot_mark(q));
+
           sa_top_mark(q) = sa_bot_mark(q);
         }
         break;
@@ -2032,7 +2070,8 @@ boolean do_marks(small_number a, small_number l, pointer q)
       case fire_up_done:
         if ((sa_top_mark(q) != null) && (sa_first_mark(q) == null))
         {
-          sa_first_mark(q) = sa_top_mark(q); add_token_ref(sa_top_mark(q));
+          sa_first_mark(q) = sa_top_mark(q);
+          add_token_ref(sa_top_mark(q));
         }
         break;
 
@@ -2043,7 +2082,8 @@ boolean do_marks(small_number a, small_number l, pointer q)
 
           if (cur_ptr != null)
           {
-            delete_token_ref(cur_ptr); put_sa_ptr(null);
+            delete_token_ref(cur_ptr);
+            put_sa_ptr(null);
           }
         }
         break;
@@ -2060,16 +2100,19 @@ boolean do_marks(small_number a, small_number l, pointer q)
   return (q == null);
 }
 
-void sa_save(pointer p)
+void sa_save (pointer p)
 {
   pointer q;
   quarterword i;
 
   if (cur_level != sa_level)
   {
-    check_full_save_stack(); save_type(save_ptr) = restore_sa;
-    save_level(save_ptr) = sa_level; save_index(save_ptr) = sa_chain;
-    incr(save_ptr); sa_chain = null; sa_level = cur_level;
+    check_full_save_stack();
+    save_type(save_ptr) = restore_sa;
+    save_level(save_ptr) = sa_level;
+    save_index(save_ptr) = sa_chain;
+    incr(save_ptr); sa_chain = null;
+    sa_level = cur_level;
   }
 
   i = sa_index(p);
@@ -2078,36 +2121,43 @@ void sa_save(pointer p)
   {
     if (sa_int(p) == 0)
     {
-      q = get_node(pointer_node_size); i = tok_val_limit;
+      q = get_node(pointer_node_size);
+      i = tok_val_limit;
     }
     else
     {
-      q = get_node(word_node_size); sa_int(q) = sa_int(p);
+      q = get_node(word_node_size);
+      sa_int(q) = sa_int(p);
     }
 
     sa_ptr(q) = null;
   }
   else
   {
-    q = get_node(pointer_node_size); sa_ptr(q) = sa_ptr(p);
+    q = get_node(pointer_node_size);
+    sa_ptr(q) = sa_ptr(p);
   }
 
-  sa_loc(q) = p; sa_index(q) = i; sa_lev(q) = sa_lev(p);
-  link(q) = sa_chain; sa_chain = q; add_sa_ref(p);
+  sa_loc(q) = p;
+  sa_index(q) = i;
+  sa_lev(q) = sa_lev(p);
+  link(q) = sa_chain;
+  sa_chain = q;
+  add_sa_ref(p);
 }
 
-void sa_destroy(pointer p)
+void sa_destroy (pointer p)
 {
-  if (sa_index(p)<mu_val_limit)
+  if (sa_index(p) < mu_val_limit)
     delete_glue_ref(sa_ptr(p));
   else if (sa_ptr(p) != null)
-  if (sa_index(p)<box_val_limit)
+  if (sa_index(p) < box_val_limit)
     flush_node_list(sa_ptr(p));
   else
     delete_token_ref(sa_ptr(p));
 }
 
-void sa_def(pointer p, halfword e)
+void sa_def (pointer p, halfword e)
 {
   add_sa_ref(p);
 
@@ -2132,7 +2182,8 @@ void sa_def(pointer p, halfword e)
     else
       sa_save(p);
 
-    sa_lev(p) = cur_level; sa_ptr(p) = e;
+    sa_lev(p) = cur_level;
+    sa_ptr(p) = e;
 
 #ifdef STAT
     if (tracing_assigns > 0)
@@ -2143,7 +2194,7 @@ void sa_def(pointer p, halfword e)
   delete_sa_ref(p);
 }
 
-void sa_w_def(pointer p, integer w)
+void sa_w_def (pointer p, integer w)
 {
   add_sa_ref(p);
 
@@ -2164,7 +2215,9 @@ void sa_w_def(pointer p, integer w)
     if (sa_lev(p) != cur_level)
       sa_save(p);
 
-    sa_lev(p) = cur_level; sa_int(p) = w;
+    sa_lev(p) = cur_level;
+    sa_int(p) = w;
+
 #ifdef STAT 
     if (tracing_assigns > 0)
       show_sa(p, "into");
@@ -2174,26 +2227,31 @@ void sa_w_def(pointer p, integer w)
   delete_sa_ref(p);
 }
 
-void gsa_def(pointer p, halfword e)
+void gsa_def (pointer p, halfword e)
 {
   add_sa_ref(p);
+
 #ifdef STAT
-  if (tracing_assigns>0)
+  if (tracing_assigns > 0)
     show_sa(p, "globally changing");
 #endif
 
-  sa_destroy(p); sa_lev(p) = level_one; sa_ptr(p) = e;
+  sa_destroy(p);
+  sa_lev(p) = level_one;
+  sa_ptr(p) = e;
 
 #ifdef STAT
   if (tracing_assigns > 0)
     show_sa(p, "into");
 #endif
+
   delete_sa_ref(p);
 }
 
-void gsa_w_def(pointer p, integer w)
+void gsa_w_def (pointer p, integer w)
 {
   add_sa_ref(p);
+
 #ifdef STAT
   if (tracing_assigns > 0)
     show_sa(p, "globally changing");
@@ -2205,6 +2263,7 @@ void gsa_w_def(pointer p, integer w)
   if (tracing_assigns > 0)
     show_sa(p, "into");
 #endif
+
   delete_sa_ref(p);
 }
 
@@ -2221,34 +2280,36 @@ void sa_restore(void)
         sa_destroy(sa_chain);
 
 #ifdef STAT
-      if (tracing_restores>0)
+      if (tracing_restores > 0)
         show_sa(p, "retaining");
 #endif
     }
     else
     {
-      if (sa_index(p)<dimen_val_limit)
-        if (sa_index(sa_chain)<dimen_val_limit)
+      if (sa_index(p) < dimen_val_limit)
+        if (sa_index(sa_chain) < dimen_val_limit)
           sa_int(p) = sa_int(sa_chain);
         else
           sa_int(p) = 0;
       else
-        {
-        sa_destroy(p); sa_ptr(p) = sa_ptr(sa_chain);
-        }
+      {
+        sa_destroy(p);
+        sa_ptr(p) = sa_ptr(sa_chain);
+      }
 
       sa_lev(p) = sa_lev(sa_chain);
 
 #ifdef STAT
-      if (tracing_restores>0)
+      if (tracing_restores > 0)
         show_sa(p, "restoring");
 #endif
     }
 
     delete_sa_ref(p);
-    p = sa_chain; sa_chain = link(p);
+    p = sa_chain;
+    sa_chain = link(p);
 
-    if (sa_index(p)<dimen_val_limit)
+    if (sa_index(p) < dimen_val_limit)
       free_node(p, word_node_size);
     else
       free_node(p, pointer_node_size);
