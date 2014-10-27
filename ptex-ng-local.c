@@ -23,13 +23,13 @@
 #elif defined (__APPLE__)
   #include <malloc/malloc.h>
   #define malloc_usable_size malloc_size
+  #undef CLK_TCK
 #endif
 
 #define EXTERN extern
 #include "ptex-ng.h"
 
 #define USEOUREALLOC
-#define USEMEMSET
 
 #ifdef USEOUREALLOC
   #define REALLOC ourrealloc
@@ -61,10 +61,11 @@ const char * dist = "Linux";
 const char * dist = "Unknown";
 #endif
 
-const char * compiletime  = __TIME__;
-const char * compiledate  = __DATE__;
-const char * application  = "pTeX-ng";
-const char * banner       = "This is pTeX-ng, Version 3.14159265";
+#if defined (W32TeX)
+const char * banner = "This is pTeX-ng, Version 3.14159265 (W32TeX)";
+#else
+const char * banner = "This is pTeX-ng, Version 3.14159265";
+#endif
 
 clock_t start_time, main_time, finish_time;
 
@@ -78,7 +79,7 @@ char log_line[256];
 
 boolean mem_spec_flag     = false;
 boolean format_spec       = false;
-boolean reorder_arg_flag  = true;  /* put command line flags/arguments first */
+boolean reorder_arg_flag  = true;
 
 void show_usage (void)
 {
@@ -121,15 +122,14 @@ void scivilize (char * date)
     date[9] = '0';
 }
 
-void stamp_it (char * s)
+void stamp_it ()
 {
   char date[11 + 1];
 
-  strcpy(date, compiledate);
+  strcpy(date, __DATE__);
   scivilize(date);
-  sprintf(s, "%s (compiled time: %s %s with %s/%s)",
-    application, date, compiletime, dist, compiler);
-  s += strlen(s);
+  printf("pTeX-ng (compiled time: %s %s with %s/%s)\n",
+    date, __TIME__, dist, compiler);
 }
 
 #define MAXSPLITS 3
@@ -156,28 +156,26 @@ void * ourrealloc (void * old, size_t new_size)
 {
   void * mnew;
   size_t old_size, overlap;
-  
-  /* round up to nearest multiple of four bytes */
-  /* avoid unlikely alignment */
+
   if ((new_size % 4) != 0)
     new_size = ((new_size / 4) + 1) * 4;
 
   if (old == NULL)
-    return malloc (new_size);  /* no old block - use malloc */
+    return malloc (new_size);
 
 #ifdef _WIN32
-  old_size = _msize (old);
+  old_size = _msize(old);
 #else
-  old_size = malloc_usable_size (old);
+  old_size = malloc_usable_size(old);
 #endif
 
   if (old_size >= new_size && old_size < new_size + 4)
     return old;
 
 #ifdef _WIN32
-  mnew = _expand (old, new_size); /* first try and expand in place MSVC */
+  mnew = _expand(old, new_size);
 #else
-  mnew = realloc (old, new_size);
+  mnew = realloc(old, new_size);
 #endif
 
   if (mnew != NULL)
@@ -190,13 +188,13 @@ void * ourrealloc (void * old, size_t new_size)
   }
 
   /* do this if you want to call the real realloc next -  */
-  mnew = realloc (old, new_size);
+  mnew = realloc(old, new_size);
 
   if (mnew != NULL)
     return mnew;
 
   /*  we are screwed typically if we ever drop through here - no more space */
-  mnew = malloc (new_size); /* otherwise find new space */
+  mnew = malloc(new_size); /* otherwise find new space */
 
   if (mnew == NULL)
     return mnew;        /* if unable to allocate */
@@ -206,8 +204,8 @@ void * ourrealloc (void * old, size_t new_size)
   else
     overlap = new_size;
 
-  memcpy (mnew, old, overlap); /* copy old data to new area */
-  free(old); /* free the old area */
+  memcpy(mnew, old, overlap);
+  free(old);
 
   return mnew;
 }
@@ -342,21 +340,8 @@ int realloc_hyphen (int hyphen_prime)
   if (trace_flag)
     printf("Addresses hyph_word %p hyph_list %p\n", hyph_word, hyph_list);
 
-/*  cannot preserve old contents when hyphen prime is changed */
-#ifdef USEMEMSET
   memset(hyph_word, 0, (hyphen_prime + 1) * sizeof (hyph_word[0]));
-#else
-  for (k = 0; k <= hyphen_prime; k++)
-    hyph_word[k]= 0;
-#endif
-
-#ifdef USEMEMSET
   memset(hyph_list, 0, (hyphen_prime + 1) * sizeof (hyph_list[0]));
-#else
-  for (k = 0; k <= hyphen_prime; k++)
-    hyph_list[k]= 0;
-#endif
-
   hyph_count = 0;
 
   if (current_prime != 0)
@@ -596,12 +581,10 @@ memory_word * realloc_font_info (int size)
   if (trace_flag)
     printf("Old Address %s == %p\n", "font_info", font_info);
 
-  /* during initial allocation, font_info == NULL - realloc acts like malloc */
-  /* during initial allocation current_font_mem_size == 0 */
-  if (current_font_mem_size == font_mem_size)  /* if we REALLY run up to limit */
+  if (current_font_mem_size == font_mem_size)
   {
     /* memory_error("font", (font_mem_size + 1) * sizeof(memory_word)); */
-    return font_info;    /* pass it back to TeX 99/Fabe/4 */
+    return font_info;
   }
   /* try and prevent excessive frequent reallocations */
   /* while avoiding over allocation by too much */
@@ -621,7 +604,7 @@ memory_word * realloc_font_info (int size)
     if (new_size > font_mem_size)
       new_size = font_mem_size; /* bump against limit */
 
-/*    important + 1 since fmemoryword font_info[font_mem_size + 1]  original */
+/* important + 1 since fmemoryword font_info[font_mem_size + 1]  original */
     n = (new_size + 1) * sizeof (memory_word);
 
     if (trace_flag)
@@ -865,7 +848,7 @@ memory_word * realloc_save_stack (int size)
 
   if (current_save_size == save_size)
   {
-    return save_stack; /* let TeX handle the error */
+    return save_stack;
   }
 
   min_size =  current_save_size / 100 * percent_grow;
@@ -1191,14 +1174,7 @@ ASCII_code * realloc_buffer (int size)
 
   buffer = new_buffer;
   update_statistics ((long) buffer, n, current_buf_size);
-
-#ifdef USEMEMSET
   memset(buffer + current_buf_size, 0, new_size - current_buf_size);
-#else
-  for (k = current_buf_size; k < new_size; k++)
-    buffer[k] = 0;
-#endif
-
   current_buf_size = new_size;
 
   if (trace_flag)
@@ -1214,9 +1190,6 @@ ASCII_code * realloc_buffer (int size)
 }
 #endif
 
-/* here is the main memory allocation routine -- calls the above */
-/* returns -1 if it fails */
-/* allocate rather than static 93/Nov/26 */
 int allocate_memory (void)
 {
 #ifdef ALLOCATEINPUTSTACK
@@ -1522,12 +1495,9 @@ boolean prime (int x)
   return true;
 }
 
-boolean show_use = false;
-
 void complainarg (int c, char *s)
 {
   printf("ERROR: Do not understand `%c' argument value `%s'\n", c, s);
-  show_use = true;
 }
 
 /* following is list of allowed command line flags and args */
@@ -1622,175 +1592,6 @@ void reorderargs (int ac, char **av)
   }
 }
 
-int test_align (long address, int size, const char *str)
-{
-  int n;
-
-  if (size > sizeof(void *))
-    n = address % sizeof(void *);
-  else
-    n = address % size;
-
-  if (n != 0)
-    printf("OFFSET %d (ELEMENT %d) in %s\n", n, size, str);
-
-  return n;
-}
-
-/* activate detailed checking of alignment when trace_flag is set */
-
-void check_fixed_align (int flag)
-{
-  (void) flag;
-
-  if (test_align ((long) &mem_top, 4, "FIXED ALIGNMENT"))
-  {
-    puts("PLEASE RECOMPILE ME!");
-  }
-
-#ifdef CHECKALIGNMENT
-  if (!flag)
-    return;
-
-  test_align ((long) &mem_top, 4, "mem_top");
-  test_align ((long) &mem_max, 4, "mem_max");
-  test_align ((long) &mem_min, 4, "mem_min");
-  test_align ((long) &bad, 4, "bad");
-  test_align ((long) &trie_size, 4, "trie_size");
-  test_align ((long) &xord, sizeof(xord[0]), "xord");
-  test_align ((long) &xchr, sizeof(xchr[0]), "xchr");
-  test_align ((long) &name_length, 4, "name_length");
-  test_align ((long) &first, 4, "first");
-  test_align ((long) &last, 4, "last");
-  test_align ((long) &max_buf_stack, 4, "max_buf_stack");
-  test_align ((long) &pool_ptr, 4, "pool_ptr");
-  test_align ((long) &str_ptr, 4, "str_ptr");
-  test_align ((long) &init_pool_ptr, 4, "init_pool_ptr");
-  test_align ((long) &init_str_ptr, 4, "init_str_ptr");
-  test_align ((long) &log_file, 4, "log_file");
-  test_align ((long) &tally, 4, "tally");
-  test_align ((long) &term_offset, 4, "term_offset");
-  test_align ((long) &file_offset, 4, "file_offset");
-  test_align ((long) &trick_count, 4, "trick_count");
-  test_align ((long) &first_count, 4, "first_count");
-  test_align ((long) &deletions_allowed, 4, "deletions_allowed");
-  test_align ((long) &set_box_allowed, 4, "set_box_allowed");
-  test_align ((long) &help_line, sizeof(help_line[0]), "help_line");
-  test_align ((long) &use_err_help, 4, "use_err_help");
-  test_align ((long) &interrupt, 4, "interrupt");
-  test_align ((long) &OK_to_interrupt, 4, "OK_to_interrupt");
-  test_align ((long) &arith_error, 4, "arith_error");
-  test_align ((long) &tex_remainder, 4, "tex_remainder");
-  test_align ((long) &temp_ptr, 4, "temp_ptr");
-  test_align ((long) &lo_mem_max, 4, "lo_mem_max");
-  test_align ((long) &hi_mem_min, 4, "hi_mem_min");
-  test_align ((long) &var_used, 4, "var_used");
-  test_align ((long) &dyn_used, 4, "dyn_used");
-  test_align ((long) &avail, 4, "avail");
-  test_align ((long) &mem_end, 4, "mem_end");
-  test_align ((long) &mem_start, 4, "mem_start");
-  test_align ((long) &rover, 4, "rover");
-  test_align ((long) &font_in_short_display, 4, "font_in_short_display");
-  test_align ((long) &depth_threshold, 4, "depth_threshold");
-  test_align ((long) &breadth_max, 4, "breadth_max");
-  test_align ((long) &nest, sizeof(nest[0]), "nest");
-  // test_align ((long) &xeq_level, sizeof(xeq_level[0]), "xeq_level");
-  test_align ((long) &zzzad, sizeof(zzzad[0]), "zzzad");
-  // test_align ((long) &hash, sizeof(hash[0]), "hash");
-  test_align ((long) &zzzae, sizeof(zzzae[0]), "zzzae");
-  test_align ((long) &save_stack, sizeof(save_stack[0]), "save_stack");
-  test_align ((long) &input_stack, sizeof(input_stack[0]), "input_stack");
-  test_align ((long) &input_file, sizeof(input_file[0]), "input_file");
-  test_align ((long) &line_stack, sizeof(line_stack[0]), "line_stack");
-  test_align ((long) &param_stack, sizeof(param_stack[0]), "param_stack");
-  test_align ((long) &cur_mark, sizeof(cur_mark[0]), "cur_mark");
-  test_align ((long) &pstack, sizeof(pstack[0]), "pstack");
-  test_align ((long) &read_file, sizeof(read_file[0]), "read_file");
-  test_align ((long) &font_check, sizeof(font_check[0]), "font_check");
-  test_align ((long) &font_size, sizeof(font_size[0]), "font_size");
-  test_align ((long) &font_dsize, sizeof(font_dsize[0]), "font_dsize");
-  test_align ((long) &font_params, sizeof(font_params[0]), "font_params");
-  test_align ((long) &font_name, sizeof(font_name[0]), "font_name");
-  test_align ((long) &font_area, sizeof(font_area[0]), "font_area");
-  test_align ((long) &font_bc, sizeof(font_bc[0]), "font_bc");
-  test_align ((long) &font_ec, sizeof(font_ec[0]), "font_ec");
-  test_align ((long) &font_glue, sizeof(font_glue[0]), "font_glue");
-  test_align ((long) &font_used, sizeof(font_used[0]), "font_used");
-  test_align ((long) &hyphen_char, sizeof(hyphen_char[0]), "hyphen_char");
-  test_align ((long) &skew_char, sizeof(skew_char[0]), "skew_char");
-  test_align ((long) &bchar_label, sizeof(bchar_label[0]), "bchar_label");
-  test_align ((long) &font_bchar, sizeof(font_bchar[0]), "font_bchar");
-  test_align ((long) &font_false_bchar, sizeof(font_false_bchar[0]), "font_false_bchar");
-  test_align ((long) &char_base, sizeof(char_base[0]), "char_base");
-  test_align ((long) &width_base, sizeof(width_base[0]), "width_base");
-  test_align ((long) &height_base, sizeof(height_base[0]), "height_base");
-  test_align ((long) &depth_base, sizeof(depth_base[0]), "depth_base");
-  test_align ((long) &italic_base, sizeof(italic_base[0]), "italic_base");
-  test_align ((long) &lig_kern_base, sizeof(lig_kern_base[0]), "lig_kern_base");
-  test_align ((long) &kern_base, sizeof(kern_base[0]), "kern_base");
-  test_align ((long) &exten_base, sizeof(exten_base[0]), "exten_base");
-  test_align ((long) &param_base, sizeof(param_base[0]), "param_base");
-  test_align ((long) &total_stretch, sizeof(total_stretch[0]), "total_stretch");
-  test_align ((long) &total_shrink, sizeof(total_shrink[0]), "total_shrink");
-  test_align ((long) &active_width, sizeof(active_width[0]), "active_width");
-  test_align ((long) &cur_active_width, sizeof(cur_active_width[0]), "cur_active_width");
-  test_align ((long) &background, sizeof(background[0]), "background");
-  test_align ((long) &break_width, sizeof(break_width[0]), "break_width");
-  test_align ((long) &minimal_demerits, sizeof(minimal_demerits[0]), "minimal_demerits");
-  test_align ((long) &best_place, sizeof(best_place[0]), "best_place");
-  test_align ((long) &best_pl_line, sizeof(best_pl_line[0]), "best_pl_line");
-  test_align ((long) &hc, sizeof(hc[0]), "hc");
-  test_align ((long) &hu, sizeof(hu[0]), "hu");
-  test_align ((long) &hyf, sizeof(hyf[0]), "hyf");
-  // test_align ((long) &x, sizeof(x[0]), "x");
-  test_align ((long) &hyf_distance, sizeof(hyf_distance[0]), "hyf_distance");
-  test_align ((long) &hyf_num, sizeof(hyf_num[0]), "hyf_num");
-  test_align ((long) &hyf_next, sizeof(hyf_next[0]), "hyf_next");
-  test_align ((long) &op_start, sizeof(op_start[0]), "op_start");
-  // test_align ((long) &trie_op_hash, sizeof(trie_op_hash[0]), "trie_op_hash");
-  test_align ((long) &trie_used, sizeof(trie_used[0]), "trie_used");
-/*  test_align ((long) &trie_op_lang, sizeof(trie_op_lang[0]), "trie_op_lang");*/
-  test_align ((long) &trie_op_val, sizeof(trie_op_val[0]), "trie_op_val");
-  test_align ((long) &trie_min, sizeof(trie_min[0]), "trie_min");
-  test_align ((long) &page_so_far, sizeof(page_so_far[0]), "page_so_far");
-  test_align ((long) &write_file, sizeof(write_file[0]), "write_file");
-  test_align ((long) &write_open, sizeof(write_open[0]), "write_open");
-#endif
-}
-
-void check_alloc_align (int flag)
-{
-  (void) flag;
-
-  if (test_align((long) eqtb, sizeof(eqtb[0]), "ALLOCATED ALIGNMENT"))
-    puts("PLEASE RECOMPILE ME!");
-
-#ifdef CHECKALIGNMENT
-  if (!flag)
-    return;
-
-#ifndef ALLOCZEQTB
-  test_align ((long) eqtb, sizeof(eqtb[0]), "eqtb"); 
-#endif
-
-  test_align ((long) str_pool, sizeof(str_pool[0]), "str_pool"); /* no op */
-  test_align ((long) str_start, sizeof(str_start[0]), "str_start");
-  test_align ((long) mem, sizeof(mem[0]), "main memory");
-  test_align ((long) font_info, sizeof(font_info[0]), "font memory");
-  test_align ((long) trie_trl, sizeof(trie_trl[0]), "trie_trl");
-  test_align ((long) trie_tro, sizeof(trie_tro[0]), "trie_tro");
-  test_align ((long) trie_trc, sizeof(trie_trc[0]), "trie_trc");
-  test_align ((long) hyph_word, sizeof(hyph_word[0]), "hyph_word");
-  test_align ((long) hyph_list, sizeof(hyph_list[0]), "hyph_list");
-/*  test_align ((long) trie_c, sizeof(trie_c[0]), "trie_c"); *//* no op */
-  test_align ((long) trie_o, sizeof(trie_o[0]), "trie_o");
-  test_align ((long) trie_l, sizeof(trie_l[0]), "trie_l");
-  test_align ((long) trie_r, sizeof(trie_r[0]), "trie_r");
-  test_align ((long) trie_hash, sizeof(trie_hash[0]), "trie_hash");
-  test_align ((long) trie_taken, sizeof(trie_taken[0]), "trie_taken");
-#endif
-}
-
 boolean shorten_file_name  = false; /* don't shorten file names to 8+3 for DOS */
 
 /* cache to prevent allocating twice in a row */
@@ -1798,7 +1599,6 @@ boolean shorten_file_name  = false; /* don't shorten file names to 8+3 for DOS *
 char * lastname  = NULL;
 char * lastvalue = NULL;
 
-/* returns allocated string -- these strings are not freed again */
 /* is it safe to do that now ? 98/Jan/31 */
 char * grabenv (const char * varname)
 {
@@ -1863,14 +1663,10 @@ void knuthify (void)
   show_tfm_flag         = false; /* don't show metric file in log */
   tab_step              = 0;     /* tab's size of width */
   show_line_break_stats = false; /* do not show line break stats */
-  show_fonts_used       = false;
   default_rule          = 26214; /* revert to default rule thickness */
-  pseudo_tilde          = false;
-  pseudo_space          = false;
   truncate_long_lines   = false;
   allow_quoted_names    = false;
   show_cs_names         = false;
-  ignore_frozen         = false;
   suppress_f_ligs       = false;
   full_file_name_flag   = false;
   knuth_flag            = true;  /* so other code can know about this */
@@ -1904,32 +1700,12 @@ static struct option long_options[] =
   {NULL,            0, 0, 0}
 };
 
-int analyze_flag (int c, char * optarg)
+int analyze_flag (int c)
 {
   switch (c)
   {
-    case 'Q':
-      interaction = batch_mode;
-      break;
-
-    case 'R':
-      interaction = nonstop_mode;
-      break;
-
-    case 'S':
-      interaction = scroll_mode;
-      break;
-
-    case 'T':
-      interaction = error_stop_mode;
-      break;
-
     case 'w':
       show_in_hex = true;
-      break;
-
-    case 'f':
-      show_fonts_used = false;
       break;
 
     case '8':
@@ -1940,20 +1716,12 @@ int analyze_flag (int c, char * optarg)
       show_cs_names = true;
       break;
 
-    case '4':
-      ignore_frozen = true;
-      break;
-
     case 'J':
-      show_line_break_stats = false; /* 96/Feb/8 */
+      show_line_break_stats = false;
       break;
 
     case 'O':
-      show_fmt_flag = false; /* 94/Jun/21 */
-      break;
-
-    case 'z':
-      full_file_name_flag = false; // 00 Jun 18
+      show_fmt_flag = false;
       break;
 
     case 's':
@@ -1972,23 +1740,6 @@ int analyze_flag (int c, char * optarg)
       open_trace_flag = true;
       break;
 
-    case 'Y':
-      reorder_arg_flag = false;
-      break;
-
-    case 'U':
-      if (optarg == 0)
-        pseudo_tilde = 0;
-      else
-        pseudo_tilde = atoi(optarg);
-
-      if (pseudo_tilde > 255)
-        pseudo_tilde = 255;
-      else if (pseudo_tilde < 128)
-        pseudo_tilde = 128;
-
-      break;
-
     case '?':
     default:
       return -1;
@@ -1996,22 +1747,6 @@ int analyze_flag (int c, char * optarg)
   }
 
   return 0;
-}
-
-void strip_name (char *pathname)
-{
-  char *s;
-
-  if ((s = strrchr(pathname, '\\')) != NULL)
-    ;
-  else if ((s = strrchr(pathname, '/')) != NULL)
-    ;
-  else if ((s = strrchr(pathname, ':')) != NULL)
-    s++;
-  else
-    s = pathname;
-
-  *s = '\0';
 }
 
 #undef name
@@ -2155,14 +1890,12 @@ int read_command_line (int ac, char **av)
     }
     else if (ARGUMENT_IS("help"))
     {
-      stamp_it(log_line);
-      strcat(log_line, "\n");
-      show_line(log_line, 0);
+      stamp_it();
       show_usage();
       return -1; // failure
     }
     else
-      analyze_flag(c, optargnew);
+      analyze_flag(c);
   }
 
   return 0;
@@ -2180,8 +1913,6 @@ int init_commands (int ac, char **av)
   return_flag           = true;  // hard wired now
   trimeof               = true;  // hard wired now
   deslash               = true;
-  pseudo_tilde          = 254;   /* default '~' replace 95/Sep/26 filledbox DOS 850 */
-  pseudo_space          = 255;   /* default ' ' replace 97/June/5 nbspace DOS 850 */
   default_rule          = 26214;
   show_current          = true;
   civilize_flag         = true;
@@ -2194,7 +1925,6 @@ int init_commands (int ac, char **av)
   truncate_long_lines   = true;  /* truncate long lines */
   tab_step              = 0;     /* do not replace tabs with spaces */
   show_line_break_stats = true;  /* show line break statistics 96/Feb/8 */
-  show_fonts_used       = true;  /* show fonts used in LOG file 97/Dec/24 */
   allow_quoted_names    = true;  /* allow quoted names with spaces 98/Mar/15 */
   show_cs_names         = false;
   knuth_flag            = false;
@@ -2203,8 +1933,7 @@ int init_commands (int ac, char **av)
   new_hyphen_prime      = 0;
 
 #ifdef VARIABLETRIESIZE
-  // trie_size = default_trie_size;
-  trie_size = 0;
+  trie_size = 0; // default_trie_size
 #endif
 
   mem_extra_high = 0;
@@ -2275,7 +2004,7 @@ void initial_memory (void)
 
   if (new_hyphen_prime > 0)
   {
-    if (! is_initex)
+    if (!is_initex)
       puts("ERROR: Can only set hyphen prime in initex");
     else
     {
@@ -2305,34 +2034,16 @@ void perrormod (const char * s)
   printf("`%s': %s\n", s, strerror(errno));
 }
 
-/* convert tilde to pseudo_tilde to hide it from TeX --- 95/Sep/26 */
-/* convert space to pseudo_space to hide it from TeX --- 97/Jun/5 */
-/* called only if pseudo_tilde != 0 or pseudo_space != 0 */
-/* this is then undone in tex3.c both for fopen input and output */
-/* not ideal, since pseudo name appears in log and in error messages ... */
-
-void hidetwiddle (char *tname)
+inline void deslash_path (char * s)
 {
-  char *s = tname;
+  if (strcmp(s, "") != 0)
+    flush_trailing_slash(s);
+}
 
-#ifdef DEBUGTWIDDLE
-  if (trace_flag)
-    printf("Hidetwiddle %s", tname);
-#endif
-
-  while (*s != '\0')
-  {
-    if (*s == '~' && pseudo_tilde != 0)
-      *s = (char) pseudo_tilde;  /* typically 254 */
-    else if (*s == ' ' && pseudo_space != 0)
-      *s = (char) pseudo_space;  /* typically 255 */
-    s++;
-  }
-
-#ifdef DEBUGTWIDDLE
-  if (trace_flag)
-    printf("=> %s\n", tname);
-#endif
+inline void unixify_path (char * s)
+{
+  if (strcmp(s, "") != 0)
+    unixify(s);
 }
 
 void deslash_all (int ac, char **av)
@@ -2369,37 +2080,19 @@ void deslash_all (int ac, char **av)
   if (*s == '\\' || *s == '/')
     *s = '\0';
 
-  if (strcmp(dvi_directory, "") != 0)
-    flush_trailing_slash(dvi_directory);
-
-  if (strcmp(log_directory, "") != 0)
-    flush_trailing_slash(log_directory);
-
-  if (strcmp(aux_directory, "") != 0)
-    flush_trailing_slash(aux_directory);
-
-  if (strcmp(fmt_directory, "") != 0)
-    flush_trailing_slash(fmt_directory);
-
-  if (strcmp(pdf_directory, "") != 0)
-    flush_trailing_slash(pdf_directory);
+  deslash_path(dvi_directory);
+  deslash_path(log_directory);
+  deslash_path(aux_directory);
+  deslash_path(fmt_directory);
+  deslash_path(pdf_directory);
 
   if (deslash)
   {
-    if (strcmp(dvi_directory, "") != 0)
-      unixify(dvi_directory);
-    
-    if (strcmp(log_directory, "") != 0)
-      unixify(log_directory);
-
-    if (strcmp(aux_directory, "") != 0)
-      unixify(aux_directory);
-
-    if (strcmp(fmt_directory, "") != 0)
-      unixify(fmt_directory);
-
-    if (strcmp(pdf_directory, "") != 0)
-      unixify(pdf_directory);
+    unixify_path(dvi_directory);
+    unixify_path(log_directory);
+    unixify_path(aux_directory);
+    unixify_path(fmt_directory);
+    unixify_path(pdf_directory);
   }
 
   format_spec = false;
@@ -2413,9 +2106,6 @@ void deslash_all (int ac, char **av)
 
       unixify(av[optind]);
     }
-
-    if (pseudo_tilde != 0 || pseudo_space != 0)
-      hidetwiddle(av[optind]);
 
     if (*av[optind] == '&' || *av[optind] == '+')
     {
@@ -2431,9 +2121,6 @@ void deslash_all (int ac, char **av)
 
           unixify(av[optind + 1]);
         }
-
-        if (pseudo_tilde != 0 || pseudo_space != 0)
-          hidetwiddle(av[optind + 1]);
       }
     }         
   }
@@ -2477,22 +2164,16 @@ int main_init (int ac, char ** av)
   trie_tro   = NULL;
   trie_trl   = NULL;
 
-  log_opened          = false;  /* so can tell whether opened */
-  interaction         = -1;     /* default state => 3 */
-  missing_characters  = 0;      /* none yet! */
-  ignore_frozen       = false;  /* default is not to ignore */
-  suppress_f_ligs     = false;  /* default is not to ignore f-ligs */
-
-  if (ac > 1 && !strncmp(av[1], "-Y", 2))
-    reorder_arg_flag = false;
+  log_opened          = false;
+  interaction         = -1;
+  missing_characters  = 0;
+  suppress_f_ligs     = false;
 
   if (reorder_arg_flag)
     reorderargs(ac, av);  
 
   if (init_commands(ac, av))
     return -1;
-
-  check_fixed_align(trace_flag);
 
   format_file   = NULL;
   source_direct = NULL;
@@ -2528,19 +2209,17 @@ int main_init (int ac, char ** av)
   if (allocate_memory() != 0)
     return -1;
 
-  check_alloc_align(trace_flag);
-
   if (trace_flag)
     puts("Leaving main_init().");
 
   return 0;
 }
 
-#ifdef __APPLE__
-#undef CLK_TCK
+#if defined (__APPLE__)
+  #undef CLK_TCK
 #endif
-#define CLK_TCK CLOCKS_PER_SEC
 
+#define CLK_TCK CLOCKS_PER_SEC
 
 void show_inter_val (clock_t inter_val)
 {
@@ -2594,13 +2273,16 @@ int endit (int flag)
     show_inter_val(main_time - start_time);
     printf(" format load + ");
     show_inter_val(finish_time - main_time);
-    printf(" processing) ");
+    printf(" processing)");
 
     if (total_pages > 0)
     {
+      printf(" ");
       show_inter_val((finish_time - main_time) / total_pages);
       printf("s per page.\n");
     }
+    else
+      printf(".\n");
   }
 
   return flag;
@@ -2668,12 +2350,7 @@ void print_cs_names (FILE *output, int pass)
     if (csused == NULL)
       return;
 
-#ifdef USEMEMSET
     memset(csused, 0, nfcs);
-#else
-    for (h = 0; h < (hash_size + 780); h++)
-      csused[h] = 0;
-#endif
   }
 
   ccount = 0;

@@ -128,19 +128,6 @@ void check_short_name (unsigned char *s)
 
 /* Following works on both null-terminated names */
 
-void retwiddle (unsigned char *s)
-{
-  while (*s != '\0')
-  {
-    if (*s == (unsigned char) pseudo_tilde)
-      *s = '~';
-    else if (*s == (unsigned char) pseudo_space)
-      *s = ' ';
-
-    s++;
-  }
-}
-
 boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode)
 {
   boolean openable = false;
@@ -153,10 +140,6 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
   }
 
   name_of_file[name_length + 1] = '\0';
-
-  /* reinsert '~' and ' ' in file names */  
-  if (pseudo_tilde != 0 || pseudo_space != 0)
-    retwiddle(name_of_file + 1);
 
   if (shorten_file_name)
     check_short_name(name_of_file + 1);
@@ -289,9 +272,6 @@ boolean open_output (FILE ** f, const char * fopen_mode)
 
   name_of_file[name_length + 1] = '\0';
 
-  if (pseudo_tilde != 0 || pseudo_space !=  0)
-    retwiddle(name_of_file + 1);
-
   /* 8 + 3 file names on Windows NT 95/Feb/20 */
   if (shorten_file_name)
     check_short_name(name_of_file + 1);
@@ -349,38 +329,4 @@ boolean open_output (FILE ** f, const char * fopen_mode)
     name_length = temp_length;
   
   return (*f != NULL);
-}
-
-boolean pack_json_name (str_number nom, str_number aire)
-{
-  JSON_Value  * json_font;
-  JSON_Object * json_spec;
-  char * temp_json_name = (char *) malloc(length(nom) + 6);
-  char * temp_file_name;
-
-  strncpy(temp_json_name, (const char *) (str_pool + str_start[nom]), length(nom));
-  strncpy(temp_json_name + length(nom), ".json", 6);
-  temp_file_name = kpse_find_file((const_string) temp_json_name, kpse_miscfonts_format, false);
-  free(temp_json_name);
-
-  cur_cmap = 0;
-  cur_spec = 0;
-
-  if (temp_file_name != NULL)
-  {
-    json_font = json_parse_file(temp_file_name);
-
-    if (json_value_get_type(json_font) != JSONObject)
-      return false;
-
-    json_spec = json_value_get_object(json_font);
-    pack_file_name(make_string_pool(json_object_get_string(json_spec, "metric")), aire, 805);
-    cur_cmap = make_string_pool(json_object_get_string(json_spec, "cmap"));
-    cur_spec = make_string_pool(json_object_get_string(json_spec, "spec"));
-    json_value_free(json_font);
-
-    return true;
-  }
-  else
-    return false;
 }

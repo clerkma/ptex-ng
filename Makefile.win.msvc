@@ -10,7 +10,7 @@ LINK = link
 RC = rc
 
 CFLAGS=/nologo /c /MT /GF /Gy /W4 \
-	/I"kpathsea" /I"zlib" /I"libptexenc/ptexenc" /I"parson"
+	/I"kpathsea" /I"zlib" /I"libptexenc/ptexenc"
 
 LFLAGS=/NOLOGO /MAP
 
@@ -26,53 +26,55 @@ objs = \
 	ptex-ng-utils.obj\
 	ptex-ng-pdf.obj\
 	ptex-ng-kanji.obj\
-	ptex-ng-module.obj
+	ptex-ng-module.obj\
+	ptex-ng-vf.obj
 
 ptex-ng.exe: $(objs) libdpx\libdpx.lib
-	$(LINK) $(LFLAGS) $(objs) parson\parson.obj \
+	$(LINK) $(LFLAGS) $(objs) \
 	libptexenc\ptexenc.lib \
 	kpathsea\kpathsea.lib \
 	libdpx\libdpx.lib \
 	libpng\libpng.lib \
 	zlib\zlib.lib
-	del ..\yandy\bin\ptex-ng.exe
-	copy ptex-ng.exe ..\yandy\bin\ptex-ng.exe
 
 ptex-ng.res: ptex-ng.rc
 	$(RC) /nologo ptex-ng.rc
 
 ptex-ng-pdf.obj: ptex-ng-pdf.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng.obj: ptex-ng.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng-initex.obj: ptex-ng-initex.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng-io.obj: ptex-ng-io.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng-subroute.obj: ptex-ng-subroute.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng-kanji.obj: ptex-ng-kanji.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng-module.obj: ptex-ng-module.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
+
+ptex-ng-vf.obj: ptex-ng-vf.c \
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng-local.obj: ptex-ng-local.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng-src.obj: ptex-ng-src.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng-pool.obj: ptex-ng-pool.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 ptex-ng-utils.obj: ptex-ng-utils.c \
-	texd.h ptex-ng.h coerce.h macros.h
+	ptex-ng.h coerce.h macros.h
 
 .SUFFIXES:
 .SUFFIXES: .obj .c

@@ -63,16 +63,12 @@ void int_error (integer n);
 void normalize_selector (void);
 void pause_for_instructions (void);
 integer half (integer x);
-scaled round_decimals_(small_number k);
+scaled round_decimals (small_number k);
 void print_scaled (scaled s);
-scaled mult_and_add_(integer n, scaled x, scaled y, scaled max_answer);
-#define mult_and_add(n, x, y, max_answer) mult_and_add_((integer) (n), (scaled) (x), (scaled) (y), (scaled) (max_answer))
-scaled x_over_n_(scaled x, integer n);
-#define x_over_n(x, n) x_over_n_((scaled) (x), (integer) (n))
-scaled xn_over_d_(scaled x, integer n, integer d);
-#define xn_over_d(x, n, d) xn_over_d_((scaled) (x), (integer) (n), (integer) (d))
-halfword badness_(scaled t, scaled s);
-#define badness(t, s) badness_((scaled) (t), (scaled) (s))
+scaled mult_and_add (integer n, scaled x, scaled y, scaled max_answer);
+scaled x_over_n (scaled x, integer n);
+scaled xn_over_d (scaled x, integer n, integer d);
+halfword badness (scaled t, scaled s);
 void print_word (memory_word w);
 void show_token_list_(integer p, integer q, integer l);
 #define show_token_list(p, q, l) show_token_list_((integer) (p), (integer) (q), (integer) (l))
@@ -146,7 +142,7 @@ void print_cmd_chr_(quarterword cmd, halfword chr_code);
 void show_eqtb (pointer n);
 pointer id_lookup (integer j, integer l);
 void primitive_(str_number s, quarterword c, halfword o);
-#define primitive(s, c, o) primitive_(make_string_pool((const char *) s), (quarterword) (c), (halfword) (o))
+#define primitive(s, c, o) primitive_(make_str_string((const char *) s), (quarterword) (c), (halfword) (o))
 void new_save_level (group_code c);
 void eq_destroy (memory_word w);
 void eq_save (pointer p, quarterword l);
@@ -225,9 +221,9 @@ str_number w_make_name_string_(void);
 #define w_make_name_string(f) w_make_name_string_()
 void scan_file_name (void);
 void pack_job_name_(str_number s);
-#define pack_job_name(s) pack_job_name_(make_string_pool((const char *) (s)))
+#define pack_job_name(s) pack_job_name_(make_str_string((const char *) (s)))
 void prompt_file_name_(const char * s, str_number e);
-#define prompt_file_name(s, e) prompt_file_name_((const char *) s, make_string_pool((const char*) e))
+#define prompt_file_name(s, e) prompt_file_name_((const char *) s, make_str_string((const char*) e))
 void open_log_file (void);
 void start_input (void);
 internal_font_number read_font_info (pointer u, str_number nom, str_number arie, scaled s);
@@ -242,9 +238,9 @@ void dvi_pop_(integer l);
 #define dvi_pop(l) dvi_pop_((integer) (l))
 void dvi_font_def (internal_font_number f);
 void movement (scaled w, eight_bits o);
-void special_out (pointer p);
-void hlist_out (void);
-void vlist_out (void);
+void pdf_special_out (pointer p);
+void pdf_hlist_out (void);
+void pdf_vlist_out (void);
 void pdf_ship_out (pointer p);
 void ship_out (pointer p);
 void prune_movements (integer l);
@@ -405,6 +401,7 @@ void final_cleanup (void);
 void init_prim (void);
 void debug_help (void);
 void fix_date_and_time (void);
+// ptex
 pointer new_dir_node(pointer b, eight_bits dir);
 eight_bits get_jfm_pos(KANJI_code kcode, internal_font_number f);
 void print_kansuji(integer n);
@@ -416,7 +413,7 @@ void adjust_hlist(pointer p, boolean pf);
 void print_dir(eight_bits dir);
 void print_direction(integer d);
 void print_direction_alt(integer d);
-void dir_out(void);
+void pdf_dir_out(void);
 void set_math_kchar(integer c);
 void print_kanji(KANJI_code s);
 integer check_kcat_code(integer ct);
@@ -460,14 +457,10 @@ void sa_w_def(pointer p, integer w);
 void gsa_def(pointer p, halfword e);
 void gsa_w_def(pointer p, integer w);
 void sa_restore(void);
-
 void pdf_synch_h(void);
 void pdf_synch_v(void);
-
-int do_final_end (void);
-int main_program (void);
-int main_init (int ac, char ** av);
-
+extern int main_program (void);
+extern int main_init (int ac, char ** av);
 // for pdf backend.
 extern void pdf_init_fontmaps(void);
 extern void pdf_close_fontmaps(void);
@@ -497,7 +490,8 @@ extern int spc_exec_at_begin_page(void);
 extern int spc_exec_at_end_page(void);
 typedef signed long spt_t;
 extern int spc_exec_special (const char *buffer, long size, double x_user, double y_user, double dpx_mag);
-extern int  pdf_dev_locate_font(const char *font_name, spt_t ptsize);
+extern int pdf_dev_locate_font(const char *font_name, spt_t ptsize);
+extern int vf_locate_font(const char *tex_name, spt_t ptsize);
 extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
 extern void pdf_dev_set_string (spt_t xpos,
                                 spt_t ypos,
@@ -512,13 +506,97 @@ typedef struct pdf_rect
 {
   double llx, lly, urx, ury;
 } pdf_rect;
-extern void pdf_dev_set_rect (pdf_rect *rect,
+extern void pdf_dev_set_rect(pdf_rect *rect,
                   spt_t x_user, spt_t y_user,
                   spt_t width,  spt_t height, spt_t depth);
-extern void pdf_doc_expand_box (const pdf_rect *rect);
+extern void pdf_doc_expand_box(const pdf_rect *rect);
 extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
 extern void pdf_enc_compute_id_string(char *dviname, char *pdfname);
 extern void pdf_dev_set_dirmode(int dir_mode);
 extern int pdf_load_fontmap_file(const char *filename, int map_mode);
 extern int pdf_insert_ng_fontmap(const char * fnt_name, const char * fnt_cmap, const char * fnt_spec, int fnt_idx);
+// virtual font
+extern boolean read_vf_info(internal_font_number f);
+// special out
+extern void pdf_special_exec(scaled h, scaled v);
+// kanji processing
+extern boolean check_kanji(integer c);
+extern boolean is_char_ascii(integer c);
+extern boolean is_char_kanji(integer c);
+extern boolean ismultiprn(integer c);
+extern integer calc_pos(integer c);
+extern integer kcatcodekey(integer c);
+extern integer multilenbuffchar(integer c);
+extern void init_default_kanji(const_string file_str, const_string internal_str);
+/* sec 79 */
+// macro to function at ptex-ng-utils.c
+extern int do_final_end(void);
+extern void node_list_display(integer p);
+extern void do_nothing(void);
+extern void wake_up_terminal(void);
+extern void update_terminal(void);
+extern void check_full_save_stack(void);
+extern void push_input(void);
+extern void pop_input(void);
+extern void print_err(const char * s);
+extern void ensure_dvi_open(void);
+extern void write_dvi(size_t a, size_t b);
+extern void prompt_input(const char * s);
+extern void synch_h(void);
+extern void synch_v(void);
+extern void set_cur_lang(void);
+extern void str_room(int val);
+extern void tail_append_(pointer val);
+#define tail_append(a) tail_append_((pointer) a)
+extern void prev_append_(pointer val);
+#define prev_append(a) prev_append_((pointer) a)
+extern void tex_help(unsigned int n, ...);
+extern void append_char(ASCII_code c);
+extern void append_lc_hex(ASCII_code c);
+extern void succumb(void);
+extern void dvi_out_(ASCII_code op);
+#define dvi_out(op) dvi_out_((ASCII_code) (op))
+extern void free_avail_(halfword p);
+#define free_avail(p) free_avail_((halfword) (p))
+extern void flush_string(void);
+extern str_number load_pool_strings(integer spare_size);
+extern str_number make_str_string(const char * s);
+extern char * get_str_string(str_number s);
+extern void print_plus(int i, const char * s);
+extern void fget(void);
+extern str_number get_job_name(str_number job);
+extern void show_font_info(void);
+// functions in ptex-ng-local.c
+extern memory_word * allocate_main_memory(int size);
+extern memory_word * realloc_main(int lo_size, int hi_size);
+extern ASCII_code * realloc_vf_info(int size);
+extern packed_ASCII_code * realloc_str_pool(int size);
+extern pool_pointer * realloc_str_start(int size);
+extern memory_word * realloc_save_stack(int size);
+extern list_state_record * realloc_nest_stack(int size);
+extern in_state_record * realloc_input_stack(int size);
+extern halfword * realloc_param_stack(int size);
+extern ASCII_code * realloc_buffer(int size);
+extern memory_word * realloc_font_info(int size);
+extern int realloc_hyphen(int hyphen_prime);
+extern int allocate_tries(int trie_max);
+extern void probe_memory(void);
+extern void print_cs_names(FILE * output, int pass);
+extern void perrormod(const char * s);
+extern char * grabenv(const char * varname);
+extern void flush_trailing_slash(char * directory);
+extern boolean prime(int x);
+extern int endit(int flag);
+extern void uexit(int unix_code);
+extern void t_open_in(void);
+extern void call_edit(ASCII_code * filename, pool_pointer fnstart,
+  integer fnlength, integer linenumber);
+extern void add_variable_space(int size);
+extern char * unixify(char * t);
+// ptex-ng-io.c
+extern boolean input_ln (FILE * f, boolean bypass_eoln);
+extern integer web2c_round(double r);
+extern boolean open_input(FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
+extern boolean open_output(FILE ** f, const char * fopen_mode);
+extern int check_fclose(FILE * f);
 #endif

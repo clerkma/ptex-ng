@@ -9,7 +9,7 @@
 
 CC = gcc
 CFLAGS = -g -c -O2 -Wno-unused-result -I/home/clerk/dev/extra/include
-LDFLAGS = libdpx.a libpng.a libz.a libptexenc.a /home/clerk/dev/extra/lib/libkpathsea.a -lm
+LDFLAGS = libdpx.a libpng.a libz.a libptexenc.a libkpathsea.a -lm
 
 objects = \
 	ptex-ng.o\
@@ -22,9 +22,10 @@ objects = \
 	ptex-ng-utils.o\
 	ptex-ng-pdf-backend.o\
 	ptex-ng-kanji.o\
-	ptex-ng-module.o
+	ptex-ng-module.o\
+	ptex-ng-vf.o
 
-headers = ptex-ng.h texd.h coerce.h macros.h
+headers = ptex-ng.h coerce.h macros.h
 
 ptex-ng: $(objects)
 	$(CC) -o ptex-ng $(objects) $(LDFLAGS)
@@ -61,6 +62,9 @@ ptex-ng-pool.o: ptex-ng-pool.c $(headers)
 
 ptex-ng-utils.o: ptex-ng-utils.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-utils.c
+
+ptex-ng-vf.o: ptex-ng-vf.c $(headers)
+	$(CC) $(CFLAGS) ptex-ng-vf.c
 
 .PHONY: clean
 

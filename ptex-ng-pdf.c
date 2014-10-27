@@ -21,8 +21,6 @@
 #include "ptex-ng.h"
 
 static const double sp2bp = 0.000015202;
-static scaled cur_page_width;
-static scaled cur_page_height;
 static scaled pdf_h, pdf_v;
 
 void ensure_pdf_open(void)
@@ -41,7 +39,7 @@ void ensure_pdf_open(void)
   }
 }
 
-void pdf_set_cur_page(scaled cur_wd, scaled cur_ht)
+void pdf_set_cur_page (scaled cur_wd, scaled cur_ht)
 {
   pdf_rect mediabox;
 
@@ -162,18 +160,37 @@ void pdf_ship_out (pointer p)
 
   page_loc = dvi_offset + dvi_ptr;
 
-  if (pdf_page_width != 0)
-    cur_page_width = pdf_page_width;
-  else
-    cur_page_width = width(p) + 2 * (pdf_h_origin + h_offset + 4736286);
+  {
+    scaled cur_page_width;
+    scaled cur_page_height;
+    scaled cur_h_origin;
+    scaled cur_v_origin;
 
-  if (pdf_page_height != 0)
-    cur_page_height = pdf_page_height;
-  else
-    cur_page_height = height(p) + depth(p) + 2 * (pdf_v_origin + v_offset + 4736286);
+    if (pdf_h_origin != 0)
+      cur_h_origin = pdf_h_origin;
+    else
+      cur_h_origin = 4736286;
 
-  pdf_set_cur_page(cur_page_width, cur_page_height);
-  pdf_doc_begin_page(1.0, pdf_h_origin * sp2bp, (cur_page_height - pdf_v_origin) * sp2bp);
+    if (pdf_v_origin != 0)
+      cur_v_origin = pdf_v_origin;
+    else
+      cur_v_origin = 4736286;
+
+    if (pdf_page_width != 0)
+      cur_page_width = pdf_page_width;
+    else
+      cur_page_width = width(p) + 2 * (abs(cur_h_origin) + h_offset);
+
+    if (pdf_page_height != 0)
+      cur_page_height = pdf_page_height;
+    else
+      cur_page_height = height(p) + depth(p) + 2 * (abs(cur_v_origin) + v_offset);
+
+    pdf_set_cur_page (cur_page_width, cur_page_height);
+    pdf_doc_begin_page (1.0, cur_h_origin * sp2bp,
+      (cur_page_height - cur_v_origin) * sp2bp);
+  }
+
   spc_exec_at_begin_page();
   last_bop = page_loc;
   cur_v = height(p) + v_offset;
@@ -182,15 +199,15 @@ void pdf_ship_out (pointer p)
   switch (type(p))
   {
     case hlist_node:
-      hlist_out();
+      pdf_hlist_out();
       break;
 
     case vlist_node:
-      vlist_out();
+      pdf_vlist_out();
       break;
 
     case dir_node:
-      dir_out();
+      pdf_dir_out();
       break;
   }
 
@@ -258,23 +275,14 @@ void pdf_synch_v (void)
     dvi_v = cur_v;
 }
 
-#define get_str_string(a, b)                                      \
-do {                                                              \
-  strncpy(a, (const char *)(str_pool + str_start[b]), length(b)); \
-  a[length(b)] = '\0';                                            \
-} while (0)
-
 void pdf_map_font (internal_font_number f)
 {
   if ((font_cmap[f] == 0) || (font_spec[f] == 0))
     return;
 
-  char * fnt_name = malloc(length(font_name[f]) + 1);
-  get_str_string(fnt_name, font_name[f]);
-  char * fnt_cmap = malloc(length(font_cmap[f]) + 1);
-  get_str_string(fnt_cmap, font_cmap[f]);
-  char * fnt_spec = malloc(length(font_spec[f]) + 1);
-  get_str_string(fnt_spec, font_spec[f]);
+  char * fnt_name = get_str_string(font_name[f]);
+  char * fnt_cmap = get_str_string(font_cmap[f]);
+  char * fnt_spec = get_str_string(font_spec[f]);
   pdf_insert_ng_fontmap(fnt_name, fnt_cmap, fnt_spec, 0);
   free(fnt_name);
   free(fnt_cmap);
@@ -283,8 +291,7 @@ void pdf_map_font (internal_font_number f)
 
 void pdf_get_font (internal_font_number f)
 {
-  char * sbuf = malloc(length(font_name[f]) + 1);
-  get_str_string(sbuf, font_name[f]);
+  char * sbuf = get_str_string(font_name[f]);
   int pdf_font_id = pdf_dev_locate_font(sbuf, font_size[f]);
 
   if (pdf_font_id >= 0)
@@ -319,13 +326,16 @@ static void pdf_adjust_dir (scaled x, scaled y)
   }
 }
 
-void pdf_out_char (internal_font_number f, ASCII_code c)
+void pdf_char_out (internal_font_number f, ASCII_code c)
 {
   pdf_rect rect;
   char cbuf[2];
 
   cbuf[0] = c;
   cbuf[1] = 0;
+
+  if (font_id[f] == -1)
+    return;
 
   pdf_adjust_dir(cur_h, cur_v);
   pdf_dev_set_string(pdf_h, pdf_v, cbuf, 1,
@@ -401,12 +411,15 @@ scaled adjust_kanji (internal_font_number f, KANJI_code k)
   return adjust_pos;
 }
 
-void pdf_out_kanji (internal_font_number f, KANJI_code k)
+void pdf_kanji_out (internal_font_number f, KANJI_code k)
 {
   pdf_rect rect;
   char cbuf[4];
   int cbuf_len;
   ASCII_code d;
+
+  if (font_id[f] == -1)
+    return;
 
   d = get_jfm_pos(KANJI(k), f);
   pdf_adjust_dir(cur_h + adjust_kanji(f, k), cur_v);
@@ -438,7 +451,7 @@ void pdf_out_kanji (internal_font_number f, KANJI_code k)
   pdf_doc_expand_box(&rect);
 }
 
-void pdf_output_rule (scaled rule_wd, scaled rule_ht)
+void pdf_rule_out (scaled rule_wd, scaled rule_ht)
 {
   switch (cur_dir_hv)
   {
@@ -457,7 +470,7 @@ void pdf_output_rule (scaled rule_wd, scaled rule_ht)
 }
 
 // output an |hlist_node| box
-void hlist_out (void)
+void pdf_hlist_out (void)
 {
   scaled base_line;
   scaled disp;
@@ -517,9 +530,15 @@ void hlist_out (void)
       
       if ((cur_dir == right_to_left) && (box_lr(this_box) != reversed))
       {
-        save_h = cur_h; temp_ptr = p; p = new_kern(0); link(prev_p) = p;
-        cur_h = 0; link(p) = reverse(this_box, null, cur_g, cur_glue); width(p) = -cur_h;
-        cur_h = save_h; set_box_lr(this_box, reversed);
+        save_h = cur_h;
+        temp_ptr = p;
+        p = new_kern(0);
+        link(prev_p) = p;
+        cur_h = 0;
+        link(p) = reverse(this_box, null, cur_g, cur_glue);
+        width(p) = -cur_h;
+        cur_h = save_h;
+        set_box_lr(this_box, reversed);
       }
   }
 
@@ -552,7 +571,7 @@ reswitch:
       if (font_dir[f] == dir_default)
       {
         chain = false;
-        pdf_out_char(dvi_f, c);
+        pdf_char_out(dvi_f, c);
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
       else
@@ -582,7 +601,7 @@ reswitch:
 
         p = link(p);
         jc = toDVI(KANJI(info(p)) % max_cjk_val);
-        pdf_out_kanji(f, jc);
+        pdf_kanji_out(f, jc);
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
 
@@ -617,13 +636,15 @@ reswitch:
           switch (type(p))
           {
             case hlist_node:
-              hlist_out();
+              pdf_hlist_out();
               break;
+
             case vlist_node:
-              vlist_out();
+              pdf_vlist_out();
               break;
+
             case dir_node:
-              dir_out();
+              pdf_dir_out();
               break;
           }
 
@@ -726,13 +747,13 @@ reswitch:
                 switch (type(p))
                 {
                   case hlist_node:
-                    hlist_out();
+                    pdf_hlist_out();
                     break;
                   case vlist_node:
-                    vlist_out();
+                    pdf_vlist_out();
                     break;
                   case dir_node:
-                    dir_out();
+                    pdf_dir_out();
                     break;
                 }
 
@@ -840,7 +861,7 @@ fin_rule:
       pdf_synch_h();
       cur_v = base_line + rule_dp;
       pdf_synch_v();
-      pdf_output_rule(rule_wd, rule_ht);
+      pdf_rule_out(rule_wd, rule_ht);
       cur_v = base_line;
       dvi_h = dvi_h + rule_wd;
     }
@@ -876,7 +897,7 @@ next_p:
 }
 
 // output an |vlist_node| box
-void vlist_out (void)
+void pdf_vlist_out (void)
 {
   scaled left_edge;
   scaled top_edge;
@@ -949,13 +970,15 @@ void vlist_out (void)
             switch (type(p))
             {
               case hlist_node:
-                hlist_out();
+                pdf_hlist_out();
                 break;
+
               case vlist_node:
-                vlist_out();
+                pdf_vlist_out();
                 break;
+
               case dir_node:
-                dir_out();
+                pdf_dir_out();
                 break;
             }
 
@@ -1068,13 +1091,13 @@ void vlist_out (void)
                   switch (type(p))
                   {
                     case hlist_node:
-                      hlist_out();
+                      pdf_hlist_out();
                       break;
                     case vlist_node:
-                      vlist_out();
+                      pdf_vlist_out();
                       break;
                     case dir_node:
-                      dir_out();
+                      pdf_dir_out();
                       break;
                   }
 
@@ -1120,7 +1143,7 @@ fin_rule:
 
         pdf_synch_h();
         pdf_synch_v();
-        pdf_output_rule(rule_wd, rule_ht);
+        pdf_rule_out(rule_wd, rule_ht);
         cur_h = left_edge;
       }
 
@@ -1138,7 +1161,7 @@ next_p:
   decr(cur_s);
 }
 
-void dir_out (void)
+void pdf_dir_out (void)
 {
   pointer this_box;
 
@@ -1146,7 +1169,7 @@ void dir_out (void)
   temp_ptr = list_ptr(this_box);
 
   if ((type(temp_ptr) != hlist_node) && (type(temp_ptr) != vlist_node))
-    confusion("dir_out");
+    confusion("pdf_dir_out");
 
   switch (box_dir(this_box))
   {
@@ -1209,7 +1232,59 @@ void dir_out (void)
   cur_dir_hv = box_dir(temp_ptr);
 
   if (type(temp_ptr) == vlist_node)
-    vlist_out();
+    pdf_vlist_out();
   else
-    hlist_out();
+    pdf_hlist_out();
+}
+//
+void pdf_special_exec (scaled h, scaled v)
+{
+  double spc_h;
+  double spc_v;
+
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      spc_h = h * sp2bp;
+      spc_v = -v * sp2bp;
+      break;
+
+    case dir_tate:
+      spc_h = -v * sp2bp;
+      spc_v = -h * sp2bp;
+      break;
+
+    case dir_dtou:
+      spc_h = v * sp2bp;
+      spc_v = h * sp2bp;
+      break;
+  }
+
+  graphics_mode();
+  spc_exec_special((const char *)str_pool + str_start[str_ptr], cur_length,
+    spc_h, spc_v, 1.0);
+}
+
+void pdf_special_out(pointer p)
+{
+  char old_setting;
+
+  pdf_synch_h();
+  pdf_synch_h();
+  old_setting = selector;
+  selector = new_string;
+
+#ifdef ALLOCATESTRING
+  if (pool_ptr + 32000 > current_pool_size)
+    str_pool = realloc_str_pool(increment_pool_size);
+
+  show_token_list(link(write_tokens(p)), 0, 10000000L);
+#else
+  show_token_list(link(write_tokens(p)), 0, pool_size - pool_ptr);
+#endif
+
+  selector = old_setting;
+  str_room(1);
+  pdf_special_exec(cur_h, cur_v);
+  pool_ptr = str_start[str_ptr];
 }

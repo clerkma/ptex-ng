@@ -20,6 +20,7 @@
 #ifndef _PTEX_H
 #define _PTEX_H
 
+// macros for dynamic allocation
 #define ALLOCATEINI
 #define ALLOCATEMAIN       /* allocate main memory for TeX (2 Meg) */
 #define ALLOCATEFONT       /* allocate font_info (800 k) (dynamically now) */
@@ -40,7 +41,153 @@
 #define INITEX             /* invoke initex */
 #define WORDS_BIGENDIAN 0  /* about format file */
 
-#include "texd.h"
+/* headers and pragmas */
+#if defined (_WIN32)
+  #pragma warning(disable:4201) // nameless struct/union
+  #pragma warning(disable:4267)
+  #pragma warning(disable:4996) // a function that was marked with deprecated
+  #pragma warning(disable:4701) // potentially uninitialized local variable 'name' used
+  #pragma warning(disable:4135) // conversion between different integral types
+  #pragma warning(disable:4127) // conditional expression is constant
+#elif defined (__clang__)
+  #pragma clang diagnostic ignored "-Wdangling-else"
+#elif defined (__GNUC__) || defined (__GNUG__)
+  #pragma GCC diagnostic ignored "-Wunused-result"
+#endif
+
+// standard C headers
+#include <stdarg.h>
+#include <setjmp.h>
+#include <time.h>
+#include <math.h>
+#include <signal.h>
+// TeX Live's kpathsea
+#include <kpathsea/c-auto.h>
+#include <kpathsea/c-pathmx.h> // PATH_MAX
+#include <kpathsea/c-pathch.h> // IS_DIR_SEP
+#include <kpathsea/c-fopen.h>  // FOPEN_WBIN_MODE
+#include <kpathsea/config.h>
+#include <kpathsea/getopt.h>   // get_opt
+#include <kpathsea/tex-file.h> // kpse_find_file
+#include <kpathsea/variable.h> // kpse_var_value
+// ptexenc for kanji processing
+#include <ptexenc/ptexenc.h>
+#include <ptexenc/unicode.h>
+#include "zlib.h"
+// integers
+typedef long long integer;
+typedef double  glue_ratio;
+typedef double  real;
+typedef uint8_t ASCII_code;
+typedef int32_t KANJI_code;
+typedef uint8_t eight_bits;
+typedef integer pool_pointer;
+typedef integer str_number;
+typedef uint8_t packed_ASCII_code;
+typedef integer scaled;
+typedef integer nonnegative_integer;
+typedef uint8_t small_number;
+// files
+typedef FILE * alpha_file;
+typedef FILE * byte_file;
+typedef FILE * word_file;
+
+#ifdef link
+  #undef link
+#endif
+
+//#define abs(x)   ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
+//#define fabs(x)  ((x) >= 0.0 ? (x) : -(x))
+#define chr(x)    (x)
+#define odd(x)    ((x) % 2)
+#define round(x)  web2c_round((double) (x))
+#define decr(x)   --(x)
+#define incr(x)   ++(x)
+#define negate(x) x = -x
+#define toint(x)  ((integer) (x))
+#define show_line(str, flag) (void) fputs(str, stdout)
+#define wterm(s)    (void) putc(s, stdout)
+#define wlog(s)     (void) putc(s, log_file)
+#define wterm_cr()  (void) putc('\n', stdout);
+#define wlog_cr()   (void) putc('\n', log_file);
+/* sec 0027 */
+#define a_open_in(f)    open_input  (&(f), kpse_tex_format, FOPEN_R_MODE)
+#define a_open_out(f)   open_output (&(f), FOPEN_W_MODE)
+#define b_open_in(f)    open_input  (&(f), kpse_tfm_format, FOPEN_RBIN_MODE)
+#define b_open_out(f)   open_output (&(f), FOPEN_WBIN_MODE)
+#define w_open_in(f)    open_input  (&(f), kpse_fmt_format, FOPEN_RBIN_MODE)
+#define w_open_out(f)   open_output (&(f), FOPEN_WBIN_MODE)
+#define vf_open_in(f)   open_input  (&(f), kpse_vf_format,  FOPEN_RBIN_MODE)
+#define a_close(f)	    (void) check_fclose(f)
+#define b_close         a_close
+#define w_close         a_close
+#define vf_close        a_close
+#define gz_close        gzclose
+
+/* If we're running under Unix, use system calls instead of standard I/O
+to read and write the output files; also, be able to make a core dump. */
+#ifndef unix
+  #define dumpcore() exit(1)
+#else
+  #define dumpcore abort
+#endif
+
+#ifdef COMPACTFORMAT
+EXTERN int do_dump(char * p, int item_size, int nitems, gzFile out_file);
+EXTERN int do_undump(char * p, int item_size, int nitems, gzFile out_file);
+#define dump_file gz_fmt_file
+#else
+EXTERN int do_dump(char * p, int item_size, int nitems, FILE * out_file);
+EXTERN int do_undump(char * p, int item_size, int nitems, FILE * out_file);
+#define dump_file fmt_file
+#endif
+
+#define dump_things(base, len)    do_dump  ((char *) &(base), sizeof (base), (int) (len), dump_file)
+#define undump_things(base, len)  do_undump((char *) &(base), sizeof (base), (int) (len), dump_file)
+
+/* Use the above for all the other dumping and undumping. */
+#define generic_dump(x)   dump_things(x, 1)
+#define generic_undump(x) undump_things(x, 1)
+
+#define dump_wd     generic_dump
+#define undump_wd   generic_undump
+#define dump_hh     generic_dump
+#define undump_hh   generic_undump
+#define dump_qqqq   generic_dump
+#define undump_qqqq generic_undump
+
+#define dump_int(x)     \
+do {                    \
+  integer x_val = (x);  \
+  generic_dump (x_val); \
+} while (0)
+
+#define undump_int  generic_undump
+
+#define undump_size(arg1, arg2, arg3, arg4)                     \
+do {                                                            \
+  undump_int(x);                                                \
+                                                                \
+  if (x < arg1)                                                 \
+    goto bad_fmt;                                               \
+                                                                \
+  if (x > arg2)                                                 \
+  {                                                             \
+    fprintf(stdout, "%s%s\n", "---! Must increase the ", arg3); \
+    goto bad_fmt;                                               \
+  }                                                             \
+  else                                                          \
+    arg4 = x;                                                   \
+} while (0)
+
+// pTeX-ng's macros
+#define XXHi(x) BYTE1(x)
+#define XHi(x)  BYTE2(x)
+#define Hi(x)   BYTE3(x)
+#define Lo(x)   BYTE4(x)
+
+#define nrestmultichr(x)  ((x)!=0 ? ((x) / 8) + 2 - ((x) % 8) : -1)
+#define max_cjk_val 0x1000000
 
 #define file_name_size PATH_MAX
 
@@ -51,7 +198,7 @@
 
 #ifdef INCREASEFONTS
   #define min_quarterword 0
-  #define max_quarterword 65535L
+  #define max_quarterword 65535
 #else
   #define min_quarterword 0
   #define max_quarterword 255
@@ -80,7 +227,7 @@
   #define buf_size           2000000L
   EXTERN ASCII_code *        buffer;
 #else
-  #define buf_size           20000
+  #define buf_size           20000L
   EXTERN ASCII_code          buffer[buf_size + 4];
 #endif
 
@@ -120,7 +267,7 @@ EXTERN integer max_buf_stack;
   #define pool_size 124000L
 #endif
 
-#define string_vacancies 100000L
+#define string_vacancies 100000
 
 #ifdef VARIABLETRIESIZE
   EXTERN integer trie_size;
@@ -301,7 +448,7 @@ EXTERN halfword temp_ptr;
   EXTERN memory_word * mem;
 #else
   EXTERN memory_word zzzaa[mem_max - mem_bot + 1];
-  #define zmem (zzzaa - (int)(mem_bot))
+  #define mem (zzzaa - (int)(mem_bot))
 #endif
 
 EXTERN pointer lo_mem_max;
@@ -318,27 +465,17 @@ EXTERN pointer rover;
 #ifdef DEBUG
   #ifdef ALLOCATEMAIN
     EXTERN char * zzzab;
+    EXTERN char * zzzac;
   #else
+    EXTERN char zzzab[mem_max - mem_bot + 1];
+    EXTERN char zzzac[mem_max - mem_bot + 1];
+  #endif
 
-  EXTERN char
-#define freearr (zzzab - (int)(mem_bot))
-  zzzab[mem_max - mem_bot + 1]; 
+  #define freearr (zzzab - (int)(mem_bot))
+  #define wasfree (zzzac - (int)(mem_bot))
+  EXTERN pointer was_mem_end, was_lo_max, was_hi_min;
+  EXTERN boolean panicking;
 #endif
-
-#ifdef ALLOCATEMAIN
-  EXTERN char *zzzac;
-#else
-/* EXTERN boolean */   /* save (4 - 1) * mem_max - mem_min */
-EXTERN char
-/* #define wasfree (zzzac - (int)(mem_min)) */
-#define wasfree (zzzac - (int)(mem_bot))
-/*  zzzac[mem_max - mem_min + 1];  */
-  zzzac[mem_max - mem_bot + 1]; 
-#endif
-
-EXTERN pointer was_mem_end, was_lo_max, was_hi_min;
-EXTERN boolean panicking;
-#endif /* DEBUG */
 
 EXTERN integer font_in_short_display;
 EXTERN integer depth_threshold;
@@ -348,40 +485,22 @@ EXTERN int old_setting;
 
 #ifdef INCREASEFONTS
   #define eqtb_extra (font_max - 255 + hash_extra)
+  EXTERN memory_word eqtb[eqtb_size + 1 + eqtb_extra];
+  #define xeq_level (zzzad - (int_base + eqtb_extra))
+  EXTERN two_halves zzzae[undefined_control_sequence - hash_base + eqtb_extra];
 #else
   #define eqtb_extra 0
+  EXTERN memory_word eqtb[eqtb_size + 1];
+  #define xeq_level (zzzad - (int_base))
+  EXTERN two_halves zzzae[undefined_control_sequence - hash_base];
 #endif
 
 #if (eqtb_extra != 0)
   #error ERROR: eqtb_extra is not zero (need hash_extra equal 255 - font_max)
 #endif
 
-#ifdef INCREASEFONTS
-  EXTERN memory_word eqtb[eqtb_size + 1 + eqtb_extra];
-#else
-  EXTERN memory_word eqtb[eqtb_size + 1];
-#endif
-
-#ifdef INCREASEFONTS
-  #define xeq_level (zzzad - (int_base + eqtb_extra))
-#else
-  #define xeq_level (zzzad - (int_base))
-#endif
-
 EXTERN quarterword zzzad[eqtb_size - int_base + 1];
-
-#ifdef ALLOCATEHASH
-  EXTERN two_halves *zzzae;
-  #define hash (zzzae - hash_base)
-#else
-  #ifdef INCREASEFONTS
-    EXTERN two_halves zzzae[undefined_control_sequence - hash_base + eqtb_extra];
-  #else
-    EXTERN two_halves zzzae[undefined_control_sequence - hash_base];
-  #endif
-
-  #define hash (zzzae - hash_base)
-#endif
+#define hash (zzzae - hash_base)
 
 EXTERN pointer hash_used;
 EXTERN boolean no_new_control_sequence;
@@ -490,7 +609,7 @@ EXTERN str_number cur_spec;
 EXTERN pool_pointer area_delimiter;
 EXTERN pool_pointer ext_delimiter;
 EXTERN integer format_default_length;
-EXTERN char * TEX_format_default;
+EXTERN const char * TEX_format_default;
 EXTERN boolean name_in_progress;
 EXTERN boolean log_opened;
 EXTERN boolean quoted_file_name;
@@ -513,7 +632,6 @@ EXTERN char * log_file_name;
 
 EXTERN font_index fmem_ptr;
 EXTERN internal_font_number font_ptr;
-EXTERN internal_font_number frozen_font_ptr;
 EXTERN four_quarters font_check[font_max + 1];
 EXTERN eight_bits font_dir[font_max + 1];
 EXTERN integer font_num_ext[font_max + 1];
@@ -687,24 +805,17 @@ EXTERN trie_op_code max_op_used;
     EXTERN trie_pointer * trie_l;      /* left subtrie links */
     EXTERN trie_pointer * trie_r;      /* right subtrie links */
     EXTERN trie_pointer * trie_hash;   /* used to identify equivlent subtries */
+    EXTERN char * trie_taken;
   #else
     EXTERN packed_ASCII_code trie_c[trie_size + 1];
     EXTERN trie_op_code trie_o[trie_size + 1];
     EXTERN trie_pointer trie_l[trie_size + 1];
     EXTERN trie_pointer trie_r[trie_size + 1];
     EXTERN trie_pointer trie_hash[trie_size + 1];
-  #endif
-
-  EXTERN trie_pointer trie_ptr;
-#endif
-
-#ifdef INITEX
-  #ifdef ALLOCATEINI
-    EXTERN char * trie_taken;
-  #else
     EXTERN boolean trie_taken[trie_size + 1];
   #endif
 
+  EXTERN trie_pointer trie_ptr;
   EXTERN trie_pointer trie_min[256];
   EXTERN trie_pointer trie_max;
   EXTERN boolean trie_not_ready;
@@ -785,7 +896,7 @@ EXTERN scaled best_pl_glue[4];
 EXTERN trie_pointer hyph_start;
 EXTERN trie_pointer hyph_index;
 EXTERN pointer disc_ptr[4];
-/* new variables defined in local.c */
+/* new variables defined in ptex-ng-local.c */
 EXTERN boolean is_initex;
 EXTERN boolean verbose_flag;
 EXTERN boolean trace_flag;
@@ -795,7 +906,6 @@ EXTERN boolean c_style_flag;
 EXTERN boolean deslash;
 EXTERN boolean trimeof;
 EXTERN boolean allow_patterns;
-EXTERN boolean show_fonts_used;
 EXTERN boolean reset_exceptions;
 EXTERN boolean show_current;
 EXTERN boolean return_flag;
@@ -814,8 +924,6 @@ EXTERN boolean show_tfm_flag;
 EXTERN boolean truncate_long_lines;
 EXTERN boolean show_cs_names;
 EXTERN int tab_step;
-EXTERN int pseudo_tilde;
-EXTERN int pseudo_space;
 EXTERN boolean allow_quoted_names;
 EXTERN int default_rule;
 EXTERN char * format_file;
@@ -832,21 +940,21 @@ EXTERN int overfull_vbox;
 EXTERN int paragraph_failed;
 EXTERN int single_line;
 EXTERN FILE * errout;
-EXTERN int ignore_frozen;
 EXTERN boolean suppress_f_ligs;
 EXTERN int jump_used;
-EXTERN jmp_buf jumpbuffer;
+EXTERN jmp_buf ng_env;
 extern int current_pool_size;
 extern int current_max_strings;
 extern int current_mem_size;
 extern int current_font_mem_size;
+extern int current_vf_info_size;
 extern int current_save_size;
 extern int current_stack_size;
 extern int current_nest_size;
 extern int current_param_size;
 extern int current_buf_size;
+extern ASCII_code * vf_info;
 extern const char * banner;
-extern const char * application;
 extern char log_line[256];
 extern char * dvi_directory;
 extern char * log_directory;
@@ -855,68 +963,6 @@ extern char * fmt_directory;
 extern char * pdf_directory;
 extern clock_t start_time, main_time, finish_time;
 
-extern memory_word * allocate_main_memory (int size);
-extern memory_word * realloc_main (int lo_size, int hi_size);
-extern packed_ASCII_code * realloc_str_pool (int size);
-extern pool_pointer * realloc_str_start (int size);
-extern memory_word * realloc_save_stack (int size);
-extern list_state_record * realloc_nest_stack (int size);
-extern in_state_record * realloc_input_stack (int size);
-extern halfword * realloc_param_stack (int size);
-extern ASCII_code * realloc_buffer (int size);
-extern memory_word * realloc_font_info (int size);
-extern int realloc_hyphen (int hyphen_prime);
-extern int allocate_tries (int trie_max);
-extern void probe_memory (void);
-extern void print_cs_names (FILE * output, int pass);
-extern void perrormod (const char * s);
-extern char * grabenv (const char * varname);
-extern void flush_trailing_slash (char * directory);
-extern boolean prime (int x);
-extern int endit (int flag);
-extern void uexit (int unix_code);
-extern void t_open_in (void);
-extern void call_edit (ASCII_code * filename, pool_pointer fnstart,
-  integer fnlength, integer linenumber);
-extern void add_variable_space (int size);
-extern char * unixify (char * t);
-
 #include "coerce.h"
-
-/* sec 79 */
-extern void node_list_display (integer p);
-extern void do_nothing (void);
-extern void wake_up_terminal (void);
-extern void update_terminal (void);
-extern void check_full_save_stack (void);
-extern void push_input (void);
-extern void pop_input (void);
-extern void print_err (const char * s);
-extern void ensure_dvi_open (void);
-extern void write_dvi (size_t a, size_t b);
-extern void prompt_input (const char * s);
-extern void synch_h (void);
-extern void synch_v (void);
-extern void set_cur_lang (void);
-extern void str_room (int val);
-extern void tail_append_ (pointer val);
-#define tail_append(a) tail_append_((pointer) a)
-extern void prev_append_ (pointer val);
-#define prev_append(a) prev_append_((pointer) a)
-extern void tex_help (unsigned int n, ...);
-extern void append_char (ASCII_code c);
-extern void append_lc_hex (ASCII_code c);
-extern void succumb (void);
-extern void dvi_out_ (ASCII_code op);
-#define dvi_out(op) dvi_out_((ASCII_code) (op))
-extern void free_avail_ (halfword p);
-#define free_avail(p) free_avail_((halfword) (p))
-extern void flush_string (void);
-extern str_number load_pool_strings (integer spare_size);
-extern str_number make_string_pool (const char * s);
-extern void print_plus (int i, const char * s);
-extern void fget (void);
-extern str_number get_job_name (str_number job);
-extern void show_font_info (void);
 #define log_printf(...) fprintf(log_file, __VA_ARGS__)
 #endif

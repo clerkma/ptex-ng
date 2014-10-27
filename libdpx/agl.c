@@ -63,8 +63,8 @@ typedef struct
   const agl_data * data;
 } agl_statics;
 
-#include "glyphlist_static_data.c"
-#include "pdfglyphlist_static_data.c"
+#include "agl_static_data_glyphlist.c"
+#include "agl_static_data_pdfglyphlist.c"
 
 static void
 agl_load_static_data (agl_statics data, int is_predef);
@@ -416,7 +416,7 @@ agl_load_static_data (agl_statics data, int is_predef)
 
   for (i = 0; i < data.sums; i++)
   {
-    const char * name  = (data.data)[i].glyph_name;
+    char * name        = (char *)(data.data)[i].glyph_name;
     agln               = agl_normalized_name(name);
     agln->is_predef    = is_predef;
     agln->n_components = (data.data)[i].uni_len;

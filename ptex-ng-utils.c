@@ -41,7 +41,7 @@ void append_char (ASCII_code c)
   incr(pool_ptr);
 }
 /* sec 0042 */
-void str_room(int val)
+void str_room (int val)
 {
 #ifdef ALLOCATESTRING
   if (pool_ptr + val > current_pool_size)
@@ -79,7 +79,7 @@ void print_err (const char * s)
   prints(s);
 }
 /* sec 0071 */
-void prompt_input(const char * s)
+void prompt_input (const char * s)
 {
   wake_up_terminal();
   prints(s);

@@ -27,7 +27,7 @@ char **gargv;
 
 int jump_used = 0;
 
-jmp_buf jumpbuffer;
+jmp_buf ng_env;
 
 int main (int ac, char *av[])
 {
@@ -44,7 +44,7 @@ int main (int ac, char *av[])
 
   jump_used = 0;
 
-  ret = setjmp(jumpbuffer);
+  ret = setjmp(ng_env);
 
   if (ret == 0)
   {
@@ -60,12 +60,12 @@ int main (int ac, char *av[])
   }
 
   if (endit(flag) != 0)
-    flag = 1; /* do final clean up in local.c */
+    flag = 1;
 
   if (flag == 0)
     return 0;
   else
-    exit (flag);
+    exit(flag);
 }
 /* texk/web2c/lib/texmfmp.c */
 void t_open_in (void)
@@ -121,9 +121,6 @@ void fix_date_and_time (void)
 
   (void) time(&clock);
 
-  if (trace_flag)
-    printf("The time is %lld\n", (long long)clock);
-
   if (clock < 0)
     puts("Time not available!");
 
@@ -143,14 +140,6 @@ void fix_date_and_time (void)
     day      = tmptr->tm_mday;
     month    = tmptr->tm_mon + 1;
     year     = tmptr->tm_year + 1900;
-
-    if (trace_flag)
-      printf("%d-%d-%d %d:%d\n",
-        tmptr->tm_year + 1900,
-        tmptr->tm_mon + 1,
-        tmptr->tm_mday,
-        tmptr->tm_hour,
-        tmptr->tm_min);
   }
 
   {
@@ -263,10 +252,11 @@ boolean input_line_finish (void)
 }
 /* sec 0031 */
 // inputs the next line or returns |false|
-boolean input_line (FILE * f)
+boolean input_ln (FILE * f, boolean bypass_eoln)
 {
   int i = '\0';
 
+  (void) bypass_eoln;
   last = first;
 
 #ifdef ALLOCATEBUFFER
@@ -536,7 +526,7 @@ void call_edit (ASCII_code * filename, pool_pointer fnstart, integer fnlength, i
 }
 
 
-#if !defined (WORDS_BIGENDIAN) && !defined (NO_FMTBASE_SWAP)
+#if !defined (WORDS_BIGENDIAN)
    
 #define SWAP(x, y) temp = (x); (x) = (y); (y) = temp;
 
@@ -592,7 +582,7 @@ static int swap_items (char *p, int nitems, int size)
   }
   return 0;
 }
-#endif /* not WORDS_BIGENDIAN and not NO_FMTBASE_SWAP */
+#endif
 
 #ifdef COMPACTFORMAT
 int do_dump (char *p, int item_size, int nitems, gzFile out_file)
@@ -600,8 +590,8 @@ int do_dump (char *p, int item_size, int nitems, gzFile out_file)
 int do_dump (char *p, int item_size, int nitems, FILE *out_file)
 #endif
 {
-#if !defined (WORDS_BIGENDIAN) && !defined (NO_FMTBASE_SWAP)
-  swap_items (p, nitems, item_size);
+#if !defined (WORDS_BIGENDIAN)
+  swap_items(p, nitems, item_size);
 #endif
 
 #ifdef COMPACTFORMAT
@@ -616,8 +606,8 @@ int do_dump (char *p, int item_size, int nitems, FILE *out_file)
   }
 
 /* Have to restore the old contents of memory, since some of it might get used again.  */
-#if !defined (WORDS_BIGENDIAN) && !defined (NO_FMTBASE_SWAP)
-  swap_items (p, nitems, item_size);
+#if !defined (WORDS_BIGENDIAN)
+  swap_items(p, nitems, item_size);
 #endif
 
   return 0;
@@ -640,7 +630,7 @@ int do_undump (char *p, int item_size, int nitems, FILE *in_file)
     uexit(EXIT_FAILURE);
   }
 
-#if !defined (WORDS_BIGENDIAN) && !defined (NO_FMTBASE_SWAP)
+#if !defined (WORDS_BIGENDIAN)
   swap_items (p, nitems, item_size);
 #endif
 

@@ -948,9 +948,6 @@ void print_current_string (void)
 void term_input (void)
 { 
   integer k;
-  
-  if (!knuth_flag)
-    show_line("\n", 0);
 
   update_terminal();
 
@@ -1062,7 +1059,7 @@ void print_scaled (scaled s)
   } while (!(s <= delta));
 }
 /* sec 0105 */
-scaled mult_and_add_(integer n, scaled x, scaled y, scaled max_answer)
+scaled mult_and_add (integer n, scaled x, scaled y, scaled max_answer)
 {
   if (n < 0)
   {
@@ -1082,7 +1079,7 @@ scaled mult_and_add_(integer n, scaled x, scaled y, scaled max_answer)
   }
 }
 /* sec 0106 */
-scaled x_over_n_(scaled x, integer n)
+scaled x_over_n (scaled x, integer n)
 {
   register scaled Result;
   boolean negative;
@@ -1122,7 +1119,7 @@ scaled x_over_n_(scaled x, integer n)
   return Result;
 }
 /* sec 0107 */
-scaled xn_over_d_(scaled x, integer n, integer d)
+scaled xn_over_d (scaled x, integer n, integer d)
 {
   register scaled Result;
   boolean positive;
@@ -1160,7 +1157,7 @@ scaled xn_over_d_(scaled x, integer n, integer d)
 }
 /* sec 0108 */
 // compute badness, given |t>=0|
-halfword badness_(scaled t, scaled s)
+halfword badness (scaled t, scaled s)
 {
   integer r;
 
@@ -10946,14 +10943,6 @@ void prompt_file_name_(const char * s, str_number e)
       if (k == last)
         goto done;
 
-      /* convert tilde '~' to pseudo tilde */
-      if (pseudo_tilde != 0 && buffer[k]== '~')
-        buffer[k] = pseudo_tilde;
-
-      /* convert space ' ' to pseudo space */
-      if (pseudo_space != 0 && buffer[k]== ' ')
-        buffer[k] = pseudo_space;
-
       if (!more_name(buffer[k]))
         goto done;
 
@@ -11139,9 +11128,7 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
 
   g = null_font;
   file_opened = false;
-
-  if (!pack_json_name(nom, aire))
-    pack_file_name(nom, aire, 805); /* .tfm */
+  pack_file_name(nom, aire, 805); /* .tfm */
 
   if (!b_open_in(tfm_file))
     goto bad_tfm;
@@ -11986,25 +11973,7 @@ void special_out (pointer p)
 
   selector = old_setting;
   str_room(1);
-  graphics_mode();
-
-  switch (cur_dir_hv)
-  {
-    case dir_yoko:
-      spc_exec_special((const char *) str_pool + str_start[str_ptr], cur_length,
-        cur_h * 0.000015202, -cur_v * 0.000015202, 1.0);
-      break;
-
-    case dir_tate:
-      spc_exec_special((const char *)str_pool + str_start[str_ptr], cur_length,
-        -cur_v * 0.000015202, -cur_h * 0.000015202, 1.0);
-      break;
-
-    case dir_dtou:
-      spc_exec_special((const char *)str_pool + str_start[str_ptr], cur_length,
-        cur_v * 0.000015202, cur_h * 0.000015202, 1.0);
-      break;
-  }
+  pdf_special_exec(cur_h, cur_v);
 /*
   if (cur_length < 256)
   {
@@ -12125,7 +12094,7 @@ void out_what (pointer p)
       break;
 
     case special_node:
-      special_out(p); 
+      pdf_special_out(p); 
       break;
 
     case language_node:
@@ -21604,37 +21573,16 @@ void new_font (small_number a)
       if (s > 0)
       {
         if (s == font_size[f])
-        {
-          if (ignore_frozen == 0 || f > frozen_font_ptr)
-          {
-            if (trace_flag)
-              printf("SKIPPING %lld ", s);
-
-            goto common_ending;
-          }
-        }
+          goto common_ending;
       }
       else if (font_size[f] == xn_over_d(font_dsize[f], -s, 1000))
-      {
-        if (ignore_frozen == 0 || f > frozen_font_ptr)
-        {
-          if (trace_flag)
-            printf("SKIPPING %lld ", s);
-          goto common_ending;
-        }
-      }
+        goto common_ending;
     }
   }
 
-  if (trace_flag)
-    show_line("READING ", 0);
-
-  f = read_font_info(u, cur_name, cur_area, s); 
+  f = read_font_info(u, cur_name, cur_area, s);
 
 common_ending:
-  if (trace_flag)
-    printf("NEW FONT %lld ", f);
-
   define(u, set_font, f);
   eqtb[font_id_base + f] = eqtb[u];
   font_id_text(f) = t;
@@ -23425,7 +23373,7 @@ boolean open_fmt_file (void)
       name_of_file[name_length + 1] = '\0';
       printf("%s (%s);%s\n", "Sorry, I can't find that format", name_of_file + 1, " will try the default.");
       name_of_file[name_length + 1] = ' ';
-      printf("(Perhaps your Y&Y TeX's environment variable is not set correctly)\n");
+      printf("(Perhaps your pTeX-ng's environment variable is not set correctly)\n");
     }
 
     update_terminal();
@@ -23445,7 +23393,7 @@ boolean open_fmt_file (void)
       name_of_file[name_length + 1] = '\0';
       printf("%s (%s)!\n", "I can't find the default format file", name_of_file + 1);
       name_of_file[name_length + 1] = ' ';
-      printf("(Perhaps your Y&Y TeX's environment variable is not set correctly)\n");
+      printf("(Perhaps your pTeX-ng's environment variable is not set correctly)\n");
     }
 
     return false;

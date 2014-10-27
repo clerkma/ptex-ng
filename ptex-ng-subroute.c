@@ -247,7 +247,7 @@ void show_save_groups (void)
     do {
       m = nest[p].mode_field;
 
-      if (p>0)
+      if (p > 0)
         decr(p);
       else
         m = vmode;
@@ -384,7 +384,7 @@ void show_save_groups (void)
 
       case math_left_group:
         {
-          if (type(nest[p+1].eTeX_aux_field) == left_noad)
+          if (type(nest[p + 1].eTeX_aux_field) == left_noad)
             print_esc("left");
           else
             print_esc("middle");
@@ -426,7 +426,7 @@ void show_save_groups (void)
       print_char('=');
     }
     else
-      print_cmd_chr(leader_ship,i - (leader_flag - a_leaders));
+      print_cmd_chr(leader_ship, i - (leader_flag - a_leaders));
 
 found1:
   print_esc(s);
@@ -938,7 +938,8 @@ void app_display (pointer j, pointer b, scaled d)
       q = p;
     else
     {
-      r = list_ptr(p); free_node(p, box_node_size);
+      r = list_ptr(p);
+      free_node(p, box_node_size);
 
       if (r == null)
         confusion("LR4");
@@ -1000,7 +1001,8 @@ void app_display (pointer j, pointer b, scaled d)
     }
     else
     {
-      width(r) = d; link(r) = p;
+      width(r) = d;
+      link(r) = p;
       link(u) = r;
 
       if (j == null)
@@ -1031,17 +1033,19 @@ void pseudo_start (void)
   token_show(temp_head);
   selector = old_setting;
   flush_list(link(temp_head));
-  str_room(1); s = make_string();
+  str_room(1);
+  s = make_string();
   str_pool[pool_ptr] = ' ';
   l = str_start[s];
   nl = new_line_char;
-  p = get_avail(); q = p;
+  p = get_avail();
+  q = p;
 
   while (l < pool_ptr)
   {
     m = l;
 
-    while ((l<pool_ptr) && (str_pool[l] != nl))
+    while ((l < pool_ptr) && (str_pool[l] != nl))
       incr(l);
 
     sz = (l - m + 7) / 4;
@@ -1107,7 +1111,7 @@ void pseudo_start (void)
   {
     if (term_offset > max_print_line - 3)
       print_ln();
-    else if ((term_offset>0) || (file_offset>0))
+    else if ((term_offset > 0) || (file_offset > 0))
       print_char(' ');
 
     name = 19;
@@ -1144,15 +1148,17 @@ boolean pseudo_input (void)
     for (r = p + 1; r <= p + sz - 1; ++r)
     {
       w = mem[r].qqqq;
-      buffer[last] = w.b0; buffer[last + 1] = w.b1;
-      buffer[last + 2] = w.b2; buffer[last + 3] = w.b3;
+      buffer[last] = w.b0;
+      buffer[last + 1] = w.b1;
+      buffer[last + 2] = w.b2;
+      buffer[last + 3] = w.b3;
       last = last + 4;
     }
 
     if (last >= max_buf_stack)
       max_buf_stack = last + 1;
 
-    while ((last>first) && (buffer[last - 1] == ' '))
+    while ((last > first) && (buffer[last - 1] == ' '))
       decr(last);
 
     free_node(p, sz);
@@ -1201,17 +1207,18 @@ void group_warning (void)
 
   base_ptr = input_ptr;
   input_stack[base_ptr] = cur_input;
-  i = in_open; w = false;
+  i = in_open;
+  w = false;
 
   while ((grp_stack[i] == cur_boundary) && (i > 0))
   {
     if (tracing_nesting>0)
     {
       while ((input_stack[base_ptr].state_field == token_list) ||
-        (input_stack[base_ptr].index_field>i))
+        (input_stack[base_ptr].index_field > i))
         decr(base_ptr);
 
-      if (input_stack[base_ptr].name_field>17)
+      if (input_stack[base_ptr].name_field > 17)
         w = true;
     }
 
@@ -1241,7 +1248,8 @@ void if_warning (void)
 
   base_ptr = input_ptr;
   input_stack[base_ptr] = cur_input;
-  i = in_open; w = false;
+  i = in_open;
+  w = false;
 
   while (if_stack[i] == cond_ptr)
   {
@@ -1255,7 +1263,8 @@ void if_warning (void)
         w = true;
     }
 
-    if_stack[i] = link(cond_ptr); decr(i);
+    if_stack[i] = link(cond_ptr);
+    decr(i);
   }
 
   if (w)
@@ -1274,15 +1283,17 @@ void if_warning (void)
   }
 }
 
-void file_warning(void)
+void file_warning (void)
 {
   pointer p;
   quarterword l;
   quarterword c;
   integer i;
 
-  p = save_ptr; l = cur_level;
-  c = cur_group; save_ptr = cur_boundary;
+  p = save_ptr;
+  l = cur_level;
+  c = cur_group;
+  save_ptr = cur_boundary;
 
   while (grp_stack[in_open] != save_ptr)
   {
@@ -1589,7 +1600,7 @@ void scan_mu_glue (void)
   scan_glue(mu_val);
 }
 
-integer add_or_sub(integer x, integer y, integer max_answer, boolean negative)
+integer add_or_sub (integer x, integer y, integer max_answer, boolean negative)
 {
   integer a;
 

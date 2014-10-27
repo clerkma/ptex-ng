@@ -7,7 +7,7 @@
 #
 
 CC = gcc
-CFLAGS = -c -O2 -I/Users/maqiyuan/dev/extra/include -I./parson
+CFLAGS = -c -O2 -I/Users/maqiyuan/dev/extra/include
 LDFLAGS = libdpx.a libpng.a libz.a libptexenc.a libkpathsea.a -lm
 
 objects = \
@@ -19,12 +19,12 @@ objects = \
 	ptex-ng-src.o\
 	ptex-ng-pool.o\
 	ptex-ng-utils.o\
-	ptex-ng-pdf-backend.o\
+	ptex-ng-pdf.o\
 	ptex-ng-kanji.o\
 	ptex-ng-module.o\
-	parson.o
+	ptex-ng-vf.o
 
-headers = ptex-ng.h texd.h coerce.h macros.h
+headers = ptex-ng.h coerce.h macros.h
 
 ptex-ng: $(objects)
 	$(CC) -o ptex-ng $(objects) $(LDFLAGS)
@@ -32,8 +32,8 @@ ptex-ng: $(objects)
 ptex-ng.o: ptex-ng.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng.c
 
-ptex-ng-pdf-backend.o: ptex-ng-pdf-backend.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-pdf-backend.c
+ptex-ng-pdf.o: ptex-ng-pdf.c $(headers)
+	$(CC) $(CFLAGS) ptex-ng-pdf.c
 
 ptex-ng-kanji.o: ptex-ng-kanji.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-kanji.c
@@ -62,8 +62,8 @@ ptex-ng-pool.o: ptex-ng-pool.c $(headers)
 ptex-ng-utils.o: ptex-ng-utils.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-utils.c
 
-parson.o: parson/parson.c
-	$(CC) $(CFLAGS) parson/parson.c
+ptex-ng-vf.o: ptex-ng-vf.c $(headers)
+	$(CC) $(CFLAGS) ptex-ng-vf.c
 
 .PHONY: clean
 

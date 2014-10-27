@@ -2229,7 +2229,6 @@ boolean load_fmt_file (void)
   {
     undump_things(font_info[0], fmem_ptr);
     undump_size(font_base, font_max, "font max", font_ptr);
-    frozen_font_ptr = font_ptr;
     undump_things(font_dir[null_font], font_ptr + 1);
     undump_things(font_num_ext[null_font], font_ptr + 1);
     undump_things(font_check[null_font], font_ptr + 1);
@@ -3262,7 +3261,7 @@ boolean get_strings_started (void)
 
   if (g == 0)
   {
-    printf("%s\n", "! You have to increase POOLSIZE." );
+    printf("%s\n", "! You have to increase POOLSIZE.");
     return false;
   }
 
@@ -4325,7 +4324,7 @@ done2:
   tracing_stats = 0;
 
 #ifdef COMPACTFORMAT
-  gz_w_close(gz_fmt_file);
+  gz_close(gz_fmt_file);
 #else
   w_close(fmt_file);
 #endif
@@ -4469,7 +4468,7 @@ void init_prim (void)
   primitive("divide", divide, 0);
   primitive("endcsname", end_cs_name, 0);
   primitive("endgroup", end_group, 0);
-  text(frozen_end_group) = make_string_pool("endgroup");
+  text(frozen_end_group) = make_str_string("endgroup");
   eqtb[frozen_end_group] = eqtb[cur_val]; 
   primitive("expandafter", expand_after, 0);
   primitive("font", def_font, 0);
@@ -4496,7 +4495,7 @@ void init_prim (void)
   primitive("radical", radical, 0);
   primitive("read", read_to_cs, 0);
   primitive("relax", relax, 256);
-  text(frozen_relax) = make_string_pool("relax");
+  text(frozen_relax) = make_str_string("relax");
   eqtb[frozen_relax] = eqtb[cur_val];
   primitive("setbox", set_box, 0);
   primitive("the", the, 0);
@@ -4568,7 +4567,7 @@ void init_prim (void)
   primitive("ifybox", if_test, if_ybox_code);
   primitive("ifdbox", if_test, if_dbox_code);
   primitive("fi", fi_or_else, fi_code);
-  text(frozen_fi) = make_string_pool("fi");
+  text(frozen_fi) = make_str_string("fi");
   eqtb[frozen_fi] = eqtb[cur_val];
   primitive("or", fi_or_else, or_code);
   primitive("else", fi_or_else, else_code);
@@ -4577,11 +4576,11 @@ void init_prim (void)
   eqtb[frozen_null_font] = eqtb[cur_val];
   primitive("span", tab_mark, span_code);
   primitive("cr", car_ret, cr_code);
-  text(frozen_cr) = make_string_pool("cr");
+  text(frozen_cr) = make_str_string("cr");
   eqtb[frozen_cr] = eqtb[cur_val];
   primitive("crcr", car_ret, cr_cr_code);
-  text(frozen_end_template) = make_string_pool("endtemplate");
-  text(frozen_endv) = make_string_pool("endtemplate");
+  text(frozen_end_template) = make_str_string("endtemplate");
+  text(frozen_endv) = make_str_string("endtemplate");
   eq_type(frozen_endv) = endv;
   equiv(frozen_endv) = null_list; 
   eq_level(frozen_endv) = level_one; 
@@ -4666,7 +4665,7 @@ void init_prim (void)
   primitive("atopwithdelims", above, delimited_code + atop_code);
   primitive("left", left_right, left_noad);
   primitive("right", left_right, right_noad);
-  text(frozen_right) = make_string_pool("right");
+  text(frozen_right) = make_str_string("right");
   eqtb[frozen_right] = eqtb[cur_val]; 
   primitive("long", prefix, 1);
   primitive("outer", prefix, 2);

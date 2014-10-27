@@ -1084,7 +1084,7 @@ str_number load_pool_strings (integer spare_size)
   return g;
 }
 
-str_number make_string_pool (const char * s)
+str_number make_str_string (const char * s)
 {
   int slen = strlen(s);
 
@@ -1105,7 +1105,16 @@ str_number get_job_name (str_number job)
   str_number ret = job;
 
   if (c_job_name != NULL)
-    ret = make_string_pool(c_job_name);
+    ret = make_str_string(c_job_name);
 
   return ret;
+}
+
+char * get_str_string (str_number s)
+{
+  char * a = (char *)malloc(length(s) + 1);
+  strncpy(a, (const char *)(str_pool + str_start[s]), length(s));
+  a[length(s)] = '\0';
+
+  return a;
 }
