@@ -81,7 +81,7 @@ boolean mem_spec_flag     = false;
 boolean format_spec       = false;
 boolean reorder_arg_flag  = true;
 
-void show_usage (void)
+static void show_usage (void)
 {
   printf("\n"
       "Useage: ptex-ng [OPTION]... [+format_file] [file]\n\n"
@@ -103,7 +103,7 @@ void show_usage (void)
 
 // Sep 27 1990 => 1990 Sep 27
 // 0123456789     0123456789
-void scivilize (char * date)
+static void scivilize (char * date)
 {
   int k;
   char pyear[6];
@@ -122,7 +122,7 @@ void scivilize (char * date)
     date[9] = '0';
 }
 
-void stamp_it ()
+static void stamp_it (void)
 {
   char date[11 + 1];
 
@@ -142,7 +142,7 @@ int ini_max_address = 0;  /* maximum address when starting */
 int max_address     = 0;  /* maximum address seen in allocated memory */
 
 
-void show_maximums (FILE * output)
+static void show_maximums (FILE * output)
 {
   sprintf(log_line, "Max allocated %d --- max address %d\n", total_allocated, max_address);
   fputs(log_line, output);
@@ -152,7 +152,7 @@ void show_maximums (FILE * output)
 /* also tries _expand first, which can avoid address growth ... */
 
 #ifdef USEOUREALLOC 
-void * ourrealloc (void * old, size_t new_size)
+static void * ourrealloc (void * old, size_t new_size)
 {
   void * mnew;
   size_t old_size, overlap;
@@ -211,7 +211,7 @@ void * ourrealloc (void * old, size_t new_size)
 }
 #endif
 
-void memory_error (const char * s, int n)
+static void memory_error (const char * s, int n)
 {
   if (log_opened)
   {
@@ -223,12 +223,12 @@ void memory_error (const char * s, int n)
   show_maximums(stderr);
 }
 
-void trace_memory (const char * s, int n)
+static void trace_memory (const char * s, int n)
 {
   printf("Allocating %d bytes for %s\n", n, s);
 }
 
-void update_statistics (long address, int size, int old_size)
+static void update_statistics (long address, int size, int old_size)
 {
   if (address + size > max_address)
     max_address = address + size;
@@ -236,20 +236,20 @@ void update_statistics (long address, int size, int old_size)
   total_allocated =  total_allocated + size - old_size;
 }
 
-void probe_memory (void)
+static void probe_memory (void)
 {
   char * s = (char *) malloc(sizeof(void *));
   free(s);
   update_statistics ((long) s, 0, 0);
 }
 
-void probe_show (void)
+static void probe_show (void)
 {
   probe_memory();
   show_maximums(stdout);
 }
 
-size_t roundup (size_t n)
+static size_t roundup (size_t n)
 {
   if ((n % sizeof(void *)) == 0)
     return n;
@@ -300,6 +300,28 @@ int allocate_tries (int trie_max)
   return 0; // success
 }
 #endif
+
+static boolean prime (int x)
+{
+  int k;
+  int sum = 1;    /* 1 + 3 + 5 + k = (k + 1) * (k + 1) / 4 */
+
+  if (x % 2 == 0)
+    return false;
+
+  for (k = 3; k < x; k = k + 2)
+  {
+    if (x % k == 0)
+      return false;
+
+    if (sum * 4 > x)
+      return true;
+
+    sum += k;
+  }
+
+  return true;
+}
 
 #ifdef ALLOCATEHYPHEN
 int current_prime = 0; /* remember in case reallocated later */
@@ -444,7 +466,7 @@ memory_word * realloc_main (int lo_size, int hi_size)
   {
     puts("ERROR: Cannot extent main memory in initex");
 
-    if (!knuth_flag)
+    if (!tex82_flag)
       puts("Please use `-m=...' on command line");
 
     return NULL;
@@ -1173,7 +1195,7 @@ ASCII_code * realloc_buffer (int size)
   }
 
   buffer = new_buffer;
-  update_statistics ((long) buffer, n, current_buf_size);
+  update_statistics((long) buffer, n, current_buf_size);
   memset(buffer + current_buf_size, 0, new_size - current_buf_size);
   current_buf_size = new_size;
 
@@ -1190,7 +1212,7 @@ ASCII_code * realloc_buffer (int size)
 }
 #endif
 
-int allocate_memory (void)
+static int allocate_memory (void)
 {
 #ifdef ALLOCATEINPUTSTACK
   input_stack = NULL;
@@ -1316,195 +1338,98 @@ int allocate_memory (void)
   return 0; // success
 }
 
-/* returns non-zero if error - done to test integrity of stack mostly */
-int free_memory (void)
+#define safe_free(a)  \
+do {                  \
+  if (a != NULL)      \
+    free(a);          \
+  a = NULL;           \
+} while (0)
+
+static int free_memory (void)
 {
-  unsigned int heap_total = 0;
-
-  if (trace_flag)
-    puts("free_memory ");
-
-  if (verbose_flag || trace_flag)
-    show_maximums(stdout); 
-
   if (trace_flag)
   {
-    printf("Heap total: %u bytes --- max address %u\n", 
-        heap_total, max_address);
-    printf("Main Memory: variable node %lld (%lld - %d);\n"
+    puts("free_memory() ");
+    show_maximums(stdout); 
+    printf(
+      "Heap total : %u bytes --- max address %u\n"
+      "Main Memory: variable node %lld (%lld - %d);\n"
       "             one word %d (%d - %d)\n",
+      0, max_address,
       lo_mem_max - mem_min, mem_min, lo_mem_max,
-      mem_end - hi_mem_min, hi_mem_min, mem_end);
+      mem_end - hi_mem_min, hi_mem_min, mem_end
+      );
     puts("Freeing memory again");
   }
 
-/* only free memory if safe ... additional check */
 #ifdef ALLOCATEINI
   if (is_initex)
   {
-    if (trie_taken != NULL)
-      free(trie_taken);
-
-    if (trie_hash != NULL)
-      free(trie_hash);
-
-    if (trie_r != NULL)
-      free(trie_r);
-
-    if (trie_c != NULL)
-      free(trie_c);
-
-    if (trie_o != NULL)
-      free(trie_o);
-
-    if (trie_l != NULL)
-      free(trie_l);
-
-    trie_taken = NULL;
-    trie_hash = NULL;
-    trie_l = NULL;
-    trie_r = NULL;
-    trie_c = NULL;
-    trie_o = NULL;
+    safe_free(trie_taken);
+    safe_free(trie_hash);
+    safe_free(trie_l);
+    safe_free(trie_r);
+    safe_free(trie_c);
+    safe_free(trie_o);
   }
 #endif
 
 #ifdef ALLOCATETRIES
-  if (trie_trc != NULL)
-    free(trie_trc);
-
-  if (trie_tro != NULL)
-    free(trie_tro);
-
-  if (trie_trl != NULL)
-    free(trie_trl);
-
-  trie_trc = NULL;
-  trie_tro = NULL;
-  trie_trl = NULL;
+  safe_free(trie_trc);
+  safe_free(trie_tro);
+  safe_free(trie_trl);
 #endif
 
 #ifdef ALLOCATEHYPHEN
-  if (hyph_list != NULL)
-    free(hyph_list);
-
-  if (hyph_word != NULL)
-    free(hyph_word);
-
-  hyph_list = NULL;
-  hyph_word = NULL;
+  safe_free(hyph_list);
+  safe_free(hyph_word);
 #endif
 
 #ifdef ALLOCATEMAIN
-  if (main_memory != NULL)
-    free(main_memory);
-
-  main_memory = NULL;
+  safe_free(main_memory);
 #endif
 
 #ifdef ALLOCATEFONT
-  if (font_info != NULL)
-    free(font_info);
-
-  font_info = NULL;
+  safe_free(font_info);
 #endif
 
 #ifdef ALLOCATESTRING
-  if (str_start != NULL)
-    free(str_start);
-
-  if (str_pool != NULL)
-    free(str_pool);
-
-  str_start = NULL;
-  str_pool = NULL;
+  safe_free(str_start);
+  safe_free(str_pool);
 #endif
 
 #ifdef ALLOCATEPARAMSTACK
-  if (param_stack != NULL)
-    free(param_stack);
-
-  param_stack = NULL;
+  safe_free(param_stack);
 #endif
 
 #ifdef ALLOCATENESTSTACK
-  if (nest != NULL)
-    free(nest);
-
-  nest = NULL;
+  safe_free(nest);
 #endif
 
 #ifdef ALLOCATEINPUTSTACK
-  if (input_stack != NULL)
-    free(input_stack);
-
-  input_stack = NULL;
+  safe_free(input_stack);
 #endif
 
 #ifdef ALLOCATESAVESTACK
-  if (save_stack != NULL)
-    free(save_stack);
-
-  save_stack = NULL;
+  safe_free(save_stack);
 #endif
 
-  if (format_file != NULL)
-    free(format_file);
-
-  if (source_direct != NULL)
-    free(source_direct);
-
-  format_file = NULL;
-  source_direct = NULL;
-
-  if (dvi_file_name != NULL)
-    free(dvi_file_name);
-
-  if (log_file_name != NULL)
-    free(log_file_name);
-
-  if (pdf_file_name != NULL)
-    free(pdf_file_name);
-
-  pdf_file_name = NULL;
-  log_file_name = NULL;
-  dvi_file_name = NULL;
+  safe_free(format_file);
+  safe_free(dvi_file_name);
+  safe_free(log_file_name);
+  safe_free(pdf_file_name);
 
   return 0;
 }
 
-boolean prime (int x)
-{
-  int k;
-  int sum = 1;    /* 1 + 3 + 5 + k = (k + 1) * (k + 1) / 4 */
-
-  if (x % 2 == 0)
-    return false;
-
-  for (k = 3; k < x; k = k + 2)
-  {
-    if (x % k == 0)
-      return false;
-
-    if (sum * 4 > x)
-      return true;
-
-    sum += k;
-  }
-
-  return true;
-}
-
-void complainarg (int c, char *s)
+static void complainarg (int c, char *s)
 {
   printf("ERROR: Do not understand `%c' argument value `%s'\n", c, s);
 }
 
-/* following is list of allowed command line flags and args */
+static char *allowedargs = "+bcdfijnpqrstvwyzABCDFGIJKLMNOPQRSTVWXYZ023456789?a=e=g=h=k=l=m=o=u=x=E=H=P=U=";
 
-char *allowedargs = "+bcdfijnpqrstvwyzABCDFGIJKLMNOPQRSTVWXYZ023456789?a=e=g=h=k=l=m=o=u=x=E=H=P=U=";
-
-void reorderargs (int ac, char **av)
+static void reorderargs (int ac, char **av)
 {
   int n, m;
   char *s, *t;
@@ -1592,15 +1517,11 @@ void reorderargs (int ac, char **av)
   }
 }
 
-boolean shorten_file_name  = false; /* don't shorten file names to 8+3 for DOS */
-
-/* cache to prevent allocating twice in a row */
-
-char * lastname  = NULL;
-char * lastvalue = NULL;
+static char * lastname  = NULL;
+static char * lastvalue = NULL;
 
 /* is it safe to do that now ? 98/Jan/31 */
-char * grabenv (const char * varname)
+static char * grabenv (const char * varname)
 {
   char * s;
 
@@ -1638,7 +1559,7 @@ char * grabenv (const char * varname)
     return NULL;
 }
 
-void flush_trailing_slash (char * directory)
+static void flush_trailing_slash (char * directory)
 {
   char * s;
 
@@ -1651,7 +1572,7 @@ void flush_trailing_slash (char * directory)
   }
 }
 
-void knuthify (void)
+static void knuthify (void)
 {
   allow_patterns        = false; /* don't allow pattern redefinition */
   show_in_hex           = true;  /* show character code in hex */
@@ -1664,12 +1585,11 @@ void knuthify (void)
   tab_step              = 0;     /* tab's size of width */
   show_line_break_stats = false; /* do not show line break stats */
   default_rule          = 26214; /* revert to default rule thickness */
-  truncate_long_lines   = false;
   allow_quoted_names    = false;
   show_cs_names         = false;
   suppress_f_ligs       = false;
   full_file_name_flag   = false;
-  knuth_flag            = true;  /* so other code can know about this */
+  tex82_flag            = true;  /* so other code can know about this */
 }
 
 static struct option long_options[] =
@@ -1685,6 +1605,8 @@ static struct option long_options[] =
   {"aux-dir",       required_argument, NULL, 0},
   {"progname",      required_argument, NULL, 0},
   {"jobname",       required_argument, NULL, 0},
+  {"showcsnames",   no_argument,       NULL, 0},
+  {"showinhex",     no_argument,       NULL, 0},
   {"verbose",       no_argument,       NULL, 0},
   {"patterns",      no_argument,       NULL, 0},
   {"ini",           no_argument,       NULL, 0},
@@ -1700,22 +1622,10 @@ static struct option long_options[] =
   {NULL,            0, 0, 0}
 };
 
-int analyze_flag (int c)
+static int analyze_flag (int c)
 {
   switch (c)
   {
-    case 'w':
-      show_in_hex = true;
-      break;
-
-    case '8':
-      shorten_file_name = true;
-      break;
-
-    case '9':
-      show_cs_names = true;
-      break;
-
     case 'J':
       show_line_break_stats = false;
       break;
@@ -1752,7 +1662,7 @@ int analyze_flag (int c)
 #undef name
 #define ARGUMENT_IS(a) !strcmp(long_options[option_idx].name, a)
 
-int read_command_line (int ac, char **av)
+static int read_command_line (int ac, char **av)
 { 
   int c;
   char *optargnew;
@@ -1782,6 +1692,10 @@ int read_command_line (int ac, char **av)
       c_style_flag = true;
     else if (ARGUMENT_IS("showtfm"))
       show_tfm_flag = true;
+    else if (ARGUMENT_IS("showcsnames"))
+      show_cs_names = true;
+    else if (ARGUMENT_IS("showinhex"))
+      show_in_hex = true;
     else if (ARGUMENT_IS("showmissing"))
       show_missing = false;
     else if (ARGUMENT_IS("deslash"))
@@ -1901,7 +1815,7 @@ int read_command_line (int ac, char **av)
   return 0;
 }
 
-int init_commands (int ac, char **av)
+static int init_commands (int ac, char **av)
 {
   is_initex             = false; 
   allow_patterns        = false;
@@ -1921,13 +1835,11 @@ int init_commands (int ac, char **av)
   c_style_flag          = false;
   show_fmt_flag         = true;
   show_tfm_flag         = false; /* don't show metric file in log */
-  shorten_file_name     = false; /* don't shorten file names to 8+3 */
-  truncate_long_lines   = true;  /* truncate long lines */
-  tab_step              = 0;     /* do not replace tabs with spaces */
+  tab_step              = 0;
   show_line_break_stats = true;  /* show line break statistics 96/Feb/8 */
   allow_quoted_names    = true;  /* allow quoted names with spaces 98/Mar/15 */
   show_cs_names         = false;
-  knuth_flag            = false;
+  tex82_flag            = false;
   full_file_name_flag   = true;  /* new default 2000 June 18 */
   errout                = stdout; /* as opposed to stderr say --- used ??? */
   new_hyphen_prime      = 0;
@@ -1950,9 +1862,9 @@ int init_commands (int ac, char **av)
   return 0;
 }
 
-void initial_memory (void)
+/* set initial memory allocations */
+static void initial_memory (void)
 {
-  /* set initial memory allocations */
   if (mem_extra_high < 0)
     mem_extra_high = 0;
 
@@ -2029,24 +1941,19 @@ void initial_memory (void)
     percent_grow = 10;   /* lower limit - 10% */
 }
 
-void perrormod (const char * s)
-{
-  printf("`%s': %s\n", s, strerror(errno));
-}
-
-inline void deslash_path (char * s)
+static inline void deslash_path (char * s)
 {
   if (strcmp(s, "") != 0)
     flush_trailing_slash(s);
 }
 
-inline void unixify_path (char * s)
+static inline void unixify_path (char * s)
 {
   if (strcmp(s, "") != 0)
     unixify(s);
 }
 
-void deslash_all (int ac, char **av)
+static void deslash_all (int ac, char **av)
 {
   char buffer[file_name_size];  
   char *s;
@@ -2102,7 +2009,7 @@ void deslash_all (int ac, char **av)
     if (deslash)
     {
       if (trace_flag)
-        printf("deslash: k %d argv[k] %s (argc %d)\n", optind, av[optind], ac);
+        printf("deslash: argv[%d] = %s (argc %d)\n", optind, av[optind], ac);
 
       unixify(av[optind]);
     }
@@ -2117,7 +2024,7 @@ void deslash_all (int ac, char **av)
         if (deslash)
         {
           if (trace_flag)
-            printf("deslash: k %d argv[k] %s (argc %d)\n", optind + 1, av[optind + 1], ac);
+            printf("deslash: argv[%d] %s (argc %d)\n", optind + 1, av[optind + 1], ac);
 
           unixify(av[optind + 1]);
         }
@@ -2176,7 +2083,6 @@ int main_init (int ac, char ** av)
     return -1;
 
   format_file   = NULL;
-  source_direct = NULL;
   dvi_file_name = NULL;
   log_file_name = NULL;
   pdf_file_name = NULL;
@@ -2221,7 +2127,7 @@ int main_init (int ac, char ** av)
 
 #define CLK_TCK CLOCKS_PER_SEC
 
-void show_inter_val (clock_t inter_val)
+static void show_inter_val (clock_t inter_val)
 {
   int seconds, tenths, hundredth, thousands;
 
@@ -2255,12 +2161,12 @@ int endit (int flag)
   finish_time = clock();
 
   if (missing_characters != 0)
+  {
     flag = 1;
-
-  if (missing_characters)
     printf("! There %s %d missing character%s --- see log file\n",
       (missing_characters == 1) ? "was" : "were", missing_characters,
       (missing_characters == 1) ? "" : "s");
+  }
 
   if (free_memory() != 0)
     flag++;
@@ -2279,50 +2185,64 @@ int endit (int flag)
     {
       printf(" ");
       show_inter_val((finish_time - main_time) / total_pages);
-      printf("s per page.\n");
+      printf("s per page");
     }
-    else
-      printf(".\n");
+
+    printf(".\n");
   }
 
   return flag;
 }
-// printf control sequences' name
-void print_cs_name (FILE * output, int h)
+
+// print control sequences' name
+static void print_cs_name (FILE * output, int h)
 {
-  int c, textof, n;
-
-  memset(log_line, 0, sizeof(log_line));
-
-  textof = hash[h].rh;
-
-  if (textof == 0)
+  if (text(h) == 0)
     return;
 
-  c = sprintf(log_line, "(%d), ", h);
-  n = length(textof);
-
-  memmove(log_line + c, str_pool + str_start[textof], n);
-  memmove(log_line + c + n, "\n", 2);
-
-  if (output == stderr)
-    show_line(log_line, 1);
-  else if (output == stdout)
-    show_line(log_line, 0);
-  else
-    fprintf(output, "%s", log_line);
+  char * cs = get_str_string(text(h));
+  fprintf(output, "(%d), \"%s\"\n", h, cs);
+  free(cs);
 }
-// prototype
-int compare_strn (int, int, int, int);
-/* compare two csnames in qsort */
-int compare_cs (const void *cp1, const void *cp2)
+
+/* k1 and k2 are positions in string pool */
+/* l1 and l2 are lengths of strings */
+static int compare_strn (int k1, int l1, int k2, int l2)
 {
-  int c1, c2, l1, l2, k1, k2, textof1, textof2;
+  int c1, c2;
+
+  while (l1 > 0 && l2 > 0)
+  {
+    c1 = str_pool[k1];
+    c2 = str_pool[k2];
+
+    if (c1 > c2)
+      return 1;
+    else if (c2 > c1)
+      return -1;
+
+    l1--; l2--;
+    k1++; k2++;
+  }
+
+  if (l1 > 0)
+    return 1;  /* first string longer */
+  else if (l2 > 0)
+    return -1; /* second string longer */
+
+  return 0;    /* strings match */
+}
+
+/* compare two csnames in qsort */
+static int compare_cs (const void *cp1, const void *cp2)
+{
+  int c1, c2, l1, l2, k1, k2;
+  pointer textof1, textof2;
 
   c1 = *(int *)cp1;
   c2 = *(int *)cp2;
-  textof1 = hash[c1].rh;
-  textof2 = hash[c2].rh;
+  textof1 = text(c1);
+  textof2 = text(c2);
   l1 = length(textof1);
   l2 = length(textof2);
   k1 = str_start[textof1];
@@ -2331,46 +2251,42 @@ int compare_cs (const void *cp1, const void *cp2)
   return compare_strn(k1, l1, k2, l2);
 }
 
-char * csused = NULL;
+static char * cs_used = NULL;
 
-/* Allocate table of indeces to allow sorting on csname */
-/* Allocate flags to remember which ones already listed at start */
-/* pass = 0 --> fmt   */
-/* pass = 1 --> after */
-void print_cs_names (FILE *output, int pass)
+void print_cs_names (FILE * output, boolean pass)
 {
-  int h, k, ccount, repeatflag;
-  int *cnumtable;
+  int h, k, ccount;
+  int * cnumtable;
   int nfcs = frozen_control_sequence;
 
-  if (pass == 0 && csused == NULL)
+  if ((pass == false) && (cs_used == NULL))
   {
-    csused = (char *) malloc (nfcs);
+    cs_used = (char *) malloc(nfcs);
 
-    if (csused == NULL)
+    if (cs_used == NULL)
       return;
 
-    memset(csused, 0, nfcs);
+    memset(cs_used, 0, nfcs);
   }
 
   ccount = 0;
 
   for (h = hash_base + 1; h < nfcs; h++)
   {
-    if (pass == 1 && csused[h])
+    if ((pass == true) && cs_used[h])
       continue;
 
     if (text(h) != 0)
     {
       if (pass == 0)
-        csused[h] = 1;
+        cs_used[h] = 1;
 
       ccount++;
     }
   }
 
   sprintf(log_line, "\n%d %s multiletter control sequences:\n",
-      ccount, (pass == 1) ? "new" : "");
+      ccount, (pass == true) ? "new" : "");
 
   if (output == stderr)
     show_line(log_line, 1);
@@ -2390,22 +2306,20 @@ void print_cs_names (FILE *output, int pass)
 
     for (h = hash_base + 1; h < nfcs; h++)
     {
-      if (pass == 1 && csused[h])
+      if (pass == true && cs_used[h])
         continue;
 
-      if (hash[h].rh != 0)
+      if (text(h) != 0)
         cnumtable[ccount++] = h;
     }
 
     //qsort ((void *)cnumtable, ccount, sizeof (int), &compare_cs);
 
-    repeatflag = 0;
-
     for (k = 0; k < ccount; k++)
     {
       h = cnumtable[k];
 
-      if (pass == 1 && csused[h])
+      if (pass == true && cs_used[h])
         continue;
 
       print_cs_name(output, h);
@@ -2420,224 +2334,12 @@ void print_cs_names (FILE *output, int pass)
     else
       fprintf(output, "%s", log_line);
 
-    free((void *)cnumtable);
+    free((void *) cnumtable);
   }
 
-  if (pass == 1 && csused != NULL)
+  if ((pass == true) && (cs_used != NULL))
   {
-    free(csused);
-    csused = NULL;
+    free(cs_used);
+    cs_used = NULL;
   }
-}
-
-/* k1 and k2 are positions in string pool */
-/* l1 and l2 are lengths of strings */
-int compare_strn (int k1, int l1, int k2, int l2)
-{
-  int c1, c2;
-
-  while (l1 > 0 && l2 > 0)
-  {
-    c1 = str_pool[k1];
-    c2 = str_pool[k2];
-
-    if (c1 > c2)
-      return 1;
-    else if (c2 > c1)
-      return -1;
-
-    l1--; l2--;
-    k1++; k2++;
-  }
-
-  if (l1 > 0)
-    return 1;   /* first string longer */
-  else if (l2 > 0)
-    return -1; /* second string longer */
-
-  return 0;         /* strings match */
-}
-/* compare two font names and their at sizes in qsort */
-int compare_fnt (const void * fp1, const void * fp2)
-{
-  int f1, f2, l1, l2, k1, k2, s;
-
-  f1 = *(short *)fp1;
-  f2 = *(short *)fp2;
-  l1 = length(font_name[f1]);
-  l2 = length(font_name[f2]);
-  k1 = str_start[font_name[f1]]; 
-  k2 = str_start[font_name[f2]]; 
-
-  s = compare_strn (k1, l1, k2, l2);
-
-  if (s != 0)
-    return s;
-
-  if (font_size[f1] > font_size[f2])
-    return 1;
-  else if (font_size[f1] < font_size[f2])
-    return -1;
-
-  return 0;         /* should not ever get here */
-}
-/* compare two font names */
-int compare_fnt_name (int f1, int f2)
-{
-  int l1, l2, k1, k2, s;
-
-  l1 = length(font_name[f1]);
-  l2 = length(font_name[f2]); 
-  k1 = str_start[font_name[f1]]; 
-  k2 = str_start[font_name[f2]]; 
-
-  s = compare_strn (k1, l1, k2, l2);
-
-  return s;
-}
-/* decode checksum information */
-const unsigned long checkdefault = 0x59265920;
-int decode_fourty (unsigned long checksum, char *codingvector)
-{
-  int c;
-  int k;
-
-  if (checksum == 0)
-  {
-    strcpy(codingvector, "unknwn");
-    return 1;
-  }
-  else if ((checksum >> 8) == (checkdefault >> 8))
-  {
-    strcpy (codingvector, "fixed ");
-    return 1;
-  }
-  else
-  {
-    for (k = 0; k < 6; k++)
-    {
-      c = (int) (checksum % 40);
-      checksum = checksum / 40;
-      
-      if (c <= 'z' - 'a')
-        c = c + 'a';
-      else if (c < 36)
-        c = (c + '0') - ('z' - 'a') - 1;
-      else if (c == 36)
-        c = '-';
-      else if (c == 37)
-        c = '&';
-      else if (c == 38)
-        c = '_';
-      else
-        c = '.';
-      
-      codingvector[5-k] = (char) c;
-    }
-
-    codingvector[6] = '\0';
-  }
-
-  return 0;
-}
-
-double sclpnt (long x)
-{
-  double pt;
-
-  pt = (double) x / 65536.0;
-  pt = (double) ((int) (pt * 1000.0 + 0.5)) / 1000.0;
-
-  return (pt);
-}
-
-void dvi_font_show (internal_font_number f, int suppressname)
-{
-  int a, l, k, n;
-  unsigned long checksum;
-  char checksumvector[8];
-  char buffer[32];
-
-  putc(' ', log_file);
-
-  if (suppressname == 0)
-  {
-    a = length(font_area[f]);
-    l = length(font_name[f]);
-
-    k = str_start[font_area[f]];
-
-    memcpy(buffer, str_pool + k, length(font_area[f]));
-    fwrite(buffer, sizeof(char), length(font_area[f]), log_file);
-
-    k = str_start[font_name[f]];
-
-    memcpy(buffer, str_pool + k, length(font_name[f]));
-    fwrite(buffer, sizeof(char), length(font_name[f]), log_file);
-  }
-  else a = l = 0;
-
-  for (k = a + l; k < 16; k++)
-    putc(' ', log_file);
-
-  sprintf(buffer, "at %lgpt ", sclpnt(font_size[f]));
-  fputs(buffer, log_file);
-
-  if (suppressname == 0)
-  {
-    n = strlen(buffer);
-
-    for (k = n; k < 16; k++)
-      putc(' ', log_file);
-
-    checksum = (((font_check[f].b0) << 8 | font_check[f].b1) << 8 | font_check[f].b2) << 8 | font_check[f].b3;
-    decode_fourty(checksum, checksumvector);
-    log_printf("encoding: %s..", checksumvector);
-  }
-
-  putc('\n', log_file);
-}
-/* Allocate table of indeces to allow sorting on font name */
-void show_font_info (void)
-{
-  int k, m, fcount, repeatflag;
-  short *fnumtable;
-
-  fcount = 0;
-
-  for (k = 1; k <= font_ptr; k++)
-    if (font_used[k])
-      fcount++;
-
-  if (fcount == 0)
-    return;
-
-  fnumtable = (short *) malloc(fcount * sizeof(short));
-
-  log_printf("\nUsed %d font%s:\n", fcount, (fcount == 1) ? "" : "s");
-
-  fcount = 0;
-
-  for (k = 1; k <= font_ptr; k++) 
-    if (font_used[k])
-      fnumtable[fcount++] = (short) k;
-
-  qsort ((void *)fnumtable, fcount, sizeof(short), &compare_fnt);
-
-  repeatflag = 0;
-
-  for (m = 0; m < fcount; m++)
-  {
-    if (m > 0)
-    {
-      if (compare_fnt_name(fnumtable[m - 1], fnumtable[m]) == 0)
-        repeatflag = 1;
-      else
-        repeatflag = 0;
-    }
-
-    dvi_font_show(fnumtable[m], repeatflag);
-  }
-
-  free((void *)fnumtable);
 }

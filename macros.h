@@ -93,8 +93,8 @@ while (0)
 #define unity 0200000
 #define two   0400000
 /* sec 0105 */
-#define nx_plus_y(a, b, c)  mult_and_add(a, b, c, 07777777777L)
-#define mult_integers(a, b) mult_and_add(a, b, 0, 017777777777L)
+#define nx_plus_y(a, b, c)  mult_and_add(a, b, c, 07777777777)
+#define mult_integers(a, b) mult_and_add(a, b, 0, 017777777777)
 /* sec 0108 */
 #define inf_bad 10000
 /* sec 0109 */
@@ -145,8 +145,8 @@ while (0)
 #define empty_flag  max_halfword
 #define is_empty(a) (link(a) == empty_flag)
 #define node_size   info
-#define llink(a)    info(a+1)
-#define rlink(a)    link(a+1)
+#define llink(a)    info(a + 1)
+#define rlink(a)    link(a + 1)
 /* sec 0133 */
 #define type(a)    mem[a].hh.b0
 #define subtype(a) mem[a].hh.b1
@@ -170,10 +170,10 @@ while (0)
 #define width_offset      1
 #define depth_offset      2
 #define height_offset     3
-#define width(a)          mem[a + width_offset].cint
-#define depth(a)          mem[a + depth_offset].cint
-#define height(a)         mem[a + height_offset].cint
-#define shift_amount(a)   mem[a + 4].cint
+#define width(a)          mem[a + width_offset].sc
+#define depth(a)          mem[a + depth_offset].sc
+#define height(a)         mem[a + height_offset].sc
+#define shift_amount(a)   mem[a + 4].sc
 #define list_offset       5
 #define list_ptr(a)       link(a + list_offset)
 #define glue_order(a)     subtype(a + list_offset)
@@ -496,51 +496,51 @@ while (0)
 #define level_zero        min_quarterword
 #define level_one         level_zero + 1
 /* sec 0222 */
-#define active_base                   1                                    // 1
-#define single_base                   (active_base + 256)                  // 257
-#define null_cs                       (single_base + 256)                  // 513
-#define hash_base                     (null_cs + 1)                        // 514
-#define frozen_control_sequence       (hash_base + hash_size + hash_extra) // (hash_size + hash_extra + 514)
-#define frozen_protection             frozen_control_sequence              // (hash_size + hash_extra + 514)
-#define frozen_cr                     (frozen_control_sequence + 1)        // (hash_size + hash_extra + 515)
-#define frozen_end_group              (frozen_control_sequence + 2)        // (hash_size + hash_extra + 516)
-#define frozen_right                  (frozen_control_sequence + 3)        // (hash_size + hash_extra + 517)
-#define frozen_fi                     (frozen_control_sequence + 4)        // (hash_size + hash_extra + 518)
-#define frozen_end_template           (frozen_control_sequence + 5)        // (hash_size + hash_extra + 519)
-#define frozen_endv                   (frozen_control_sequence + 6)        // (hash_size + hash_extra + 520)
-#define frozen_relax                  (frozen_control_sequence + 7)        // (hash_size + hash_extra + 521)
-#define end_write                     (frozen_control_sequence + 8)        // (hash_size + hash_extra + 522)
-#define frozen_dont_expand            (frozen_control_sequence + 9)        // (hash_size + hash_extra + 523)
-#define frozen_null_font              (frozen_control_sequence + 10)       // (hash_size + hash_extra + 524)
-#define font_id_base                  (frozen_null_font - font_base)       // (hash_size + hash_extra + 524)
-#define undefined_control_sequence    (frozen_null_font + font_max + 2)    // (hash_size + 781)
-#define glue_base                     (undefined_control_sequence + 1)     // (hash_size + 782)
+#define active_base                   1
+#define single_base                   (active_base + 256)
+#define null_cs                       (single_base + 256)
+#define hash_base                     (null_cs + 1)
+#define frozen_control_sequence       (hash_base + hash_size)
+#define frozen_protection             frozen_control_sequence
+#define frozen_cr                     (frozen_control_sequence + 1)
+#define frozen_end_group              (frozen_control_sequence + 2)
+#define frozen_right                  (frozen_control_sequence + 3)
+#define frozen_fi                     (frozen_control_sequence + 4)
+#define frozen_end_template           (frozen_control_sequence + 5)
+#define frozen_endv                   (frozen_control_sequence + 6)
+#define frozen_relax                  (frozen_control_sequence + 7)
+#define end_write                     (frozen_control_sequence + 8)
+#define frozen_dont_expand            (frozen_control_sequence + 9)
+#define frozen_null_font              (frozen_control_sequence + 10)
+#define font_id_base                  (frozen_null_font - font_base)
+#define undefined_control_sequence    (frozen_null_font + font_max + 2)
+#define glue_base                     (undefined_control_sequence + 1)
 /* sec 0224 */
-#define line_skip_code                0  // 782
-#define baseline_skip_code            1  // 783
-#define par_skip_code                 2  // 784
-#define above_display_skip_code       3  // 785
-#define below_display_skip_code       4  // 786
-#define above_display_short_skip_code 5  // 787
-#define below_display_short_skip_code 6  // 788
-#define left_skip_code                7  // 789
-#define right_skip_code               8  // 790
-#define top_skip_code                 9  // 791
-#define split_top_skip_code           10 // 792
-#define tab_skip_code                 11 // 793
-#define space_skip_code               12 // 794
-#define xspace_skip_code              13 // 795
-#define par_fill_skip_code            14 // 796
-#define kanji_skip_code               15 // 797
-#define xkanji_skip_code              16 // 798
-#define thin_mu_skip_code             17 // 799
-#define med_mu_skip_code              18 // 800
-#define thick_mu_skip_code            19 // 801
-#define jfm_skip                      20 // 802
-#define glue_pars                     21 // 803
-#define skip_base                     (glue_base + glue_pars) // 800
-#define mu_skip_base                  (skip_base + 256) // 1056
-#define local_base                    (mu_skip_base + 256) // 1312
+#define line_skip_code                0
+#define baseline_skip_code            1
+#define par_skip_code                 2
+#define above_display_skip_code       3
+#define below_display_skip_code       4
+#define above_display_short_skip_code 5
+#define below_display_short_skip_code 6
+#define left_skip_code                7
+#define right_skip_code               8
+#define top_skip_code                 9
+#define split_top_skip_code           10
+#define tab_skip_code                 11
+#define space_skip_code               12
+#define xspace_skip_code              13
+#define par_fill_skip_code            14
+#define kanji_skip_code               15
+#define xkanji_skip_code              16
+#define thin_mu_skip_code             17
+#define med_mu_skip_code              18
+#define thick_mu_skip_code            19
+#define jfm_skip                      20
+#define glue_pars                     21
+#define skip_base                     (glue_base + glue_pars)
+#define mu_skip_base                  (skip_base + 256)
+#define local_base                    (mu_skip_base + 256)
 // #
 #define skip(a)                       equiv(skip_base + a)
 #define mu_skip(a)                    equiv(mu_skip_base + a)
@@ -566,17 +566,17 @@ while (0)
 #define med_mu_skip                   glue_par(med_mu_skip_code)
 #define thick_mu_skip                 glue_par(thick_mu_skip_code)
 /* sec 0230 */
-#define par_shape_loc                 local_base             // 1312
-#define output_routine_loc            (local_base + 1)       // 1313
-#define every_par_loc                 (local_base + 2)       // 1314
-#define every_math_loc                (local_base + 3)       // 1315
-#define every_display_loc             (local_base + 4)       // 1316
-#define every_hbox_loc                (local_base + 5)       // 1317
-#define every_vbox_loc                (local_base + 6)       // 1318
-#define every_job_loc                 (local_base + 7)       // 1319
-#define every_cr_loc                  (local_base + 8)       // 1320
-#define err_help_loc                  (local_base + 9)       // 1321
-#define tex_toks                      (local_base + 10)      // 1322
+#define par_shape_loc                 local_base
+#define output_routine_loc            (local_base + 1)
+#define every_par_loc                 (local_base + 2)
+#define every_math_loc                (local_base + 3)
+#define every_display_loc             (local_base + 4)
+#define every_hbox_loc                (local_base + 5)
+#define every_vbox_loc                (local_base + 6)
+#define every_job_loc                 (local_base + 7)
+#define every_cr_loc                  (local_base + 8)
+#define err_help_loc                  (local_base + 9)
+#define tex_toks                      (local_base + 10)
 #define etex_toks_base                tex_toks
 #define every_eof_loc                 etex_toks_base
 #define etex_toks                     (etex_toks_base + 1)
@@ -588,8 +588,8 @@ while (0)
 #define display_widow_penalties_loc   (etex_pen_base + 3)
 #define etex_pens                     (etex_pen_base + 4)
 #define box_base                      etex_pens
-#define cur_font_loc                  (box_base + 256)       // 1834
-#define math_font_base                (cur_font_loc + 1)     // 1835
+#define cur_font_loc                  (box_base + 256)
+#define math_font_base                (cur_font_loc + 1)
 #define cur_jfont_loc                 (math_font_base + 48)
 #define cur_tfont_loc                 (cur_jfont_loc + 1)
 #define auto_spacing_code             (cur_tfont_loc + 1)
@@ -601,11 +601,11 @@ while (0)
 #define inhibit_xsp_code_base         (auto_xsp_code_base + 256)
 #define kinsoku_base                  (inhibit_xsp_code_base + 256)
 #define kansuji_base                  (kinsoku_base + 256)
-#define lc_code_base                  (kansuji_base + 10)    // 2139
-#define uc_code_base                  (lc_code_base + 256)   // 2395
-#define sf_code_base                  (uc_code_base + 256)   // 2651
-#define math_code_base                (sf_code_base + 256)   // 2907
-#define int_base                      (math_code_base + 256) // 3163
+#define lc_code_base                  (kansuji_base + 10)
+#define uc_code_base                  (lc_code_base + 256)
+#define sf_code_base                  (uc_code_base + 256)
+#define math_code_base                (sf_code_base + 256)
+#define int_base                      (math_code_base + 256)
 // #
 #define par_shape_ptr                 equiv(par_shape_loc)
 #define output_routine                equiv(output_routine_loc)
@@ -647,62 +647,62 @@ while (0)
 #define null_font font_base
 #define var_code 070000
 /* sec 0236 */
-#define pretolerance_code             0  // 3163
-#define tolerance_code                1  // 3164
-#define line_penalty_code             2  // 3165
-#define hyphen_penalty_code           3  // 3166
-#define ex_hyphen_penalty_code        4  // 3167
-#define club_penalty_code             5  // 3168
-#define widow_penalty_code            6  // 3169
-#define display_widow_penalty_code    7  // 3170
-#define broken_penalty_code           8  // 3171
-#define bin_op_penalty_code           9  // 3172
-#define rel_penalty_code              10 // 3173
-#define pre_display_penalty_code      11 // 3174
-#define post_display_penalty_code     12 // 3175
-#define inter_line_penalty_code       13 // 3176
-#define double_hyphen_demerits_code   14 // 3177
-#define final_hyphen_demerits_code    15 // 3178
-#define adj_demerits_code             16 // 3179
-#define mag_code                      17 // 3180
-#define delimiter_factor_code         18 // 3181
-#define looseness_code                19 // 3182
-#define time_code                     20 // 3183
-#define day_code                      21 // 3184
-#define month_code                    22 // 3185
-#define year_code                     23 // 3186
-#define show_box_breadth_code         24 // 3187
-#define show_box_depth_code           25 // 3188
-#define hbadness_code                 26 // 3189
-#define vbadness_code                 27 // 3190
-#define pausing_code                  28 // 3191
-#define tracing_online_code           29 // 3192
-#define tracing_macros_code           30 // 3193
-#define tracing_stats_code            31 // 3194
-#define tracing_paragraphs_code       32 // 3195
-#define tracing_pages_code            33 // 3196
-#define tracing_output_code           34 // 3197
-#define tracing_lost_chars_code       35 // 3198
-#define tracing_commands_code         36 // 3199 
-#define tracing_restores_code         37 // 3200
-#define uc_hyph_code                  38 // 3201
-#define output_penalty_code           39 // 3202
-#define max_dead_cycles_code          40 // 3203
-#define hang_after_code               41 // 3204
-#define floating_penalty_code         42 // 3205
-#define global_defs_code              43 // 3206
-#define cur_fam_code                  44 // 3207
+#define pretolerance_code             0
+#define tolerance_code                1
+#define line_penalty_code             2
+#define hyphen_penalty_code           3
+#define ex_hyphen_penalty_code        4
+#define club_penalty_code             5
+#define widow_penalty_code            6
+#define display_widow_penalty_code    7
+#define broken_penalty_code           8
+#define bin_op_penalty_code           9
+#define rel_penalty_code              10
+#define pre_display_penalty_code      11
+#define post_display_penalty_code     12
+#define inter_line_penalty_code       13
+#define double_hyphen_demerits_code   14
+#define final_hyphen_demerits_code    15
+#define adj_demerits_code             16
+#define mag_code                      17
+#define delimiter_factor_code         18
+#define looseness_code                19
+#define time_code                     20
+#define day_code                      21
+#define month_code                    22
+#define year_code                     23
+#define show_box_breadth_code         24
+#define show_box_depth_code           25
+#define hbadness_code                 26
+#define vbadness_code                 27
+#define pausing_code                  28
+#define tracing_online_code           29
+#define tracing_macros_code           30
+#define tracing_stats_code            31
+#define tracing_paragraphs_code       32
+#define tracing_pages_code            33
+#define tracing_output_code           34
+#define tracing_lost_chars_code       35
+#define tracing_commands_code         36
+#define tracing_restores_code         37
+#define uc_hyph_code                  38
+#define output_penalty_code           39
+#define max_dead_cycles_code          40
+#define hang_after_code               41
+#define floating_penalty_code         42
+#define global_defs_code              43
+#define cur_fam_code                  44
 #define cur_jfam_code                 45
-#define escape_char_code              46 // 3208
-#define default_hyphen_char_code      47 // 3209
-#define default_skew_char_code        48 // 3210
-#define end_line_char_code            49 // 3211
-#define new_line_char_code            50 // 3212
-#define language_code                 51 // 3213
-#define left_hyphen_min_code          52 // 3214
-#define right_hyphen_min_code         53 // 3215
-#define holding_inserts_code          54 // 3216
-#define error_context_lines_code      55 // 3217
+#define escape_char_code              46
+#define default_hyphen_char_code      47
+#define default_skew_char_code        48
+#define end_line_char_code            49
+#define new_line_char_code            50
+#define language_code                 51
+#define left_hyphen_min_code          52
+#define right_hyphen_min_code         53
+#define holding_inserts_code          54
+#define error_context_lines_code      55
 #define jchr_widow_penalty_code       56
 #define tracing_assigns_code          57
 #define tracing_groups_code           58
@@ -715,9 +715,9 @@ while (0)
 #define saving_hyph_codes_code        65
 #define eTeX_state_code               66
 #define int_pars                      67
-#define count_base                    (int_base + int_pars) // 3218
-#define del_code_base                 (count_base + 256)    // 3474
-#define dimen_base                    (del_code_base + 256) // 3730
+#define count_base                    (int_base + int_pars)
+#define del_code_base                 (count_base + 256)
+#define dimen_base                    (del_code_base + 256)
 // #
 #define del_code(a)                   eqtb[del_code_base + a].cint
 #define count(a)                      eqtb[count_base + a].cint
@@ -792,27 +792,27 @@ while (0)
 #define saving_hyph_codes             int_par(saving_hyph_codes_code)
 
 /* sec 0247 */
-#define par_indent_code               0  // 3730
-#define math_surround_code            1  // 3731
-#define line_skip_limit_code          2  // 3732
-#define hsize_code                    3  // 3733
-#define vsize_code                    4  // 3734
-#define max_depth_code                5  // 3735
-#define split_max_depth_code          6  // 3736
-#define box_max_depth_code            7  // 3737
-#define hfuzz_code                    8  // 3738
-#define vfuzz_code                    9  // 3739
-#define delimiter_shortfall_code      10 // 3740
-#define null_delimiter_space_code     11 // 3741
-#define script_space_code             12 // 3742
-#define pre_display_size_code         13 // 3743
-#define display_width_code            14 // 3744
-#define display_indent_code           15 // 3745
-#define overfull_rule_code            16 // 3746
-#define hang_indent_code              17 // 3747
-#define h_offset_code                 18 // 3748
-#define v_offset_code                 19 // 3749
-#define emergency_stretch_code        20 // 3750
+#define par_indent_code               0
+#define math_surround_code            1
+#define line_skip_limit_code          2
+#define hsize_code                    3
+#define vsize_code                    4
+#define max_depth_code                5
+#define split_max_depth_code          6
+#define box_max_depth_code            7
+#define hfuzz_code                    8
+#define vfuzz_code                    9
+#define delimiter_shortfall_code      10
+#define null_delimiter_space_code     11
+#define script_space_code             12
+#define pre_display_size_code         13
+#define display_width_code            14
+#define display_indent_code           15
+#define overfull_rule_code            16
+#define hang_indent_code              17
+#define h_offset_code                 18
+#define v_offset_code                 19
+#define emergency_stretch_code        20
 #define t_baseline_shift_code         21
 #define y_baseline_shift_code         22
 #define pdf_h_origin_code             23
@@ -820,9 +820,9 @@ while (0)
 #define pdf_page_width_code           25
 #define pdf_page_height_code          26
 #define dimen_pars                    27
-#define scaled_base                   (dimen_base + dimen_pars) // 3751
+#define scaled_base                   (dimen_base + dimen_pars)
 #define kinsoku_penalty_base          (scaled_base + 256)
-#define eqtb_size                     (kinsoku_penalty_base + 255) // 4006
+#define eqtb_size                     (kinsoku_penalty_base + 255)
 // #
 #define dimen(a)                      eqtb[scaled_base + a].cint
 #define dimen_par(a)                  eqtb[dimen_base + a].cint
@@ -1160,15 +1160,15 @@ while (0)
 #define if_false_code  15
 #define if_case_code   16
 //#
-#define if_tdir_code   (if_case_code + 1)
-#define if_ydir_code   (if_tdir_code + 1)
-#define if_ddir_code   (if_ydir_code + 1)
-#define if_mdir_code   (if_ddir_code + 1)
-#define if_tbox_code   (if_mdir_code + 1)
-#define if_ybox_code   (if_tbox_code + 1)
-#define if_dbox_code   (if_ybox_code + 1)
-#define if_def_code    (if_dbox_code + 1)
-#define if_cs_code     (if_def_code  + 1)
+#define if_tdir_code      (if_case_code + 1)
+#define if_ydir_code      (if_tdir_code + 1)
+#define if_ddir_code      (if_ydir_code + 1)
+#define if_mdir_code      (if_ddir_code + 1)
+#define if_tbox_code      (if_mdir_code + 1)
+#define if_ybox_code      (if_tbox_code + 1)
+#define if_dbox_code      (if_ybox_code + 1)
+#define if_def_code       (if_dbox_code + 1)
+#define if_cs_code        (if_def_code  + 1)
 #define if_font_char_code (if_cs_code + 1)
 /* sec 0489 */
 #define if_node_size     2
@@ -1263,8 +1263,7 @@ while (0)
 #define extra_space(f)   param(extra_space_code, f)
 /* sec 0561 */
 #define start_font_error_message()  \
-do                                  \
-{                                   \
+do {                                \
   print_err("Font ");               \
   sprint_cs(u);                     \
   print_char('=');                  \
@@ -1279,10 +1278,9 @@ do                                  \
   else if (s != -1000)              \
   {                                 \
     prints(" scaled ");             \
-    print_int(-(integer)s);         \
+    print_int(-s);                  \
   }                                 \
-}                                   \
-while (0)
+} while (0)
 /* sec 0564 */
 #define read_sixteen(a) \
 do                      \
@@ -1296,6 +1294,7 @@ do                      \
     a = a * 256 + fbyte;\
   }                     \
 while (0)
+// #
 #define read_sixteenx(a) \
 do                      \
   {                     \
@@ -1308,6 +1307,7 @@ do                      \
     a = a * 256 + fbyte;\
   }                     \
 while (0)
+// #
 #define store_four_quarters(val)  \
 do                                \
   {                               \
@@ -1370,18 +1370,18 @@ while (0)
 #define nop       138 // NULL
 #define bop       139 // c0[4] c1[4] ... c9[4] p[4]
 #define eop       140 // NULL
-#define push      141
-#define pop       142
+#define push      141 // NULL
+#define pop       142 // NULL
 #define right1    143 // b[1]
 #define right2    144 // b[2]
 #define right3    145 // b[3]
 #define right4    146 // b[4]
-#define w0        147 //
+#define w0        147 // NULL
 #define w1        148 // b[1]
 #define w2        149 // b[2]
 #define w3        150 // b[3]
 #define w4        151 // b[4]
-#define x0        152 //
+#define x0        152 // NULL
 #define x1        153 // b[1]
 #define x2        154 // b[2]
 #define x3        155 // b[3]
@@ -1421,8 +1421,8 @@ while (0)
 #define id_byte    2
 #define ex_id_byte 3
 /* sec 0605 */
-#define movement_node_size 3
-#define location(a) mem[a + 2].cint
+#define movement_node_size  3
+#define location(a)         mem[a + 2].cint
 /* sec 0608 */
 #define y_here  1
 #define z_here  2

@@ -56,6 +56,8 @@
 #endif
 
 // standard C headers
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <time.h>
@@ -117,17 +119,12 @@ typedef FILE * word_file;
 #define b_open_out(f)   open_output (&(f), FOPEN_WBIN_MODE)
 #define w_open_in(f)    open_input  (&(f), kpse_fmt_format, FOPEN_RBIN_MODE)
 #define w_open_out(f)   open_output (&(f), FOPEN_WBIN_MODE)
-#define vf_open_in(f)   open_input  (&(f), kpse_vf_format,  FOPEN_RBIN_MODE)
 #define a_close(f)	    (void) check_fclose(f)
-#define b_close         a_close
-#define w_close         a_close
-#define vf_close        a_close
-#define gz_close        gzclose
+#define b_close(f)      a_close(f)
+#define w_close(f)      gzclose(gz_fmt_file)
 
-/* If we're running under Unix, use system calls instead of standard I/O
-to read and write the output files; also, be able to make a core dump. */
 #ifndef unix
-  #define dumpcore() exit(1)
+  #define dumpcore() exit(EXIT_FAILURE)
 #else
   #define dumpcore abort
 #endif
@@ -290,12 +287,12 @@ EXTERN integer max_buf_stack;
 
 #define dvi_buf_size 16384
 
-#define hash_extra (255 - font_max)
-#define hash_prime 27197 // (prime ~ 85% * (hash_size + hash_extra))
-#define hash_size  97280 // 32768 9500 25000
-
-#if (hash_extra != 255 - font_max)
-  #error ERROR: hash_extra not equal to (255 - font_max)
+#if !defined (ng_huge)  
+  #define hash_prime  55711 // 27197 (prime ~ 85% * hash_size)
+  #define hash_size   65536 // 32000 32768 9500 25000
+#else
+  #define hash_prime  445631
+  #define hash_size   524288
 #endif
 
 /* sec 0113 */
@@ -305,12 +302,10 @@ EXTERN integer max_buf_stack;
   typedef unsigned char  quarterword;
 #endif
 
-/* typedef unsigned long halfword; NO NO: since mem_min may be < 0 */
+/* mem_min may be < 0 */
 /* sec 0113 */
 typedef int32_t halfword;
 typedef halfword pointer;
-typedef char two_choices;
-typedef char four_choices;
 /* sec 0113 */
 typedef struct
 {
@@ -462,7 +457,7 @@ EXTERN pointer mem_start;
 EXTERN pointer rover;
 /* sec 0165 */
 /* NOTE: the following really also need to be dynamically allocated */
-#ifdef DEBUG
+#ifdef NG_DEBUG
   #ifdef ALLOCATEMAIN
     EXTERN char * zzzab;
     EXTERN char * zzzac;
@@ -484,19 +479,13 @@ EXTERN int shown_mode;
 EXTERN int old_setting;
 
 #ifdef INCREASEFONTS
-  #define eqtb_extra (font_max - 255 + hash_extra)
-  EXTERN memory_word eqtb[eqtb_size + 1 + eqtb_extra];
-  #define xeq_level (zzzad - (int_base + eqtb_extra))
-  EXTERN two_halves zzzae[undefined_control_sequence - hash_base + eqtb_extra];
-#else
-  #define eqtb_extra 0
   EXTERN memory_word eqtb[eqtb_size + 1];
   #define xeq_level (zzzad - (int_base))
   EXTERN two_halves zzzae[undefined_control_sequence - hash_base];
-#endif
-
-#if (eqtb_extra != 0)
-  #error ERROR: eqtb_extra is not zero (need hash_extra equal 255 - font_max)
+#else
+  EXTERN memory_word eqtb[eqtb_size + 1];
+  #define xeq_level (zzzad - (int_base))
+  EXTERN two_halves zzzae[undefined_control_sequence - hash_base];
 #endif
 
 EXTERN quarterword zzzad[eqtb_size - int_base + 1];
@@ -506,10 +495,6 @@ EXTERN pointer hash_used;
 EXTERN boolean no_new_control_sequence;
 EXTERN integer cs_count;
 
-/* *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** */
-/* using allocated save stack slows it down 1% to 2%                       */
-/* despite reallocation, we still limit it to something finite             */
-/* to avoid soaking up all of machine memory in case of infinite loop      */
 #ifdef ALLOCATESAVESTACK
   #define save_size           65536
   #define initial_save_size   1000
@@ -775,7 +760,7 @@ EXTERN trie_op_code hyf_next[trie_op_size + 1];
 EXTERN integer op_start[256];
 
 #ifdef ALLOCATEHYPHEN
-  #define default_hyphen_prime 1009
+#define default_hyphen_prime 8191 // 1009
   EXTERN str_number * hyph_word;
   EXTERN pointer * hyph_list;
   EXTERN integer hyphen_prime;
@@ -867,8 +852,6 @@ EXTERN eight_bits page_dir;
 EXTERN pointer first_char;
 EXTERN pointer last_char;
 EXTERN boolean find_first_char;
-EXTERN pool_pointer edit_name_start;
-EXTERN integer edit_name_length, edit_line;
 EXTERN int fbyte;
 //eTeX
 EXTERN boolean eTeX_mode;
@@ -901,7 +884,7 @@ EXTERN boolean is_initex;
 EXTERN boolean verbose_flag;
 EXTERN boolean trace_flag;
 EXTERN boolean open_trace_flag;
-EXTERN boolean knuth_flag;
+EXTERN boolean tex82_flag;
 EXTERN boolean c_style_flag;
 EXTERN boolean deslash;
 EXTERN boolean trimeof;
@@ -921,13 +904,11 @@ EXTERN int missing_characters;
 EXTERN boolean show_in_hex;
 EXTERN boolean show_fmt_flag;
 EXTERN boolean show_tfm_flag;
-EXTERN boolean truncate_long_lines;
 EXTERN boolean show_cs_names;
 EXTERN int tab_step;
 EXTERN boolean allow_quoted_names;
-EXTERN int default_rule;
+EXTERN scaled default_rule;
 EXTERN char * format_file;
-EXTERN char * source_direct;
 EXTERN char * format_name;
 EXTERN boolean show_line_break_stats;
 EXTERN int first_pass_count;

@@ -76,7 +76,8 @@ integer calc_pos(integer c)
 
 // Ref. http://www.unicode.org/Public/UNIDATA/Blocks.txt
 // TODO: updating to Unicode 7.0.0
-static long ucs_range[] = {
+static long ucs_range[] = 
+{
   0x0000, // Basic Latin
   0x0080, // Latin-1 Supplement
   0x0100, // Latin Extended-A
@@ -402,6 +403,6 @@ void init_default_kanji(const_string file_str, const_string internal_str)
     fprintf(stderr, "Bad kanji encoding \"%s\" or \"%s\".\n",
       file_str ? file_str : "NULL",
       internal_str ? internal_str : "NULL");
-    uexit(1);
+    uexit(EXIT_FAILURE);
   }
 }

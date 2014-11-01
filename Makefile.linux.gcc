@@ -15,15 +15,12 @@ objects = \
 	ptex-ng.o\
 	ptex-ng-initex.o\
 	ptex-ng-io.o\
-	ptex-ng-subroute.o\
 	ptex-ng-local.o\
 	ptex-ng-src.o\
 	ptex-ng-pool.o\
 	ptex-ng-utils.o\
-	ptex-ng-pdf-backend.o\
-	ptex-ng-kanji.o\
-	ptex-ng-module.o\
-	ptex-ng-vf.o
+	ptex-ng-pdf.o\
+	ptex-ng-kanji.o
 
 headers = ptex-ng.h coerce.h macros.h
 
@@ -33,23 +30,17 @@ ptex-ng: $(objects)
 ptex-ng.o: ptex-ng.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng.c
 
-ptex-ng-pdf-backend.o: ptex-ng-pdf-backend.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-pdf-backend.c
+ptex-ng-pdf.o: ptex-ng-pdf.c $(headers)
+	$(CC) $(CFLAGS) ptex-ng-pdf.c
 
 ptex-ng-kanji.o: ptex-ng-kanji.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-kanji.c
-	
-ptex-ng-module.o: ptex-ng-module.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-module.c
 
 ptex-ng-initex.o: ptex-ng-initex.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-initex.c
 
 ptex-ng-io.o: ptex-ng-io.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-io.c
-
-ptex-ng-subroute.o: ptex-ng-subroute.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-subroute.c
 
 ptex-ng-local.o: ptex-ng-local.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-local.c
@@ -62,9 +53,6 @@ ptex-ng-pool.o: ptex-ng-pool.c $(headers)
 
 ptex-ng-utils.o: ptex-ng-utils.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-utils.c
-
-ptex-ng-vf.o: ptex-ng-vf.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-vf.c
 
 .PHONY: clean
 

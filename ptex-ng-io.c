@@ -29,7 +29,7 @@
 
 extern int shorten_file_name;
 
-char * xconcat3 (char *buffer, char *s1, char *s2, char *s3)
+static char * xconcat3 (char *buffer, char *s1, char *s2, char *s3)
 {
   int n1 = strlen(s1);
   int n2 = strlen(s2);
@@ -51,7 +51,7 @@ char * xconcat3 (char *buffer, char *s1, char *s2, char *s3)
   return buffer;
 }
 
-void patch_in_path (ASCII_code * buffer, ASCII_code *name, ASCII_code * path)
+static void patch_in_path (ASCII_code * buffer, ASCII_code *name, ASCII_code * path)
 {
   if (*path == '\0')
     strcpy((char *) buffer, (char *) name);
@@ -59,7 +59,7 @@ void patch_in_path (ASCII_code * buffer, ASCII_code *name, ASCII_code * path)
     xconcat3((char *) buffer, (char *) path, "/", (char *) name);
 }
 
-int qualified (ASCII_code * name)
+static int qualified (ASCII_code * name)
 {
   if (strchr((char *) name, '/') != NULL ||
       strchr((char *) name, '\\') != NULL ||
@@ -73,7 +73,7 @@ int qualified (ASCII_code * name)
     (ii)  name not qualified
     (iii) ext match
 */
-int prepend_path_if(ASCII_code * buffer, ASCII_code * name, const char * ext, char *path)
+static int prepend_path_if(ASCII_code * buffer, ASCII_code * name, const char * ext, char *path)
 {
   if (path == NULL)
     return 0;
@@ -92,42 +92,6 @@ int prepend_path_if(ASCII_code * buffer, ASCII_code * name, const char * ext, ch
   return 1;
 }
 
-//  Following works on null-terminated strings
-void check_short_name (unsigned char *s)
-{
-  unsigned char *star, *sdot;
-  int n;
-
-  if ((star = (unsigned char *) strrchr((char *) s, '\\')) != NULL)
-    star++;
-  else if ((star = (unsigned char *) strrchr((char *) s, '/')) != NULL)
-    star++;
-  else if ((star = (unsigned char *) strchr((char *) s, ':')) != NULL)
-    star++;
-  else
-    star = s;
-
-  if ((sdot = (unsigned char *) strchr((char *) star, '.')) != NULL)
-    n = sdot - star;
-  else
-    n = strlen((char *) star);
-
-  if (n > 8)
-    strcpy((char *) star + 8, (char *) star + n);
-
-  if ((sdot = (unsigned char *) strchr((char *) star, '.')) != NULL)
-  {
-    star = sdot + 1;
-
-    n = strlen((char *) star);
-
-    if (n > 3)
-      *(star + 3) = '\0';
-  }
-}
-
-/* Following works on both null-terminated names */
-
 boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode)
 {
   boolean openable = false;
@@ -140,9 +104,6 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
   }
 
   name_of_file[name_length + 1] = '\0';
-
-  if (shorten_file_name)
-    check_short_name(name_of_file + 1);
   
   if (open_trace_flag)
     printf(" Open `%s' for input ", name_of_file + 1);
@@ -207,23 +168,6 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
         file_offset += n + 3;
       }
     }
-    else if (source_direct == NULL)
-    {
-      char *s;
-
-      source_direct = xstrdup((char *) name_of_file + 1);
-
-      if (trace_flag)
-        printf("Methinks the source %s is `%s'\n", "file", source_direct);
-
-      if ((s = strrchr(source_direct, '/')) == NULL)
-        *source_direct = '\0';
-      else
-        *(s + 1) = '\0';
-
-      if (trace_flag)
-        printf("Methinks the source %s is `%s'\n", "directory", source_direct);
-    }
 
     openable = true;
   }
@@ -234,6 +178,11 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
   }
 
   return openable;
+}
+
+static inline void perrormod(const char * s)
+{
+  printf("`%s': %s\n", s, strerror(errno));
 }
 
 int check_fclose (FILE * f)
@@ -250,7 +199,7 @@ int check_fclose (FILE * f)
   return 0;
 }
 
-char * xstrdup_name (void)
+static char * xstrdup_name (void)
 {
   if (qualified(name_of_file + 1))
     *log_line = '\0';
@@ -271,10 +220,6 @@ boolean open_output (FILE ** f, const char * fopen_mode)
   unsigned temp_length;
 
   name_of_file[name_length + 1] = '\0';
-
-  /* 8 + 3 file names on Windows NT 95/Feb/20 */
-  if (shorten_file_name)
-    check_short_name(name_of_file + 1);
 
   if (prepend_path_if(name_of_file + 1, name_of_file + 1, ".dvi", dvi_directory) ||
       prepend_path_if(name_of_file + 1, name_of_file + 1, ".log", log_directory) ||

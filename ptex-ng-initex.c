@@ -20,12 +20,10 @@
 #define EXTERN extern
 #include "ptex-ng.h"
 
-#define BEGINFMTCHECKSUM 367403084L
-#define ENDFMTCHECKSUM   69069L
+static const integer BEGINFMTCHECKSUM = 367403084;
+static const integer ENDFMTCHECKSUM   = 69069;
 
-#ifdef INITEX
-  void do_initex (void);
-#endif
+static void do_initex (void);
 
 /* sec 0004 */
 void initialize (void)
@@ -100,7 +98,7 @@ void initialize (void)
   interrupt = 0;
   OK_to_interrupt = true;
 
-#ifdef DEBUG
+#ifdef NG_DEBUG
   was_mem_end = mem_min;
   was_lo_max = mem_bot; // mem_min
   was_hi_min = mem_top; // mem_max
@@ -249,21 +247,18 @@ void initialize (void)
   split_disc = null;
   inhibit_glue_flag = false;
   page_dir = dir_yoko;
-  edit_name_start = 0;
 
-#ifdef INITEX
   if (is_initex)
     do_initex();
-#endif
 }
 
 /* do the part of initialize() that requires mem_top, mem_max or mem[] */
 /* do this part after allocating main memory */
 
 #ifdef ALLOCATEMAIN
-void initialize_aux (void)
+static void initialize_aux (void)
 {
-#ifdef DEBUG
+#ifdef NG_DEBUG
   was_mem_end = mem_min;
   was_lo_max = mem_bot; // mem_min
   was_hi_min = mem_top; // mem_max
@@ -461,13 +456,11 @@ void line_break (boolean d)
 
     if (second_pass)
     {
-#ifdef INITEX
       if (is_initex)
       {
         if (trie_not_ready)
           init_trie();
       }
-#endif
 
       cur_lang = init_cur_lang;
       l_hyf = init_l_hyf;
@@ -1460,11 +1453,9 @@ void prefixed_command (void)
         p = cur_chr;
         scan_optional_equals();
 
-        do
-          {
-            get_x_token();
-          }
-        while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+        do {
+          get_x_token();
+        } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
 
         if (cur_cmd != left_brace)
         {
@@ -1475,7 +1466,7 @@ void prefixed_command (void)
               {
                 scan_register_num();
 
-                if (cur_val<256)
+                if (cur_val < 256)
                   q = equiv(toks_base + cur_val);
                 else
                 {
@@ -1718,7 +1709,7 @@ void prefixed_command (void)
 
         if (n <= 0)
           p = null;
-        else if (q>par_shape_loc)
+        else if (q > par_shape_loc)
         {
           n = (cur_val / 2) + 1;
           p = get_node(2 * n + 1);
@@ -1756,22 +1747,19 @@ void prefixed_command (void)
     case hyph_data:
       if (cur_chr == 1)
       {
-#ifdef INITEX
         if (is_initex)
         {
           new_patterns();
           goto done;
         }
-#endif
+
         print_err("Patterns can be loaded only by INITEX");
         help_ptr = 0;
         error();
 
-        do
-          {
-            get_token();
-          }
-        while (!(cur_cmd == right_brace));
+        do {
+          get_token();
+        } while (!(cur_cmd == right_brace));
 
         return;
       }
@@ -2002,7 +1990,7 @@ boolean load_fmt_file (void)
 #ifdef ALLOCATEMAIN
 /* we already read this once earlier to grab mem_top */
   if (trace_flag)
-    printf("Read from fmt file mem_top = %lld TeX words\n", x);
+    printf("Read from fmt file mem_top = %lld memory words\n", x);
 
   mem = allocate_main_memory(x);
 
@@ -2104,19 +2092,17 @@ boolean load_fmt_file (void)
   p = mem_bot;
   q = rover;
 
-  do
-    {
-      if (undump_things(mem[p], q + 2 - p))
-        return -1;
-
-      p = q + node_size(q);
-
-      if ((p > lo_mem_max) || ((q >= rlink(q)) && (rlink(q) != rover)))
-        goto bad_fmt;
-
-      q = rlink(q);
-    }
-  while (!(q == rover));
+  do {
+    if (undump_things(mem[p], q + 2 - p))
+      return -1;
+    
+    p = q + node_size(q);
+    
+    if ((p > lo_mem_max) || ((q >= rlink(q)) && (rlink(q) != rover)))
+      goto bad_fmt;
+    
+    q = rlink(q);
+  } while (!(q == rover));
 
   if (undump_things(mem[p], lo_mem_max + 1 - p))
     return -1;
@@ -2129,8 +2115,8 @@ boolean load_fmt_file (void)
 
     p = llink(rover);
     q = mem_min + 1;
-    link(mem_min) = 0;       /* null */
-    info(mem_min) = 0;       /* null */
+    link(mem_min) = 0;  /* null */
+    info(mem_min) = 0;  /* null */
     rlink(p) = q;
     llink(rover) = q;
     rlink(q) = rover;
@@ -2151,28 +2137,26 @@ boolean load_fmt_file (void)
 
   k = active_base;
 
-  do
-    {
-      undump_int(x);
-
-      if ((x < 1) || (k + x > (eqtb_size + 1)))
-        goto bad_fmt;
-
-      if (undump_things(eqtb[k], x))
-        return -1;
-
-      k = k + x;
-      undump_int(x);
-
-      if ((x < 0) || (k + x > (eqtb_size + 1)))
-        goto bad_fmt;
-
-      for (j = k; j <= k + x - 1; j++)
-        eqtb[j] = eqtb[k - 1];
-
-      k = k + x;
-    }
-    while (!(k > eqtb_size));
+  do {
+    undump_int(x);
+    
+    if ((x < 1) || (k + x > (eqtb_size + 1)))
+      goto bad_fmt;
+    
+    if (undump_things(eqtb[k], x))
+      return -1;
+    
+    k = k + x;
+    undump_int(x);
+    
+    if ((x < 0) || (k + x > (eqtb_size + 1)))
+      goto bad_fmt;
+    
+    for (j = k; j <= k + x - 1; j++)
+      eqtb[j] = eqtb[k - 1];
+    
+    k = k + x;
+  } while (!(k > eqtb_size));
 
   undump(hash_base, frozen_control_sequence, par_loc);
   par_token = cs_token_flag + par_loc;
@@ -2181,20 +2165,15 @@ boolean load_fmt_file (void)
 
   p = hash_base - 1;
 
-  do
-    {
-      undump(p + 1, hash_used, p);
-      undump_hh(hash[p]);
-    }
-  while (!(p == hash_used));
+  do {
+    undump(p + 1, hash_used, p);
+    undump_hh(hash[p]);
+  } while (!(p == hash_used));
 
   if (undump_things(hash[hash_used + 1], undefined_control_sequence - 1 - hash_used))
     return -1;
 
   undump_int(cs_count);
-
-  if (trace_flag)
-    printf("itex undump cs_count %lld ", cs_count);
 
   {
     undump_int(x); /* font_mem_size */
@@ -2335,10 +2314,8 @@ boolean load_fmt_file (void)
       j = x;
   }
 
-#ifdef INITEX
   if (is_initex)
     trie_max = j;
-#endif
 
   undump(0, j, hyph_start);
   undump_things(trie_trl[0], j + 1);
@@ -2346,22 +2323,18 @@ boolean load_fmt_file (void)
   undump_things(trie_trc[0], j + 1);
   undump_size(0, trie_op_size, "trie op size", j);
 
-#ifdef INITEX
   if (is_initex)
     trie_op_ptr = j;
-#endif
   
   undump_things(hyf_distance[1], j);
   undump_things(hyf_num[1], j);
   undump_things(hyf_next[1], j);
 
-#ifdef INITEX
   if (is_initex)
   {
     for (k = 0; k <= 255; k++)
       trie_used[k] = min_quarterword;
   }
-#endif
 
   k = 256;
 
@@ -2370,19 +2343,15 @@ boolean load_fmt_file (void)
     undump(0, k - 1, k);
     undump(1, j, x);
 
-#ifdef INITEX
     if (is_initex)
       trie_used[k] = x;
-#endif
 
     j = j - x;
     op_start[k] = j;
   }
 
-#ifdef INITEX
   if (is_initex)
     trie_not_ready = false;
-#endif
 
   undump(batch_mode, error_stop_mode, interaction);
   undump(0, str_ptr, format_ident);
@@ -2457,7 +2426,7 @@ void final_cleanup (void)
   }
 
   if (history != spotless)
-    if (((history == warning_issued) || (interaction < error_stop_mode)))
+    if ((history == warning_issued) || (interaction < error_stop_mode))
       if (selector == term_and_log)
       {
         selector = term_only;
@@ -2467,7 +2436,6 @@ void final_cleanup (void)
 
   if (c == 1)
   {
-#ifdef INITEX
     if (is_initex)
     {
       for (c = 0; c <= 4; c++)
@@ -2486,14 +2454,12 @@ void final_cleanup (void)
 
       store_fmt_file();
     }
-#endif
-
-    if (!is_initex)
+    else
       print_nl("(\\dump is performed only by INITEX)");
   }
 }
 
-void show_frozen (void)
+static void show_frozen (void)
 {
   int i;
 
@@ -2534,7 +2500,7 @@ int main_program (void)
   if (mem_bot + 1100 > mem_top)
     bad = 4;
 
-  if (hash_prime > (hash_size + hash_extra))
+  if (hash_prime > hash_size)
     bad = 5;
 
   if (max_in_open >= 128)
@@ -2543,13 +2509,11 @@ int main_program (void)
   if (mem_top < 256 + 11)
     bad = 7;
 
-#ifdef INITEX
   if (is_initex)
   {
     if ((mem_min != 0) || (mem_max != mem_top))
       bad = 10;
   }
-#endif
 
   if ((mem_min > mem_bot) || (mem_max < mem_top))
     bad = 10;
@@ -2607,7 +2571,6 @@ int main_program (void)
 
   initialize();
 
-#ifdef INITEX
   if (is_initex)
   {
     if (!get_strings_started())
@@ -2618,7 +2581,6 @@ int main_program (void)
     init_pool_ptr = pool_ptr;
     fix_date_and_time();
   }
-#endif
 
   ready_already = 314159;
 
@@ -2670,7 +2632,7 @@ start_of_TEX:
 #endif
 
       first = 0;
-      scanner_status = 0;
+      scanner_status = normal;
       warning_index = 0;
       first = 1;
       state = new_line;
@@ -2781,19 +2743,11 @@ start_of_TEX:
 
       if (!load_fmt_file())
       {
-#ifdef COMPACTFORMAT
-        gzclose(gz_fmt_file);
-#else
         w_close(fmt_file);
-#endif
         goto final_end;
       }
 
-#ifdef COMPACTFORMAT
-      gzclose(gz_fmt_file);
-#else
       w_close(fmt_file);
-#endif
 
       while ((loc < limit) && (buffer[loc] == ' '))
         incr(loc);
@@ -2826,12 +2780,12 @@ start_of_TEX:
   history = spotless;
 
   if (show_cs_names)
-    print_cs_names(stdout, 0);
+    print_cs_names(stdout, false);
 
   main_control();
 
   if (show_cs_names)
-    print_cs_names(stdout, 1);
+    print_cs_names(stdout, true);
 
   final_cleanup();
   close_files_and_terminate();
@@ -2842,7 +2796,7 @@ final_end:
 
 #ifdef ALLOCATEMAIN
 /* add a block of variable size node space below mem_bot(0) */
-void add_variable_space(int size)
+void add_variable_space (int size)
 {
   halfword p;
   halfword q;
@@ -2878,8 +2832,7 @@ void add_variable_space(int size)
 #endif
 
 #ifdef INITEX
-/* split out to allow sharing of code from do_initex and newpattern */
-void reset_trie (void)
+static void reset_trie (void)
 {
   integer k;
 
@@ -2898,7 +2851,7 @@ void reset_trie (void)
   trie_not_ready = true;
 }
 /* borrowed code from initialize() */
-void reset_hyphen(void)
+static void reset_hyphen(void)
 {
   hyph_pointer z;
 
@@ -2911,7 +2864,7 @@ void reset_hyphen(void)
   hyph_count = 0;
 }
 /* split out to allow optimize for space, not time */
-void do_initex (void)
+static void do_initex (void)
 {
   integer i;
   integer k;
@@ -3221,9 +3174,6 @@ void do_initex (void)
   hyph_root = 0;
   hyph_start = 0;
 }
-#endif
-
-#ifdef INITEX
 /* sec 0047 */
 boolean get_strings_started (void)
 {
@@ -3267,9 +3217,6 @@ boolean get_strings_started (void)
 
   return true;
 }
-#endif
-
-#ifdef INITEX
 /* sec 0131 */
 void sort_avail (void)
 {
@@ -3315,9 +3262,6 @@ void sort_avail (void)
   rlink(p) = rover;
   llink(rover) = p;
 }
-#endif
-
-#ifdef INITEX
 /* sec 0264 */
 void primitive_ (str_number s, quarterword c, halfword o)
 { 
@@ -3362,9 +3306,6 @@ void primitive_ (str_number s, quarterword c, halfword o)
   eq_type(cur_val) = c;
   equiv(cur_val) = o;
 }
-#endif
-
-#ifdef INITEX
 /* sec 0944 */
 trie_op_code new_trie_op (small_number d, small_number n, trie_op_code v)
 {
@@ -3956,9 +3897,6 @@ void init_trie (void)
   trie_char(0) = '?';
   trie_not_ready = false;
 }
-#endif
-
-#ifdef INITEX
 /* sec 1302 */
 void store_fmt_file (void)
 {
@@ -3970,7 +3908,7 @@ void store_fmt_file (void)
   {
     puts("! \\dump is performed only by INITEX");
 
-    if (!knuth_flag)
+    if (!tex82_flag)
       puts("  (Use -ini on the command line)");
 
     return;
@@ -4178,8 +4116,8 @@ done2:
   cs_count = frozen_control_sequence - 1 - hash_used;
 
   if (trace_flag)
-    printf("itex cs_count %lld hash_size %d hash_extra %d hash_used %d",
-        cs_count, hash_size, hash_extra, hash_used);
+    printf(" (cs_count %lld hash_size %d hash_used %d) ",
+        cs_count, hash_size, hash_used);
 
   for (p = hash_base; p <= hash_used; p++)
   {
@@ -4190,7 +4128,7 @@ done2:
       incr(cs_count);
 
       if (trace_flag)
-        puts("itex.c store_fmt_file() cs_count++ ");
+        puts(" (do store_fmt_file() cs_count++) ");
     }
   }
 
@@ -4322,16 +4260,8 @@ done2:
   dump_int(format_ident);
   dump_int(ENDFMTCHECKSUM);
   tracing_stats = 0;
-
-#ifdef COMPACTFORMAT
-  gz_close(gz_fmt_file);
-#else
   w_close(fmt_file);
-#endif
 }
-#endif
-
-#ifdef INITEX
 /* sec 01336 */
 void init_prim (void)
 {

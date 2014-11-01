@@ -18,16 +18,13 @@ objs = \
 	ptex-ng.obj\
 	ptex-ng-initex.obj\
 	ptex-ng-io.obj\
-	ptex-ng-subroute.obj\
 	ptex-ng-local.obj\
 	ptex-ng-src.obj\
 	ptex-ng-pool.obj\
 	ptex-ng.res\
 	ptex-ng-utils.obj\
 	ptex-ng-pdf.obj\
-	ptex-ng-kanji.obj\
-	ptex-ng-module.obj\
-	ptex-ng-vf.obj
+	ptex-ng-kanji.obj
 
 ptex-ng.exe: $(objs) libdpx\libdpx.lib
 	$(LINK) $(LFLAGS) $(objs) \
@@ -52,16 +49,7 @@ ptex-ng-initex.obj: ptex-ng-initex.c \
 ptex-ng-io.obj: ptex-ng-io.c \
 	ptex-ng.h coerce.h macros.h
 
-ptex-ng-subroute.obj: ptex-ng-subroute.c \
-	ptex-ng.h coerce.h macros.h
-
 ptex-ng-kanji.obj: ptex-ng-kanji.c \
-	ptex-ng.h coerce.h macros.h
-
-ptex-ng-module.obj: ptex-ng-module.c \
-	ptex-ng.h coerce.h macros.h
-
-ptex-ng-vf.obj: ptex-ng-vf.c \
 	ptex-ng.h coerce.h macros.h
 
 ptex-ng-local.obj: ptex-ng-local.c \

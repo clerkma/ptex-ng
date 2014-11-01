@@ -111,7 +111,7 @@ void succumb (void)
   if (log_opened)
     error();
 
-#ifdef DEBUG
+#ifdef NG_DEBUG
   if (interaction > 0)
     debug_help();
 #endif
@@ -120,7 +120,7 @@ void succumb (void)
   jump_out();
 }
 /* sec 0121 */
-void free_avail_(halfword p)
+void free_avail (halfword p)
 {
   link(p) = avail;
   avail = p;
@@ -136,7 +136,7 @@ void node_list_display (integer p)
   decr(pool_ptr);
 }
 /* sec 0214 */
-void tail_append_ (pointer val)
+void tail_append (pointer val)
 {
   link(tail) = val;
   tail = link(tail);

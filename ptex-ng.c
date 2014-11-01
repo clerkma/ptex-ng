@@ -22,12 +22,8 @@
 #define EXTERN
 #include "ptex-ng.h"
 
-int    gargc;
-char **gargv;
-
-int jump_used = 0;
-
-jmp_buf ng_env;
+static int    gargc;
+static char **gargv;
 
 int main (int ac, char *av[])
 {
@@ -109,7 +105,7 @@ static void catch_interrupt (int err)
   (void) signal(SIGINT, SIG_IGN);
 
   if (interrupt++ >= 3)
-    exit(1);
+    exit(EXIT_FAILURE);
 
   (void) signal(SIGINT, catch_interrupt);
 }
@@ -160,96 +156,6 @@ void fix_date_and_time (void)
   }
 }
 
-/* I/O for TeX and Metafont. */
-void complain_line (FILE * output)
-{
-  show_line("\n", 0);
-
-#ifdef ALLOCATEBUFFER
-  sprintf(log_line, "! Unable to read an entire line---buf_size=%d.\n", current_buf_size);
-#else
-  sprintf(log_line, "! Unable to read an entire line---buf_size=%d.\n", buf_size);
-#endif
-
-  fputs(log_line, output);
-  puts("  (File may have a line termination problem.)");
-}
-
-void show_bad_line (FILE * output, int first, int last)
-{
-  int i, c, d, ch;
-  char *s = log_line;
-
-  for (i = first; i <= last; i++)
-  {
-    ch = buffer[i];
-
-    if (show_in_hex && (ch > 127))
-    {
-      c = ch >> 4;
-      d = ch & 15;
-
-      if (c > 9)
-        c = c + 'a' - 10;
-      else
-        c = c + '0';
-
-      if (d > 9)
-        d = d + 'a' - 10;
-      else
-        d = d + '0';
-
-      *s++ = '^';
-      *s++ = '^';
-
-      *s++ = (char) c;
-      *s++ = (char) d;
-    }
-    else if (ch < 32)
-    {
-      *s++ = '^';
-      *s++ = '^';
-      *s++ = (char) (ch + 64);
-    }
-    else if (ch == 127)
-    {
-      *s++ = '^';
-      *s++ = '^';
-      *s++ = (char) (ch - 64);
-    }
-    else
-    {
-      *s++ = (char) ch;
-    }
-  }
-
-  *s++ = ' ';
-  *s++ = '\0';
-
-  fputs(log_line, output);   // log_file
-}
-
-boolean input_line_finish (void)
-{
-  int i = '\0';
-
-  buffer[last] = ' ';
-
-  if (last >= max_buf_stack)
-    max_buf_stack = last;
-
-  while (last > first)
-  {
-    i = buffer[last - 1];
-
-    if (i == ' ' || i == '\t')
-      --last;
-    else
-      break;
-  }
-
-  return true;
-}
 /* sec 0031 */
 // inputs the next line or returns |false|
 boolean input_ln (FILE * f, boolean bypass_eoln)
@@ -348,183 +254,23 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
   if (i == EOF && last == first)
     return false;
 
-/*  Didn't get the whole line because buffer was too small?  */
-/*  This shouldn't happen anymore 99/Jan/23 */
-  if (i != EOF && i != '\n' && i != '\r')
+  buffer[last] = ' ';
+
+  if (last >= max_buf_stack)
+    max_buf_stack = last;
+
+  while (last > first)
   {
-    complain_line(errout);
+    i = buffer[last - 1];
 
-    if (log_opened)
-      complain_line(log_file);
-
-    /* This may no longer be needed ... now that we grow it */
-    if (truncate_long_lines)
-    {
-      while (i != EOF && i != '\n' && i != '\r')
-      {
-        i = getc (f);     // discard rest of line
-      }
-
-      last--;       /* just in case */
-    }
+    if (i == ' ' || i == '\t')
+      --last;
     else
-      uexit(EXIT_FAILURE);      /* line too long */
+      break;
   }
 
-  return input_line_finish();
+  return true;
 }
-
-static char * edit_value = "c:\\yandy\\WinEdt\\WinEdt.exe [Open('%s');SelLine(%d,7)]";
-
-#ifdef WIN32
-static inline int Isspace (char c)
-{
-  return (c == ' ' || c == '\t');
-}
-#endif
-
-void call_edit (ASCII_code * filename, pool_pointer fnstart, integer fnlength, integer linenumber)
-{
-  char *temp, *command, *fullcmd;
-  char c;
-  int sdone, ddone, i;
-
-#ifdef WIN32
-  char *fp, *ffp, *env, editorname[256], buffer[256];
-  int cnt = 0;
-  int dontchange = 0;
-#endif
-
-  sdone = ddone = 0;
-  filename += fnstart;
-
-  /* Close any open input files, since we're going to kill the job. */
-  for (i = 1; i <= in_open; i++)
-    xfclose(input_file[i], "inputfile");
-
-  /* Replace the default with the value of the appropriate environment
-     variable or config file value, if it's set.  */
-  temp = kpse_var_value("TEXEDIT");
-
-  if (temp != NULL)
-    edit_value = temp;
-
-  /* Construct the command string.  The `11' is the maximum length an
-     integer might be.  */
-  command = (char *) xmalloc (strlen (edit_value) + fnlength + 11);
-
-  /* So we can construct it as we go.  */
-  temp = command;
-
-#ifdef WIN32
-  fp = editorname;
-  if ((isalpha(*edit_value) && *(edit_value + 1) == ':'
-        && IS_DIR_SEP (*(edit_value + 2)))
-      || (*edit_value == '"' && isalpha(*(edit_value + 1))
-        && *(edit_value + 2) == ':'
-        && IS_DIR_SEP (*(edit_value + 3)))
-     )
-    dontchange = 1;
-#endif
-
-  while ((c = *edit_value++) != 0)
-  {
-    if (c == '%')
-    {
-      switch (c = *edit_value++)
-      {
-        case 'd':
-          if (ddone)
-            FATAL ("call_edit: `%%d' appears twice in editor command");
-          sprintf (temp, "%ld", (long int)linenumber);
-          while (*temp != '\0')
-            temp++;
-          ddone = 1;
-          break;
-        
-        case 's':
-          if (sdone)
-            FATAL ("call_edit: `%%s' appears twice in editor command");
-          for (i = 0; i < fnlength; i++)
-            *temp++ = xchr[(filename[i])];
-          sdone = 1;
-          break;
-        
-        case '\0':
-          *temp++ = '%';
-          /* Back up to the null to force termination.  */
-          edit_value--;
-          break;
-        
-        default:
-          *temp++ = '%';
-          *temp++ = c;
-          break;
-      }
-    }
-    else
-    {
-#ifdef WIN32
-      if (dontchange)
-        *temp++ = c;
-      else 
-      { 
-        if(Isspace(c) && cnt == 0)
-        {
-          cnt++;
-          temp = command;
-          *temp++ = c;
-          *fp = '\0';
-        }
-        else if(!Isspace(c) && cnt == 0)
-        {
-          *fp++ = c;
-        }
-        else
-        {
-          *temp++ = c;
-        }
-      }
-#else
-      *temp++ = c;
-#endif
-    }
-  }
-
-  *temp = 0;
-
-#ifdef WIN32
-  if (dontchange == 0) {
-    if(editorname[0] == '.' ||
-       editorname[0] == '/' ||
-       editorname[0] == '\\') {
-      fprintf(stderr, "%s is not allowed to execute.\n", editorname);
-      uexit(1);
-    }
-    env = (char *)getenv("PATH");
-    if(SearchPath(env, editorname, ".exe", 256, buffer, &ffp)==0) {
-      if(SearchPath(env, editorname, ".bat", 256, buffer, &ffp)==0) {
-        fprintf(stderr, "I cannot find %s in the PATH.\n", editorname);
-        uexit(1);
-      }
-    }
-    fullcmd = (char *)xmalloc(strlen(buffer)+strlen(command)+5);
-    strcpy(fullcmd, "\"");
-    strcat(fullcmd, buffer);
-    strcat(fullcmd, "\"");
-    strcat(fullcmd, command);
-  } else
-#endif
-  fullcmd = command;
-
-  /* Execute the command.  */
-  if (system (fullcmd) != 0)
-    fprintf(stderr, "! Trouble executing `%s'.\n", command);
-
-  /* Quit, since we found an error.  */
-  uexit(1);
-}
-
 
 #if !defined (WORDS_BIGENDIAN)
    
@@ -635,4 +381,68 @@ int do_undump (char *p, int item_size, int nitems, FILE *in_file)
 #endif
 
   return 0;
+}
+
+void uexit(int unix_code)
+{
+  int final_code;
+
+  update_terminal();
+
+  if (unix_code == 0)
+    final_code = EXIT_SUCCESS;
+  else if (unix_code == 1)
+    final_code = EXIT_FAILURE;
+  else
+    final_code = unix_code;
+
+  if (jump_used)
+  {
+    printf("Jump Buffer already used.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  jump_used++;
+  exit(final_code);
+}
+// texk/web2c/lib/zround.c
+integer web2c_round(double r)
+{
+  integer i;
+
+  if (r > 2147483647.0)
+    i = 2147483647;
+  else if (r < -2147483647.0)
+    i = -2147483647;
+  else if (r >= 0.0)
+    i = (integer)(r + 0.5);
+  else
+    i = (integer)(r - 0.5);
+
+  return i;
+}
+// Unixify filename and path (turn \ into /)
+// --- assumes null terminated
+char * unixify(char * t)
+{
+  char * s = t;
+
+  if (s == NULL)
+    return s;
+
+  if (t != '\0')
+  {
+    while (*s != '\0')
+    {
+      if (*s == '\\')
+        *s = '/';
+
+      s++;
+    }
+  }
+
+  if (trace_flag)
+    printf("Unixified name: %s\n", t);
+
+  return t;
 }
