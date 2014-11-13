@@ -19,7 +19,6 @@
 
 #ifndef _PTEX_H
 #define _PTEX_H
-
 // macros for dynamic allocation
 #define ALLOCATEINI
 #define ALLOCATEMAIN       /* allocate main memory for TeX (2 Meg) */
@@ -33,8 +32,7 @@
 #define ALLOCATENESTSTACK  /* experiment to dynamically deal with nest_stack   */
 #define ALLOCATEPARAMSTACK /* experiment to dynamically deal with param_stack  */
 #define ALLOCATEBUFFER     /* experiment to dynamically deal with input buffer */
-#define INCREASEFIXED      /* max_in_open */
-#define INCREASEFONTS      /* 65536 fonts */
+#define INCREASEFONTS
 #define INCREASETRIEOP     /* tire_* */
 #define COMPACTFORMAT      /* .fmt file with zlib */
 #define STAT               /* TeX's statistics (tex82) */
@@ -66,7 +64,7 @@
 // TeX Live's kpathsea
 #include <kpathsea/c-auto.h>
 #include <kpathsea/c-pathmx.h> // PATH_MAX
-#include <kpathsea/c-pathch.h> // IS_DIR_SEP
+#include <kpathsea/c-pathch.h> // ISBLANK
 #include <kpathsea/c-fopen.h>  // FOPEN_WBIN_MODE
 #include <kpathsea/config.h>
 #include <kpathsea/getopt.h>   // get_opt
@@ -98,20 +96,10 @@ typedef FILE * word_file;
   #undef link
 #endif
 
-//#define abs(x)   ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
-//#define fabs(x)  ((x) >= 0.0 ? (x) : -(x))
-#define chr(x)    (x)
-#define odd(x)    ((x) % 2)
-#define round(x)  web2c_round((double) (x))
-#define decr(x)   --(x)
-#define incr(x)   ++(x)
-#define negate(x) x = -x
-#define toint(x)  ((integer) (x))
-#define show_line(str, flag) (void) fputs(str, stdout)
-#define wterm(s)    (void) putc(s, stdout)
-#define wlog(s)     (void) putc(s, log_file)
-#define wterm_cr()  (void) putc('\n', stdout);
-#define wlog_cr()   (void) putc('\n', log_file);
+#define wterm(s)    (void) fputc(s, stdout)
+#define wlog(s)     (void) fputc(s, log_file)
+#define wterm_cr()  (void) fputc('\n', stdout)
+#define wlog_cr()   (void) fputc('\n', log_file)
 /* sec 0027 */
 #define a_open_in(f)    open_input  (&(f), kpse_tex_format, FOPEN_R_MODE)
 #define a_open_out(f)   open_output (&(f), FOPEN_W_MODE)
@@ -119,15 +107,9 @@ typedef FILE * word_file;
 #define b_open_out(f)   open_output (&(f), FOPEN_WBIN_MODE)
 #define w_open_in(f)    open_input  (&(f), kpse_fmt_format, FOPEN_RBIN_MODE)
 #define w_open_out(f)   open_output (&(f), FOPEN_WBIN_MODE)
-#define a_close(f)	    (void) check_fclose(f)
+#define a_close(f)      close_file(f)
 #define b_close(f)      a_close(f)
 #define w_close(f)      gzclose(gz_fmt_file)
-
-#ifndef unix
-  #define dumpcore() exit(EXIT_FAILURE)
-#else
-  #define dumpcore abort
-#endif
 
 #ifdef COMPACTFORMAT
 EXTERN int do_dump(char * p, int item_size, int nitems, gzFile out_file);
@@ -178,19 +160,15 @@ do {                                                            \
 } while (0)
 
 // pTeX-ng's macros
-#define XXHi(x) BYTE1(x)
-#define XHi(x)  BYTE2(x)
-#define Hi(x)   BYTE3(x)
-#define Lo(x)   BYTE4(x)
-
+#define Hi(x) BYTE3(x)
+#define Lo(x) BYTE4(x)
 #define nrestmultichr(x)  ((x)!=0 ? ((x) / 8) + 2 - ((x) % 8) : -1)
-#define max_cjk_val 0x1000000
+#define max_cjk_val       0x1000000
 
 #define file_name_size PATH_MAX
-
-#define min_halfword -2147483647L /* LONG_MIN, for 64 bit memory word (signed) */
+#define min_halfword  0
+//#define min_halfword -2147483647L /* LONG_MIN, for 64 bit memory word (signed) */
 #define max_halfword  2147483647L /* LONG_MAX, for 64 bit memory word (signed) */
-
 #define block_size 1000 /* block_size for variable length node alloc */
 
 #ifdef INCREASEFONTS
@@ -228,9 +206,9 @@ do {                                                            \
   EXTERN ASCII_code          buffer[buf_size + 4];
 #endif
 
-EXTERN integer first; 
-EXTERN integer last; 
-EXTERN integer max_buf_stack; 
+EXTERN integer first;
+EXTERN integer last;
+EXTERN integer max_buf_stack;
 
 #define error_line      79
 #define half_error_line 50
@@ -287,7 +265,7 @@ EXTERN integer max_buf_stack;
 
 #define dvi_buf_size 16384
 
-#if !defined (ng_huge)  
+#if !defined (ng_huge)
   #define hash_prime  55711 // 27197 (prime ~ 85% * hash_size)
   #define hash_size   65536 // 32000 32768 9500 25000
 #else
@@ -353,11 +331,9 @@ typedef union
   four_quarters qqqq;
 } memory_word;
 
-#define sc cint
-
 #include "macros.h"
 /* sec 0150 */
-typedef char glue_ord; 
+typedef char glue_ord;
 /* sec 0212 */
 typedef struct
 {
@@ -374,7 +350,7 @@ typedef char group_code;
 /* sec 0300 */
 typedef struct
 {
-  quarterword state_field, index_field; 
+  quarterword state_field, index_field;
   halfword start_field, loc_field, limit_field, name_field;
 } in_state_record;
 /* sec 0548 */
@@ -402,8 +378,8 @@ EXTERN integer name_length;
   #define increment_max_strings 10000
   EXTERN pool_pointer *         str_start;
 #else
-  EXTERN packed_ASCII_code      str_pool[pool_size + 1]; 
-  EXTERN pool_pointer           str_start[max_strings + 1]; 
+  EXTERN packed_ASCII_code      str_pool[pool_size + 1];
+  EXTERN pool_pointer           str_start[max_strings + 1];
 #endif
 
 EXTERN pool_pointer pool_ptr;
@@ -434,7 +410,7 @@ EXTERN boolean use_err_help;
 EXTERN integer interrupt;
 EXTERN boolean OK_to_interrupt;
 EXTERN boolean arith_error;
-EXTERN scaled tex_remainder;
+EXTERN scaled ng_remainder;
 EXTERN halfword temp_ptr;
 
 /* sec 0116 */
@@ -559,7 +535,6 @@ EXTERN integer high_in_open;
 EXTERN in_state_record cur_input;
 EXTERN int in_open;
 EXTERN integer open_parens;
-EXTERN integer max_open_parens;
 EXTERN alpha_file input_file[max_in_open + 1];
 EXTERN integer line;
 EXTERN integer line_stack[max_in_open + 1];
@@ -580,7 +555,7 @@ EXTERN int cur_val_level;
 EXTERN int radix;
 EXTERN int cur_order;
 EXTERN alpha_file read_file[16];
-EXTERN char read_open[20];
+EXTERN char read_open[17];
 EXTERN pointer cond_ptr;
 EXTERN int if_limit;
 EXTERN int cur_if;
@@ -760,7 +735,7 @@ EXTERN trie_op_code hyf_next[trie_op_size + 1];
 EXTERN integer op_start[256];
 
 #ifdef ALLOCATEHYPHEN
-#define default_hyphen_prime 8191 // 1009
+  #define default_hyphen_prime 8191 // 1009
   EXTERN str_number * hyph_word;
   EXTERN pointer * hyph_list;
   EXTERN integer hyphen_prime;
@@ -774,7 +749,7 @@ EXTERN hyph_pointer hyph_count;
 
 #ifdef INITEX
   EXTERN integer trie_op_hash_C[trie_op_size - neg_trie_op_size + 1];
-  #define trie_op_hash (trie_op_hash_C - (int)(neg_trie_op_size)) 
+  #define trie_op_hash (trie_op_hash_C - (int)(neg_trie_op_size))
   EXTERN trie_op_code trie_used[256];
   EXTERN ASCII_code trie_op_lang[trie_op_size + 1];
   EXTERN trie_op_code trie_op_val[trie_op_size + 1];
@@ -887,28 +862,23 @@ EXTERN boolean open_trace_flag;
 EXTERN boolean tex82_flag;
 EXTERN boolean c_style_flag;
 EXTERN boolean deslash;
-EXTERN boolean trimeof;
 EXTERN boolean allow_patterns;
 EXTERN boolean reset_exceptions;
 EXTERN boolean show_current;
-EXTERN boolean return_flag;
 EXTERN boolean civilize_flag;
 EXTERN boolean show_numeric;
 EXTERN boolean show_missing;
-EXTERN boolean full_file_name_flag;
 EXTERN int mem_initex;
 EXTERN int mem_extra_high;
 EXTERN int mem_extra_low;
 EXTERN int new_hyphen_prime;
 EXTERN int missing_characters;
 EXTERN boolean show_in_hex;
-EXTERN boolean show_fmt_flag;
 EXTERN boolean show_tfm_flag;
 EXTERN boolean show_cs_names;
 EXTERN int tab_step;
 EXTERN boolean allow_quoted_names;
 EXTERN scaled default_rule;
-EXTERN char * format_file;
 EXTERN char * format_name;
 EXTERN boolean show_line_break_stats;
 EXTERN int first_pass_count;
@@ -920,7 +890,6 @@ EXTERN int underfull_vbox;
 EXTERN int overfull_vbox;
 EXTERN int paragraph_failed;
 EXTERN int single_line;
-EXTERN FILE * errout;
 EXTERN boolean suppress_f_ligs;
 EXTERN int jump_used;
 EXTERN jmp_buf ng_env;
@@ -934,7 +903,6 @@ extern int current_stack_size;
 extern int current_nest_size;
 extern int current_param_size;
 extern int current_buf_size;
-extern ASCII_code * vf_info;
 extern const char * banner;
 extern char log_line[256];
 extern char * dvi_directory;

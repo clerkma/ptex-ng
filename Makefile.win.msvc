@@ -22,7 +22,6 @@ objs = \
 	ptex-ng-src.obj\
 	ptex-ng-pool.obj\
 	ptex-ng.res\
-	ptex-ng-utils.obj\
 	ptex-ng-pdf.obj\
 	ptex-ng-kanji.obj
 
@@ -59,9 +58,6 @@ ptex-ng-src.obj: ptex-ng-src.c \
 	ptex-ng.h coerce.h macros.h
 
 ptex-ng-pool.obj: ptex-ng-pool.c \
-	ptex-ng.h coerce.h macros.h
-
-ptex-ng-utils.obj: ptex-ng-utils.c \
 	ptex-ng.h coerce.h macros.h
 
 .SUFFIXES:

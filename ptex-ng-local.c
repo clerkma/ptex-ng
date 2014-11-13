@@ -23,7 +23,6 @@
 #elif defined (__APPLE__)
   #include <malloc/malloc.h>
   #define malloc_usable_size malloc_size
-  #undef CLK_TCK
 #endif
 
 #define EXTERN extern
@@ -84,7 +83,7 @@ boolean reorder_arg_flag  = true;
 static void show_usage (void)
 {
   printf("\n"
-      "Useage: ptex-ng [OPTION]... [+format_file] [file]\n\n"
+      "Useage: ptex-ng [OPTION]... [+fmt_file_name] [file]\n\n"
       " --help         show this usage summary\n"
       " --initex       start up as initex (create format file)\n"
       " --verbose      be verbose (show implementation version number)\n"
@@ -151,7 +150,7 @@ static void show_maximums (FILE * output)
 /* our own version of realloc --- avoid supposed MicroSoft version bug */
 /* also tries _expand first, which can avoid address growth ... */
 
-#ifdef USEOUREALLOC 
+#ifdef USEOUREALLOC
 static void * ourrealloc (void * old, size_t new_size)
 {
   void * mnew;
@@ -187,7 +186,7 @@ static void * ourrealloc (void * old, size_t new_size)
     return mnew;
   }
 
-  /* do this if you want to call the real realloc next -  */
+  /* do this if you want to call the real realloc next - */
   mnew = realloc(old, new_size);
 
   if (mnew != NULL)
@@ -258,7 +257,8 @@ static size_t roundup (size_t n)
 }
 
 #ifdef ALLOCATETRIES
-/* returns -1 if it fails */
+// -1 - fails
+//  0 - success
 
 int allocate_tries (int trie_max)
 {
@@ -297,7 +297,7 @@ int allocate_tries (int trie_max)
   if (trace_flag)
     probe_show();
 
-  return 0; // success
+  return 0;
 }
 #endif
 
@@ -386,16 +386,9 @@ int realloc_hyphen (int hyphen_prime)
 }
 #endif
 
-int current_mem_size = 0;   /* current total words in main mem allocated -1 */
+#ifdef ALLOCATEMAIN
+int current_mem_size = 0;
 
-/* this gets called from itex.c when it figures out what mem_top is */
-/* or gets called from here when in ini_TeX mode */ /* and nowhere else */
-/* initial allocation only, may get expanded later */
-/* NOTE: we DON't use ALLOCATEHIGH & ALLOCATELOW anymore */
-/* returns NULL if it fails */
-
-#ifdef ALLOCATEMAIN   
-/* initial main memory alloc - mem_top */
 memory_word * allocate_main_memory (int size)
 {
   int n;
@@ -443,13 +436,9 @@ memory_word * allocate_main_memory (int size)
 
   return mem;
 }
-#endif
-
-#ifdef ALLOCATEMAIN
-/* int firstallocation = 1; */
 
 /* increase main memory allocation at low end and high end */
-/* called only from tex0.c *//* called with one of lo_size or hi_size == 0 */
+/* called with one of lo_size or hi_size == 0 */
 /* returns NULL if it fails */
 
 memory_word * realloc_main (int lo_size, int hi_size)
@@ -608,9 +597,7 @@ memory_word * realloc_font_info (int size)
     /* memory_error("font", (font_mem_size + 1) * sizeof(memory_word)); */
     return font_info;
   }
-  /* try and prevent excessive frequent reallocations */
-  /* while avoiding over allocation by too much */
-  /* min_size = current_font_mem_size / 2; */
+
   min_size = current_font_mem_size / 100 * percent_grow;
 
   if (size < min_size)
@@ -626,7 +613,6 @@ memory_word * realloc_font_info (int size)
     if (new_size > font_mem_size)
       new_size = font_mem_size; /* bump against limit */
 
-/* important + 1 since fmemoryword font_info[font_mem_size + 1]  original */
     n = (new_size + 1) * sizeof (memory_word);
 
     if (trace_flag)
@@ -697,13 +683,13 @@ packed_ASCII_code * realloc_str_pool (int size)
 
     if (new_size > pool_size)
       new_size = pool_size;
-/* important + 1 since  packed_ASCII_code str_pool[pool_size + 1]; in original */
+
     n = (new_size + 1) * sizeof (packed_ASCII_code);
 
     if (trace_flag)
       trace_memory("str_pool", n);
 
-    new_str_pool = (packed_ASCII_code *) REALLOC (str_pool, n); /* 95/Sep/24 */
+    new_str_pool = (packed_ASCII_code *) REALLOC (str_pool, n);
 
     if (new_str_pool != NULL)
       break;    /* did we get it ? */
@@ -750,7 +736,7 @@ pool_pointer * realloc_str_start (int size)
   if (current_max_strings == max_strings)
   {
     /* memory_error ("string pointer", (max_strings + 1) * sizeof(pool_pointer)); */
-    return str_start;    /* pass it back to TeX 99/Fabe/4 */
+    return str_start;
   }
 
   min_size = current_max_strings / 100 * percent_grow;
@@ -767,7 +753,7 @@ pool_pointer * realloc_str_start (int size)
 
     if (new_size > max_strings)
       new_size = max_strings;
-/*    important + 1 since str_start[maxstring + 1] originally */
+
     n = (new_size + 1) * sizeof (pool_pointer);
 
     if (trace_flag)
@@ -928,7 +914,7 @@ memory_word * realloc_save_stack (int size)
 #endif
 
 #ifdef ALLOCATEINPUTSTACK
-int current_stack_size = 0;       /* input stack size */
+int current_stack_size = 0;
 
 in_state_record * realloc_input_stack (int size)
 {
@@ -999,7 +985,7 @@ in_state_record * realloc_input_stack (int size)
 #endif
 
 #ifdef ALLOCATENESTSTACK
-int current_nest_size = 0;        /* current nest size */
+int current_nest_size = 0;
 
 list_state_record * realloc_nest_stack (int size)
 {
@@ -1250,23 +1236,20 @@ static int allocate_memory (void)
   str_start = NULL;
   current_max_strings = 0;
 
-/*  maybe taylor allocations to actual pool file 1300 strings 27000 bytes ? */
   if (is_initex)
   {
     if (trace_flag)
-      puts("ini TeX pool and string allocation");
+      puts("INITEX pool and string allocation");
 
     str_pool = realloc_str_pool(initial_pool_size);
     str_start = realloc_str_start(initial_max_strings);
   }
 #endif
 
-/* the following can save a lot of the usual 800k fixed allocation */
 #ifdef ALLOCATEFONT
   font_info = NULL;
   current_font_mem_size = 0;
-/* if not iniTeX, then do initial allocation on fmt file read in itex.c */
-/* if ini-TeX we need to do it here - no format file read later */
+
   if (is_initex)
     font_info = realloc_font_info(initial_font_mem_size);
 #endif
@@ -1274,11 +1257,10 @@ static int allocate_memory (void)
 #ifdef ALLOCATEMAIN
   main_memory = NULL;
   mem = NULL;
-  mem_min = mem_bot;        /* just to avoid complaints in texbody */
+  mem_min = mem_bot;
   mem_top = mem_initex;
   mem_max = mem_top;
-/* allocate main memory here if this is iniTeX */
-/* otherwise wait for format undumping in itex.c ... */
+
   if (is_initex)
   {
     /* avoid this if format specified on command line ??? */
@@ -1289,13 +1271,11 @@ static int allocate_memory (void)
   }
 #endif
 
-/* now for the hyphenation exception stuff */
 #ifdef ALLOCATEHYPHEN
   hyph_word = NULL;
   hyph_list = NULL;
-/* this will be overridden later by what is in format file */
   hyphen_prime = default_hyphen_prime;
-/* non ini-TeX use assumes format will be read and that specifies size */
+
   if (is_initex)
   {
     if (new_hyphen_prime)
@@ -1306,9 +1286,6 @@ static int allocate_memory (void)
   }
 #endif
 
-/* now for memory for the part of the hyphenation stuff that always needed */
-/* if iniTeX, need to allocate pre-determined fixed amount - trie_size */
-/* if iniTeX not selected, allocate only enough later - undump in itex.c ! */
 #ifdef ALLOCATETRIES
   if (is_initex)
   {
@@ -1317,7 +1294,6 @@ static int allocate_memory (void)
   }
 #endif
 
-/* now for memory for hyphenation stuff needed only when running iniTeX */
 #ifdef ALLOCATEINI
   if (is_initex)
   {
@@ -1414,7 +1390,6 @@ static int free_memory (void)
   safe_free(save_stack);
 #endif
 
-  safe_free(format_file);
   safe_free(dvi_file_name);
   safe_free(log_file_name);
   safe_free(pdf_file_name);
@@ -1455,7 +1430,7 @@ static void reorderargs (int ac, char **av)
 
   if (trace_flag)
   {
-    show_line(takeargs, 0);
+    printf("%s", takeargs);
     wterm_cr();
   }
   
@@ -1580,7 +1555,6 @@ static void knuthify (void)
   show_missing          = false; /* don't show missing characters */
   civilize_flag         = false; /* don't reorder date fields */
   c_style_flag          = false; /* don't add file name to error msg */
-  show_fmt_flag         = false; /* don't show format file in log */
   show_tfm_flag         = false; /* don't show metric file in log */
   tab_step              = 0;     /* tab's size of width */
   show_line_break_stats = false; /* do not show line break stats */
@@ -1588,7 +1562,6 @@ static void knuthify (void)
   allow_quoted_names    = false;
   show_cs_names         = false;
   suppress_f_ligs       = false;
-  full_file_name_flag   = false;
   tex82_flag            = true;  /* so other code can know about this */
 }
 
@@ -1628,10 +1601,6 @@ static int analyze_flag (int c)
   {
     case 'J':
       show_line_break_stats = false;
-      break;
-
-    case 'O':
-      show_fmt_flag = false;
       break;
 
     case 's':
@@ -1823,9 +1792,7 @@ static int init_commands (int ac, char **av)
   open_trace_flag       = false;
   trace_flag            = false;
   verbose_flag          = false;
-  show_in_hex           = false; /* default is not to show as hex code ^^ 00/Jun/18 */
-  return_flag           = true;  // hard wired now
-  trimeof               = true;  // hard wired now
+  show_in_hex           = false;
   deslash               = true;
   default_rule          = 26214;
   show_current          = true;
@@ -1833,15 +1800,12 @@ static int init_commands (int ac, char **av)
   show_numeric          = true;
   show_missing          = true;
   c_style_flag          = false;
-  show_fmt_flag         = true;
-  show_tfm_flag         = false; /* don't show metric file in log */
+  show_tfm_flag         = false;
   tab_step              = 0;
-  show_line_break_stats = true;  /* show line break statistics 96/Feb/8 */
-  allow_quoted_names    = true;  /* allow quoted names with spaces 98/Mar/15 */
+  show_line_break_stats = true;
+  allow_quoted_names    = true;
   show_cs_names         = false;
   tex82_flag            = false;
-  full_file_name_flag   = true;  /* new default 2000 June 18 */
-  errout                = stdout; /* as opposed to stderr say --- used ??? */
   new_hyphen_prime      = 0;
 
 #ifdef VARIABLETRIESIZE
@@ -2082,7 +2046,6 @@ int main_init (int ac, char ** av)
   if (init_commands(ac, av))
     return -1;
 
-  format_file   = NULL;
   dvi_file_name = NULL;
   log_file_name = NULL;
   pdf_file_name = NULL;
@@ -2153,7 +2116,7 @@ static void show_inter_val (clock_t inter_val)
     printf("%d.%03d", seconds, thousands);
   }
   else
-    show_line("0", 0);
+    printf("0");
 }
 
 int endit (int flag)
@@ -2287,13 +2250,7 @@ void print_cs_names (FILE * output, boolean pass)
 
   sprintf(log_line, "\n%d %s multiletter control sequences:\n",
       ccount, (pass == true) ? "new" : "");
-
-  if (output == stderr)
-    show_line(log_line, 1);
-  else if (output == stdout)
-    show_line(log_line, 0);
-  else
-    fprintf(output, "%s", log_line);
+  fprintf(output, "%s", log_line);
 
   if (ccount > 0)
   {
@@ -2326,13 +2283,7 @@ void print_cs_names (FILE * output, boolean pass)
     }
 
     sprintf(log_line, "\n");
-
-    if (output == stderr)
-      show_line(log_line, 1);
-    else if (output == stdout)
-      show_line(log_line, 0);
-    else
-      fprintf(output, "%s", log_line);
+    fprintf(output, "%s", log_line);
 
     free((void *) cnumtable);
   }

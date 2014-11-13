@@ -30,9 +30,21 @@
 #define eTeX_ex             (eTeX_mode == true)
 
 // predefined macro
-#define KANJI(x)   x
-#define tokanji(x) x
-#define tonum(x)   x
+//#define fabs(x)  ((x) >= 0.0 ? (x) : -(x))
+//#define abs(x)   ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
+#define toint(x)    ((integer) (x))
+#define chr(x)      (x)
+#define odd(x)      ((x) % 2)
+#define round(x)    web2c_round((double) (x))
+#define decr(x)     --(x)
+#define incr(x)     ++(x)
+#define negate(x)   x = -x
+#define empty       0
+#define KANJI(x)    x
+#define tokanji(x)  x
+#define tonum(x)    x
+// scaled| data is equivalent to integer
+#define sc cint
 //#
 #define font_base 0
 /* sec 0022 */
@@ -44,10 +56,10 @@
 /* sec 0040 */
 #define length(s) (str_start[(s) + 1] - str_start[(s)])
 /* sec 0041 */
-#define cur_length (pool_ptr - str_start[str_ptr])
+#define cur_length    (pool_ptr - str_start[str_ptr])
 #define flush_char()  decr(pool_ptr)
 /* sec 0054 */
-enum 
+enum
 {
   no_print     = 16,
   term_only    = 17,
@@ -81,14 +93,6 @@ enum
 #define help4(...)  tex_help(4, __VA_ARGS__)
 #define help5(...)  tex_help(5, __VA_ARGS__)
 #define help6(...)  tex_help(6, __VA_ARGS__)
-/* sec 0096 */
-#define check_interrupt()     \
-do                            \
-{                             \
-  if (interrupt != 0)         \
-    pause_for_instructions(); \
-}                             \
-while (0)
 /* sec 0101 */
 #define unity 0200000
 #define two   0400000
@@ -102,7 +106,7 @@ while (0)
 #define set_glue_ratio_one(a)  (a) = 1.0
 #define tex_float(a)           (a)
 #define unfloat(a)             (a)
-#define float_constant(a)      (float) (a)
+#define float_constant(a)      (double) (a)
 /* sec 0115 */
 #define null 0
 /* sec 0118 */
@@ -192,7 +196,7 @@ while (0)
 /* sec 0138 */
 #define rule_node      3
 #define rule_node_size 4
-#define null_flag      -010000000000L
+#define null_flag      -010000000000
 #define is_running(a)  (a == null_flag)
 /* sec 0140 */
 #define ins_node         4
@@ -254,8 +258,8 @@ while (0)
 /* sec 0150 */
 #define glue_spec_size    4
 #define glue_ref_count(a) link(a)
-#define stretch(a)        mem[a + 2].cint
-#define shrink(a)         mem[a + 3].cint
+#define stretch(a)        mem[a + 2].sc
+#define shrink(a)         mem[a + 3].sc
 #define stretch_order     type
 #define shrink_order      subtype
 #define fil               1
@@ -275,16 +279,17 @@ while (0)
 #define penalty(a)    mem[a + 1].cint
 /* sec 0159 */
 #define unset_node      15
-#define glue_stretch(a) mem[a + glue_offset].cint
+#define glue_stretch(a) mem[a + glue_offset].sc
 #define glue_shrink     shift_amount
 #define span_count      subtype
 /* sec 0162 */
-#define zero_glue         mem_bot // 0
-#define fil_glue          (zero_glue + glue_spec_size) // 4
-#define fill_glue         (fil_glue + glue_spec_size) // 8
-#define ss_glue           (fill_glue + glue_spec_size) // 12
-#define fil_neg_glue      (ss_glue + glue_spec_size) // 16
-#define lo_mem_stat_max   (fil_neg_glue + glue_spec_size - 1) // 19
+#define zero_glue         mem_bot
+#define fil_glue          (zero_glue + glue_spec_size)
+#define fill_glue         (fil_glue + glue_spec_size)
+#define ss_glue           (fill_glue + glue_spec_size)
+#define fil_neg_glue      (ss_glue + glue_spec_size)
+#define lo_mem_stat_max   (fil_neg_glue + glue_spec_size - 1)
+// #
 #define page_ins_head     mem_top
 #define contrib_head      (mem_top - 1)
 #define page_head         (mem_top - 2)
@@ -458,14 +463,14 @@ while (0)
 #define dont_expand     (max_command + 16)
 #define glue_ref        (max_command + 17)
 #define shape_ref       (max_command + 18)
-#define box_ref         (max_command + 19) 
+#define box_ref         (max_command + 19)
 #define data            (max_command + 20)
 /* sec 0211 */
 #define vmode 1
 #define hmode (vmode + max_command + 1)
 #define mmode (hmode + max_command + 1)
 /* sec 0212 */
-#define ignore_depth -65536000L
+#define ignore_depth -65536000
 /* sec 0213 */
 #define mode            cur_list.mode_field
 #define direction       cur_list.dir_field
@@ -494,7 +499,7 @@ while (0)
 #define eq_type(a)        eq_type_field(eqtb[a])
 #define equiv(a)          equiv_field(eqtb[a])
 #define level_zero        min_quarterword
-#define level_one         level_zero + 1
+#define level_one         (level_zero + 1)
 /* sec 0222 */
 #define active_base                   1
 #define single_base                   (active_base + 256)
@@ -790,7 +795,6 @@ while (0)
 #define last_line_fit                 int_par(last_line_fit_code)
 #define saving_vdiscards              int_par(saving_vdiscards_code)
 #define saving_hyph_codes             int_par(saving_hyph_codes_code)
-
 /* sec 0247 */
 #define par_indent_code               0
 #define math_surround_code            1
@@ -826,7 +830,7 @@ while (0)
 // #
 #define dimen(a)                      eqtb[scaled_base + a].cint
 #define dimen_par(a)                  eqtb[dimen_base + a].cint
-#define kinsoku_penalty(a)            eqtb[kinsoku_penalty_base + a].cint 
+#define kinsoku_penalty(a)            eqtb[kinsoku_penalty_base + a].cint
 #define par_indent                    dimen_par(par_indent_code)
 #define math_surround                 dimen_par(math_surround_code)
 #define line_skip_limit               dimen_par(line_skip_limit_code)
@@ -907,12 +911,10 @@ while (0)
 #define protected_token   0xE01
 /* sec 0298 */
 #define chr_cmd(s)  \
-do                  \
-{                   \
+do {                \
   prints(s);        \
   print(chr_code);  \
-}                   \
-while (0)
+} while (0)
 /* sec 0302 */
 #define state cur_input.state_field
 #define index cur_input.index_field
@@ -956,20 +958,19 @@ while (0)
 #define write_text         (toks_base - eTeX_text_offset)
 /* sec 0316 */
 #define begin_pseudoprint() \
-do                          \
-{                           \
+do {                        \
   l = tally;                \
   tally = 0;                \
   selector = pseudo;        \
   kcode_pos = 0;            \
   trick_count = 1000000;    \
-}                           \
-while (0)
+} while (0)
+//
 #define set_trick_count()                                       \
-do                                                              \
-{                                                               \
+do {                                                            \
   first_count = tally;                                          \
   kcp = trick_buf2[(first_count - 1) % error_line];             \
+                                                                \
   if ((first_count > 0) && (kcp > 0))                           \
     first_count = first_count + nrestmultichr(kcp);             \
                                                                 \
@@ -977,9 +978,7 @@ do                                                              \
                                                                 \
   if (trick_count < error_line)                                 \
     trick_count = error_line;                                   \
-}                                                               \
-while (0)
-/* sec 0322 */
+} while (0)
 /* sec 0323 */
 #define back_list(a) begin_token_list(a, backed_up)
 #define ins_list(a)  begin_token_list(a, inserted)
@@ -1007,9 +1006,9 @@ while (0)
 /* sec 0352 */
 #define is_hex(a) \
   (((a >= '0') && (a <= '9')) || ((a >= 'a') && (a <= 'f')))
+//
 #define hex_to_cur_chr()                    \
-do                                          \
-{                                           \
+do {                                        \
   if (c <= '9')                             \
     cur_chr = c - '0';                      \
   else                                      \
@@ -1019,31 +1018,27 @@ do                                          \
     cur_chr = 16 * cur_chr + cc - '0';      \
   else                                      \
     cur_chr = 16 * cur_chr + cc - 'a' + 10; \
-}                                           \
-while (0)
+} while (0)
 /* sec 0360 */
 #define end_line_char_inactive()  \
   (end_line_char < 0) || (end_line_char > 255)
 /* sec 0358 */
 /* sec 0371 */
 #define store_new_token(a)  \
-  do                        \
-    {                       \
-      q = get_avail();      \
-      link(p) = q;          \
-      info(q) = a;          \
-      p = q;                \
-    }                       \
-  while (0)
+do {                        \
+  q = get_avail();          \
+  link(p) = q;              \
+  info(q) = a;              \
+  p = q;                    \
+} while (0)
+//
 #define fast_store_new_token(a) \
-  do                            \
-    {                           \
-      fast_get_avail(q);        \
-      link(p) = q;              \
-      info(q) = a;              \
-      p = q;                    \
-    }                           \
-  while (0)
+do {                            \
+  fast_get_avail(q);            \
+  link(p) = q;                  \
+  info(q) = a;                  \
+  p = q;                        \
+} while (0)
 #define no_expand_flag 257
 /* sec 0382 */
 #define marks_code            5
@@ -1065,13 +1060,11 @@ while (0)
 #define ident_val 4
 #define tok_val   5
 /* sec 0413 */
-#define scanned_result(va, vb) \
-do                            \
-  {                           \
-    cur_val = va;             \
-    cur_val_level = vb;       \
-  }                           \
-while (0)
+#define scanned_result(va, vb)  \
+do {                            \
+  cur_val = va;                 \
+  cur_val_level = vb;           \
+} while (0)
 /* sec 0416 */
 #define last_node_type_code       (glue_val + 1) // 3
 #define input_line_no_code        (glue_val + 2) // 4
@@ -1100,29 +1093,27 @@ while (0)
 #define mu_to_glue_code           eTeX_glue
 #define glue_to_mu_code           eTeX_mu
 #define eTeX_expr                 (eTeX_mu + 1) // 25
-
 /* sec 0421 */
 #define max_dimen 07777777777
 /* sec 0438 */
-#define octal_token             (other_token + '\'') // 3111
-#define hex_token               (other_token + '"' ) // 3106
-#define alpha_token             (other_token + '`' ) // 3168
-#define point_token             (other_token + '.' ) // 3118
-#define continental_point_token (other_token + ',' ) // 3116
+#define octal_token             (other_token + '\'')
+#define hex_token               (other_token + '"' )
+#define alpha_token             (other_token + '`' )
+#define point_token             (other_token + '.' )
+#define continental_point_token (other_token + ',' )
 /* sec 0445 */
 #define infinity      017777777777
-#define zero_token    (other_token  + '0') // 3120
-#define A_token       (letter_token + 'A') // 2881
-#define other_A_token (other_token  + 'A') // 3137
+#define zero_token    (other_token  + '0')
+#define A_token       (letter_token + 'A')
+#define other_A_token (other_token  + 'A')
 /* sec 0448 */
 #define scan_normal_dimen() scan_dimen(false, false, false)
 /* sec 0458 */
 #define set_conversion(a, b)  \
-  do                          \
-  {                           \
-    num = a;                  \
-    denom = b;                \
-  } while (0)
+do {                          \
+  num = a;                    \
+  denom = b;                  \
+} while (0)
 /* sec 0468 */
 #define number_code        0
 #define roman_numeral_code 1
@@ -1141,35 +1132,35 @@ while (0)
 #define closed    2
 #define just_open 1
 /* sec 0487 */
-#define unless_code    32
-#define if_char_code   0
-#define if_cat_code    1
-#define if_int_code    2
-#define if_dim_code    3
-#define if_odd_code    4
-#define if_vmode_code  5
-#define if_hmode_code  6
-#define if_mmode_code  7
-#define if_inner_code  8
-#define if_void_code   9
-#define if_hbox_code   10
-#define if_vbox_code   11
-#define ifx_code       12
-#define if_eof_code    13
-#define if_true_code   14
-#define if_false_code  15
-#define if_case_code   16
+#define unless_code       32
+#define if_char_code      0
+#define if_cat_code       1
+#define if_int_code       2
+#define if_dim_code       3
+#define if_odd_code       4
+#define if_vmode_code     5
+#define if_hmode_code     6
+#define if_mmode_code     7
+#define if_inner_code     8
+#define if_void_code      9
+#define if_hbox_code      10
+#define if_vbox_code      11
+#define ifx_code          12
+#define if_eof_code       13
+#define if_true_code      14
+#define if_false_code     15
+#define if_case_code      16
+#define if_def_code       17
+#define if_cs_code        18
+#define if_font_char_code 19
 //#
-#define if_tdir_code      (if_case_code + 1)
+#define if_tdir_code      (if_case_code + 4)
 #define if_ydir_code      (if_tdir_code + 1)
 #define if_ddir_code      (if_ydir_code + 1)
 #define if_mdir_code      (if_ddir_code + 1)
 #define if_tbox_code      (if_mdir_code + 1)
 #define if_ybox_code      (if_tbox_code + 1)
 #define if_dbox_code      (if_ybox_code + 1)
-#define if_def_code       (if_dbox_code + 1)
-#define if_cs_code        (if_def_code  + 1)
-#define if_font_char_code (if_cs_code + 1)
 /* sec 0489 */
 #define if_node_size     2
 #define if_line_field(a) mem[(a) + 1].cint
@@ -1179,28 +1170,26 @@ while (0)
 #define or_code          4
 /* sec 0506 */
 #define get_x_token_or_active_char()                    \
-do                                                      \
-{                                                       \
+do {                                                    \
   get_x_token();                                        \
                                                         \
   if (cur_cmd == relax)                                 \
+  {                                                     \
     if (cur_chr == no_expand_flag)                      \
     {                                                   \
       cur_cmd = active_char;                            \
       cur_chr = cur_tok - cs_token_flag - active_base;  \
     }                                                   \
-}                                                       \
-while (0)
+  }                                                     \
+} while (0)
 /* sec 0519 */
 #define append_to_name(a)       \
-do                              \
-{                               \
+do {                            \
   c = a; incr(k);               \
                                 \
   if (k < file_name_size)       \
     name_of_file[k] = xchr[c];  \
-}                               \
-while (0)
+} while (0)
 /* sec 0529 */
 #define pack_cur_name() pack_file_name(cur_name, cur_area, cur_ext)
 /* sec 0544 */
@@ -1283,53 +1272,44 @@ do {                                \
 } while (0)
 /* sec 0564 */
 #define read_sixteen(a) \
-do                      \
-  {                     \
-    a = fbyte;          \
+do {                    \
+  a = fbyte;            \
                         \
-    if (a > 127)        \
-      goto bad_tfm;     \
+  if (a > 127)          \
+    goto bad_tfm;       \
                         \
-    fget();             \
-    a = a * 256 + fbyte;\
-  }                     \
-while (0)
+  fget();               \
+  a = a * 256 + fbyte;  \
+} while (0)
 // #
-#define read_sixteenx(a) \
-do                      \
-  {                     \
-    a = fbyte;          \
-                        \
-    if (a > 255)        \
-      goto bad_tfm;     \
-                        \
-    fget();             \
-    a = a * 256 + fbyte;\
-  }                     \
-while (0)
+#define read_sixteenx(a)  \
+do {                      \
+  a = fbyte;              \
+                          \
+  if (a > 255)            \
+    goto bad_tfm;         \
+                          \
+  fget();                 \
+  a = a * 256 + fbyte;    \
+} while (0)
 // #
 #define store_four_quarters(val)  \
-do                                \
-  {                               \
-    fget(); a = fbyte; qw.b0 = a; \
-    fget(); b = fbyte; qw.b1 = b; \
-    fget(); c = fbyte; qw.b2 = c; \
-    fget(); d = fbyte; qw.b3 = d; \
-    val = qw;                     \
-  }                               \
-while (0)
+do {                              \
+  fget(); a = fbyte; qw.b0 = a;   \
+  fget(); b = fbyte; qw.b1 = b;   \
+  fget(); c = fbyte; qw.b2 = c;   \
+  fget(); d = fbyte; qw.b3 = d;   \
+  val = qw;                       \
+} while (0)
 /* sec 0570 */
 #define check_byte_range(a) \
-do                          \
-{                           \
+do {                        \
   if ((a < bc) || (a > ec)) \
     goto bad_tfm;           \
-}                           \
-  while (0)
+} while (0)
 /* sec 0571 */
 #define store_scaled(a)                                       \
-do                                                            \
-{                                                             \
+do {                                                          \
   fget(); a = fbyte; fget(); b = fbyte;                       \
   fget(); c = fbyte; fget(); d = fbyte;                       \
   sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;\
@@ -1340,20 +1320,16 @@ do                                                            \
     a = sw - alpha;                                           \
   else                                                        \
     goto bad_tfm;                                             \
-}                                                             \
-while (0)
+} while (0)
 /* sec 0573 */
 #define check_existence(a)  \
-do                          \
-{                           \
+do {                        \
   check_byte_range(a);      \
-                            \
   qw = char_info(f, a);     \
                             \
   if (!char_exists(qw))     \
     goto bad_tfm;           \
-}                           \
-while (0)
+} while (0)
 /* sec 0576 */
 #define adjust(a) a[f] = a[f]
 /* sec 0585 */
@@ -1437,19 +1413,18 @@ while (0)
 /* sec 0625 */
 #define billion 1000000000.0
 #define vet_glue(a)             \
-do                              \
-{                               \
+do {                            \
   glue_temp = a;                \
+                                \
   if (glue_temp > billion)      \
     glue_temp = billion;        \
   else if (glue_temp < -billion)\
     glue_temp = -billion;       \
-}                               \
-while (0)
+} while (0)
 /* sec 0644 */
-#define exactly    0
-#define additional 1
-#define natural 0, additional
+#define exactly     0
+#define additional  1
+#define natural     0, additional
 /* sec 0769 */
 #define u_part(a)     mem[(a) + height_offset].cint
 #define v_part(a)     mem[(a) + depth_offset].cint
@@ -1495,7 +1470,7 @@ while (0)
 #define large_fam(a)       mem[(a)].qqqq.b2
 #define large_char(a)      mem[(a)].qqqq.b3
 #define thickness          width
-#define default_code       010000000000L
+#define default_code       010000000000
 #define numerator          supscr
 #define denominator        subscr
 /* sec 0687 */
@@ -1569,12 +1544,10 @@ while (0)
 #define new_hlist(a) mem[nucleus(a)].cint
 /* sec 0731 */
 #define choose_mlist(a) \
-do                      \
-{                       \
+do {                    \
   p = a(q);             \
   a(q) = 0;             \
-}                       \
-while (0)
+} while (0)
 /* sec 0770 */
 #define preamble              link(align_head)
 #define align_stack_node_size 5
@@ -1593,15 +1566,15 @@ while (0)
 /* sec 0819 */
 #define active_node_size_normal   3
 #define active_node_size_extended 5
-#define active_short(a)   mem[a + 3].cint
-#define active_glue(a)    mem[a + 4].cint
-#define fitness           subtype
-#define break_node        rlink
-#define line_number       llink
-#define total_demerits(a) mem[a + 2].cint
-#define unhyphenated      0
-#define hyphenated        1
-#define last_active       active
+#define active_short(a)           mem[a + 3].cint
+#define active_glue(a)            mem[a + 4].cint
+#define fitness                   subtype
+#define break_node                rlink
+#define line_number               llink
+#define total_demerits(a)         mem[a + 2].cint
+#define unhyphenated              0
+#define hyphenated                1
+#define last_active               active
 /* sec 0821 */
 #define passive_node_size 2
 #define cur_break         rlink
@@ -1612,20 +1585,16 @@ while (0)
 #define delta_node      2
 /* sec 0823 */
 #define do_all_six(a) \
-do                    \
-{                     \
+do {                  \
   a(1); a(2); a(3);   \
   a(4); a(5); a(6);   \
-}                     \
-while (0)
+} while (0)
 /* sec 0825 */
 #define check_shrinkage(s)                            \
-do                                                    \
-{                                                     \
+do {                                                  \
   if ((shrink_order(s) != normal) && (shrink(s) != 0))\
     s = finite_shrink(s);                             \
-}                                                     \
-while (0)
+} while (0)
 /* sec 0829 */
 #define copy_to_cur_active(a) cur_active_width[a] = active_width[a]
 /* sec 0832 */
@@ -1650,45 +1619,39 @@ while (0)
 /* sec 0866 */
 #define act_width active_width[1]
 #define kern_break()                                \
-do                                                  \
-{                                                   \
+do {                                                \
   if (!is_char_node(link(cur_p)) && auto_breaking)  \
     if (type(link(cur_p)) == glue_node)             \
       try_break(0, unhyphenated);                   \
                                                     \
   act_width = act_width + width(cur_p);             \
-}                                                   \
-while (0)
+} while (0)
 /* sec 0877 */
 #define next_break prev_break
 /* sec 0908 */
 #define append_charnode_to_t(a) \
-do                              \
-  {                             \
-    link(t) = get_avail();      \
-    t = link(t);                \
-    font(t) = hf;               \
-    character(t) = (a);         \
-  }                             \
-while (0)
-#define set_cur_r()      \
-do                       \
-  {                      \
-    if (j < n)           \
-      cur_r = hu[j + 1]; \
-    else                 \
-      cur_r = bchar;     \
-                         \
-    if (odd(hyf[j]))     \
-      cur_rh = hchar;    \
-    else                 \
-      cur_rh = non_char; \
-  }                      \
-while (0)
+do {                            \
+  link(t) = get_avail();        \
+  t = link(t);                  \
+  font(t) = hf;                 \
+  character(t) = (a);           \
+} while (0)
+//
+#define set_cur_r()     \
+do {                    \
+  if (j < n)            \
+    cur_r = hu[j + 1];  \
+  else                  \
+    cur_r = bchar;      \
+                        \
+  if (odd(hyf[j]))      \
+    cur_rh = hchar;     \
+  else                  \
+    cur_rh = non_char;  \
+} while (0)
 /* sec 0910 */
 #define wrap_lig(a)                           \
-do                                            \
-{                                             \
+do {                                          \
   if (ligature_present)                       \
   {                                           \
     p = new_ligature(hf, cur_l, link(cur_q)); \
@@ -1710,38 +1673,34 @@ do                                            \
     t = p;                                    \
     ligature_present = false;                 \
   }                                           \
-}                                             \
-while (0)
+} while (0)
+//
 #define pop_lig_stack()                       \
-do                                            \
+do {                                          \
+  if (lig_ptr(lig_stack) != 0)                \
   {                                           \
-    if (lig_ptr(lig_stack) != 0)              \
-    {                                         \
-      link(t) = lig_ptr(lig_stack);           \
-      t = link(t);                            \
-      incr(j);                                \
-    }                                         \
-                                              \
-    p = lig_stack;                            \
-    lig_stack = link(p);                      \
-    free_node(p, small_node_size);            \
-                                              \
-    if (lig_stack == 0)                       \
-    {                                         \
-      set_cur_r();                            \
-    }                                         \
-    else                                      \
-      cur_r = character(lig_stack);           \
+    link(t) = lig_ptr(lig_stack);             \
+    t = link(t);                              \
+    incr(j);                                  \
   }                                           \
-while (0)
+                                              \
+  p = lig_stack;                              \
+  lig_stack = link(p);                        \
+  free_node(p, small_node_size);              \
+                                              \
+  if (lig_stack == 0)                         \
+  {                                           \
+    set_cur_r();                              \
+  }                                           \
+  else                                        \
+    cur_r = character(lig_stack);             \
+} while (0)
 /* sec 0914 */
-#define advance_major_tail()       \
-do                                 \
-  {                                \
-    major_tail = link(major_tail); \
-    incr(r_count);                 \
-  }                                \
-while (0)
+#define advance_major_tail()      \
+do {                              \
+  major_tail = link(major_tail);  \
+  incr(r_count);                  \
+} while (0)
 /* sec 0947 */
 #define trie_root trie_l[0]
 /* sec 0970 */
@@ -1749,7 +1708,7 @@ while (0)
 #define cur_height         active_height[1]
 #define set_height_zero(a) active_width[(a)] = 0
 /* sec 0974 */
-#define deplorable 100000L
+#define deplorable 100000
 /* sec 0980 */
 #define inserts_only 1
 #define box_there    2
@@ -1772,9 +1731,9 @@ while (0)
 #define contrib_tail nest[0].tail_field
 /* sec 1034 */
 #define adjust_space_factor()   \
-do                              \
-{                               \
+do {                            \
   main_s = sf_code(cur_chr);    \
+                                \
   if (main_s == 1000)           \
     space_factor = 1000;        \
   else if (main_s < 1000)       \
@@ -1786,12 +1745,10 @@ do                              \
     space_factor = 1000;        \
   else                          \
     space_factor = main_s;      \
-}                               \
-while (0)
+} while (0)
 /* sec 1035 */
 #define pack_lig(a)                                   \
-do                                                    \
-{                                                     \
+do {                                                  \
   main_p = new_ligature(main_f, cur_l, link(cur_q));  \
                                                       \
   if (lft_hit)                                        \
@@ -1810,11 +1767,10 @@ do                                                    \
   link(cur_q) = main_p;                               \
   tail = main_p;                                      \
   ligature_present = false;                           \
-}                                                     \
-while (0)
+} while (0)
+//
 #define wrapup(a)                                         \
-do                                                        \
-{                                                         \
+do {                                                      \
   if (cur_l < non_char)                                   \
   {                                                       \
     if (link(cur_q) != 0)                                 \
@@ -1834,8 +1790,7 @@ do                                                        \
       }                                                   \
     }                                                     \
   }                                                       \
-}                                                         \
-while (0)
+} while (0)
 /* sec 1045 */
 #define any_mode(a) vmode + a: case hmode + a: case mmode + a
 /* sec 1046 */
@@ -1865,10 +1820,11 @@ while (0)
 #define atop_code      2
 #define delimited_code 3
 /* sec 1214 */
+#define global (a >= 4)
 #define define(p, t, e) \
 do                      \
 {                       \
-  if (a >= 4)           \
+  if (global)           \
     geq_define(p, t, e);\
   else                  \
     eq_define(p, t, e); \
@@ -1877,7 +1833,7 @@ while (0)
 #define word_define(p, w) \
 do                        \
 {                         \
-  if (a >= 4)             \
+  if (global)             \
     geq_word_define(p, w);\
   else                    \
     eq_word_define(p, w); \
@@ -1903,16 +1859,14 @@ while (0)
 #define show_mode     7
 /* sec 1306 */
 #define undump(va, vb, vc)        \
-do                                \
-  {                               \
-    undump_int(x);                \
+do {                              \
+  undump_int(x);                  \
                                   \
-    if ((x < (va)) || (x > (vb))) \
-      goto bad_fmt;               \
-    else                          \
-      vc = x;                     \
-  }                               \
-while (0)
+  if ((x < (va)) || (x > (vb)))   \
+    goto bad_fmt;                 \
+  else                            \
+    vc = x;                       \
+} while (0)
 /* sec 1342 */
 #define write_node_size 2
 #define open_node_size  3
@@ -1936,57 +1890,55 @@ while (0)
 #define end_write_token (cs_token_flag + end_write)
 // macros of pTeX
 #define find_effective_tail_epTeX()             \
-do                                              \
-{                                               \
+do {                                            \
   tx = tail;                                    \
                                                 \
   if (!is_char_node(tx))                        \
+  {                                             \
     if (type(tx) == disp_node)                  \
-    {                                           \
       tx = prev_node;                           \
+  }                                             \
                                                 \
-      if (!is_char_node(tx))                    \
-        if ((type(tx) == disp_node) ||          \
-            ((type(tx) == math_node) &&         \
-             (subtype(tx) == end_M_code)))      \
-        {                                       \
-          r = head;                             \
-          q = link(head);                       \
+  if (!is_char_node(tx))                        \
+  {                                             \
+    if ((type(tx) == disp_node) ||              \
+      ((type(tx) == math_node) &&               \
+      (subtype(tx) == end_M_code)))             \
+    {                                           \
+      r = head;                                 \
+      q = link(head);                           \
                                                 \
-          while (q != tx)                       \
-          {                                     \
-            if (is_char_node(q))                \
-              r = q;                            \
-            else if ((type(q) != disp_node) &&  \
-              ((type(q) != math_node) ||        \
-                (subtype(q) != end_M_code)))    \
-              r = q;                            \
-          }                                     \
+      while (q != tx)                           \
+      {                                         \
+        if (is_char_node(q))                    \
+          r = q;                                \
+        else if ((type(q) != disp_node) &&      \
+          ((type(q) != math_node) ||            \
+           (subtype(q) != end_M_code)))         \
+          r = q;                                \
                                                 \
-          q = link(q);                          \
-        }                                       \
-        tx = r;                                 \
+        q = link(q);                            \
+      }                                         \
+                                                \
+      tx = r;                                   \
     }                                           \
-}                                               \
-while (0)
+  }                                             \
+} while (0)
 //#
 #define find_effective_tail() find_effective_tail_epTeX()
 #define current_character_being_worked_on (k - char_base[f])
 #define print_lc_hex(a)       \
-do                            \
-{                             \
+do {                          \
   l = (a);                    \
                               \
   if (l < 10)                 \
     print_char(l + '0');      \
   else                        \
     print_char(l - 10 + 'a'); \
-}                             \
-while (0)
-
+} while (0)
+//
 #define goto_main_lig_loop()  \
-do                            \
-{                             \
+do {                          \
   bchar = non_char;           \
   cur_r = bchar;              \
   lig_stack = 0;              \
@@ -2004,7 +1956,7 @@ do                            \
   goto main_loop_j;           \
 }                             \
 while (0)
-
+//
 #define fetch_effective_tail_epTeX(a)           \
 do                                              \
 {                                               \
@@ -2013,8 +1965,7 @@ do                                              \
   disp = 0;                                     \
   pdisp = 0;                                    \
                                                 \
-  do                                            \
-  {                                             \
+  do {                                          \
     s = r; r = p;                               \
     p = q; fm = fm / 2; fd = fd / 2;            \
     fd = false;                                 \
@@ -2041,8 +1992,7 @@ do                                              \
       }                                         \
                                                 \
     q = link(p);                                \
-  }                                             \
-  while (!(q == tx));                           \
+  } while (!(q == tx));                         \
                                                 \
   q = link(tx); link(p) = q; link(tx) = null;   \
                                                 \
@@ -2060,7 +2010,8 @@ do                                              \
         gd = 0;                                 \
       else if (type(link(q)) == disp_node)      \
         gd = 1;                                 \
-      else confusion("tail3");                  \
+      else                                      \
+        confusion("tail3");                     \
     }                                           \
     else if (type(q) == disp_node)              \
     {                                           \
@@ -2070,9 +2021,11 @@ do                                              \
         gm = 0;                                 \
       else if (type(link(q)) == math_node)      \
         gm = 1;                                 \
-      else confusion("tail4");                  \
+      else                                      \
+        confusion("tail4");                     \
     }                                           \
-    else confusion("tail5");                    \
+    else                                        \
+      confusion("tail5");                       \
   }                                             \
                                                 \
   if (gm == 0) if (fm == 2) confusion("tail1"); \
@@ -2081,7 +2034,7 @@ do                                              \
   if (gm == 0) fm = 0;                          \
   if (gd == 0) fd = 0;                          \
                                                 \
-  if (fd)                                       \
+  if (fd > 0)                                   \
   {                                             \
     if (gm == 0)                                \
     {                                           \
@@ -2108,7 +2061,8 @@ do                                              \
     }                                           \
                                                 \
     prev_disp = pdisp;                          \
-    free_node(t, small_node_size); gd = 0;      \
+    free_node(t, small_node_size);              \
+    gd = 0;                                     \
   }                                             \
                                                 \
   if (fm > 0)                                   \
@@ -2180,14 +2134,17 @@ do {                                          \
   if (font_dir[font(p)] != dir_default)       \
   {                                           \
     KANJI(cx) = info(link(p)) % max_cjk_val;  \
+                                              \
     if (insert_skip == after_schar)           \
       insert_ascii_kanji_spacing();           \
+                                              \
     p = link(p);                              \
     insert_skip = after_wchar;                \
   }                                           \
   else                                        \
   {                                           \
     ax = character(p);                        \
+                                              \
     if (insert_skip == after_wchar)           \
       insert_kanji_ascii_spacing();           \
     if (auto_xsp_code(ax) >= 2)               \
@@ -2196,7 +2153,7 @@ do {                                          \
       insert_skip = no_skip;                  \
   }                                           \
 } while (0)
-
+//
 #define insert_hbox_surround_spacing()    \
 do {                                      \
   find_first_char = true;                 \
@@ -2248,7 +2205,7 @@ do {                                                  \
       insert_kanji_ascii_spacing();                   \
   }                                                   \
 } while (0)
-
+//
 #define insert_space_after_last_char()                \
 do {                                                  \
   if (type(last_char) == math_node)                   \
@@ -3232,7 +3189,7 @@ do {                                      \
 #define sa_define(a1,a2,a3,a4,a5) \
 do {                    \
   if (e)                \
-    if (a >= 4)         \
+    if (global)         \
       gsa_def(a1, a2);  \
     else                \
       sa_def(a1, a2);   \
@@ -3243,7 +3200,7 @@ do {                    \
 #define sa_def_box()                      \
 do {                                      \
   find_sa_element(box_val, cur_val, true);\
-  if (a >= 4)                             \
+  if (global)                             \
     gsa_def(cur_ptr,cur_box);             \
   else                                    \
     sa_def(cur_ptr,cur_box);              \
@@ -3252,7 +3209,7 @@ do {                                      \
 #define sa_word_define(a1,a2) \
 do {                          \
   if (e)                      \
-    if (a >= 4)               \
+    if (global)               \
       gsa_w_def(a1, a2);      \
     else                      \
       sa_w_def(a1, a2);       \

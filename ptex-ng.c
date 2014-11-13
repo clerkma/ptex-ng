@@ -168,14 +168,14 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
 #ifdef ALLOCATEBUFFER
   while (true) 
 #else
-  while (last < buf_size) 
+  while (last < buf_size)
 #endif
   {
     i = getc(f);
 
     if (i < ' ')
     {
-      if (i == EOF || i == '\n' || (i == '\r' && return_flag))
+      if ((i == EOF) || (i == '\n') || (i == '\r'))
         break;
       else if (i == '\t' && tab_step != 0)
       {
@@ -184,7 +184,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
 #ifdef ALLOCATEBUFFER
         if (last >= current_buf_size)
         {
-          buffer = realloc_buffer(increment_buf_size);  
+          buffer = realloc_buffer(increment_buf_size);
 
           if (last >= current_buf_size)
             break;
@@ -197,7 +197,6 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
         while (last < buf_size && (last - first) % tab_step != 0)
 #endif
         {
-
           buffer[last++] = (ASCII_code) ' ';
 
 #ifdef ALLOCATEBUFFER
@@ -230,25 +229,15 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
     }
   }
 
-  if (return_flag)  /* let return terminate line as well as newline */
+  if (i == '\r')
   {
-    if (i == '\r')  /* see whether return followed by newline */
+    i = getc(f);
+
+    if (i != '\n')
     {
-      i = getc(f);  /* in which case throw away the newline */
-
-      if (i != '\n')
-      {
-        ungetc(i, f);
-        i = '\r';
-      }
-/*      else  buffer[last-1] = (ASCII_code) i; */
+      ungetc(i, f);
+      i = '\r';
     }
-  }
-
-  //  Turn Ctrl-Z at end of file into newline 2000 June 22
-  if (i == EOF && trimeof && buffer[last - 1] == 26)
-  {
-    last--;
   }
 
   if (i == EOF && last == first)
@@ -273,19 +262,13 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
 }
 
 #if !defined (WORDS_BIGENDIAN)
-   
+// for swap
 #define SWAP(x, y) temp = (x); (x) = (y); (y) = temp;
-
-
-/* Make the NITEMS items pointed at by P, each of size SIZE, be the
-   opposite-endianness of whatever they are now.  */
 
 static int swap_items (char *p, int nitems, int size)
 {
   char temp;
 
-  /* Since `size' does not change, we can write a while loop for each
-     case, and avoid testing `size' for each time.  */
   switch (size)
   {
     case 8:
@@ -317,15 +300,14 @@ static int swap_items (char *p, int nitems, int size)
       break;
 
     case 1:
-    /* Nothing to do.  */
+      do_nothing();
       break;
 
     default:
-      show_line("\n", 0);
-      sprintf(log_line, "! I can't (un)dump a %d byte item.\n", size);
-      show_line(log_line, 1);
+      printf("\n! I can't (un)dump a %d byte item.\n", size);
       uexit(EXIT_FAILURE);
   }
+
   return 0;
 }
 #endif
@@ -383,7 +365,7 @@ int do_undump (char *p, int item_size, int nitems, FILE *in_file)
   return 0;
 }
 
-void uexit(int unix_code)
+void uexit (int unix_code)
 {
   int final_code;
 
@@ -406,7 +388,7 @@ void uexit(int unix_code)
   exit(final_code);
 }
 // texk/web2c/lib/zround.c
-integer web2c_round(double r)
+integer web2c_round (double r)
 {
   integer i;
 
@@ -422,8 +404,7 @@ integer web2c_round(double r)
   return i;
 }
 // Unixify filename and path (turn \ into /)
-// --- assumes null terminated
-char * unixify(char * t)
+char * unixify (char * t)
 {
   char * s = t;
 

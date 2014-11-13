@@ -17,7 +17,6 @@ objects = \
 	ptex-ng-local.o\
 	ptex-ng-src.o\
 	ptex-ng-pool.o\
-	ptex-ng-utils.o\
 	ptex-ng-pdf.o\
 	ptex-ng-kanji.o
 
@@ -49,9 +48,6 @@ ptex-ng-src.o: ptex-ng-src.c $(headers)
 
 ptex-ng-pool.o: ptex-ng-pool.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-pool.c
-
-ptex-ng-utils.o: ptex-ng-utils.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-utils.c
 
 .PHONY: clean
 

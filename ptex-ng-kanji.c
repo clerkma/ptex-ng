@@ -20,9 +20,10 @@
 #define EXTERN extern
 #include "ptex-ng.h"
 
+#define XXHi(x)         BYTE1(x)
 #define CJK_TOKEN_FLAG  0xFFFFFF
 
-boolean check_kanji(integer c)
+boolean check_kanji (integer c)
 {
   if (c > cs_token_flag)
     return false;
@@ -37,7 +38,7 @@ boolean is_char_ascii (integer c)
   return (0 <= c && c < 0x100);
 }
 
-boolean is_char_kanji(integer c)
+boolean is_char_kanji (integer c)
 {
   if (is_internalUPTEX())
     return (c >= 0 && (c & CJK_TOKEN_FLAG) < max_cjk_val);
@@ -45,7 +46,7 @@ boolean is_char_kanji(integer c)
     return iskanji1(Hi(c)) && iskanji2(Lo(c));
 }
 
-boolean ismultiprn(integer c)
+boolean ismultiprn (integer c)
 {
   int i, j;
 

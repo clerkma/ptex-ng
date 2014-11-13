@@ -939,10 +939,7 @@ void pdf_vlist_out (void)
   while (p != 0)
   {
     if (is_char_node(p))
-    {
       confusion("vlistout");
-      return;
-    }
     else
     {
       switch (type(p))

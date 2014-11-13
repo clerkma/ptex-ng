@@ -27,9 +27,7 @@
 #define PATH_SEP        '/'
 #define PATH_SEP_STRING "/"
 
-extern int shorten_file_name;
-
-static char * xconcat3 (char *buffer, char *s1, char *s2, char *s3)
+static char * xconcat3 (char * buffer, char * s1, char * s2, char * s3)
 {
   int n1 = strlen(s1);
   int n2 = strlen(s2);
@@ -51,7 +49,7 @@ static char * xconcat3 (char *buffer, char *s1, char *s2, char *s3)
   return buffer;
 }
 
-static void patch_in_path (ASCII_code * buffer, ASCII_code *name, ASCII_code * path)
+static void patch_in_path (ASCII_code * buffer, ASCII_code * name, ASCII_code * path)
 {
   if (*path == '\0')
     strcpy((char *) buffer, (char *) name);
@@ -59,61 +57,60 @@ static void patch_in_path (ASCII_code * buffer, ASCII_code *name, ASCII_code * p
     xconcat3((char *) buffer, (char *) path, "/", (char *) name);
 }
 
-static int qualified (ASCII_code * name)
+static boolean qualified (ASCII_code * name)
 {
   if (strchr((char *) name, '/') != NULL ||
       strchr((char *) name, '\\') != NULL ||
       strchr((char *) name, ':') != NULL)
-    return 1;
+    return true;
   else
-    return 0;
+    return false;
 }
 /* patch path if 
     (i)   path not empty
     (ii)  name not qualified
     (iii) ext match
 */
-static int prepend_path_if(ASCII_code * buffer, ASCII_code * name, const char * ext, char *path)
+static boolean prepend_path_if(ASCII_code * buffer, ASCII_code * name, const char * ext, char * path)
 {
   if (path == NULL)
-    return 0;
+    return false;
 
   if (*path == '\0')
-    return 0;
+    return false;
 
   if (qualified(name))
-    return 0;
+    return false;
 
   if (strstr((char *) name, ext) == NULL)
-    return 0;
+    return false;
 
   patch_in_path(buffer, name, (ASCII_code *)path);
 
-  return 1;
+  return true;
 }
 
 boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode)
 {
   boolean openable = false;
+  boolean must_exist;
   char * file_name = NULL;
 
-  if (return_flag)
-  {
-    if (strcmp(fopen_mode, "r") == 0)
-      fopen_mode = "rb";
-  }
+  if (strcmp(fopen_mode, "r") == 0)
+    fopen_mode = "rb";
 
   name_of_file[name_length + 1] = '\0';
   
   if (open_trace_flag)
     printf(" Open `%s' for input ", name_of_file + 1);
 
-  file_name = kpse_find_file((const_string) name_of_file + 1, file_fmt, false);
+  must_exist = (file_fmt != kpse_tex_format);
+  file_name = kpse_find_file((const_string) name_of_file + 1, file_fmt, must_exist);
 
   if (file_name != NULL)
   {
     strcpy ((char *) name_of_file + 1, file_name);
-    *f = xfopen((char *) file_name, fopen_mode);
+    *f = fopen((char *) file_name, fopen_mode);
 
 #ifdef _WIN32
     if (name_of_file[1] == '.' && (name_of_file[2] == PATH_SEP || name_of_file[2] == '\\'))
@@ -142,31 +139,9 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
 
     if (strstr((char *) name_of_file + 1, ".fmt") != NULL)
     {
-      if (format_file == NULL)
-        format_file = xstrdup((char *) name_of_file + 1);
-
 #ifdef COMPACTFORMAT
       gz_fmt_file = gzdopen(fileno(*f), FOPEN_RBIN_MODE);
 #endif
-    }
-    else if (strstr((char *) name_of_file + 1, ".tfm") != NULL)
-    {
-      if (show_tfm_flag && log_opened)
-      {
-        int n; 
-        n = strlen((char *) name_of_file + 1);
-
-        if (file_offset + n > max_print_line)
-        {
-          (void) putc('\n', log_file);
-          file_offset = 0;
-        }
-        else
-          (void) putc(' ', log_file);
-
-        log_printf("(%s)", name_of_file + 1);
-        file_offset += n + 3;
-      }
     }
 
     openable = true;
@@ -180,23 +155,16 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
   return openable;
 }
 
-static inline void perrormod(const char * s)
-{
-  printf("`%s': %s\n", s, strerror(errno));
-}
-
-int check_fclose (FILE * f)
+void close_file (FILE * f)
 {
   if (f == NULL)
-    return 0;
+    return;
 
   if (ferror(f) || fclose (f))
   {
-    perrormod("\n! I/O Error");
+    perror("\n! I/O Error");
     uexit(EXIT_FAILURE);
   }
-
-  return 0;
 }
 
 static char * xstrdup_name (void)
@@ -253,6 +221,11 @@ boolean open_output (FILE ** f, const char * fopen_mode)
       if (*f)
         strcpy((char *) name_of_file + 1, (char *) temp_name);
     }
+  }
+
+  {
+    char * ng_buffer = (char *) malloc(BUFSIZ);
+    setbuf(*f, ng_buffer);
   }
 
 #ifdef COMPACTFORMAT

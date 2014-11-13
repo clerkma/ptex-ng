@@ -1,5 +1,4 @@
 /*
-   Copyright 2007 TeX Users Group
    Copyright 2014 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
@@ -20,7 +19,40 @@
 
 #ifndef _PTEX_NG_COERCE_H
 #define _PTEX_NG_COERCE_H
-
+// functions of TeX's mainbody
+extern int main_program (void);
+extern int main_init (int ac, char ** av);
+// functions of reallocation
+extern memory_word * allocate_main_memory(int size);
+extern memory_word * realloc_main(int lo_size, int hi_size);
+extern packed_ASCII_code * realloc_str_pool(int size);
+extern pool_pointer * realloc_str_start(int size);
+extern memory_word * realloc_save_stack(int size);
+extern list_state_record * realloc_nest_stack(int size);
+extern in_state_record * realloc_input_stack(int size);
+extern halfword * realloc_param_stack(int size);
+extern ASCII_code * realloc_buffer(int size);
+extern memory_word * realloc_font_info(int size);
+extern int realloc_hyphen(int hyphen_prime);
+extern int allocate_tries(int trie_max);
+extern void print_cs_names(FILE * output, boolean pass);
+// functions of string pool
+extern str_number load_pool_strings(integer spare_size);
+extern str_number make_str_string(const char * s);
+extern char * get_str_string(str_number s);
+extern str_number get_job_name(str_number job);
+extern int endit(int flag);
+extern void uexit(int unix_code);
+extern void t_open_in(void);
+extern void add_variable_space(int size);
+extern char * unixify(char * t);
+// functions of I/O
+extern boolean input_ln(FILE * f, boolean bypass_eoln);
+extern integer web2c_round(double r);
+extern boolean open_input(FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
+extern boolean open_output(FILE ** f, const char * fopen_mode);
+extern void    close_file(FILE * f);
+// functions of TeX82
 void initialize (void);
 void print_ln (void);
 void print_char (ASCII_code s);
@@ -276,8 +308,7 @@ pointer vsplit (halfword n, scaled h);
 void print_totals (void);
 void freeze_page_specs (small_number s);
 void box_error (eight_bits n);
-void ensure_vbox_(eight_bits n);
-#define ensure_vbox(n) ensure_vbox_((eight_bits) (n))
+void ensure_vbox (eight_bits n);
 void fire_up (pointer c);
 void build_page (void);
 void app_space (void);
@@ -377,14 +408,22 @@ void print_direction_alt(integer d);
 void pdf_dir_out(void);
 void set_math_kchar(integer c);
 void print_kanji(KANJI_code s);
-integer check_kcat_code(integer ct);
-integer check_echar_range(integer c);
-boolean eTeX_enabled(boolean b, quarterword j, halfword k);
+boolean check_kcat_code(integer ct);
+boolean check_echar_range(integer c);
+// etex
+boolean eTeX_enabled (boolean b, quarterword j, halfword k);
 void print_group(boolean e);
 void group_trace(boolean e);
 void show_save_groups(void);
 void scan_general_text(void);
-void print_if_line(integer val);
+static inline void print_if_line (integer val)
+{
+  if (val != 0)
+  {
+    prints(" entered on line ");
+    print_int(val);
+  }
+}
 pointer new_edge(small_number s, scaled w);
 pointer reverse(pointer this_box, pointer t, scaled cur_g, real cur_glue);
 pointer new_segment(small_number s, pointer f);
@@ -420,8 +459,6 @@ void gsa_w_def(pointer p, integer w);
 void sa_restore(void);
 void pdf_synch_h(void);
 void pdf_synch_v(void);
-extern int main_program (void);
-extern int main_init (int ac, char ** av);
 // for pdf backend.
 extern void pdf_init_fontmaps(void);
 extern void pdf_close_fontmaps(void);
@@ -488,62 +525,271 @@ extern integer kcatcodekey(integer c);
 extern integer multilenbuffchar(integer c);
 extern void init_default_kanji(const_string file_str, const_string internal_str);
 /* sec 79 */
-// macro to function at ptex-ng-utils.c
-extern int do_final_end(void);
-extern void node_list_display(integer p);
-extern void do_nothing(void);
-extern void wake_up_terminal(void);
-extern void update_terminal(void);
-extern void check_full_save_stack(void);
-extern void push_input(void);
-extern void pop_input(void);
-extern void print_err(const char * s);
-extern void ensure_dvi_open(void);
-extern void write_dvi(size_t a, size_t b);
-extern void prompt_input(const char * s);
-extern void synch_h(void);
-extern void synch_v(void);
-extern void set_cur_lang(void);
-extern void str_room(int val);
-extern void tail_append (pointer val);
-extern void prev_append (pointer val);
-extern void tex_help(unsigned int n, ...);
-extern void append_char(ASCII_code c);
-extern void append_lc_hex(ASCII_code c);
-extern void succumb(void);
-extern void dvi_out_(ASCII_code op);
-#define dvi_out(op) dvi_out_((ASCII_code) (op))
-extern void free_avail (halfword p);
-extern void flush_string(void);
-extern str_number load_pool_strings(integer spare_size);
-extern str_number make_str_string(const char * s);
-extern char * get_str_string(str_number s);
-extern void print_plus(int i, const char * s);
-extern void fget(void);
-extern str_number get_job_name(str_number job);
-// functions in ptex-ng-local.c
-extern memory_word * allocate_main_memory(int size);
-extern memory_word * realloc_main(int lo_size, int hi_size);
-extern packed_ASCII_code * realloc_str_pool(int size);
-extern pool_pointer * realloc_str_start(int size);
-extern memory_word * realloc_save_stack(int size);
-extern list_state_record * realloc_nest_stack(int size);
-extern in_state_record * realloc_input_stack(int size);
-extern halfword * realloc_param_stack(int size);
-extern ASCII_code * realloc_buffer(int size);
-extern memory_word * realloc_font_info(int size);
-extern int realloc_hyphen(int hyphen_prime);
-extern int allocate_tries(int trie_max);
-extern void print_cs_names(FILE * output, boolean pass);
-extern int endit(int flag);
-extern void uexit(int unix_code);
-extern void t_open_in(void);
-extern void add_variable_space(int size);
-extern char * unixify(char * t);
-// ptex-ng-io.c
-extern boolean input_ln (FILE * f, boolean bypass_eoln);
-extern integer web2c_round(double r);
-extern boolean open_input(FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
-extern boolean open_output(FILE ** f, const char * fopen_mode);
-extern int check_fclose(FILE * f);
+// inline functions
+/* sec 0016 */
+static inline void do_nothing (void)
+{
+  /* todo */
+}
+static inline void wake_up_terminal (void)
+{
+  /* todo */
+}
+/* sec 0034 */
+static inline void update_terminal (void)
+{
+  fflush(stdout);
+}
+// web2c's specific
+static inline int do_final_end (void)
+{
+  update_terminal();
+  ready_already = 0;
+
+  if ((history != spotless) && (history != warning_issued))
+    return 1;
+  else
+    return 0;
+}
+/* sec 0073 */
+static inline void print_err (const char * s)
+{
+  if (interaction == error_stop_mode)
+    wake_up_terminal();
+
+  print_nl("! ");
+  prints(s);
+}
+/* sec 0042 */
+static inline void append_char (ASCII_code c)
+{
+  str_pool[pool_ptr] = c;
+  incr(pool_ptr);
+}
+/* sec 0042 */
+static inline void str_room (int val)
+{
+#ifdef ALLOCATESTRING
+  if (pool_ptr + val > current_pool_size)
+    str_pool = realloc_str_pool(increment_pool_size);
+
+  if (pool_ptr + val > current_pool_size)
+    overflow("pool size", current_pool_size - init_pool_ptr);
+#else
+  if (pool_ptr + val > pool_size)
+    overflow("pool size", pool_size - init_pool_ptr);
+#endif
+}
+/* sec 0044 */
+static inline void flush_string (void)
+{
+  decr(str_ptr);
+  pool_ptr = str_start[str_ptr];
+}
+/* sec 0048 */
+static inline void append_lc_hex (ASCII_code c)
+{
+  if (c < 10)
+    append_char(c + '0');
+  else
+    append_char(c - 10 + 'a');
+}
+/* sec 0071 */
+static inline void prompt_input (const char * s)
+{
+  wake_up_terminal();
+  prints(s);
+  term_input();
+}
+/* sec 0079 */
+static inline void tex_help (unsigned int n, ...)
+{
+  int i;
+  va_list help_arg;
+
+  if (n > 6)
+    n = 6;
+
+  help_ptr = n;
+  va_start(help_arg, n);
+
+  for (i = n - 1; i > -1; --i)
+    help_line[i] = va_arg(help_arg, char *);
+
+  va_end(help_arg);
+}
+/* sec 0093 */
+static inline void succumb (void)
+{
+  if (interaction == error_stop_mode)
+    interaction = scroll_mode;
+
+  if (log_opened)
+    error();
+
+#ifdef NG_DEBUG
+  if (interaction > 0)
+    debug_help();
+#endif
+
+  history = error_stop_mode;
+  jump_out();
+}
+/* sec 0096 */
+static inline void check_interrupt (void)
+{
+  if (interrupt != 0)
+    pause_for_instructions();
+}
+/* sec 0273 */
+static inline void check_full_save_stack (void)
+{
+  if (save_ptr > max_save_stack)
+  {
+    max_save_stack = save_ptr;
+
+#ifdef ALLOCATESAVESTACK
+    if (max_save_stack > current_save_size - 7)
+      save_stack = realloc_save_stack(increment_save_size);
+
+    if (max_save_stack > current_save_size - 7)
+      overflow("save size", current_save_size);
+#else
+    if (max_save_stack > save_size - 7)
+      overflow("save size", save_size);
+#endif
+  }
+}
+/* sec 0321 */
+static inline void push_input (void)
+{
+  if (input_ptr > max_in_stack)
+  {
+    max_in_stack = input_ptr;
+
+#ifdef ALLOCATEINPUTSTACK
+    if (input_ptr == current_stack_size)
+      input_stack = realloc_input_stack(increment_stack_size);
+
+    if (input_ptr == current_stack_size)
+      overflow("input stack size", current_stack_size);
+#else
+    if (input_ptr == stack_size)
+      overflow("input stack size", stack_size);
+#endif
+  }
+
+  input_stack[input_ptr] = cur_input;
+  incr(input_ptr);
+}
+/* sec 0322 */
+static inline void pop_input (void)
+{
+  decr(input_ptr);
+  cur_input = input_stack[input_ptr];
+}
+/* sec 0532 */
+static inline void ensure_dvi_open (void)
+{
+  if (output_file_name == 0)
+  {
+    if (job_name == 0)
+      open_log_file();
+
+    pack_job_name(".dvi");
+
+    while (!b_open_out(dvi_file))
+      prompt_file_name("file name for output", ".dvi");
+
+    output_file_name = b_make_name_string(dvi_file);
+  }
+}
+/* sec 0616 */
+static inline void synch_h (void)
+{
+  if (cur_h != dvi_h)
+  {
+    movement(cur_h - dvi_h, right1);
+    dvi_h = cur_h;
+  }
+}
+/* sec 0616 */
+static inline void synch_v (void)
+{
+  if (cur_v != dvi_v)
+  {
+    movement(cur_v - dvi_v, down1);
+    dvi_v = cur_v;
+  }
+}
+/* sec 0121 */
+static inline void free_avail (halfword p)
+{
+  link(p) = avail;
+  avail = p;
+#ifdef STAT
+  decr(dyn_used);
+#endif
+}
+/* sec 0180 */
+static inline void node_list_display (integer p)
+{
+  append_char('.');
+  show_node_list(p);
+  decr(pool_ptr);
+}
+/* sec 0214 */
+static inline void tail_append (pointer val)
+{
+  link(tail) = val;
+  tail = link(tail);
+}
+/* sec 0214 */
+static inline void prev_append (pointer val)
+{
+  link(prev_node) = val;
+  link(link(prev_node)) = tail;
+  prev_node = link(prev_node);
+}
+/* sec 0564 */
+static inline void fget (void)
+{
+  fbyte = getc(tfm_file);
+}
+/* sec 0597 */
+static inline void write_dvi (size_t a, size_t b)
+{
+  if (fwrite((char *)&dvi_buf[a], sizeof(dvi_buf[a]),
+    (b - a + 1), dvi_file) != (b - a + 1))
+    FATAL_PERROR("\n! dvi file");
+}
+/* sec 0598 */
+static inline void dvi_out (ASCII_code op)
+{
+  dvi_buf[dvi_ptr] = op;
+  incr(dvi_ptr);
+
+  if (dvi_ptr == dvi_limit)
+    dvi_swap();
+}
+/* sec 0934 */
+static inline void set_cur_lang (void)
+{
+  if (language <= 0)
+    cur_lang = 0;
+  else if (language > 255)
+    cur_lang = 0;
+  else
+    cur_lang = language;
+}
+/* sec 0985 */
+static inline void print_plus (int i, const char * s)
+{
+  if (page_so_far[i] != 0)
+  {
+    prints(" plus ");
+    print_scaled(page_so_far[i]);
+    prints(s);
+  }
+}
 #endif

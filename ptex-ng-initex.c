@@ -252,9 +252,6 @@ void initialize (void)
     do_initex();
 }
 
-/* do the part of initialize() that requires mem_top, mem_max or mem[] */
-/* do this part after allocating main memory */
-
 #ifdef ALLOCATEMAIN
 static void initialize_aux (void)
 {
@@ -356,7 +353,7 @@ void line_break (boolean d)
   {
     q = glue_ptr(last_line_fill);
 
-    if ((stretch(q)>0) && (stretch_order(q)>normal))
+    if ((stretch(q) > 0) && (stretch_order(q) > normal))
       if ((background[3] == 0) && (background[4] == 0) && (background[5] == 0))
       {
         do_last_line_fit = true;
@@ -873,48 +870,43 @@ done1:;
               try_break(ex_hyphen_penalty, hyphenated);
             else
             {
-              do
+              do {
+                if (is_char_node(s))
                 {
-                  if (is_char_node(s))
-                  {
-                    f = font(s);
-                    disc_width = disc_width + char_width(f, char_info(f, character(s)));
+                  f = font(s);
+                  disc_width = disc_width + char_width(f, char_info(f, character(s)));
 
-                    if (font_dir[f] != dir_default)
-                      s = link(s);
-                  }
-                  else switch (type(s))
-                  {
-                    case ligature_node:
-                      {
-                        f = font(lig_char(s));
-                        disc_width = disc_width + char_width(f, char_info(f, character(lig_char(s))));
-                      }
-                      break;
-
-                    case hlist_node:
-                    case vlist_node:
-                    case dir_node:
-                    case rule_node:
-                    case kern_node:
-                      disc_width = disc_width + width(s);
-                      break;
-
-                    case disc_node:
-                      do_nothing();
-                      break;
-
-                    default:
-                      {
-                        confusion("disc3");
-                        return;
-                      }
-                      break;
-                  }
-
-                  s = link(s);
+                  if (font_dir[f] != dir_default)
+                    s = link(s);
                 }
-              while (!(s == 0));
+                else switch (type(s))
+                {
+                  case ligature_node:
+                    {
+                      f = font(lig_char(s));
+                      disc_width = disc_width + char_width(f, char_info(f, character(lig_char(s))));
+                    }
+                    break;
+
+                  case hlist_node:
+                  case vlist_node:
+                  case dir_node:
+                  case rule_node:
+                  case kern_node:
+                    disc_width = disc_width + width(s);
+                    break;
+
+                  case disc_node:
+                    do_nothing();
+                    break;
+
+                  default:
+                    confusion("disc3");
+                    break;
+                }
+
+                s = link(s);
+              } while (!(s == 0));
 
               act_width = act_width + disc_width;
               try_break(hyphen_penalty, hyphenated);
@@ -956,10 +948,7 @@ done1:;
                   break;
 
                 default:
-                  {
-                    confusion("disc4");
-                    return;
-                  }
+                  confusion("disc4");
                   break;
               }
 
@@ -993,10 +982,7 @@ done1:;
           break;
 
         default:
-          {
-            confusion("paragraph");
-            return;
-          }
+          confusion("paragraph");
           break;
       }
 
@@ -1014,18 +1000,16 @@ done5:;
         r = link(active);
         fewest_demerits = awful_bad;
 
-        do
-          {
-            if (type(r) != delta_node)
-              if (total_demerits(r) < fewest_demerits)
-              {
-                fewest_demerits = total_demerits(r);
-                best_bet = r;
-              }
+        do {
+          if (type(r) != delta_node)
+            if (total_demerits(r) < fewest_demerits)
+            {
+              fewest_demerits = total_demerits(r);
+              best_bet = r;
+            }
 
-            r = link(r);
-          }
-        while (!(r == active));
+          r = link(r);
+        } while (!(r == active));
 
         best_line = line_number(best_bet);
 
@@ -1038,29 +1022,27 @@ done5:;
           r = link(active);
           actual_looseness = 0;
 
-          do
+          do {
+            if (type(r) != delta_node)
             {
-              if (type(r) != delta_node)
+              line_diff = toint(line_number(r)) - toint(best_line);
+
+              if (((line_diff < actual_looseness) && (looseness <= line_diff)) ||
+                  ((line_diff > actual_looseness) && (looseness >= line_diff)))
               {
-                line_diff = toint(line_number(r)) - toint(best_line);
-
-                if (((line_diff < actual_looseness) && (looseness <= line_diff)) ||
-                    ((line_diff > actual_looseness) && (looseness >= line_diff)))
-                {
-                  best_bet = r;
-                  actual_looseness = line_diff;
-                  fewest_demerits = total_demerits(r);
-                }
-                else if ((line_diff == actual_looseness) && (total_demerits(r) < fewest_demerits))
-                {
-                  best_bet = r;
-                  fewest_demerits = total_demerits(r);
-                }
+                best_bet = r;
+                actual_looseness = line_diff;
+                fewest_demerits = total_demerits(r);
               }
-
-              r = link(r);
+              else if ((line_diff == actual_looseness) && (total_demerits(r) < fewest_demerits))
+              {
+                best_bet = r;
+                fewest_demerits = total_demerits(r);
+              }
             }
-          while (!(r == active));
+
+            r = link(r);
+          } while (!(r == active));
 
           best_line = line_number(best_bet);
         }
@@ -1101,6 +1083,7 @@ done5:;
       if (tracing_paragraphs > 0)
         print_nl("@secondpass");
 #endif
+
       threshold = tolerance;
       second_pass = true;
       second_pass_count++;
@@ -1187,11 +1170,9 @@ void prefixed_command (void)
     if (!odd(a / cur_chr))
       a = a + cur_chr;
 
-    do
-      {
-        get_x_token();
-      }
-    while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+    do {
+      get_x_token();
+    } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
 
     if (cur_cmd <= max_non_prefixed_command)
     {
@@ -1217,9 +1198,10 @@ void prefixed_command (void)
     j = protected_token;
     a = a - 8;
   }
-  else j = 0;
+  else
+    j = 0;
 
-  if ((cur_cmd != def) && (a % 4 != 0))
+  if ((cur_cmd != def) && ((a % 4 != 0) || (j != 0)))
   {
     print_err("You can't use `");
     print_esc("long");
@@ -1243,29 +1225,31 @@ void prefixed_command (void)
   if (global_defs != 0)
     if (global_defs < 0)
     {
-      if ((a >= 4))
+      if (global)
         a = a - 4;
     }
     else
     {
-      if (!(a >= 4))
+      if (!global)
         a = a + 4;
     }
 
   switch (cur_cmd)
   {
     case set_font:
-      if (font_dir[cur_chr] == dir_yoko)
-        define(cur_jfont_loc, data, cur_chr);
-      else if (font_dir[cur_chr] == dir_tate)
-        define(cur_tfont_loc, data, cur_chr);
-      else
-        define(cur_font_loc, data, cur_chr);
+      {
+        if (font_dir[cur_chr] == dir_yoko)
+          define(cur_jfont_loc, data, cur_chr);
+        else if (font_dir[cur_chr] == dir_tate)
+          define(cur_tfont_loc, data, cur_chr);
+        else
+          define(cur_font_loc, data, cur_chr);
+      }
       break;
 
     case def:
       {
-        if (odd(cur_chr) && !(a >= 4) && (global_defs >= 0))
+        if (odd(cur_chr) && !global && (global_defs >= 0))
           a = a + 4;
 
         e = (cur_chr >= 2);
@@ -1291,13 +1275,11 @@ void prefixed_command (void)
         get_r_token();
         p = cur_cs;
 
-        if (n == 0)
+        if (n == normal)
         {
-          do
-            {
-              get_token();
-            }
-          while (!(cur_cmd != spacer));
+          do {
+            get_token();
+          } while (!(cur_cmd != spacer));
 
           if (cur_tok == other_token + '=')
           {
@@ -1362,11 +1344,11 @@ void prefixed_command (void)
             {
               scan_register_num();
 
-              if (cur_val>255)
+              if (cur_val > 255)
               {
                 j = n - count_def_code;
 
-                if (j>mu_val)
+                if (j > mu_val)
                   j = tok_val;
 
                 find_sa_element(j, cur_val, true);
@@ -1442,7 +1424,8 @@ void prefixed_command (void)
             if (cur_val > 255)
             {
               find_sa_element(tok_val, cur_val, true);
-              cur_chr = cur_ptr; e = true;
+              cur_chr = cur_ptr;
+              e = true;
             }
             else
               cur_chr = toks_base + cur_val;
@@ -1660,7 +1643,7 @@ void prefixed_command (void)
       {
         scan_register_num();
 
-        if (a >= 4)
+        if (global)
           n = global_box_flag + cur_val;
         else
           n = box_flag + cur_val;
@@ -1754,7 +1737,7 @@ void prefixed_command (void)
         }
 
         print_err("Patterns can be loaded only by INITEX");
-        help_ptr = 0;
+        help0();
         error();
 
         do {
@@ -1914,9 +1897,7 @@ void prefixed_command (void)
             word_define(kinsoku_penalty_base + j, cur_val);
           }
           else
-          {
             confusion("kinsoku");
-          }
         }
         else
         {
@@ -1940,10 +1921,7 @@ void prefixed_command (void)
       break;
 
     default:
-      {
-        confusion("prefix");
-        return;
-      }
+      confusion("prefix");
       break;
   }
 
@@ -2095,12 +2073,12 @@ boolean load_fmt_file (void)
   do {
     if (undump_things(mem[p], q + 2 - p))
       return -1;
-    
+
     p = q + node_size(q);
-    
+
     if ((p > lo_mem_max) || ((q >= rlink(q)) && (rlink(q) != rover)))
       goto bad_fmt;
-    
+
     q = rlink(q);
   } while (!(q == rover));
 
@@ -2139,22 +2117,22 @@ boolean load_fmt_file (void)
 
   do {
     undump_int(x);
-    
+
     if ((x < 1) || (k + x > (eqtb_size + 1)))
       goto bad_fmt;
-    
+
     if (undump_things(eqtb[k], x))
       return -1;
-    
+
     k = k + x;
     undump_int(x);
-    
+
     if ((x < 0) || (k + x > (eqtb_size + 1)))
       goto bad_fmt;
-    
+
     for (j = k; j <= k + x - 1; j++)
       eqtb[j] = eqtb[k - 1];
-    
+
     k = k + x;
   } while (!(k > eqtb_size));
 
@@ -2245,7 +2223,7 @@ boolean load_fmt_file (void)
 #ifdef ALLOCATEFONT
   {
     int count = 0, oldfont_mem_size = 0;
-    
+
     for (x = 0; x <= font_ptr; x++)
     {
       if (bchar_label[x] > oldfont_mem_size)
@@ -2325,7 +2303,7 @@ boolean load_fmt_file (void)
 
   if (is_initex)
     trie_op_ptr = j;
-  
+
   undump_things(hyf_distance[1], j);
   undump_things(hyf_num[1], j);
   undump_things(hyf_next[1], j);
@@ -2438,7 +2416,7 @@ void final_cleanup (void)
   {
     if (is_initex)
     {
-      for (c = 0; c <= 4; c++)
+      for (c = top_mark_code; c <= split_bot_mark_code; c++)
         if (cur_mark[c] != 0)
           delete_token_ref(cur_mark[c]);
 
@@ -2618,7 +2596,6 @@ start_of_TEX:
       in_open = 0;
       high_in_open = 0;
       open_parens = 0;
-      max_open_parens = 0;
       max_buf_stack = 0;
       grp_stack[0] = 0;
       if_stack[0] = null;
@@ -3282,16 +3259,10 @@ void primitive_ (str_number s, quarterword c, halfword o)
       buffer = realloc_buffer(increment_buf_size);
 
     if (first + l > current_buf_size + 1)
-    {
       overflow("buffer size", current_buf_size);
-      return;
-    }
 #else
     if (first + l > buf_size + 1)
-    {
       overflow("buffer size", buf_size);
-      return;
-    }
 #endif
 
     for (j = 0; j <= l - 1; j++)
@@ -3322,18 +3293,12 @@ trie_op_code new_trie_op (small_number d, small_number n, trie_op_code v)
     if (l == 0)
     {
       if (trie_op_ptr == trie_op_size)
-      {
         overflow("pattern memory ops", trie_op_size);
-        return 0;
-      }
 
       u = trie_used[cur_lang];
 
       if (u == max_trie_op)
-      {
         overflow("pattern memory ops per language", max_trie_op - min_trie_op);
-        return 0;
-      }
 
       incr(trie_op_ptr);
       incr(u);
@@ -3428,10 +3393,7 @@ void first_fit (trie_pointer p)
     if (trie_max < h + 256)
     {
       if (trie_size <= h + 256)
-      {
         overflow("pattern memory", trie_size);
-        return;
-      }
 
       do {
         incr(trie_max);
@@ -3654,10 +3616,7 @@ done1:
                 if ((p == 0) || (c < trie_c[p]))
                 {
                   if (trie_ptr == trie_size)
-                  {
                     overflow("pattern memory", trie_size);
-                    return;
-                  }
 
                   incr(trie_ptr);
                   trie_r[trie_ptr] = p;
@@ -3720,10 +3679,7 @@ done:
       if ((p == 0) || (c < trie_c[p]))
       {
         if (trie_ptr == trie_size)
-        {
           overflow("pattern memory", trie_size);
-          return;
-        }
 
         incr(trie_ptr);
         trie_r[trie_ptr] = p;
@@ -3749,10 +3705,7 @@ done:
           if (p == 0)
           {
             if (trie_ptr == trie_size)
-            {
               overflow("pattern memory", trie_size);
-              return;
-            }
 
             incr(trie_ptr);
             trie_r[trie_ptr] = p;
