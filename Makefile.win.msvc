@@ -9,7 +9,7 @@ CC = cl
 LINK = link
 RC = rc
 
-CFLAGS=/nologo /c /MT /GF /Gy /W4 \
+CFLAGS=/nologo /c /MT /O2 /GF /Gy /W4 \
 	/I"kpathsea" /I"zlib" /I"libptexenc/ptexenc"
 
 LFLAGS=/NOLOGO /MAP

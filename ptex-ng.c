@@ -124,7 +124,7 @@ void fix_date_and_time (void)
 
   if (tmptr == NULL)
   {
-    printf("Cannot convert time (%0lld)!\n", (long long)clock);
+    printf("Cannot convert time (%0lld)!\n", (long long) clock);
     year     = 2038;
     month    = 1;
     day      = 18;

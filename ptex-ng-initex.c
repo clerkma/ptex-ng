@@ -354,6 +354,7 @@ void line_break (boolean d)
     q = glue_ptr(last_line_fill);
 
     if ((stretch(q) > 0) && (stretch_order(q) > normal))
+	  {
       if ((background[3] == 0) && (background[4] == 0) && (background[5] == 0))
       {
         do_last_line_fit = true;
@@ -363,6 +364,7 @@ void line_break (boolean d)
         fill_width[2] = 0;
         fill_width[stretch_order(q) - 1] = stretch(q);
       }
+	  }
   }
 
   minimum_demerits = awful_bad;
@@ -372,6 +374,7 @@ void line_break (boolean d)
   minimal_demerits[very_loose_fit] = awful_bad;
 
   if (par_shape_ptr == 0)
+  {
     if (hang_indent == 0)
     {
       last_special_line = 0;
@@ -406,6 +409,7 @@ void line_break (boolean d)
           second_indent = 0;
       }
     }
+  }
   else
   {
     last_special_line = info(par_shape_ptr) - 1;
@@ -497,6 +501,7 @@ void line_break (boolean d)
         chain = false;
 
         if (is_char_node(cur_p))
+        {
           if (font_dir[font(cur_p)] != dir_default)
           {
             switch (type(prev_p))
@@ -520,85 +525,84 @@ void line_break (boolean d)
                 break;
             }
           }
+        }
 
         prev_p = cur_p;
         post_p = cur_p;
         post_f = font(post_p);
 
-        do
+        do {
+          f = post_f;
+          cc = character(post_p);
+          act_width = act_width + char_width(f, char_info(f, cc));
+          post_p = link(cur_p);
+
+          if (font_dir[f] != dir_default)
           {
-            f = post_f;
-            cc = character(post_p);
-            act_width = act_width + char_width(f, char_info(f, cc));
-            post_p = link(cur_p);
+            prev_p = cur_p;
+            cur_p = post_p;
+            post_p = link(post_p);
 
-            if (font_dir[f] != dir_default)
-            {
-              prev_p = cur_p;
-              cur_p = post_p;
-              post_p = link(post_p);
-
-              if (is_char_node(post_p))
-              {
-                post_f = font(post_p);
-
-                if (font_dir[post_f] != dir_default)
-                  chain = true;
-                else
-                  chain = false;
-
-                try_break(0, unhyphenated);
-              }
-              else
-              {
-                chain = false;
-
-                switch (type(post_p))
-                {
-                  case hlist_node:
-                  case vlist_node:
-                  case dir_node:
-                  case rule_node:
-                  case ligature_node:
-                  case disc_node:
-                  case math_node:
-                    try_break(0, unhyphenated);
-                    break;
-
-                  default:
-                    do_nothing();
-                    break;
-                }
-              }
-
-              if (chain)
-              {
-                if (first_use)
-                {
-                  check_shrinkage(cur_kanji_skip);
-                  first_use = false;
-                }
-
-                act_width = act_width + width(cur_kanji_skip);
-                active_width[2 + stretch_order(cur_kanji_skip)] =
-                  active_width[2 + stretch_order(cur_kanji_skip)] + stretch(cur_kanji_skip);
-                active_width[6] = active_width[6] + shrink(cur_kanji_skip);
-              }
-
-              prev_p = cur_p;
-            }
-            else if (is_char_node(post_p))
+            if (is_char_node(post_p))
             {
               post_f = font(post_p);
-              chain = false;
 
               if (font_dir[post_f] != dir_default)
-                try_break(0, unhyphenated);
+                chain = true;
+              else
+                chain = false;
+
+              try_break(0, unhyphenated);
+            }
+            else
+            {
+              chain = false;
+
+              switch (type(post_p))
+              {
+                case hlist_node:
+                case vlist_node:
+                case dir_node:
+                case rule_node:
+                case ligature_node:
+                case disc_node:
+                case math_node:
+                  try_break(0, unhyphenated);
+                  break;
+
+                default:
+                  do_nothing();
+                  break;
+              }
             }
 
-            cur_p = post_p;
+            if (chain)
+            {
+              if (first_use)
+              {
+                check_shrinkage(cur_kanji_skip);
+                first_use = false;
+              }
+
+              act_width = act_width + width(cur_kanji_skip);
+              active_width[2 + stretch_order(cur_kanji_skip)] =
+                active_width[2 + stretch_order(cur_kanji_skip)] + stretch(cur_kanji_skip);
+              active_width[6] = active_width[6] + shrink(cur_kanji_skip);
+            }
+
+            prev_p = cur_p;
           }
-        while (!(!is_char_node(cur_p)));
+          else if (is_char_node(post_p))
+          {
+            post_f = font(post_p);
+            chain = false;
+
+            if (font_dir[post_f] != dir_default)
+              try_break(0, unhyphenated);
+          }
+
+          cur_p = post_p;
+        } while (!(!is_char_node(cur_p)));
 
         chain = false;
       }
@@ -673,6 +677,7 @@ void line_break (boolean d)
                     goto continu;
                   }
                   else if (type(s) == ligature_node)
+                  {
                     if (lig_ptr(s) == 0)
                       goto continu;
                     else
@@ -681,6 +686,7 @@ void line_break (boolean d)
                       c = character(q);
                       hf = font(q);
                     }
+                  }
                   else if ((type(s) == kern_node) && (subtype(s) == normal))
                     goto continu;
                   else if ((type(s) == math_node) && (subtype(s) >= L_code))
@@ -702,10 +708,12 @@ void line_break (boolean d)
                   set_lc_code(c);
 
                   if (hc[0] != 0)
+                  {
                     if ((hc[0] == (halfword) c) || (uc_hyph > 0))
                       goto done2;
                     else
                       goto done1;
+                  }
 continu:
                   prev_s = s;
                   s = link(prev_s);
@@ -803,6 +811,7 @@ done3:
                 while (true)
                 {
                   if (!(is_char_node(s)))
+                  {
                     switch (type(s))
                     {
                       case ligature_node:
@@ -837,6 +846,8 @@ done3:
                         goto done1;
                         break;
                     }
+                  }
+
                   s = link(s);
                 }
 done4:
@@ -1002,11 +1013,13 @@ done5:;
 
         do {
           if (type(r) != delta_node)
+          {
             if (total_demerits(r) < fewest_demerits)
             {
               fewest_demerits = total_demerits(r);
               best_bet = r;
             }
+          }
 
           r = link(r);
         } while (!(r == active));
@@ -1115,6 +1128,7 @@ done:
 #endif
 
   if (do_last_line_fit)
+  {
     if (active_short(best_bet) == 0)
       do_last_line_fit = false;
     else
@@ -1124,6 +1138,7 @@ done:
       width(q) = width(q) + active_short(best_bet) - active_glue(best_bet);
       stretch(q) = 0; glue_ptr(last_line_fill) = q;
     }
+  }
 
   post_line_break(d);
   q = link(active);
@@ -1189,8 +1204,10 @@ void prefixed_command (void)
     }
 
     if (tracing_commands > 2)
+    {
       if (eTeX_ex)
         show_cur_cmd_chr();
+    }
   }
 
   if (a >= 8)
@@ -1223,6 +1240,7 @@ void prefixed_command (void)
   }
 
   if (global_defs != 0)
+  {
     if (global_defs < 0)
     {
       if (global)
@@ -1233,6 +1251,7 @@ void prefixed_command (void)
       if (!global)
         a = a + 4;
     }
+  }
 
   switch (cur_cmd)
   {
@@ -1302,8 +1321,10 @@ void prefixed_command (void)
         if (cur_cmd >= call)
           add_token_ref(cur_chr);
         else if ((cur_cmd == tex_register) || (cur_cmd == toks_register))
+        {
           if ((cur_chr < mem_bot) || (cur_chr > lo_mem_stat_max))
             add_sa_ref(cur_chr);
+        }
 
         define(p, cur_cmd, cur_chr);
       }
@@ -1417,6 +1438,7 @@ void prefixed_command (void)
         e = false;
 
         if (cur_cmd == toks_register)
+        {
           if (cur_chr == mem_bot)
           {
             scan_register_num();
@@ -1432,6 +1454,7 @@ void prefixed_command (void)
           }
           else
             e = true;
+        }
 
         p = cur_chr;
         scan_optional_equals();
@@ -1445,6 +1468,7 @@ void prefixed_command (void)
           if ((cur_cmd == toks_register) || (cur_cmd == assign_toks))
           {
             if (cur_cmd == toks_register)
+            {
               if (cur_chr == mem_bot)
               {
                 scan_register_num();
@@ -1463,6 +1487,7 @@ void prefixed_command (void)
               }
               else
                 q = sa_ptr(cur_chr);
+            }
             else
               q = equiv(cur_chr);
 
@@ -1966,7 +1991,6 @@ boolean load_fmt_file (void)
   undump_int(x); /* mem_top */
 
 #ifdef ALLOCATEMAIN
-/* we already read this once earlier to grab mem_top */
   if (trace_flag)
     printf("Read from fmt file mem_top = %lld memory words\n", x);
 

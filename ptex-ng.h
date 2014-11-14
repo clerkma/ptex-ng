@@ -165,11 +165,10 @@ do {                                                            \
 #define nrestmultichr(x)  ((x)!=0 ? ((x) / 8) + 2 - ((x) % 8) : -1)
 #define max_cjk_val       0x1000000
 
-#define file_name_size PATH_MAX
-#define min_halfword  0
-//#define min_halfword -2147483647L /* LONG_MIN, for 64 bit memory word (signed) */
-#define max_halfword  2147483647L /* LONG_MAX, for 64 bit memory word (signed) */
-#define block_size 1000 /* block_size for variable length node alloc */
+#define file_name_size  PATH_MAX
+#define min_halfword    0
+#define max_halfword    2147483647
+#define block_size      1000
 
 #ifdef INCREASEFONTS
   #define min_quarterword 0
@@ -179,10 +178,7 @@ do {                                                            \
   #define max_quarterword 255
 #endif
 
-#define default_mem_top 262140L  /* usual big TeX allocation 2 Meg bytes */
-/* #define default_mem_top 131070L */ /* usual big TeX allocation 1 Meg bytes */
-/* #define default_mem_top 65534L  */ /* usual small TeX allocation 0.5 Meg   */
-
+#define default_mem_top 262140
 #define mem_bot 0
 
 #ifdef ALLOCATEMAIN
@@ -236,10 +232,10 @@ EXTERN integer max_buf_stack;
 
 #ifdef ALLOCATESTRING
   #define max_strings (max_halfword / sizeof(pool_pointer) - 1)
-  #define pool_size (max_halfword - 1)
+  #define pool_size   (max_halfword - 1)
 #else
   #define max_strings 16384
-  #define pool_size 124000L
+  #define pool_size   124000
 #endif
 
 #define string_vacancies 100000

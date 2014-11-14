@@ -1,0 +1,53 @@
+%!TeX Program=pTeX-ng(LaTeX)
+\special{pdf: mapline + upjisr-h UniGB-UTF16-H FandolSong-Regular}
+\special{pdf: mapline + upjisg-h UniGB-UTF16-H FandolHei-Regular}
+\special{pdf: mapline + upjisr-v UniGB-UTF16-V FandolSong-Regular}
+\special{pdf: mapline + upjisg-v UniGB-UTF16-V FandolHei-Regular}
+%
+\documentclass[dvipdfmx]{beamer}
+\usepackage{hologo}
+\usetheme{EastLansing}
+\ybaselineshift.5pt
+\pdfpagewidth\paperwidth
+\pdfpageheight\paperheight
+\begin{document}
+\title{\bf 关于p\TeX-ng的零散文档}
+\author{马起园}
+\date{2014年11月}
+\begin{frame}
+\maketitle
+\end{frame}
+%
+\parskip.5zw
+\begin{frame}[fragile]
+\frametitle{\bf p\TeX-ng是什么}
+p\TeX-ng是下一代的p\TeX。在底层引擎上支持汉字处理、禁则处理、汉字和西文间距处理、汉字直排。目前只支持UTF-8编码，覆盖有中日韩三种语言支持。
+
+p\TeX 是日本{\font\t=ascii10 \t ASCII}公司开发的汉字处理引擎。在2008年和2010年经历合并以及收购之后，p\TeX 的实际开发已经停止，已经转向由社区维护。
+
+p\TeX-ng的开发最早可以追溯到2012年春节假期，最早在Lua\TeX 进行试验性质的修改，在2013年一度中断开发，正式版在今年（2014年）10月份开始发布。由于作者的时间有限，目前只做漏洞修补，下一部分大规模开发要拖到2015年春节。p\TeX-ng是自由软件，分发遵循GPL第二版许可。
+\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{\bf p\TeX-ng的开发概要}
+p\TeX-ng的前身是Y\&Y \TeX，一个用C语言实现的带内存管理的\TeX。早期的Y\&Y \TeX 的源代码
+是使用web2c经Pascal转换为C语言，不具有可读性和可扩展性，这部分代码在2014年上半年进行
+了重写。p\TeX-ng的源代码建立在Y\&Y \TeX 的基础之上。
+
+p\TeX-ng的的汉字处理相关代码来源于p\TeX；Unicode编码处理代码来源于up\TeX。对于\hologo{eTeX}
+的支持来源于eup\TeX。
+
+p\TeX-ng只支持PDF文件输出，不支持DVI文件输出。输出PDF相关的代码来源于dvipdfmx，没有任何
+来自\hologo{pdfTeX}的代码，所以大量primitive不被支持。
+\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{\bf p\TeX-ng的将来}
+p\TeX-ng在将来会支持OpenType字体、绑定动态语言扩展宏编程。
+\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{\bf p\TeX-ng的primitive}
+\TeX 中的primitive是最基本的命令，宏展开之后就是primitive的一个序列。
+\end{frame}
+\end{document}
