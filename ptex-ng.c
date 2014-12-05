@@ -177,7 +177,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
     {
       if ((i == EOF) || (i == '\n') || (i == '\r'))
         break;
-      else if (i == '\t' && tab_step != 0)
+      else if ((i == '\t') && (tab_step != 0))
       {
         buffer[last++] = (ASCII_code) ' ';
 
@@ -194,7 +194,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
 #ifdef ALLOCATEBUFFER
         while ((last - first) % tab_step != 0) 
 #else
-        while (last < buf_size && (last - first) % tab_step != 0)
+        while ((last < buf_size) && ((last - first) % tab_step != 0))
 #endif
         {
           buffer[last++] = (ASCII_code) ' ';

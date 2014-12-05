@@ -41,6 +41,8 @@
 
 /* headers and pragmas */
 #if defined (_WIN32)
+  #define _CRT_DISABLE_PERFCRIT_LOCKS
+  #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
   #pragma warning(disable:4201) // nameless struct/union
   #pragma warning(disable:4267)
   #pragma warning(disable:4996) // a function that was marked with deprecated
@@ -62,11 +64,10 @@
 #include <math.h>
 #include <signal.h>
 // TeX Live's kpathsea
-#include <kpathsea/c-auto.h>
+#include <kpathsea/config.h>
 #include <kpathsea/c-pathmx.h> // PATH_MAX
 #include <kpathsea/c-pathch.h> // ISBLANK
 #include <kpathsea/c-fopen.h>  // FOPEN_WBIN_MODE
-#include <kpathsea/config.h>
 #include <kpathsea/getopt.h>   // get_opt
 #include <kpathsea/tex-file.h> // kpse_find_file
 #include <kpathsea/variable.h> // kpse_var_value
@@ -96,6 +97,9 @@ typedef FILE * word_file;
   #undef link
 #endif
 
+//#include <conio.h>
+//#define wterm(s)    (void) _putch(s)
+//#define wterm_cr()  (void) _putch('\n')
 #define wterm(s)    (void) fputc(s, stdout)
 #define wlog(s)     (void) fputc(s, log_file)
 #define wterm_cr()  (void) fputc('\n', stdout)
@@ -560,8 +564,6 @@ EXTERN integer skip_line;
 EXTERN str_number cur_name;
 EXTERN str_number cur_area;
 EXTERN str_number cur_ext;
-EXTERN str_number cur_cmap;
-EXTERN str_number cur_spec;
 EXTERN pool_pointer area_delimiter;
 EXTERN pool_pointer ext_delimiter;
 EXTERN integer format_default_length;
@@ -592,8 +594,6 @@ EXTERN four_quarters font_check[font_max + 1];
 EXTERN eight_bits font_dir[font_max + 1];
 EXTERN integer font_num_ext[font_max + 1];
 EXTERN integer font_id[font_max + 1];
-EXTERN str_number font_cmap[font_max + 1];
-EXTERN str_number font_spec[font_max + 1];
 EXTERN scaled font_size[font_max + 1];
 EXTERN scaled font_dsize[font_max + 1];
 EXTERN font_index font_params[font_max + 1];
@@ -850,6 +850,8 @@ EXTERN scaled best_pl_glue[4];
 EXTERN trie_pointer hyph_start;
 EXTERN trie_pointer hyph_index;
 EXTERN pointer disc_ptr[4];
+EXTERN boolean is_print_utf8;
+EXTERN str_number last_tokens_string;
 /* new variables defined in ptex-ng-local.c */
 EXTERN boolean is_initex;
 EXTERN boolean verbose_flag;
@@ -900,6 +902,7 @@ extern int current_nest_size;
 extern int current_param_size;
 extern int current_buf_size;
 extern const char * banner;
+extern const char * dist;
 extern char log_line[256];
 extern char * dvi_directory;
 extern char * log_directory;

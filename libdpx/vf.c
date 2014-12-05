@@ -1050,3 +1050,5 @@ void vf_close_all_fonts(void)
     RELEASE (vf_fonts);
   return;
 }
+
+#include "vf_ng.c"

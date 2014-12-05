@@ -275,30 +275,10 @@ void pdf_synch_v (void)
     dvi_v = cur_v;
 }
 
-void pdf_map_font (internal_font_number f)
-{
-  if ((font_cmap[f] == 0) || (font_spec[f] == 0))
-    return;
-
-  char * fnt_name = get_str_string(font_name[f]);
-  char * fnt_cmap = get_str_string(font_cmap[f]);
-  char * fnt_spec = get_str_string(font_spec[f]);
-  pdf_insert_ng_fontmap(fnt_name, fnt_cmap, fnt_spec, 0);
-  free(fnt_name);
-  free(fnt_cmap);
-  free(fnt_spec);
-}
-
-void pdf_get_font (internal_font_number f)
+void pdf_locate_font (internal_font_number f)
 {
   char * sbuf = get_str_string(font_name[f]);
-  int pdf_font_id = pdf_dev_locate_font(sbuf, font_size[f]);
-
-  if (pdf_font_id >= 0)
-    font_id[f] = pdf_font_id;
-  else
-    font_id[f] = -1;
-
+  font_id[f] = dvi_locate_font(sbuf, font_size[f]);
   free(sbuf);
 }
 
@@ -328,127 +308,15 @@ static void pdf_adjust_dir (scaled x, scaled y)
 
 void pdf_char_out (internal_font_number f, ASCII_code c)
 {
-  pdf_rect rect;
-  char cbuf[2];
-
-  cbuf[0] = c;
-  cbuf[1] = 0;
-
-  if (font_id[f] == -1)
-    return;
-
   pdf_adjust_dir(cur_h, cur_v);
-  pdf_dev_set_string(pdf_h, pdf_v, cbuf, 1,
-    char_width(f, char_info(f, c)), font_id[f], 1);
-  pdf_dev_set_rect(&rect, pdf_h, pdf_v, char_width(f, char_info(f, c)),
-      char_height(f, height_depth(char_info(f, c))),
-      char_depth(f, height_depth(char_info(f, c))));
-  pdf_doc_expand_box(&rect);
+  ng_set(c, font_id[f], pdf_h, pdf_v);
 }
 
-#define jfm_zw(f) char_width(f, char_info(f, 0))
 
-scaled adjust_kanji (internal_font_number f, KANJI_code k)
+void pdf_kanji_out (internal_font_number f, KANJI_code c)
 {
-  scaled adjust_pos;
-  // physical width, char class 0
-  scaled kanji_pwd = char_width(f, char_info(f, 0));
-  // logical or overloaded width
-  scaled kanji_lwd = char_width(f, char_info(f, get_jfm_pos(k, f)));
-
-  switch (k)
-  {
-    case 0xFF08: /* （ */
-    case 0x3014: /* 〔 */
-    case 0xFF3B: /* ［ */
-    case 0xFF5B: /* ｛ */
-    case 0x3008: /* 〈 */
-    case 0x300A: /* 《 */
-    case 0x300C: /* 「 */
-    case 0x300E: /* 『 */
-    case 0x3010: /* 【 */
-    case 0xFF5F: /* JIS X 0213  1-02-54 始め二重バーレーン */
-    case 0x3018: /* JIS X 0213  1-02-56 始め二重亀甲括弧 */
-    case 0x3016: /* JIS X 0213  1-02-58 始めすみ付き括弧(白) */
-    case 0x301D: /* JIS X 0213  1-13-64 始めダブルミニュート */
-      adjust_pos = -(kanji_pwd - kanji_lwd);
-      break;
-
-    case 0x3000: /* spc */
-    case 0x3001: /* 、 */
-    case 0x3002: /* 。 */
-    case 0xFF0C: /* ， */
-    case 0xFF0E: /* ． */
-    case 0x309B: /* ゛ */
-    case 0x309C: /* ゜ */
-    case 0xFF09: /* ） */
-    case 0x3015: /* 〕 */
-    case 0xFF3D: /* ］ */
-    case 0xFF5D: /* ｝ */
-    case 0x3009: /* 〉 */
-    case 0x300B: /* 》 */
-    case 0x300D: /* 」 */
-    case 0x300F: /* 』 */
-    case 0x3011: /* 】 */
-    case 0xFF60: /* JIS X 0213  1-02-55 終わり二重バーレーン */
-    case 0x3019: /* JIS X 0213  1-02-57 終わり二重亀甲括弧 */
-    case 0x3017: /* JIS X 0213  1-02-59 終わりすみ付き括弧(白) */
-    case 0x301F: /* JIS X 0213  1-13-65 終わりダブルミニュート */
-    case 0x00B0: /* ° */
-    case 0x2032: /* ′ */
-    case 0x2033: /* ″ */
-      adjust_pos = 0;
-      break;
-
-    default:
-      if (kanji_pwd != kanji_lwd)
-        adjust_pos = -(kanji_pwd - kanji_lwd) / 2;
-      else
-        adjust_pos = 0;
-      break;
-  }
-
-  return adjust_pos;
-}
-
-void pdf_kanji_out (internal_font_number f, KANJI_code k)
-{
-  pdf_rect rect;
-  char cbuf[4];
-  int cbuf_len;
-  ASCII_code d;
-
-  if (font_id[f] == -1)
-    return;
-
-  d = get_jfm_pos(KANJI(k), f);
-  pdf_adjust_dir(cur_h + adjust_kanji(f, k), cur_v);
-
-  if (k < 0x10000)
-  {
-    cbuf[0] = Hi(k);
-    cbuf[1] = Lo(k);
-    cbuf[2] = 0;
-    cbuf[3] = 0;
-    cbuf_len = 2;
-  }
-  else
-  {
-    cbuf[0] = (UTF32toUTF16HS(k) >> 8) & 0xff;
-    cbuf[1] = UTF32toUTF16HS(k)        & 0xff;
-    cbuf[2] = (UTF32toUTF16LS(k) >> 8) & 0xff;
-    cbuf[3] = UTF32toUTF16LS(k)        & 0xff;
-    cbuf_len = 4;
-  }
-
-  if (font_id[f] >= 0)
-    pdf_dev_set_string(pdf_h, pdf_v, cbuf, cbuf_len, jfm_zw(f), font_id[f], 2);
-
-  pdf_dev_set_rect(&rect, pdf_h, pdf_v,
-    char_width(f, char_info(f, d)),
-    char_height(f, height_depth(char_info(f, d))),
-    char_depth(f, height_depth(char_info(f, d))));
-  pdf_doc_expand_box(&rect);
+  pdf_adjust_dir(cur_h, cur_v);
+  ng_set(c, font_id[f], pdf_h, pdf_v);
 }
 
 void pdf_rule_out (scaled rule_wd, scaled rule_ht)
@@ -520,6 +388,7 @@ void pdf_hlist_out (void)
     put_LR(before);
   
     if (box_lr(this_box) == dlist)
+    {
       if (cur_dir == right_to_left)
       {
         cur_dir = left_to_right;
@@ -527,19 +396,20 @@ void pdf_hlist_out (void)
       }
       else
         set_box_lr(this_box, 0);
-      
-      if ((cur_dir == right_to_left) && (box_lr(this_box) != reversed))
-      {
-        save_h = cur_h;
-        temp_ptr = p;
-        p = new_kern(0);
-        link(prev_p) = p;
-        cur_h = 0;
-        link(p) = reverse(this_box, null, cur_g, cur_glue);
-        width(p) = -cur_h;
-        cur_h = save_h;
-        set_box_lr(this_box, reversed);
-      }
+    }
+
+    if ((cur_dir == right_to_left) && (box_lr(this_box) != reversed))
+    {
+      save_h = cur_h;
+      temp_ptr = p;
+      p = new_kern(0);
+      link(prev_p) = p;
+      cur_h = 0;
+      link(p) = reverse(this_box, null, cur_g, cur_glue);
+      width(p) = -cur_h;
+      cur_h = save_h;
+      set_box_lr(this_box, reversed);
+    }
   }
 
   left_edge = cur_h;
@@ -560,8 +430,7 @@ reswitch:
       {
         if (!font_used[f])
         {
-          pdf_map_font(f);
-          pdf_get_font(f);
+          pdf_locate_font(f);
           font_used[f] = true;
         }
 
@@ -788,13 +657,15 @@ reswitch:
           if (eTeX_ex)
           {
             if (end_LR(p))
+            {
               if (info(LR_ptr) == end_LR_type(p))
                 pop_LR();
               else
               {
-                if (subtype(p)>L_code)
+                if (subtype(p) > L_code)
                   incr(LR_problems);
               }
+            }
             else
             {
               push_LR(p);

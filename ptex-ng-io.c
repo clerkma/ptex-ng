@@ -90,6 +90,15 @@ static boolean prepend_path_if(ASCII_code * buffer, ASCII_code * name, const cha
   return true;
 }
 
+static inline boolean check_path_sep(ASCII_code c)
+{
+#ifdef _WIN32
+  return (c == PATH_SEP || c == '\\');
+#else
+  return (c == PATH_SEP);
+#endif
+}
+
 boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode)
 {
   boolean openable = false;
@@ -112,11 +121,7 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
     strcpy ((char *) name_of_file + 1, file_name);
     *f = fopen((char *) file_name, fopen_mode);
 
-#ifdef _WIN32
-    if (name_of_file[1] == '.' && (name_of_file[2] == PATH_SEP || name_of_file[2] == '\\'))
-#else
-    if (name_of_file[1] == '.' && name_of_file[2] == PATH_SEP)
-#endif
+    if (name_of_file[1] == '.' && check_path_sep(name_of_file[2]))
     {
       unsigned i = 1;
 
@@ -221,11 +226,6 @@ boolean open_output (FILE ** f, const char * fopen_mode)
       if (*f)
         strcpy((char *) name_of_file + 1, (char *) temp_name);
     }
-  }
-
-  {
-    char * ng_buffer = (char *) malloc(BUFSIZ);
-    setbuf(*f, ng_buffer);
   }
 
 #ifdef COMPACTFORMAT

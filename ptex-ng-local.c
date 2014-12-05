@@ -23,6 +23,8 @@
 #elif defined (__APPLE__)
   #include <malloc/malloc.h>
   #define malloc_usable_size malloc_size
+#elif defined (__gnu_linux__)
+  #include <malloc.h>
 #endif
 
 #define EXTERN extern
@@ -1775,7 +1777,6 @@ static int read_command_line (int ac, char **av)
     {
       stamp_it();
       show_usage();
-      return -1; // failure
     }
     else
       analyze_flag(c);

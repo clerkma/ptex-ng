@@ -63,6 +63,7 @@ void prints_(const char * s);
 void slow_print (integer s);
 void print_nl (const char * s);
 void print_esc (const char * s);
+void sprint_esc (str_number s);
 void print_the_digs (eight_bits k);
 void print_int (integer n);
 void print_cs (integer p);
@@ -489,7 +490,9 @@ extern int spc_exec_at_end_page(void);
 typedef signed long spt_t;
 extern int spc_exec_special (const char *buffer, long size, double x_user, double y_user, double dpx_mag);
 extern int pdf_dev_locate_font(const char *font_name, spt_t ptsize);
-extern int vf_locate_font(const char *tex_name, spt_t ptsize);
+extern int dvi_locate_font(const char *tfm_name, spt_t ptsize);
+typedef long UNSIGNED_TRIPLE, SIGNED_TRIPLE, SIGNED_QUAD;
+extern void ng_set(SIGNED_QUAD ch, int ng_font_id, SIGNED_QUAD h, SIGNED_QUAD v);
 extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
 extern void pdf_dev_set_string (spt_t xpos,
                                 spt_t ypos,
@@ -791,5 +794,90 @@ static inline void print_plus (int i, const char * s)
     print_scaled(page_so_far[i]);
     prints(s);
   }
+}
+static inline void ptex_ng_error (const char * t, const char * p)
+{
+  normalize_selector();
+  print_err("pTeX-ng error");
+
+  if (t != NULL)
+  {
+    prints(" (");
+    prints(t);
+    prints(")");
+  }
+
+  prints(": ");
+  prints(p);
+  succumb();
+}
+static inline str_number tokens_to_string(pointer p)
+{
+  if (selector == new_string)
+    ptex_ng_error("tokens", "tokens_to_string() called while selector = new_string");
+
+  old_setting = selector;
+  selector = new_string;
+  show_token_list(link(p), null, pool_size - pool_ptr);
+  selector = old_setting;
+  last_tokens_string = make_string();
+  return last_tokens_string;
+}
+#define call_func(a) a
+#define flushable(a) (a == str_ptr - 1)
+static inline void flush_str(str_number s)
+{
+  if (flushable(s))
+    flush_string();
+}
+static inline void compare_strings (void)
+{
+  str_number s1, s2;
+  pool_pointer i1, i2, j1, j2;
+
+  call_func(scan_toks(false, true));
+  is_print_utf8 = true;
+  s1 = tokens_to_string(def_ref);
+  is_print_utf8 = false;
+  delete_token_ref(def_ref);
+  call_func(scan_toks(false, true));
+  is_print_utf8 = true;
+  s2 = tokens_to_string(def_ref);
+  is_print_utf8 = false;
+  delete_token_ref(def_ref);
+  i1 = str_start[s1];
+  j1 = str_start[s1 + 1];
+  i2 = str_start[s2];
+  j2 = str_start[s2 + 1];
+
+  while ((i1 < j1) && (i2 < j2))
+  {
+    if (str_pool[i1] < str_pool[i2])
+    {
+      cur_val = -1;
+      goto done;
+    }
+
+    if (str_pool[i1] > str_pool[i2])
+    {
+      cur_val = 1;
+      goto done;
+    }
+
+    incr(i1);
+    incr(i2);
+  }
+
+  if ((i1 == j1) && (i2 == j2))
+    cur_val = 0;
+  else if (i1 < j1)
+    cur_val = 1;
+  else
+    cur_val = -1;
+
+done:
+  flush_str(s2);
+  flush_str(s1);
+  cur_val_level = int_val;
 }
 #endif

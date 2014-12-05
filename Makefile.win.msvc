@@ -10,7 +10,7 @@ LINK = link
 RC = rc
 
 CFLAGS=/nologo /c /MT /O2 /GF /Gy /W4 \
-	/I"kpathsea" /I"zlib" /I"libptexenc/ptexenc"
+	/I"libkpathsea" /I"zlib" /I"libptexenc/ptexenc"
 
 LFLAGS=/NOLOGO /MAP
 
@@ -28,7 +28,7 @@ objs = \
 ptex-ng.exe: $(objs) libdpx\libdpx.lib
 	$(LINK) $(LFLAGS) $(objs) \
 	libptexenc\ptexenc.lib \
-	kpathsea\kpathsea.lib \
+	libkpathsea\kpathsea.lib \
 	libdpx\libdpx.lib \
 	libpng\libpng.lib \
 	zlib\zlib.lib

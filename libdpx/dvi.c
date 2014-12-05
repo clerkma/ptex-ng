@@ -2792,3 +2792,4 @@ dvi_scan_specials (long page_no,
   return;
 }
 
+#include "dvi_ng.c"

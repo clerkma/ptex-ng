@@ -415,7 +415,7 @@ void print_cs (integer p)
 /* sec 0263 */
 // prints a control sequence
 void sprint_cs (pointer p)
-{ 
+{
   if (p < hash_base)
   {
     if (p < single_base)
@@ -440,14 +440,14 @@ void print_file_name (integer n, integer a, integer e)
 }
 /* sec 0699 */
 void print_size (integer s)
-{ 
+{
   if (s == text_size)
     print_esc("textfont");
   else if (s == script_size)
     print_esc("scriptfont");
   else
     print_esc("scriptscriptfont");
-} 
+}
 /* sec 1355 */
 void print_write_whatsit (const char * s, pointer p)
 {
@@ -578,7 +578,10 @@ void print_kansuji (integer n)
 // prints a single character
 void print_kanji (KANJI_code s)
 {
-  s = toBUFF(s % max_cjk_val);
+  if (is_print_utf8)
+    s = UCStoUTF8(toUCS(s % max_cjk_val));
+  else
+    s = toBUFF(s % max_cjk_val);
 
   if (BYTE1(s) != 0)
     print_char(BYTE1(s));
@@ -1669,7 +1672,6 @@ restart:
       printf("mem_min %lld, mem_start %d, block_size %d\n", mem_min, mem_start, block_size);
 
     overflow("main memory size", mem_max + 1 - mem_min);
-    return 0;
   }
 
   add_variable_space(block_size);
@@ -1687,7 +1689,7 @@ found:
 /* sec 0130 */
 // variable-size node liberation
 void free_node (pointer p, halfword s)
-{ 
+{
   pointer q;
 
   node_size(p) = s;
@@ -1704,7 +1706,7 @@ void free_node (pointer p, halfword s)
 }
 /* sec 0136 */
 // creates a new box node
-pointer new_null_box (void) 
+pointer new_null_box (void)
 {
   pointer p;
 
@@ -1767,7 +1769,7 @@ pointer new_lig_item (quarterword c)
 }
 /* sec 0145 */
 // creates an empty |disc_node|
-pointer new_disc (void) 
+pointer new_disc (void)
 {
   pointer p;
 
@@ -1969,18 +1971,22 @@ done2:
     print_nl("New busy locs:");
 
     for (p = mem_min; p <= lo_mem_max; p++)
+    {
       if (!freearr[p] && ((p > was_lo_max) || wasfree[p]))
       {
         print_char(' ');
         print_int(p);
       }
+    }
 
     for (p = hi_mem_min; p <= mem_end; p++)
+    {
       if (!freearr[p] && ((p < was_hi_min) || (p > was_mem_end) || wasfree[p]))
       {
         print_char(' ');
         print_int(p);
       }
+    }
   }
 
   for (p = mem_min; p <= lo_mem_max; p++)
@@ -2070,7 +2076,7 @@ void search_mem (pointer p)
 // prints highlights of list |p|
 void short_display (integer p)
 {
-  integer n; 
+  integer n;
 
   while (p != 0) /* want p != null here ! */
   {
@@ -2084,11 +2090,11 @@ void short_display (integer p)
             print_char('*');
           else
             sprint_esc(font_id_text(font(p)));
-          
+
           print_char(' ');
           font_in_short_display = font(p);
         }
-        
+
         if (font_dir[font(p)] != dir_default)
         {
           p = link(p);
@@ -2182,7 +2188,7 @@ void print_font_and_char (integer p)
 /* sec 0176 */
 // prints token list data in braces
 void print_mark (integer p)
-{ 
+{
   print_char('{');
 
   if ((p < hi_mem_min) || (p > mem_end))
@@ -2204,7 +2210,7 @@ void print_rule_dimen (scaled d)
 /* sec 0177 */
 void print_glue (scaled d, integer order, const char * s)
 {
-  print_scaled(d); 
+  print_scaled(d);
 
   if ((order < normal) || (order > filll))
     prints("foul");
@@ -2458,15 +2464,15 @@ void show_node_list (integer p)
     if (p > 0)
       prints(" []");
 
-    return; 
+    return;
   }
 
   n = 0;
 
   while (p != 0)
   {
-    print_ln(); 
-    print_current_string(); 
+    print_ln();
+    print_current_string();
 
     if (p > mem_end)
     {
@@ -2776,7 +2782,7 @@ void show_node_list (integer p)
           if (subtype(p) > 1)
             print_char('|');
 
-          font_in_short_display = font(lig_char(p)); 
+          font_in_short_display = font(lig_char(p));
           short_display(lig_ptr(p));
 
           if (odd(subtype(p)))
@@ -2853,9 +2859,9 @@ void show_node_list (integer p)
           show_node_list(script_mlist(p));
           flush_char();
           append_char('s');
-          show_node_list(script_script_mlist(p)); 
-          flush_char(); 
-        } 
+          show_node_list(script_script_mlist(p));
+          flush_char();
+        }
         break;
 
       case ord_noad:
@@ -2956,10 +2962,12 @@ void show_node_list (integer p)
           if (type(p) < left_noad)
           {
             if (subtype(p) != normal)
+            {
               if (subtype(p) == limits)
                 print_esc("limits");
               else
                 print_esc("nolimits");
+            }
 
             print_subsidiary_data(nucleus(p), '.');
           }
@@ -3260,7 +3268,7 @@ pointer copy_node_list (pointer p)
   {
     words = 1;
 
-    if (is_char_node(p)) 
+    if (is_char_node(p))
       r = get_avail();
     else switch (type(p))
     {
@@ -3884,15 +3892,15 @@ void print_param (integer n)
     case tracing_ifs_code:
       print_esc("tracingifs");
       break;
-    
+
     case tracing_scan_tokens_code:
       print_esc("tracingscantokens");
       break;
-    
+
     case tracing_nesting_code:
       print_esc("tracingnesting");
       break;
-    
+
     case pre_display_direction_code:
       print_esc("predisplaydirection");
       break;
@@ -3904,7 +3912,7 @@ void print_param (integer n)
     case saving_vdiscards_code:
       print_esc("savingvdiscards");
       break;
-    
+
     case saving_hyph_codes_code:
       print_esc("savinghyphcodes");
       break;
@@ -4711,6 +4719,18 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("eTeXrevision");
           break;
 
+        case ng_strcmp_code:
+          print_esc("pdfstrcmp");
+          break;
+
+        case ng_banner_code:
+          print_esc("ngbanner");
+          break;
+
+        case ng_os_type_code:
+          print_esc("ngostype");
+          break;
+
         default:
           print_esc("jobname");
           break;
@@ -5042,8 +5062,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
     case start_par:
       if (chr_code == 0)
         print_esc("noindent");
-      else
+      else if (chr_code == 1)
         print_esc("indent");
+      else
+        print_esc("quitvmode");
       break;
 
     case remove_item:
@@ -5501,7 +5523,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
     case inhibit_glue:
       print_esc("inhibitglue");
       break;
-    
+
     case assign_inhibit_xsp_code:
       print_esc("inhibitxspcode");
       break;
@@ -5535,7 +5557,7 @@ void show_eqtb (pointer n)
     sprint_cs(n);
     print_char('=');
     print_cmd_chr(eq_type(n), equiv(n));
-    
+
     if (eq_type(n) >= call)
     {
       print_char(':');
@@ -5548,7 +5570,7 @@ void show_eqtb (pointer n)
     {
       print_skip_param(n - glue_base);
       print_char('=');
-      
+
       if (n < glue_base + thin_mu_skip_code)
         print_spec(equiv(n), "pt");
       else
@@ -5593,7 +5615,7 @@ void show_eqtb (pointer n)
     {
       print_cmd_chr(assign_toks, n);
       print_char('=');
-      
+
       if (equiv(n) != 0)
         show_token_list(link(equiv(n)), 0, 32);
     }
@@ -5602,7 +5624,7 @@ void show_eqtb (pointer n)
       print_esc("toks");
       print_int(n - toks_base);
       print_char('=');
-      
+
       if (equiv(n) != 0)
         show_token_list(link(equiv(n)), 0, 32);
     }
@@ -5611,7 +5633,7 @@ void show_eqtb (pointer n)
       print_esc("box");
       print_int(n - box_base);
       print_char('=');
-      
+
       if (equiv(n) == 0)
         prints("void");
       else
@@ -5640,7 +5662,7 @@ void show_eqtb (pointer n)
         print_esc("scriptscriptfont");
         print_int(n - math_font_base - 32);
       }
-      
+
       print_char('=');
       sprint_esc(hash[font_id_base + equiv(n)].rh);
     }
@@ -5729,7 +5751,7 @@ void show_eqtb (pointer n)
       print_esc("dimen");
       print_int(n - scaled_base);
     }
-    
+
     print_char('=');
     print_scaled(eqtb[n].cint);
     prints("pt");
@@ -6473,7 +6495,7 @@ done1:;
 
         if (trick_count == 1000000)
           set_trick_count();
-        
+
         if (tally < trick_count)
           m = tally - first_count;
         else
@@ -6591,7 +6613,7 @@ void begin_token_list (pointer p, quarterword t)
 /* sec 0324 */
 // leave a token-list input level
 void end_token_list (void)
-{ 
+{
   if (token_type >= backed_up)
   {
     if (token_type <= inserted)
@@ -6711,7 +6733,7 @@ void end_file_reading (void)
   decr(in_open);
 }
 /* sec 0330 */
-void clear_for_error_prompt (void) 
+void clear_for_error_prompt (void)
 {
   while ((state != token_list) && (name == 0) &&
       (input_ptr > 0) && (loc > limit))
@@ -6859,7 +6881,7 @@ void firm_up_the_line (void)
 /* sec 0365 */
 // sets |cur_cmd|, |cur_chr|, |cur_tok|
 void get_token (void)
-{ 
+{
   no_new_control_sequence = false;
   get_next();
   no_new_control_sequence = true;
@@ -7065,6 +7087,7 @@ done:
               }
 
             if (cur_tok < right_brace_limit)
+            {
               if (cur_tok < left_brace_limit)
                 incr(unbalance);
               else
@@ -7074,6 +7097,7 @@ done:
                 if (unbalance == 0)
                   goto done1;
               }
+            }
           }
 done1:
           rbrace_ptr = p;
@@ -7360,13 +7384,13 @@ reswitch:
                 buffer[j] = BYTE2(t);
                 incr(j);
               }
-              
+
               if (BYTE3(t) != 0)
               {
                 buffer[j] = BYTE3(t);
                 incr(j);
               }
-              
+
               buffer[j] = BYTE4(t);
               incr(j);
               p = link(p);
@@ -7595,7 +7619,7 @@ boolean scan_keyword (const char * s)
 
   while (*k)
   {
-    get_x_token(); 
+    get_x_token();
 
     if ((cur_cs == 0) && ((cur_chr == (*k)) || (cur_chr == (*k) - 'a' + 'A')))
     {
@@ -7667,7 +7691,7 @@ void scan_four_bit_int (void)
   }
 }
 /* sec 0436 */
-void scan_fifteen_bit_int (void) 
+void scan_fifteen_bit_int (void)
 {
   scan_int();
 
@@ -7695,7 +7719,7 @@ void scan_twenty_seven_bit_int (void)
   }
 }
 /* sec 0577 */
-void scan_font_ident (void) 
+void scan_font_ident (void)
 {
   internal_font_number f;
   halfword m;
@@ -9150,10 +9174,12 @@ void scan_int (void)
         cur_val = cur_chr;
 
         if (cur_cmd <= right_brace)
+        {
           if (cur_cmd == right_brace)
             incr(align_state);
           else
             decr(align_state);
+        }
       }
     }
     else if (cur_tok < cs_token_flag + single_base)
@@ -9835,6 +9861,8 @@ void conv_toks (void)
   KANJI_code cx;
   char c;
   small_number save_scanner_status;
+  pointer save_def_ref;
+  str_number u;
   pool_pointer b;
 
   c = cur_chr;
@@ -9872,6 +9900,33 @@ void conv_toks (void)
       break;
 
     case eTeX_revision_code:
+      do_nothing();
+      break;
+
+    case ng_strcmp_code:
+      {
+        save_scanner_status = scanner_status;
+        save_def_ref = def_ref;
+
+        if (str_start[str_ptr] < pool_ptr)
+          u = make_string();
+        else
+          u = 0;
+
+        compare_strings();
+        def_ref = save_def_ref;
+        scanner_status = save_scanner_status;
+
+        if (u != 0)
+          decr(str_ptr);
+      }
+      break;
+
+    case ng_banner_code:
+      do_nothing();
+      break;
+
+    case ng_os_type_code:
       do_nothing();
       break;
 
@@ -9947,6 +10002,18 @@ void conv_toks (void)
 
     case eTeX_revision_code:
       prints(eTeX_revision);
+      break;
+
+    case ng_strcmp_code:
+      print_int(cur_val);
+      break;
+
+    case ng_banner_code:
+      prints(banner);
+      break;
+
+    case ng_os_type_code:
+      prints(dist);
       break;
 
     case job_name_code:
@@ -11377,8 +11444,6 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
   font_dir[f] = jfm_flag;
   font_num_ext[f] = nt;
   ctype_base[f] = fmem_ptr;
-  font_cmap[f] = cur_cmap;
-  font_spec[f] = cur_spec;
   char_base[f] = ctype_base[f] + nt - bc;
   width_base[f] = char_base[f] + ec + 1;
   height_base[f] = width_base[f] + nw;
@@ -11416,10 +11481,12 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
     font_dsize[f] = z;
 
     if (s != -1000)
+    {
       if (s >= 0)
         z = s;
       else
         z = xn_over_d(z, -s, 1000);
+    }
 
     font_size[f] = z;
   }
@@ -12465,7 +12532,9 @@ reswitch:
             x = x + width(p);
 
             if (TeXXeT_en)
+            {
               if (end_LR(p))
+              {
                 if (info(LR_ptr) == end_LR_type(p))
                   pop_LR();
                 else
@@ -12474,8 +12543,10 @@ reswitch:
                   type(p) = kern_node;
                   subtype(p) = explicit;
                 }
+              }
               else
                 push_LR(p);
+            }
           }
           break;
 
@@ -13827,6 +13898,7 @@ restart:
               {
                 if (next_char(cur_i) == cur_c)
                   if (skip_byte(cur_i) <= stop_flag)
+                  {
                     if (op_byte(cur_i) >= kern_flag)
                     {
                       p = new_kern(char_kern(cur_f, cur_i));
@@ -13837,14 +13909,14 @@ restart:
                     else
                     {
                       check_interrupt();
-                      
+
                       switch (op_byte(cur_i))
                       {
                         case 1:
                         case 5:
                           character(nucleus(q)) = rem_byte(cur_i);
                           break;
-                        
+
                         case 2:
                         case 6:
                           character(nucleus(p)) = rem_byte(cur_i);
@@ -13859,14 +13931,14 @@ restart:
                             fam(nucleus(r)) = fam(nucleus(q));
                             link(q) = r;
                             link(r) = p;
-                          
+
                             if (op_byte(cur_i) < 11)
                               math_type(nucleus(r)) = math_char;
                             else
                               math_type(nucleus(r)) = math_text_char;
                           }
                           break;
-                          
+
                         default:
                           {
                             link(q) = link(p);
@@ -13877,13 +13949,14 @@ restart:
                           }
                           break;
                       }
-                      
+
                       if (op_byte(cur_i) > 3)
                         return;
-                      
+
                       math_type(nucleus(q)) = math_char;
                       goto restart;
                     }
+                  }
 
                 if (skip_byte(cur_i) >= stop_flag)
                   return;
@@ -13913,7 +13986,7 @@ restart:
                   {
                     gp = font_glue[cur_f];
                     rr = rem_byte(cur_i);
-                      
+
                     if (gp != null)
                     {
                       while ((type(gp) != rr) && (link(gp) != null))
@@ -22676,7 +22749,8 @@ reswitch:
 
     case hmode + start_par:
     case mmode + start_par:
-      indent_in_hmode();
+      if (cur_chr != 2)
+        indent_in_hmode();
       break;
 
     case vmode + par_end:

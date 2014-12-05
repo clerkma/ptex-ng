@@ -1127,7 +1127,10 @@ do {                          \
 #define kuten_code         9
 #define ucs_code           10
 #define eTeX_revision_code 11
-#define job_name_code      12
+#define ng_strcmp_code     12
+#define ng_banner_code     13
+#define ng_os_type_code    14
+#define job_name_code      15
 /* sec 0480 */
 #define closed    2
 #define just_open 1
@@ -3058,6 +3061,7 @@ do {                      \
 do {                          \
   if (stretch(a) == 0)        \
     stretch_order(a) = normal;\
+                              \
   if (shrink(a) == 0)         \
     shrink_order(a) = normal; \
 } while (0)
@@ -3086,10 +3090,12 @@ do {                          \
 #define if_cur_ptr_is_null_then_return_or_goto(a) \
 do {                    \
   if (cur_ptr == null)  \
+  {                     \
     if (w)              \
       goto a;           \
     else                \
       return;           \
+  }                     \
 } while (0)
 //
 #define hex_dig1(a) (a / 4096)
@@ -3145,6 +3151,7 @@ do {                                          \
   else                                        \
   {                                           \
     find_sa_element(box_val, cur_val, false); \
+                                              \
     if (cur_ptr == null)                      \
       a = null;                               \
     else                                      \
@@ -3165,6 +3172,7 @@ do {                  \
 #define set_sa_box(a)                     \
 do {                                      \
   find_sa_element(box_val,cur_val,false); \
+                                          \
   if (cur_ptr != null)                    \
   {                                       \
     sa_ptr(cur_ptr) = a;                  \
@@ -3189,10 +3197,12 @@ do {                                      \
 #define sa_define(a1,a2,a3,a4,a5) \
 do {                    \
   if (e)                \
+  {                     \
     if (global)         \
       gsa_def(a1, a2);  \
     else                \
       sa_def(a1, a2);   \
+  }                     \
   else                  \
     define(a3, a4, a5); \
 } while (0)
@@ -3200,6 +3210,7 @@ do {                    \
 #define sa_def_box()                      \
 do {                                      \
   find_sa_element(box_val, cur_val, true);\
+                                          \
   if (global)                             \
     gsa_def(cur_ptr,cur_box);             \
   else                                    \
@@ -3209,10 +3220,12 @@ do {                                      \
 #define sa_word_define(a1,a2) \
 do {                          \
   if (e)                      \
+  {                           \
     if (global)               \
       gsa_w_def(a1, a2);      \
     else                      \
       sa_w_def(a1, a2);       \
+  }                           \
   else word_define(a1, a2);   \
 } while (0)
 //

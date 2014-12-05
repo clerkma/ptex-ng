@@ -2088,8 +2088,10 @@ boolean load_fmt_file (void)
   undump(lo_mem_stat_max + 1, lo_mem_max, rover);
 
   if (eTeX_ex)
+  {
     for (k = int_val; k <= tok_val; ++k)
       undump(0, lo_mem_max, sa_root[k]);
+  }
 
   p = mem_bot;
   q = rover;
@@ -2223,8 +2225,6 @@ boolean load_fmt_file (void)
     undump_things(font_bc[null_font], font_ptr + 1);
     undump_things(font_ec[null_font], font_ptr + 1);
     undump_things(ctype_base[null_font], font_ptr + 1);
-    undump_things(font_cmap[null_font], font_ptr + 1);
-    undump_things(font_spec[null_font], font_ptr + 1);
     undump_things(char_base[null_font], font_ptr + 1);
     undump_things(width_base[null_font], font_ptr + 1);
     undump_things(height_base[null_font], font_ptr + 1);
@@ -2240,13 +2240,9 @@ boolean load_fmt_file (void)
     undump_things(font_false_bchar[null_font], font_ptr + 1);
   }
 
-/* log not opened yet, so can't show fonts frozen into format */
-/* May be able to avoid the following since we switched to */
-/* non_address from font_mem_size to 0 96/Jan/15 ??? */
-
 #ifdef ALLOCATEFONT
   {
-    int count = 0, oldfont_mem_size = 0;
+    integer count = 0, oldfont_mem_size = 0;
 
     for (x = 0; x <= font_ptr; x++)
     {
@@ -2254,7 +2250,7 @@ boolean load_fmt_file (void)
         oldfont_mem_size = bchar_label[x];
     }
 
-    if (oldfont_mem_size != non_address && oldfont_mem_size > font_max)
+    if ((oldfont_mem_size != non_address) && (oldfont_mem_size > font_max))
     {
       for (x = 0; x <= font_ptr; x++)
       {
@@ -2428,25 +2424,33 @@ void final_cleanup (void)
   }
 
   if (history != spotless)
+  {
     if ((history == warning_issued) || (interaction < error_stop_mode))
+    {
       if (selector == term_and_log)
       {
         selector = term_only;
         print_nl("(see the transcript file for additional information)");
         selector = term_and_log;
       }
+    }
+  }
 
   if (c == 1)
   {
     if (is_initex)
     {
       for (c = top_mark_code; c <= split_bot_mark_code; c++)
+      {
         if (cur_mark[c] != 0)
           delete_token_ref(cur_mark[c]);
+      }
 
       if (sa_mark != null)
+      {
         if (do_marks(destroy_marks, 0, sa_mark))
           sa_mark = null;
+      }
 
       for (c = last_box_code; c <= vsplit_code; ++c)
         flush_node_list(disc_ptr[c]);
@@ -2627,9 +2631,9 @@ start_of_TEX:
       max_param_stack = 0;
 
 #ifdef ALLOCATEBUFFER
-      memset (buffer, 0, current_buf_size);
+      memset(buffer, 0, current_buf_size);
 #else
-      memset (buffer, 0, buf_size);
+      memset(buffer, 0, buf_size);
 #endif
 
       first = 0;
@@ -2837,7 +2841,7 @@ static void reset_trie (void)
 {
   integer k;
 
-  for (k = -(integer) trie_op_size; k <= trie_op_size; k++)
+  for (k = -trie_op_size; k <= trie_op_size; k++)
     trie_op_hash[k] = 0;
 
   for (k = 0; k <= 255; k++)
@@ -3358,7 +3362,6 @@ trie_pointer trie_node (trie_pointer p)
   trie_pointer h;
   trie_pointer q;
 
-  /* the 1009, 2718, 3142 are hard-wired constants here (not hyphen_prime) */
   /* compute hash value */
   h = abs(trie_c[p] + 1009 * trie_o[p] + 2718 * trie_l[p] + 3142 * trie_r[p]) % trie_size;
 
@@ -3451,33 +3454,29 @@ found:
   trie_hash[p] = h;
   q = p;
 
-  do
+  do {
+    z = h + trie_c[q];
+    l = trie_tro[z];
+    r = trie_link(z);
+    trie_tro[r] = l;
+    trie_link(l) = r;
+    trie_link(z) = 0;
+
+    if (l < 256)
     {
-      z = h + trie_c[q];
-      l = trie_tro[z];
-      r = trie_link(z);
-      trie_tro[r] = l;
-      trie_link(l) = r;
-      trie_link(z) = 0;
-
-      if (l < 256)
-      {
-        if (z < 256)
-          ll = z;         /* short ll */
-        else
-          ll = 256;
-
-        do
-          {
-            trie_min[l] = r;
-            incr(l);
-          }
-        while (!(l == ll));
-      }
-
-      q = trie_r[q];
+      if (z < 256)
+        ll = z;
+      else
+        ll = 256;
+      
+      do {
+        trie_min[l] = r;
+        incr(l);
+      } while (!(l == ll));
     }
-  while (!(q == 0));
+
+    q = trie_r[q];
+  } while (!(q == 0));
 }
 /* sec 0957 */
 void trie_pack (trie_pointer p)
@@ -3697,7 +3696,8 @@ done:
       p = 0;
 
       do {
-        q = p; p = trie_r[q];
+        q = p;
+        p = trie_r[q];
       } while (!((p == 0) || (c <= trie_c[p])));
 
       if ((p == 0) || (c < trie_c[p]))
@@ -3724,6 +3724,7 @@ done:
       first_child = true;
 
       for (c = 0; c <= 255; ++c)
+      {
         if ((lc_code(c) > 0) || ((c == 255) && first_child))
         {
           if (p == 0)
@@ -3752,12 +3753,13 @@ done:
           p = trie_r[q];
           first_child = false;
         }
+      }
+
       if (first_child)
         trie_l[q] = 0;
       else
         trie_r[q] = 0;
     }
-
   }
   else
   {
@@ -3827,8 +3829,10 @@ void init_trie (void)
   if (hyph_root > 0)
   {
     if (trie_root == 0)
+    {
       for (p = 0; p <= 255; ++p)
         trie_min[p] = p + 2;
+    }
 
     first_fit(hyph_root);
     trie_pack(hyph_root);
@@ -3856,19 +3860,17 @@ void init_trie (void)
 
     r = 0;
 
-    do
+    do {
+      s = trie_link(r);
+
       {
-        s = trie_link(r);
-
-        {
-          trie_link(r) = 0;
-          trie_op(r) = min_trie_op;
-          trie_char(r) = min_quarterword;
-        }
-
-        r = s;
+        trie_link(r) = 0;
+        trie_op(r) = min_trie_op;
+        trie_char(r) = min_quarterword;
       }
-    while (!(r > trie_max));
+
+      r = s;
+    } while (!(r > trie_max));
   }
 
   trie_char(0) = '?';
@@ -3954,24 +3956,24 @@ void store_fmt_file (void)
   dump_int(rover);
 
   if (eTeX_ex)
+  {
     for (k = int_val; k <= tok_val; ++k)
       dump_int(sa_root[k]);
+  }
 
   p = 0;
   q = rover;
   x = 0;
 
-  do
-    {
-      if (dump_things(mem[p], q + 2 - p))
-        return;
+  do {
+    if (dump_things(mem[p], q + 2 - p))
+      return;
 
-      x = x + q + 2 - p;
-      var_used = var_used + q - p;
-      p = q + node_size(q);
-      q = rlink(q);
-    }
-  while (!(q == rover));
+    x = x + q + 2 - p;
+    var_used = var_used + q - p;
+    p = q + node_size(q);
+    q = rlink(q);
+  } while (!(q == rover));
 
   var_used = var_used + lo_mem_max - p;
   dyn_used = mem_end + 1 - hi_mem_min;
@@ -4006,85 +4008,81 @@ void store_fmt_file (void)
 
   k = active_base;
 
-  do
-    {
-      j = k;
+  do {
+    j = k;
 
-      while (j < (int_base - 1))
-      {
-        if ((equiv(j) == equiv(j + 1)) &&
+    while (j < (int_base - 1))
+    {
+      if ((equiv(j) == equiv(j + 1)) &&
           (eq_type(j) == eq_type(j + 1)) &&
           (eq_level(j) == eq_level(j + 1)))
           goto found1;
 
-        incr(j);
-      }
+      incr(j);
+    }
 
-      l = (int_base);
-      goto done1;
+    l = (int_base);
+    goto done1;
 
 found1:
-      incr(j);
-      l = j;
+    incr(j);
+    l = j;
 
-      while (j < (int_base - 1))
-      {
-        if ((equiv(j) != equiv(j + 1)) ||
+    while (j < (int_base - 1))
+    {
+      if ((equiv(j) != equiv(j + 1)) ||
           (eq_type(j) != eq_type(j + 1)) ||
           (eq_level(j) != eq_level(j + 1)))
           goto done1;
 
-        incr(j);
-      }
+      incr(j);
+    }
 
 done1:
-      dump_int(l - k);
+    dump_int(l - k);
 
-      if (dump_things(eqtb[k], l - k))
-        return;
+    if (dump_things(eqtb[k], l - k))
+      return;
 
-      k = j + 1;
-      dump_int(k - l);
-    }
-  while (!(k == (int_base)));
+    k = j + 1;
+    dump_int(k - l);
+  } while (!(k == (int_base)));
 
-  do
+  do {
+    j = k;
+
+    while (j < (eqtb_size))
     {
-      j = k;
+      if (eqtb[j].cint == eqtb[j + 1].cint)
+        goto found2;
 
-      while (j < (eqtb_size))
-      {
-        if (eqtb[j].cint == eqtb[j + 1].cint)
-          goto found2;
+      incr(j);
+    }
 
-        incr(j);
-      }
-
-      l = (eqtb_size + 1);
-      goto done2;
+    l = (eqtb_size + 1);
+    goto done2;
 
 found2:
+    incr(j);
+    l = j;
+
+    while (j < eqtb_size)
+    {
+      if (eqtb[j].cint != eqtb[j + 1].cint)
+        goto done2;
+
       incr(j);
-      l = j;
-
-      while (j < (eqtb_size))
-      {
-        if (eqtb[j].cint != eqtb[j + 1].cint)
-          goto done2;
-
-        incr(j);
-      }
+    }
 
 done2:
-      dump_int(l - k);
+    dump_int(l - k);
 
-      if (dump_things(eqtb[k], l - k))
-        return;
+    if (dump_things(eqtb[k], l - k))
+      return;
 
-      k = j + 1;
-      dump_int(k - l);
-    }
-  while (!(k > (eqtb_size)));
+    k = j + 1;
+    dump_int(k - l);
+  } while (!(k > eqtb_size));
 
   dump_int(par_loc);
   dump_int(write_loc);
@@ -4135,8 +4133,6 @@ done2:
     dump_things(font_bc[null_font], font_ptr + 1);
     dump_things(font_ec[null_font], font_ptr + 1);
     dump_things(ctype_base[null_font], font_ptr + 1);
-    dump_things(font_cmap[null_font], font_ptr + 1);
-    dump_things(font_spec[null_font], font_ptr + 1);
     dump_things(char_base[null_font], font_ptr + 1);
     dump_things(width_base[null_font], font_ptr + 1);
     dump_things(height_base[null_font], font_ptr + 1);
@@ -4154,8 +4150,7 @@ done2:
     for (k = 0; k <= font_ptr; k++)
     {
       print_nl("\\font");
-      print_esc("");
-      print(font_id_text(k));
+      sprint_esc(font_id_text(k));
       print_char('=');
       print_file_name(font_name[k], font_area[k], 335);
 
@@ -4448,6 +4443,9 @@ void init_prim (void)
   primitive("jis", convert, jis_code);
   primitive("kuten", convert, kuten_code);
   primitive("ucs", convert, ucs_code);
+  primitive("pdfstrcmp", convert, ng_strcmp_code);
+  primitive("ngbanner", convert, ng_banner_code);
+  primitive("ngostype", convert, ng_os_type_code);
   primitive("jobname", convert, job_name_code);
   primitive("if", if_test, if_char_code);
   primitive("ifcat", if_test, if_cat_code);
@@ -4536,6 +4534,7 @@ void init_prim (void)
   primitive("xleaders", leader_ship, x_leaders);
   primitive("indent", start_par, 1);
   primitive("noindent", start_par, 0);
+  primitive("quitvmode", start_par, 2);
   primitive("unpenalty", remove_item, penalty_node);
   primitive("unkern", remove_item, kern_node);
   primitive("unskip", remove_item, glue_node);
