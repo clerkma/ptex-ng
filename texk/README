@@ -1,0 +1,106 @@
+$Id: README 35661 2014-11-25 08:47:42Z peter $
+Copyright 2006-2012 TeX Users Group.
+You may freely use, modify and/or distribute this file.
+
+This TeX Live directory contains the programs that use the kpathsea
+library for configuration and path searching, and the library itself.
+
+Some programs can be built on their own, but others, including kpathsea
+itself, cannot.  Instead, try using the script ../../Build or the
+equivalent configure && make. In general, for TeX Live we only test
+configuring the whole tree.
+
+Upstream sources and last-checked versions follow.  If a url is given,
+that is the upstream, although this does not mean the program is
+actively maintained.  Programs marked with a "?" are not (knowingly)
+maintained here, but the upstream is unknown.  If a program is knowingly
+maintained here in the TL repo, that is explicitly stated.
+
+Anyone -- please research and update any of this information.
+
+
+afm2pl - maintained here
+  http://tex.aanhet.net/afm2pl/
+
+bibtex-x - maintained here, contains
+  bibtex8
+  bibtexu
+    http://omega.enstb.org/yannis/bibtexu/
+
+chktex 1.7.2 - checked 30may13
+  http://mirror.ctan.org/support/chktex/
+  http://download.savannah.gnu.org/releases/chktex/
+
+cjkutils 4.8.3 - checked 11may12
+  http://cjk.ffii.org/cjk-4.8.3.tar.gz
+
+detex 2.8 - checked 10may12
+  http://www.cs.purdue.edu/homes/trinkle/detex/
+
+devnag - from devnag package installed in texmf-dist.
+
+dtl - ?
+
+dvi2tty 5.3.4 - checked 10may12
+  http://www.mesa.nl/pub/dvi2tty/
+  ftp://ftp.mesa.nl/pub/dvi2tty/
+
+dvidvi - ?
+
+dviljk - maintained here, by Joachim Schrod
+
+dvipdfm-x - maintained here, by Khaled Hosny, Jonathan Kew, contains
+  dvipdfmx
+  xdvipdfmx
+
+dvipng 1.14 - checked 10may12
+  http://mirror.ctan.org/dviware/dvipng/ (but maybe stale)
+  http://savannah.nongnu.org/files/?group=dvipng
+
+dvipos - ?
+
+dvipsk - maintained here, by us
+
+dvisvgm 1.8.1 - checked 15sep14
+  http://downloads.sourceforge.net/dvisvgm/
+
+gsftopk - from Paul Vojta's xdvi?
+
+kpathsea - maintained here, by us
+
+lacheck - checked 25apr11
+  http://mirror.ctan.org/support/lacheck/lacheck-1.26.tar.gz
+
+lcdf-typetools 2.104 - checked 8jul14
+  http://www.lcdf.org/type/
+
+makeindexk - maintained here, by us
+
+makejvf - ?
+
+mendexk - maintained here, by us (akira et al.)
+
+ps2pkm - ?
+
+psutils 1.23 - checked 16jan14
+  https://github.com/rrthomas/psutils/archive/v1.23.tar.gz
+
+ptexenc - maintained here, by us (akira et al.)
+
+seetexk - ?
+
+tex4htk - checked 25apr11
+  http://tug.org/tex4ht/
+
+texlive - scripts maintained here, by us
+
+ttf2pk2 - maintained here, by us
+
+ttfdump - ?
+
+web2c - maintained here, by us - core web2c, plain tex, etc.
+        The TeX variant dirs (pdftexdir, xetexdir, etc.)
+        updated here by their respective maintainers.
+
+xdvik 22.87 - checked 14apr14
+  http://sourceforge.net/projects/xdvi/files/xdvik/

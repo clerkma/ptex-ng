@@ -1,0 +1,125 @@
+#! /bin/sh
+# $Id: reautoconf 15977 2009-11-10 10:34:20Z peter $
+# This "reautoconf" script found at the root of the TeX Live source tree 
+# runs aclocal and autoconf (from PATH) in all relevant directories.
+#
+# Copyright 2008 Karl Berry.
+# Copyright 2005 Olaf Weber.
+# Copyright 2004 - 2009 Peter Breitenlohner.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+unset CDPATH
+
+usage="Usage: $0 [OPTION]... [DIR]...
+  Run \`autoreconf --no-recursive' in the directories DIR...
+  (default all) of the TeX Live source tree.
+
+Options:
+  -h, --help      display this help and exit successfully
+  -n, --dry-run   don't run any commands; just print them
+  -q, --quiet     don't echo commands
+  -v, --verbose   verbosely report processing (default)
+
+Environment variables:
+  TL_AUTOCONF:   program to use instead of autoconf from PATH
+  TL_AUTOHEADER: program to use instead of autoheader from PATH
+  TL_AUTOMAKE:   program to use instead of automake from PATH
+  TL_ACLOCAL:    program to use instead of aclocal from PATH"
+
+do_cmd=eval
+do_say=echo
+verbose=-v
+
+list=
+
+for option
+do
+  case $option in
+    -h | --help) echo "$usage"; exit 0
+      ;;
+    -n | --dry-run) do_cmd=:
+      ;;
+    -q | --quiet) do_say=:; verbose=
+      ;;
+    -v | --verbose) do_say=echo; verbose=-v
+      ;;
+    -*) echo "$0: *** unrecognized option \`$option'"
+      echo "$usage"; exit 1
+      ;;
+    *) list="$list $option"
+      ;;
+  esac
+done
+
+[ "$do_cmd" = : ] && do_say=echo	# -n implies -v
+
+[ -f ./m4/kpse-setup.m4 ] || {
+	echo "$0: *** can't find ./m4/kpse-setup.m4 (from `pwd`)" >&2
+	exit 1
+}
+
+: ${TL_AUTOCONF=autoconf}
+echo "$0: using \"$TL_AUTOCONF\" = `$TL_AUTOCONF --version | sed 1q`"
+: ${TL_AUTOHEADER=autoheader}
+echo "$0: using \"$TL_AUTOHEADER\" = `$TL_AUTOHEADER --version | sed 1q`"
+: ${TL_AUTOMAKE=automake}
+echo "$0: using \"$TL_AUTOMAKE\" = `$TL_AUTOMAKE --version | sed 1q`"
+: ${TL_ACLOCAL=aclocal}
+echo "$0: using \"$TL_ACLOCAL\" = `$TL_ACLOCAL --version | sed 1q`"
+echo "$0:       if you want to use different versions, set TL_AUTOCONF,"
+echo "$0:               TL_AUTOHEADER, TL_AUTOMAKE, and/or TL_ACLOCAL."
+
+# Give users a chance to quit here
+# and set TL_AUTOCONF, TL_AUTOHEADER, TL_AUTOMAKE, and/or TL_ACLOCAL
+$do_cmd sleep 5
+
+AUTOCONF=$TL_AUTOCONF
+AUTOHEADER=$TL_AUTOHEADER
+AUTOMAKE=$TL_AUTOMAKE
+ACLOCAL=$TL_ACLOCAL
+export AUTOCONF AUTOHEADER AUTOMAKE ACLOCAL
+
+do_it () {
+  $do_say "$0: running \"$@\""
+  $do_cmd "$@"
+}
+
+if test "x$list" = x; then
+  list=". auxdir/auxsub libs utils texk `find libs utils texk -type d -name ac |
+    sed 's,/ac\$,,'`"
+fi
+
+# Autoreconf in all directories
+for dir in $list; do
+  # Remove trailing slash from shell filename completion
+  dir=`echo $dir | sed 's,/\$,,'`
+  if test ! -d "$dir"; then
+    echo "$0: $dir not a directory, skipping." >&2
+    continue
+  fi
+  if test ! -f "$dir/configure.ac"; then
+    echo "$0: $dir/configure.ac: no such file, skipping." >&2
+    continue
+  fi
+  if test -f "$dir/ac/withenable.ac"; then
+    extra_dirs=`grep 'dnl extra_dirs = ' $dir/ac/withenable.ac |
+      sed 's,^.*= ,,'`
+  else
+    extra_dirs=
+  fi
+  do_it autoreconf $verbose --no-recursive $dir $extra_dirs
+done
+
+echo "$0: done."

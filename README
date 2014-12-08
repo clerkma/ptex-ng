@@ -1,0 +1,67 @@
+$Id: README 33784 2014-05-01 23:05:45Z karl $
+Public domain.  Originally written 2005 by Karl Berry.
+
+For a high-level overview of building TeX Live, see
+http://tug.org/texlive/build.html.  In brief:
+
+To configure and make the source tree, run ./Build.
+To build (mostly) without optimization, run ./Build --debug.
+To make without configuring, run TL_CONFIGURE=true ./Build.
+Email tlbuild@tug.org if problems.
+
+(Nearly everything the Build script does can be overridden via
+environment variables; just take a look to see the names.)
+
+Many more details about the TL build system, such as configuring to work
+on a single program, adding new programs or libraries, recompiling after
+fixing problems, etc., are in the doc/tlbuild* document and the sibling
+README* files here (which are generated from that document).
+
+
+Build information for some of the platforms.
+
+i386-linux: gcc 4.8.2, Linux 2.6.18-* (CentOS 5.10, tug.org:~karl/bin/mybuild)
+  Except for dvisvgm, where we must use the system compiler (gcc 4.1.2,
+  Red Hat 4.1.2-54) or libgs.so crashes trying to use gcc 4.8.2's
+  libstdc++.  On the other hand, the system compiler has an optimization
+  bug that causes lcdf-typetools's tfm.test to fail, so it can't be used
+  for everything.  Sigh.
+        
+x86_64-linux: gcc 4.8.2, libc 2.3.6, Linux 2.6.28.6
+  
+amd64-netbsd:
+  gcc version 4.5.3 (NetBSD nb2 20110806)
+  NetBSD/amd64 6.1.3
+  TL_MAKE=gmake LDFLAGS='-L/usr/X11R7/lib -Wl,-rpath,/usr/X11R7/lib' ./Build
+
+*-kfreebsd:  the builder says ...
+  I do not have any native kfreebsd systems. The best way to build is
+  to run a clean kfreebsd "userland" within a jail.  I am running Debian
+  "stable" kfreebsd userland under a freebsd 10.0 real system. Thus, I
+  produced 32bit i386-kfreebsd binaries above ("./Build").
+  
+  I also tried, but am planning on dropping, running Debian "stable"
+  kfreebsd installed on a virtual machine via VirtualBox. Thus, I
+  produced 64bit amd64-kfreebsd binaries above.
+  
+  I tested that the freebsd binaries will *not* run on a kfreebsd
+  "userland" and the kfreebsd binaries will *not* run on a freebsd
+  "userland". Whereas I would have thought them to be somewhat
+  interchangeable, they are linked to libraries (ELF interpreter ld.so.1)
+  and maybe others) that are to be found in different locations on the
+  different systems.
+  
+i386-solaris, x86_64-solaris: Solaris 10.
+
+i386-cygwin, x86_64-cygwin: gcc-4.8.2, cygwin-1.7.29.
+  ./Build (with --enable-xindy for i386).
+
+powerpc-linux (Debian Squeeze)
+  Linux homer 2.6.32-5-powerpc64 #1 SMP Tue Mar 8 02:01:42 UTC 2011
+  ppc64 Debian GNU/Linux 6.0
+  (only the kernel is 64bit, the entire userland is 32bit)
+
+sparc-solaris: gcc-4.5.0, Solaris 5.10 (Utah).
+
+universal-darwin, x86_64-darwin: a menagerie of versions.
+  See Master/source/mactexdoc.tar.xz.

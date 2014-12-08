@@ -1,0 +1,17 @@
+#! /bin/sh
+
+# Copyright (C) 2009 Peter Breitenlohner <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+echo hello world | ./minigzip | ./minigzip -d || { \
+  echo '                *** minigzip test FAILED ***' 
+  exit 1
+}
+
+if ./example; then
+  echo '                *** zlib test OK ***'
+else
+  echo '                *** zlib test FAILED ***'
+  exit 1
+fi
+
