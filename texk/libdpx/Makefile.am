@@ -153,22 +153,6 @@ pdfdoc.c\
 
 $(libdpx_a_OBJECTS) : config.force
 
-## Links
-##
-bin_links =
-
-include $(top_srcdir)/../../am/bin_links.am
-
-## Manpages
-
-man1_links =
-
-## doesn't seem worth worrying about the broken man page link
-## if only xdvipdfmx is being built.  not like there is x*x-specific
-## documentation anywhere anyway.
-
-include $(top_srcdir)/../../am/man1_links.am
-
 ## Data
 ##
 configdatadir = $(datarootdir)/texmf-dist/dvipdfmx
@@ -182,12 +166,6 @@ dist_mapdata_DATA = data/cid-x.map
 
 cmapdatadir = $(datarootdir)/texmf-dist/fonts/cmap/dvipdfmx
 dist_cmapdata_DATA = data/EUC-UCS2
-
-install-exec-hook: install-bin-links
-
-install-data-hook: install-man1-links
-
-uninstall-hook: uninstall-bin-links uninstall-man1-links
 
 all-local: config.force
 

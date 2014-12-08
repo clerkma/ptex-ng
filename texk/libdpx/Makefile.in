@@ -79,16 +79,15 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-DIST_COMMON = $(top_srcdir)/../../am/bin_links.am \
-	$(top_srcdir)/../../am/man1_links.am $(srcdir)/Makefile.in \
-	$(srcdir)/Makefile.am $(top_srcdir)/configure \
-	$(am__configure_deps) $(srcdir)/config.h.in \
-	$(top_srcdir)/../texlive/w32_wrapper/callexe.c \
-	$(top_srcdir)/../../build-aux/depcomp $(dist_cmapdata_DATA) \
-	$(dist_configdata_DATA) $(dist_glyphlistdata_DATA) \
-	$(dist_mapdata_DATA) $(top_srcdir)/../../build-aux/test-driver \
-	AUTHORS COPYING ChangeLog INSTALL README \
-	../../build-aux/compile ../../build-aux/config.guess \
+TESTS =
+subdir = .
+DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+	$(top_srcdir)/configure $(am__configure_deps) \
+	$(srcdir)/config.h.in $(top_srcdir)/../../build-aux/depcomp \
+	$(dist_cmapdata_DATA) $(dist_configdata_DATA) \
+	$(dist_glyphlistdata_DATA) $(dist_mapdata_DATA) \
+	$(top_srcdir)/../../build-aux/test-driver COPYING INSTALL \
+	README ../../build-aux/compile ../../build-aux/config.guess \
 	../../build-aux/config.sub ../../build-aux/depcomp \
 	../../build-aux/install-sh ../../build-aux/missing \
 	../../build-aux/texinfo.tex ../../build-aux/ylwrap \
@@ -99,8 +98,6 @@ DIST_COMMON = $(top_srcdir)/../../am/bin_links.am \
 	$(top_srcdir)/../../build-aux/install-sh \
 	$(top_srcdir)/../../build-aux/ltmain.sh \
 	$(top_srcdir)/../../build-aux/missing
-TESTS =
-subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../m4/kpse-common.m4 \
 	$(top_srcdir)/../../m4/kpse-freetype2-flags.m4 \
@@ -122,7 +119,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = callexe.c
+CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -730,8 +727,6 @@ pdfdoc.c\
 	vf.h \
 	xbb.c
 
-bin_links = 
-man1_links = 
 configdatadir = $(datarootdir)/texmf-dist/dvipdfmx
 dist_configdata_DATA = data/dvipdfmx.cfg
 glyphlistdatadir = $(datarootdir)/texmf-dist/fonts/map/glyphlist
@@ -763,7 +758,7 @@ all: config.h
 .SUFFIXES: .c .lo .log .o .obj .test .test$(EXEEXT) .trs
 am--refresh: Makefile
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/../../am/bin_links.am $(top_srcdir)/../../am/man1_links.am $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -786,7 +781,6 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe);; \
 	esac;
-$(top_srcdir)/../../am/bin_links.am $(top_srcdir)/../../am/man1_links.am:
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
@@ -2468,15 +2462,13 @@ info-am:
 
 install-data-am: install-dist_cmapdataDATA install-dist_configdataDATA \
 	install-dist_glyphlistdataDATA install-dist_mapdataDATA
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
+
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
 install-exec-am: install-libLIBRARIES
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
+
 install-html: install-html-am
 
 install-html-am:
@@ -2520,10 +2512,8 @@ ps-am:
 uninstall-am: uninstall-dist_cmapdataDATA \
 	uninstall-dist_configdataDATA uninstall-dist_glyphlistdataDATA \
 	uninstall-dist_mapdataDATA uninstall-libLIBRARIES
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
-.MAKE: all check-am install-am install-data-am install-exec-am \
-	install-strip uninstall-am
+
+.MAKE: all check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am all-local am--refresh check \
 	check-TESTS check-am clean clean-cscope clean-generic \
@@ -2534,11 +2524,10 @@ uninstall-am: uninstall-dist_cmapdataDATA \
 	distclean-libtool distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am \
-	install-data-hook install-dist_cmapdataDATA \
-	install-dist_configdataDATA install-dist_glyphlistdataDATA \
-	install-dist_mapdataDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-exec-hook install-html \
-	install-html-am install-info install-info-am \
+	install-dist_cmapdataDATA install-dist_configdataDATA \
+	install-dist_glyphlistdataDATA install-dist_mapdataDATA \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
 	install-libLIBRARIES install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
@@ -2547,50 +2536,10 @@ uninstall-am: uninstall-dist_cmapdataDATA \
 	recheck tags tags-am uninstall uninstall-am \
 	uninstall-dist_cmapdataDATA uninstall-dist_configdataDATA \
 	uninstall-dist_glyphlistdataDATA uninstall-dist_mapdataDATA \
-	uninstall-hook uninstall-libLIBRARIES
+	uninstall-libLIBRARIES
 
 
 $(libdpx_a_OBJECTS) : config.force
-.PHONY: install-bin-links uninstall-bin-links
-
-install-bin-links:
-@WIN32_FALSE@	@cd $(DESTDIR)$(bindir) && \
-@WIN32_FALSE@	  for s in $(bin_links); do \
-@WIN32_FALSE@	    link=`echo $$s | sed 's,.*:,,'`; \
-@WIN32_FALSE@	    file=`echo $$s | sed 's,:.*,,'`; \
-@WIN32_FALSE@	    rm -f $$link; \
-@WIN32_FALSE@	    echo "creating link '$$link' -> '$$file'"; \
-@WIN32_FALSE@	    $(LN_S) $$file $$link || exit 1; \
-@WIN32_FALSE@	  done
-
-uninstall-bin-links:
-@WIN32_FALSE@	@for s in $(bin_links); do \
-@WIN32_FALSE@	  link=`echo $$s | sed 's,.*:,,'`; \
-@WIN32_FALSE@	  rm -f $(DESTDIR)$(bindir)/$$link; \
-@WIN32_FALSE@	done
-.PHONY: install-man1-links uninstall-man1-links
-
-install-man1-links:
-	@cd $(DESTDIR)$(man1dir) && \
-	  for s in $(man1_links); do \
-	    link=`echo $$s | sed 's,.*:,,'`; \
-	    file=`echo $$s | sed 's,:.*,,'`; \
-	    rm -f $$link.1; \
-	    echo "creating link '$$link.1' -> '$$file.1'"; \
-	    echo ".so man1/$$file.1" >$$link.1; \
-	  done
-
-uninstall-man1-links:
-	@for s in $(man1_links); do \
-	  link=`echo $$s | sed 's,.*:,,'`; \
-	  rm -f $(DESTDIR)$(man1dir)/$$link.1; \
-	done
-
-install-exec-hook: install-bin-links
-
-install-data-hook: install-man1-links
-
-uninstall-hook: uninstall-bin-links uninstall-man1-links
 
 all-local: config.force
 
