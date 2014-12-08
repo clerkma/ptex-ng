@@ -86,8 +86,6 @@ AC_DEFINE([HAVE_ZLIB], 1, [Define if you have zlib and its headers.])
 AC_DEFINE([HAVE_ZLIB_COMPRESS2], 1, [Define if your zlib has the compress2 function.])
 AC_DEFINE([HAVE_LIBPNG], 1, [Define if you have libpng and its headers.])
 
-KPSE_WIN32_CALL
-
 AM_CONDITIONAL([DVIPDFMX], [test "x$enable_dvipdfmx" != xno])
 
 AC_CONFIG_FILES([Makefile])
