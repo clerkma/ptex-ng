@@ -3805,6 +3805,10 @@ void print_param (integer n)
       print_esc("tracingrestores");
       break;
 
+    case tracing_fontloaders_code:
+      print_esc("tracingfontloaders");
+      break;
+
     case uc_hyph_code:
       print_esc("uchyph");
       break;
@@ -8231,26 +8235,31 @@ void scan_something_internal (small_number level, boolean negative)
 
                 if (font_dir[q] != dir_default)
                 {
-                  i = char_info(q, get_jfm_pos(KANJI(cur_val), q));
-
-                  switch (m)
+                  if (cur_val >= 256)
                   {
-                    case font_char_wd_code:
-                      cur_val = char_width(q, i);
-                      break;
+                    i = char_info(q, get_jfm_pos(KANJI(cur_val), q));
 
-                    case font_char_ht_code:
-                      cur_val = char_height(q, height_depth(i));
-                      break;
+                    switch (m)
+                    {
+                      case font_char_wd_code:
+                        cur_val = char_width(q, i);
+                        break;
 
-                    case font_char_dp_code:
-                      cur_val = char_depth(q, height_depth(i));
-                      break;
+                      case font_char_ht_code:
+                        cur_val = char_height(q, height_depth(i));
+                        break;
 
-                    case font_char_ic_code:
-                      cur_val = char_italic(q, i);
-                      break;
+                      case font_char_dp_code:
+                        cur_val = char_depth(q, height_depth(i));
+                        break;
+
+                      case font_char_ic_code:
+                        cur_val = char_italic(q, i);
+                        break;
+                    }
                   }
+                  else
+                    cur_val = 0;
                 }
                 else if ((font_bc[q] <= cur_val) && (font_ec[q] >= cur_val))
                 {
@@ -11329,6 +11338,28 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
   file_opened = false;
   pack_file_name(nom, aire, 805); /* .tfm */
 
+  if (tracing_fontloaders)
+  {
+    begin_diagnostic();
+    print_nl("Requested font \"");
+    print(nom);
+    print_char('\"');
+
+    if (s < 0)
+    {
+      prints(" scaled ");
+      print_int(-s);
+    }
+    else
+    {
+      prints(" at ");
+      print_scaled(s);
+      prints("pt");
+    }
+
+    end_diagnostic(false);
+  }
+
   if (!b_open_in(tfm_file))
     goto bad_tfm;
 
@@ -11736,6 +11767,41 @@ bad_tfm:
 done:
   if (file_opened)
     b_close(tfm_file);
+
+  if (tracing_fontloaders > 0)
+  {
+    if (g == null_font)
+    {
+      begin_diagnostic();
+      print_nl(" -> font not found, using \"nullfont\"");
+      end_diagnostic(false);
+    }
+    else
+    {
+      begin_diagnostic();
+      print_nl(" -> ");
+
+      switch (font_dir[g])
+      {
+        case dir_default:
+          prints("[TFM:D] ");
+          break;
+
+        case dir_yoko:
+          prints("[JFM:Y] ");
+          break;
+
+        case dir_tate:
+          prints("[JFM:T] ");
+          break;
+      }
+
+      for (k = 0; k <= name_length; k++)
+        print_char(name_of_file[k + 1]);
+
+      end_diagnostic(false);
+    }
+  }
 
   return g;
 }

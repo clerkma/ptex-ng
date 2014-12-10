@@ -719,7 +719,8 @@ enum
 #define saving_vdiscards_code         64
 #define saving_hyph_codes_code        65
 #define eTeX_state_code               66
-#define int_pars                      67
+#define tracing_fontloaders_code      67
+#define int_pars                      68
 #define count_base                    (int_base + int_pars)
 #define del_code_base                 (count_base + 256)
 #define dimen_base                    (del_code_base + 256)
@@ -767,6 +768,7 @@ enum
 #define tracing_lost_chars            int_par(tracing_lost_chars_code)
 #define tracing_commands              int_par(tracing_commands_code)
 #define tracing_restores              int_par(tracing_restores_code)
+#define tracing_fontloaders           int_par(tracing_fontloaders_code)
 #define uc_hyph                       int_par(uc_hyph_code)
 #define output_penalty                int_par(output_penalty_code)
 #define max_dead_cycles               int_par(max_dead_cycles_code)

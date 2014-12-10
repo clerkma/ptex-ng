@@ -264,6 +264,7 @@ EXTERN integer max_buf_stack;
 #endif
 
 #define dvi_buf_size 16384
+#define ng_huge
 
 #if !defined (ng_huge)
   #define hash_prime  55711 // 27197 (prime ~ 85% * hash_size)

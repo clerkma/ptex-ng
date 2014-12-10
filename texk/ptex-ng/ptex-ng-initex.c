@@ -2262,7 +2262,7 @@ boolean load_fmt_file (void)
       }
 
       if (trace_flag)
-        printf("oldfont_mem_size is %lld --- hit %lld times. Using non_address %d\n",
+        printf("oldfont_mem_size is %d --- hit %d times. Using non_address %d\n",
             oldfont_mem_size, count, non_address);
     }
   }
@@ -4309,6 +4309,7 @@ void init_prim (void)
   primitive("tracinglostchars", assign_int, int_base + tracing_lost_chars_code);
   primitive("tracingcommands", assign_int, int_base + tracing_commands_code);
   primitive("tracingrestores", assign_int, int_base + tracing_restores_code);
+  primitive("tracingfontloaders", assign_int, int_base + tracing_fontloaders_code);
   primitive("uchyph", assign_int, int_base + uc_hyph_code);
   primitive("outputpenalty", assign_int, int_base + output_penalty_code);
   primitive("maxdeadcycles", assign_int, int_base + max_dead_cycles_code);
