@@ -33,35 +33,38 @@ int main (int ac, char *av[])
   gargv = av;
 
   if (main_init(gargc, gargv))
-    return -1;
+    exit(1);
 
-  TEX_format_default = " plain.fmt";
+  format_name = remove_suffix(xbasename(gargv[0]));
+  TEX_format_default = (char *) malloc(strlen(format_name) + 6);
+
+  if (TEX_format_default == NULL)
+  {
+    fprintf(stderr, "%s: something really went bad: cannot allocated mem for default format! Exiting.\n", gargv[0]);
+    exit(1);
+  }
+
+  sprintf(TEX_format_default, " %s.fmt", format_name);
   format_default_length = strlen(TEX_format_default + 1);
 
   jump_used = 0;
-
   ret = setjmp(ng_env);
 
   if (ret == 0)
   {
     flag = main_program();
-
-    if (trace_flag)
-      printf("EXITING at %s: flag = %d, ret = %d, jump_used = %d\n", "main", flag, ret, jump_used);
   }
-  else
+
+  if (trace_flag)
   {
-    if (trace_flag)
-      printf("EXITING at %s: flag = %d, ret = %d, jump_used = %d\n", "jump_out", flag, ret, jump_used);
+    printf("EXITING at %s: flag = %d, ret = %d, jump_used = %d\n",
+      (ret == 0) ? "main" : "jump_out", flag, ret, jump_used);
   }
 
   if (endit(flag) != 0)
-    flag = 1;
-
-  if (flag == 0)
-    return 0;
+    exit(1);
   else
-    exit(flag);
+    return 0;
 }
 /* texk/web2c/lib/texmfmp.c */
 void t_open_in (void)

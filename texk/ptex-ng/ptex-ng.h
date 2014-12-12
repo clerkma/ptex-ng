@@ -568,7 +568,7 @@ EXTERN str_number cur_ext;
 EXTERN pool_pointer area_delimiter;
 EXTERN pool_pointer ext_delimiter;
 EXTERN integer format_default_length;
-EXTERN const char * TEX_format_default;
+EXTERN char * TEX_format_default;
 EXTERN boolean name_in_progress;
 EXTERN boolean log_opened;
 EXTERN boolean quoted_file_name;

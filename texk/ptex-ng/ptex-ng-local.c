@@ -1395,6 +1395,7 @@ static int free_memory (void)
   safe_free(dvi_file_name);
   safe_free(log_file_name);
   safe_free(pdf_file_name);
+  safe_free(TEX_format_default);
 
   return 0;
 }
@@ -1816,7 +1817,6 @@ static int init_commands (int ac, char **av)
   mem_extra_high = 0;
   mem_extra_low  = 0;
   mem_initex     = 0;
-  format_name    = "plain";
 
   if (read_command_line(ac, av) < 0)
     return -1;
