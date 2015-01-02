@@ -1,7 +1,7 @@
 /*
    Copyright 1992 Karl Berry
    Copyright 2007 TeX Users Group
-   Copyright 2014 Clerk Ma
+   Copyright 2014, 2015 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
 
   name_of_file[name_length + 1] = '\0';
   
-  if (open_trace_flag)
+  if (flag_open_trace)
     printf(" Open `%s' for input ", name_of_file + 1);
 
   must_exist = (file_fmt != kpse_tex_format);
@@ -200,11 +200,11 @@ boolean open_output (FILE ** f, const char * fopen_mode)
       prepend_path_if(name_of_file + 1, name_of_file + 1, ".fmt", fmt_directory) ||
       prepend_path_if(name_of_file + 1, name_of_file + 1, ".pdf", pdf_directory))
   {
-    if (open_trace_flag)
+    if (flag_open_trace)
       printf("After prepend %s\n", name_of_file + 1);
   }
 
-  if (open_trace_flag)
+  if (flag_open_trace)
     printf(" Open `%s' for output ", name_of_file + 1);
 
   *f = fopen((char *) name_of_file + 1, fopen_mode);
@@ -218,7 +218,7 @@ boolean open_output (FILE ** f, const char * fopen_mode)
       unsigned char temp_name[file_name_size];
       xconcat3((char *) temp_name, temp_dir, PATH_SEP_STRING, (char *) name_of_file + 1);
 
-      if (deslash)
+      if (flag_deslash)
         unixify((char *) temp_name);
       
       *f = fopen((char *) temp_name, fopen_mode);

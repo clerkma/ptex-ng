@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014 Clerk Ma   
+   Copyright 2014, 2015 Clerk Ma   
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -181,7 +181,7 @@ static void * ourrealloc (void * old, size_t new_size)
 
   if (mnew != NULL)
   {
-    if (trace_flag)
+    if (flag_trace)
       printf("EXPANDED! %p (%ld) == %p (%ld)\n",
           mnew, new_size, old, old_size);
 
@@ -274,7 +274,7 @@ int allocate_tries (int trie_max)
   nc = (trie_max + 1) * sizeof(quarterword);
   n = nl + no + nc;
 
-  if (trace_flag)
+  if (flag_trace)
     trace_memory("hyphen trie", n);
 
   trie_trl = (halfword *) malloc(roundup(nl));
@@ -287,7 +287,7 @@ int allocate_tries (int trie_max)
     return -1;
   }
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Addresses trie_trl %p trie_tro %p trie_trc %p\n", trie_trl, trie_tro, trie_trc);
 
   update_statistics((long) trie_trl, nl, 0);
@@ -296,7 +296,7 @@ int allocate_tries (int trie_max)
 
   trie_size = trie_max;
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return 0;
@@ -349,7 +349,7 @@ int realloc_hyphen (int hyphen_prime)
   nl = (hyphen_prime + 1) * sizeof(halfword);
   n = nw + nl;
 
-  if (trace_flag)
+  if (flag_trace)
     trace_memory("hyphen exception", n);
 
   hyph_word = (str_number *) REALLOC (hyph_word, nw);
@@ -361,7 +361,7 @@ int realloc_hyphen (int hyphen_prime)
     return -1;
   }
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Addresses hyph_word %p hyph_list %p\n", hyph_word, hyph_list);
 
   memset(hyph_word, 0, (hyphen_prime + 1) * sizeof (hyph_word[0]));
@@ -381,7 +381,7 @@ int realloc_hyphen (int hyphen_prime)
 
   current_prime = hyphen_prime;
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return 0; // success
@@ -397,7 +397,7 @@ memory_word * allocate_main_memory (int size)
 
   if (main_memory != NULL)
   {
-    if (trace_flag)
+    if (flag_trace)
       puts("Reallocating initial memory allocation");
   }
 
@@ -407,7 +407,7 @@ memory_word * allocate_main_memory (int size)
   mem_min = 0;       /* bottom of area made available to TeX */
   n = (mem_max - mem_start + 1) * sizeof (memory_word);
 
-  if (trace_flag)
+  if (flag_trace)
     trace_memory("main memory", n);
 
   main_memory = (memory_word *) REALLOC (main_memory, n);
@@ -418,22 +418,22 @@ memory_word * allocate_main_memory (int size)
     return NULL;
   }
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Address main memory == %p\n", main_memory);
 
   mem = main_memory;
 
-  if (mem_start != 0 && !is_initex)
+  if (mem_start != 0 && !flag_initex)
     mem = main_memory - mem_start;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Offset address main memory == %p\n", mem);
 
   update_statistics((long) main_memory, n, (current_mem_size + 1) * sizeof (memory_word));
 /*  current_mem_size = (mem_max - mem_start + 1); */
   current_mem_size = mem_max - mem_start;   /* total number of words - 1 */
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return mem;
@@ -450,20 +450,20 @@ memory_word * realloc_main (int lo_size, int hi_size)
   int n = 0;
   memory_word * new_memory = NULL;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("WARNING: Entering realloc_main lo %d hi %d\n", lo_size, hi_size);
 
-  if (is_initex)
+  if (flag_initex)
   {
     puts("ERROR: Cannot extent main memory in initex");
 
-    if (!tex82_flag)
+    if (!flag_tex82)
       puts("Please use `-m=...' on command line");
 
     return NULL;
   }
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Old Address %s == %p\n", "main memory", main_memory);
 
   /* if we REALLY run up to limit ! */
@@ -519,7 +519,7 @@ memory_word * realloc_main (int lo_size, int hi_size)
 
     n = (new_size + 1) * sizeof (memory_word);
 
-    if (trace_flag)
+    if (flag_trace)
       trace_memory("main memory", n);
 
     new_memory = (memory_word *) REALLOC (main_memory, n);
@@ -539,13 +539,13 @@ memory_word * realloc_main (int lo_size, int hi_size)
     return mem;
   }
 
-  if (trace_flag)
+  if (flag_trace)
     printf("New Address %s == %p\n", "main memory", new_memory);
 
   if (lo_size > 0)
   {
 /*  shift everything upward to make space for new low area */
-    if (trace_flag)
+    if (flag_trace)
       printf("memmove %p %p %ld \n", new_memory + lo_size,
           new_memory, (current_mem_size + 1) * sizeof(memory_word));
 
@@ -574,7 +574,7 @@ memory_word * realloc_main (int lo_size, int hi_size)
   else
     mem = main_memory;
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return mem;
@@ -591,7 +591,7 @@ memory_word * realloc_font_info (int size)
   int new_size = 0;
   int n = 0;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Old Address %s == %p\n", "font_info", font_info);
 
   if (current_font_mem_size == font_mem_size)
@@ -617,7 +617,7 @@ memory_word * realloc_font_info (int size)
 
     n = (new_size + 1) * sizeof (memory_word);
 
-    if (trace_flag)
+    if (flag_trace)
       trace_memory("font_info", n);
 
     new_font_info = (memory_word *) REALLOC (font_info, n);
@@ -639,13 +639,13 @@ memory_word * realloc_font_info (int size)
 
   font_info = new_font_info;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("New Address %s == %p\n", "font_info", font_info);
 
   update_statistics ((long) font_info, n, current_font_mem_size * sizeof(memory_word));
   current_font_mem_size = new_size;
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return font_info;
@@ -662,7 +662,7 @@ packed_ASCII_code * realloc_str_pool (int size)
   int n = 0;
   packed_ASCII_code * new_str_pool = NULL;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Old Address %s == %p\n", "string pool", str_pool);
 
   if (current_pool_size == pool_size)
@@ -688,7 +688,7 @@ packed_ASCII_code * realloc_str_pool (int size)
 
     n = (new_size + 1) * sizeof (packed_ASCII_code);
 
-    if (trace_flag)
+    if (flag_trace)
       trace_memory("str_pool", n);
 
     new_str_pool = (packed_ASCII_code *) REALLOC (str_pool, n);
@@ -712,10 +712,10 @@ packed_ASCII_code * realloc_str_pool (int size)
   update_statistics ((long) str_pool, n, current_pool_size);
   current_pool_size = new_size;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("New Address %s == %p\n", "string pool", str_pool);
   
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return str_pool;
@@ -732,7 +732,7 @@ pool_pointer * realloc_str_start (int size)
   int new_size = 0;
   pool_pointer * new_str_start = NULL;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Old Address %s == %p\n", "string start", str_start);
 
   if (current_max_strings == max_strings)
@@ -758,7 +758,7 @@ pool_pointer * realloc_str_start (int size)
 
     n = (new_size + 1) * sizeof (pool_pointer);
 
-    if (trace_flag)
+    if (flag_trace)
       trace_memory("str_start", n);
 
     new_str_start = (pool_pointer *) REALLOC (str_start, n);
@@ -782,10 +782,10 @@ pool_pointer * realloc_str_start (int size)
   update_statistics((long) str_start, n, current_max_strings * sizeof (pool_pointer));
   current_max_strings = new_size;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("New Address %s == %p\n", "string start", str_start);
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return str_start;
@@ -807,7 +807,7 @@ int allocate_ini (int size)
   nt = (size + 1) * sizeof(char);
   n = nl + no + nc + nr + nh + nt;
 
-  if (trace_flag)
+  if (flag_trace)
     trace_memory ("initex hyphen trie", n);
 
   trie_l = (trie_pointer *) malloc (roundup(nl));
@@ -824,7 +824,7 @@ int allocate_ini (int size)
     return -1;
   }
   
-  if (trace_flag)
+  if (flag_trace)
   {
     printf("Addresses: trie_l %p trie_o %p trie_c %p\n", trie_l, trie_o, trie_c);
     printf("Addresses: trie_r %p trie_hash %p trie_taken %p\n", trie_r, trie_hash, trie_taken);
@@ -837,7 +837,7 @@ int allocate_ini (int size)
   update_statistics ((long) trie_hash, nh, 0);
   update_statistics ((long) trie_taken, nt, 0);
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return 0; // success
@@ -853,7 +853,7 @@ memory_word * realloc_save_stack (int size)
   int n = 0, new_size = 0;
   memory_word * new_save_stack = NULL;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Old Address %s == %p\n", "save stack", save_stack);
 
   if (current_save_size == save_size)
@@ -878,7 +878,7 @@ memory_word * realloc_save_stack (int size)
 
     n = (new_size + 1) * sizeof (memory_word);
 
-    if (trace_flag)
+    if (flag_trace)
       trace_memory("save_stack", n);
 
     new_save_stack = (memory_word *) REALLOC (save_stack, n);
@@ -902,13 +902,13 @@ memory_word * realloc_save_stack (int size)
   update_statistics ((long) save_stack, n, current_save_size);
   current_save_size = new_size;
 
-  if (trace_flag)
+  if (flag_trace)
   {
     printf("Current %s %d\n", "save_size", current_save_size);
     printf("New Address %s == %p\n", "save stack", save_stack);
   }
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return save_stack;
@@ -924,7 +924,7 @@ in_state_record * realloc_input_stack (int size)
   int n = 0, new_size = 0;
   in_state_record * new_input_stack = NULL;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Old Address %s == %p\n", "input stack", input_stack);
 
   if (current_stack_size == stack_size)
@@ -949,7 +949,7 @@ in_state_record * realloc_input_stack (int size)
 
     n = (new_size + 1) * sizeof(in_state_record);
 
-    if (trace_flag)
+    if (flag_trace)
       trace_memory("input_stack", n);
 
     new_input_stack = (in_state_record *) REALLOC (input_stack, n);
@@ -973,13 +973,13 @@ in_state_record * realloc_input_stack (int size)
   update_statistics ((long) input_stack, n, current_stack_size);
   current_stack_size = new_size;
 
-  if (trace_flag)
+  if (flag_trace)
   {
     printf("Current %s %d\n", "stack_size", current_stack_size);
     printf("New Address %s == %p\n", "input stack", input_stack);
   }
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return input_stack;
@@ -995,7 +995,7 @@ list_state_record * realloc_nest_stack (int size)
   int n = 0, new_size = 0;
   list_state_record * new_nest = NULL;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Old Address %s == %p\n", "nest stack", nest);
 
   if (current_nest_size == nest_size)
@@ -1020,7 +1020,7 @@ list_state_record * realloc_nest_stack (int size)
 
     n = (new_size + 1) * sizeof (list_state_record);
 
-    if (trace_flag)
+    if (flag_trace)
       trace_memory("nest stack", n);
 
     new_nest = (list_state_record *) REALLOC (nest, n);
@@ -1044,13 +1044,13 @@ list_state_record * realloc_nest_stack (int size)
   update_statistics ((long) nest, n, current_nest_size);
   current_nest_size = new_size;
 
-  if (trace_flag)
+  if (flag_trace)
   {
     printf("Current %s %d\n", "nest_size", current_nest_size);
     printf("New Address %s == %p\n", "nest stack", nest);
   }
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return nest;
@@ -1066,7 +1066,7 @@ halfword * realloc_param_stack (int size)
   int n = 0, new_size = 0;
   halfword * new_param = NULL;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Old Address %s == %p\n", "param stack", param_stack);
 
   if (current_param_size == param_size)
@@ -1091,7 +1091,7 @@ halfword * realloc_param_stack (int size)
 
     n = (new_size + 1) * sizeof(pointer);
 
-    if (trace_flag)
+    if (flag_trace)
       trace_memory("param stack", n);
 
     new_param = (pointer *) REALLOC (param_stack, n);
@@ -1115,13 +1115,13 @@ halfword * realloc_param_stack (int size)
   update_statistics((long) param_stack, n, current_param_size);
   current_param_size = new_size;
 
-  if (trace_flag)
+  if (flag_trace)
   {
     printf("Current %s %d\n", "param_size", current_param_size);
     printf("New Address %s == %p\n", "param stack", param_stack);
   }
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return param_stack;
@@ -1137,7 +1137,7 @@ ASCII_code * realloc_buffer (int size)
   int n = 0, new_size = 0;
   ASCII_code * new_buffer = NULL;
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Old Address %s == %p\n", "buffer", buffer);
 
   if (current_buf_size == buf_size)
@@ -1162,7 +1162,7 @@ ASCII_code * realloc_buffer (int size)
 
     n = (new_size + 1) * sizeof(ASCII_code);
 
-    if (trace_flag)
+    if (flag_trace)
       trace_memory("buffer", n);
 
     new_buffer = (ASCII_code *) REALLOC (buffer, n);
@@ -1187,13 +1187,13 @@ ASCII_code * realloc_buffer (int size)
   memset(buffer + current_buf_size, 0, new_size - current_buf_size);
   current_buf_size = new_size;
 
-  if (trace_flag)
+  if (flag_trace)
   {
     printf("Current %s %d\n", "buffer", current_buf_size);
     printf("New Address %s == %p\n", "buffer", buffer);
   }
 
-  if (trace_flag)
+  if (flag_trace)
     probe_show();
 
   return buffer;
@@ -1238,9 +1238,9 @@ static int allocate_memory (void)
   str_start = NULL;
   current_max_strings = 0;
 
-  if (is_initex)
+  if (flag_initex)
   {
-    if (trace_flag)
+    if (flag_trace)
       puts("INITEX pool and string allocation");
 
     str_pool = realloc_str_pool(initial_pool_size);
@@ -1252,7 +1252,7 @@ static int allocate_memory (void)
   font_info = NULL;
   current_font_mem_size = 0;
 
-  if (is_initex)
+  if (flag_initex)
     font_info = realloc_font_info(initial_font_mem_size);
 #endif
 
@@ -1263,7 +1263,7 @@ static int allocate_memory (void)
   mem_top = mem_initex;
   mem_max = mem_top;
 
-  if (is_initex)
+  if (flag_initex)
   {
     /* avoid this if format specified on command line ??? */
     mem = allocate_main_memory(mem_initex); /* made variable ! */
@@ -1278,7 +1278,7 @@ static int allocate_memory (void)
   hyph_list = NULL;
   hyphen_prime = default_hyphen_prime;
 
-  if (is_initex)
+  if (flag_initex)
   {
     if (new_hyphen_prime)
       hyphen_prime = new_hyphen_prime;
@@ -1289,7 +1289,7 @@ static int allocate_memory (void)
 #endif
 
 #ifdef ALLOCATETRIES
-  if (is_initex)
+  if (flag_initex)
   {
     if (allocate_tries (trie_size))
       return -1;
@@ -1297,7 +1297,7 @@ static int allocate_memory (void)
 #endif
 
 #ifdef ALLOCATEINI
-  if (is_initex)
+  if (flag_initex)
   {
     if (allocate_ini(trie_size))
       return -1;
@@ -1325,23 +1325,23 @@ do {                  \
 
 static int free_memory (void)
 {
-  if (trace_flag)
+  if (flag_trace)
   {
     puts("free_memory() ");
     show_maximums(stdout); 
     printf(
       "Heap total : %u bytes --- max address %u\n"
-      "Main Memory: variable node %lld (%lld - %d);\n"
+      "Main Memory: variable node %d (%d - %d);\n"
       "             one word %d (%d - %d)\n",
       0, max_address,
-      lo_mem_max - mem_min, mem_min, lo_mem_max,
-      mem_end - hi_mem_min, hi_mem_min, mem_end
+      (int) (lo_mem_max - mem_min), (int) mem_min, (int) lo_mem_max,
+      (int) (mem_end - hi_mem_min), (int) hi_mem_min, (int) mem_end
       );
     puts("Freeing memory again");
   }
 
 #ifdef ALLOCATEINI
-  if (is_initex)
+  if (flag_initex)
   {
     safe_free(trie_taken);
     safe_free(trie_hash);
@@ -1431,7 +1431,7 @@ static void reorderargs (int ac, char **av)
 
   *t = '\0';
 
-  if (trace_flag)
+  if (flag_trace)
   {
     printf("%s", takeargs);
     wterm_cr();
@@ -1511,7 +1511,7 @@ static char * grabenv (const char * varname)
 
   if (lastname != NULL && strcasecmp(lastname, varname) == 0)
   {
-    if (trace_flag)
+    if (flag_trace)
       printf("Cache hit: %s=%s\n", lastname, lastvalue);
 
     return xstrdup(lastvalue);
@@ -1552,20 +1552,20 @@ static void flush_trailing_slash (char * directory)
 
 static void knuthify (void)
 {
-  allow_patterns        = false; /* don't allow pattern redefinition */
-  show_in_hex           = true;  /* show character code in hex */
-  show_numeric          = false; /* don't show character code decimal */
-  show_missing          = false; /* don't show missing characters */
-  civilize_flag         = false; /* don't reorder date fields */
-  c_style_flag          = false; /* don't add file name to error msg */
-  show_tfm_flag         = false; /* don't show metric file in log */
-  tab_step              = 0;     /* tab's size of width */
-  show_line_break_stats = false; /* do not show line break stats */
-  default_rule          = 26214; /* revert to default rule thickness */
-  allow_quoted_names    = false;
-  show_cs_names         = false;
-  suppress_f_ligs       = false;
-  tex82_flag            = true;  /* so other code can know about this */
+  flag_allow_patterns       = false; /* don't allow pattern redefinition */
+  flag_show_in_hex          = true;  /* show character code in hex */
+  flag_show_numeric         = false; /* don't show character code decimal */
+  flag_show_missing         = false; /* don't show missing characters */
+  flag_civilize             = false; /* don't reorder date fields */
+  flag_c_style              = false; /* don't add file name to error msg */
+  flag_show_tfm             = false; /* don't show metric file in log */
+  tab_step                  = 0;     /* tab's size of width */
+  flag_show_linebreak_stats = false; /* do not show line break stats */
+  default_rule              = 26214; /* revert to default rule thickness */
+  flag_allow_quoted         = false;
+  flag_show_csnames         = false;
+  flag_suppress_f_ligs      = false;
+  flag_tex82                = true;  /* so other code can know about this */
 }
 
 static struct option long_options[] =
@@ -1581,6 +1581,7 @@ static struct option long_options[] =
   {"aux-dir",       required_argument, NULL, 0},
   {"progname",      required_argument, NULL, 0},
   {"jobname",       required_argument, NULL, 0},
+  {"synctex",       required_argument, NULL, 0},
   {"showcsnames",   no_argument,       NULL, 0},
   {"showinhex",     no_argument,       NULL, 0},
   {"verbose",       no_argument,       NULL, 0},
@@ -1603,23 +1604,23 @@ static int analyze_flag (int c)
   switch (c)
   {
     case 'J':
-      show_line_break_stats = false;
+      flag_show_linebreak_stats = false;
       break;
 
     case 's':
-      show_current = false;
+      flag_show_current = false;
       break;
 
     case 'N':
-      show_numeric = false;
+      flag_show_numeric = false;
       break;
 
     case 'A':
-      civilize_flag = false;
+      flag_civilize = false;
       break; 
 
     case 'B':
-      open_trace_flag = true;
+      flag_open_trace = true;
       break;
 
     case '?':
@@ -1654,30 +1655,32 @@ static int read_command_line (int ac, char **av)
       kpse_reset_program_name(optarg);
     else if (ARGUMENT_IS("jobname"))
       c_job_name = optarg;
+    else if (ARGUMENT_IS("synctex"))
+      synctex_option = (int) strtol(optarg, NULL, 0);
     else if (ARGUMENT_IS("verbose"))
-      verbose_flag = true;
+      flag_verbose = true;
     else if (ARGUMENT_IS("ini"))
-      is_initex = true;
+      flag_initex = true;
     else if (ARGUMENT_IS("knuthify"))
       knuthify();
     else if (ARGUMENT_IS("cstyle"))
-      c_style_flag = true;
+      flag_c_style = true;
     else if (ARGUMENT_IS("showtfm"))
-      show_tfm_flag = true;
+      flag_show_tfm = true;
     else if (ARGUMENT_IS("showcsnames"))
-      show_cs_names = true;
+      flag_show_csnames = true;
     else if (ARGUMENT_IS("showinhex"))
-      show_in_hex = true;
+      flag_show_in_hex = true;
     else if (ARGUMENT_IS("showmissing"))
-      show_missing = false;
-    else if (ARGUMENT_IS("deslash"))
-      deslash = false;
+      flag_show_missing = false;
+    else if (ARGUMENT_IS("flag_deslash"))
+      flag_deslash = false;
     else if (ARGUMENT_IS("suppressfligs"))
-      suppress_f_ligs = true;
+      flag_suppress_f_ligs = true;
     else if (ARGUMENT_IS("patterns"))
-      allow_patterns = true;
+      flag_allow_patterns = true;
     else if (ARGUMENT_IS("trace"))
-      trace_flag = true;
+      flag_trace = true;
     else if (ARGUMENT_IS("dvi-dir"))
     {
       if (optarg == 0)
@@ -1788,35 +1791,32 @@ static int read_command_line (int ac, char **av)
 
 static int init_commands (int ac, char **av)
 {
-  is_initex             = false; 
-  allow_patterns        = false;
-  reset_exceptions      = false;
-  open_trace_flag       = false;
-  trace_flag            = false;
-  verbose_flag          = false;
-  show_in_hex           = false;
-  deslash               = true;
-  default_rule          = 26214;
-  show_current          = true;
-  civilize_flag         = true;
-  show_numeric          = true;
-  show_missing          = true;
-  c_style_flag          = false;
-  show_tfm_flag         = false;
-  tab_step              = 0;
-  show_line_break_stats = true;
-  allow_quoted_names    = true;
-  show_cs_names         = false;
-  tex82_flag            = false;
-  new_hyphen_prime      = 0;
+  flag_initex               = false; 
+  flag_allow_patterns       = false;
+  flag_reset_exceptions     = false;
+  flag_open_trace           = false;
+  flag_trace                = false;
+  flag_verbose              = false;
+  flag_show_in_hex          = false;
+  flag_deslash              = true;
+  flag_show_current         = true;
+  flag_civilize             = true;
+  flag_show_numeric         = true;
+  flag_show_missing         = true;
+  flag_c_style              = false;
+  flag_show_tfm             = false;
+  flag_show_linebreak_stats = true;
+  flag_allow_quoted         = true;
+  flag_show_csnames         = false;
+  flag_tex82                = false;
+  default_rule              = 26214;
+  tab_step                  = 0;
+  new_hyphen_prime          = 0;
+  mem_initex                = 0;
 
 #ifdef VARIABLETRIESIZE
   trie_size = 0; // default_trie_size
 #endif
-
-  mem_extra_high = 0;
-  mem_extra_low  = 0;
-  mem_initex     = 0;
 
   if (read_command_line(ac, av) < 0)
     return -1;
@@ -1830,16 +1830,10 @@ static int init_commands (int ac, char **av)
 /* set initial memory allocations */
 static void initial_memory (void)
 {
-  if (mem_extra_high < 0)
-    mem_extra_high = 0;
-
-  if (mem_extra_low < 0)
-    mem_extra_low = 0;
-
   if (mem_initex < 0)
     mem_initex = 0;
 
-  if (!is_initex)
+  if (!flag_initex)
   {
     if (mem_initex != 0)
     {
@@ -1860,13 +1854,6 @@ static void initial_memory (void)
   if (trie_size == 0)
     trie_size = default_trie_size;
 
-/* Just in case user mistakenly specified words instead of kilo words */
-  if (mem_extra_high > 10000L * 1024L)
-    mem_extra_high = mem_extra_high / 1024;
-
-  if (mem_extra_low > 10000L * 1024L)
-    mem_extra_low = mem_extra_low / 1024;
-
   if (mem_initex > 10000L * 1024L)
     mem_initex = mem_initex / 1024;
 
@@ -1881,7 +1868,7 @@ static void initial_memory (void)
 
   if (new_hyphen_prime > 0)
   {
-    if (!is_initex)
+    if (!flag_initex)
       puts("ERROR: Can only set hyphen prime in initex");
     else
     {
@@ -1891,7 +1878,7 @@ static void initial_memory (void)
       while (!prime(new_hyphen_prime))
         new_hyphen_prime = new_hyphen_prime + 2;
 
-      if (trace_flag)
+      if (flag_trace)
         printf("Using %d as hyphen prime\n", new_hyphen_prime);
     }
   }
@@ -1906,7 +1893,7 @@ static void initial_memory (void)
     percent_grow = 10;   /* lower limit - 10% */
 }
 
-static inline void deslash_path (char * s)
+static inline void flag_deslash_path (char * s)
 {
   if (strcmp(s, "") != 0)
     flush_trailing_slash(s);
@@ -1918,7 +1905,7 @@ static inline void unixify_path (char * s)
     unixify(s);
 }
 
-static void deslash_all (int ac, char **av)
+static void flag_deslash_all (int ac, char **av)
 {
   char buffer[file_name_size];  
   char *s;
@@ -1952,13 +1939,13 @@ static void deslash_all (int ac, char **av)
   if (*s == '\\' || *s == '/')
     *s = '\0';
 
-  deslash_path(dvi_directory);
-  deslash_path(log_directory);
-  deslash_path(aux_directory);
-  deslash_path(fmt_directory);
-  deslash_path(pdf_directory);
+  flag_deslash_path(dvi_directory);
+  flag_deslash_path(log_directory);
+  flag_deslash_path(aux_directory);
+  flag_deslash_path(fmt_directory);
+  flag_deslash_path(pdf_directory);
 
-  if (deslash)
+  if (flag_deslash)
   {
     unixify_path(dvi_directory);
     unixify_path(log_directory);
@@ -1971,10 +1958,10 @@ static void deslash_all (int ac, char **av)
 
   if (optind < ac && optind > 0)
   {
-    if (deslash)
+    if (flag_deslash)
     {
-      if (trace_flag)
-        printf("deslash: argv[%d] = %s (argc %d)\n", optind, av[optind], ac);
+      if (flag_trace)
+        printf("flag_deslash: argv[%d] = %s (argc %d)\n", optind, av[optind], ac);
 
       unixify(av[optind]);
     }
@@ -1986,20 +1973,21 @@ static void deslash_all (int ac, char **av)
 
       if (optind + 1 < ac)
       {
-        if (deslash)
+        if (flag_deslash)
         {
-          if (trace_flag)
-            printf("deslash: argv[%d] %s (argc %d)\n", optind + 1, av[optind + 1], ac);
+          if (flag_trace)
+            printf("flag_deslash: argv[%d] %s (argc %d)\n", optind + 1, av[optind + 1], ac);
 
           unixify(av[optind + 1]);
         }
       }
-    }         
+    }
   }
 }
 
 int main_init (int ac, char ** av)
 {
+  synctex_option = INT_MAX;
   kpse_set_program_name(av[0], NULL);
   init_default_kanji("utf8", "uptex");
   xputenv("engine", "ptex-ng");
@@ -2036,10 +2024,10 @@ int main_init (int ac, char ** av)
   trie_tro   = NULL;
   trie_trl   = NULL;
 
-  log_opened          = false;
-  interaction         = -1;
-  missing_characters  = 0;
-  suppress_f_ligs     = false;
+  log_opened            = false;
+  interaction           = -1;
+  missing_characters    = 0;
+  flag_suppress_f_ligs  = false;
 
   if (reorder_arg_flag)
     reorderargs(ac, av);  
@@ -2051,27 +2039,27 @@ int main_init (int ac, char ** av)
   log_file_name = NULL;
   pdf_file_name = NULL;
 
-  first_pass_count  = 0;
-  second_pass_count = 0;
-  final_pass_count  = 0;
-  paragraph_failed  = 0;
-  single_line       = 0;
-  overfull_hbox     = 0;
-  underfull_hbox    = 0;
-  overfull_vbox     = 0;
-  underfull_vbox    = 0;
+  count_first_pass  = 0;
+  count_second_pass = 0;
+  count_final_pass  = 0;
+  count_paragraph_failed  = 0;
+  count_single_line       = 0;
+  count_overfull_hbox     = 0;
+  count_underfull_hbox    = 0;
+  count_overfull_vbox     = 0;
+  count_underfull_vbox    = 0;
 
-  if (trace_flag)
+  if (flag_trace)
     puts("Entering main_init().");
 
   probe_memory();
   ini_max_address = max_address;
 
-  if (trace_flag)
+  if (flag_trace)
     show_maximums(stdout);
 
   initial_memory();
-  deslash_all(ac, av);
+  flag_deslash_all(ac, av);
 
   if (format_spec && mem_spec_flag)
     puts("WARNING: Cannot change initial main_memory size when format specified");
@@ -2079,7 +2067,7 @@ int main_init (int ac, char ** av)
   if (allocate_memory() != 0)
     return -1;
 
-  if (trace_flag)
+  if (flag_trace)
     puts("Leaving main_init().");
 
   return 0;
@@ -2135,7 +2123,7 @@ int endit (int flag)
   if (free_memory() != 0)
     flag++;
 
-  if (!is_initex)
+  if (!flag_initex)
   {
     printf("Total ");
     show_inter_val(finish_time - start_time);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2014 Clerk Ma
+   Copyright 2014, 2015 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -124,7 +124,7 @@ void initialize (void)
   page_tail = page_head;
 
 #ifdef ALLOCATEMAIN
-  if (is_initex)
+  if (flag_initex)
 #endif
     link(page_head) = 0;
 
@@ -248,7 +248,7 @@ void initialize (void)
   inhibit_glue_flag = false;
   page_dir = dir_yoko;
 
-  if (is_initex)
+  if (flag_initex)
     do_initex();
 }
 
@@ -436,7 +436,7 @@ void line_break (boolean d)
 
     second_pass = false;
     final_pass = false;
-    first_pass_count++;
+    count_first_pass++;
   }
   else
   {
@@ -457,7 +457,7 @@ void line_break (boolean d)
 
     if (second_pass)
     {
-      if (is_initex)
+      if (flag_initex)
       {
         if (trie_not_ready)
           init_trie();
@@ -1099,7 +1099,7 @@ done5:;
 
       threshold = tolerance;
       second_pass = true;
-      second_pass_count++;
+      count_second_pass++;
       final_pass = (emergency_stretch <= 0);
     }
     else
@@ -1111,13 +1111,13 @@ done5:;
 
       background[2] = background[2] + emergency_stretch;
       final_pass = true;
-      ++final_pass_count;
+      ++count_final_pass;
     }
   }
 
 done:
   if (best_line == decent_fit)
-    single_line++;
+    count_single_line++;
 
 #ifdef STAT
   if (tracing_paragraphs > 0)
@@ -1755,7 +1755,7 @@ void prefixed_command (void)
     case hyph_data:
       if (cur_chr == 1)
       {
-        if (is_initex)
+        if (flag_initex)
         {
           new_patterns();
           goto done;
@@ -1991,8 +1991,8 @@ boolean load_fmt_file (void)
   undump_int(x); /* mem_top */
 
 #ifdef ALLOCATEMAIN
-  if (trace_flag)
-    printf("Read from fmt file mem_top = %lld memory words\n", x);
+  if (flag_trace)
+    printf("Read from fmt file mem_top = %d memory words\n", (int) x);
 
   mem = allocate_main_memory(x);
 
@@ -2035,8 +2035,8 @@ boolean load_fmt_file (void)
 #ifdef ALLOCATESTRING
     if (x > current_pool_size)
     {
-      if (trace_flag)
-        printf("undump string pool reallocation (%lld > %d)\n", x, current_pool_size);
+      if (flag_trace)
+        printf("undump string pool reallocation (%d > %d)\n", (int) x, current_pool_size);
 
       str_pool = realloc_str_pool(x - current_pool_size + increment_pool_size);
     }
@@ -2062,8 +2062,8 @@ boolean load_fmt_file (void)
 #ifdef ALLOCATESTRING
     if (x > current_max_strings)
     {
-      if (trace_flag)
-        printf("undump string pointer reallocation (%lld > %d)\n", x, current_max_strings);
+      if (flag_trace)
+        printf("undump string pointer reallocation (%d > %d)\n", (int) x, current_max_strings);
 
       str_start = realloc_str_start(x - current_max_strings + increment_max_strings);
     }
@@ -2114,7 +2114,7 @@ boolean load_fmt_file (void)
   if (mem_min < mem_bot - 2)
   {
 /*  or call add_variable_space(mem_bot - (mem_min + 1)) */
-    if (trace_flag)
+    if (flag_trace)
       puts("Splicing in mem_min space in undump!");
 
     p = llink(rover);
@@ -2186,13 +2186,13 @@ boolean load_fmt_file (void)
       goto bad_fmt;
 
 #ifdef ALLOCATEFONT
-    if (trace_flag)
-      printf("Read from fmt fmem_ptr = %lld\n", x);
+    if (flag_trace)
+      printf("Read from fmt fmem_ptr = %d\n", (int) x);
 
     if (x > current_font_mem_size)
     {
-      if (trace_flag)
-        printf("Undump realloc font_info (%lld > %d)\n", x, current_font_mem_size);
+      if (flag_trace)
+        printf("Undump realloc font_info (%d > %d)\n", (int) x, current_font_mem_size);
 
       font_info = realloc_font_info (x - current_font_mem_size + increment_font_mem_size);
     }
@@ -2261,9 +2261,9 @@ boolean load_fmt_file (void)
         }
       }
 
-      if (trace_flag)
+      if (flag_trace)
         printf("oldfont_mem_size is %d --- hit %d times. Using non_address %d\n",
-            oldfont_mem_size, count, non_address);
+            (int) oldfont_mem_size, (int) count, non_address);
     }
   }
 #endif
@@ -2280,7 +2280,7 @@ boolean load_fmt_file (void)
 #ifdef ALLOCATEHYPHEN
 /* if user specified new hyphen prime - flush existing exception patterns ! */
 /* but, we can reclaim the string storage wasted ... */
-  if (is_initex)
+  if (flag_initex)
   {
     if (new_hyphen_prime != 0)
     {
@@ -2297,7 +2297,7 @@ boolean load_fmt_file (void)
       goto bad_fmt;
 
 #ifdef ALLOCATETRIES
-    if (!is_initex)
+    if (!flag_initex)
     {
       allocate_tries(x); /* allocate only as much as is needed */
     }
@@ -2312,7 +2312,7 @@ boolean load_fmt_file (void)
       j = x;
   }
 
-  if (is_initex)
+  if (flag_initex)
     trie_max = j;
 
   undump(0, j, hyph_start);
@@ -2321,14 +2321,14 @@ boolean load_fmt_file (void)
   undump_things(trie_trc[0], j + 1);
   undump_size(0, trie_op_size, "trie op size", j);
 
-  if (is_initex)
+  if (flag_initex)
     trie_op_ptr = j;
 
   undump_things(hyf_distance[1], j);
   undump_things(hyf_num[1], j);
   undump_things(hyf_next[1], j);
 
-  if (is_initex)
+  if (flag_initex)
   {
     for (k = 0; k <= 255; k++)
       trie_used[k] = min_quarterword;
@@ -2341,14 +2341,14 @@ boolean load_fmt_file (void)
     undump(0, k - 1, k);
     undump(1, j, x);
 
-    if (is_initex)
+    if (flag_initex)
       trie_used[k] = x;
 
     j = j - x;
     op_start[k] = j;
   }
 
-  if (is_initex)
+  if (flag_initex)
     trie_not_ready = false;
 
   undump(batch_mode, error_stop_mode, interaction);
@@ -2438,7 +2438,7 @@ void final_cleanup (void)
 
   if (c == 1)
   {
-    if (is_initex)
+    if (flag_initex)
     {
       for (c = top_mark_code; c <= split_bot_mark_code; c++)
       {
@@ -2469,7 +2469,7 @@ static void show_frozen (void)
 {
   int i;
 
-  log_printf("\n(%lld fonts frozen in format file:\n", font_ptr);
+  log_printf("\n(%d fonts frozen in format file:\n", (int) font_ptr);
 
   for (i = 1; i <= font_ptr; i++)
   {
@@ -2515,7 +2515,7 @@ int main_program (void)
   if (mem_top < 256 + 11)
     bad = 7;
 
-  if (is_initex)
+  if (flag_initex)
   {
     if ((mem_min != 0) || (mem_max != mem_top))
       bad = 10;
@@ -2536,7 +2536,7 @@ int main_program (void)
   if ((mem_min < min_halfword) || (mem_max >= max_halfword) || (mem_bot - mem_min >= max_halfword))
     bad = 14;
 
-  if (mem_max > mem_top + mem_extra_high)
+  if (mem_max > mem_top)
     bad = 14;
 
   if ((0 < min_quarterword) || (font_max > max_quarterword))
@@ -2577,7 +2577,7 @@ int main_program (void)
 
   initialize();
 
-  if (is_initex)
+  if (flag_initex)
   {
     if (!get_strings_started())
       goto final_end;
@@ -2655,7 +2655,7 @@ start_of_TEX:
       first = last + 1;
     }
 
-    if (is_initex)
+    if (flag_initex)
     {
       if (true || ((buffer[loc] == '*') && (format_ident == 1251)))
       {
@@ -2778,18 +2778,19 @@ start_of_TEX:
       start_input();
   }
 
-  if (show_tfm_flag && log_opened && font_ptr > 0)
+  if (flag_show_tfm && log_opened && (font_ptr > 0))
     show_frozen();
 
   main_time = clock();
   history = spotless;
+  synctex_init();
 
-  if (show_cs_names)
+  if (flag_show_csnames)
     print_cs_names(stdout, false);
 
   main_control();
 
-  if (show_cs_names)
+  if (flag_show_csnames)
     print_cs_names(stdout, true);
 
   final_cleanup();
@@ -2816,7 +2817,7 @@ void add_variable_space (int size)
 
   if (mem_min < mem_start)
   {
-    if (trace_flag)
+    if (flag_trace)
       puts("WARNING: mem_min < mem_start!");
 
     mem_min = mem_start;
@@ -2995,6 +2996,9 @@ static void do_initex (void)
     kinsoku_type(k) = 0;
   }
 
+  for (k = 0; k <= 512; k++)
+    kcat_code(k) = other_kchar;
+
   cat_code(carriage_return) = car_ret;
   cat_code(' ') = spacer;
   cat_code('\\') = escape;
@@ -3042,48 +3046,48 @@ static void do_initex (void)
     kcat_code(0x23) = hangul;
 
     // { CJK Radicals Supplement .. Ideographic Description Characters }
-    for (k = 0x63; k <= 0x65; k++)
+    for (k = 0x64; k <= 0x66; k++)
       kcat_code(k) = kanji;
 
     // { Hiragana, Katakana }
-    for (k = 0x67; k <= 0x68; k++)
+    for (k = 0x68; k <= 0x69; k++)
       kcat_code(k) = kana;
 
     // { Bopomofo }
-    kcat_code(0x69) = kanji;
+    kcat_code(0x6A) = kanji;
     // { Hangul Compatibility Jamo }
-    kcat_code(0x6A) = hangul;
+    kcat_code(0x6B) = hangul;
 
     // { Kanbun .. CJK Strokes }
-    for (k = 0x6B; k <= 0x6D; k++)
+    for (k = 0x6C; k <= 0x6E; k++)
       kcat_code(k) = kanji;
 
     // { Katakana Phonetic Extensions }
-    kcat_code(0x6E) = kana;
+    kcat_code(0x6F) = kana;
     // { CJK Unified Ideographs Extension A }
-    kcat_code(0x71) = kanji;
+    kcat_code(0x72) = kanji;
     // { CJK Unified Ideographs }
-    kcat_code(0x73) = kanji;
+    kcat_code(0x74) = kanji;
     // { Hangul Jamo Extended-A }
-    kcat_code(0x83) = hangul;
+    kcat_code(0x84) = hangul;
     // { Hangul Syllables }
-    kcat_code(0x8B) = hangul;
+    kcat_code(0x8E) = hangul;
     // { Hangul Jamo Extended-B }
-    kcat_code(0x8C) = hangul;
+    kcat_code(0x8F) = hangul;
     // { CJK Compatibility Ideographs }
-    kcat_code(0x91) = kanji;
-    // { kcat_code(0x9A) = other_kchar; Halfwidth and Fullwidth Forms }
+    kcat_code(0x94) = kanji;
+    // { kcat_code(0x9D) = other_kchar; Halfwidth and Fullwidth Forms }
     // { Kana Supplement }
-    kcat_code(0xC3) = kana;
+    kcat_code(0xDD) = kana;
 
     // { CJK Unified Ideographs Extension B .. CJK Compatibility Ideographs Supplement }
-    for (k = 0xD4; k <= 0xD7; k++)
+    for (k = 0xF4; k <= 0xF7; k++)
       kcat_code(k) = kanji;
 
     // { Fullwidth digit and latin alphabet }
-    kcat_code(0xFE) = kana;
+    kcat_code(0x1FE) = kana;
     // { Halfwidth katakana }
-    kcat_code(0xFF) = kana;
+    kcat_code(0x1FF) = kana;
   }
   else
   {
@@ -3113,6 +3117,8 @@ static void do_initex (void)
   max_dead_cycles = 25;
   escape_char = '\\';
   end_line_char = carriage_return;
+  pdf_compress_level = 9;
+  pdf_minor_version = 5;
 
   for (k = 0; k <= 255; k++)
     del_code(k) = -1;
@@ -3125,7 +3131,7 @@ static void do_initex (void)
   hash_used = frozen_control_sequence;
   cs_count = 0;
 
-  if (trace_flag)
+  if (flag_trace)
     puts("initex cs_count = 0 ");
 
   eq_type(frozen_dont_expand) = dont_expand;
@@ -3530,16 +3536,16 @@ void new_patterns (void)
 
   if (!trie_not_ready)
   {
-    if (allow_patterns)
+    if (flag_allow_patterns)
     {
-      if (trace_flag)
+      if (flag_trace)
         puts("Resetting patterns");
 
       reset_trie();
 
-      if (reset_exceptions)
+      if (flag_reset_exceptions)
       {
-        if (trace_flag)
+        if (flag_trace)
           puts("Resetting exceptions");
 
         reset_hyphen();
@@ -3883,11 +3889,11 @@ void store_fmt_file (void)
   pointer p, q;
   integer x;
 
-  if (!is_initex)
+  if (!flag_initex)
   {
     puts("! \\dump is performed only by INITEX");
 
-    if (!tex82_flag)
+    if (!flag_tex82)
       puts("  (Use -ini on the command line)");
 
     return;
@@ -4090,9 +4096,9 @@ done2:
   dump_int(hash_used);
   cs_count = frozen_control_sequence - 1 - hash_used;
 
-  if (trace_flag)
-    printf(" (cs_count %lld hash_size %d hash_used %d) ",
-        cs_count, hash_size, hash_used);
+  if (flag_trace)
+    printf(" (cs_count %d hash_size %d hash_used %d) ",
+        (int) cs_count, hash_size, hash_used);
 
   for (p = hash_base; p <= hash_used; p++)
   {
@@ -4102,7 +4108,7 @@ done2:
       dump_hh(hash[p]);
       incr(cs_count);
 
-      if (trace_flag)
+      if (flag_trace)
         puts(" (do store_fmt_file() cs_count++) ");
     }
   }
@@ -4329,6 +4335,9 @@ void init_prim (void)
   primitive("holdinginserts", assign_int, int_base + holding_inserts_code);
   primitive("errorcontextlines", assign_int, int_base + error_context_lines_code);
   primitive("jcharwidowpenalty", assign_int, int_base + jchr_widow_penalty_code);
+  primitive("pdfcompresslevel", assign_int, int_base + pdf_compress_level_code);
+  primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
+  primitive("synctex", assign_int, int_base + synctex_code);
   /* sec 0248 */
   primitive("parindent", assign_dimen, dimen_base + par_indent_code);
   primitive("mathsurround", assign_dimen, dimen_base + math_surround_code);

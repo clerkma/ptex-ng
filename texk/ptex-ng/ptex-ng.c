@@ -1,7 +1,7 @@
 /*
    Copyright 1992 Karl Berry
    Copyright 2007 TeX Users Group
-   Copyright 2014 Clerk Ma
+   Copyright 2014, 2015 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ int main (int ac, char *av[])
     flag = main_program();
   }
 
-  if (trace_flag)
+  if (flag_trace)
   {
     printf("EXITING at %s: flag = %d, ret = %d, jump_used = %d\n",
       (ret == 0) ? "main" : "jump_out", flag, ret, jump_used);
@@ -77,7 +77,7 @@ void t_open_in (void)
   {
     for (i = optind; i < gargc; i++)
     {
-      if (allow_quoted_names && strchr(gargv[i], ' ') != NULL)
+      if (flag_allow_quoted && strchr(gargv[i], ' ') != NULL)
       {
         (void) strcat ((char *) &buffer[first], "\"");
         (void) strcat ((char *) &buffer[first], gargv[i]);
@@ -195,7 +195,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
 #endif
 
 #ifdef ALLOCATEBUFFER
-        while ((last - first) % tab_step != 0) 
+        while ((last - first) % tab_step != 0)
 #else
         while ((last < buf_size) && ((last - first) % tab_step != 0))
 #endif
@@ -425,7 +425,7 @@ char * unixify (char * t)
     }
   }
 
-  if (trace_flag)
+  if (flag_trace)
     printf("Unixified name: %s\n", t);
 
   return t;

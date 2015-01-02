@@ -16,7 +16,8 @@ objects = \
 	ptex-ng-src.o\
 	ptex-ng-pool.o\
 	ptex-ng-pdf.o\
-	ptex-ng-kanji.o
+	ptex-ng-kanji.o\
+	ptex-ng-synctex.o
 
 headers = ptex-ng.h coerce.h macros.h
 
@@ -31,6 +32,9 @@ ptex-ng-pdf.o: ptex-ng-pdf.c $(headers)
 
 ptex-ng-kanji.o: ptex-ng-kanji.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-kanji.c
+
+ptex-ng-synctex.o: ptex-ng-synctex.c $(headers)
+	$(CC) $(CFLAGS) ptex-ng-synctex.c
 
 ptex-ng-initex.o: ptex-ng-initex.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng-initex.c

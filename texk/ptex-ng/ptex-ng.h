@@ -1,5 +1,5 @@
 /*
-   Copyright 2014 Clerk Ma
+   Copyright 2014, 2015 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -58,6 +58,7 @@
 // standard C headers
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <time.h>
@@ -74,9 +75,10 @@
 // ptexenc for kanji processing
 #include <ptexenc/ptexenc.h>
 #include <ptexenc/unicode.h>
+// zlib for fmt file and synctex
 #include "zlib.h"
 // integers
-typedef long long integer;
+typedef int64_t integer;
 typedef double  glue_ratio;
 typedef double  real;
 typedef uint8_t ASCII_code;
@@ -97,9 +99,6 @@ typedef FILE * word_file;
   #undef link
 #endif
 
-//#include <conio.h>
-//#define wterm(s)    (void) _putch(s)
-//#define wterm_cr()  (void) _putch('\n')
 #define wterm(s)    (void) fputc(s, stdout)
 #define wlog(s)     (void) fputc(s, log_file)
 #define wterm_cr()  (void) fputc('\n', stdout)
@@ -116,13 +115,13 @@ typedef FILE * word_file;
 #define w_close(f)      gzclose(gz_fmt_file)
 
 #ifdef COMPACTFORMAT
-EXTERN int do_dump(char * p, int item_size, int nitems, gzFile out_file);
-EXTERN int do_undump(char * p, int item_size, int nitems, gzFile out_file);
-#define dump_file gz_fmt_file
+  EXTERN int do_dump(char * p, int item_size, int nitems, gzFile out_file);
+  EXTERN int do_undump(char * p, int item_size, int nitems, gzFile out_file);
+  #define dump_file gz_fmt_file
 #else
-EXTERN int do_dump(char * p, int item_size, int nitems, FILE * out_file);
-EXTERN int do_undump(char * p, int item_size, int nitems, FILE * out_file);
-#define dump_file fmt_file
+  EXTERN int do_dump(char * p, int item_size, int nitems, FILE * out_file);
+  EXTERN int do_undump(char * p, int item_size, int nitems, FILE * out_file);
+  #define dump_file fmt_file
 #endif
 
 #define dump_things(base, len)    do_dump  ((char *) &(base), sizeof (base), (int) (len), dump_file)
@@ -231,7 +230,7 @@ EXTERN integer max_buf_stack;
   #define initial_font_mem_size   20000
   #define increment_font_mem_size 40000
 #else
-  #define font_mem_size 100000L
+  #define font_mem_size 100000
 #endif
 
 #ifdef ALLOCATESTRING
@@ -353,6 +352,7 @@ typedef struct
 {
   quarterword state_field, index_field;
   halfword start_field, loc_field, limit_field, name_field;
+  integer synctex_tag_field;
 } in_state_record;
 /* sec 0548 */
 typedef integer internal_font_number;
@@ -825,6 +825,7 @@ EXTERN pointer first_char;
 EXTERN pointer last_char;
 EXTERN boolean find_first_char;
 EXTERN int fbyte;
+
 //eTeX
 EXTERN boolean eTeX_mode;
 EXTERN boolean eof_seen[max_in_open + 1];
@@ -853,43 +854,42 @@ EXTERN trie_pointer hyph_index;
 EXTERN pointer disc_ptr[4];
 EXTERN boolean is_print_utf8;
 EXTERN str_number last_tokens_string;
+
 /* new variables defined in ptex-ng-local.c */
-EXTERN boolean is_initex;
-EXTERN boolean verbose_flag;
-EXTERN boolean trace_flag;
-EXTERN boolean open_trace_flag;
-EXTERN boolean tex82_flag;
-EXTERN boolean c_style_flag;
-EXTERN boolean deslash;
-EXTERN boolean allow_patterns;
-EXTERN boolean reset_exceptions;
-EXTERN boolean show_current;
-EXTERN boolean civilize_flag;
-EXTERN boolean show_numeric;
-EXTERN boolean show_missing;
+EXTERN boolean flag_initex;
+EXTERN boolean flag_verbose;
+EXTERN boolean flag_trace;
+EXTERN boolean flag_open_trace;
+EXTERN boolean flag_tex82;
+EXTERN boolean flag_c_style;
+EXTERN boolean flag_deslash;
+EXTERN boolean flag_allow_patterns;
+EXTERN boolean flag_reset_exceptions;
+EXTERN boolean flag_show_current;
+EXTERN boolean flag_civilize;
+EXTERN boolean flag_show_numeric;
+EXTERN boolean flag_show_missing;
+EXTERN boolean flag_show_in_hex;
+EXTERN boolean flag_show_tfm;
+EXTERN boolean flag_show_csnames;
+EXTERN boolean flag_allow_quoted;
+EXTERN boolean flag_show_linebreak_stats;
+EXTERN boolean flag_suppress_f_ligs;
 EXTERN int mem_initex;
-EXTERN int mem_extra_high;
-EXTERN int mem_extra_low;
 EXTERN int new_hyphen_prime;
 EXTERN int missing_characters;
-EXTERN boolean show_in_hex;
-EXTERN boolean show_tfm_flag;
-EXTERN boolean show_cs_names;
 EXTERN int tab_step;
-EXTERN boolean allow_quoted_names;
 EXTERN scaled default_rule;
 EXTERN char * format_name;
-EXTERN boolean show_line_break_stats;
-EXTERN int first_pass_count;
-EXTERN int second_pass_count;
-EXTERN int final_pass_count;
-EXTERN int underfull_hbox;
-EXTERN int overfull_hbox;
-EXTERN int underfull_vbox;
-EXTERN int overfull_vbox;
-EXTERN int paragraph_failed;
-EXTERN int single_line;
-EXTERN boolean suppress_f_ligs;
+EXTERN int count_first_pass;
+EXTERN int count_second_pass;
+EXTERN int count_final_pass;
+EXTERN int count_underfull_hbox;
+EXTERN int count_overfull_hbox;
+EXTERN int count_underfull_vbox;
+EXTERN int count_overfull_vbox;
+EXTERN int count_paragraph_failed;
+EXTERN int count_single_line;
 EXTERN int jump_used;
 EXTERN jmp_buf ng_env;
 extern int current_pool_size;
@@ -911,6 +911,8 @@ extern char * aux_directory;
 extern char * fmt_directory;
 extern char * pdf_directory;
 extern clock_t start_time, main_time, finish_time;
+// for synctex
+EXTERN integer synctex_option;
 
 #include "coerce.h"
 #define log_printf(...) fprintf(log_file, __VA_ARGS__)

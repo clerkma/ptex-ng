@@ -1,5 +1,5 @@
 /*
-   Copyright 2014 Clerk Ma
+   Copyright 2014, 2015 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -857,7 +857,7 @@ void overflow (const char * s, integer n)
   help2("If you really absolutely need more capacity,",
       "you can ask a wizard to enlarge me.");
 
-  if (!tex82_flag)
+  if (!flag_tex82)
   {
     if (!strcmp(s, "pattern memory") && (n == trie_size))
       printf("\n  (Maybe use -h=... on command line in initex)\n");
@@ -1622,7 +1622,7 @@ restart:
 
   if (s == 010000000000)
   {
-    if (trace_flag)
+    if (flag_trace)
       puts("Merged adjacent multi-word nodes");
 
     return max_halfword;
@@ -1668,8 +1668,8 @@ restart:
 
   if (mem_min - (block_size + 1) <= mem_start) /* check again */
   {
-    if (trace_flag)
-      printf("mem_min %lld, mem_start %d, block_size %d\n", mem_min, mem_start, block_size);
+    if (flag_trace)
+      printf("mem_min %d, mem_start %d, block_size %d\n", (int) mem_min, (int) mem_start, (int) block_size);
 
     overflow("main memory size", mem_max + 1 - mem_min);
   }
@@ -1678,6 +1678,12 @@ restart:
   goto restart;
 
 found:
+  if (s >= medium_node_size)
+  {
+    sync_tag(r + s) = synctex_tag;
+    sync_line(r + s) = line;
+  }
+
   link(r) = 0;
 
 #ifdef STAT
@@ -1786,7 +1792,7 @@ pointer new_math (scaled w, small_number s)
 {
   pointer p;
 
-  p = get_node(small_node_size);
+  p = get_node(medium_node_size);
   type(p) = math_node;
   subtype(p) = s;
   width(p) = w;
@@ -1814,7 +1820,7 @@ pointer new_param_glue (small_number n)
   pointer p;
   pointer q;
 
-  p = get_node(small_node_size);
+  p = get_node(medium_node_size);
   type(p) = glue_node;
   subtype(p) = n + 1;
   leader_ptr(p) = 0;
@@ -1829,7 +1835,7 @@ pointer new_glue (pointer q)
 {
   pointer p;
 
-  p = get_node(small_node_size);
+  p = get_node(medium_node_size);
   type(p) = glue_node;
   subtype(p) = normal;
   leader_ptr(p) = 0;
@@ -1855,7 +1861,7 @@ pointer new_kern (scaled w)
 {
   pointer p;
 
-  p = get_node(small_node_size);
+  p = get_node(medium_node_size);
   type(p) = kern_node;
   subtype(p) = normal;
   width(p) = w;
@@ -1867,7 +1873,7 @@ pointer new_penalty (integer m)
 {
   pointer p;
 
-  p = get_node(small_node_size);
+  p = get_node(medium_node_size);
   type(p) = penalty_node;
   subtype(p) = 0;
   penalty(p) = m;
@@ -3141,14 +3147,23 @@ void flush_node_list (pointer p)
 
             if (leader_ptr(p) != 0)
               flush_node_list(leader_ptr(p));
+
+            free_node(p, medium_node_size);
+            goto done;
           }
           break;
 
         case disp_node:
+          do_nothing();
+          break;
+
         case kern_node:
         case math_node:
         case penalty_node:
-          do_nothing();
+          {
+            free_node(p, medium_node_size);
+            goto done;
+          }
           break;
 
         case ligature_node:
@@ -3278,6 +3293,8 @@ pointer copy_node_list (pointer p)
       case unset_node:
         {
           r = get_node(box_node_size);
+          sync_tag(r + box_node_size) = sync_tag(p + box_node_size);
+          sync_line(r + box_node_size) = sync_line(p + box_node_size);
           mem[r + 7] = mem[p + 7];
           mem[r + 6] = mem[p + 6];
           mem[r + 5] = mem[p + 5];
@@ -3291,7 +3308,9 @@ pointer copy_node_list (pointer p)
       case rule_node:
         {
           r = get_node(rule_node_size);
-          words = rule_node_size;
+          words = rule_node_size - synctex_field_size;
+          sync_tag(r + rule_node_size) = sync_tag(p + rule_node_size);
+          sync_line(r + rule_node_size) = sync_line(p + rule_node_size);
         }
         break;
 
@@ -3341,7 +3360,9 @@ pointer copy_node_list (pointer p)
 
       case glue_node:
         {
-          r = get_node(small_node_size);
+          r = get_node(medium_node_size);
+          sync_tag(r + medium_node_size) = sync_tag(p + medium_node_size);
+          sync_line(r + medium_node_size) = sync_line(p + medium_node_size);
           add_glue_ref(glue_ptr(p));
           glue_ptr(r) = glue_ptr(p);
           leader_ptr(r) = copy_node_list(leader_ptr(p));
@@ -3349,12 +3370,18 @@ pointer copy_node_list (pointer p)
         break;
 
       case disp_node:
+        {
+          r = get_node(small_node_size);
+          words = small_node_size;
+        }
+        break;
+
       case kern_node:
       case math_node:
       case penalty_node:
         {
-          r = get_node(small_node_size);
-          words = small_node_size;
+          r = get_node(medium_node_size);
+          words = medium_node_size;
         }
         break;
 
@@ -3923,6 +3950,18 @@ void print_param (integer n)
 
     case eTeX_state_code + TeXXeT_code:
       print_esc("TeXXeTstate");
+      break;
+
+    case pdf_compress_level_code:
+      print_esc("pdfcompresslevel");
+      break;
+
+    case pdf_minor_version_code:
+      print_esc("pdfminorversion");
+      break;
+
+    case synctex_code:
+      print_esc("synctex");
       break;
 
     default:
@@ -6341,7 +6380,7 @@ void show_context (void)
           }
           else
           {
-            if (c_style_flag)
+            if (flag_c_style)
             {
               print_ln();
 
@@ -6721,6 +6760,7 @@ void begin_file_reading (void)
   start = first;
   state = mid_line;
   name = 0;
+  synctex_tag = 0;
 }
 /* sec 0329 */
 void end_file_reading (void)
@@ -11063,7 +11103,7 @@ void scan_file_name (void)
 
   quoted_file_name = false;
 
-  if (allow_quoted_names)
+  if (flag_allow_quoted)
   {
     if (cur_chr == '"')
     {
@@ -11152,7 +11192,7 @@ void prompt_file_name_(const char * s, str_number e)
 
     quoted_file_name = false;
 
-    if (allow_quoted_names && k < last)
+    if (flag_allow_quoted && (k < last))
     {
       if (buffer[k]== '"')
       {
@@ -11214,7 +11254,7 @@ void open_log_file (void)
 
     prints("  ");
 
-    if (civilize_flag)
+    if (flag_civilize)
       print_int(year);
     else
       print_int(day);
@@ -11227,7 +11267,7 @@ void open_log_file (void)
 
     print_char(' ');
 
-    if (civilize_flag)
+    if (flag_civilize)
       print_int(day);
     else
       print_int(year);
@@ -11294,6 +11334,8 @@ done:
   slow_print(name);
   update_terminal();
   state = new_line;
+
+  synctex_start_input();
 
   {
     line = 1;
@@ -11457,9 +11499,9 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
   if ((font_ptr == font_max) || (fmem_ptr + lf > font_mem_size))
 #endif
   {
-    if (trace_flag)
-      printf("font_ptr %lld font_max %d fmem_ptr %lld lf %d font_mem_size %ld\n",
-          font_ptr, font_max, fmem_ptr, lf, font_mem_size);
+    if (flag_trace)
+      printf("font_ptr %d font_max %d fmem_ptr %d lf %d font_mem_size %d\n",
+          (int) font_ptr, (int) font_max, (int) fmem_ptr, (int)lf, (int) font_mem_size);
 
     start_font_error_message();
     prints(" not loaded: Not enough room left");
@@ -11818,10 +11860,10 @@ void char_warning (internal_font_number f, eight_bits c)
     if (eTeX_ex && (tracing_lost_chars > 1))
       tracing_online = 1;
 
-    if (show_missing == 0)
+    if (flag_show_missing == 0)
       begin_diagnostic();
 
-    if (show_missing)
+    if (flag_show_missing)
     {
       print_nl("! ");
       prints("Missing character: there is no ");
@@ -11847,7 +11889,7 @@ void char_warning (internal_font_number f, eight_bits c)
     else
       print(c);
 
-    if (show_numeric)
+    if (flag_show_numeric)
     {
       print_char(' ');
       print_char('(');
@@ -11874,13 +11916,13 @@ void char_warning (internal_font_number f, eight_bits c)
     slow_print(font_name[f]);
     print_char('!');
 
-    if (show_missing)
+    if (flag_show_missing)
     {
       if (f != null_font)
         show_context();
     }
 
-    if (show_missing == 0)
+    if (flag_show_missing == 0)
       end_diagnostic(false);
 
     missing_characters++;
@@ -11912,10 +11954,10 @@ pointer new_character (internal_font_number f, eight_bits c)
 /* sec 0598 */
 void dvi_swap (void)
 { 
-  if (trace_flag)
+  if (flag_trace)
   {
     wterm_cr();
-    printf("dvi_swap() %lld", dvi_gone);
+    printf("dvi_swap() %d", (int) dvi_gone);
   }
 
   if (dvi_limit == dvi_buf_size)
@@ -12693,7 +12735,7 @@ reswitch:
           print_int(last_badness);
 
           if (last_badness > 100)
-            underfull_hbox++;
+            count_underfull_hbox++;
 
           goto common_ending;
         }
@@ -12744,7 +12786,7 @@ reswitch:
         print_scaled(-x - total_shrink[normal]);
         prints("pt too wide");
         
-        overfull_hbox++;
+        count_overfull_hbox++;
         goto common_ending;
       }
     }
@@ -12987,7 +13029,7 @@ pointer vpackage (pointer p, scaled h, small_number m, scaled l)
           print_int(last_badness);
 
           if (last_badness > 100)
-            underfull_vbox++;
+            count_underfull_vbox++;
 
           goto common_ending;
         }
@@ -13029,7 +13071,7 @@ pointer vpackage (pointer p, scaled h, small_number m, scaled l)
         print_scaled(-x - total_shrink[0]);
         prints("pt too high");
 
-        overfull_vbox++;
+        count_overfull_vbox++;
 
         goto common_ending;
       }
@@ -13582,7 +13624,7 @@ found:
         if (!is_char_node(r))
           if (type(r) == kern_node)
           {
-            free_node(r, small_node_size);
+            free_node(r, medium_node_size);
             link(q) = 0;
           }
   }
@@ -17050,6 +17092,7 @@ done:
     link(t) = new_kern(w);
     t = link(t);
     w = 0;
+    sync_tag(t + medium_node_size) = 0;
   }
 
   if (lig_stack != 0)
@@ -17408,7 +17451,7 @@ void new_hyph_exceptions (void)
   scan_left_brace();
   set_cur_lang();
 
-  if (is_initex)
+  if (flag_initex)
   {
     hyph_index = 0;
     goto not_found1;
@@ -21704,10 +21747,12 @@ void new_font (small_number a)
   if (u >= hash_base)
     t = text(u);
   else if (u >= single_base)
+  {
     if (u == null_cs)
       t = 1213; /* FONT */
     else
       t = u - single_base;
+  }
   else
   {
     old_setting = selector;
@@ -22381,8 +22426,7 @@ void handle_right_brace (void)
 
     case output_group:
       {
-        if ((loc != 0) ||
-          ((token_type != output_text) && (token_type != backed_up)))
+        if ((loc != 0) || ((token_type != output_text) && (token_type != backed_up)))
         {
           print_err("Unbalanced output routine");
           help2("Your sneaky output routine has problematic {'s and/or }'s.",
@@ -22606,9 +22650,9 @@ reswitch:
         get_x_token();
 
         if ((cur_cmd == letter) || (cur_cmd == other_char) ||
-          ((cur_cmd >= kanji) && (cur_cmd <= hangul)) ||
-          (cur_cmd == char_given) || (cur_cmd == char_num) ||
-          (cur_cmd == kchar_given) || (cur_cmd == kchar_num))
+            ((cur_cmd >= kanji) && (cur_cmd <= hangul)) ||
+            (cur_cmd == char_given) || (cur_cmd == char_num) ||
+            (cur_cmd == kchar_given) || (cur_cmd == kchar_num))
           cancel_boundary = true;
 
         goto reswitch;
@@ -22756,6 +22800,7 @@ reswitch:
     case any_mode(chg_dir):
       {
         if (cur_group != align_group)
+        {
           if (head == tail)
           {
             direction = cur_chr;
@@ -22772,6 +22817,7 @@ reswitch:
               "current list is null.");
             error();
           }
+        }
         else
         {
           print_err("You can't use `");
@@ -22939,10 +22985,12 @@ reswitch:
 
     case mmode + eq_no:
       if (privileged())
+      {
         if (cur_group == math_shift_group)
           start_eq_no();
         else
           off_save();
+      }
       break;
 
     case mmode + left_brace:
@@ -22957,10 +23005,12 @@ reswitch:
     case mmode + other_char:
     case mmode + char_given:
       if (check_echar_range(cur_chr))
+      {
         if (cur_chr < 128)
           set_math_char(math_code(cur_chr));
         else
           set_math_char(cur_chr);
+      }
       else
         set_math_kchar(cur_chr);
       break;
@@ -22981,10 +23031,12 @@ reswitch:
         cur_chr = cur_val;
 
         if (check_echar_range(cur_chr))
+        {
           if (cur_chr < 128)
             set_math_char(math_code(cur_chr));
           else
             set_math_char(cur_chr);
+        }
         else
           set_math_kchar(cur_chr);
       }
@@ -23189,8 +23241,10 @@ main_loop:
   false_bchar = font_false_bchar[main_f];
 
   if (mode > 0)
+  {
     if (language != clang)
       fix_language();
+  }
 
   fast_get_avail(lig_stack);
   font(lig_stack) = main_f;
@@ -23361,7 +23415,7 @@ main_lig_loop_1:
 main_lig_loop_2:
   bSuppress = false;
 
-  if (suppress_f_ligs && next_char(main_j) == cur_r && op_byte(main_j) == no_tag)
+  if (flag_suppress_f_ligs && next_char(main_j) == cur_r && op_byte(main_j) == no_tag)
   {
     if (cur_l == 'f')
       bSuppress = true;
@@ -23450,8 +23504,10 @@ main_lig_loop_2:
       }
 
       if (op_byte(main_j) > 4)
+      {
         if (op_byte(main_j) != 7)
           goto main_loop_wrapup;
+      }
 
       if (cur_l < non_char)
         goto main_lig_loop;
@@ -23485,10 +23541,12 @@ main_loop_move_lig:
   ligature_present = true;
 
   if (lig_stack == 0)
+  {
     if (main_p != 0)
       goto main_loop_lookahead;
     else
       cur_r = bchar;
+  }
   else
     cur_r = character(lig_stack);
 
@@ -23556,15 +23614,15 @@ boolean open_fmt_file (void)
     if (w_open_in(fmt_file))
       goto found;
   
-    if (tex82_flag)
+    if (flag_tex82)
     {
       wake_up_terminal();
-      printf("%s;%s\n", "Sorry, I can't find that format", " will try the default.");
+      printf("Sorry, I can't find that format; will try the default.\n");
     }
     else
     {
       name_of_file[name_length + 1] = '\0';
-      printf("%s (%s);%s\n", "Sorry, I can't find that format", name_of_file + 1, " will try the default.");
+      printf("Sorry, I can't find that format (%s); will try the default.\n", name_of_file + 1);
       name_of_file[name_length + 1] = ' ';
       printf("(Perhaps your pTeX-ng's environment variable is not set correctly)\n");
     }
@@ -23576,7 +23634,7 @@ boolean open_fmt_file (void)
 
   if (!w_open_in(fmt_file))
   {
-    if (tex82_flag)
+    if (flag_tex82)
     {
       wake_up_terminal();
       printf("%s!\n", "I can't find the default format file");
@@ -23584,7 +23642,7 @@ boolean open_fmt_file (void)
     else
     {
       name_of_file[name_length + 1] = '\0';
-      printf("%s (%s)!\n", "I can't find the default format file", name_of_file + 1);
+      printf("I can't find the default format file (%s)!\n", name_of_file + 1);
       name_of_file[name_length + 1] = ' ';
       printf("(Perhaps your pTeX-ng's environment variable is not set correctly)\n");
     }
@@ -23597,168 +23655,162 @@ found:
 
   return true;
 }
+
+#define ng_stat(a) (int)(flag_show_current ? current_##a : a)
+#define mem_size (mem_end + 1 - mem_min)
 /* sec 1333 */
 void close_files_and_terminate (void)
 {
   integer k; 
 
-  if (trace_flag)
+  if (flag_trace)
     puts("\nclose_files_and_terminate() ");
 
   for (k = 0; k <= 15; k++)
+  {
     if (write_open[k])
       a_close(write_file[k]);
+  }
 
 #ifdef STAT
-  if (tracing_stats > 0 || verbose_flag != 0)
+  if (tracing_stats > 0 || flag_verbose != 0)
+  {
     if (log_opened)
     {
-      log_printf("%c\n", ' ');
+      log_printf(" \n");
       log_printf("\n");
-      log_printf("%s%s\n", "Here is how much of TeX's memory", " you used:");
-      log_printf("%c%lld%s", ' ', (integer)(str_ptr - init_str_ptr), " string");
+      log_printf("Here is how much of TeX's memory you used:\n");
+      log_printf(" %d string", (int)(str_ptr - init_str_ptr));
 
       if (str_ptr != init_str_ptr + 1)
         wlog('s');
 
 #ifdef ALLOCATESTRING
-      if (show_current)
-        log_printf("%s%d\n", " out of ", (int)(current_max_strings - init_str_ptr));
-      else
+      log_printf(" out of %d\n", (int)(ng_stat(max_strings) - init_str_ptr));
+      log_printf(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(ng_stat(pool_size) - init_pool_ptr));
+#else
+      log_printf(" out of %d\n", (int)(max_strings - init_str_ptr));
+      log_printf(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(pool_size - init_pool_ptr));
 #endif
-        log_printf("%s%d\n", " out of ", (int)(max_strings - init_str_ptr));
-
-#ifdef ALLOCATESTRING
-      if (show_current)
-        log_printf("%c%lld%s%lld\n", ' ', (integer)(pool_ptr - init_pool_ptr), " string characters out of ", current_pool_size - init_pool_ptr);
-      else
-#endif
-        log_printf("%c%lld%s%lld\n", ' ', (integer)(pool_ptr - init_pool_ptr), " string characters out of ", pool_size - init_pool_ptr);
 
 #ifdef ALLOCATEMAIN
-      if (show_current)
-        log_printf("%c%lld%s%d\n", ' ', (integer)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), " words of memory out of ", current_mem_size);
-      else
+      log_printf(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), ng_stat(mem_size));
+#else
+      log_printf(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), (int) (mem_size));
 #endif
-        log_printf("%c%lld%s%lld\n", ' ', (integer)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), " words of memory out of ", mem_end + 1 - mem_min);
 
-      log_printf("%c%lld%s%d\n", ' ', (cs_count), " multiletter control sequences out of ", hash_size);
-      log_printf("%c%lld%s%lld%s", ' ', (fmem_ptr), " words of font info for ", (font_ptr - font_base), " font");
+      log_printf(" %d multiletter control sequences out of %d\n", (int)(cs_count), (int) (hash_size));
+      log_printf(" %d words of font info for %d font", (int)(fmem_ptr), (int)(font_ptr - font_base));
 
       if (font_ptr != 1)
         wlog('s');
 
 #ifdef ALLOCATEFONT
-      if (show_current)
-        log_printf("%s%d%s%d\n", ", out of ", current_font_mem_size, " for ", font_max - font_base);
-      else
+      log_printf(", out of %d for %d\n", ng_stat(font_mem_size), (int)(font_max - font_base));
+#else
+      log_printf(", out of %d for %d\n", (int)(font_mem_size), (int)(font_max - font_base));
 #endif
-        log_printf("%s%lu%s%d\n", ", out of ", font_mem_size, " for ", font_max - font_base);
 
-      log_printf("%c%lld%s", ' ', hyph_count, " hyphenation exception");
+      log_printf(" %d hyphenation exception", (int) hyph_count);
 
       if (hyph_count != 1)
         wlog('s');
 
-      log_printf("%s%lld\n", " out of ", hyphen_prime);
+      log_printf(" out of %d\n", (int) hyphen_prime);
       log_printf(" ");
-      log_printf("%d%s", (int) max_in_stack, "i,");
-      log_printf("%d%s", (int) max_nest_stack, "n,");
-      log_printf("%d%s", (int) max_param_stack, "p,");
-      log_printf("%d%s", (int) max_buf_stack + 1, "b,");
-      log_printf("%d%s", (int) max_save_stack + 6, "s");
+      log_printf("%di,", (int) max_in_stack);
+      log_printf("%dn,", (int) max_nest_stack);
+      log_printf("%dp,", (int) max_param_stack);
+      log_printf("%db,", (int) max_buf_stack + 1);
+      log_printf("%ds", (int) max_save_stack + 6);
       log_printf(" stack positions out of ");
 
 #ifdef ALLOCATESAVESTACK
-      if (show_current)
-        log_printf("%d%s", current_stack_size, "i,");
-      else
+      log_printf("%di,", ng_stat(stack_size));
+#else
+      log_printf("%di,", (int)(stack_size));
 #endif
-        log_printf("%d%s", stack_size, "i,");
 
 #ifdef ALLOCATENESTSTACK
-      if (show_current)
-        log_printf("%d%s", current_nest_size, "n,");
-      else
+      log_printf("%dn,", ng_stat(nest_size));
+#else
+      log_printf("%dn,", (int)(nest_size));
 #endif
-        log_printf("%d%s", nest_size, "n,");
 
 #ifdef ALLOCATEPARAMSTACK
-      if (show_current)
-        log_printf("%d%s", current_param_size, "p,");
-      else
+      log_printf("%dp,", ng_stat(param_size));
+#else
+      log_printf("%dp,", (int)(param_size));
 #endif
-        log_printf("%d%s", param_size, "p,");
 
 #ifdef ALLOCATEBUFFER
-      if (show_current)
-        log_printf("%d%s", current_buf_size, "b,");
-      else
+      log_printf("%db,", ng_stat(buf_size));
+#else
+      log_printf("%db,", (int)(buf_size));
 #endif
-        log_printf("%ld%s", buf_size, "b,");
 
 #ifdef ALLOCATESAVESTACK
-      if (show_current)
-        log_printf("%d%s", current_save_size, "s");
-      else
+      log_printf("%ds", ng_stat(save_size));
+#else
+      log_printf("%ds", (int)(save_size));
 #endif
-        log_printf("%d%s", save_size, "s");
 
       log_printf("\n");
 
-      if (!tex82_flag)
+      if (!flag_tex82)
       {
         log_printf(" (i = in_stack, n = nest_stack, p = param_stack, b = buf_stack, s = save_stack)\n");
-        log_printf(" %lld inputs open max out of %d\n", high_in_open, max_in_open);
+        log_printf(" %d inputs open max out of %d\n", (int) high_in_open, (int) max_in_open);
       }
 
-      if (show_line_break_stats && first_pass_count > 0)
+      if (flag_show_linebreak_stats && (count_first_pass > 0))
       {
         int first_count, second_count, third_count;
 
-        log_printf("\nSuccess at breaking %d paragraph%s:", first_pass_count, (first_pass_count == 1) ? "" : "s");
+        log_printf("\nSuccess at breaking %d paragraph%s:", count_first_pass, (count_first_pass == 1) ? "" : "s");
 
-        if (single_line > 0)
-          log_printf("\n %d single line `paragraph%s'", single_line, (single_line == 1) ? "" : "s");
+        if (count_single_line > 0)
+          log_printf("\n %d single line `paragraph%s'", count_single_line, (count_single_line == 1) ? "" : "s");
 
-        first_count = first_pass_count - single_line - second_pass_count;
+        first_count = count_first_pass - count_single_line - count_second_pass;
 
         if (first_count < 0)
           first_count = 0;
 
-        second_count = second_pass_count - final_pass_count;
-        third_count = final_pass_count - paragraph_failed;
+        second_count = count_second_pass - count_final_pass;
+        third_count = count_final_pass - count_paragraph_failed;
 
-        if (first_pass_count > 0)
-          log_printf("\n %d first pass (\\pretolerance = %lld)", first_pass_count, pretolerance);
+        if (count_first_pass > 0)
+          log_printf("\n %d first pass (\\pretolerance = %d)", count_first_pass, (int) pretolerance);
 
-        if (second_pass_count > 0)
-          log_printf("\n %d second pass (\\tolerance = %lld)", second_pass_count, tolerance);
+        if (count_second_pass > 0)
+          log_printf("\n %d second pass (\\tolerance = %d)", count_second_pass, (int) tolerance);
 
-        if (final_pass_count > 0 || emergency_stretch > 0)
+        if (count_final_pass > 0 || emergency_stretch > 0)
           log_printf("\n %d third pass (\\emergencystretch = %lgpt)",
-            final_pass_count, (double) emergency_stretch / 65536.0);
+            count_final_pass, (double) emergency_stretch / 65536.0);
 
-        if (paragraph_failed > 0)
-          log_printf("\n %d failed", paragraph_failed);
+        if (count_paragraph_failed > 0)
+          log_printf("\n %d failed", count_paragraph_failed);
 
         wlog_cr();
 
-        if (overfull_hbox > 0)
-          log_printf("\n %d overfull \\hbox%s", overfull_hbox, (overfull_hbox > 1) ? "es" : "");
+        if (count_overfull_hbox > 0)
+          log_printf("\n %d overfull \\hbox%s", count_overfull_hbox, (count_overfull_hbox > 1) ? "es" : "");
 
-        if (underfull_hbox > 0)
-          log_printf("\n %d underfull \\hbox%s", underfull_hbox, (underfull_hbox > 1) ? "es" : "");
+        if (count_underfull_hbox > 0)
+          log_printf("\n %d underfull \\hbox%s", count_underfull_hbox, (count_underfull_hbox > 1) ? "es" : "");
 
-        if (overfull_vbox > 0)
-          log_printf("\n %d overfull \\vbox%s", overfull_vbox, (overfull_vbox > 1) ? "es" : "");
+        if (count_overfull_vbox > 0)
+          log_printf("\n %d overfull \\vbox%s", count_overfull_vbox, (count_overfull_vbox > 1) ? "es" : "");
 
-        if (underfull_vbox > 0)
-          log_printf("\n %d underfull \\vbox%s", underfull_vbox, (underfull_vbox > 1) ? "es" : "");
+        if (count_underfull_vbox > 0)
+          log_printf("\n %d underfull \\vbox%s", count_underfull_vbox, (count_underfull_vbox > 1) ? "es" : "");
 
-        if (overfull_hbox || underfull_hbox || overfull_vbox || underfull_vbox)
+        if (count_overfull_hbox || count_underfull_hbox || count_overfull_vbox || count_underfull_vbox)
           wlog_cr();
       }
+    }
   }
 #endif
   
@@ -23794,6 +23846,8 @@ void close_files_and_terminate (void)
       b_close(pdf_file);
     }
   }
+
+  synctex_terminate();
 
   if (log_opened)
   {
@@ -25061,6 +25115,7 @@ pointer reverse (pointer this_box, pointer t, scaled cur_g, real cur_glue)
     while (p != null)
 reswitch:
     if (is_char_node(p))
+    {
       do {
         f = font(p);
         c = character(p);
@@ -25082,6 +25137,7 @@ reswitch:
           p = q;
         }
       } while (!(!is_char_node(p)));
+    }
     else
     {
       q = link(p);
@@ -25119,6 +25175,7 @@ reswitch:
             rule_wd = width(p);
 
             if (end_LR(p))
+            {
               if (info(LR_ptr) != end_LR_type(p))
               {
                 type(p) = kern_node;
@@ -25149,6 +25206,7 @@ reswitch:
                   }
                 }
               }
+            }
             else
             {
               push_LR(p);
@@ -25379,13 +25437,16 @@ void just_reverse (pointer p)
   cur_dir = reflected;
 
   while (q != null)
+  {
     if (is_char_node(q))
+    {
       do {
         p = q;
         q = link(p);
         link(p) = l;
         l = p;
       } while (!(!is_char_node(q)));
+    }
     else
     {
       p = q;
@@ -25397,6 +25458,7 @@ void just_reverse (pointer p)
       link(p) = l;
       l = p;
     }
+  }
 
   goto done;
 
@@ -26428,18 +26490,22 @@ void delete_sa_ref (pointer q)
   if (sa_ref(q) != null)
     return;
 
-  if (sa_index(q)<dimen_val_limit)
+  if (sa_index(q) < dimen_val_limit)
+  {
     if (sa_int(q) == 0)
       s = word_node_size;
     else
       return;
+  }
   else
   {
-    if (sa_index(q)<mu_val_limit)
+    if (sa_index(q) < mu_val_limit)
+    {
       if (sa_ptr(q) == zero_glue)
         delete_glue_ref(zero_glue);
       else
         return;
+    }
     else if (sa_ptr(q) != null)
       return;
 
@@ -26508,6 +26574,7 @@ void show_sa (pointer p, const char * s)
       else if (t == mu_val)
         print_spec(p, "mu");
       else if (t == box_val)
+      {
         if (p == null)
           prints("void");
         else
@@ -26516,6 +26583,7 @@ void show_sa (pointer p, const char * s)
           breadth_max = 1;
           show_node_list(p);
         }
+      }
       else if (t == tok_val)
       {
         if (p != null)
@@ -26600,11 +26668,13 @@ boolean do_marks (small_number a, small_number l, pointer q)
     }
 
     if (sa_bot_mark(q) == null)
+    {
       if (sa_split_bot_mark(q) == null)
       {
         free_node(q, mark_class_node_size);
         q = null;
       }
+    }
   }
 
   return (q == null);
@@ -26662,10 +26732,12 @@ void sa_destroy (pointer p)
   if (sa_index(p) < mu_val_limit)
     delete_glue_ref(sa_ptr(p));
   else if (sa_ptr(p) != null)
-  if (sa_index(p) < box_val_limit)
-    flush_node_list(sa_ptr(p));
-  else
-    delete_token_ref(sa_ptr(p));
+  {
+    if (sa_index(p) < box_val_limit)
+      flush_node_list(sa_ptr(p));
+    else
+      delete_token_ref(sa_ptr(p));
+  }
 }
 
 void sa_def (pointer p, halfword e)
@@ -26779,7 +26851,7 @@ void gsa_w_def (pointer p, integer w)
   delete_sa_ref(p);
 }
 
-void sa_restore(void)
+void sa_restore (void)
 {
   pointer p;
 
@@ -26799,10 +26871,12 @@ void sa_restore(void)
     else
     {
       if (sa_index(p) < dimen_val_limit)
+      {
         if (sa_index(sa_chain) < dimen_val_limit)
           sa_int(p) = sa_int(sa_chain);
         else
           sa_int(p) = 0;
+      }
       else
       {
         sa_destroy(p);

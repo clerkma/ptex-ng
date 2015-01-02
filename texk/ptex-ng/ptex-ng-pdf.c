@@ -1,5 +1,5 @@
 ﻿/*
-   Copyright 2014 Clerk Ma
+   Copyright 2014, 2015 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,11 +50,13 @@ void pdf_set_cur_page (scaled cur_wd, scaled cur_ht)
   pdf_doc_set_mediabox(total_pages + 1, &mediabox);
 }
 
-void pdf_ship_out (pointer p)
+void pdf_ship_out(pointer p)
 {
   integer page_loc;
   pointer del_node;
   char j, k;
+
+  synctex_sheet(mag);
 
   if (tracing_output > 0)
   {
@@ -108,8 +110,8 @@ void pdf_ship_out (pointer p)
     p = new_dir_node(p, dir_yoko);
 
   if ((height(p) > max_dimen) || (depth(p) > max_dimen) ||
-      (height(p) + depth(p) + v_offset > max_dimen) ||
-      (width(p) + h_offset > max_dimen))
+    (height(p) + depth(p) + v_offset > max_dimen) ||
+    (width(p) + h_offset > max_dimen))
   {
     print_err("Huge page cannot be shipped out");
     help2("The page just created is more than 18 feet tall or",
@@ -144,13 +146,22 @@ void pdf_ship_out (pointer p)
   if (total_pages == 0)
   {
     pdf_enc_compute_id_string(pdf_file_name, pdf_file_name);
-    pdf_set_version(5);
-    pdf_set_compression(9);
+
+    if ((pdf_minor_version < 0) || (pdf_minor_version > 7))
+      pdf_set_version(5);
+    else
+      pdf_set_version(pdf_minor_version);
+
+    if ((pdf_compress_level < 0) || (pdf_compress_level > 9))
+      pdf_set_compression(9);
+    else
+      pdf_set_compression(pdf_compress_level);
+
     pdf_init_fontmaps();
     pdf_load_fontmap_file("pdftex.map", '+');
     pdf_load_fontmap_file("kanjix.map", '+');
     pdf_load_fontmap_file("ckx.map",    '+');
-    pdf_doc_set_producer("pTeX-ng@2014");
+    pdf_doc_set_producer("pTeX-ng@2015");
     pdf_doc_set_creator("pTeX-ng");
     pdf_files_init();
     pdf_init_device(sp2bp, 2, 0);
@@ -235,6 +246,7 @@ done:
 
   dead_cycles = 0;
   update_terminal();
+  synctex_teehs();
 
 #ifdef STAT
   if (tracing_stats > 1)
@@ -413,6 +425,7 @@ void pdf_hlist_out (void)
   }
 
   left_edge = cur_h;
+  synctex_hlist(this_box);
 
   while (p != 0)
 reswitch:
@@ -479,6 +492,7 @@ reswitch:
       p = link(p);
     } while (!(!is_char_node(p)));
 
+    synctex_current();
     chain = false;
   }
   else
@@ -489,7 +503,17 @@ reswitch:
       case vlist_node:
       case dir_node:
         if (list_ptr(p) == 0)
+        {
+          if (type(p) != dir_node)
+          {
+            if (type(p) == vlist_node)
+              synctex_void_vlist(p, this_box);
+            else
+              synctex_void_hlist(p, this_box);
+          }
+
           cur_h = cur_h + width(p);
+        }
         else
         {
           save_h = dvi_h;
@@ -649,11 +673,14 @@ reswitch:
         break;
 
       case kern_node:
+        synctex_kern(p, this_box);
         cur_h = cur_h + width(p);
         break;
 
       case math_node:
         {
+          synctex_math(p, this_box);
+
           if (eTeX_ex)
           {
             if (end_LR(p))
@@ -739,6 +766,7 @@ fin_rule:
 
 move_past:
     cur_h = cur_h + rule_wd;
+    synctex_horizontal_rule_or_glue(p, this_box);
 
 next_p:
     prev_p = p;
@@ -763,6 +791,7 @@ next_p:
       cur_dir = right_to_left;
   }
 
+  synctex_tsilh(this_box);
   prune_movements(save_loc);
   decr(cur_s);
 }
@@ -805,6 +834,8 @@ void pdf_vlist_out (void)
   pdf_synch_dir();
   left_edge = cur_h;
   cur_v = cur_v - height(this_box);
+  left_edge = cur_h;
+  synctex_vlist(this_box);
   top_edge = cur_v;
 
   while (p != 0)
@@ -819,7 +850,19 @@ void pdf_vlist_out (void)
         case vlist_node:
         case dir_node:
           if (list_ptr(p) == 0)
-            cur_v = cur_v + height(p) + depth(p);
+          {
+            cur_v = cur_v + height(p);
+
+            if (type(p) != dir_node)
+            {
+              if (type(p) == vlist_node)
+                synctex_void_vlist(p, this_box);
+              else
+                synctex_void_hlist(p, this_box);
+            }
+
+            cur_v = cur_v + depth(p);
+          }
           else
           {
             cur_v = cur_v + height(p);
@@ -1025,6 +1068,7 @@ next_p:
     p = link(p);
   }
 
+  synctex_tsilv(this_box);
   prune_movements(save_loc);
   decr(cur_s);
 }

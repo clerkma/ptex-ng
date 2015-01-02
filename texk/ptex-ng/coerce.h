@@ -1,5 +1,5 @@
 /*
-   Copyright 2014 Clerk Ma
+   Copyright 2014, 2015 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,35 +23,53 @@
 extern int main_program (void);
 extern int main_init (int ac, char ** av);
 // functions of reallocation
-extern memory_word * allocate_main_memory(int size);
-extern memory_word * realloc_main(int lo_size, int hi_size);
-extern packed_ASCII_code * realloc_str_pool(int size);
-extern pool_pointer * realloc_str_start(int size);
-extern memory_word * realloc_save_stack(int size);
-extern list_state_record * realloc_nest_stack(int size);
-extern in_state_record * realloc_input_stack(int size);
-extern halfword * realloc_param_stack(int size);
-extern ASCII_code * realloc_buffer(int size);
-extern memory_word * realloc_font_info(int size);
-extern int realloc_hyphen(int hyphen_prime);
-extern int allocate_tries(int trie_max);
-extern void print_cs_names(FILE * output, boolean pass);
+extern memory_word * allocate_main_memory (int size);
+extern memory_word * realloc_main (int lo_size, int hi_size);
+extern packed_ASCII_code * realloc_str_pool (int size);
+extern pool_pointer * realloc_str_start (int size);
+extern memory_word * realloc_save_stack (int size);
+extern list_state_record * realloc_nest_stack (int size);
+extern in_state_record * realloc_input_stack (int size);
+extern halfword * realloc_param_stack (int size);
+extern ASCII_code * realloc_buffer (int size);
+extern memory_word * realloc_font_info (int size);
+extern int realloc_hyphen (int hyphen_prime);
+extern int allocate_tries (int trie_max);
+extern void print_cs_names (FILE * output, boolean pass);
 // functions of string pool
-extern str_number load_pool_strings(integer spare_size);
-extern str_number make_str_string(const char * s);
-extern char * get_str_string(str_number s);
-extern str_number get_job_name(str_number job);
-extern int endit(int flag);
-extern void uexit(int unix_code);
-extern void t_open_in(void);
-extern void add_variable_space(int size);
-extern char * unixify(char * t);
+extern str_number load_pool_strings (integer spare_size);
+extern str_number make_str_string (const char * s);
+extern char * get_str_string (str_number s);
+extern str_number get_job_name (str_number job);
+extern int endit (int flag);
+extern void uexit (int unix_code);
+extern void t_open_in (void);
+extern void add_variable_space (int size);
+extern char * unixify (char * t);
 // functions of I/O
-extern boolean input_ln(FILE * f, boolean bypass_eoln);
-extern integer web2c_round(double r);
-extern boolean open_input(FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
-extern boolean open_output(FILE ** f, const char * fopen_mode);
-extern void    close_file(FILE * f);
+extern boolean input_ln (FILE * f, boolean bypass_eoln);
+extern integer web2c_round (double r);
+extern boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
+extern boolean open_output (FILE ** f, const char * fopen_mode);
+extern void    close_file (FILE * f);
+// functions of synctex
+void synctex_init (void);
+void synctex_terminate (void);
+void synctex_start_input (void);
+void synctex_sheet (integer sync_mag);
+void synctex_teehs (void);
+void synctex_vlist (pointer this_box);
+void synctex_tsilv (pointer this_box);
+void synctex_void_vlist (pointer p, pointer this_box);
+void synctex_hlist (pointer this_box);
+void synctex_tsilh (pointer this_box);
+void synctex_void_hlist (pointer p, pointer this_box);
+void synctex_math (pointer p, pointer this_box);
+void synctex_horizontal_rule_or_glue (pointer p, pointer this_box);
+void synctex_kern (pointer p, pointer this_box);
+void synctex_char (pointer p, pointer this_box);
+void synctex_node (pointer p, pointer this_box);
+void synctex_current (void);
 // functions of TeX82
 void initialize (void);
 void print_ln (void);
@@ -515,7 +533,6 @@ extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
 extern void pdf_enc_compute_id_string(char *dviname, char *pdfname);
 extern void pdf_dev_set_dirmode(int dir_mode);
 extern int pdf_load_fontmap_file(const char *filename, int map_mode);
-extern int pdf_insert_ng_fontmap(const char * fnt_name, const char * fnt_cmap, const char * fnt_spec, int fnt_idx);
 // special out
 extern void pdf_special_exec(scaled h, scaled v);
 // kanji processing

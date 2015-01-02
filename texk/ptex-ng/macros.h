@@ -1,5 +1,5 @@
 /*
-   Copyright 2014 Clerk Ma
+   Copyright 2014, 2015 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@
 #define KANJI(x)    x
 #define tokanji(x)  x
 #define tonum(x)    x
-// scaled| data is equivalent to integer
+// |scaled| data is equivalent to integer
 #define sc cint
 //#
 #define font_base 0
@@ -158,9 +158,13 @@ enum
 #define is_char_node(a) (a >= hi_mem_min)
 #define font            type
 #define character       subtype
+/* for SyncTeX */
+#define synctex_field_size 2
+#define sync_tag(a)        mem[a - synctex_field_size].cint
+#define sync_line(a)       mem[a - synctex_field_size + 1].cint
 /* sec 0135 */
 #define hlist_node        0
-#define box_node_size     8
+#define box_node_size     (8 + synctex_field_size) //8
 //#
 #define box_dir(a)        (subtype(a) % 8)
 #define set_box_dir(a,b)  subtype(a) = box_lr(a) * 8 + b
@@ -195,7 +199,7 @@ enum
 #define dir_node   2
 /* sec 0138 */
 #define rule_node      3
-#define rule_node_size 4
+#define rule_node_size (4 + synctex_field_size) //4
 #define null_flag      -010000000000
 #define is_running(a)  (a == null_flag)
 /* sec 0140 */
@@ -209,10 +213,11 @@ enum
 #define disp_node        5
 #define disp_dimen(a)    mem[a + 1].cint
 /* sec 0141 */
-#define mark_node       6
-#define small_node_size 2
-#define mark_ptr(a)     link(a + 1)
-#define mark_class(a)   info(a + 1)
+#define mark_node         6
+#define small_node_size   2
+#define medium_node_size  (small_node_size + synctex_field_size)
+#define mark_ptr(a)       link(a + 1)
+#define mark_class(a)     info(a + 1)
 /* sec 0142 */
 #define adjust_node 7
 #define adjust_ptr(a)  mem[a + 1].cint
@@ -602,7 +607,7 @@ enum
 #define enable_cjk_token_code         (auto_xspacing_code + 1)
 #define cat_code_base                 (enable_cjk_token_code + 1)
 #define kcat_code_base                (cat_code_base + 256)
-#define auto_xsp_code_base            (kcat_code_base + 256)
+#define auto_xsp_code_base            (kcat_code_base + 512)
 #define inhibit_xsp_code_base         (auto_xsp_code_base + 256)
 #define kinsoku_base                  (inhibit_xsp_code_base + 256)
 #define kansuji_base                  (kinsoku_base + 256)
@@ -720,7 +725,10 @@ enum
 #define saving_hyph_codes_code        65
 #define eTeX_state_code               66
 #define tracing_fontloaders_code      67
-#define int_pars                      68
+#define pdf_compress_level_code       68
+#define pdf_minor_version_code        69
+#define synctex_code                  70
+#define int_pars                      71
 #define count_base                    (int_base + int_pars)
 #define del_code_base                 (count_base + 256)
 #define dimen_base                    (del_code_base + 256)
@@ -797,6 +805,9 @@ enum
 #define last_line_fit                 int_par(last_line_fit_code)
 #define saving_vdiscards              int_par(saving_vdiscards_code)
 #define saving_hyph_codes             int_par(saving_hyph_codes_code)
+#define pdf_compress_level            int_par(pdf_compress_level_code)
+#define pdf_minor_version             int_par(pdf_minor_version_code)
+#define synctex                       int_par(synctex_code)
 /* sec 0247 */
 #define par_indent_code               0
 #define math_surround_code            1
@@ -918,11 +929,12 @@ do {                \
   print(chr_code);  \
 } while (0)
 /* sec 0302 */
-#define state cur_input.state_field
-#define index cur_input.index_field
-#define start cur_input.start_field
-#define limit cur_input.limit_field
-#define name  cur_input.name_field
+#define state       cur_input.state_field
+#define index       cur_input.index_field
+#define start       cur_input.start_field
+#define limit       cur_input.limit_field
+#define name        cur_input.name_field
+#define synctex_tag cur_input.synctex_tag_field
 /* sec 0303 */
 #define mid_line    1
 #define mid_kanji   (2 + max_char_code)
