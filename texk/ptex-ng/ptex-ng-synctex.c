@@ -262,7 +262,7 @@ static int synctex_record_input (integer tag, char * fname)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "Input:%i:%s\n", tag, fname);
+  len = synctex_writer(synctex_file, "Input:%"PRId64":%s\n", tag, fname);
 
   if (len > 0)
   {
@@ -510,7 +510,7 @@ void synctex_teehs (void)
 static int synctex_record_preamble (void)
 {
   int len = 0;
-  len = synctex_writer(synctex_file, "SyncTeX Version:%i\n", SYNCTEX_VERSION);
+  len = synctex_writer(synctex_file, "SyncTeX Version:%"PRId64"\n", SYNCTEX_VERSION);
 
   if (len > 0)
   {
@@ -699,7 +699,9 @@ void synctex_horizontal_rule_or_glue (halfword p, halfword this_box)
       break;
 
     default:
-      printf("\nSynchronize ERROR: unknown node type %i\n", type(p));
+      print_ln();
+      printf("Synchronize ERROR: unknown node type %d", type(p));
+      print_ln();
       break;
   }
 
@@ -724,7 +726,10 @@ void synctex_horizontal_rule_or_glue (halfword p, halfword this_box)
       break;
 
     default:
-      printf("\nSynchronize ERROR: unknown node type %i\n", type(p));
+      print_ln();
+      printf("Synchronize ERROR: unknown node type %d", type(p));
+      print_ln();
+      break;
   }
 }
 
@@ -809,7 +814,7 @@ void synctex_current (void)
     return;
   else
   {
-    int len = synctex_writer(synctex_file, "x%i,%i:%i,%i\n",
+    int len = synctex_writer(synctex_file, "x%"PRId64",%"PRId64":%"PRId64",%"PRId64"\n",
         synctex_cur_tag, synctex_cur_line,
         cur_h,cur_v);
 
@@ -831,7 +836,7 @@ static int synctex_record_settings (void)
   if (synctex_file)
   {
     int len = synctex_writer(synctex_file,
-        "Output:%s\nMagnification:%i\nUnit:%i\nX Offset:%i\nY Offset:%i\n",
+        "Output:%s\nMagnification:%"PRId64"\nUnit:%"PRId64"\nX Offset:%"PRId64"\nY Offset:%"PRId64"\n",
         SYNCTEX_OUTPUT, synctex_mag, synctex_unit,
         ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287),
         ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287));
@@ -851,7 +856,7 @@ static int synctex_record_anchor (void)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "!%i\n", synctex_total_length);
+  len = synctex_writer(synctex_file, "!%"PRId64"\n", synctex_total_length);
 
   if (len > 0)
   {
@@ -884,7 +889,7 @@ static int synctex_record_sheet (integer sheet)
 {
   if (SYNCTEX_NOERR == synctex_record_anchor())
   {
-    int len = synctex_writer(synctex_file, "{%i\n", sheet);
+    int len = synctex_writer(synctex_file, "{%"PRId64"\n", sheet);
 
     if (len > 0)
     {
@@ -902,7 +907,7 @@ static int synctex_record_teehs (integer sheet)
 {
   if (SYNCTEX_NOERR == synctex_record_anchor())
   {
-    int len = synctex_writer(synctex_file, "}%i\n", sheet);
+    int len = synctex_writer(synctex_file, "}%"PRId64"\n", sheet);
 
     if (len > 0)
     {
@@ -920,7 +925,7 @@ static void synctex_record_void_vlist (pointer p)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "v%i,%i:%i,%i:%i,%i,%i\n",
+  len = synctex_writer(synctex_file, "v%"PRId64",%"PRId64":%"PRId64",%"PRId64":%"PRId64",%"PRId64",%"PRId64"\n",
       sync_tag(p + box_node_size),
       sync_line(p + box_node_size),
       synctex_h, synctex_v,
@@ -934,7 +939,6 @@ static void synctex_record_void_vlist (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 static void synctex_record_vlist (pointer p)
@@ -942,7 +946,7 @@ static void synctex_record_vlist (pointer p)
   int len = 0;
   synctex_flag_shipable = true;
 
-  len = synctex_writer(synctex_file, "[%i,%i:%i,%i:%i,%i,%i\n",
+  len = synctex_writer(synctex_file, "[%"PRId64",%"PRId64":%"PRId64",%"PRId64":%"PRId64",%"PRId64",%"PRId64"\n",
       sync_tag(p + box_node_size),
       sync_line(p + box_node_size),
       synctex_h, synctex_v,
@@ -956,7 +960,6 @@ static void synctex_record_vlist (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 static void synctex_record_tsilv (pointer p)
@@ -973,14 +976,13 @@ static void synctex_record_tsilv (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 static void synctex_record_void_hlist (pointer p)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "h%i,%i:%i,%i:%i,%i,%i\n",
+  len = synctex_writer(synctex_file, "h%"PRId64",%"PRId64":%"PRId64",%"PRId64":%"PRId64",%"PRId64",%"PRId64"\n",
       sync_tag(p + box_node_size),
       sync_line(p + box_node_size),
       synctex_h, synctex_v,
@@ -994,7 +996,6 @@ static void synctex_record_void_hlist (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 static void synctex_record_hlist (pointer p)
@@ -1002,7 +1003,7 @@ static void synctex_record_hlist (pointer p)
   int len = 0;
   synctex_flag_shipable = true;
 
-  len = synctex_writer(synctex_file, "(%i,%i:%i,%i:%i,%i,%i\n",
+  len = synctex_writer(synctex_file, "(%"PRId64",%"PRId64":%"PRId64",%"PRId64":%"PRId64",%"PRId64",%"PRId64"\n",
       sync_tag(p + box_node_size),
       sync_line(p + box_node_size),
       synctex_h, synctex_v,
@@ -1016,7 +1017,6 @@ static void synctex_record_hlist (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 static void synctex_record_tsilh (pointer p)
@@ -1034,14 +1034,13 @@ static void synctex_record_tsilh (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 static int synctex_record_count (void)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "Count:%i\n", synctex_count);
+  len = synctex_writer(synctex_file, "Count:%"PRId64"\n", synctex_count);
 
   if (len > 0)
   {
@@ -1057,7 +1056,7 @@ static void synctex_record_glue (pointer p)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "g%i,%i:%i,%i\n",
+  len = synctex_writer(synctex_file, "g%"PRId64",%"PRId64":%"PRId64",%"PRId64"\n",
       sync_tag(p + medium_node_size),
       sync_line(p + medium_node_size),
       synctex_h, synctex_v);
@@ -1070,14 +1069,13 @@ static void synctex_record_glue (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 static void synctex_record_kern (pointer p)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "k%i,%i:%i,%i:%i\n",
+  len = synctex_writer(synctex_file, "k%"PRId64",%"PRId64":%"PRId64",%"PRId64":%"PRId64"\n",
       sync_tag(p + medium_node_size),
       sync_line(p + medium_node_size),
       synctex_h, synctex_v,
@@ -1091,14 +1089,13 @@ static void synctex_record_kern (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 static void synctex_record_rule (pointer p)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "r%i,%i:%i,%i:%i,%i,%i\n",
+  len = synctex_writer(synctex_file, "r%"PRId64",%"PRId64":%"PRId64",%"PRId64":%"PRId64",%"PRId64",%"PRId64"\n",
       sync_tag(p + medium_node_size),
       sync_line(p + medium_node_size),
       synctex_h, synctex_v,
@@ -1112,14 +1109,13 @@ static void synctex_record_rule (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 void synctex_math_recorder (pointer p)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "$%i,%i:%i,%i\n",
+  len = synctex_writer(synctex_file, "$%"PRId64",%"PRId64":%"PRId64",%"PRId64"\n",
       sync_tag(p + medium_node_size),
       sync_line(p + medium_node_size),
       synctex_h, synctex_v);
@@ -1132,14 +1128,13 @@ void synctex_math_recorder (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 void synctex_kern_recorder (pointer p)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "k%i,%i:%i,%i:%i\n",
+  len = synctex_writer(synctex_file, "k%"PRId64",%"PRId64":%"PRId64",%"PRId64":%"PRId64"\n",
       sync_tag(p + medium_node_size),
       sync_line(p + medium_node_size),
       synctex_h, synctex_v,
@@ -1153,7 +1148,6 @@ void synctex_kern_recorder (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 void synctex_char_recorder (pointer p)
@@ -1161,7 +1155,7 @@ void synctex_char_recorder (pointer p)
   (void) p;
   int len = 0;
 
-  len = synctex_writer(synctex_file, "c%i,%i\n",
+  len = synctex_writer(synctex_file, "c%"PRId64",%"PRId64"\n",
       synctex_h, synctex_v);
 
   if (len > 0)
@@ -1172,14 +1166,13 @@ void synctex_char_recorder (pointer p)
   }
 
   synctex_abort();
-  return;
 }
 
 void synctex_node_recorder (pointer p)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "?%i,%i:%i,%i\n", synctex_h, synctex_v,
+  len = synctex_writer(synctex_file, "?%"PRId64",%"PRId64":%"PRId64",%"PRId64"\n", synctex_h, synctex_v,
     type(p), subtype(p));
 
   if (len > 0)
@@ -1190,5 +1183,4 @@ void synctex_node_recorder (pointer p)
   }
 
   synctex_abort();
-  return;
 }

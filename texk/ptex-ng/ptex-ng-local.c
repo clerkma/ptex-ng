@@ -87,6 +87,7 @@ static void show_usage (void)
   printf("\n"
       "Useage: ptex-ng [OPTION]... [+fmt_file_name] [file]\n\n"
       " --help         show this usage summary\n"
+      " --synctex=num  generate SyncTeX data for previewers if nonzero\n"
       " --initex       start up as initex (create format file)\n"
       " --verbose      be verbose (show implementation version number)\n"
       " --showhex      do not show `non ASCII' characters in hexadecimal\n"
@@ -98,7 +99,8 @@ static void show_usage (void)
       " --trie-size    hyphenation pattern trie size (initex only)\n"
       " --pdf-dir      write PDF file in specified directory (default '.')\n"
       " --log-dir      write LOG file in specified directory (default '.')\n"
-      " --aux-dir      write AUX file in specified directory (default '.')\n");
+      " --aux-dir      write AUX file in specified directory (default '.')\n\n"
+      "Email bug reports to clerkma@gmail.com.\n");
   uexit(EXIT_FAILURE);
 }
 

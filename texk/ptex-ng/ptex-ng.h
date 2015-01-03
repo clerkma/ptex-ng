@@ -58,7 +58,6 @@
 // standard C headers
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <time.h>
@@ -72,6 +71,7 @@
 #include <kpathsea/getopt.h>   // get_opt
 #include <kpathsea/tex-file.h> // kpse_find_file
 #include <kpathsea/variable.h> // kpse_var_value
+#include <kpathsea/types.h>    // RPId64
 // ptexenc for kanji processing
 #include <ptexenc/ptexenc.h>
 #include <ptexenc/unicode.h>
