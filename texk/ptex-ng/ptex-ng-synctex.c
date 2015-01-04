@@ -510,7 +510,7 @@ void synctex_teehs (void)
 static int synctex_record_preamble (void)
 {
   int len = 0;
-  len = synctex_writer(synctex_file, "SyncTeX Version:%"PRId64"\n", SYNCTEX_VERSION);
+  len = synctex_writer(synctex_file, "SyncTeX Version:%"PRId64"\n", (integer) SYNCTEX_VERSION);
 
   if (len > 0)
   {
@@ -816,7 +816,7 @@ void synctex_current (void)
   {
     int len = synctex_writer(synctex_file, "x%"PRId64",%"PRId64":%"PRId64",%"PRId64"\n",
         synctex_cur_tag, synctex_cur_line,
-        cur_h,cur_v);
+        cur_h, cur_v);
 
     if (len > 0)
     {
@@ -838,8 +838,8 @@ static int synctex_record_settings (void)
     int len = synctex_writer(synctex_file,
         "Output:%s\nMagnification:%"PRId64"\nUnit:%"PRId64"\nX Offset:%"PRId64"\nY Offset:%"PRId64"\n",
         SYNCTEX_OUTPUT, synctex_mag, synctex_unit,
-        ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287),
-        ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287));
+        (integer) ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287),
+        (integer) ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287));
 
     if (len > 0)
     {
@@ -1172,7 +1172,8 @@ void synctex_node_recorder (pointer p)
 {
   int len = 0;
 
-  len = synctex_writer(synctex_file, "?%"PRId64",%"PRId64":%"PRId64",%"PRId64"\n", synctex_h, synctex_v,
+  len = synctex_writer(synctex_file, "?%"PRId64",%"PRId64":%"PRId64",%"PRId64"\n",
+    synctex_h, synctex_v,
     type(p), subtype(p));
 
   if (len > 0)

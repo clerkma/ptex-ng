@@ -86,21 +86,52 @@ static void show_usage (void)
 {
   printf("\n"
       "Useage: ptex-ng [OPTION]... [+fmt_file_name] [file]\n\n"
-      " --help         show this usage summary\n"
-      " --synctex=num  generate SyncTeX data for previewers if nonzero\n"
-      " --initex       start up as initex (create format file)\n"
-      " --verbose      be verbose (show implementation version number)\n"
-      " --showhex      do not show `non ASCII' characters in hexadecimal\n"
+      " --help          show this usage summary\n"
+      " --version       output version information and exit\n"
+      " --jobname=str   set the job name to str\n"
+      " --progname=str  set program (and fmt) name to str\n"
+      " --synctex=num   generate SyncTeX data for previewers if nonzero\n"
+      " --ini           start up as initex (create format file)\n"
+      " --verbose       be verbose (show implementation version number)\n"
+      " --showhex       do not show `non ASCII' characters in hexadecimal\n"
       "                   (show as is)\n"
-      " --patterns     allow use of \\patterns after loading format (initex only)\n"
-      " --knuthify     disable all extensions to basic TeX\n"
-      " --main-mem     initial main memory size in kilo words (initex only)\n"
-      " --hyph-size    hyphenation exception dictionary size (initex only)\n"
-      " --trie-size    hyphenation pattern trie size (initex only)\n"
-      " --pdf-dir      write PDF file in specified directory (default '.')\n"
-      " --log-dir      write LOG file in specified directory (default '.')\n"
-      " --aux-dir      write AUX file in specified directory (default '.')\n\n"
+      " --patterns      allow use of \\patterns after loading format (initex only)\n"
+      " --knuthify      disable all extensions to basic TeX\n"
+      " --main-mem      initial main memory size in kilo words (initex only)\n"
+      " --hyph-size     hyphenation exception dictionary size (initex only)\n"
+      " --trie-size     hyphenation pattern trie size (initex only)\n"
+      " --pdf-dir       write PDF file in specified directory (default '.')\n"
+      " --log-dir       write LOG file in specified directory (default '.')\n"
+      " --aux-dir       write AUX file in specified directory (default '.')\n\n"
       "Email bug reports to clerkma@gmail.com.\n");
+  uexit(EXIT_FAILURE);
+}
+
+static void show_version (void)
+{
+  printf("Copyright 2014, 2015 Clerk Ma.\n"
+    "%s\n"
+    "Compiled with %s\n"
+    "Compiled with %s\n"
+    "Compiled with zlib version %s\n"
+    "Compiled with synctex (build-in edition)\n\n"
+    "Sponsors:\n"
+    " Xincheng Luo, Liang Qi, Fuzhou Chen\n\n"
+    "Acknowledgements:\n"
+    " Xincheng Luo, Jie Su, Liang Qi, Haiyang Liu, Hu Gao, Liang Sun, Tengfei Xu,\n"
+    " Xiaohao Xia, Chencheng Huang, Jinze Huang, Hai Liang, Wei Sun, Longshan Du,\n"
+    " Xiabing Wang, Guobao Li, Yujin Hu, Haiyu Yang, Hao Zhou, Mengdi Cao,\n"
+    " Renzhi Li, Yi Lu, Wenbo Lv, Yu Zhai, Yu Zhong, Zhibo Xiao, Xirui Luo,\n"
+    " Qing Li, Kang Zhang, Zheng Wang, Weisi Dai, Tianchi Li, Chongzhi Qiao,\n"
+    " Kun Lin, Wenjun Zhu, Qi Zhang, Zhaoli Wang, Jinlong Chang, Junyuan Leng,\n"
+    " Xueyuan Gao, Weiwen Zhang, Xiaosheng Yang, Xiao Zhang, Hao Wang, Ke Lin,\n"
+    " Huanjie Zhu, Runze Li, Lu Wang, Linheng Yang, Fuzhou Chen, Wenquan Sun,\n"
+    " Jianxin Rong, Jinwei Tang, Rongjun Tang, Yun Hao, Chenxing Luo, Chong Zhu,\n"
+    " Chunqi He, Yilun Lin, Sijiang Liu, Chenyu Jin, Hao Chen, Zhongyang Liu,\n"
+    " Guan Wang, Wenqing Yang, Bowai Jia, Hao Wang, Ning Zhu, Jianing Zhu, Xin Chen,\n"
+    " Xuan Leng, Shangwen Lu, Yongjie Han, Yixuan Zhang, Junqi Wang, Tianxiao Zhang,\n"
+    " Shuai Dong, Mengchang Wang\n", banner, kpathsea_version_string,
+    ptexenc_version_string, zlib_version);
   uexit(EXIT_FAILURE);
 }
 
@@ -128,7 +159,7 @@ static void scivilize (char * date)
 static void stamp_it (void)
 {
   char date[11 + 1];
-
+ 
   strcpy(date, __DATE__);
   scivilize(date);
   printf("pTeX-ng (compiled time: %s %s with %s/%s)\n",
@@ -151,7 +182,7 @@ static void show_maximums (FILE * output)
   fputs(log_line, output);
 }
 
-/* our own version of realloc --- avoid supposed MicroSoft version bug */
+/* our own version of realloc --- avoid supposed Microsoft version bug */
 /* also tries _expand first, which can avoid address growth ... */
 
 #ifdef USEOUREALLOC
@@ -407,7 +438,7 @@ memory_word * allocate_main_memory (int size)
   mem_max = mem_top;
   mem_start = 0;     /* bottom of memory allocated by system */
   mem_min = 0;       /* bottom of area made available to TeX */
-  n = (mem_max - mem_start + 1) * sizeof (memory_word);
+  n = (mem_max - mem_start + 1) * ((int) sizeof(memory_word));
 
   if (flag_trace)
     trace_memory("main memory", n);
@@ -1597,6 +1628,7 @@ static struct option long_options[] =
   {"suppressfligs", no_argument,       NULL, 0},
   {"trace",         no_argument,       NULL, 0},
   {"help",          no_argument,       NULL, 0},
+  {"version",       no_argument,       NULL, 0},
   {"usage",         no_argument,       NULL, 0},
   {NULL,            0, 0, 0}
 };
@@ -1783,6 +1815,11 @@ static int read_command_line (int ac, char **av)
     {
       stamp_it();
       show_usage();
+    }
+    else if (ARGUMENT_IS("version"))
+    {
+      stamp_it();
+      show_version();
     }
     else
       analyze_flag(c);

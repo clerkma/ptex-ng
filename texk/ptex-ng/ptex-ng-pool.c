@@ -1066,7 +1066,7 @@ static const char * pool_file_arr[] =
 str_number load_pool_strings (integer spare_size)
 {
   str_number g;
-  int k, l, i = 0;
+  size_t k, l, i = 0;
 
   for (k = 0; k < sizeof(pool_file_arr) / sizeof(char *); k++)
   {
@@ -1086,11 +1086,11 @@ str_number load_pool_strings (integer spare_size)
 
 str_number make_str_string (const char * s)
 {
-  int slen = strlen(s);
+  size_t slen = strlen(s);
 
   if (slen == 1)
   {
-    return ((str_number)s[0]);
+    return ((str_number) s[0]);
   }
   else
   {

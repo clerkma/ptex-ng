@@ -39,12 +39,11 @@
 #define INITEX             /* invoke initex */
 #define WORDS_BIGENDIAN 0  /* about format file */
 
-/* headers and pragmas */
+// headers and pragmas
 #if defined (_WIN32)
   #define _CRT_DISABLE_PERFCRIT_LOCKS
   #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
   #pragma warning(disable:4201) // nameless struct/union
-  #pragma warning(disable:4267)
   #pragma warning(disable:4996) // a function that was marked with deprecated
   #pragma warning(disable:4701) // potentially uninitialized local variable 'name' used
   #pragma warning(disable:4135) // conversion between different integral types
@@ -72,6 +71,7 @@
 #include <kpathsea/tex-file.h> // kpse_find_file
 #include <kpathsea/variable.h> // kpse_var_value
 #include <kpathsea/types.h>    // RPId64
+#include <kpathsea/version.h>
 // ptexenc for kanji processing
 #include <ptexenc/ptexenc.h>
 #include <ptexenc/unicode.h>

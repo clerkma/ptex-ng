@@ -92,7 +92,7 @@ void t_open_in (void)
     gargc = 0;
   }
 
-  /* Find the end of the buffer.  */
+  /* Find the end of the buffer. */
   for (last = first; buffer[last]; ++last)
     do_nothing();
 
@@ -123,7 +123,7 @@ void fix_date_and_time (void)
   if (clock < 0)
     puts("Time not available!");
 
-  tmptr = localtime (&clock);
+  tmptr = localtime(&clock);
 
   if (tmptr == NULL)
   {

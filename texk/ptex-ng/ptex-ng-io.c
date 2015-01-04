@@ -24,14 +24,11 @@
 #include "ptex-ng.h"
 #undef name
 
-#define PATH_SEP        '/'
-#define PATH_SEP_STRING "/"
-
 static char * xconcat3 (char * buffer, char * s1, char * s2, char * s3)
 {
-  int n1 = strlen(s1);
-  int n2 = strlen(s2);
-  int n3 = strlen(s3);
+  size_t n1 = strlen(s1);
+  size_t n2 = strlen(s2);
+  size_t n3 = strlen(s3);
 
   if (buffer == s3)
   {
@@ -93,9 +90,9 @@ static boolean prepend_path_if(ASCII_code * buffer, ASCII_code * name, const cha
 static inline boolean check_path_sep(ASCII_code c)
 {
 #ifdef _WIN32
-  return (c == PATH_SEP || c == '\\');
+  return (c == DIR_SEP || c == '\\');
 #else
-  return (c == PATH_SEP);
+  return (c == DIR_SEP);
 #endif
 }
 
@@ -153,7 +150,7 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
   }
 
   {
-    unsigned temp_length = strlen((char *) name_of_file + 1);
+    size_t temp_length = strlen((char *) name_of_file + 1);
     name_of_file[temp_length + 1] = ' ';
   }
 
@@ -179,7 +176,7 @@ static char * xstrdup_name (void)
   else
   {
     (void) getcwd(log_line, sizeof(log_line));
-    strcat(log_line, PATH_SEP_STRING);
+    strcat(log_line, DIR_SEP_STRING);
   }
 
   strcat(log_line, (char *) name_of_file + 1);
@@ -190,7 +187,7 @@ static char * xstrdup_name (void)
 
 boolean open_output (FILE ** f, const char * fopen_mode)
 {
-  unsigned temp_length;
+  size_t temp_length;
 
   name_of_file[name_length + 1] = '\0';
 
@@ -216,7 +213,7 @@ boolean open_output (FILE ** f, const char * fopen_mode)
     if (temp_dir != NULL)
     {
       unsigned char temp_name[file_name_size];
-      xconcat3((char *) temp_name, temp_dir, PATH_SEP_STRING, (char *) name_of_file + 1);
+      xconcat3((char *) temp_name, temp_dir, DIR_SEP_STRING, (char *) name_of_file + 1);
 
       if (flag_deslash)
         unixify((char *) temp_name);

@@ -210,7 +210,7 @@ void initialize (void)
   cur_head = 0;
   cur_tail = 0;
 
-/*  *not* OK with ALLOCATEHYPHEN, since may not be allocated yet */
+/* *not* OK with ALLOCATEHYPHEN, since may not be allocated yet */
 #ifndef ALLOCATEHYPHEN
   for (z = 0; z <= hyphen_prime; z++)
   {
