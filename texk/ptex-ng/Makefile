@@ -22,7 +22,7 @@ objects = \
 headers = ptex-ng.h coerce.h macros.h
 
 ptex-ng: $(objects)
-	$(CC) -o ptex-ng $(objects) $(LDFLAGS)
+	$(CC) -s -o ptex-ng $(objects) $(LDFLAGS)
 
 ptex-ng.o: ptex-ng.c $(headers)
 	$(CC) $(CFLAGS) ptex-ng.c
