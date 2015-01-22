@@ -68,7 +68,9 @@ const char * banner = "This is pTeX-ng, Version 3.14159265 (W32TeX)";
 const char * banner = "This is pTeX-ng, Version 3.14159265";
 #endif
 
-clock_t start_time, main_time, finish_time;
+clock_t time_start;
+clock_t time_main;
+clock_t time_finish;
 
 char * dvi_directory = "";
 char * log_directory = "";
@@ -78,9 +80,9 @@ char * pdf_directory = "";
 
 char log_line[256];
 
-boolean mem_spec_flag     = false;
-boolean format_spec       = false;
-boolean reorder_arg_flag  = true;
+static boolean mem_spec_flag     = false;
+static boolean format_spec       = false;
+static boolean reorder_arg_flag  = true;
 
 static void show_usage (void)
 {
@@ -116,7 +118,7 @@ static void show_version (void)
     "Compiled with zlib version %s\n"
     "Compiled with synctex (build-in edition)\n\n"
     "Sponsors:\n"
-    " Xincheng Luo, Liang Qi, Fuzhou Chen\n\n"
+    " Xincheng Luo, Liang Qi, Fuzhou Chen, Chongzhi Qiao, Bingyu Zhang\n\n"
     "Acknowledgements:\n"
     " Xincheng Luo, Jie Su, Liang Qi, Haiyang Liu, Hu Gao, Liang Sun, Tengfei Xu,\n"
     " Xiaohao Xia, Chencheng Huang, Jinze Huang, Hai Liang, Wei Sun, Longshan Du,\n"
@@ -170,11 +172,10 @@ static void stamp_it (void)
 
 /* ad hoc default minimum growth in memory realloc is 62% */
 /* golden ratio (1 + \sqrt{5}) / 2 = 1.618033989... */
-int percent_grow    = 62; /* default minimum growth in memory realloc is 62% */
-int total_allocated = 0;  /* total memory allocated so far */
-int ini_max_address = 0;  /* maximum address when starting */
-int max_address     = 0;  /* maximum address seen in allocated memory */
-
+static int percent_grow    = 62; /* default minimum growth in memory realloc is 62% */
+static int total_allocated = 0;  /* total memory allocated so far */
+static int ini_max_address = 0;  /* maximum address when starting */
+static int max_address     = 0;  /* maximum address seen in allocated memory */
 
 static void show_maximums (FILE * output)
 {
@@ -267,7 +268,7 @@ static void update_statistics (long address, int size, int old_size)
   if (address + size > max_address)
     max_address = address + size;
 
-  total_allocated =  total_allocated + size - old_size;
+  total_allocated = total_allocated + size - old_size;
 }
 
 static void probe_memory (void)
@@ -359,7 +360,7 @@ static boolean prime (int x)
 }
 
 #ifdef ALLOCATEHYPHEN
-int current_prime = 0; /* remember in case reallocated later */
+static int current_prime = 0; /* remember in case reallocated later */
 
 /* we don't return an address here, since TWO memory regions allocated */
 /* plus, we don't really reallocate, we FLUSH the old information totally */
@@ -1585,20 +1586,20 @@ static void flush_trailing_slash (char * directory)
 
 static void knuthify (void)
 {
-  flag_allow_patterns       = false; /* don't allow pattern redefinition */
-  flag_show_in_hex          = true;  /* show character code in hex */
-  flag_show_numeric         = false; /* don't show character code decimal */
-  flag_show_missing         = false; /* don't show missing characters */
-  flag_civilize             = false; /* don't reorder date fields */
-  flag_c_style              = false; /* don't add file name to error msg */
-  flag_show_tfm             = false; /* don't show metric file in log */
-  tab_step                  = 0;     /* tab's size of width */
-  flag_show_linebreak_stats = false; /* do not show line break stats */
-  default_rule              = 26214; /* revert to default rule thickness */
-  flag_allow_quoted         = false;
-  flag_show_csnames         = false;
-  flag_suppress_f_ligs      = false;
-  flag_tex82                = true;  /* so other code can know about this */
+  flag_allow_patterns   = false; /* don't allow pattern redefinition */
+  flag_show_in_hex      = true;  /* show character code in hex */
+  flag_show_numeric     = false; /* don't show character code decimal */
+  flag_show_missing     = false; /* don't show missing characters */
+  flag_civilize         = false; /* don't reorder date fields */
+  flag_c_style          = false; /* don't add file name to error msg */
+  flag_show_tfm         = false; /* don't show metric file in log */
+  tab_step              = 0;     /* tab's size of width */
+  flag_show_lb_stats    = false; /* do not show line break stats */
+  default_rule          = 26214; /* revert to default rule thickness */
+  flag_allow_quoted     = false;
+  flag_show_csnames     = false;
+  flag_suppress_f_ligs  = false;
+  flag_tex82            = true;  /* so other code can know about this */
 }
 
 static struct option long_options[] =
@@ -1623,6 +1624,8 @@ static struct option long_options[] =
   {"knuthify",      no_argument,       NULL, 0},
   {"cstyle",        no_argument,       NULL, 0},
   {"showtfm",       no_argument,       NULL, 0},
+  {"showopen",      no_argument,       NULL, 0},
+  {"showlbstats",   no_argument,       NULL, 0},
   {"showmissing",   no_argument,       NULL, 0},
   {"deslash",       no_argument,       NULL, 0},
   {"suppressfligs", no_argument,       NULL, 0},
@@ -1632,39 +1635,6 @@ static struct option long_options[] =
   {"usage",         no_argument,       NULL, 0},
   {NULL,            0, 0, 0}
 };
-
-static int analyze_flag (int c)
-{
-  switch (c)
-  {
-    case 'J':
-      flag_show_linebreak_stats = false;
-      break;
-
-    case 's':
-      flag_show_current = false;
-      break;
-
-    case 'N':
-      flag_show_numeric = false;
-      break;
-
-    case 'A':
-      flag_civilize = false;
-      break; 
-
-    case 'B':
-      flag_open_trace = true;
-      break;
-
-    case '?':
-    default:
-      return -1;
-      break;
-  }
-
-  return 0;
-}
 
 #undef name
 #define ARGUMENT_IS(a) !strcmp(long_options[option_idx].name, a)
@@ -1688,7 +1658,7 @@ static int read_command_line (int ac, char **av)
     if (ARGUMENT_IS("progname"))
       kpse_reset_program_name(optarg);
     else if (ARGUMENT_IS("jobname"))
-      c_job_name = optarg;
+      job_name_str = optarg;
     else if (ARGUMENT_IS("synctex"))
       synctex_option = (int) strtol(optarg, NULL, 0);
     else if (ARGUMENT_IS("verbose"))
@@ -1701,6 +1671,8 @@ static int read_command_line (int ac, char **av)
       flag_c_style = true;
     else if (ARGUMENT_IS("showtfm"))
       flag_show_tfm = true;
+    else if (ARGUMENT_IS("showopen"))
+      flag_open_trace = true;
     else if (ARGUMENT_IS("showcsnames"))
       flag_show_csnames = true;
     else if (ARGUMENT_IS("showinhex"))
@@ -1721,9 +1693,6 @@ static int read_command_line (int ac, char **av)
         dvi_directory = "";
       else
         dvi_directory = xstrdup(optarg);
-
-      if (strcmp(dvi_directory, "") == 0)
-        complainarg(c, optarg);
     }
     else if (ARGUMENT_IS("log-dir"))
     {
@@ -1731,9 +1700,6 @@ static int read_command_line (int ac, char **av)
         log_directory = "";
       else
         log_directory = xstrdup(optarg);
-
-      if (strcmp(log_directory, "") == 0)
-        complainarg(c, optarg);
     }
     else if (ARGUMENT_IS("aux-dir"))
     {
@@ -1741,9 +1707,6 @@ static int read_command_line (int ac, char **av)
         aux_directory = "";
       else
         aux_directory = xstrdup(optarg);
-
-      if (strcmp(aux_directory, "") == 0)
-        complainarg(c, optarg);
     }
     else if (ARGUMENT_IS("trie-size"))
     {
@@ -1821,8 +1784,6 @@ static int read_command_line (int ac, char **av)
       stamp_it();
       show_version();
     }
-    else
-      analyze_flag(c);
   }
 
   return 0;
@@ -1830,28 +1791,28 @@ static int read_command_line (int ac, char **av)
 
 static int init_commands (int ac, char **av)
 {
-  flag_initex               = false; 
-  flag_allow_patterns       = false;
-  flag_reset_exceptions     = false;
-  flag_open_trace           = false;
-  flag_trace                = false;
-  flag_verbose              = false;
-  flag_show_in_hex          = false;
-  flag_deslash              = true;
-  flag_show_current         = true;
-  flag_civilize             = true;
-  flag_show_numeric         = true;
-  flag_show_missing         = true;
-  flag_c_style              = false;
-  flag_show_tfm             = false;
-  flag_show_linebreak_stats = true;
-  flag_allow_quoted         = true;
-  flag_show_csnames         = false;
-  flag_tex82                = false;
-  default_rule              = 26214;
-  tab_step                  = 0;
-  new_hyphen_prime          = 0;
-  mem_initex                = 0;
+  flag_initex           = false; 
+  flag_allow_patterns   = false;
+  flag_reset_exceptions = false;
+  flag_open_trace       = false;
+  flag_trace            = false;
+  flag_verbose          = false;
+  flag_show_in_hex      = false;
+  flag_deslash          = true;
+  flag_show_current     = true;
+  flag_civilize         = true;
+  flag_show_numeric     = true;
+  flag_show_missing     = true;
+  flag_c_style          = false;
+  flag_show_tfm         = false;
+  flag_show_lb_stats    = true;
+  flag_allow_quoted     = true;
+  flag_show_csnames     = false;
+  flag_tex82            = false;
+  default_rule          = 26214;
+  tab_step              = 0;
+  new_hyphen_prime      = 0;
+  mem_initex            = 0;
 
 #ifdef VARIABLETRIESIZE
   trie_size = 0; // default_trie_size
@@ -1932,7 +1893,7 @@ static void initial_memory (void)
     percent_grow = 10;   /* lower limit - 10% */
 }
 
-static inline void flag_deslash_path (char * s)
+static inline void ng_deslash_path (char * s)
 {
   if (strcmp(s, "") != 0)
     flush_trailing_slash(s);
@@ -1944,7 +1905,7 @@ static inline void unixify_path (char * s)
     unixify(s);
 }
 
-static void flag_deslash_all (int ac, char **av)
+static void ng_deslash_all (int ac, char **av)
 {
   char buffer[file_name_size];  
   char *s;
@@ -1978,11 +1939,11 @@ static void flag_deslash_all (int ac, char **av)
   if (*s == '\\' || *s == '/')
     *s = '\0';
 
-  flag_deslash_path(dvi_directory);
-  flag_deslash_path(log_directory);
-  flag_deslash_path(aux_directory);
-  flag_deslash_path(fmt_directory);
-  flag_deslash_path(pdf_directory);
+  ng_deslash_path(dvi_directory);
+  ng_deslash_path(log_directory);
+  ng_deslash_path(aux_directory);
+  ng_deslash_path(fmt_directory);
+  ng_deslash_path(pdf_directory);
 
   if (flag_deslash)
   {
@@ -2026,16 +1987,34 @@ static void flag_deslash_all (int ac, char **av)
 
 int main_init (int ac, char ** av)
 {
-  synctex_option = INT_MAX;
-  kpse_set_program_name(av[0], NULL);
-  init_default_kanji("utf8", "uptex");
-  xputenv("engine", "ptex-ng");
-
+  // check of memory_word's size
   if (sizeof(memory_word) != sizeof(halfword) * 2)
     printf("ERROR: Bad word size %ld!\n", sizeof(memory_word));
 
-  start_time  = clock();
-  main_time   = start_time;
+  // for synctex
+  synctex_option = INT_MAX;
+  // for kpathsea init
+  kpse_set_program_name(av[0], NULL);
+  // for ptexenc init: encoding
+  init_default_kanji("utf8", "uptex");
+  // for engine name
+  xputenv("engine", "ptex-ng");
+
+  // try av[0] as preloaded format
+  format_name = remove_suffix(xbasename(av[0]));
+  TEX_format_default = (char *) malloc(strlen(format_name) + 6);
+
+  if (TEX_format_default == NULL)
+  {
+    fprintf(stderr, "%s: something really went bad: cannot allocated mem for default format! Exiting.\n", av[0]);
+    exit(1);
+  }
+
+  sprintf(TEX_format_default, " %s.fmt", format_name);
+  format_default_length = strlen(TEX_format_default + 1);
+
+  time_start  = clock();
+  time_main   = time_start;
   main_memory = NULL;
   font_info   = NULL;
   str_pool    = NULL;
@@ -2078,9 +2057,9 @@ int main_init (int ac, char ** av)
   log_file_name = NULL;
   pdf_file_name = NULL;
 
-  count_first_pass  = 0;
-  count_second_pass = 0;
-  count_final_pass  = 0;
+  count_first_pass        = 0;
+  count_second_pass       = 0;
+  count_final_pass        = 0;
   count_paragraph_failed  = 0;
   count_single_line       = 0;
   count_overfull_hbox     = 0;
@@ -2098,7 +2077,7 @@ int main_init (int ac, char ** av)
     show_maximums(stdout);
 
   initial_memory();
-  flag_deslash_all(ac, av);
+  ng_deslash_all(ac, av);
 
   if (format_spec && mem_spec_flag)
     puts("WARNING: Cannot change initial main_memory size when format specified");
@@ -2149,7 +2128,7 @@ static void show_inter_val (clock_t inter_val)
 
 int endit (int flag)
 {
-  finish_time = clock();
+  time_finish = clock();
 
   if (missing_characters != 0)
   {
@@ -2165,17 +2144,17 @@ int endit (int flag)
   if (!flag_initex)
   {
     printf("Total ");
-    show_inter_val(finish_time - start_time);
+    show_inter_val(time_finish - time_start);
     printf("s (");
-    show_inter_val(main_time - start_time);
+    show_inter_val(time_main - time_start);
     printf(" format load + ");
-    show_inter_val(finish_time - main_time);
+    show_inter_val(time_finish - time_main);
     printf(" processing)");
 
     if (total_pages > 0)
     {
       printf(" ");
-      show_inter_val((finish_time - main_time) / total_pages);
+      show_inter_val((time_finish - time_main) / total_pages);
       printf("s per page");
     }
 

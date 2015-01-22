@@ -11232,7 +11232,7 @@ void open_log_file (void)
   old_setting = selector;
 
   if (job_name == 0)
-    job_name = get_job_name(790);
+    job_name = get_job_name(790); // "texput"
 
   pack_job_name(".log");
 
@@ -23763,7 +23763,7 @@ void close_files_and_terminate (void)
         log_printf(" %d inputs open max out of %d\n", (int) high_in_open, (int) max_in_open);
       }
 
-      if (flag_show_linebreak_stats && (count_first_pass > 0))
+      if (flag_show_lb_stats && (count_first_pass > 0))
       {
         int first_count, second_count, third_count;
 

@@ -21,6 +21,8 @@
 
 #define EXTERN
 #include "ptex-ng.h"
+#include <fcntl.h>
+#include <io.h>
 
 static int    gargc;
 static char **gargv;
@@ -32,20 +34,13 @@ int main (int ac, char *av[])
   gargc = ac;
   gargv = av;
 
+#ifdef WIN32
+  _setmaxstdio(2048);
+  setmode(fileno(stdin), _O_BINARY);
+#endif
+
   if (main_init(gargc, gargv))
     exit(1);
-
-  format_name = remove_suffix(xbasename(gargv[0]));
-  TEX_format_default = (char *) malloc(strlen(format_name) + 6);
-
-  if (TEX_format_default == NULL)
-  {
-    fprintf(stderr, "%s: something really went bad: cannot allocated mem for default format! Exiting.\n", gargv[0]);
-    exit(1);
-  }
-
-  sprintf(TEX_format_default, " %s.fmt", format_name);
-  format_default_length = strlen(TEX_format_default + 1);
 
   jump_used = 0;
   ret = setjmp(ng_env);
@@ -66,16 +61,14 @@ int main (int ac, char *av[])
   else
     return 0;
 }
-/* texk/web2c/lib/texmfmp.c */
+
 void t_open_in (void)
 {
-  int i;
-
   buffer[first] = 0;
 
   if (gargc > optind && optind > 0)
   {
-    for (i = optind; i < gargc; i++)
+    for (int i = optind; i < gargc; i++)
     {
       if (flag_allow_quoted && strchr(gargv[i], ' ') != NULL)
       {

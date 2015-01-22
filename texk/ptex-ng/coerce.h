@@ -747,6 +747,7 @@ static inline void free_avail (halfword p)
 {
   link(p) = avail;
   avail = p;
+
 #ifdef STAT
   decr(dyn_used);
 #endif
@@ -779,7 +780,7 @@ static inline void fget (void)
 /* sec 0597 */
 static inline void write_dvi (size_t a, size_t b)
 {
-  if (fwrite((char *)&dvi_buf[a], sizeof(dvi_buf[a]),
+  if (fwrite((char *) &dvi_buf[a], sizeof(dvi_buf[a]),
     (b - a + 1), dvi_file) != (b - a + 1))
     FATAL_PERROR("\n! dvi file");
 }
@@ -828,7 +829,7 @@ static inline void ptex_ng_error (const char * t, const char * p)
   prints(p);
   succumb();
 }
-static inline str_number tokens_to_string(pointer p)
+static inline str_number tokens_to_string (pointer p)
 {
   if (selector == new_string)
     ptex_ng_error("tokens", "tokens_to_string() called while selector = new_string");
@@ -840,13 +841,16 @@ static inline str_number tokens_to_string(pointer p)
   last_tokens_string = make_string();
   return last_tokens_string;
 }
+
 #define call_func(a) a
 #define flushable(a) (a == str_ptr - 1)
-static inline void flush_str(str_number s)
+
+static inline void flush_str (str_number s)
 {
   if (flushable(s))
     flush_string();
 }
+
 static inline void compare_strings (void)
 {
   str_number s1, s2;

@@ -68,26 +68,17 @@ static boolean qualified (ASCII_code * name)
     (ii)  name not qualified
     (iii) ext match
 */
-static boolean prepend_path_if(ASCII_code * buffer, ASCII_code * name, const char * ext, char * path)
+static boolean prepend_path_if (ASCII_code * buffer, ASCII_code * name, const char * ext, char * path)
 {
-  if (path == NULL)
+  if ((path == NULL) || (*path == '\0') || qualified(name) || (strstr((char *) name, ext) == NULL))
     return false;
 
-  if (*path == '\0')
-    return false;
-
-  if (qualified(name))
-    return false;
-
-  if (strstr((char *) name, ext) == NULL)
-    return false;
-
-  patch_in_path(buffer, name, (ASCII_code *)path);
+  patch_in_path(buffer, name, (ASCII_code *) path);
 
   return true;
 }
 
-static inline boolean check_path_sep(ASCII_code c)
+static inline boolean check_path_sep (ASCII_code c)
 {
 #ifdef _WIN32
   return (c == DIR_SEP || c == '\\');

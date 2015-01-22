@@ -1102,17 +1102,15 @@ str_number make_str_string (const char * s)
 
 str_number get_job_name (str_number job)
 {
-  str_number ret = job;
-
-  if (c_job_name != NULL)
-    ret = make_str_string(c_job_name);
-
-  return ret;
+  if (job_name_str != NULL)
+    return make_str_string(job_name_str);
+  else
+    return job;
 }
 
 char * get_str_string (str_number s)
 {
-  char * a = (char *)malloc(length(s) + 1);
+  char * a = (char *) malloc(length(s) + 1);
   strncpy(a, (const char *)(str_pool + str_start[s]), length(s));
   a[length(s)] = '\0';
 

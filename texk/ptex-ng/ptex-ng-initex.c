@@ -2781,7 +2781,7 @@ start_of_TEX:
   if (flag_show_tfm && log_opened && (font_ptr > 0))
     show_frozen();
 
-  main_time = clock();
+  time_main = clock();
   history = spotless;
   synctex_init();
 

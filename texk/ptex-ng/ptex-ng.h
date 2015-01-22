@@ -275,9 +275,9 @@ EXTERN integer max_buf_stack;
 
 /* sec 0113 */
 #ifdef INCREASEFONTS
-  typedef unsigned short quarterword;
+  typedef uint16_t quarterword;
 #else
-  typedef unsigned char  quarterword;
+  typedef uint8_t  quarterword;
 #endif
 
 /* mem_min may be < 0 */
@@ -573,7 +573,7 @@ EXTERN boolean name_in_progress;
 EXTERN boolean log_opened;
 EXTERN boolean quoted_file_name;
 EXTERN str_number job_name;
-EXTERN const char * c_job_name;
+EXTERN const char * job_name_str;
 EXTERN str_number output_file_name;
 EXTERN str_number log_name;
 EXTERN byte_file dvi_file;
@@ -864,16 +864,16 @@ EXTERN boolean flag_tex82;
 EXTERN boolean flag_c_style;
 EXTERN boolean flag_deslash;
 EXTERN boolean flag_allow_patterns;
+EXTERN boolean flag_allow_quoted;
 EXTERN boolean flag_reset_exceptions;
-EXTERN boolean flag_show_current;
 EXTERN boolean flag_civilize;
+EXTERN boolean flag_show_current;
 EXTERN boolean flag_show_numeric;
 EXTERN boolean flag_show_missing;
 EXTERN boolean flag_show_in_hex;
 EXTERN boolean flag_show_tfm;
 EXTERN boolean flag_show_csnames;
-EXTERN boolean flag_allow_quoted;
-EXTERN boolean flag_show_linebreak_stats;
+EXTERN boolean flag_show_lb_stats;
 EXTERN boolean flag_suppress_f_ligs;
 EXTERN int mem_initex;
 EXTERN int new_hyphen_prime;
@@ -910,7 +910,7 @@ extern char * log_directory;
 extern char * aux_directory;
 extern char * fmt_directory;
 extern char * pdf_directory;
-extern clock_t start_time, main_time, finish_time;
+extern clock_t time_start, time_main, time_finish;
 // for synctex
 EXTERN integer synctex_option;
 
