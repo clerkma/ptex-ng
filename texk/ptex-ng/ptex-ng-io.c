@@ -24,6 +24,84 @@
 #include "ptex-ng.h"
 #undef name
 
+char * mbcs_utf8 (const char * mbcs_str)
+{
+#ifdef WIN32
+  int    utf8_len;
+  int    utf16_len;
+  size_t mbcs_len;
+  LPWSTR utf16_str;
+  char * utf8_str;
+  int    codepage;
+
+  mbcs_len = strlen(mbcs_str);
+  codepage = AreFileApisANSI() ? CP_ACP : CP_OEMCP;
+  utf16_len = MultiByteToWideChar(codepage, 0, mbcs_str, -1, NULL, 0);
+
+  if (utf16_len == 0)
+    return 0;
+
+  utf16_str = (LPWSTR) malloc((utf16_len + 1) * sizeof(utf16_str[0]));
+
+  if (utf16_str == NULL)
+    return NULL;
+
+  MultiByteToWideChar(codepage, 0, mbcs_str, -1, utf16_str, utf16_len);
+  utf8_len = WideCharToMultiByte(CP_UTF8, 0, utf16_str, utf16_len, 0, 0, 0, 0);
+  utf8_str = utf8_len ? (char*) malloc(utf8_len + 1) : 0;
+
+  if (utf8_str)
+  {
+    WideCharToMultiByte(CP_UTF8, 0, utf16_str, utf16_len, utf8_str, utf8_len, 0, 0);
+  }
+
+  free(utf16_str);
+
+  return utf8_str;
+#else
+  return xstrdup(mbcs_str);
+#endif
+}
+
+char * utf8_mbcs (const char * utf8_str)
+{
+#ifdef WIN32
+  size_t utf8_len;
+  int    utf16_len;
+  int    mbcs_len;
+  LPWSTR utf16_str;
+  char * mbcs_str;
+  int    codepage;
+
+  utf8_len = strlen(utf8_str);
+  utf16_len = MultiByteToWideChar(CP_UTF8, 0, utf8_str, -1, NULL, 0);
+
+  if (utf16_len == 0)
+    return 0;
+
+  utf16_str = (LPWSTR) malloc((utf16_len + 1) * sizeof(utf16_str[0]));
+
+  if (utf16_str == NULL)
+    return NULL;
+
+  MultiByteToWideChar(CP_UTF8, 0, utf8_str, -1, utf16_str, utf16_len);
+  codepage = AreFileApisANSI() ? CP_ACP : CP_OEMCP;
+  mbcs_len = WideCharToMultiByte(codepage, 0, utf16_str, utf16_len, 0, 0, 0, 0);
+  mbcs_str = mbcs_len ? (char*) malloc(mbcs_len + 1) : 0;
+
+  if (mbcs_str)
+  {
+    WideCharToMultiByte(codepage, 0, utf16_str, utf16_len, mbcs_str, mbcs_len, 0, 0);
+  }
+
+  free(utf16_str);
+
+  return mbcs_str;
+#else
+  return xstrdup(utf8_str);
+#endif  
+}
+
 static char * xconcat3 (char * buffer, char * s1, char * s2, char * s3)
 {
   size_t n1 = strlen(s1);
@@ -72,10 +150,11 @@ static boolean prepend_path_if (ASCII_code * buffer, ASCII_code * name, const ch
 {
   if ((path == NULL) || (*path == '\0') || qualified(name) || (strstr((char *) name, ext) == NULL))
     return false;
-
-  patch_in_path(buffer, name, (ASCII_code *) path);
-
-  return true;
+  else
+  {
+    patch_in_path(buffer, name, (ASCII_code *) path);
+    return true;
+  }
 }
 
 static inline boolean check_path_sep (ASCII_code c)
@@ -91,23 +170,23 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
 {
   boolean openable = false;
   boolean must_exist;
-  char * file_name = NULL;
+  char * file_name_kpse = NULL;
+  char * file_name_mbcs = NULL;
+  char * file_name_utf8 = NULL;
 
   if (strcmp(fopen_mode, "r") == 0)
     fopen_mode = "rb";
 
   name_of_file[name_length + 1] = '\0';
-  
-  if (flag_open_trace)
-    printf(" Open `%s' for input ", name_of_file + 1);
-
+  file_name_mbcs = utf8_mbcs((const char *) name_of_file + 1);
   must_exist = (file_fmt != kpse_tex_format);
-  file_name = kpse_find_file((const_string) name_of_file + 1, file_fmt, must_exist);
+  file_name_kpse = kpse_find_file((const_string) file_name_mbcs, file_fmt, must_exist);
 
-  if (file_name != NULL)
+  if (file_name_kpse != NULL)
   {
-    strcpy ((char *) name_of_file + 1, file_name);
-    *f = fopen((char *) file_name, fopen_mode);
+    file_name_utf8 = mbcs_utf8(file_name_kpse);
+    strcpy ((char *) name_of_file + 1, file_name_utf8);
+    *f = fopen((char *) file_name_kpse, fopen_mode);
 
     if (name_of_file[1] == '.' && check_path_sep(name_of_file[2]))
     {
@@ -124,21 +203,31 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
     }
     else
       name_length = strlen((char *) name_of_file + 1);
-      
-    if (file_fmt == kpse_tfm_format)
-    {
-      fbyte = getc(*f);
-    } 
 
-    if (strstr((char *) name_of_file + 1, ".fmt") != NULL)
+    switch (file_fmt)
     {
+      case kpse_tfm_format:
+        fbyte = getc(*f);
+        break;
+
+      case kpse_fmt_format:
 #ifdef COMPACTFORMAT
-      gz_fmt_file = gzdopen(fileno(*f), FOPEN_RBIN_MODE);
+        gz_fmt_file = gzdopen(fileno(*f), FOPEN_RBIN_MODE);
 #endif
+        break;
     }
 
     openable = true;
   }
+
+  if (file_name_mbcs != NULL)
+    free(file_name_mbcs);
+
+  if (file_name_utf8 != NULL)
+    free(file_name_utf8);
+
+  if (file_name_kpse != NULL)
+    free(file_name_kpse);
 
   {
     size_t temp_length = strlen((char *) name_of_file + 1);
@@ -179,23 +268,19 @@ static char * xstrdup_name (void)
 boolean open_output (FILE ** f, const char * fopen_mode)
 {
   size_t temp_length;
+  char * file_name_utf8 = NULL;
+  char * file_name_mbcs = NULL;
 
   name_of_file[name_length + 1] = '\0';
 
-  if (prepend_path_if(name_of_file + 1, name_of_file + 1, ".dvi", dvi_directory) ||
-      prepend_path_if(name_of_file + 1, name_of_file + 1, ".log", log_directory) ||
-      prepend_path_if(name_of_file + 1, name_of_file + 1, ".aux", aux_directory) ||
-      prepend_path_if(name_of_file + 1, name_of_file + 1, ".fmt", fmt_directory) ||
-      prepend_path_if(name_of_file + 1, name_of_file + 1, ".pdf", pdf_directory))
-  {
-    if (flag_open_trace)
-      printf("After prepend %s\n", name_of_file + 1);
-  }
+  prepend_path_if(name_of_file + 1, name_of_file + 1, ".dvi", dvi_directory);
+  prepend_path_if(name_of_file + 1, name_of_file + 1, ".log", log_directory);
+  prepend_path_if(name_of_file + 1, name_of_file + 1, ".aux", aux_directory);
+  prepend_path_if(name_of_file + 1, name_of_file + 1, ".fmt", fmt_directory);
+  prepend_path_if(name_of_file + 1, name_of_file + 1, ".pdf", pdf_directory);
 
-  if (flag_open_trace)
-    printf(" Open `%s' for output ", name_of_file + 1);
-
-  *f = fopen((char *) name_of_file + 1, fopen_mode);
+  file_name_mbcs = utf8_mbcs((const char *) name_of_file + 1);
+  *f = fopen(file_name_mbcs, fopen_mode);
 
   if (*f == NULL)
   {
@@ -204,15 +289,16 @@ boolean open_output (FILE ** f, const char * fopen_mode)
     if (temp_dir != NULL)
     {
       unsigned char temp_name[file_name_size];
-      xconcat3((char *) temp_name, temp_dir, DIR_SEP_STRING, (char *) name_of_file + 1);
+      xconcat3((char *) temp_name, temp_dir, DIR_SEP_STRING, file_name_mbcs);
 
       if (flag_deslash)
         unixify((char *) temp_name);
       
       *f = fopen((char *) temp_name, fopen_mode);
+      file_name_utf8 = mbcs_utf8((char *) temp_name);
 
       if (*f)
-        strcpy((char *) name_of_file + 1, (char *) temp_name);
+        strcpy((char *) name_of_file + 1, file_name_utf8);
     }
   }
 
@@ -233,6 +319,12 @@ boolean open_output (FILE ** f, const char * fopen_mode)
 
   if (*f)
     name_length = temp_length;
+
+  if (file_name_mbcs != NULL)
+    free(file_name_mbcs);
+
+  if (file_name_utf8 != NULL)
+    free(file_name_utf8);
   
   return (*f != NULL);
 }

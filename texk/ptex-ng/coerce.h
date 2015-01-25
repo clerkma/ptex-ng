@@ -544,6 +544,8 @@ extern integer calc_pos(integer c);
 extern integer kcatcodekey(integer c);
 extern integer multilenbuffchar(integer c);
 extern void init_default_kanji(const_string file_str, const_string internal_str);
+extern char * mbcs_utf8(const char * mbcs_str);
+extern char * utf8_mbcs(const char * utf8_str);
 /* sec 79 */
 // inline functions
 /* sec 0016 */

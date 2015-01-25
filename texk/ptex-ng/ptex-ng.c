@@ -21,15 +21,13 @@
 
 #define EXTERN
 #include "ptex-ng.h"
-#include <fcntl.h>
-#include <io.h>
 
 static int    gargc;
 static char **gargv;
 
 int main (int ac, char *av[])
 {
-  int flag = 0, ret = 0;
+  int flag = 0;
 
   gargc = ac;
   gargv = av;
@@ -42,19 +40,7 @@ int main (int ac, char *av[])
   if (main_init(gargc, gargv))
     exit(1);
 
-  jump_used = 0;
-  ret = setjmp(ng_env);
-
-  if (ret == 0)
-  {
-    flag = main_program();
-  }
-
-  if (flag_trace)
-  {
-    printf("EXITING at %s: flag = %d, ret = %d, jump_used = %d\n",
-      (ret == 0) ? "main" : "jump_out", flag, ret, jump_used);
-  }
+  flag = main_program();
 
   if (endit(flag) != 0)
     exit(1);
@@ -64,28 +50,26 @@ int main (int ac, char *av[])
 
 void t_open_in (void)
 {
+  int i;
   buffer[first] = 0;
 
   if (gargc > optind && optind > 0)
   {
-    for (int i = optind; i < gargc; i++)
+    for (i = optind; i < gargc; i++)
     {
-      if (flag_allow_quoted && strchr(gargv[i], ' ') != NULL)
-      {
-        (void) strcat ((char *) &buffer[first], "\"");
-        (void) strcat ((char *) &buffer[first], gargv[i]);
-        (void) strcat ((char *) &buffer[first], "\"");
-      }
-      else
-        (void) strcat ((char *) &buffer[first], gargv[i]);
+      char * name_from_cli = mbcs_utf8(gargv[i]);
 
-      (void) strcat ((char *) &buffer[first], " ");
+      if (flag_allow_quoted && (strchr(gargv[i], ' ') != NULL))
+        sprintf((char *) &buffer[first], "\"%s\" ", name_from_cli);
+      else
+        sprintf((char *) &buffer[first], "%s ", name_from_cli);
+
+      free(name_from_cli);
     }
-    
+
     gargc = 0;
   }
 
-  /* Find the end of the buffer. */
   for (last = first; buffer[last]; ++last)
     do_nothing();
 
@@ -374,13 +358,6 @@ void uexit (int unix_code)
   else
     final_code = unix_code;
 
-  if (jump_used)
-  {
-    printf("Jump Buffer already used.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  jump_used++;
   exit(final_code);
 }
 // texk/web2c/lib/zround.c

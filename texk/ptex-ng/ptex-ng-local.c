@@ -80,9 +80,8 @@ char * pdf_directory = "";
 
 char log_line[256];
 
-static boolean mem_spec_flag     = false;
-static boolean format_spec       = false;
-static boolean reorder_arg_flag  = true;
+static boolean mem_spec_flag = false;
+static boolean format_spec   = false;
 
 static void show_usage (void)
 {
@@ -183,6 +182,16 @@ static void show_maximums (FILE * output)
   fputs(log_line, output);
 }
 
+static void ng_trace (const char * fmt_str, ...)
+{
+  va_list m_ptr;
+  va_start(m_ptr, fmt_str);
+
+  if (flag_trace)
+    vprintf(fmt_str, m_ptr);
+
+  va_end(m_ptr);
+}
 /* our own version of realloc --- avoid supposed Microsoft version bug */
 /* also tries _expand first, which can avoid address growth ... */
 
@@ -215,10 +224,7 @@ static void * ourrealloc (void * old, size_t new_size)
 
   if (mnew != NULL)
   {
-    if (flag_trace)
-      printf("EXPANDED! %p (%ld) == %p (%ld)\n",
-          mnew, new_size, old, old_size);
-
+    ng_trace("EXPANDED! %p (%ld) == %p (%ld)\n", mnew, new_size, old, old_size);
     return mnew;
   }
 
@@ -248,19 +254,30 @@ static void * ourrealloc (void * old, size_t new_size)
 
 static void memory_error (const char * s, int n)
 {
+  int old_setting;
+
   if (log_opened)
   {
-    log_printf("\n! Unable to allocate %d bytes for %s\n", n, s);
-    show_maximums(log_file);
+    old_setting = selector;
+    selector = term_and_log;
+    print_ln();
+    prints("! Unable to allocate ");
+    print_int(n);
+    prints(" bytes for ");
+    prints(s);
+    print_ln();
+    prints("Max allocated ");
+    print_int(total_allocated);
+    prints(" --- max address ");
+    print_int(max_address);
+    print_ln();
+    selector = old_setting;
   }
-
-  printf("\n! Unable to allocate %d bytes for %s\n", n, s);
-  show_maximums(stderr);
 }
 
 static void trace_memory (const char * s, int n)
 {
-  printf("Allocating %d bytes for %s\n", n, s);
+  ng_trace("Allocating %d bytes for %s\n", n, s);
 }
 
 static void update_statistics (long address, int size, int old_size)
@@ -307,10 +324,7 @@ int allocate_tries (int trie_max)
   no = (trie_max + 1) * sizeof(halfword);
   nc = (trie_max + 1) * sizeof(quarterword);
   n = nl + no + nc;
-
-  if (flag_trace)
-    trace_memory("hyphen trie", n);
-
+  trace_memory("hyphen trie", n);
   trie_trl = (halfword *) malloc(roundup(nl));
   trie_tro = (halfword *) malloc(roundup(no));
   trie_trc = (quarterword *) malloc(roundup(nc));
@@ -321,9 +335,7 @@ int allocate_tries (int trie_max)
     return -1;
   }
 
-  if (flag_trace)
-    printf("Addresses trie_trl %p trie_tro %p trie_trc %p\n", trie_trl, trie_tro, trie_trc);
-
+  ng_trace("Addresses trie_trl %p trie_tro %p trie_trc %p\n", trie_trl, trie_tro, trie_trc);
   update_statistics((long) trie_trl, nl, 0);
   update_statistics((long) trie_tro, no, 0);
   update_statistics((long) trie_trc, nc, 0);
@@ -382,10 +394,7 @@ int realloc_hyphen (int hyphen_prime)
   nw = (hyphen_prime + 1) * sizeof(str_number);
   nl = (hyphen_prime + 1) * sizeof(halfword);
   n = nw + nl;
-
-  if (flag_trace)
-    trace_memory("hyphen exception", n);
-
+  trace_memory("hyphen exception", n);
   hyph_word = (str_number *) REALLOC (hyph_word, nw);
   hyph_list = (halfword *) REALLOC (hyph_list, nl);
 
@@ -395,9 +404,7 @@ int realloc_hyphen (int hyphen_prime)
     return -1;
   }
 
-  if (flag_trace)
-    printf("Addresses hyph_word %p hyph_list %p\n", hyph_word, hyph_list);
-
+  ng_trace("Addresses hyph_word %p hyph_list %p\n", hyph_word, hyph_list);
   memset(hyph_word, 0, (hyphen_prime + 1) * sizeof (hyph_word[0]));
   memset(hyph_list, 0, (hyphen_prime + 1) * sizeof (hyph_list[0]));
   hyph_count = 0;
@@ -430,20 +437,14 @@ memory_word * allocate_main_memory (int size)
   int n;
 
   if (main_memory != NULL)
-  {
-    if (flag_trace)
-      puts("Reallocating initial memory allocation");
-  }
+    ng_trace("Reallocating initial memory allocation");
 
   mem_top = mem_bot + size;
   mem_max = mem_top;
   mem_start = 0;     /* bottom of memory allocated by system */
   mem_min = 0;       /* bottom of area made available to TeX */
   n = (mem_max - mem_start + 1) * ((int) sizeof(memory_word));
-
-  if (flag_trace)
-    trace_memory("main memory", n);
-
+  trace_memory("main memory", n);
   main_memory = (memory_word *) REALLOC (main_memory, n);
 
   if (main_memory == NULL)
@@ -452,17 +453,13 @@ memory_word * allocate_main_memory (int size)
     return NULL;
   }
 
-  if (flag_trace)
-    printf("Address main memory == %p\n", main_memory);
-
+  ng_trace("Address main memory == %p\n", main_memory);
   mem = main_memory;
 
   if (mem_start != 0 && !flag_initex)
     mem = main_memory - mem_start;
 
-  if (flag_trace)
-    printf("Offset address main memory == %p\n", mem);
-
+  ng_trace("Offset address main memory == %p\n", mem);
   update_statistics((long) main_memory, n, (current_mem_size + 1) * sizeof (memory_word));
 /*  current_mem_size = (mem_max - mem_start + 1); */
   current_mem_size = mem_max - mem_start;   /* total number of words - 1 */
@@ -484,8 +481,7 @@ memory_word * realloc_main (int lo_size, int hi_size)
   int n = 0;
   memory_word * new_memory = NULL;
 
-  if (flag_trace)
-    printf("WARNING: Entering realloc_main lo %d hi %d\n", lo_size, hi_size);
+  ng_trace("WARNING: Entering realloc_main lo %d hi %d\n", lo_size, hi_size);
 
   if (flag_initex)
   {
@@ -497,8 +493,7 @@ memory_word * realloc_main (int lo_size, int hi_size)
     return NULL;
   }
 
-  if (flag_trace)
-    printf("Old Address %s == %p\n", "main memory", main_memory);
+  ng_trace("Old Address %s == %p\n", "main memory", main_memory);
 
   /* if we REALLY run up to limit ! */
   if (current_mem_size + 1 == max_mem_size)
@@ -552,10 +547,7 @@ memory_word * realloc_main (int lo_size, int hi_size)
     }
 
     n = (new_size + 1) * sizeof (memory_word);
-
-    if (flag_trace)
-      trace_memory("main memory", n);
-
+    trace_memory("main memory", n);
     new_memory = (memory_word *) REALLOC (main_memory, n);
 
     if (new_memory != NULL)
@@ -573,19 +565,16 @@ memory_word * realloc_main (int lo_size, int hi_size)
     return mem;
   }
 
-  if (flag_trace)
-    printf("New Address %s == %p\n", "main memory", new_memory);
+  ng_trace("New Address %s == %p\n", "main memory", new_memory);
 
   if (lo_size > 0)
   {
-/*  shift everything upward to make space for new low area */
-    if (flag_trace)
-      printf("memmove %p %p %ld \n", new_memory + lo_size,
+    ng_trace("memmove %p %p %ld \n", new_memory + lo_size,
           new_memory, (current_mem_size + 1) * sizeof(memory_word));
-
-    memmove (new_memory + lo_size, new_memory,
+    /* shift everything upward to make space for new low area */
+    memmove (new_memory + lo_size, new_memory, 
       (current_mem_size + 1) * sizeof(memory_word));
-/*  could reduce words moved by (mem_max - mem_end) */
+    /* could reduce words moved by (mem_max - mem_end) */
   }
 
   main_memory = new_memory;       /* remember for free later */
@@ -625,8 +614,7 @@ memory_word * realloc_font_info (int size)
   int new_size = 0;
   int n = 0;
 
-  if (flag_trace)
-    printf("Old Address %s == %p\n", "font_info", font_info);
+  ng_trace("Old Address %s == %p\n", "font_info", font_info);
 
   if (current_font_mem_size == font_mem_size)
   {
@@ -642,7 +630,7 @@ memory_word * realloc_font_info (int size)
   if (size < initial_font_mem_size)
     size = initial_font_mem_size;
 
-  for (k=0; k < MAXSPLITS; k++)
+  for (k = 0; k < MAXSPLITS; k++)
   {
     new_size = current_font_mem_size + size;
 
@@ -650,10 +638,7 @@ memory_word * realloc_font_info (int size)
       new_size = font_mem_size; /* bump against limit */
 
     n = (new_size + 1) * sizeof (memory_word);
-
-    if (flag_trace)
-      trace_memory("font_info", n);
-
+    trace_memory("font_info", n);
     new_font_info = (memory_word *) REALLOC (font_info, n);
 
     if (new_font_info != NULL)
@@ -672,10 +657,7 @@ memory_word * realloc_font_info (int size)
   }
 
   font_info = new_font_info;
-
-  if (flag_trace)
-    printf("New Address %s == %p\n", "font_info", font_info);
-
+  ng_trace("New Address %s == %p\n", "font_info", font_info);
   update_statistics ((long) font_info, n, current_font_mem_size * sizeof(memory_word));
   current_font_mem_size = new_size;
 
@@ -696,8 +678,7 @@ packed_ASCII_code * realloc_str_pool (int size)
   int n = 0;
   packed_ASCII_code * new_str_pool = NULL;
 
-  if (flag_trace)
-    printf("Old Address %s == %p\n", "string pool", str_pool);
+  ng_trace("Old Address %s == %p\n", "string pool", str_pool);
 
   if (current_pool_size == pool_size)
   {
@@ -721,10 +702,7 @@ packed_ASCII_code * realloc_str_pool (int size)
       new_size = pool_size;
 
     n = (new_size + 1) * sizeof (packed_ASCII_code);
-
-    if (flag_trace)
-      trace_memory("str_pool", n);
-
+    trace_memory("str_pool", n);
     new_str_pool = (packed_ASCII_code *) REALLOC (str_pool, n);
 
     if (new_str_pool != NULL)
@@ -791,10 +769,7 @@ pool_pointer * realloc_str_start (int size)
       new_size = max_strings;
 
     n = (new_size + 1) * sizeof (pool_pointer);
-
-    if (flag_trace)
-      trace_memory("str_start", n);
-
+    trace_memory("str_start", n);
     new_str_start = (pool_pointer *) REALLOC (str_start, n);
 
     if (new_str_start != NULL)
@@ -840,10 +815,7 @@ int allocate_ini (int size)
   nc = (size + 1) * sizeof(packed_ASCII_code);
   nt = (size + 1) * sizeof(char);
   n = nl + no + nc + nr + nh + nt;
-
-  if (flag_trace)
-    trace_memory ("initex hyphen trie", n);
-
+  trace_memory ("initex hyphen trie", n);
   trie_l = (trie_pointer *) malloc (roundup(nl));
   trie_o = (trie_op_code *) malloc (roundup(no));
   trie_c = (packed_ASCII_code *) malloc (roundup(nc));
@@ -911,10 +883,7 @@ memory_word * realloc_save_stack (int size)
       new_size = save_size;
 
     n = (new_size + 1) * sizeof (memory_word);
-
-    if (flag_trace)
-      trace_memory("save_stack", n);
-
+    trace_memory("save_stack", n);
     new_save_stack = (memory_word *) REALLOC (save_stack, n);
 
     if (new_save_stack != NULL)
@@ -982,10 +951,7 @@ in_state_record * realloc_input_stack (int size)
       new_size = stack_size;
 
     n = (new_size + 1) * sizeof(in_state_record);
-
-    if (flag_trace)
-      trace_memory("input_stack", n);
-
+    trace_memory("input_stack", n);
     new_input_stack = (in_state_record *) REALLOC (input_stack, n);
 
     if (new_input_stack != NULL)
@@ -1053,10 +1019,7 @@ list_state_record * realloc_nest_stack (int size)
       new_size = nest_size;
 
     n = (new_size + 1) * sizeof (list_state_record);
-
-    if (flag_trace)
-      trace_memory("nest stack", n);
-
+    trace_memory("nest stack", n);
     new_nest = (list_state_record *) REALLOC (nest, n);
 
     if (new_nest != NULL)
@@ -1124,10 +1087,7 @@ halfword * realloc_param_stack (int size)
       new_size = param_size;
 
     n = (new_size + 1) * sizeof(pointer);
-
-    if (flag_trace)
-      trace_memory("param stack", n);
-
+    trace_memory("param stack", n);
     new_param = (pointer *) REALLOC (param_stack, n);
 
     if (new_param != NULL)
@@ -1171,8 +1131,7 @@ ASCII_code * realloc_buffer (int size)
   int n = 0, new_size = 0;
   ASCII_code * new_buffer = NULL;
 
-  if (flag_trace)
-    printf("Old Address %s == %p\n", "buffer", buffer);
+  ng_trace("Old Address %s == %p\n", "buffer", buffer);
 
   if (current_buf_size == buf_size)
   {
@@ -1195,10 +1154,7 @@ ASCII_code * realloc_buffer (int size)
       new_size = buf_size;
 
     n = (new_size + 1) * sizeof(ASCII_code);
-
-    if (flag_trace)
-      trace_memory("buffer", n);
-
+    trace_memory("buffer", n);
     new_buffer = (ASCII_code *) REALLOC (buffer, n);
 
     if (new_buffer != NULL)
@@ -1221,11 +1177,7 @@ ASCII_code * realloc_buffer (int size)
   memset(buffer + current_buf_size, 0, new_size - current_buf_size);
   current_buf_size = new_size;
 
-  if (flag_trace)
-  {
-    printf("Current %s %d\n", "buffer", current_buf_size);
-    printf("New Address %s == %p\n", "buffer", buffer);
-  }
+  ng_trace("Current buffer %d\n""New Address buffer == %p\n", current_buf_size, buffer);
 
   if (flag_trace)
     probe_show();
@@ -1274,9 +1226,7 @@ static int allocate_memory (void)
 
   if (flag_initex)
   {
-    if (flag_trace)
-      puts("INITEX pool and string allocation");
-
+    ng_trace("INITEX pool and string allocation");
     str_pool = realloc_str_pool(initial_pool_size);
     str_start = realloc_str_start(initial_max_strings);
   }
@@ -1359,20 +1309,18 @@ do {                  \
 
 static int free_memory (void)
 {
-  if (flag_trace)
-  {
-    puts("free_memory() ");
-    show_maximums(stdout); 
-    printf(
-      "Heap total : %u bytes --- max address %u\n"
-      "Main Memory: variable node %d (%d - %d);\n"
-      "             one word %d (%d - %d)\n",
-      0, max_address,
-      (int) (lo_mem_max - mem_min), (int) mem_min, (int) lo_mem_max,
-      (int) (mem_end - hi_mem_min), (int) hi_mem_min, (int) mem_end
-      );
-    puts("Freeing memory again");
-  }
+  ng_trace (
+    "Statistics of free_memory() \n"
+    "  Max allocated %d --- max address %d\n"
+    "  Heap total : %u bytes --- max address %u\n"
+    "  Main Memory: variable node %d (%d - %d);\n"
+    "               one word %d (%d - %d)\n"
+    "Freeing memory again.\n",
+    total_allocated, max_address,
+    0, max_address,
+    (int) (lo_mem_max - mem_min), (int) mem_min, (int) lo_mem_max,
+    (int) (mem_end - hi_mem_min), (int) hi_mem_min, (int) mem_end
+  );
 
 #ifdef ALLOCATEINI
   if (flag_initex)
@@ -1464,13 +1412,7 @@ static void reorderargs (int ac, char **av)
   }
 
   *t = '\0';
-
-  if (flag_trace)
-  {
-    printf("%s", takeargs);
-    wterm_cr();
-  }
-  
+  ng_trace("%s\n", takeargs);  
   n = 1;
 
   for (;;)
@@ -1545,8 +1487,7 @@ static char * grabenv (const char * varname)
 
   if (lastname != NULL && strcasecmp(lastname, varname) == 0)
   {
-    if (flag_trace)
-      printf("Cache hit: %s=%s\n", lastname, lastvalue);
+    ng_trace("Cache hit: %s=%s\n", lastname, lastvalue);
 
     return xstrdup(lastvalue);
   }
@@ -1569,19 +1510,6 @@ static char * grabenv (const char * varname)
   }
   else
     return NULL;
-}
-
-static void flush_trailing_slash (char * directory)
-{
-  char * s;
-
-  if (strcmp(directory, "") != 0)
-  {
-    s = directory + strlen(directory) - 1;
-
-    if (*s == '\\' || *s == '/')
-      *s = '\0';
-  }
 }
 
 static void knuthify (void)
@@ -1639,14 +1567,14 @@ static struct option long_options[] =
 #undef name
 #define ARGUMENT_IS(a) !strcmp(long_options[option_idx].name, a)
 
-static int read_command_line (int ac, char **av)
+static void read_command_line (int ac, char **av)
 { 
   int c;
-  char *optargnew;
+  char * optargnew;
   int option_idx = 0;
 
   if (ac < 2)
-    return 0;
+    return;
 
   while ((c = getopt_long_only(ac, av, "+", long_options, &option_idx)) != EOF)
   {
@@ -1658,7 +1586,7 @@ static int read_command_line (int ac, char **av)
     if (ARGUMENT_IS("progname"))
       kpse_reset_program_name(optarg);
     else if (ARGUMENT_IS("jobname"))
-      job_name_str = optarg;
+      job_name_str = mbcs_utf8(optarg);
     else if (ARGUMENT_IS("synctex"))
       synctex_option = (int) strtol(optarg, NULL, 0);
     else if (ARGUMENT_IS("verbose"))
@@ -1785,11 +1713,9 @@ static int read_command_line (int ac, char **av)
       show_version();
     }
   }
-
-  return 0;
 }
 
-static int init_commands (int ac, char **av)
+static void init_commands (int ac, char **av)
 {
   flag_initex           = false; 
   flag_allow_patterns   = false;
@@ -1818,13 +1744,10 @@ static int init_commands (int ac, char **av)
   trie_size = 0; // default_trie_size
 #endif
 
-  if (read_command_line(ac, av) < 0)
-    return -1;
+  read_command_line(ac, av);
 
   if (optind == 0)
     optind = ac;
-
-  return 0;
 }
 
 /* set initial memory allocations */
@@ -1878,8 +1801,7 @@ static void initial_memory (void)
       while (!prime(new_hyphen_prime))
         new_hyphen_prime = new_hyphen_prime + 2;
 
-      if (flag_trace)
-        printf("Using %d as hyphen prime\n", new_hyphen_prime);
+      ng_trace("Using %d as hyphen prime\n", new_hyphen_prime);
     }
   }
 
@@ -1895,8 +1817,15 @@ static void initial_memory (void)
 
 static inline void ng_deslash_path (char * s)
 {
+  char * r;
+
   if (strcmp(s, "") != 0)
-    flush_trailing_slash(s);
+  {
+    r = s + strlen(s) - 1;
+
+    if (*r == '\\' || *r == '/')
+      *r = '\0';
+  }
 }
 
 static inline void unixify_path (char * s)
@@ -1960,9 +1889,7 @@ static void ng_deslash_all (int ac, char **av)
   {
     if (flag_deslash)
     {
-      if (flag_trace)
-        printf("flag_deslash: argv[%d] = %s (argc %d)\n", optind, av[optind], ac);
-
+      ng_trace("flag_deslash: argv[%d] = %s (argc %d)\n", optind, av[optind], ac);
       unixify(av[optind]);
     }
 
@@ -1975,9 +1902,7 @@ static void ng_deslash_all (int ac, char **av)
       {
         if (flag_deslash)
         {
-          if (flag_trace)
-            printf("flag_deslash: argv[%d] %s (argc %d)\n", optind + 1, av[optind + 1], ac);
-
+          ng_trace("flag_deslash: argv[%d] %s (argc %d)\n", optind + 1, av[optind + 1], ac);
           unixify(av[optind + 1]);
         }
       }
@@ -1988,8 +1913,9 @@ static void ng_deslash_all (int ac, char **av)
 int main_init (int ac, char ** av)
 {
   // check of memory_word's size
-  if (sizeof(memory_word) != sizeof(halfword) * 2)
-    printf("ERROR: Bad word size %ld!\n", sizeof(memory_word));
+  assert(sizeof(memory_word) == sizeof(halfword) * 2);
+  assert(sizeof(halfword) == sizeof(quarterword) * 2);
+  assert(sizeof(integer) == sizeof(real));
 
   // for synctex
   synctex_option = INT_MAX;
@@ -2047,11 +1973,8 @@ int main_init (int ac, char ** av)
   missing_characters    = 0;
   flag_suppress_f_ligs  = false;
 
-  if (reorder_arg_flag)
-    reorderargs(ac, av);  
-
-  if (init_commands(ac, av))
-    return -1;
+  reorderargs(ac, av);
+  init_commands(ac, av);
 
   dvi_file_name = NULL;
   log_file_name = NULL;
@@ -2067,15 +1990,10 @@ int main_init (int ac, char ** av)
   count_overfull_vbox     = 0;
   count_underfull_vbox    = 0;
 
-  if (flag_trace)
-    puts("Entering main_init().");
-
+  ng_trace("Entering main_init().\n");
   probe_memory();
   ini_max_address = max_address;
-
-  if (flag_trace)
-    show_maximums(stdout);
-
+  ng_trace("Max allocated %d --- max address %d\n", total_allocated, max_address);
   initial_memory();
   ng_deslash_all(ac, av);
 
@@ -2085,39 +2003,32 @@ int main_init (int ac, char ** av)
   if (allocate_memory() != 0)
     return -1;
 
-  if (flag_trace)
-    puts("Leaving main_init().");
+  ng_trace("Leaving main_init().\n");
 
   return 0;
 }
 
-#if defined (__APPLE__)
-  #undef CLK_TCK
-#endif
-
-#define CLK_TCK CLOCKS_PER_SEC
-
-static void show_inter_val (clock_t inter_val)
+static void print_time (clock_t inter_val)
 {
   int seconds, tenths, hundredth, thousands;
 
-  if (inter_val >= CLK_TCK * 10)
+  if (inter_val >= CLOCKS_PER_SEC * 10)
   {
-    tenths = (inter_val * 10 + CLK_TCK / 2) / CLK_TCK; 
+    tenths = (inter_val * 10 + CLOCKS_PER_SEC / 2) / CLOCKS_PER_SEC; 
     seconds = tenths / 10; 
     tenths = tenths % 10;
     printf("%d.%d", seconds, tenths);
   }
-  else if (inter_val >= CLK_TCK)
+  else if (inter_val >= CLOCKS_PER_SEC)
   {
-    hundredth = (inter_val * 100 + CLK_TCK / 2) / CLK_TCK;
+    hundredth = (inter_val * 100 + CLOCKS_PER_SEC / 2) / CLOCKS_PER_SEC;
     seconds = hundredth / 100;
     hundredth = hundredth % 100;
     printf("%d.%02d", seconds, hundredth);
   }
   else if (inter_val > 0)
   {
-    thousands = (inter_val * 1000 + CLK_TCK / 2) / CLK_TCK;
+    thousands = (inter_val * 1000 + CLOCKS_PER_SEC / 2) / CLOCKS_PER_SEC;
     seconds = thousands / 1000;
     thousands = thousands % 1000;
     printf("%d.%03d", seconds, thousands);
@@ -2144,17 +2055,17 @@ int endit (int flag)
   if (!flag_initex)
   {
     printf("Total ");
-    show_inter_val(time_finish - time_start);
+    print_time(time_finish - time_start);
     printf("s (");
-    show_inter_val(time_main - time_start);
+    print_time(time_main - time_start);
     printf(" format load + ");
-    show_inter_val(time_finish - time_main);
+    print_time(time_finish - time_main);
     printf(" processing)");
 
     if (total_pages > 0)
     {
       printf(" ");
-      show_inter_val((time_finish - time_main) / total_pages);
+      print_time((time_finish - time_main) / total_pages);
       printf("s per page");
     }
 

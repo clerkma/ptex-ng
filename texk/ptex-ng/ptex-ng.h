@@ -58,10 +58,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <setjmp.h>
 #include <time.h>
 #include <math.h>
 #include <signal.h>
+#include <assert.h>
 // TeX Live's kpathsea
 #include <kpathsea/config.h>
 #include <kpathsea/c-pathmx.h> // PATH_MAX
@@ -890,8 +890,6 @@ EXTERN int count_underfull_vbox;
 EXTERN int count_overfull_vbox;
 EXTERN int count_paragraph_failed;
 EXTERN int count_single_line;
-EXTERN int jump_used;
-EXTERN jmp_buf ng_env;
 extern int current_pool_size;
 extern int current_max_strings;
 extern int current_mem_size;

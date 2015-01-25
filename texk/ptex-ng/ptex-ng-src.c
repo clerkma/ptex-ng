@@ -11724,6 +11724,7 @@ not_found:;
 
   {
     for (k = 1; k <= np; k++)
+    {
       if (k == 1)
       {
         fget();
@@ -11741,6 +11742,7 @@ not_found:;
       }
       else
         store_scaled(font_info[param_base[f] + k - 1].cint);
+    }
 
     if (feof(tfm_file))
       goto bad_tfm;
@@ -23662,9 +23664,6 @@ found:
 void close_files_and_terminate (void)
 {
   integer k; 
-
-  if (flag_trace)
-    puts("\nclose_files_and_terminate() ");
 
   for (k = 0; k <= 15; k++)
   {

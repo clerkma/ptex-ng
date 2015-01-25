@@ -2569,8 +2569,8 @@ int main_program (void)
 
   if (bad > 0)
   {
-    printf("%s%s%ld\n", "Ouch---my internal constants have been clobbered!",
-        "---case ", (long) bad);
+    printf("%s%s%" PRId64 "\n", "Ouch---my internal constants have been clobbered!",
+        "---case ", bad);
 
     goto final_end;
   }
