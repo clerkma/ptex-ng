@@ -165,7 +165,7 @@ void pdf_ship_out(pointer p)
     pdf_doc_set_creator("pTeX-ng");
     pdf_files_init();
     pdf_init_device(sp2bp, 2, 0);
-    pdf_open_document(pdf_file_name, 0, 595.0, 842.0, 0, 0, !(1 << 4));
+    pdf_open_document(utf8_mbcs(pdf_file_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
     spc_exec_at_begin_document();
   }
 

@@ -155,7 +155,7 @@ static void * synctex_dot_open (void)
     return synctex_file;
 
   {
-    char * tmp = get_str_string(job_name);
+    char * tmp = utf8_mbcs(get_str_string(job_name));
     size_t len = strlen(tmp);
 
     if (len > 0)
@@ -293,7 +293,9 @@ void synctex_start_input (void)
 
   if (synctex_tag_counter == 1)
   {
-    synctex_root_name = kpse_find_file(get_str_string(name), kpse_tex_format, false);
+    char * name_mbcs = utf8_mbcs(get_str_string(name));
+    synctex_root_name = kpse_find_file(name_mbcs, kpse_tex_format, false);
+    free(name_mbcs);
 
     if (!strlen(synctex_root_name))
     {
@@ -315,7 +317,7 @@ void synctex_start_input (void)
 
 void synctex_terminate (void)
 {
-  char * tmp = get_str_string(job_name);
+  char * tmp = utf8_mbcs(get_str_string(job_name));
   char * the_real_syncname = NULL;
 
   if (log_opened && (tmp != NULL))
@@ -377,13 +379,15 @@ void synctex_terminate (void)
           if (log_opened)
           {
             char * cur_os_dir = getcwd(NULL, 0);
+            char * synctex_file_name = mbcs_utf8(the_real_syncname);
             print_ln();
             prints("SyncTeX written on ");
             prints(unixify(cur_os_dir));
             print('/');
-            prints(the_real_syncname);
+            prints(synctex_file_name);
             print('.');
             free(cur_os_dir);
+            free(synctex_file_name);
           }
         }
         else

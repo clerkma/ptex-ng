@@ -21,7 +21,7 @@
 #define _PTEX_NG_COERCE_H
 // functions of TeX's mainbody
 extern int main_program (void);
-extern int main_init (int ac, char ** av);
+extern void main_init (int ac, char ** av);
 // functions of reallocation
 extern memory_word * allocate_main_memory (int size);
 extern memory_word * realloc_main (int lo_size, int hi_size);
@@ -41,7 +41,7 @@ extern str_number load_pool_strings (integer spare_size);
 extern str_number make_str_string (const char * s);
 extern char * get_str_string (str_number s);
 extern str_number get_job_name (str_number job);
-extern int endit (int flag);
+extern void main_exit (int flag);
 extern void uexit (int unix_code);
 extern void t_open_in (void);
 extern void add_variable_space (int size);
@@ -49,9 +49,9 @@ extern char * unixify (char * t);
 // functions of I/O
 extern boolean input_ln (FILE * f, boolean bypass_eoln);
 extern integer web2c_round (double r);
-extern boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
-extern boolean open_output (FILE ** f, const char * fopen_mode);
-extern void    close_file (FILE * f);
+extern boolean open_input  (void ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
+extern boolean open_output (void ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
+extern void    close_file  (FILE * f);
 // functions of synctex
 void synctex_init (void);
 void synctex_terminate (void);
@@ -89,7 +89,7 @@ void sprint_cs (pointer p);
 void print_file_name (integer n, integer a, integer e);
 void print_size (integer s);
 void print_write_whatsit (const char * s, pointer p);
-void jump_out (void);
+void jump_out(void);
 void error (void);
 void fatal_error (const char * s);
 void overflow (const char * s, integer n);
@@ -902,5 +902,21 @@ done:
   flush_str(s2);
   flush_str(s1);
   cur_val_level = int_val;
+}
+
+static inline void print_out_name (const char * str, str_number num)
+{
+  if (str != NULL)
+    prints(str);
+  else
+    slow_print(num);
+}
+
+static inline void write_log (const char * fmt, ...)
+{
+  va_list m_ptr;
+  va_start(m_ptr, fmt);
+  vfprintf(log_file, fmt, m_ptr);
+  va_end(m_ptr);
 }
 #endif

@@ -1999,7 +1999,8 @@ boolean load_fmt_file (void)
   if (mem == NULL)
     exit(EXIT_FAILURE);
 
-  initialize_aux(); /* do `mem' part of initialize */
+  /* do `mem' part of initialize */
+  initialize_aux();
 #endif
 
   if (x != mem_top)
@@ -2262,8 +2263,8 @@ boolean load_fmt_file (void)
       }
 
       if (flag_trace)
-        printf("oldfont_mem_size is %d --- hit %d times. Using non_address %d\n",
-            (int) oldfont_mem_size, (int) count, non_address);
+        printf("oldfont_mem_size is %"PRId64" --- hit %"PRId64" times. Using non_address %d\n",
+          oldfont_mem_size, count, non_address);
     }
   }
 #endif
@@ -2355,7 +2356,7 @@ boolean load_fmt_file (void)
   undump(0, str_ptr, format_ident);
   undump_int(x);
   
-  if ((x != ENDFMTCHECKSUM) || feof(fmt_file))
+  if ((x != ENDFMTCHECKSUM) || w_eof(fmt_file))
     goto bad_fmt;
 
   return true;
@@ -2465,24 +2466,24 @@ void final_cleanup (void)
   }
 }
 
-static void show_frozen (void)
+static void write_frozen_fonts (void)
 {
   int i;
 
-  log_printf("\n(%d fonts frozen in format file:\n", (int) font_ptr);
+  write_log("\n(%"PRId64" fonts frozen in format file:\n", font_ptr);
 
   for (i = 1; i <= font_ptr; i++)
   {
     if (i > 1)
-      log_printf(", ");
+      write_log(", ");
 
     if ((i % 8) == 0)
-      log_printf("\n");
+      write_log("\n");
 
     fwrite(&str_pool[str_start[font_name[i]]], 1, length(font_name[i]), log_file);
   }
 
-  log_printf(") ");
+  write_log(") ");
 }
 
 int main_program (void)
@@ -2779,7 +2780,7 @@ start_of_TEX:
   }
 
   if (flag_show_tfm && log_opened && (font_ptr > 0))
-    show_frozen();
+    write_frozen_fonts();
 
   time_main = clock();
   history = spotless;

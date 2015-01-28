@@ -166,59 +166,69 @@ static inline boolean check_path_sep (ASCII_code c)
 #endif
 }
 
-boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fopen_mode)
+static inline void strip_file_name (char * s)
+{
+  strcpy((char *) name_of_file + 1, s);
+
+  if (name_of_file[1] == '.' && check_path_sep(name_of_file[2]))
+  {
+    unsigned i = 1;
+
+    while (name_of_file[i + 2] != '\0')
+    {
+      name_of_file[i] = name_of_file[i + 2];
+      i++;
+    }
+
+    name_of_file[i] = '\0';
+    name_length = i - 1;
+  }
+  else
+    name_length = strlen((char *) name_of_file + 1);
+}
+
+static void * (*open_file) (const char * f, const char * m);
+
+static inline void set_open_file (kpse_file_format_type file_fmt)
+{
+  if ((file_fmt == kpse_fmt_format) && (flag_compact_fmt == true))
+    open_file = (void * (*) (const char *, const char *)) &gzopen;
+  else
+    open_file = (void * (*) (const char *, const char *)) &fopen;
+}
+
+boolean open_input (void ** f, kpse_file_format_type file_fmt, const char * fopen_mode)
 {
   boolean openable = false;
-  boolean must_exist;
+  boolean must_exist = (file_fmt != kpse_tex_format);
   char * file_name_kpse = NULL;
   char * file_name_mbcs = NULL;
   char * file_name_utf8 = NULL;
+
+  set_open_file(file_fmt);
 
   if (strcmp(fopen_mode, "r") == 0)
     fopen_mode = "rb";
 
   name_of_file[name_length + 1] = '\0';
   file_name_mbcs = utf8_mbcs((const char *) name_of_file + 1);
-  must_exist = (file_fmt != kpse_tex_format);
   file_name_kpse = kpse_find_file((const_string) file_name_mbcs, file_fmt, must_exist);
 
   if (file_name_kpse != NULL)
   {
     file_name_utf8 = mbcs_utf8(file_name_kpse);
-    strcpy ((char *) name_of_file + 1, file_name_utf8);
-    *f = fopen((char *) file_name_kpse, fopen_mode);
+    *f = open_file((char *) file_name_kpse, fopen_mode);
 
-    if (name_of_file[1] == '.' && check_path_sep(name_of_file[2]))
-    {
-      unsigned i = 1;
+    if (file_fmt == kpse_tfm_format)
+      fbyte = getc((FILE *) *f);
 
-      while (name_of_file[i + 2] != '\0')
-      {
-        name_of_file[i] = name_of_file[i + 2];
-        i++;
-      }
-
-      name_of_file[i] = '\0';
-      name_length = i - 1;
-    }
-    else
-      name_length = strlen((char *) name_of_file + 1);
-
-    switch (file_fmt)
-    {
-      case kpse_tfm_format:
-        fbyte = getc(*f);
-        break;
-
-      case kpse_fmt_format:
-#ifdef COMPACTFORMAT
-        gz_fmt_file = gzdopen(fileno(*f), FOPEN_RBIN_MODE);
-#endif
-        break;
-    }
+    if (*f)
+      strip_file_name(file_name_utf8);
 
     openable = true;
   }
+
+  name_of_file[name_length + 1] = ' ';
 
   if (file_name_mbcs != NULL)
     free(file_name_mbcs);
@@ -228,11 +238,6 @@ boolean open_input (FILE ** f, kpse_file_format_type file_fmt, const char * fope
 
   if (file_name_kpse != NULL)
     free(file_name_kpse);
-
-  {
-    size_t temp_length = strlen((char *) name_of_file + 1);
-    name_of_file[temp_length + 1] = ' ';
-  }
 
   return openable;
 }
@@ -265,9 +270,8 @@ static char * xstrdup_name (void)
   return xstrdup(log_line);
 }
 
-boolean open_output (FILE ** f, const char * fopen_mode)
+boolean open_output (void ** f, kpse_file_format_type file_fmt, const char * fopen_mode)
 {
-  size_t temp_length;
   char * file_name_utf8 = NULL;
   char * file_name_mbcs = NULL;
 
@@ -279,8 +283,10 @@ boolean open_output (FILE ** f, const char * fopen_mode)
   prepend_path_if(name_of_file + 1, name_of_file + 1, ".fmt", fmt_directory);
   prepend_path_if(name_of_file + 1, name_of_file + 1, ".pdf", pdf_directory);
 
-  file_name_mbcs = utf8_mbcs((const char *) name_of_file + 1);
-  *f = fopen(file_name_mbcs, fopen_mode);
+  set_open_file(file_fmt);
+
+  file_name_mbcs = utf8_mbcs ((const char *) name_of_file + 1);
+  *f = open_file(file_name_mbcs, fopen_mode);
 
   if (*f == NULL)
   {
@@ -294,31 +300,27 @@ boolean open_output (FILE ** f, const char * fopen_mode)
       if (flag_deslash)
         unixify((char *) temp_name);
       
-      *f = fopen((char *) temp_name, fopen_mode);
-      file_name_utf8 = mbcs_utf8((char *) temp_name);
+      *f = open_file((char *) temp_name, fopen_mode);
 
       if (*f)
+      {
+        file_name_utf8 = mbcs_utf8((char *) temp_name);
         strcpy((char *) name_of_file + 1, file_name_utf8);
+        name_length = strlen((char *) name_of_file + 1);
+      }
     }
   }
 
-#ifdef COMPACTFORMAT
   if (strstr((char *) name_of_file + 1, ".fmt") != NULL)
-    gz_fmt_file = gzdopen(fileno(*f), FOPEN_WBIN_MODE);
-#endif
-
-  if (strstr((char *) name_of_file + 1, ".dvi") != NULL)
+    fmt_file_name = xstrdup_name();
+  else if (strstr((char *) name_of_file + 1, ".dvi") != NULL)
     dvi_file_name = xstrdup_name();
   else if (strstr((char *) name_of_file + 1, ".pdf") != NULL)
     pdf_file_name = xstrdup_name();
   else if (strstr((char *) name_of_file + 1, ".log") != NULL)
     log_file_name = xstrdup_name();
 
-  temp_length = strlen((char *) name_of_file + 1);
-  name_of_file[temp_length + 1] = ' ';
-
-  if (*f)
-    name_length = temp_length;
+  name_of_file[name_length + 1] = ' ';
 
   if (file_name_mbcs != NULL)
     free(file_name_mbcs);

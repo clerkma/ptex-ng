@@ -31,12 +31,14 @@ void print_ln (void)
     case term_and_log:
       {
         if (nrestmultichr(kcode_pos) > 0)
+        {
           for (ii = 0; ii <= nrestmultichr(kcode_pos) - 1; ii++)
           {
             wterm(' ');
             wlog(' ');
           }
-      
+        }
+
         wterm_cr();
         wlog_cr();
         term_offset = 0;
@@ -47,8 +49,10 @@ void print_ln (void)
     case log_only:
       {
         if (nrestmultichr(kcode_pos) > 0)
+        {
           for (ii = 0; ii <= nrestmultichr(kcode_pos) - 1; ii++)
             wlog(' ');
+        }
 
         wlog_cr();
         file_offset = 0;
@@ -58,8 +62,10 @@ void print_ln (void)
     case term_only:
       {
         if (nrestmultichr(kcode_pos) > 0)
+        {
           for (ii = 0; ii <= nrestmultichr(kcode_pos) - 1; ii++)
-          wterm(' ');
+            wterm(' ');
+        }
 
         wterm_cr();
         term_offset = 0;
@@ -596,7 +602,7 @@ void print_kanji (KANJI_code s)
 }
 /* sec 0081 */
 // todo: noreturn
-void jump_out (void)
+void jump_out(void)
 {
   close_files_and_terminate();
   uexit(do_final_end());
@@ -615,9 +621,10 @@ void error (void)
   show_context();
 
   if (interaction == error_stop_mode)
+  {
     while (true)
     {
-continu:
+    continu:
       clear_for_error_prompt();
       prompt_input("? ");
 
@@ -627,167 +634,167 @@ continu:
       c = buffer[first];
 
       if (c >= 'a')
-        c = (c + 'A' - 'a'); 
+        c = (c + 'A' - 'a');
 
       switch (c)
       {
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-          if (deletions_allowed)
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+        if (deletions_allowed)
+        {
+          s1 = cur_tok;
+          s2 = cur_cmd;
+          s3 = cur_chr;
+          s4 = align_state;
+          align_state = 1000000;
+          OK_to_interrupt = false;
+
+          if ((last > first + 1) && (buffer[first + 1] >= '0') &&
+            (buffer[first + 1] <= '9'))
+            c = (c * 10 + buffer[first + 1] - '0' * 11);
+          else
+            c = (c - '0');
+
+          while (c > 0)
           {
-            s1 = cur_tok;
-            s2 = cur_cmd;
-            s3 = cur_chr;
-            s4 = align_state;
-            align_state = 1000000;
-            OK_to_interrupt = false;
-
-            if ((last > first + 1) && (buffer[first + 1] >= '0') &&
-                (buffer[first + 1] <= '9'))
-              c = (c * 10 + buffer[first + 1] - '0' * 11);
-            else
-              c = (c - '0');
-            
-            while (c > 0)
-            {
-              get_token();
-              decr(c);
-            }
-
-            cur_tok = s1;
-            cur_cmd = s2;
-            cur_chr = s3;
-            align_state = s4;
-            OK_to_interrupt = true;
-            help2("I have just deleted some text, as you asked.",
-                "You can now delete more, or insert, or whatever.");
-            show_context();
-            goto continu;
+            get_token();
+            decr(c);
           }
-          break;
+
+          cur_tok = s1;
+          cur_cmd = s2;
+          cur_chr = s3;
+          align_state = s4;
+          OK_to_interrupt = true;
+          help2("I have just deleted some text, as you asked.",
+            "You can now delete more, or insert, or whatever.");
+          show_context();
+          goto continu;
+        }
+        break;
 
 #ifdef NG_DEBUG
-        case 'D':
-          {
-            debug_help();
-            goto continu;
-          }
-          break;
+      case 'D':
+      {
+        debug_help();
+        goto continu;
+      }
+      break;
 #endif
 
-        case 'E':
-          if (base_ptr > 0)
-          {
-            print_nl("You want to edit file ");
-            slow_print(input_stack[base_ptr].name_field);
-            prints(" at line ");
-            print_int(line);
-            interaction = scroll_mode;
-            jump_out();
-          }
-          break;
+      case 'E':
+        if (base_ptr > 0)
+        {
+          print_nl("You want to edit file ");
+          slow_print(input_stack[base_ptr].name_field);
+          prints(" at line ");
+          print_int(line);
+          interaction = scroll_mode;
+          jump_out();
+        }
+        break;
 
-        case 'H':
-          {
-            if (use_err_help)
-            {
-              give_err_help();
-              use_err_help = false;
-            }
-            else
-            {
-              if (help_ptr == 0)
-                help2("Sorry, I don't know how to help in this situation.",
-                    "Maybe you should try asking a human?");
+      case 'H':
+      {
+        if (use_err_help)
+        {
+          give_err_help();
+          use_err_help = false;
+        }
+        else
+        {
+          if (help_ptr == 0)
+            help2("Sorry, I don't know how to help in this situation.",
+            "Maybe you should try asking a human?");
 
-              do {
-                decr(help_ptr);
-                prints(help_line[help_ptr]);
-                print_ln();
-              } while (!(help_ptr == 0));
-            }
-
-            help4("Sorry, I already gave what help I could...",
-                "Maybe you should try asking a human?",
-                "An error might have occurred before I noticed any problems.",
-                "``If all else fails, read the instructions.''");
-            goto continu;
-          }
-          break;
-
-        case 'I':
-          {
-            begin_file_reading();
-
-            if (last > first + 1)
-            {
-              loc = first + 1;
-              buffer[first] = ' ';
-            }
-            else
-            {
-              prompt_input("insert>");
-              loc = first;
-            }
-
-            first = last;
-            cur_input.limit_field = last - 1;
-
-            return;
-          }
-          break;
-
-        case 'Q':
-        case 'R':
-        case 'S':
-          {
-            error_count = 0; 
-            interaction = 0 + c - 'Q';
-            prints("OK, entering ");
-
-            switch (c)
-            {
-              case 'Q':
-                {
-                  print_esc("batchmode");
-                  decr(selector);
-                }
-                break;
-
-              case 'R':
-                print_esc("nonstopmode");
-                break;
-
-              case 'S':
-                print_esc("scrollmode");
-                break;
-            }
-
-            prints("...");
+          do {
+            decr(help_ptr);
+            prints(help_line[help_ptr]);
             print_ln();
-            update_terminal();
-            return;
-          }
+          } while (!(help_ptr == 0));
+        }
+
+        help4("Sorry, I already gave what help I could...",
+          "Maybe you should try asking a human?",
+          "An error might have occurred before I noticed any problems.",
+          "``If all else fails, read the instructions.''");
+        goto continu;
+      }
+      break;
+
+      case 'I':
+      {
+        begin_file_reading();
+
+        if (last > first + 1)
+        {
+          loc = first + 1;
+          buffer[first] = ' ';
+        }
+        else
+        {
+          prompt_input("insert>");
+          loc = first;
+        }
+
+        first = last;
+        cur_input.limit_field = last - 1;
+
+        return;
+      }
+      break;
+
+      case 'Q':
+      case 'R':
+      case 'S':
+      {
+        error_count = 0;
+        interaction = 0 + c - 'Q';
+        prints("OK, entering ");
+
+        switch (c)
+        {
+        case 'Q':
+        {
+          print_esc("batchmode");
+          decr(selector);
+        }
+        break;
+
+        case 'R':
+          print_esc("nonstopmode");
           break;
 
-        case 'X':
-          {
-            interaction = scroll_mode;
-            jump_out();
-          }
+        case 'S':
+          print_esc("scrollmode");
           break;
+        }
 
-        default:
-          do_nothing();
-          break;
+        prints("...");
+        print_ln();
+        update_terminal();
+        return;
+      }
+      break;
+
+      case 'X':
+      {
+        interaction = scroll_mode;
+        jump_out();
+      }
+      break;
+
+      default:
+        do_nothing();
+        break;
       }
 
       {
@@ -804,6 +811,7 @@ continu:
         print_nl("H for help, X to quit.");
       }
     }
+  }
 
   incr(error_count);
 
@@ -915,7 +923,7 @@ boolean init_terminal (void)
     if (!input_ln(stdin, true))
     {
       wterm_cr();
-      puts("! End of file on the terminal... why?\n");
+      puts("! End of file on the terminal... why?");
       return false;
     }
 
@@ -927,7 +935,7 @@ boolean init_terminal (void)
     if (loc < last)
       return true;
 
-    printf("%s\n", "Please type the name of your input file.");
+    puts("Please type the name of your input file.");
   }
 }
 /* sec 0043 */
@@ -11247,7 +11255,7 @@ void open_log_file (void)
   log_opened = true;
 
   {
-    log_printf("%s", banner);
+    write_log("%s", banner);
 
     if (format_ident > 0)
       slow_print(format_ident);
@@ -22541,14 +22549,18 @@ void handle_right_brace (void)
             if (type(p) == ord_noad)
             {
               if (math_type(subscr(p)) == 0)
+              {
                 if ((math_type(supscr(p)) == 0) && (math_kcode(p) == null))
                 {
                   mem[saved(0)].hh = mem[nucleus(p)].hh;
                   free_node(p, noad_size);
                 }
+              }
             }
             else if (type(p) == accent_noad)
+            {
               if (saved(0) == nucleus(tail))
+              {
                 if (type(tail) == ord_noad)
                 {
                   q = head;
@@ -22560,6 +22572,8 @@ void handle_right_brace (void)
                   free_node(tail, noad_size);
                   tail = p;
                 }
+              }
+            }
       }
       break;
 
@@ -23623,6 +23637,7 @@ boolean open_fmt_file (void)
     }
     else
     {
+      wake_up_terminal();
       name_of_file[name_length + 1] = '\0';
       printf("Sorry, I can't find that format (%s); will try the default.\n", name_of_file + 1);
       name_of_file[name_length + 1] = ' ';
@@ -23643,6 +23658,7 @@ boolean open_fmt_file (void)
     }
     else
     {
+      wake_up_terminal();
       name_of_file[name_length + 1] = '\0';
       printf("I can't find the default format file (%s)!\n", name_of_file + 1);
       name_of_file[name_length + 1] = ' ';
@@ -23676,100 +23692,100 @@ void close_files_and_terminate (void)
   {
     if (log_opened)
     {
-      log_printf(" \n");
-      log_printf("\n");
-      log_printf("Here is how much of TeX's memory you used:\n");
-      log_printf(" %d string", (int)(str_ptr - init_str_ptr));
+      write_log(" \n");
+      write_log("\n");
+      write_log("Here is how much of TeX's memory you used:\n");
+      write_log(" %d string", (int)(str_ptr - init_str_ptr));
 
       if (str_ptr != init_str_ptr + 1)
         wlog('s');
 
 #ifdef ALLOCATESTRING
-      log_printf(" out of %d\n", (int)(ng_stat(max_strings) - init_str_ptr));
-      log_printf(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(ng_stat(pool_size) - init_pool_ptr));
+      write_log(" out of %d\n", (int)(ng_stat(max_strings) - init_str_ptr));
+      write_log(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(ng_stat(pool_size) - init_pool_ptr));
 #else
-      log_printf(" out of %d\n", (int)(max_strings - init_str_ptr));
-      log_printf(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(pool_size - init_pool_ptr));
+      write_log(" out of %d\n", (int)(max_strings - init_str_ptr));
+      write_log(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(pool_size - init_pool_ptr));
 #endif
 
 #ifdef ALLOCATEMAIN
-      log_printf(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), ng_stat(mem_size));
+      write_log(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), ng_stat(mem_size));
 #else
-      log_printf(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), (int) (mem_size));
+      write_log(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), (int) (mem_size));
 #endif
 
-      log_printf(" %d multiletter control sequences out of %d\n", (int)(cs_count), (int) (hash_size));
-      log_printf(" %d words of font info for %d font", (int)(fmem_ptr), (int)(font_ptr - font_base));
+      write_log(" %d multiletter control sequences out of %d\n", (int)(cs_count), (int) (hash_size));
+      write_log(" %d words of font info for %d font", (int)(fmem_ptr), (int)(font_ptr - font_base));
 
       if (font_ptr != 1)
         wlog('s');
 
 #ifdef ALLOCATEFONT
-      log_printf(", out of %d for %d\n", ng_stat(font_mem_size), (int)(font_max - font_base));
+      write_log(", out of %d for %d\n", ng_stat(font_mem_size), (int)(font_max - font_base));
 #else
-      log_printf(", out of %d for %d\n", (int)(font_mem_size), (int)(font_max - font_base));
+      write_log(", out of %d for %d\n", (int)(font_mem_size), (int)(font_max - font_base));
 #endif
 
-      log_printf(" %d hyphenation exception", (int) hyph_count);
+      write_log(" %"PRId64" hyphenation exception", hyph_count);
 
       if (hyph_count != 1)
         wlog('s');
 
-      log_printf(" out of %d\n", (int) hyphen_prime);
-      log_printf(" ");
-      log_printf("%di,", (int) max_in_stack);
-      log_printf("%dn,", (int) max_nest_stack);
-      log_printf("%dp,", (int) max_param_stack);
-      log_printf("%db,", (int) max_buf_stack + 1);
-      log_printf("%ds", (int) max_save_stack + 6);
-      log_printf(" stack positions out of ");
+      write_log(" out of %"PRId64"\n", hyphen_prime);
+      write_log(" ");
+      write_log("%"PRId64"i,", max_in_stack);
+      write_log("%"PRId64"n,", max_nest_stack);
+      write_log("%"PRId64"p,", max_param_stack);
+      write_log("%"PRId64"b,", max_buf_stack + 1);
+      write_log("%"PRId64"s", max_save_stack + 6);
+      write_log(" stack positions out of ");
 
 #ifdef ALLOCATESAVESTACK
-      log_printf("%di,", ng_stat(stack_size));
+      write_log("%di,", ng_stat(stack_size));
 #else
-      log_printf("%di,", (int)(stack_size));
+      write_log("%di,", (int)(stack_size));
 #endif
 
 #ifdef ALLOCATENESTSTACK
-      log_printf("%dn,", ng_stat(nest_size));
+      write_log("%dn,", ng_stat(nest_size));
 #else
-      log_printf("%dn,", (int)(nest_size));
+      write_log("%dn,", (int)(nest_size));
 #endif
 
 #ifdef ALLOCATEPARAMSTACK
-      log_printf("%dp,", ng_stat(param_size));
+      write_log("%dp,", ng_stat(param_size));
 #else
-      log_printf("%dp,", (int)(param_size));
+      write_log("%dp,", (int)(param_size));
 #endif
 
 #ifdef ALLOCATEBUFFER
-      log_printf("%db,", ng_stat(buf_size));
+      write_log("%db,", ng_stat(buf_size));
 #else
-      log_printf("%db,", (int)(buf_size));
+      write_log("%db,", (int)(buf_size));
 #endif
 
 #ifdef ALLOCATESAVESTACK
-      log_printf("%ds", ng_stat(save_size));
+      write_log("%ds", ng_stat(save_size));
 #else
-      log_printf("%ds", (int)(save_size));
+      write_log("%ds", (int)(save_size));
 #endif
 
-      log_printf("\n");
+      write_log("\n");
 
       if (!flag_tex82)
       {
-        log_printf(" (i = in_stack, n = nest_stack, p = param_stack, b = buf_stack, s = save_stack)\n");
-        log_printf(" %d inputs open max out of %d\n", (int) high_in_open, (int) max_in_open);
+        write_log(" (i = in_stack, n = nest_stack, p = param_stack, b = buf_stack, s = save_stack)\n");
+        write_log(" %d inputs open max out of %d\n", (int) high_in_open, (int) max_in_open);
       }
 
       if (flag_show_lb_stats && (count_first_pass > 0))
       {
         int first_count, second_count, third_count;
 
-        log_printf("\nSuccess at breaking %d paragraph%s:", count_first_pass, (count_first_pass == 1) ? "" : "s");
+        write_log("\nSuccess at breaking %d paragraph%s:", count_first_pass, (count_first_pass == 1) ? "" : "s");
 
         if (count_single_line > 0)
-          log_printf("\n %d single line `paragraph%s'", count_single_line, (count_single_line == 1) ? "" : "s");
+          write_log("\n %d single line `paragraph%s'", count_single_line, (count_single_line == 1) ? "" : "s");
 
         first_count = count_first_pass - count_single_line - count_second_pass;
 
@@ -23780,31 +23796,31 @@ void close_files_and_terminate (void)
         third_count = count_final_pass - count_paragraph_failed;
 
         if (count_first_pass > 0)
-          log_printf("\n %d first pass (\\pretolerance = %d)", count_first_pass, (int) pretolerance);
+          write_log("\n %d first pass (\\pretolerance = %d)", count_first_pass, (int) pretolerance);
 
         if (count_second_pass > 0)
-          log_printf("\n %d second pass (\\tolerance = %d)", count_second_pass, (int) tolerance);
+          write_log("\n %d second pass (\\tolerance = %d)", count_second_pass, (int) tolerance);
 
         if (count_final_pass > 0 || emergency_stretch > 0)
-          log_printf("\n %d third pass (\\emergencystretch = %lgpt)",
+          write_log("\n %d third pass (\\emergencystretch = %lgpt)",
             count_final_pass, (double) emergency_stretch / 65536.0);
 
         if (count_paragraph_failed > 0)
-          log_printf("\n %d failed", count_paragraph_failed);
+          write_log("\n %d failed", count_paragraph_failed);
 
         wlog_cr();
 
         if (count_overfull_hbox > 0)
-          log_printf("\n %d overfull \\hbox%s", count_overfull_hbox, (count_overfull_hbox > 1) ? "es" : "");
+          write_log("\n %d overfull \\hbox%s", count_overfull_hbox, (count_overfull_hbox > 1) ? "es" : "");
 
         if (count_underfull_hbox > 0)
-          log_printf("\n %d underfull \\hbox%s", count_underfull_hbox, (count_underfull_hbox > 1) ? "es" : "");
+          write_log("\n %d underfull \\hbox%s", count_underfull_hbox, (count_underfull_hbox > 1) ? "es" : "");
 
         if (count_overfull_vbox > 0)
-          log_printf("\n %d overfull \\vbox%s", count_overfull_vbox, (count_overfull_vbox > 1) ? "es" : "");
+          write_log("\n %d overfull \\vbox%s", count_overfull_vbox, (count_overfull_vbox > 1) ? "es" : "");
 
         if (count_underfull_vbox > 0)
-          log_printf("\n %d underfull \\vbox%s", count_underfull_vbox, (count_underfull_vbox > 1) ? "es" : "");
+          write_log("\n %d underfull \\vbox%s", count_underfull_vbox, (count_underfull_vbox > 1) ? "es" : "");
 
         if (count_overfull_hbox || count_underfull_hbox || count_overfull_vbox || count_underfull_vbox)
           wlog_cr();
@@ -23826,12 +23842,7 @@ void close_files_and_terminate (void)
       pdf_files_close();
       pdf_close_fontmaps();
       print_nl("Output written on ");
-
-      if (pdf_file_name != NULL)
-        prints(pdf_file_name);
-      else
-        slow_print(output_file_name);
-
+      print_out_name(pdf_file_name, output_file_name);
       prints(" (");
       print_int(total_pages);
       prints(" page");
@@ -23857,12 +23868,7 @@ void close_files_and_terminate (void)
     if (selector == term_only)
     {
       print_nl("Transcript written on ");
-
-      if (log_file_name != NULL)
-        prints(log_file_name);
-      else
-        slow_print(log_name);
-
+      print_out_name(log_file_name, log_name);
       print_char('.');
     }
   }

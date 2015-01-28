@@ -1377,6 +1377,7 @@ static int free_memory (void)
   safe_free(dvi_file_name);
   safe_free(log_file_name);
   safe_free(pdf_file_name);
+  safe_free(fmt_file_name);
   safe_free(TEX_format_default);
 
   return 0;
@@ -1528,6 +1529,7 @@ static void knuthify (void)
   flag_show_csnames     = false;
   flag_suppress_f_ligs  = false;
   flag_tex82            = true;  /* so other code can know about this */
+  flag_compact_fmt      = false;
 }
 
 static struct option long_options[] =
@@ -1552,7 +1554,6 @@ static struct option long_options[] =
   {"knuthify",      no_argument,       NULL, 0},
   {"cstyle",        no_argument,       NULL, 0},
   {"showtfm",       no_argument,       NULL, 0},
-  {"showopen",      no_argument,       NULL, 0},
   {"showlbstats",   no_argument,       NULL, 0},
   {"showmissing",   no_argument,       NULL, 0},
   {"deslash",       no_argument,       NULL, 0},
@@ -1599,8 +1600,6 @@ static void read_command_line (int ac, char **av)
       flag_c_style = true;
     else if (ARGUMENT_IS("showtfm"))
       flag_show_tfm = true;
-    else if (ARGUMENT_IS("showopen"))
-      flag_open_trace = true;
     else if (ARGUMENT_IS("showcsnames"))
       flag_show_csnames = true;
     else if (ARGUMENT_IS("showinhex"))
@@ -1720,7 +1719,6 @@ static void init_commands (int ac, char **av)
   flag_initex           = false; 
   flag_allow_patterns   = false;
   flag_reset_exceptions = false;
-  flag_open_trace       = false;
   flag_trace            = false;
   flag_verbose          = false;
   flag_show_in_hex      = false;
@@ -1735,6 +1733,7 @@ static void init_commands (int ac, char **av)
   flag_allow_quoted     = true;
   flag_show_csnames     = false;
   flag_tex82            = false;
+  flag_compact_fmt      = true;
   default_rule          = 26214;
   tab_step              = 0;
   new_hyphen_prime      = 0;
@@ -1910,7 +1909,7 @@ static void ng_deslash_all (int ac, char **av)
   }
 }
 
-int main_init (int ac, char ** av)
+void main_init (int ac, char ** av)
 {
   // check of memory_word's size
   assert(sizeof(memory_word) == sizeof(halfword) * 2);
@@ -1979,6 +1978,7 @@ int main_init (int ac, char ** av)
   dvi_file_name = NULL;
   log_file_name = NULL;
   pdf_file_name = NULL;
+  fmt_file_name = NULL;
 
   count_first_pass        = 0;
   count_second_pass       = 0;
@@ -2001,11 +2001,9 @@ int main_init (int ac, char ** av)
     puts("WARNING: Cannot change initial main_memory size when format specified");
 
   if (allocate_memory() != 0)
-    return -1;
+    exit(1);
 
   ng_trace("Leaving main_init().\n");
-
-  return 0;
 }
 
 static void print_time (clock_t inter_val)
@@ -2037,17 +2035,14 @@ static void print_time (clock_t inter_val)
     printf("0");
 }
 
-int endit (int flag)
+void main_exit (int flag)
 {
   time_finish = clock();
 
   if (missing_characters != 0)
-  {
-    flag = 1;
     printf("! There %s %d missing character%s --- see log file\n",
       (missing_characters == 1) ? "was" : "were", missing_characters,
       (missing_characters == 1) ? "" : "s");
-  }
 
   if (free_memory() != 0)
     flag++;
@@ -2072,7 +2067,8 @@ int endit (int flag)
     printf(".\n");
   }
 
-  return flag;
+  if (flag)
+    exit(1);
 }
 
 // print control sequences' name

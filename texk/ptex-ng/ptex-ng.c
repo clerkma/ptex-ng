@@ -25,27 +25,23 @@
 static int    gargc;
 static char **gargv;
 
-int main (int ac, char *av[])
+int main (int argc, char *argv[])
 {
   int flag = 0;
 
-  gargc = ac;
-  gargv = av;
+  gargc = argc;
+  gargv = argv;
 
 #ifdef WIN32
   _setmaxstdio(2048);
   setmode(fileno(stdin), _O_BINARY);
 #endif
 
-  if (main_init(gargc, gargv))
-    exit(1);
-
+  main_init(argc, argv);
   flag = main_program();
+  main_exit(flag);
 
-  if (endit(flag) != 0)
-    exit(1);
-  else
-    return 0;
+  return 0;
 }
 
 void t_open_in (void)
@@ -292,28 +288,26 @@ static int swap_items (char *p, int nitems, int size)
 }
 #endif
 
-#ifdef COMPACTFORMAT
-int do_dump (char *p, int item_size, int nitems, gzFile out_file)
-#else
-int do_dump (char *p, int item_size, int nitems, FILE *out_file)
-#endif
+int do_dump (char * p, int item_size, int nitems, void * out_file)
 {
+  boolean flag_fmt_failed;
+
 #if !defined (WORDS_BIGENDIAN)
   swap_items(p, nitems, item_size);
 #endif
 
-#ifdef COMPACTFORMAT
-  if (gzwrite(out_file, p, (item_size * nitems)) != (item_size * nitems))
-#else
-  if ((int) fwrite(p, item_size, nitems, out_file) != nitems)
-#endif
+  if (flag_compact_fmt)
+    flag_fmt_failed = (gzwrite(out_file, p, (item_size * nitems)) != (item_size * nitems));
+  else
+    flag_fmt_failed = (fwrite(p, item_size, nitems, out_file) != nitems);
+
+  if (flag_fmt_failed)
   {
     printf("\n! Could not write %d %d-byte item%s.\n",
                nitems, item_size, (nitems > 1) ? "s" : "");
     uexit(EXIT_FAILURE);
   }
 
-/* Have to restore the old contents of memory, since some of it might get used again.  */
 #if !defined (WORDS_BIGENDIAN)
   swap_items(p, nitems, item_size);
 #endif
@@ -321,17 +315,16 @@ int do_dump (char *p, int item_size, int nitems, FILE *out_file)
   return 0;
 }
 
-#ifdef COMPACTFORMAT
-int do_undump (char *p, int item_size, int nitems, gzFile in_file)
-#else
-int do_undump (char *p, int item_size, int nitems, FILE *in_file)
-#endif
+int do_undump (char * p, int item_size, int nitems, void * in_file)
 {
-#ifdef COMPACTFORMAT
-  if (gzread(in_file, (void *) p, (unsigned int) (item_size * nitems)) <= 0)
-#else
-  if ((int) fread((void *) p, item_size, nitems, in_file) != nitems)
-#endif
+  boolean flag_fmt_failed;
+
+  if (flag_compact_fmt)
+    flag_fmt_failed = (gzread(in_file, (void *) p, (item_size * nitems)) <= 0);
+  else
+    flag_fmt_failed = (fread((void *) p, item_size, nitems, in_file) != nitems);
+
+  if (flag_fmt_failed)
   {
     printf("\n! Could not read %d %d-byte item%s.\n",
                nitems, item_size, (nitems > 1) ? "s" : "");

@@ -34,7 +34,7 @@
 #define ALLOCATEBUFFER     /* experiment to dynamically deal with input buffer */
 #define INCREASEFONTS
 #define INCREASETRIEOP     /* tire_* */
-#define COMPACTFORMAT      /* .fmt file with zlib */
+// tex's infrastructure
 #define STAT               /* TeX's statistics (tex82) */
 #define INITEX             /* invoke initex */
 #define WORDS_BIGENDIAN 0  /* about format file */
@@ -93,7 +93,7 @@ typedef uint8_t small_number;
 // files
 typedef FILE * alpha_file;
 typedef FILE * byte_file;
-typedef FILE * word_file;
+typedef void * word_file;
 
 #ifdef link
   #undef link
@@ -104,30 +104,23 @@ typedef FILE * word_file;
 #define wterm_cr()  (void) fputc('\n', stdout)
 #define wlog_cr()   (void) fputc('\n', log_file)
 /* sec 0027 */
-#define a_open_in(f)    open_input  (&(f), kpse_tex_format, FOPEN_R_MODE)
-#define a_open_out(f)   open_output (&(f), FOPEN_W_MODE)
-#define b_open_in(f)    open_input  (&(f), kpse_tfm_format, FOPEN_RBIN_MODE)
-#define b_open_out(f)   open_output (&(f), FOPEN_WBIN_MODE)
-#define w_open_in(f)    open_input  (&(f), kpse_fmt_format, FOPEN_RBIN_MODE)
-#define w_open_out(f)   open_output (&(f), FOPEN_WBIN_MODE)
+#define a_open_in(f)    open_input  ((void **) &(f), kpse_tex_format, FOPEN_R_MODE)
+#define a_open_out(f)   open_output ((void **) &(f), kpse_tex_format, FOPEN_W_MODE)
+#define b_open_in(f)    open_input  ((void **) &(f), kpse_tfm_format, FOPEN_RBIN_MODE)
+#define b_open_out(f)   open_output ((void **) &(f), kpse_tfm_format, FOPEN_WBIN_MODE)
+#define w_open_in(f)    open_input  ((void **) &(f), kpse_fmt_format, FOPEN_RBIN_MODE)
+#define w_open_out(f)   open_output ((void **) &(f), kpse_fmt_format, FOPEN_WBIN_MODE)
 #define a_close(f)      close_file(f)
 #define b_close(f)      a_close(f)
-#define w_close(f)      gzclose(gz_fmt_file)
+#define w_close(f)      gzclose(fmt_file)
+#define w_eof(f)        (flag_compact_fmt == true ? gzeof((gzFile) f) : feof((FILE *) f))
 
-#ifdef COMPACTFORMAT
-  EXTERN int do_dump(char * p, int item_size, int nitems, gzFile out_file);
-  EXTERN int do_undump(char * p, int item_size, int nitems, gzFile out_file);
-  #define dump_file gz_fmt_file
-#else
-  EXTERN int do_dump(char * p, int item_size, int nitems, FILE * out_file);
-  EXTERN int do_undump(char * p, int item_size, int nitems, FILE * out_file);
-  #define dump_file fmt_file
-#endif
+EXTERN int do_dump   (char * p, int item_size, int nitems, void * out_file);
+EXTERN int do_undump (char * p, int item_size, int nitems, void * out_file);
 
-#define dump_things(base, len)    do_dump  ((char *) &(base), sizeof (base), (int) (len), dump_file)
-#define undump_things(base, len)  do_undump((char *) &(base), sizeof (base), (int) (len), dump_file)
+#define dump_things(base, len)    do_dump  ((char *) &(base), sizeof (base), (int) (len), fmt_file)
+#define undump_things(base, len)  do_undump((char *) &(base), sizeof (base), (int) (len), fmt_file)
 
-/* Use the above for all the other dumping and undumping. */
 #define generic_dump(x)   dump_things(x, 1)
 #define generic_undump(x) undump_things(x, 1)
 
@@ -582,6 +575,7 @@ EXTERN byte_file pdf_file;
 EXTERN char * dvi_file_name;
 EXTERN char * pdf_file_name;
 EXTERN char * log_file_name;
+EXTERN char * fmt_file_name;
 
 #ifdef ALLOCATEFONT
   EXTERN memory_word * font_info;
@@ -809,7 +803,6 @@ EXTERN halfword after_token;
 EXTERN boolean long_help_seen;
 EXTERN str_number format_ident;
 EXTERN word_file fmt_file;
-EXTERN gzFile gz_fmt_file;
 /* sec 1331 */
 EXTERN integer ready_already;
 /* sec 1342 */
@@ -859,8 +852,8 @@ EXTERN str_number last_tokens_string;
 EXTERN boolean flag_initex;
 EXTERN boolean flag_verbose;
 EXTERN boolean flag_trace;
-EXTERN boolean flag_open_trace;
 EXTERN boolean flag_tex82;
+EXTERN boolean flag_compact_fmt;
 EXTERN boolean flag_c_style;
 EXTERN boolean flag_deslash;
 EXTERN boolean flag_allow_patterns;
@@ -913,5 +906,4 @@ extern clock_t time_start, time_main, time_finish;
 EXTERN integer synctex_option;
 
 #include "coerce.h"
-#define log_printf(...) fprintf(log_file, __VA_ARGS__)
 #endif
