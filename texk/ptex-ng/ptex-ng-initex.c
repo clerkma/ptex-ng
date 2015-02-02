@@ -31,7 +31,7 @@ void initialize (void)
   integer i;
   integer k;
 
-#ifndef ALLOCATEHYPHEN
+#ifndef NG_EXTENSION
   hyph_pointer z;
 #endif
 
@@ -123,7 +123,7 @@ void initialize (void)
   page_contents = 0;
   page_tail = page_head;
 
-#ifdef ALLOCATEMAIN
+#ifdef NG_EXTENSION
   if (flag_initex)
 #endif
     link(page_head) = 0;
@@ -210,8 +210,8 @@ void initialize (void)
   cur_head = 0;
   cur_tail = 0;
 
-/* *not* OK with ALLOCATEHYPHEN, since may not be allocated yet */
-#ifndef ALLOCATEHYPHEN
+/* *not* OK with NG_EXTENSION, since may not be allocated yet */
+#ifndef NG_EXTENSION
   for (z = 0; z <= hyphen_prime; z++)
   {
     hyph_word[z] = 0;
@@ -252,7 +252,7 @@ void initialize (void)
     do_initex();
 }
 
-#ifdef ALLOCATEMAIN
+#ifdef NG_EXTENSION
 static void initialize_aux (void)
 {
 #ifdef NG_DEBUG
@@ -635,8 +635,10 @@ void line_break (boolean d)
               else if (precedes_break(prev_p))
                 try_break(0, unhyphenated);
               else if (type(prev_p) == kern_node)
+              {
                 if ((subtype(prev_p) != explicit) && (subtype(prev_p) != ita_kern))
                   try_break(0, unhyphenated);
+              }
             }
 
             check_shrinkage(glue_ptr(cur_p));
@@ -815,6 +817,7 @@ done3:
                     switch (type(s))
                     {
                       case ligature_node:
+                        do_nothing();
                         break;
     
                       case kern_node:
@@ -1965,6 +1968,7 @@ boolean load_fmt_file (void)
   pointer p, q;
   integer x;
 
+  // Undump constants for consistency check
   undump_int(x);
 
   if (x != BEGINFMTCHECKSUM)
@@ -1990,10 +1994,7 @@ boolean load_fmt_file (void)
 
   undump_int(x); /* mem_top */
 
-#ifdef ALLOCATEMAIN
-  if (flag_trace)
-    printf("Read from fmt file mem_top = %d memory words\n", (int) x);
-
+#ifdef NG_EXTENSION
   mem = allocate_main_memory(x);
 
   if (mem == NULL)
@@ -2018,7 +2019,7 @@ boolean load_fmt_file (void)
 
   undump_int(x); /* hyphen_prime */
 
-#ifdef ALLOCATEHYPHEN
+#ifdef NG_EXTENSION
 /* allow format files dumped with arbitrary (prime) hyphenation exceptions */
   realloc_hyphen(x);
   hyphen_prime = x;
@@ -2027,20 +2028,16 @@ boolean load_fmt_file (void)
   if (x != hyphen_prime)
     goto bad_fmt;
 
+  // Undump the string pool
   {
     undump_int(x); /* pool_size */
 
     if (x < 0)
       goto bad_fmt; 
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
     if (x > current_pool_size)
-    {
-      if (flag_trace)
-        printf("undump string pool reallocation (%d > %d)\n", (int) x, current_pool_size);
-
       str_pool = realloc_str_pool(x - current_pool_size + increment_pool_size);
-    }
 
     if (x > current_pool_size)
 #else
@@ -2060,14 +2057,9 @@ boolean load_fmt_file (void)
     if (x < 0)
       goto bad_fmt;
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
     if (x > current_max_strings)
-    {
-      if (flag_trace)
-        printf("undump string pointer reallocation (%d > %d)\n", (int) x, current_max_strings);
-
       str_start = realloc_str_start(x - current_max_strings + increment_max_strings);
-    }
 
     if (x > current_max_strings)
 #else
@@ -2085,6 +2077,7 @@ boolean load_fmt_file (void)
   undump_things(str_pool[0], pool_ptr);
   init_str_ptr = str_ptr;
   init_pool_ptr = pool_ptr;
+  // Undump the dynamic memory
   undump(lo_mem_stat_max + 1000, hi_mem_stat_min - 1, lo_mem_max);
   undump(lo_mem_stat_max + 1, lo_mem_max, rover);
 
@@ -2115,9 +2108,6 @@ boolean load_fmt_file (void)
   if (mem_min < mem_bot - 2)
   {
 /*  or call add_variable_space(mem_bot - (mem_min + 1)) */
-    if (flag_trace)
-      puts("Splicing in mem_min space in undump!");
-
     p = llink(rover);
     q = mem_min + 1;
     link(mem_min) = 0;  /* null */
@@ -2140,12 +2130,14 @@ boolean load_fmt_file (void)
   undump_int(var_used);
   undump_int(dyn_used);
 
+  // Undump the table of equivalents
+  // Undump regions 1 to 6 of eqtb
   k = active_base;
 
   do {
     undump_int(x);
 
-    if ((x < 1) || (k + x > (eqtb_size + 1)))
+    if ((x < 1) || (k + x > eqtb_size + 1))
       goto bad_fmt;
 
     if (undump_things(eqtb[k], x))
@@ -2154,7 +2146,7 @@ boolean load_fmt_file (void)
     k = k + x;
     undump_int(x);
 
-    if ((x < 0) || (k + x > (eqtb_size + 1)))
+    if ((x < 0) || (k + x > eqtb_size + 1))
       goto bad_fmt;
 
     for (j = k; j <= k + x - 1; j++)
@@ -2168,6 +2160,7 @@ boolean load_fmt_file (void)
   undump(hash_base, frozen_control_sequence, write_loc);
   undump(hash_base, frozen_control_sequence, hash_used);
 
+  // Undump the hash table
   p = hash_base - 1;
 
   do {
@@ -2180,23 +2173,16 @@ boolean load_fmt_file (void)
 
   undump_int(cs_count);
 
+  // Undump the font information
   {
     undump_int(x); /* font_mem_size */
 
     if (x < 7)
       goto bad_fmt;
 
-#ifdef ALLOCATEFONT
-    if (flag_trace)
-      printf("Read from fmt fmem_ptr = %d\n", (int) x);
-
+#ifdef NG_EXTENSION
     if (x > current_font_mem_size)
-    {
-      if (flag_trace)
-        printf("Undump realloc font_info (%d > %d)\n", (int) x, current_font_mem_size);
-
       font_info = realloc_font_info (x - current_font_mem_size + increment_font_mem_size);
-    }
 
     if (x > current_font_mem_size)
 #else
@@ -2210,9 +2196,10 @@ boolean load_fmt_file (void)
       fmem_ptr = x;
   }
 
+  undump_things(font_info[0], fmem_ptr);
+  undump_size(font_base, font_max, "font max", font_ptr);
+
   {
-    undump_things(font_info[0], fmem_ptr);
-    undump_size(font_base, font_max, "font max", font_ptr);
     undump_things(font_dir[null_font], font_ptr + 1);
     undump_things(font_num_ext[null_font], font_ptr + 1);
     undump_things(font_check[null_font], font_ptr + 1);
@@ -2241,7 +2228,7 @@ boolean load_fmt_file (void)
     undump_things(font_false_bchar[null_font], font_ptr + 1);
   }
 
-#ifdef ALLOCATEFONT
+#ifdef NG_EXTENSION
   {
     integer count = 0, oldfont_mem_size = 0;
 
@@ -2269,6 +2256,7 @@ boolean load_fmt_file (void)
   }
 #endif
 
+  // Undump the hyphenation tables
   undump(0, hyphen_prime, hyph_count);
 
   for (k = 1; k <= hyph_count; k++)
@@ -2278,7 +2266,7 @@ boolean load_fmt_file (void)
     undump(0, max_halfword, hyph_list[j]);
   }
 
-#ifdef ALLOCATEHYPHEN
+#ifdef NG_EXTENSION
 /* if user specified new hyphen prime - flush existing exception patterns ! */
 /* but, we can reclaim the string storage wasted ... */
   if (flag_initex)
@@ -2297,7 +2285,7 @@ boolean load_fmt_file (void)
     if (x < 0)
       goto bad_fmt;
 
-#ifdef ALLOCATETRIES
+#ifdef NG_EXTENSION
     if (!flag_initex)
     {
       allocate_tries(x); /* allocate only as much as is needed */
@@ -2543,7 +2531,7 @@ int main_program (void)
   if ((0 < min_quarterword) || (font_max > max_quarterword))
     bad = 15;
 
-#ifdef INCREASEFONTS
+#ifdef NG_EXTENSION
   if (font_max > 65535)
 #else
   if (font_max > 256)
@@ -2631,7 +2619,7 @@ start_of_TEX:
       param_ptr = 0;
       max_param_stack = 0;
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
       memset(buffer, 0, current_buf_size);
 #else
       memset(buffer, 0, buf_size);
@@ -2801,7 +2789,7 @@ final_end:
   return do_final_end();
 }
 
-#ifdef ALLOCATEMAIN
+#ifdef NG_EXTENSION
 /* add a block of variable size node space below mem_bot(0) */
 void add_variable_space (int size)
 {
@@ -3289,7 +3277,7 @@ void primitive_ (str_number s, quarterword c, halfword o)
     k = str_start[s];
     l = str_start[s + 1] - k;
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
     if (first + l > current_buf_size + 1)
       buffer = realloc_buffer(increment_buf_size);
 
@@ -3936,6 +3924,7 @@ void store_fmt_file (void)
   print_nl("");
   slow_print(format_ident);
 
+  // Dump constants for consistency check
   dump_int(BEGINFMTCHECKSUM);
 
   while (pseudo_files != null)
@@ -3948,15 +3937,20 @@ void store_fmt_file (void)
   dump_int(eqtb_size);
   dump_int(hash_prime);
   dump_int(hyphen_prime);
+
+  // Dump the string pool
   dump_int(pool_ptr);
   dump_int(str_ptr);
-  dump_things(str_start[0], str_ptr + 1);
+
+  for (k = 0; k <= str_ptr; k++)
+    dump_int(str_start[k]);
+
   dump_things(str_pool[0], pool_ptr);
   print_ln();
   print_int(str_ptr);
   prints(" strings of total length ");
   print_int(pool_ptr);
-
+  // Dump the dynamic memory
   sort_avail();
   var_used = 0;
   dump_int(lo_mem_max);
@@ -4013,12 +4007,14 @@ void store_fmt_file (void)
   print_char('&');
   print_int(dyn_used);
 
+  // Dump the table of equivalents
+  // Dump regions 1 to 4 of eqtb
   k = active_base;
 
   do {
     j = k;
 
-    while (j < (int_base - 1))
+    while (j < int_base - 1)
     {
       if ((equiv(j) == equiv(j + 1)) &&
           (eq_type(j) == eq_type(j + 1)) &&
@@ -4028,14 +4024,14 @@ void store_fmt_file (void)
       incr(j);
     }
 
-    l = (int_base);
+    l = int_base;
     goto done1;
 
 found1:
     incr(j);
     l = j;
 
-    while (j < (int_base - 1))
+    while (j < int_base - 1)
     {
       if ((equiv(j) != equiv(j + 1)) ||
           (eq_type(j) != eq_type(j + 1)) ||
@@ -4053,12 +4049,13 @@ done1:
 
     k = j + 1;
     dump_int(k - l);
-  } while (!(k == (int_base)));
+  } while (!(k == int_base));
 
+  // Dump regions 5 and 6 of eqtb
   do {
     j = k;
 
-    while (j < (eqtb_size))
+    while (j < eqtb_size)
     {
       if (eqtb[j].cint == eqtb[j + 1].cint)
         goto found2;
@@ -4066,7 +4063,7 @@ done1:
       incr(j);
     }
 
-    l = (eqtb_size + 1);
+    l = eqtb_size + 1;
     goto done2;
 
 found2:
@@ -4093,13 +4090,9 @@ done2:
 
   dump_int(par_loc);
   dump_int(write_loc);
-
+  // Dump the hash table
   dump_int(hash_used);
   cs_count = frozen_control_sequence - 1 - hash_used;
-
-  if (flag_trace)
-    printf(" (cs_count %d hash_size %d hash_used %d) ",
-        (int) cs_count, hash_size, hash_used);
 
   for (p = hash_base; p <= hash_used; p++)
   {
@@ -4108,9 +4101,6 @@ done2:
       dump_int(p);
       dump_hh(hash[p]);
       incr(cs_count);
-
-      if (flag_trace)
-        puts(" (do store_fmt_file() cs_count++) ");
     }
   }
 
@@ -4122,11 +4112,12 @@ done2:
   print_int(cs_count);
   prints(" multiletter control sequences");
 
+  // Dump the font information
   dump_int(fmem_ptr);
+  dump_things(font_info[0], fmem_ptr);
+  dump_int(font_ptr);
 
   {
-    dump_things(font_info[0], fmem_ptr);
-    dump_int(font_ptr);
     dump_things(font_dir[null_font], font_ptr + 1);
     dump_things(font_num_ext[null_font], font_ptr + 1);
     dump_things(font_check[null_font], font_ptr + 1);
@@ -4179,6 +4170,7 @@ done2:
   if (font_ptr != font_base + 1)
     print_char('s');
 
+  // Dump the hyphenation tables
   dump_int(hyph_count);
 
   for (k = 0; k <= hyphen_prime; k++)
@@ -4235,6 +4227,7 @@ done2:
     }
   }
 
+  // Dump a couple more things and the closing check word
   dump_int(interaction);
   dump_int(format_ident);
   dump_int(ENDFMTCHECKSUM);

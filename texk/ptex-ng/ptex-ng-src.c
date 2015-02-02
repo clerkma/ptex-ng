@@ -187,7 +187,7 @@ void print_char (ASCII_code s)
       break;
 
     case new_string:
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
       if (pool_ptr + 1 > current_pool_size)
         str_pool = realloc_str_pool(increment_pool_size);
 
@@ -942,7 +942,7 @@ boolean init_terminal (void)
 // current string enters the pool
 str_number make_string (void)
 {
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   if (str_ptr == current_max_strings)
     str_start = realloc_str_start(increment_max_strings);
 
@@ -3040,7 +3040,7 @@ void show_box (pointer p)
   if (breadth_max <= 0)
     breadth_max = 5;
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   if (pool_ptr + depth_threshold >= current_pool_size)
     str_pool = realloc_str_pool(increment_pool_size);
 
@@ -3500,7 +3500,7 @@ void push_nest (void)
   {
     max_nest_stack = nest_ptr;
 
-#ifdef ALLOCATEINPUTSTACK
+#ifdef NG_EXTENSION
     if (nest_ptr == current_nest_size)
       nest = realloc_nest_stack(increment_nest_size);
 
@@ -6743,7 +6743,7 @@ void begin_file_reading (void)
   if (in_open == max_in_open)
     overflow("text input levels", max_in_open);
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
   if (first == current_buf_size)
     buffer = realloc_buffer(increment_buf_size);
 
@@ -7238,7 +7238,7 @@ found:
     {
       max_param_stack = param_ptr + n;
 
-#ifdef ALLOCATEPARAMSTACK
+#ifdef NG_EXTENSION
       if (max_param_stack > current_param_size)
         param_stack = realloc_param_stack(increment_param_size);
 
@@ -7409,7 +7409,7 @@ reswitch:
             {
               max_buf_stack = j + 1;
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
               if (max_buf_stack == current_buf_size)
                 buffer = realloc_buffer (increment_buf_size);
 
@@ -7834,7 +7834,7 @@ void find_font_dimen (boolean writing)
       else
       {
         do {
- #ifdef ALLOCATEFONT
+ #ifdef NG_EXTENSION
           if (fmem_ptr == current_font_mem_size)
             font_info = realloc_font_info(increment_font_mem_size);
 
@@ -10746,7 +10746,7 @@ void conditional (void)
           {
             max_buf_stack = m + 1;
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
             if (max_buf_stack == current_buf_size)
               buffer = realloc_buffer(increment_buf_size);
 
@@ -10962,7 +10962,7 @@ boolean more_name (ASCII_code c)
 /* sec 0517 */
 void end_name (void) 
 {
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   if (str_ptr + 3 > current_max_strings)
     str_start = realloc_str_start(increment_max_strings + 3);
 
@@ -11059,7 +11059,7 @@ str_number make_name_string (void)
 {
   integer k;
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   if (pool_ptr + name_length > current_pool_size)
     str_pool = realloc_str_pool(increment_pool_size + name_length);
 
@@ -11498,7 +11498,7 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
   if (np < 7)
     lf = lf + 7 - np;
 
-#ifdef ALLOCATEFONT
+#ifdef NG_EXTENSION
   if ((fmem_ptr + lf > current_font_mem_size))
     font_info = realloc_font_info (increment_font_mem_size + lf);
 
@@ -12016,7 +12016,7 @@ void dvi_font_def (internal_font_number f)
 {
   pool_pointer k;
 
-#ifdef INCREASEFONTS
+#ifdef NG_EXTENSION
   if (f <= 256)
   {
     dvi_out(fnt_def1);
@@ -12283,7 +12283,7 @@ void special_out (pointer p)
   old_setting = selector;
   selector = new_string;
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   if (pool_ptr + 32000 > current_pool_size)
     str_pool = realloc_str_pool (increment_pool_size);
 
@@ -23700,7 +23700,7 @@ void close_files_and_terminate (void)
       if (str_ptr != init_str_ptr + 1)
         wlog('s');
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
       write_log(" out of %d\n", (int)(ng_stat(max_strings) - init_str_ptr));
       write_log(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(ng_stat(pool_size) - init_pool_ptr));
 #else
@@ -23708,7 +23708,7 @@ void close_files_and_terminate (void)
       write_log(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(pool_size - init_pool_ptr));
 #endif
 
-#ifdef ALLOCATEMAIN
+#ifdef NG_EXTENSION
       write_log(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), ng_stat(mem_size));
 #else
       write_log(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), (int) (mem_size));
@@ -23720,7 +23720,7 @@ void close_files_and_terminate (void)
       if (font_ptr != 1)
         wlog('s');
 
-#ifdef ALLOCATEFONT
+#ifdef NG_EXTENSION
       write_log(", out of %d for %d\n", ng_stat(font_mem_size), (int)(font_max - font_base));
 #else
       write_log(", out of %d for %d\n", (int)(font_mem_size), (int)(font_max - font_base));
@@ -23740,31 +23740,31 @@ void close_files_and_terminate (void)
       write_log("%"PRId64"s", max_save_stack + 6);
       write_log(" stack positions out of ");
 
-#ifdef ALLOCATESAVESTACK
+#ifdef NG_EXTENSION
       write_log("%di,", ng_stat(stack_size));
 #else
       write_log("%di,", (int)(stack_size));
 #endif
 
-#ifdef ALLOCATENESTSTACK
+#ifdef NG_EXTENSION
       write_log("%dn,", ng_stat(nest_size));
 #else
       write_log("%dn,", (int)(nest_size));
 #endif
 
-#ifdef ALLOCATEPARAMSTACK
+#ifdef NG_EXTENSION
       write_log("%dp,", ng_stat(param_size));
 #else
       write_log("%dp,", (int)(param_size));
 #endif
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
       write_log("%db,", ng_stat(buf_size));
 #else
       write_log("%db,", (int)(buf_size));
 #endif
 
-#ifdef ALLOCATESAVESTACK
+#ifdef NG_EXTENSION
       write_log("%ds", ng_stat(save_size));
 #else
       write_log("%ds", (int)(save_size));
@@ -23935,7 +23935,7 @@ void debug_help (void)
         case 8:
           {
             breadth_max = 10000;
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
             if (pool_ptr + 32000 > current_pool_size)
               str_pool = realloc_str_pool (increment_pool_size);
 

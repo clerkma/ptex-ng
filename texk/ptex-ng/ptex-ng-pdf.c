@@ -1186,7 +1186,7 @@ void pdf_special_out(pointer p)
   old_setting = selector;
   selector = new_string;
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   if (pool_ptr + 32000 > current_pool_size)
     str_pool = realloc_str_pool(increment_pool_size);
 

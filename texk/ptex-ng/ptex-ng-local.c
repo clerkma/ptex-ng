@@ -309,7 +309,30 @@ static size_t roundup (size_t n)
     return ((n / sizeof(void *)) + 1) * sizeof(void *);
 }
 
-#ifdef ALLOCATETRIES
+static boolean prime (int x)
+{
+  int k;
+  int sum = 1;    /* 1 + 3 + 5 + k = (k + 1) * (k + 1) / 4 */
+
+  if (x % 2 == 0)
+    return false;
+
+  for (k = 3; k < x; k = k + 2)
+  {
+    if (x % k == 0)
+      return false;
+
+    if (sum * 4 > x)
+      return true;
+
+    sum += k;
+  }
+
+  return true;
+}
+
+
+#ifdef NG_EXTENSION
 // -1 - fails
 //  0 - success
 
@@ -347,31 +370,7 @@ int allocate_tries (int trie_max)
 
   return 0;
 }
-#endif
 
-static boolean prime (int x)
-{
-  int k;
-  int sum = 1;    /* 1 + 3 + 5 + k = (k + 1) * (k + 1) / 4 */
-
-  if (x % 2 == 0)
-    return false;
-
-  for (k = 3; k < x; k = k + 2)
-  {
-    if (x % k == 0)
-      return false;
-
-    if (sum * 4 > x)
-      return true;
-
-    sum += k;
-  }
-
-  return true;
-}
-
-#ifdef ALLOCATEHYPHEN
 static int current_prime = 0; /* remember in case reallocated later */
 
 /* we don't return an address here, since TWO memory regions allocated */
@@ -427,9 +426,7 @@ int realloc_hyphen (int hyphen_prime)
 
   return 0; // success
 }
-#endif
 
-#ifdef ALLOCATEMAIN
 int current_mem_size = 0;
 
 memory_word * allocate_main_memory (int size)
@@ -602,9 +599,7 @@ memory_word * realloc_main (int lo_size, int hi_size)
 
   return mem;
 }
-#endif
 
-#ifdef ALLOCATEFONT
 int current_font_mem_size = 0;
 
 memory_word * realloc_font_info (int size)
@@ -666,9 +661,7 @@ memory_word * realloc_font_info (int size)
 
   return font_info;
 }
-#endif
 
-#ifdef ALLOCATESTRING
 int current_pool_size = 0;
 
 packed_ASCII_code * realloc_str_pool (int size)
@@ -732,9 +725,7 @@ packed_ASCII_code * realloc_str_pool (int size)
 
   return str_pool;
 }
-#endif
 
-#ifdef ALLOCATESTRING
 int current_max_strings = 0;
 
 pool_pointer * realloc_str_start (int size)
@@ -799,9 +790,7 @@ pool_pointer * realloc_str_start (int size)
 
   return str_start;
 }
-#endif
 
-#ifdef ALLOCATEINI
 /* returns -1 if it fails */
 /* size == trie_size */
 int allocate_ini (int size)
@@ -848,9 +837,7 @@ int allocate_ini (int size)
 
   return 0; // success
 }
-#endif
 
-#ifdef ALLOCATESAVESTACK
 int current_save_size = 0;
 
 memory_word * realloc_save_stack (int size)
@@ -916,9 +903,7 @@ memory_word * realloc_save_stack (int size)
 
   return save_stack;
 }
-#endif
 
-#ifdef ALLOCATEINPUTSTACK
 int current_stack_size = 0;
 
 in_state_record * realloc_input_stack (int size)
@@ -984,9 +969,7 @@ in_state_record * realloc_input_stack (int size)
 
   return input_stack;
 }
-#endif
 
-#ifdef ALLOCATENESTSTACK
 int current_nest_size = 0;
 
 list_state_record * realloc_nest_stack (int size)
@@ -1052,9 +1035,7 @@ list_state_record * realloc_nest_stack (int size)
 
   return nest;
 }
-#endif
 
-#ifdef ALLOCATEPARAMSTACK
 int current_param_size = 0;
 
 halfword * realloc_param_stack (int size)
@@ -1120,9 +1101,7 @@ halfword * realloc_param_stack (int size)
 
   return param_stack;
 }
-#endif
 
-#ifdef ALLOCATEBUFFER
 int current_buf_size = 0;
 
 ASCII_code * realloc_buffer (int size)
@@ -1188,25 +1167,16 @@ ASCII_code * realloc_buffer (int size)
 
 static int allocate_memory (void)
 {
-#ifdef ALLOCATEINPUTSTACK
+#ifdef NG_EXTENSION
   input_stack = NULL;
   current_stack_size = 0;
   input_stack = realloc_input_stack(initial_stack_size);
-#endif
-
-#ifdef ALLOCATENESTSTACK
   nest = NULL;
   current_nest_size = 0;
   nest = realloc_nest_stack(initial_nest_size);
-#endif
-
-#ifdef ALLOCATEPARAMSTACK
   param_stack = NULL;
   current_param_size = 0;
   param_stack = realloc_param_stack(initial_param_size);
-#endif
-
-#ifdef ALLOCATESAVESTACK
   save_stack = NULL;
   current_save_size = 0;
   save_stack = realloc_save_stack (initial_save_size);
@@ -1218,7 +1188,7 @@ static int allocate_memory (void)
   buffer = realloc_buffer (initial_buf_size);
 #endif
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   str_pool = NULL;
   current_pool_size = 0;
   str_start = NULL;
@@ -1230,17 +1200,13 @@ static int allocate_memory (void)
     str_pool = realloc_str_pool(initial_pool_size);
     str_start = realloc_str_start(initial_max_strings);
   }
-#endif
 
-#ifdef ALLOCATEFONT
   font_info = NULL;
   current_font_mem_size = 0;
 
   if (flag_initex)
     font_info = realloc_font_info(initial_font_mem_size);
-#endif
 
-#ifdef ALLOCATEMAIN
   main_memory = NULL;
   mem = NULL;
   mem_min = mem_bot;
@@ -1255,9 +1221,7 @@ static int allocate_memory (void)
     if (mem == NULL)
       return -1;
   }
-#endif
 
-#ifdef ALLOCATEHYPHEN
   hyph_word = NULL;
   hyph_list = NULL;
   hyphen_prime = default_hyphen_prime;
@@ -1269,18 +1233,11 @@ static int allocate_memory (void)
 
     if (realloc_hyphen(hyphen_prime)) /* allocate just in case no format */
       return -1;
-  }
-#endif
 
-#ifdef ALLOCATETRIES
-  if (flag_initex)
-  {
     if (allocate_tries (trie_size))
       return -1;
   }
-#endif
 
-#ifdef ALLOCATEINI
   if (flag_initex)
   {
     if (allocate_ini(trie_size))
@@ -1322,7 +1279,7 @@ static int free_memory (void)
     (int) (mem_end - hi_mem_min), (int) hi_mem_min, (int) mem_end
   );
 
-#ifdef ALLOCATEINI
+#ifdef NG_EXTENSION
   if (flag_initex)
   {
     safe_free(trie_taken);
@@ -1332,45 +1289,19 @@ static int free_memory (void)
     safe_free(trie_c);
     safe_free(trie_o);
   }
-#endif
 
-#ifdef ALLOCATETRIES
   safe_free(trie_trc);
   safe_free(trie_tro);
   safe_free(trie_trl);
-#endif
-
-#ifdef ALLOCATEHYPHEN
   safe_free(hyph_list);
   safe_free(hyph_word);
-#endif
-
-#ifdef ALLOCATEMAIN
   safe_free(main_memory);
-#endif
-
-#ifdef ALLOCATEFONT
   safe_free(font_info);
-#endif
-
-#ifdef ALLOCATESTRING
   safe_free(str_start);
   safe_free(str_pool);
-#endif
-
-#ifdef ALLOCATEPARAMSTACK
   safe_free(param_stack);
-#endif
-
-#ifdef ALLOCATENESTSTACK
   safe_free(nest);
-#endif
-
-#ifdef ALLOCATEINPUTSTACK
   safe_free(input_stack);
-#endif
-
-#ifdef ALLOCATESAVESTACK
   safe_free(save_stack);
 #endif
 
@@ -1637,7 +1568,7 @@ static void read_command_line (int ac, char **av)
     }
     else if (ARGUMENT_IS("trie-size"))
     {
-#ifdef VARIABLETRIESIZE
+#ifdef NG_EXTENSION
       if (optarg == 0)
         trie_size = default_trie_size;
       else
@@ -1649,7 +1580,7 @@ static void read_command_line (int ac, char **av)
     }
     else if (ARGUMENT_IS("hyph-size"))
     {
-#ifdef ALLOCATEHYPHEN
+#ifdef NG_EXTENSION
       if (optarg == 0)
         new_hyphen_prime = hyphen_prime * 2;
       else
@@ -1739,7 +1670,7 @@ static void init_commands (int ac, char **av)
   new_hyphen_prime      = 0;
   mem_initex            = 0;
 
-#ifdef VARIABLETRIESIZE
+#ifdef NG_EXTENSION
   trie_size = 0; // default_trie_size
 #endif
 
@@ -1945,11 +1876,11 @@ void main_init (int ac, char ** av)
   str_pool    = NULL;
   str_start   = NULL;
 
-#ifdef ALLOCATESAVESTACK
+#ifdef NG_EXTENSION
   save_stack = NULL; 
 #endif
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
   buffer           = NULL;
   current_buf_size = 0;
   buffer           = realloc_buffer(initial_buf_size);

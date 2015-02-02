@@ -141,8 +141,8 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
   (void) bypass_eoln;
   last = first;
 
-#ifdef ALLOCATEBUFFER
-  while (true) 
+#ifdef NG_EXTENSION
+  while (true)
 #else
   while (last < buf_size)
 #endif
@@ -157,7 +157,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
       {
         buffer[last++] = (ASCII_code) ' ';
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
         if (last >= current_buf_size)
         {
           buffer = realloc_buffer(increment_buf_size);
@@ -167,7 +167,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
         }
 #endif
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
         while ((last - first) % tab_step != 0)
 #else
         while ((last < buf_size) && ((last - first) % tab_step != 0))
@@ -175,7 +175,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
         {
           buffer[last++] = (ASCII_code) ' ';
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
           if (last >= current_buf_size)
           {
             buffer = realloc_buffer(increment_buf_size);
@@ -193,7 +193,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
     {
       buffer[last++] = (ASCII_code) i;
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
       if (last >= current_buf_size)
       {
         buffer = realloc_buffer(increment_buf_size);
@@ -237,64 +237,9 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
   return true;
 }
 
-#if !defined (WORDS_BIGENDIAN)
-// for swap
-#define SWAP(x, y) temp = (x); (x) = (y); (y) = temp;
-
-static int swap_items (char *p, int nitems, int size)
-{
-  char temp;
-
-  switch (size)
-  {
-    case 8:
-      while (nitems--)
-      {
-        SWAP (p[0], p[7]);
-        SWAP (p[1], p[6]);
-        SWAP (p[2], p[5]);
-        SWAP (p[3], p[4]);
-        p += size;
-      }
-      break;
-
-    case 4:
-      while (nitems--)
-      {
-        SWAP (p[0], p[3]);
-        SWAP (p[1], p[2]);
-        p += size;
-      }
-      break;
-
-    case 2:
-      while (nitems--)
-      {
-        SWAP (p[0], p[1]);
-        p += size;
-      }
-      break;
-
-    case 1:
-      do_nothing();
-      break;
-
-    default:
-      printf("\n! I can't (un)dump a %d byte item.\n", size);
-      uexit(EXIT_FAILURE);
-  }
-
-  return 0;
-}
-#endif
-
-int do_dump (char * p, int item_size, int nitems, void * out_file)
+int block_dump (char * p, int item_size, int nitems, void * out_file)
 {
   boolean flag_fmt_failed;
-
-#if !defined (WORDS_BIGENDIAN)
-  swap_items(p, nitems, item_size);
-#endif
 
   if (flag_compact_fmt)
     flag_fmt_failed = (gzwrite(out_file, p, (item_size * nitems)) != (item_size * nitems));
@@ -308,14 +253,10 @@ int do_dump (char * p, int item_size, int nitems, void * out_file)
     uexit(EXIT_FAILURE);
   }
 
-#if !defined (WORDS_BIGENDIAN)
-  swap_items(p, nitems, item_size);
-#endif
-
   return 0;
 }
 
-int do_undump (char * p, int item_size, int nitems, void * in_file)
+int block_undump (char * p, int item_size, int nitems, void * in_file)
 {
   boolean flag_fmt_failed;
 
@@ -330,10 +271,6 @@ int do_undump (char * p, int item_size, int nitems, void * in_file)
                nitems, item_size, (nitems > 1) ? "s" : "");
     uexit(EXIT_FAILURE);
   }
-
-#if !defined (WORDS_BIGENDIAN)
-  swap_items (p, nitems, item_size);
-#endif
 
   return 0;
 }
@@ -353,6 +290,7 @@ void uexit (int unix_code)
 
   exit(final_code);
 }
+
 // texk/web2c/lib/zround.c
 integer web2c_round (double r)
 {
@@ -363,12 +301,13 @@ integer web2c_round (double r)
   else if (r < -2147483647.0)
     i = -2147483647;
   else if (r >= 0.0)
-    i = (integer)(r + 0.5);
+    i = (integer) (r + 0.5);
   else
-    i = (integer)(r - 0.5);
+    i = (integer) (r - 0.5);
 
   return i;
 }
+
 // Unixify filename and path (turn \ into /)
 char * unixify (char * t)
 {

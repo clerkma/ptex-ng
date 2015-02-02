@@ -591,7 +591,7 @@ static inline void append_char (ASCII_code c)
 /* sec 0042 */
 static inline void str_room (int val)
 {
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   if (pool_ptr + val > current_pool_size)
     str_pool = realloc_str_pool(increment_pool_size);
 
@@ -670,7 +670,7 @@ static inline void check_full_save_stack (void)
   {
     max_save_stack = save_ptr;
 
-#ifdef ALLOCATESAVESTACK
+#ifdef NG_EXTENSION
     if (max_save_stack > current_save_size - 7)
       save_stack = realloc_save_stack(increment_save_size);
 
@@ -689,7 +689,7 @@ static inline void push_input (void)
   {
     max_in_stack = input_ptr;
 
-#ifdef ALLOCATEINPUTSTACK
+#ifdef NG_EXTENSION
     if (input_ptr == current_stack_size)
       input_stack = realloc_input_stack(increment_stack_size);
 
@@ -815,6 +815,7 @@ static inline void print_plus (int i, const char * s)
     prints(s);
   }
 }
+
 static inline void ptex_ng_error (const char * t, const char * p)
 {
   normalize_selector();
@@ -844,7 +845,6 @@ static inline str_number tokens_to_string (pointer p)
   return last_tokens_string;
 }
 
-#define call_func(a) a
 #define flushable(a) (a == str_ptr - 1)
 
 static inline void flush_str (str_number s)
@@ -858,12 +858,12 @@ static inline void compare_strings (void)
   str_number s1, s2;
   pool_pointer i1, i2, j1, j2;
 
-  call_func(scan_toks(false, true));
+  scan_toks(false, true);
   is_print_utf8 = true;
   s1 = tokens_to_string(def_ref);
   is_print_utf8 = false;
   delete_token_ref(def_ref);
-  call_func(scan_toks(false, true));
+  scan_toks(false, true);
   is_print_utf8 = true;
   s2 = tokens_to_string(def_ref);
   is_print_utf8 = false;
@@ -918,5 +918,20 @@ static inline void write_log (const char * fmt, ...)
   va_start(m_ptr, fmt);
   vfprintf(log_file, fmt, m_ptr);
   va_end(m_ptr);
+}
+
+static inline void dump_int (integer x)
+{
+  generic_dump(x);
+}
+
+static inline void dump_hh (two_halves x)
+{
+  generic_dump(x);
+}
+
+static inline void dump_wd (memory_word x)
+{
+  generic_dump(x);
 }
 #endif

@@ -19,25 +19,11 @@
 
 #ifndef _PTEX_H
 #define _PTEX_H
-// macros for dynamic allocation
-#define ALLOCATEINI
-#define ALLOCATEMAIN       /* allocate main memory for TeX (2 Meg) */
-#define ALLOCATEFONT       /* allocate font_info (800 k) (dynamically now) */
-#define ALLOCATETRIES      /* allocate hyphenation trie stuff (270 k) trie_trl, trie_tro, trie_trc */
-#define ALLOCATEHYPHEN     /* allocate hyphenation exception tables */
-#define VARIABLETRIESIZE   /* allow trie_size to be variable */
-#define ALLOCATESTRING     /* allocate strings and string pointers (184 k) str_pool & str_start */
-#define ALLOCATESAVESTACK  /* experiment to dynamically deal with save_stack   */
-#define ALLOCATEINPUTSTACK /* experiment to dynamically deal with input_stack  */
-#define ALLOCATENESTSTACK  /* experiment to dynamically deal with nest_stack   */
-#define ALLOCATEPARAMSTACK /* experiment to dynamically deal with param_stack  */
-#define ALLOCATEBUFFER     /* experiment to dynamically deal with input buffer */
-#define INCREASEFONTS
-#define INCREASETRIEOP     /* tire_* */
+// macro for dynamic allocation
+#define NG_EXTENSION
 // tex's infrastructure
-#define STAT               /* TeX's statistics (tex82) */
-#define INITEX             /* invoke initex */
-#define WORDS_BIGENDIAN 0  /* about format file */
+#define STAT
+#define INITEX
 
 // headers and pragmas
 #if defined (_WIN32)
@@ -71,7 +57,7 @@
 #include <kpathsea/tex-file.h> // kpse_find_file
 #include <kpathsea/variable.h> // kpse_var_value
 #include <kpathsea/types.h>    // RPId64
-#include <kpathsea/version.h>
+#include <kpathsea/version.h>  // kpathsea_version_string
 // ptexenc for kanji processing
 #include <ptexenc/ptexenc.h>
 #include <ptexenc/unicode.h>
@@ -115,44 +101,32 @@ typedef void * word_file;
 #define w_close(f)      gzclose(fmt_file)
 #define w_eof(f)        (flag_compact_fmt == true ? gzeof((gzFile) f) : feof((FILE *) f))
 
-EXTERN int do_dump   (char * p, int item_size, int nitems, void * out_file);
-EXTERN int do_undump (char * p, int item_size, int nitems, void * out_file);
+EXTERN int block_dump   (char * p, int item_size, int nitems, void * out_file);
+EXTERN int block_undump (char * p, int item_size, int nitems, void * out_file);
 
-#define dump_things(base, len)    do_dump  ((char *) &(base), sizeof (base), (int) (len), fmt_file)
-#define undump_things(base, len)  do_undump((char *) &(base), sizeof (base), (int) (len), fmt_file)
+#define dump_things(base, len)    block_dump  ((char *) &(base), sizeof (base), (int) (len), fmt_file)
+#define undump_things(base, len)  block_undump((char *) &(base), sizeof (base), (int) (len), fmt_file)
 
 #define generic_dump(x)   dump_things(x, 1)
 #define generic_undump(x) undump_things(x, 1)
 
-#define dump_wd     generic_dump
-#define undump_wd   generic_undump
-#define dump_hh     generic_dump
 #define undump_hh   generic_undump
-#define dump_qqqq   generic_dump
-#define undump_qqqq generic_undump
-
-#define dump_int(x)     \
-do {                    \
-  integer x_val = (x);  \
-  generic_dump (x_val); \
-} while (0)
-
 #define undump_int  generic_undump
 
-#define undump_size(arg1, arg2, arg3, arg4)                     \
-do {                                                            \
-  undump_int(x);                                                \
-                                                                \
-  if (x < arg1)                                                 \
-    goto bad_fmt;                                               \
-                                                                \
-  if (x > arg2)                                                 \
-  {                                                             \
-    fprintf(stdout, "%s%s\n", "---! Must increase the ", arg3); \
-    goto bad_fmt;                                               \
-  }                                                             \
-  else                                                          \
-    arg4 = x;                                                   \
+#define undump_size(arg1, arg2, arg3, arg4)            \
+do {                                                   \
+  undump_int(x);                                       \
+                                                       \
+  if (x < arg1)                                        \
+    goto bad_fmt;                                      \
+                                                       \
+  if (x > arg2)                                        \
+  {                                                    \
+    printf("%s%s\n", "---! Must increase the ", arg3); \
+    goto bad_fmt;                                      \
+  }                                                    \
+  else                                                 \
+    arg4 = x;                                          \
 } while (0)
 
 // pTeX-ng's macros
@@ -166,7 +140,7 @@ do {                                                            \
 #define max_halfword    2147483647
 #define block_size      1000
 
-#ifdef INCREASEFONTS
+#ifdef NG_EXTENSION
   #define min_quarterword 0
   #define max_quarterword 65535
 #else
@@ -177,7 +151,7 @@ do {                                                            \
 #define default_mem_top 262140
 #define mem_bot 0
 
-#ifdef ALLOCATEMAIN
+#ifdef NG_EXTENSION
   EXTERN integer mem_top;
   EXTERN integer mem_max;
   EXTERN integer mem_min;
@@ -188,7 +162,7 @@ do {                                                            \
   #define mem_min 0
 #endif
 
-#ifdef ALLOCATEBUFFER
+#ifdef NG_EXTENSION
   #define initial_buf_size   1000
   #define increment_buf_size 2000
   #define buf_size           2000000L
@@ -212,13 +186,13 @@ EXTERN integer max_buf_stack;
   #define max_in_open 15
 #endif
 
-#ifdef INCREASEFONTS
+#ifdef NG_EXTENSION
   #define font_max 65535
 #else
   #define font_max 255
 #endif
 
-#ifdef ALLOCATEFONT
+#ifdef NG_EXTENSION
   #define font_mem_size (max_halfword / sizeof(memory_word) - 1)
   #define initial_font_mem_size   20000
   #define increment_font_mem_size 40000
@@ -226,7 +200,7 @@ EXTERN integer max_buf_stack;
   #define font_mem_size 100000
 #endif
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   #define max_strings (max_halfword / sizeof(pool_pointer) - 1)
   #define pool_size   (max_halfword - 1)
 #else
@@ -236,14 +210,14 @@ EXTERN integer max_buf_stack;
 
 #define string_vacancies 100000
 
-#ifdef VARIABLETRIESIZE
+#ifdef NG_EXTENSION
   EXTERN integer trie_size;
   #define default_trie_size 1000000 // 60000
 #else
   #define trie_size 30000
 #endif
 
-#ifdef INCREASETRIEOP
+#ifdef NG_EXTENSION
   #define trie_op_size      35111 //  3001
   #define neg_trie_op_size -35111 // -3001
   #define min_trie_op       0
@@ -267,7 +241,7 @@ EXTERN integer max_buf_stack;
 #endif
 
 /* sec 0113 */
-#ifdef INCREASEFONTS
+#ifdef NG_EXTENSION
   typedef uint16_t quarterword;
 #else
   typedef uint8_t  quarterword;
@@ -280,7 +254,6 @@ typedef halfword pointer;
 /* sec 0113 */
 typedef struct
 {
-#ifdef WORDS_BIGENDIAN
   halfword rh;
 
   union
@@ -292,35 +265,18 @@ typedef struct
       quarterword b0, b1;
     };
   };
-#else
-  union
-  {
-    struct
-    {
-      quarterword b1, b0;
-    };
-
-    halfword lh;
-  };
-
-  halfword rh;
-#endif
 } two_halves;
 
 typedef struct
 {
-#ifdef WORDS_BIGENDIAN
   quarterword b0, b1, b2, b3;
-#else
-  quarterword b3, b2, b1, b0;
-#endif
 } four_quarters;
 
 typedef union
 {
+  integer cint;
   glue_ratio gr;
   two_halves hh;
-  integer cint;
   four_quarters qqqq;
 } memory_word;
 
@@ -364,7 +320,7 @@ EXTERN ASCII_code xchr[256];
 EXTERN ASCII_code name_of_file[file_name_size + 4];
 EXTERN integer name_length;
 
-#ifdef ALLOCATESTRING
+#ifdef NG_EXTENSION
   #define initial_pool_size     40000
   #define increment_pool_size   80000
   EXTERN packed_ASCII_code *    str_pool;
@@ -408,7 +364,7 @@ EXTERN scaled ng_remainder;
 EXTERN halfword temp_ptr;
 
 /* sec 0116 */
-#ifdef ALLOCATEMAIN
+#ifdef NG_EXTENSION
   EXTERN memory_word * main_memory;
   EXTERN memory_word * mem;
 #else
@@ -428,7 +384,7 @@ EXTERN pointer rover;
 /* sec 0165 */
 /* NOTE: the following really also need to be dynamically allocated */
 #ifdef NG_DEBUG
-  #ifdef ALLOCATEMAIN
+  #ifdef NG_EXTENSION
     EXTERN char * zzzab;
     EXTERN char * zzzac;
   #else
@@ -448,13 +404,13 @@ EXTERN integer breadth_max;
 EXTERN int shown_mode;
 EXTERN int old_setting;
 
-#ifdef INCREASEFONTS
+#ifdef NG_EXTENSION
   EXTERN memory_word eqtb[eqtb_size + 1];
-  #define xeq_level (zzzad - (int_base))
+  #define xeq_level (zzzad - int_base)
   EXTERN two_halves zzzae[undefined_control_sequence - hash_base];
 #else
   EXTERN memory_word eqtb[eqtb_size + 1];
-  #define xeq_level (zzzad - (int_base))
+  #define xeq_level (zzzad - int_base)
   EXTERN two_halves zzzae[undefined_control_sequence - hash_base];
 #endif
 
@@ -465,7 +421,7 @@ EXTERN pointer hash_used;
 EXTERN boolean no_new_control_sequence;
 EXTERN integer cs_count;
 
-#ifdef ALLOCATESAVESTACK
+#ifdef NG_EXTENSION
   #define save_size           65536
   #define initial_save_size   1000
   #define increment_save_size 2000
@@ -486,7 +442,7 @@ EXTERN halfword cur_chr;
 EXTERN pointer cur_cs;
 EXTERN halfword cur_tok;
 
-#ifdef ALLOCATENESTSTACK
+#ifdef NG_EXTENSION
   #define nest_size           65536
   #define initial_nest_size   100
   #define increment_nest_size 200
@@ -500,7 +456,7 @@ EXTERN integer nest_ptr;
 EXTERN integer max_nest_stack;
 EXTERN list_state_record cur_list;
 
-#ifdef ALLOCATEPARAMSTACK
+#ifdef NG_EXTENSION
   #define param_size           65536
   #define initial_param_size   100
   #define increment_param_size 200
@@ -513,7 +469,7 @@ EXTERN list_state_record cur_list;
 EXTERN integer param_ptr;
 EXTERN integer max_param_stack;
 
-#ifdef ALLOCATEINPUTSTACK
+#ifdef NG_EXTENSION
   #define stack_size           65536
   #define initial_stack_size   100
   #define increment_stack_size 200
@@ -577,7 +533,7 @@ EXTERN char * pdf_file_name;
 EXTERN char * log_file_name;
 EXTERN char * fmt_file_name;
 
-#ifdef ALLOCATEFONT
+#ifdef NG_EXTENSION
   EXTERN memory_word * font_info;
 #else
   EXTERN memory_word font_info[font_mem_size + 1];
@@ -710,7 +666,7 @@ EXTERN pointer lig_stack;
 EXTERN boolean ligature_present;
 EXTERN boolean lft_hit, rt_hit;
 
-#ifdef ALLOCATETRIES
+#ifdef NG_EXTENSION
   EXTERN halfword * trie_trl;
   EXTERN halfword * trie_tro;
   EXTERN quarterword * trie_trc;
@@ -725,7 +681,7 @@ EXTERN small_number hyf_num[trie_op_size + 1];
 EXTERN trie_op_code hyf_next[trie_op_size + 1];
 EXTERN integer op_start[256];
 
-#ifdef ALLOCATEHYPHEN
+#ifdef NG_EXTENSION
   #define default_hyphen_prime 8191 // 1009
   EXTERN str_number * hyph_word;
   EXTERN pointer * hyph_list;
@@ -750,7 +706,7 @@ EXTERN hyph_pointer hyph_count;
 EXTERN trie_op_code max_op_used;
 
 #ifdef INITEX
-  #ifdef ALLOCATEINI
+  #ifdef NG_EXTENSION
     EXTERN packed_ASCII_code * trie_c; /* characters to match */
     EXTERN trie_op_code * trie_o;      /* operations to perform */
     EXTERN trie_pointer * trie_l;      /* left subtrie links */

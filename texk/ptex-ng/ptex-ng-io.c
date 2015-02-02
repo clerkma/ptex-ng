@@ -192,9 +192,9 @@ static void * (*open_file) (const char * f, const char * m);
 static inline void set_open_file (kpse_file_format_type file_fmt)
 {
   if ((file_fmt == kpse_fmt_format) && (flag_compact_fmt == true))
-    open_file = (void * (*) (const char *, const char *)) &gzopen;
+    open_file = (void * (*) (const char * f, const char * m)) &gzopen;
   else
-    open_file = (void * (*) (const char *, const char *)) &fopen;
+    open_file = (void * (*) (const char * f, const char * m)) &fopen;
 }
 
 boolean open_input (void ** f, kpse_file_format_type file_fmt, const char * fopen_mode)
@@ -217,15 +217,16 @@ boolean open_input (void ** f, kpse_file_format_type file_fmt, const char * fope
   if (file_name_kpse != NULL)
   {
     file_name_utf8 = mbcs_utf8(file_name_kpse);
-    *f = open_file((char *) file_name_kpse, fopen_mode);
+    *f = open_file(file_name_kpse, fopen_mode);
 
     if (file_fmt == kpse_tfm_format)
       fbyte = getc((FILE *) *f);
 
     if (*f)
+    {
       strip_file_name(file_name_utf8);
-
-    openable = true;
+      openable = true;
+    }
   }
 
   name_of_file[name_length + 1] = ' ';
@@ -246,8 +247,7 @@ void close_file (FILE * f)
 {
   if (f == NULL)
     return;
-
-  if (ferror(f) || fclose (f))
+  else if (ferror(f) || fclose(f))
   {
     perror("\n! I/O Error");
     uexit(EXIT_FAILURE);
