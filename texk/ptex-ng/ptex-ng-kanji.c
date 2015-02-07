@@ -17,7 +17,6 @@
    02110-1301 USA.
 */
 
-#define EXTERN extern
 #include "ptex-ng.h"
 
 #define XXHi(x)         BYTE1(x)

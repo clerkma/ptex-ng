@@ -147,7 +147,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
   while (last < buf_size)
 #endif
   {
-    i = getc(f);
+    i = fgetc(f);
 
     if (i < ' ')
     {
@@ -207,7 +207,7 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
 
   if (i == '\r')
   {
-    i = getc(f);
+    i = fgetc(f);
 
     if (i != '\n')
     {

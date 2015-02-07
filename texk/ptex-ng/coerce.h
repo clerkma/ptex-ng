@@ -777,7 +777,7 @@ static inline void prev_append (pointer val)
 /* sec 0564 */
 static inline void fget (void)
 {
-  fbyte = getc(tfm_file);
+  fbyte = fgetc(tfm_file);
 }
 /* sec 0597 */
 static inline void write_dvi (size_t a, size_t b)
@@ -933,5 +933,25 @@ static inline void dump_hh (two_halves x)
 static inline void dump_wd (memory_word x)
 {
   generic_dump(x);
+}
+
+static inline void wterm (ASCII_code s)
+{
+  (void) fputc(s, stdout);
+}
+
+static inline void wlog (ASCII_code s)
+{
+  (void) fputc(s, log_file);
+}
+
+static inline void wterm_cr (void)
+{
+  (void) fputc('\n', stdout);
+}
+
+static inline void wlog_cr (void)
+{
+  (void) fputc('\n', log_file);
 }
 #endif

@@ -17,7 +17,6 @@
    02110-1301 USA.
  */
 
-#define EXTERN extern
 #include "ptex-ng.h"
 
 static const char * pool_file_arr[] =

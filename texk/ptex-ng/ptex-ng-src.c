@@ -17,7 +17,6 @@
    02110-1301 USA.
 */
 
-#define EXTERN extern
 #include "ptex-ng.h"
 
 /* sec 0058 */
@@ -23674,8 +23673,14 @@ found:
   return true;
 }
 
-#define ng_stat(a) (int)(flag_show_current ? current_##a : a)
+#ifdef NG_EXTENSION
+  #define ng_stat(a) (int)(flag_show_current ? current_##a : a)
+#else
+  #define ng_stat(a) (int)(a)
+#endif
+
 #define mem_size (mem_end + 1 - mem_min)
+
 /* sec 1333 */
 void close_files_and_terminate (void)
 {
@@ -23700,32 +23705,16 @@ void close_files_and_terminate (void)
       if (str_ptr != init_str_ptr + 1)
         wlog('s');
 
-#ifdef NG_EXTENSION
       write_log(" out of %d\n", (int)(ng_stat(max_strings) - init_str_ptr));
       write_log(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(ng_stat(pool_size) - init_pool_ptr));
-#else
-      write_log(" out of %d\n", (int)(max_strings - init_str_ptr));
-      write_log(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(pool_size - init_pool_ptr));
-#endif
-
-#ifdef NG_EXTENSION
       write_log(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), ng_stat(mem_size));
-#else
-      write_log(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), (int) (mem_size));
-#endif
-
       write_log(" %d multiletter control sequences out of %d\n", (int)(cs_count), (int) (hash_size));
       write_log(" %d words of font info for %d font", (int)(fmem_ptr), (int)(font_ptr - font_base));
 
       if (font_ptr != 1)
         wlog('s');
 
-#ifdef NG_EXTENSION
       write_log(", out of %d for %d\n", ng_stat(font_mem_size), (int)(font_max - font_base));
-#else
-      write_log(", out of %d for %d\n", (int)(font_mem_size), (int)(font_max - font_base));
-#endif
-
       write_log(" %"PRId64" hyphenation exception", hyph_count);
 
       if (hyph_count != 1)
@@ -23739,37 +23728,11 @@ void close_files_and_terminate (void)
       write_log("%"PRId64"b,", max_buf_stack + 1);
       write_log("%"PRId64"s", max_save_stack + 6);
       write_log(" stack positions out of ");
-
-#ifdef NG_EXTENSION
       write_log("%di,", ng_stat(stack_size));
-#else
-      write_log("%di,", (int)(stack_size));
-#endif
-
-#ifdef NG_EXTENSION
       write_log("%dn,", ng_stat(nest_size));
-#else
-      write_log("%dn,", (int)(nest_size));
-#endif
-
-#ifdef NG_EXTENSION
       write_log("%dp,", ng_stat(param_size));
-#else
-      write_log("%dp,", (int)(param_size));
-#endif
-
-#ifdef NG_EXTENSION
       write_log("%db,", ng_stat(buf_size));
-#else
-      write_log("%db,", (int)(buf_size));
-#endif
-
-#ifdef NG_EXTENSION
       write_log("%ds", ng_stat(save_size));
-#else
-      write_log("%ds", (int)(save_size));
-#endif
-
       write_log("\n");
 
       if (!flag_tex82)

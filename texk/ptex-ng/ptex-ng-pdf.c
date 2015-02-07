@@ -17,7 +17,6 @@
    02110-1301 USA.
 */
 
-#define EXTERN extern
 #include "ptex-ng.h"
 
 static const double sp2bp = 0.000015202;
@@ -1173,11 +1172,11 @@ void pdf_special_exec (scaled h, scaled v)
   }
 
   graphics_mode();
-  spc_exec_special((const char *)str_pool + str_start[str_ptr], cur_length,
+  spc_exec_special((const char *) str_pool + str_start[str_ptr], cur_length,
     spc_h, spc_v, 1.0);
 }
 
-void pdf_special_out(pointer p)
+void pdf_special_out (pointer p)
 {
   char old_setting;
 

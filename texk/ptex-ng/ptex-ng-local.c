@@ -27,7 +27,6 @@
   #include <malloc.h>
 #endif
 
-#define EXTERN extern
 #include "ptex-ng.h"
 
 #define USEOUREALLOC
@@ -68,17 +67,11 @@ const char * banner = "This is pTeX-ng, Version 3.14159265 (W32TeX)";
 const char * banner = "This is pTeX-ng, Version 3.14159265";
 #endif
 
-clock_t time_start;
-clock_t time_main;
-clock_t time_finish;
-
 char * dvi_directory = "";
 char * log_directory = "";
 char * aux_directory = "";
 char * fmt_directory = "";
 char * pdf_directory = "";
-
-char log_line[256];
 
 static boolean mem_spec_flag = false;
 static boolean format_spec   = false;
@@ -115,23 +108,8 @@ static void show_version (void)
     "Compiled with %s\n"
     "Compiled with %s\n"
     "Compiled with zlib version %s\n"
-    "Compiled with synctex (build-in edition)\n\n"
-    "Sponsors:\n"
-    " Xincheng Luo, Liang Qi, Fuzhou Chen, Chongzhi Qiao, Bingyu Zhang\n\n"
-    "Acknowledgements:\n"
-    " Xincheng Luo, Jie Su, Liang Qi, Haiyang Liu, Hu Gao, Liang Sun, Tengfei Xu,\n"
-    " Xiaohao Xia, Chencheng Huang, Jinze Huang, Hai Liang, Wei Sun, Longshan Du,\n"
-    " Xiabing Wang, Guobao Li, Yujin Hu, Haiyu Yang, Hao Zhou, Mengdi Cao,\n"
-    " Renzhi Li, Yi Lu, Wenbo Lv, Yu Zhai, Yu Zhong, Zhibo Xiao, Xirui Luo,\n"
-    " Qing Li, Kang Zhang, Zheng Wang, Weisi Dai, Tianchi Li, Chongzhi Qiao,\n"
-    " Kun Lin, Wenjun Zhu, Qi Zhang, Zhaoli Wang, Jinlong Chang, Junyuan Leng,\n"
-    " Xueyuan Gao, Weiwen Zhang, Xiaosheng Yang, Xiao Zhang, Hao Wang, Ke Lin,\n"
-    " Huanjie Zhu, Runze Li, Lu Wang, Linheng Yang, Fuzhou Chen, Wenquan Sun,\n"
-    " Jianxin Rong, Jinwei Tang, Rongjun Tang, Yun Hao, Chenxing Luo, Chong Zhu,\n"
-    " Chunqi He, Yilun Lin, Sijiang Liu, Chenyu Jin, Hao Chen, Zhongyang Liu,\n"
-    " Guan Wang, Wenqing Yang, Bowai Jia, Hao Wang, Ning Zhu, Jianing Zhu, Xin Chen,\n"
-    " Xuan Leng, Shangwen Lu, Yongjie Han, Yixuan Zhang, Junqi Wang, Tianxiao Zhang,\n"
-    " Shuai Dong, Mengchang Wang\n", banner, kpathsea_version_string,
+    "Compiled with synctex (build-in edition)\n\n",
+    banner, kpathsea_version_string,
     ptexenc_version_string, zlib_version);
   uexit(EXIT_FAILURE);
 }
@@ -427,8 +405,6 @@ int realloc_hyphen (int hyphen_prime)
   return 0; // success
 }
 
-int current_mem_size = 0;
-
 memory_word * allocate_main_memory (int size)
 {
   int n;
@@ -600,8 +576,6 @@ memory_word * realloc_main (int lo_size, int hi_size)
   return mem;
 }
 
-int current_font_mem_size = 0;
-
 memory_word * realloc_font_info (int size)
 {
   memory_word * new_font_info = NULL;
@@ -661,8 +635,6 @@ memory_word * realloc_font_info (int size)
 
   return font_info;
 }
-
-int current_pool_size = 0;
 
 packed_ASCII_code * realloc_str_pool (int size)
 {
@@ -725,8 +697,6 @@ packed_ASCII_code * realloc_str_pool (int size)
 
   return str_pool;
 }
-
-int current_max_strings = 0;
 
 pool_pointer * realloc_str_start (int size)
 {
@@ -838,8 +808,6 @@ int allocate_ini (int size)
   return 0; // success
 }
 
-int current_save_size = 0;
-
 memory_word * realloc_save_stack (int size)
 {
   int k, min_size;
@@ -903,8 +871,6 @@ memory_word * realloc_save_stack (int size)
 
   return save_stack;
 }
-
-int current_stack_size = 0;
 
 in_state_record * realloc_input_stack (int size)
 {
@@ -970,8 +936,6 @@ in_state_record * realloc_input_stack (int size)
   return input_stack;
 }
 
-int current_nest_size = 0;
-
 list_state_record * realloc_nest_stack (int size)
 {
   int k, min_size;
@@ -1035,8 +999,6 @@ list_state_record * realloc_nest_stack (int size)
 
   return nest;
 }
-
-int current_param_size = 0;
 
 halfword * realloc_param_stack (int size)
 {
@@ -1102,8 +1064,6 @@ halfword * realloc_param_stack (int size)
   return param_stack;
 }
 
-int current_buf_size = 0;
-
 ASCII_code * realloc_buffer (int size)
 {
   int k, min_size;
@@ -1167,6 +1127,8 @@ ASCII_code * realloc_buffer (int size)
 
 static int allocate_memory (void)
 {
+  current_mem_size = 0;
+
 #ifdef NG_EXTENSION
   input_stack = NULL;
   current_stack_size = 0;
@@ -1871,32 +1833,29 @@ void main_init (int ac, char ** av)
 
   time_start  = clock();
   time_main   = time_start;
+
+#ifdef NG_EXTENSION
   main_memory = NULL;
   font_info   = NULL;
   str_pool    = NULL;
   str_start   = NULL;
+  save_stack  = NULL;
+  hyph_list   = NULL;
+  hyph_word   = NULL;
+  trie_taken  = NULL;
+  trie_hash   = NULL;
+  trie_r      = NULL;
+  trie_c      = NULL;
+  trie_o      = NULL;
+  trie_l      = NULL;
+  trie_trc    = NULL;
+  trie_tro    = NULL;
+  trie_trl    = NULL;
 
-#ifdef NG_EXTENSION
-  save_stack = NULL; 
-#endif
-
-#ifdef NG_EXTENSION
   buffer           = NULL;
   current_buf_size = 0;
   buffer           = realloc_buffer(initial_buf_size);
 #endif
-
-  hyph_list  = NULL;
-  hyph_word  = NULL;
-  trie_taken = NULL;
-  trie_hash  = NULL;
-  trie_r     = NULL;
-  trie_c     = NULL;
-  trie_o     = NULL;
-  trie_l     = NULL;
-  trie_trc   = NULL;
-  trie_tro   = NULL;
-  trie_trl   = NULL;
 
   log_opened            = false;
   interaction           = -1;

@@ -29,7 +29,6 @@
   authorization from the copyright holder.
 */
 
-#define EXTERN extern
 #include "ptex-ng.h"
 
 #define SYNCTEX_VERSION       1

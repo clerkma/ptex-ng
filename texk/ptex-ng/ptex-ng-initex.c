@@ -17,7 +17,6 @@
    02110-1301 USA.
 */
 
-#define EXTERN extern
 #include "ptex-ng.h"
 
 static const integer BEGINFMTCHECKSUM = 367403084;
@@ -3950,6 +3949,7 @@ void store_fmt_file (void)
   print_int(str_ptr);
   prints(" strings of total length ");
   print_int(pool_ptr);
+
   // Dump the dynamic memory
   sort_avail();
   var_used = 0;
@@ -3962,13 +3962,13 @@ void store_fmt_file (void)
       dump_int(sa_root[k]);
   }
 
-  p = 0;
+  p = mem_bot;
   q = rover;
   x = 0;
 
   do {
-    if (dump_things(mem[p], q + 2 - p))
-      return;
+    for (k = p; k <= q + 1; k++)
+      dump_wd(mem[k]);
 
     x = x + q + 2 - p;
     var_used = var_used + q - p;
@@ -3979,15 +3979,15 @@ void store_fmt_file (void)
   var_used = var_used + lo_mem_max - p;
   dyn_used = mem_end + 1 - hi_mem_min;
 
-  if (dump_things(mem[p], lo_mem_max + 1 - p))
-    return;
+  for (k = p; k <= lo_mem_max; k++)
+    dump_wd(mem[k]);
 
   x = x + lo_mem_max + 1 - p;
   dump_int(hi_mem_min);
   dump_int(avail); 
 
-  if (dump_things(mem[hi_mem_min], mem_end + 1 - hi_mem_min))
-    return;
+  for (k = hi_mem_min; k <= mem_end; k++)
+    dump_wd(mem[k]);
 
   x = x + mem_end + 1 - hi_mem_min;
   p = avail;
@@ -4044,8 +4044,11 @@ found1:
 done1:
     dump_int(l - k);
 
-    if (dump_things(eqtb[k], l - k))
-      return;
+    while (k < l)
+    {
+      dump_wd(eqtb[k]);
+      incr(k);
+    }
 
     k = j + 1;
     dump_int(k - l);
@@ -4081,8 +4084,11 @@ found2:
 done2:
     dump_int(l - k);
 
-    if (dump_things(eqtb[k], l - k))
-      return;
+    while (k < l)
+    {
+      dump_wd(eqtb[k]);
+      incr(k);
+    }
 
     k = j + 1;
     dump_int(k - l);
@@ -4104,8 +4110,8 @@ done2:
     }
   }
 
-  if (dump_things(hash[hash_used + 1], undefined_control_sequence - 1 - hash_used))
-    return;
+  for (p = hash_used + 1; p <= undefined_control_sequence - 1; p++)
+    dump_hh(hash[p]);
 
   dump_int(cs_count);
   print_ln();
@@ -4114,7 +4120,10 @@ done2:
 
   // Dump the font information
   dump_int(fmem_ptr);
-  dump_things(font_info[0], fmem_ptr);
+
+  for (k = 0; k <= fmem_ptr - 1; k++)
+    dump_wd(font_info[k]);
+
   dump_int(font_ptr);
 
   {

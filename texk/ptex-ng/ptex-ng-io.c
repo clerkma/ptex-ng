@@ -19,8 +19,6 @@
    02110-1301 USA.
 */
 
-#define EXTERN extern
-
 #include "ptex-ng.h"
 #undef name
 
@@ -213,6 +211,7 @@ boolean open_input (void ** f, kpse_file_format_type file_fmt, const char * fope
   name_of_file[name_length + 1] = '\0';
   file_name_mbcs = utf8_mbcs((const char *) name_of_file + 1);
   file_name_kpse = kpse_find_file((const_string) file_name_mbcs, file_fmt, must_exist);
+  //printf("\n>>> (%s), index = %d\n", name_of_file + 1, (int)index);
 
   if (file_name_kpse != NULL)
   {
@@ -220,7 +219,7 @@ boolean open_input (void ** f, kpse_file_format_type file_fmt, const char * fope
     *f = open_file(file_name_kpse, fopen_mode);
 
     if (file_fmt == kpse_tfm_format)
-      fbyte = getc((FILE *) *f);
+      fbyte = fgetc((FILE *) *f);
 
     if (*f)
     {
