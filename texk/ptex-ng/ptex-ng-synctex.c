@@ -967,8 +967,8 @@ static void synctex_record_vlist (pointer p)
 
 static void synctex_record_tsilv (pointer p)
 {
-  (void) p;
   int len = 0;
+  (void) p;
 
   len = synctex_writer(synctex_file, "]\n");
 
@@ -1024,8 +1024,9 @@ static void synctex_record_hlist (pointer p)
 
 static void synctex_record_tsilh (pointer p)
 {
-  (void) p;
   int len = 0;
+  (void) p;
+
 
   len = synctex_writer(synctex_file, ")\n");
 
@@ -1155,8 +1156,8 @@ void synctex_kern_recorder (pointer p)
 
 void synctex_char_recorder (pointer p)
 {
-  (void) p;
   int len = 0;
+  (void) p;
 
   len = synctex_writer(synctex_file, "c%"PRId64",%"PRId64"\n",
       synctex_h, synctex_v);

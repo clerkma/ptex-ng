@@ -89,18 +89,15 @@ static void catch_interrupt (int err)
 void fix_date_and_time (void)
 {
   time_t clock;
-  struct tm *tmptr;
+  struct tm * tmptr;
 
-  (void) time(&clock);
-
-  if (clock < 0)
+  if ((clock = time(NULL)) < 0)
     puts("Time not available!");
 
   tmptr = localtime(&clock);
 
   if (tmptr == NULL)
   {
-    printf("Cannot convert time (%0lld)!\n", (long long) clock);
     year     = 2038;
     month    = 1;
     day      = 18;

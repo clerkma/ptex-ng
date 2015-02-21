@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014, 2015 Clerk Ma   
+   Copyright 2014, 2015 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,9 +18,31 @@
    02110-1301 USA.
 */
 
-#if   defined (__ANDROID__)
-  #define malloc_usable_size dlmalloc_usable_size
+#if defined (__ANDROID__)
+
+/*
+ for android-ndk-r10c
+ 
+ 1. arm64-v8a   --> __arm__ __aarch64__
+ 2. armeabi-v7a --> __arm__ __ARM_ARCH_7A__
+ 3. armeabi     --> __arm__
+ 4. x86         --> __i386__
+ 5. x86_64      --> __x86_64__
+ 6. mips        --> __mips__
+ 7. mips64      --> __mips64
+ */
+
+  #if defined (__mips64) || defined (__aarch64__) || defined (__x86_64__)
+    #include <malloc.h>
+  #else
+    #define malloc_usable_size dlmalloc_usable_size
+  #endif
 #elif defined (__APPLE__)
+
+/*
+ for Mac OS X, iOS
+ */
+
   #include <malloc/malloc.h>
   #define malloc_usable_size malloc_size
 #elif defined (__gnu_linux__)
@@ -138,7 +160,7 @@ static void scivilize (char * date)
 static void stamp_it (void)
 {
   char date[11 + 1];
- 
+
   strcpy(date, __DATE__);
   scivilize(date);
   printf("pTeX-ng (compiled time: %s %s with %s/%s)\n",
@@ -170,6 +192,7 @@ static void ng_trace (const char * fmt_str, ...)
 
   va_end(m_ptr);
 }
+
 /* our own version of realloc --- avoid supposed Microsoft version bug */
 /* also tries _expand first, which can avoid address growth ... */
 
@@ -183,7 +206,7 @@ static void * ourrealloc (void * old, size_t new_size)
     new_size = ((new_size / 4) + 1) * 4;
 
   if (old == NULL)
-    return malloc (new_size);
+    return malloc(new_size);
 
 #ifdef _WIN32
   old_size = _msize(old);
@@ -372,8 +395,8 @@ int realloc_hyphen (int hyphen_prime)
   nl = (hyphen_prime + 1) * sizeof(halfword);
   n = nw + nl;
   trace_memory("hyphen exception", n);
-  hyph_word = (str_number *) REALLOC (hyph_word, nw);
-  hyph_list = (halfword *) REALLOC (hyph_list, nl);
+  hyph_word = (str_number *) REALLOC(hyph_word, nw);
+  hyph_list = (halfword *) REALLOC(hyph_list, nl);
 
   if (hyph_word == NULL || hyph_list == NULL)
   {
@@ -459,10 +482,6 @@ memory_word * realloc_main (int lo_size, int hi_size)
   if (flag_initex)
   {
     puts("ERROR: Cannot extent main memory in initex");
-
-    if (!flag_tex82)
-      puts("Please use `-m=...' on command line");
-
     return NULL;
   }
 
@@ -676,13 +695,13 @@ packed_ASCII_code * realloc_str_pool (int size)
     if (current_pool_size == 0)
       break;  /* initial allocation must work */
 
-    size = size / 2;          /* else can retry smaller */
+    size = size / 2; /* else can retry smaller */
   }
 
   if (new_str_pool == NULL)
   {
     memory_error("string pool", n);
-    return str_pool;           /* try and continue !!! */
+    return str_pool; /* try and continue !!! */
   }
 
   str_pool = new_str_pool;
@@ -1728,7 +1747,7 @@ static inline void unixify_path (char * s)
 
 static void ng_deslash_all (int ac, char **av)
 {
-  char buffer[file_name_size];  
+  char buffer[file_name_size];
   char *s;
 
   if ((s = grabenv("TEXDVI")) != NULL)
@@ -1966,10 +1985,12 @@ static void print_cs_name (FILE * output, int h)
 {
   if (text(h) == 0)
     return;
-
-  char * cs = get_str_string(text(h));
-  fprintf(output, "(%d), \"%s\"\n", h, cs);
-  free(cs);
+  else
+  {
+    char * cs = get_str_string(text(h));
+    fprintf(output, "(%d), \"%s\"\n", h, cs);
+    free(cs);
+  }
 }
 
 /* k1 and k2 are positions in string pool */

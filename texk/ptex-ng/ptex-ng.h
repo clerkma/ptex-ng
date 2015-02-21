@@ -69,6 +69,10 @@
 // zlib for fmt file and synctex
 #include "zlib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // integers
 typedef uint8_t ASCII_code;
 typedef int32_t KANJI_code;
@@ -342,9 +346,8 @@ EXTERN pointer mem_end;
 EXTERN pointer mem_start;
 /* sec 0124 */
 EXTERN pointer rover;
-/* sec 0165 */
 
-/* NOTE: the following really also need to be dynamically allocated */
+/* sec 0165 */
 #ifdef NG_DEBUG
   define_array(zzzab, char, mem_max - mem_bot + 1);
   define_array(zzzac, char, mem_max - mem_bot + 1);
@@ -756,4 +759,9 @@ EXTERN clock_t time_start, time_main, time_finish;
 EXTERN integer synctex_option;
 
 #include "coerce.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #endif

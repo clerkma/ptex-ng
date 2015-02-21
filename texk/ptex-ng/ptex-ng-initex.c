@@ -4096,6 +4096,7 @@ done2:
 
   dump_int(par_loc);
   dump_int(write_loc);
+
   // Dump the hash table
   dump_int(hash_used);
   cs_count = frozen_control_sequence - 1 - hash_used;

@@ -2655,7 +2655,8 @@ again_2:                                                \
     case letter:                                        \
     case other_char:                                    \
       {                                                 \
-        ins_kp = true; cur_l = 0;                       \
+        ins_kp = true;                                  \
+        cur_l = 0;                                      \
         goto main_loop_j_3;                             \
       }                                                 \
       break;                                            \
@@ -2723,13 +2724,17 @@ again_2:                                                \
                                                         \
     case inhibit_glue:                                  \
       {                                                 \
-        inhibit_glue_flag = true; goto again_2;         \
+        inhibit_glue_flag = true;                       \
+        goto again_2;                                   \
       }                                                 \
       break;                                            \
+                                                        \
     default:                                            \
       {                                                 \
         ins_kp = max_halfword;                          \
-        cur_l = 0; cur_r = non_char; lig_stack = null;  \
+        cur_l = 0;                                      \
+        cur_r = non_char;                               \
+        lig_stack = null;                               \
       }                                                 \
       break;                                            \
   }                                                     \

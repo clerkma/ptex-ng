@@ -1675,9 +1675,6 @@ restart:
 
   if (mem_min - (block_size + 1) <= mem_start) /* check again */
   {
-    if (flag_trace)
-      printf("mem_min %d, mem_start %d, block_size %d\n", (int) mem_min, (int) mem_start, (int) block_size);
-
     overflow("main memory size", mem_max + 1 - mem_min);
   }
 
@@ -1698,7 +1695,7 @@ found:
 #endif
 
   return r;
-} 
+}
 /* sec 0130 */
 // variable-size node liberation
 void free_node (pointer p, halfword s)
@@ -6633,7 +6630,7 @@ void begin_token_list (pointer p, quarterword t)
 
       if (tracing_macros > 1)
       {
-        begin_diagnostic(); 
+        begin_diagnostic();
         print_nl("");
 
         switch (t)
@@ -7349,7 +7346,7 @@ reswitch:
 
           print_err("You can't use `");
           print_esc("unless");
-          print("' before `");
+          prints("' before `");
           print_cmd_chr(cur_cmd, cur_chr);
           print_char('\'');
           help1("Continue, and I'll forget that it ever happened.");
@@ -11164,7 +11161,7 @@ void pack_job_name_(str_number s)
   pack_cur_name();
 }
 /* sec 0530 */
-void prompt_file_name_(const char * s, str_number e) 
+void prompt_file_name_(const char * s, str_number e)
 {
   integer k;
 
@@ -11506,10 +11503,6 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
   if ((font_ptr == font_max) || (fmem_ptr + lf > font_mem_size))
 #endif
   {
-    if (flag_trace)
-      printf("font_ptr %d font_max %d fmem_ptr %d lf %d font_mem_size %d\n",
-          (int) font_ptr, (int) font_max, (int) fmem_ptr, (int)lf, (int) font_mem_size);
-
     start_font_error_message();
     prints(" not loaded: Not enough room left");
     help4("I'm afraid I won't be able to make use of this font,",
@@ -11537,7 +11530,7 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
   {
     if (lh < 2)
       goto bad_tfm;
-    
+
     store_four_quarters(font_check[f]);
     fget();
     read_sixteen(z);
@@ -11547,7 +11540,7 @@ internal_font_number read_font_info (pointer u, str_number nom, str_number aire,
     z = (z * 16) + (fbyte / 16);
 
     if (z < unity)
-      goto bad_tfm; 
+      goto bad_tfm;
 
     while (lh > 2)
     {
@@ -11962,13 +11955,7 @@ pointer new_character (internal_font_number f, eight_bits c)
 }
 /* sec 0598 */
 void dvi_swap (void)
-{ 
-  if (flag_trace)
-  {
-    wterm_cr();
-    printf("dvi_swap() %d", (int) dvi_gone);
-  }
-
+{
   if (dvi_limit == dvi_buf_size)
   {
     write_dvi(0, half_buf - 1);
@@ -22979,10 +22966,12 @@ reswitch:
 
     case mmode + halign:
       if (privileged())
+      {
         if (cur_group == math_shift_group)
           init_align();
         else
           off_save();
+      }
       break;
 
     case vmode + endv:
