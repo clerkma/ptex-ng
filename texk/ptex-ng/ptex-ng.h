@@ -761,7 +761,7 @@ EXTERN integer synctex_option;
 #include "coerce.h"
 
 #ifdef __cplusplus
-extern "C" {
+}
 #endif
 
 #endif
