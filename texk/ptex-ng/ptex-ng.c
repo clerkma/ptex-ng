@@ -25,21 +25,49 @@
 static int    gargc;
 static char **gargv;
 
-int main (int argc, char *argv[])
+void set_utf8_argv (int argc, char ** argv)
 {
-  int flag = 0;
+#ifdef WIN32
+  int i;
 
   gargc = argc;
-  gargv = argv;
+  gargv = (char **) malloc(gargc * sizeof(char *));
 
-#ifdef WIN32
+  for (i = 0; i < argc; i++)
+    gargv[i] = mbcs_utf8(argv[i]);
+
   _setmaxstdio(2048);
   setmode(fileno(stdin), _O_BINARY);
+#else
+  gargc = argc;
+  gargv = argv;
 #endif
+}
 
-  main_init(argc, argv);
-  flag = main_program();
-  main_exit(flag);
+void free_utf8_argv (void)
+{
+#ifdef WIN32
+  int i;
+
+  for (i = 0; i < gargc; i++)
+  {
+    if (gargv[i] != NULL)
+      free(gargv[i]);
+
+    gargv[i] = NULL;
+  }
+
+  free(gargv);
+#endif
+}
+
+int main (int argc, char *argv[])
+{
+  set_utf8_argv(argc, argv);
+  main_init(gargc, gargv);
+  main_program();
+  main_exit();
+  free_utf8_argv();
 
   return 0;
 }
@@ -47,23 +75,18 @@ int main (int argc, char *argv[])
 void t_open_in (void)
 {
   int i;
+
   buffer[first] = 0;
 
   if (gargc > optind && optind > 0)
   {
     for (i = optind; i < gargc; i++)
     {
-      char * name_from_cli = mbcs_utf8(gargv[i]);
-
       if (flag_allow_quoted && (strchr(gargv[i], ' ') != NULL))
-        sprintf((char *) &buffer[first], "\"%s\" ", name_from_cli);
+        sprintf((char *) &buffer[first], "\"%s\" ", gargv[i]);
       else
-        sprintf((char *) &buffer[first], "%s ", name_from_cli);
-
-      free(name_from_cli);
+        sprintf((char *) &buffer[first], "%s ", gargv[i]);
     }
-
-    gargc = 0;
   }
 
   for (last = first; buffer[last]; ++last)
@@ -129,6 +152,16 @@ void fix_date_and_time (void)
   }
 }
 
+static inline void input_char (ASCII_code i)
+{
+  buffer[last++] = i;
+
+#ifdef NG_EXTENSION
+  if (last >= current_buf_size)
+    buffer = realloc_buffer(increment_buf_size);
+#endif
+}
+
 /* sec 0031 */
 // inputs the next line or returns |false|
 boolean input_ln (FILE * f, boolean bypass_eoln)
@@ -146,59 +179,25 @@ boolean input_ln (FILE * f, boolean bypass_eoln)
   {
     i = fgetc(f);
 
-    if (i < ' ')
+    if ((i == EOF) || (i == '\n') || (i == '\r'))
+      break;
+    else switch (i)
     {
-      if ((i == EOF) || (i == '\n') || (i == '\r'))
+      case '\t':
+        if (tab_step >= 0)
+          input_char('\t');
+        else
+        {
+          int j;
+
+          for (j = 0; j < tab_step; j++)
+            input_char(' ');
+        }
         break;
-      else if ((i == '\t') && (tab_step != 0))
-      {
-        buffer[last++] = (ASCII_code) ' ';
 
-#ifdef NG_EXTENSION
-        if (last >= current_buf_size)
-        {
-          buffer = realloc_buffer(increment_buf_size);
-
-          if (last >= current_buf_size)
-            break;
-        }
-#endif
-
-#ifdef NG_EXTENSION
-        while ((last - first) % tab_step != 0)
-#else
-        while ((last < buf_size) && ((last - first) % tab_step != 0))
-#endif
-        {
-          buffer[last++] = (ASCII_code) ' ';
-
-#ifdef NG_EXTENSION
-          if (last >= current_buf_size)
-          {
-            buffer = realloc_buffer(increment_buf_size);
-
-            if (last >= current_buf_size)
-              break;
-          }
-#endif
-        }
-
-        continue;
-      }
-    }
-
-    {
-      buffer[last++] = (ASCII_code) i;
-
-#ifdef NG_EXTENSION
-      if (last >= current_buf_size)
-      {
-        buffer = realloc_buffer(increment_buf_size);
-
-        if (last >= current_buf_size)
-          break;
-      }
-#endif
+      default:
+        input_char(i);
+        break;
     }
   }
 

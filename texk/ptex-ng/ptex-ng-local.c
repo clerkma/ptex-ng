@@ -1300,90 +1300,6 @@ static void complainarg (int c, char *s)
   printf("ERROR: Do not understand `%c' argument value `%s'\n", c, s);
 }
 
-static char *allowedargs = "+bcdfijnpqrstvwyzABCDFGIJKLMNOPQRSTVWXYZ023456789?a=e=g=h=k=l=m=o=u=x=E=H=P=U=";
-
-static void reorderargs (int ac, char **av)
-{
-  int n, m;
-  char *s, *t;
-  char takeargs[256];   /* large enough for all command line arg chars */
-
-  if (ac < 3)
-  {
-    return; /* no args ! */
-  }
-
-  s = allowedargs;
-  t = takeargs;   /* list of those that take args */
-
-  while (*s != '\0' && *(s + 1) != '\0')
-  {
-    if (*(s + 1) == '=')
-      *t++ = *s++;   /* copy over --- without the = */
-
-    s++;
-  }
-
-  *t = '\0';
-  ng_trace("%s\n", takeargs);  
-  n = 1;
-
-  for (;;)
-  {
-    if (*av[n] != '-')
-      break;
-
-    if (n + 1 < ac && *(av[n] + 2) == '\0' &&
-      strchr(takeargs, *(av[n] + 1)) != NULL)
-      n += 2; /* step over it */
-    else
-      n++;
-
-    if (n == ac)
-      break;
-  }
-
-  for (;;)
-  {
-    if (n == ac)
-      break;
-
-    m = n;
-
-    while (m < ac && *av[m] != '-')
-      m++;  /* first command */
-
-    if (m == ac)
-      break;
-/* does it take an argument ? and is this argument next ? */
-/* check first whether the `-x' is isolated, or arg follows directly */
-/* then check whether this is one of those that takes an argument */
-    if (m+1 < ac && *(av[m] + 2) == '\0' &&
-      strchr(takeargs, *(av[m] + 1)) != NULL)
-    {
-      s = av[m];      /*  move command down before non-command */
-      t = av[m + 1];
-
-      for (; m > n; m--)
-        av[m + 1] = av[m - 1];
-
-      av[n] = s;
-      av[n + 1] = t;
-      n += 2;       /* step over moved args */
-    }
-    else
-    {
-      s = av[m];      /*  move command down before non-command */
-
-      for (; m > n; m--)
-        av[m] = av[m - 1];
-
-      av[n] = s;
-      n++;        /* step over moved args */
-    }
-  }
-}
-
 static char * lastname  = NULL;
 static char * lastvalue = NULL;
 
@@ -1444,47 +1360,47 @@ static void knuthify (void)
   flag_compact_fmt      = false;
 }
 
-static struct option long_options[] =
+static void read_command_line (int ac, char **av)
 {
-  {"main-memory",   required_argument, NULL, 0},
-  {"hyph-size",     required_argument, NULL, 0},
-  {"trie-size",     required_argument, NULL, 0},
-  {"tab-step",      required_argument, NULL, 0},
-  {"percent-grow",  required_argument, NULL, 0},
-  {"default-rule",  required_argument, NULL, 0},
-  {"dvi-dir",       required_argument, NULL, 0},
-  {"log-dir",       required_argument, NULL, 0},
-  {"aux-dir",       required_argument, NULL, 0},
-  {"progname",      required_argument, NULL, 0},
-  {"jobname",       required_argument, NULL, 0},
-  {"synctex",       required_argument, NULL, 0},
-  {"showcsnames",   no_argument,       NULL, 0},
-  {"showinhex",     no_argument,       NULL, 0},
-  {"verbose",       no_argument,       NULL, 0},
-  {"patterns",      no_argument,       NULL, 0},
-  {"ini",           no_argument,       NULL, 0},
-  {"knuthify",      no_argument,       NULL, 0},
-  {"cstyle",        no_argument,       NULL, 0},
-  {"showtfm",       no_argument,       NULL, 0},
-  {"showlbstats",   no_argument,       NULL, 0},
-  {"showmissing",   no_argument,       NULL, 0},
-  {"deslash",       no_argument,       NULL, 0},
-  {"suppressfligs", no_argument,       NULL, 0},
-  {"trace",         no_argument,       NULL, 0},
-  {"help",          no_argument,       NULL, 0},
-  {"version",       no_argument,       NULL, 0},
-  {"usage",         no_argument,       NULL, 0},
-  {NULL,            0, 0, 0}
-};
+  int c;
+  char * optargnew;
+  int option_idx = 0;
 
 #undef name
 #define ARGUMENT_IS(a) !strcmp(long_options[option_idx].name, a)
 
-static void read_command_line (int ac, char **av)
-{ 
-  int c;
-  char * optargnew;
-  int option_idx = 0;
+  struct option long_options[] =
+  {
+    { "main-memory",    required_argument, NULL, 0 },
+    { "hyph-size",      required_argument, NULL, 0 },
+    { "trie-size",      required_argument, NULL, 0 },
+    { "tab-step",       required_argument, NULL, 0 },
+    { "percent-grow",   required_argument, NULL, 0 },
+    { "default-rule",   required_argument, NULL, 0 },
+    { "dvi-dir",        required_argument, NULL, 0 },
+    { "log-dir",        required_argument, NULL, 0 },
+    { "aux-dir",        required_argument, NULL, 0 },
+    { "progname",       required_argument, NULL, 0 },
+    { "jobname",        required_argument, NULL, 0 },
+    { "synctex",        required_argument, NULL, 0 },
+    { "showcsnames",    no_argument, NULL, 0 },
+    { "showinhex",      no_argument, NULL, 0 },
+    { "verbose",        no_argument, NULL, 0 },
+    { "patterns",       no_argument, NULL, 0 },
+    { "ini",            no_argument, NULL, 0 },
+    { "knuthify",       no_argument, NULL, 0 },
+    { "cstyle",         no_argument, NULL, 0 },
+    { "showtfm",        no_argument, NULL, 0 },
+    { "showlbstats",    no_argument, NULL, 0 },
+    { "showmissing",    no_argument, NULL, 0 },
+    { "deslash",        no_argument, NULL, 0 },
+    { "suppressfligs",  no_argument, NULL, 0 },
+    { "trace",          no_argument, NULL, 0 },
+    { "help",           no_argument, NULL, 0 },
+    { "version",        no_argument, NULL, 0 },
+    { "usage",          no_argument, NULL, 0 },
+    { NULL, 0, 0, 0 }
+  };
 
   if (ac < 2)
     return;
@@ -1499,7 +1415,7 @@ static void read_command_line (int ac, char **av)
     if (ARGUMENT_IS("progname"))
       kpse_reset_program_name(optarg);
     else if (ARGUMENT_IS("jobname"))
-      job_name_str = mbcs_utf8(optarg);
+      job_name_str = optarg;
     else if (ARGUMENT_IS("synctex"))
       synctex_option = (int) strtol(optarg, NULL, 0);
     else if (ARGUMENT_IS("verbose"))
@@ -1881,7 +1797,6 @@ void main_init (int ac, char ** av)
   missing_characters    = 0;
   flag_suppress_f_ligs  = false;
 
-  reorderargs(ac, av);
   init_commands(ac, av);
 
   dvi_file_name = NULL;
@@ -1944,17 +1859,9 @@ static void print_time (clock_t inter_val)
     printf("0");
 }
 
-void main_exit (int flag)
+void main_exit (void)
 {
   time_finish = clock();
-
-  if (missing_characters != 0)
-    printf("! There %s %d missing character%s --- see log file\n",
-      (missing_characters == 1) ? "was" : "were", missing_characters,
-      (missing_characters == 1) ? "" : "s");
-
-  if (free_memory() != 0)
-    flag++;
 
   if (!flag_initex)
   {
@@ -1976,7 +1883,15 @@ void main_exit (int flag)
     printf(".\n");
   }
 
-  if (flag)
+  if (missing_characters != 0)
+  {
+    char * be = (missing_characters == 1) ? "was" : "were";
+    char * pl = (missing_characters == 1) ? "" : "s";
+    printf("! There %s %d missing character%s --- see log file.\n",
+      be, missing_characters, pl);
+  }
+
+  if (free_memory() != 0)
     exit(1);
 }
 

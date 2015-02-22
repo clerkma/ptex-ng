@@ -41,7 +41,7 @@ extern str_number load_pool_strings (integer spare_size);
 extern str_number make_str_string (const char * s);
 extern char * get_str_string (str_number s);
 extern str_number get_job_name (str_number job);
-extern void main_exit (int flag);
+extern void main_exit (void);
 extern void uexit (int unix_code);
 extern void t_open_in (void);
 extern void add_variable_space (int size);
