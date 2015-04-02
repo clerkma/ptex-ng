@@ -35,7 +35,7 @@
 #define toint(x)    ((integer) (x))
 #define chr(x)      (x)
 #define odd(x)      ((x) % 2)
-#define round(x)    web2c_round((double) (x))
+#define round(x)    web2c_round((real) (x))
 #define decr(x)     --(x)
 #define incr(x)     ++(x)
 #define negate(x)   x = -x
@@ -106,7 +106,7 @@ enum
 #define set_glue_ratio_one(a)  (a) = 1.0
 #define tex_float(a)           (a)
 #define unfloat(a)             (a)
-#define float_constant(a)      (double) (a)
+#define float_constant(a)      (real) (a)
 /* sec 0115 */
 #define null 0
 /* sec 0118 */

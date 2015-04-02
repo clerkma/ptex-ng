@@ -24,6 +24,7 @@
 
 static int    gargc;
 static char **gargv;
+static void set_signal (void);
 
 void set_utf8_argv (int argc, char ** argv)
 {
@@ -64,6 +65,7 @@ void free_utf8_argv (void)
 int main (int argc, char *argv[])
 {
   set_utf8_argv(argc, argv);
+  set_signal();
   main_init(gargc, gargv);
   main_program();
   main_exit();
@@ -109,6 +111,24 @@ static void catch_interrupt (int err)
   (void) signal(SIGINT, catch_interrupt);
 }
 
+static void set_signal (void)
+{
+#ifdef _WIN32
+  if (signal(SIGINT, catch_interrupt) == SIG_ERR)
+  {
+    puts(" CTRL-C handler not installed");
+    uexit(EXIT_FAILURE);
+  }
+#else
+  void (*old_handler)();
+
+  old_handler = signal(SIGINT, catch_interrupt);
+
+  if (old_handler != SIG_DFL)
+    (void) signal(SIGINT, old_handler);
+#endif
+}
+
 void fix_date_and_time (void)
 {
   time_t clock;
@@ -132,23 +152,6 @@ void fix_date_and_time (void)
     day      = tmptr->tm_mday;
     month    = tmptr->tm_mon + 1;
     year     = tmptr->tm_year + 1900;
-  }
-
-  {
-#ifdef _WIN32
-    if (signal(SIGINT, catch_interrupt) == SIG_ERR)
-    {
-      puts(" CTRL-C handler not installed");
-      uexit(EXIT_FAILURE);
-    }
-#else
-    void (*old_handler)();
-
-    old_handler = signal(SIGINT, catch_interrupt);
-
-    if (old_handler != SIG_DFL)
-      (void) signal(SIGINT, old_handler);
-#endif
   }
 }
 
@@ -288,7 +291,7 @@ void uexit (int unix_code)
 }
 
 // texk/web2c/lib/zround.c
-integer web2c_round (double r)
+integer web2c_round (real r)
 {
   integer i;
 
@@ -322,9 +325,6 @@ char * unixify (char * t)
       s++;
     }
   }
-
-  if (flag_trace)
-    printf("Unixified name: %s\n", t);
 
   return t;
 }

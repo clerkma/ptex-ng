@@ -47,11 +47,40 @@ extern void t_open_in (void);
 extern void add_variable_space (int size);
 extern char * unixify (char * t);
 // functions of I/O
+
+extern integer web2c_round (real r);
+
+#ifndef NG_FILE
 extern boolean input_ln (FILE * f, boolean bypass_eoln);
-extern integer web2c_round (double r);
 extern boolean open_input  (void ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
 extern boolean open_output (void ** f, kpse_file_format_type file_fmt, const char * fopen_mode);
 extern void    close_file  (FILE * f);
+#define a_open_in(f)    open_input  ((void **) &(f), kpse_tex_format, FOPEN_R_MODE)
+#define a_open_out(f)   open_output ((void **) &(f), kpse_tex_format, FOPEN_W_MODE)
+#define b_open_in(f)    open_input  ((void **) &(f), kpse_tfm_format, FOPEN_RBIN_MODE)
+#define b_open_out(f)   open_output ((void **) &(f), kpse_tfm_format, FOPEN_WBIN_MODE)
+#define w_open_in(f)    open_input  ((void **) &(f), kpse_fmt_format, FOPEN_RBIN_MODE)
+#define w_open_out(f)   open_output ((void **) &(f), kpse_fmt_format, FOPEN_WBIN_MODE)
+#define a_close(f)      close_file(f)
+#define b_close(f)      a_close(f)
+#define w_close(f)      gzclose(fmt_file)
+#define w_eof(f)        (flag_compact_fmt == true ? gzeof((gzFile) f) : feof((FILE *) f))
+#else
+extern boolean input_ln (EFILE f, boolean bypass_eoln);
+extern boolean open_input  (EFILE * f, kpse_file_format_type file_fmt, const char * fopen_mode);
+extern boolean open_output (EFILE * f, kpse_file_format_type file_fmt, const char * fopen_mode);
+extern void    close_file  (EFILE f);
+#define a_open_in(f)    open_input  ((EFILE *) &(f), kpse_tex_format, FOPEN_R_MODE)
+#define a_open_out(f)   open_output ((EFILE *) &(f), kpse_tex_format, FOPEN_W_MODE)
+#define b_open_in(f)    open_input  ((EFILE *) &(f), kpse_tfm_format, FOPEN_RBIN_MODE)
+#define b_open_out(f)   open_output ((EFILE *) &(f), kpse_tfm_format, FOPEN_WBIN_MODE)
+#define w_open_in(f)    open_input  ((EFILE *) &(f), kpse_fmt_format, FOPEN_RBIN_MODE)
+#define w_open_out(f)   open_output ((EFILE *) &(f), kpse_fmt_format, FOPEN_WBIN_MODE)
+#define a_close(f)      close_file(f)
+#define b_close(f)      close_file(f)
+#define w_close(f)      close_file(f)
+#define w_eof(f)        (flag_compact_fmt == true ? gzeof((gzFile) f) : feof((FILE *) f))
+#endif
 // functions of synctex
 void synctex_init (void);
 void synctex_terminate (void);

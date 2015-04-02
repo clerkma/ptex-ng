@@ -928,7 +928,7 @@ boolean init_terminal (void)
 
     loc = first;
 
-    while ((loc < last) && (buffer[loc]== ' '))
+    while ((loc < last) && (buffer[loc] == ' '))
       incr(loc);
 
     if (loc < last)
@@ -8960,7 +8960,7 @@ found:
 
         case all_jcode(skip_blanks):
         case all_jcode(new_line):
-        case all_jcode(mid_kanji):
+        case all_jcode(mid_line):
           state = mid_kanji;
           break;
 
@@ -12706,7 +12706,7 @@ reswitch:
     glue_sign(r) = stretching;
 
     if (total_stretch[o] != 0)
-      glue_set(r) = x / ((double) total_stretch[o]);
+      glue_set(r) = x / ((real) total_stretch[o]);
     else
     {
       glue_sign(r) = normal;
@@ -12754,7 +12754,7 @@ reswitch:
     glue_sign(r) = shrinking;
 
     if (total_shrink[o] != 0)
-      glue_set(r) = ((-x) / ((double) total_shrink[o]));
+      glue_set(r) = ((-x) / ((real) total_shrink[o]));
     else
     {
       glue_sign(r) = normal;
@@ -13000,7 +13000,7 @@ pointer vpackage (pointer p, scaled h, small_number m, scaled l)
     glue_sign(r) = stretching;
 
     if (total_stretch[o] != 0)
-      glue_set(r) = x / ((double) total_stretch[o]);
+      glue_set(r) = x / ((real) total_stretch[o]);
     else
     {
       glue_sign(r) = normal;
@@ -13048,7 +13048,7 @@ pointer vpackage (pointer p, scaled h, small_number m, scaled l)
     glue_sign(r) = shrinking;
 
     if (total_shrink[o] != 0)
-      glue_set(r) = (-x) / ((double) total_shrink[o]);
+      glue_set(r) = (-x) / ((real) total_shrink[o]);
     else
     {
       glue_sign(r) = normal;
@@ -15271,7 +15271,7 @@ void fin_align (void)
               if (glue_stretch(r) == 0)
                 set_glue_ratio_zero(glue_set(r));
               else
-                glue_set(r) = (t - width(r)) / ((double) glue_stretch(r));
+                glue_set(r) = (t - width(r)) / ((real) glue_stretch(r));
             }
             else
             {
@@ -15283,7 +15283,7 @@ void fin_align (void)
               else if ((glue_order(r) == normal) && (width(r) - t > glue_shrink(r)))
                 set_glue_ratio_one(glue_set(r));
               else
-                glue_set(r) = (width(r) - t) / ((double) glue_shrink(r));
+                glue_set(r) = (width(r) - t) / ((real) glue_shrink(r));
             }
 
             width(r) = w;
@@ -15307,7 +15307,7 @@ void fin_align (void)
               if (glue_stretch(r) == 0)
                 set_glue_ratio_zero(glue_set(r));
               else
-                glue_set(r) = (t - height(r)) / ((double) glue_stretch(r));
+                glue_set(r) = (t - height(r)) / ((real) glue_stretch(r));
             }
             else
             {
@@ -15319,7 +15319,7 @@ void fin_align (void)
               else if ((glue_order(r) == normal) && (height(r) - t > glue_shrink(r)))
                 set_glue_ratio_one(glue_set(r));
               else
-                glue_set(r) = (height(r) - t) / ((double) glue_shrink(r));
+                glue_set(r) = (height(r) - t) / ((real) glue_shrink(r));
             }
 
             height(r) = w;
@@ -15940,8 +15940,7 @@ continu:
 
       if (l > old_l)
       {
-        if ((minimum_demerits < awful_bad) &&
-          ((old_l != easy_line) || (r == active)))
+        if ((minimum_demerits < awful_bad) && ((old_l != easy_line) || (r == active)))
         {
           if (no_break_yet)
           {
@@ -19865,7 +19864,7 @@ void make_accent (void)
 
   scan_char_num();
 
-  if (check_echar_range(cur_val) == 0)
+  if (check_echar_range(cur_val) == false)
   {
     KANJI(cx) = cur_val;
 
@@ -19891,7 +19890,7 @@ void make_accent (void)
   if (p != 0)
   {
     x = x_height(f);
-    s = slant(f) / ((double) 65536.0);
+    s = slant(f) / ((real) 65536.0);
     a = char_width(f, char_info(f, character(p)));
     do_assignments();
     q = 0;
@@ -19993,7 +19992,7 @@ void make_accent (void)
 
     if (q != 0)
     {
-      t = slant(f) / ((double) 65536.0);
+      t = slant(f) / ((real) 65536.0);
       i = char_info(f, character(q));
       w = char_width(f, i);
       h = char_height(f, height_depth(i));
@@ -20010,7 +20009,7 @@ void make_accent (void)
         shift_amount(p) = x - h;
       }
 
-      delta = round((w - a) / ((double) 2.0) + h * t - x * s);
+      delta = round((w - a) / ((real) 2.0) + h * t - x * s);
       r = new_kern(delta);
       subtype(r) = acc_kern;
       link(tail) = r;

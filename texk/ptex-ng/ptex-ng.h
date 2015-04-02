@@ -31,17 +31,21 @@
 #define INITEX
 
 // headers and pragmas
-#if defined (_WIN32)
+#if defined (_MSC_VER)
+  // MSVC
   #define _CRT_DISABLE_PERFCRIT_LOCKS
   #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+
   #pragma warning(disable:4201) // nameless struct/union
   #pragma warning(disable:4996) // a function that was marked with deprecated
   #pragma warning(disable:4701) // potentially uninitialized local variable 'name' used
   #pragma warning(disable:4135) // conversion between different integral types
   #pragma warning(disable:4127) // conditional expression is constant
 #elif defined (__clang__)
+  // Clang
   #pragma clang diagnostic ignored "-Wdangling-else"
 #elif defined (__GNUC__) || defined (__GNUG__)
+  // GCC
   #pragma GCC diagnostic ignored "-Wunused-result"
 #endif
 
@@ -88,18 +92,6 @@ typedef void * word_file;
 #ifdef link
   #undef link
 #endif
-
-/* sec 0027 */
-#define a_open_in(f)    open_input  ((void **) &(f), kpse_tex_format, FOPEN_R_MODE)
-#define a_open_out(f)   open_output ((void **) &(f), kpse_tex_format, FOPEN_W_MODE)
-#define b_open_in(f)    open_input  ((void **) &(f), kpse_tfm_format, FOPEN_RBIN_MODE)
-#define b_open_out(f)   open_output ((void **) &(f), kpse_tfm_format, FOPEN_WBIN_MODE)
-#define w_open_in(f)    open_input  ((void **) &(f), kpse_fmt_format, FOPEN_RBIN_MODE)
-#define w_open_out(f)   open_output ((void **) &(f), kpse_fmt_format, FOPEN_WBIN_MODE)
-#define a_close(f)      close_file(f)
-#define b_close(f)      a_close(f)
-#define w_close(f)      gzclose(fmt_file)
-#define w_eof(f)        (flag_compact_fmt == true ? gzeof((gzFile) f) : feof((FILE *) f))
 
 EXTERN int block_dump   (char * p, int item_size, int nitems, void * out_file);
 EXTERN int block_undump(char * p, int item_size, int nitems, void * out_file);
@@ -306,7 +298,7 @@ EXTERN pool_pointer pool_ptr;
 EXTERN str_number   str_ptr;
 EXTERN pool_pointer init_pool_ptr;
 EXTERN str_number   init_str_ptr;
-EXTERN alpha_file log_file; 
+EXTERN alpha_file log_file;
 EXTERN int selector;
 EXTERN char dig[23 + 1];
 EXTERN integer tally;
