@@ -9,49 +9,50 @@ CFLAGS = -c -O2 -Wno-unused-result -I.. -I../ptexenc/ -I../../libs/zlib/include
 LDFLAGS = libdpx.a libpng.a libz.a libptexenc.a libkpathsea.a -lm
 
 objects = \
-	ptex-ng.o\
-	ptex-ng-initex.o\
-	ptex-ng-io.o\
-	ptex-ng-local.o\
-	ptex-ng-src.o\
-	ptex-ng-pool.o\
-	ptex-ng-pdf.o\
-	ptex-ng-kanji.o\
-	ptex-ng-synctex.o
+	aptex.o\
+	aptex-initex.o\
+	aptex-io.o\
+	aptex-local.o\
+	aptex-src.o\
+	aptex-string-pool.o\
+	aptex-pdf.o\
+	aptex-kanji.o\
+	aptex-synctex.o
 
-headers = ptex-ng.h coerce.h macros.h
+headers = aptex.h aptex-functions.h aptex-macros.h aptex-synctex.h
 
-ptex-ng: $(objects)
-	$(CC) -s -o ptex-ng $(objects) $(LDFLAGS)
+aptex: $(objects)
+	$(CC) -s -o aptex $(objects) $(LDFLAGS)
+	cp aptex ptex-ng
 
-ptex-ng.o: ptex-ng.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng.c
+aptex.o: aptex.c $(headers)
+	$(CC) $(CFLAGS) aptex.c
 
-ptex-ng-pdf.o: ptex-ng-pdf.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-pdf.c
+aptex-pdf.o: aptex-pdf.c $(headers)
+	$(CC) $(CFLAGS) aptex-pdf.c
 
-ptex-ng-kanji.o: ptex-ng-kanji.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-kanji.c
+aptex-kanji.o: aptex-kanji.c $(headers)
+	$(CC) $(CFLAGS) aptex-kanji.c
 
-ptex-ng-synctex.o: ptex-ng-synctex.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-synctex.c
+aptex-synctex.o: aptex-synctex.c $(headers)
+	$(CC) $(CFLAGS) aptex-synctex.c
 
-ptex-ng-initex.o: ptex-ng-initex.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-initex.c
+aptex-initex.o: aptex-initex.c $(headers)
+	$(CC) $(CFLAGS) aptex-initex.c
 
-ptex-ng-io.o: ptex-ng-io.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-io.c
+aptex-io.o: aptex-io.c $(headers)
+	$(CC) $(CFLAGS) aptex-io.c
 
-ptex-ng-local.o: ptex-ng-local.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-local.c
+aptex-local.o: aptex-local.c $(headers)
+	$(CC) $(CFLAGS) aptex-local.c
 
-ptex-ng-src.o: ptex-ng-src.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-src.c
+aptex-src.o: aptex-src.c $(headers)
+	$(CC) $(CFLAGS) aptex-src.c
 
-ptex-ng-pool.o: ptex-ng-pool.c $(headers)
-	$(CC) $(CFLAGS) ptex-ng-pool.c
+aptex-string-pool.o: aptex-string-pool.c $(headers)
+	$(CC) $(CFLAGS) aptex-string-pool.c
 
 .PHONY: clean
 
 clean:
-	rm ptex-ng *.o
+	rm aptex ptex-ng *.o
