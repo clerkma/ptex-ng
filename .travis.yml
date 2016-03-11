@@ -1,0 +1,6 @@
+language: c
+
+compiler:
+    - gcc
+
+script: ./build-pTeX-ng.sh
