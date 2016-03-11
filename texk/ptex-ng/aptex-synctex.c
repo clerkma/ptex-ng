@@ -1,6 +1,6 @@
 /*
   Copyright (c) 2008, 2009, 2010, 2011 jerome DOT laurens AT u-bourgogne DOT fr
-  Copyright (c) 2014, 2015 Clerk Ma
+  Copyright (c) 2014, 2015, 2016 Clerk Ma
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -29,6 +29,7 @@
   authorization from the copyright holder.
 */
 
+#define EXTERN
 #include "aptex.h"
 
 #define SYNCTEX_VERSION       1
@@ -154,7 +155,7 @@ static void * synctex_dot_open (void)
     return synctex_file;
 
   {
-    char * tmp = utf8_mbcs(get_str_string(job_name));
+    char * tmp = utf8_mbcs(take_str_string(job_name));
     size_t len = strlen(tmp);
 
     if (len > 0)
@@ -292,7 +293,7 @@ void synctex_start_input (void)
 
   if (synctex_tag_counter == 1)
   {
-    char * name_mbcs = utf8_mbcs(get_str_string(name));
+    char * name_mbcs = utf8_mbcs(take_str_string(name));
     synctex_root_name = kpse_find_file(name_mbcs, kpse_tex_format, false);
     free(name_mbcs);
 
@@ -316,7 +317,7 @@ void synctex_start_input (void)
 
 void synctex_terminate (void)
 {
-  char * tmp = utf8_mbcs(get_str_string(job_name));
+  char * tmp = utf8_mbcs(take_str_string(job_name));
   char * the_real_syncname = NULL;
 
   if (log_opened && (tmp != NULL))
@@ -377,15 +378,11 @@ void synctex_terminate (void)
         {
           if (log_opened)
           {
-            char * cur_os_dir = getcwd(NULL, 0);
             char * synctex_file_name = mbcs_utf8(the_real_syncname);
             print_ln();
             prints("SyncTeX written on ");
-            prints(aptex_utils_canonicalize(cur_os_dir));
-            print('/');
             prints(synctex_file_name);
             print('.');
-            free(cur_os_dir);
             free(synctex_file_name);
           }
         }
@@ -414,7 +411,7 @@ void synctex_terminate (void)
       remove(the_real_syncname);
     }
   }
-  else if ((tmp = get_str_string(job_name)) != NULL)
+  else if ((tmp = take_str_string(job_name)) != NULL)
   {
     size_t len = strlen(tmp);
     the_real_syncname = xmalloc((size_t)

@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015 Clerk Ma
+   Copyright 2014, 2015, 2016 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,41 +19,72 @@
 
 #ifndef APTEX_FUNCTIONS_H
 #define APTEX_FUNCTIONS_H
+
 // functions of TeX's mainbody
-extern int  aptex_program (void);
-extern void aptex_init (void);
-extern void aptex_fini (void);
-// functions of reallocation
-extern memory_word * allocate_main_memory (int size);
-extern memory_word * realloc_main (int lo_size, int hi_size);
-extern packed_ASCII_code * realloc_str_pool (int size);
-extern pool_pointer * realloc_str_start (int size);
-extern memory_word * realloc_save_stack (int size);
-extern list_state_record * realloc_nest_stack (int size);
-extern in_state_record * realloc_input_stack (int size);
-extern halfword * realloc_param_stack (int size);
-extern ASCII_code * realloc_buffer (int size);
-extern memory_word * realloc_font_info (int size);
-extern int realloc_hyphen (int hyphen_prime);
-extern int allocate_tries (int trie_max);
-extern void print_cs_names (FILE * output, boolean pass);
+
+extern packed_ASCII_code *  realloc_str_pool (int size);
+// str_pool   => the characters
+
+extern pool_pointer *       realloc_str_start (int size);
+// str_start  => the starting pointers
+
+extern memory_word *        realloc_save_stack (int size);
+// save_stack =>
+
+extern list_state_record *  realloc_nest_stack (int size);
+// nest_stack =>
+
+extern in_state_record *    realloc_input_stack (int size);
+// input_stack=>
+
+extern halfword *           realloc_param_stack (int size);
+// param_stack=> token list pointers for parameters
+
+extern ASCII_code *         realloc_buffer (int size);
+// buffer     =>
+
+extern memory_word *        realloc_font_info (int size);
+// font_info  =>
+
+extern int                  realloc_hyphen (int hyphen_prime);
+
 // functions of string pool
-extern str_number load_pool_strings (integer spare_size);
-extern str_number make_str_string (const char * s);
-extern char * get_str_string (str_number s);
-extern str_number get_job_name (str_number job);
-extern void t_open_in (void);
-extern void add_variable_space (int size);
+str_number make_str_string (const char * s);
+char *     take_str_string (str_number s);
 
-extern void     aptex_utils_exit (int unix_code);
-extern char *   aptex_utils_canonicalize (char * t);
-extern integer  aptex_utils_round (real r);
 
-#include "aptex-io.h"      // functions of I/O
-#include "aptex-synctex.h" // functions of synctex
+boolean b_open_output (byte_file * f);
+
+#define a_open_in(f)    a_open_input(&(f))
+#define b_open_in(f)    b_open_input(&(f))
+#define w_open_in(f)    w_open_input(&(f))
+//
+#define a_open_out(f)   a_open_output(&(f))
+#define b_open_out(f)   b_open_output(&(f))
+#define w_open_out(f)   w_open_output(&(f))
+//
+#define w_eof(f)        (aptex_env.flag_compact_fmt == true ? gzeof((gzFile) f) : feof((FILE *) f))
+//
+// functions of synctex
+void synctex_init (void);
+void synctex_terminate (void);
+void synctex_start_input (void);
+void synctex_sheet (integer sync_mag);
+void synctex_teehs (void);
+void synctex_vlist (pointer this_box);
+void synctex_tsilv (pointer this_box);
+void synctex_void_vlist (halfword p, halfword this_box);
+void synctex_hlist (halfword this_box);
+void synctex_tsilh (halfword this_box);
+void synctex_void_hlist (halfword p, halfword this_box);
+void synctex_math (halfword p, halfword this_box);
+void synctex_horizontal_rule_or_glue (halfword p, halfword this_box);
+void synctex_kern (halfword p, halfword this_box);
+void synctex_char (halfword p, halfword this_box);
+void synctex_node (halfword p, halfword this_box);
+void synctex_current (void);
 
 // functions of TeX82
-void initialize (void);
 void print_ln (void);
 void print_char (ASCII_code s);
 void print_(integer s);
@@ -64,304 +95,109 @@ void slow_print (integer s);
 void print_nl (const char * s);
 void print_esc (const char * s);
 void sprint_esc (str_number s);
-void print_the_digs (eight_bits k);
 void print_int (integer n);
-void print_cs (integer p);
-void sprint_cs (pointer p);
 void print_file_name (integer n, integer a, integer e);
-void print_size (integer s);
-void print_write_whatsit (const char * s, pointer p);
-void jump_out(void);
+void jump_out (void);
 void error (void);
-void fatal_error (const char * s);
 void overflow (const char * s, integer n);
-void confusion (const char * s);
+
 boolean init_terminal (void);
 str_number make_string (void);
-boolean str_eq_buf (str_number s, integer k);
-boolean str_eq_str (str_number s, str_number t);
-boolean get_strings_started (void);
-void print_two (integer n);
-void print_hex (integer n);
-void print_roman_int (integer n);
-void print_current_string (void);
+
 void term_input (void);
-void int_error (integer n);
 void normalize_selector (void);
 void pause_for_instructions (void);
-integer half (integer x);
-scaled round_decimals (small_number k);
 void print_scaled (scaled s);
-scaled mult_and_add (integer n, scaled x, scaled y, scaled max_answer);
-scaled x_over_n (scaled x, integer n);
-scaled xn_over_d (scaled x, integer n, integer d);
-halfword badness (scaled t, scaled s);
-void print_word (memory_word w);
+
 void show_token_list (integer p, integer q, integer l);
-void runaway (void);
 pointer get_avail (void);
 void flush_list (pointer p);
 pointer get_node (integer s);
 void free_node (pointer p, halfword s);
-void sort_avail (void);
-pointer new_null_box (void);
-pointer new_rule (void);
-pointer new_ligature (quarterword f, quarterword c, pointer q);
-pointer new_lig_item (quarterword c);
-pointer new_disc (void);
-pointer new_math (scaled w, small_number s);
-pointer new_spec (pointer p);
-pointer new_param_glue (small_number n);
-pointer new_glue (pointer q);
-pointer new_skip_param (small_number n);
-pointer new_kern (scaled w);
-pointer new_penalty (integer m);
+
 #ifdef APTEX_DEBUG
 void check_mem (boolean print_locs);
 void search_mem (pointer p);
 #endif
-void short_display (integer p);
-void print_font_and_char (integer p);
-void print_mark (integer p);
-void print_rule_dimen (scaled d);
-void print_glue (scaled d, integer order, const char * s);
-void print_spec (integer p, const char * s);
-void print_fam_and_char (pointer p, small_number t);
-void print_delimiter (pointer p);
-void print_subsidiary_data (pointer p, ASCII_code c);
-void print_style (integer c);
-void print_skip_param (integer n);
+
 void show_node_list (integer p);
 void show_box (pointer p);
 void delete_token_ref (pointer p);
 void delete_glue_ref (pointer p);
 #define fast_delete_glue_ref(p) delete_glue_ref((pointer) (p))
 void flush_node_list (pointer p);
-pointer copy_node_list (pointer p);
-void print_mode (integer m);
-void push_nest (void);
 void pop_nest (void);
-void show_activities (void);
-void print_param (integer n);
 void begin_diagnostic (void);
 void end_diagnostic (boolean blank_line);
-void print_length_param (integer n);
 void print_cmd_chr (quarterword cmd, halfword chr_code);
-void show_eqtb (pointer n);
 pointer id_lookup (integer j, integer l);
-void primitive_(str_number s, quarterword c, halfword o);
 #define primitive(s, c, o) primitive_(make_str_string((const char *) s), (quarterword) (c), (halfword) (o))
-void new_save_level (group_code c);
-void eq_destroy (memory_word w);
-void eq_save (pointer p, quarterword l);
-void eq_define (pointer p, quarterword t, halfword e);
-void eq_word_define (pointer p, integer w);
-void geq_define (pointer p, quarterword t, halfword e);
-void geq_word_define (pointer p, integer w);
-void save_for_after (halfword t);
-void restore_trace (pointer p, const char * s);
+
 void assign_trace (pointer p, const char * s);
-void unsave (void);
-void prepare_mag (void);
-void token_show (pointer p);
-void print_meaning (void);
-void show_cur_cmd_chr (void);
+
 void show_context (void);
 void begin_token_list (pointer p, quarterword t);
 void end_token_list (void);
 void back_input (void);
 void back_error (void);
-void ins_error (void);
 void begin_file_reading (void);
 void end_file_reading (void);
 void clear_for_error_prompt (void);
-void check_outer_validity (void);
 void get_next (void);
-void firm_up_the_line (void);
 void get_token (void);
-void macro_call (void);
-void insert_relax (void);
-void expand (void);
 void get_x_token (void);
 void x_token (void);
 void scan_left_brace (void);
-void scan_optional_equals (void);
-boolean scan_keyword (const char * s);
-void mu_error (void);
-void scan_eight_bit_int (void);
+
+
 void scan_char_num (void);
 void scan_four_bit_int (void);
 void scan_fifteen_bit_int (void);
-void scan_twenty_seven_bit_int (void);
 void scan_font_ident (void);
 void find_font_dimen (boolean writing);
-void scan_something_internal (small_number level, boolean negative);
 void scan_int (void);
 void scan_dimen (boolean mu, boolean inf, boolean shortcut);
 void scan_glue (small_number level);
-pointer scan_rule_spec (void);
-pointer str_toks (pool_pointer b);
-pointer the_toks (void);
 void ins_the_toks (void);
 void conv_toks (void);
 pointer scan_toks (boolean macro_def, boolean xpand);
 void read_toks (integer n, pointer r, halfword j);
 void pass_text (void);
-void change_if_limit (small_number l, pointer p);
 void conditional (void);
-void begin_name (void);
-boolean more_name (ASCII_code c);
-void end_name (void);
 void pack_file_name (str_number n, str_number a, str_number e);
-void pack_buffered_name (small_number n, integer a, integer b);
-str_number make_name_string (void);
-str_number a_make_name_string_(void);
-#define a_make_name_string(f) a_make_name_string_()
-str_number b_make_name_string_(void);
-#define b_make_name_string(f) b_make_name_string_()
-str_number w_make_name_string_(void);
-#define w_make_name_string(f) w_make_name_string_()
-void scan_file_name (void);
+str_number b_make_name_string (byte_file f);
+str_number w_make_name_string (word_file f);
 void pack_job_name_(str_number s);
 #define pack_job_name(s) pack_job_name_(make_str_string((const char *) (s)))
 void prompt_file_name_(const char * s, str_number e);
 #define prompt_file_name(s, e) prompt_file_name_((const char *) s, make_str_string((const char*) e))
 void open_log_file (void);
 void start_input (void);
-internal_font_number read_font_info (pointer u, str_number nom, str_number arie, scaled s);
-void char_warning (internal_font_number f, eight_bits c);
-pointer new_character (internal_font_number f, eight_bits c);
 void dvi_swap (void);
-void dvi_four_(integer x);
-#define dvi_four(x) dvi_four_((integer) (x))
-void dvi_pop_(integer l);
-#define dvi_pop(l) dvi_pop_((integer) (l))
-void dvi_font_def (internal_font_number f);
+
+
+
 void movement (scaled w, eight_bits o);
-void pdf_special_out (pointer p);
-void pdf_hlist_out (void);
-void pdf_vlist_out (void);
-void pdf_ship_out (pointer p);
-void ship_out (pointer p);
+void hlist_out (void);
+void vlist_out (void);
+
 void prune_movements (integer l);
-void write_out (pointer p);
 void out_what (pointer p);
-void scan_spec (group_code c, boolean three_codes);
-pointer hpack (pointer p, scaled w, small_number m);
-pointer vpackage (pointer p, scaled h, small_number m, scaled l);
-void append_to_vlist (pointer b);
-pointer new_noad (void);
-pointer new_style (small_number s);
-pointer new_choice (void);
 void show_info (void);
-pointer fraction_rule (scaled t);
-pointer overbar (pointer b, scaled k, scaled t);
-pointer char_box (internal_font_number f, quarterword c);
-void stack_into_box (pointer b, internal_font_number f, quarterword c);
-scaled height_plus_depth (internal_font_number f, quarterword c);
-pointer var_delimiter (pointer d, small_number s, scaled v);
-pointer rebox (pointer b, scaled w);
-pointer math_glue (pointer g, scaled m);
-void math_kern (pointer p, scaled m);
-void flush_math (void);
-pointer clean_box (pointer p, small_number s, halfword jc);
-void fetch (pointer a);
-void make_over (pointer q);
-void make_under (pointer q);
-void make_vcenter (pointer q);
-void make_radical (pointer q);
-void make_math_accent (pointer q);
-void make_fraction (pointer q);
-scaled make_op (pointer q);
-void make_ord (pointer q);
-void make_scripts (pointer q, scaled delta);
-small_number make_left_right (pointer q, small_number style, scaled max_d, scaled max_h);
+
 void mlist_to_hlist (void);
-void push_alignment (void);
-void pop_alignment (void);
-void get_preamble_token (void);
-void init_align (void);
-void init_span (pointer p);
-void init_row (void);
-void init_col (void);
-boolean fin_col (void);
-void fin_row (void);
-void fin_align (void);
 void align_peek (void);
 pointer finite_shrink (pointer p);
 void try_break (integer pi, small_number breaktype);
 void post_line_break (boolean d);
-small_number reconstitute (small_number j, small_number n, halfword bchar, halfword hchar);
 void hyphenate (void);
-trie_op_code new_trie_op (small_number d, small_number n, trie_op_code v);
-trie_pointer trie_node (trie_pointer p);
-trie_pointer compress_trie (trie_pointer p);
-void first_fit (trie_pointer p);
-void trie_pack (trie_pointer p);
-void trie_fix (trie_pointer p);
-void new_patterns (void);
+void new_patterns(void);
 void init_trie (void);
-void line_break (boolean d);
 void new_hyph_exceptions (void);
-pointer prune_page_top (pointer p, boolean s);
-pointer vert_break (pointer p, scaled h, scaled d);
-pointer vsplit (halfword n, scaled h);
 void print_totals (void);
-void freeze_page_specs (small_number s);
-void box_error (eight_bits n);
-void ensure_vbox (eight_bits n);
-void fire_up (pointer c);
 void build_page (void);
-void app_space (void);
-void insert_dollar_sign (void);
-void you_cant (void);
-void report_illegal_case (void);
-boolean privileged (void);
-boolean its_all_over (void);
-void append_glue (void);
-void append_kern (void);
-void off_save (void);
-void extra_right_brace (void);
 void normal_paragraph (void);
-void box_end (integer box_content);
-void begin_box (integer box_content);
 void scan_box (integer box_content);
-void package (small_number c);
-small_number norm_min (integer h);
-void new_graf (boolean indented);
-void indent_in_hmode (void);
-void head_for_vmode (void);
-void end_graf (void);
-void begin_insert_or_adjust (void);
-void make_mark (void);
-void append_penalty (void);
-void delete_last (void);
-void unpackage (void);
-void append_italic_correction (void);
-void append_discretionary (void);
-void build_discretionary (void);
-void make_accent (void);
-void align_error (void);
-void no_align_error (void);
-void omit_error (void);
-void do_endv (void);
-void cs_error (void);
-void push_math (group_code c);
-void init_math (void);
-void start_eq_no (void);
-void scan_math (pointer p, pointer q);
-void set_math_char (integer c);
-void math_limit_switch(void);
-void scan_delimiter (pointer p, boolean r);
-void math_radical (void);
-void math_ac (void);
-void append_choices (void);
-pointer fin_mlist (pointer p);
-void build_choices (void);
-void sub_sup (void);
-void math_fraction (void);
-void math_left_right (void);
-void after_math (void);
 void resume_after_display (void);
 void get_r_token (void);
 void trap_zero_glue (void);
@@ -373,50 +209,38 @@ void alter_integer (void);
 void alter_box_dimen (void);
 void new_font (small_number a);
 void new_interaction (void);
-void prefixed_command (void);
 void do_assignments (void);
-void open_or_close_in (void);
-void issue_message (void);
-void shift_case (void);
-void show_whatever (void);
-void store_fmt_file (void);
-void new_whatsit (small_number s, small_number w);
-void new_write_whatsit (small_number w);
-void do_extension (void);
-void fix_language (void);
-void handle_right_brace (void);
 void main_control (void);
 void give_err_help (void);
 boolean open_fmt_file (void);
-boolean load_fmt_file (void);
 void close_files_and_terminate (void);
-void final_cleanup (void);
-void init_prim (void);
+
+#ifdef APTEX_DEBUG
 void debug_help (void);
-void fix_date_and_time (void);
+#endif
+
 // ptex
-pointer new_dir_node(pointer b, eight_bits dir);
-eight_bits get_jfm_pos(KANJI_code kcode, internal_font_number f);
-void print_kansuji(integer n);
-pointer get_inhibit_pos(KANJI_code c, small_number n);
-pointer get_kinsoku_pos(KANJI_code c, small_number n);
-void pdf_synch_dir(void);
-boolean check_box(pointer box_p);
+pointer new_dir_node (pointer b, eight_bits dir);
+eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f);
+
+pointer get_inhibit_pos (KANJI_code c, small_number n);
+pointer get_kinsoku_pos (KANJI_code c, small_number n);
+
+boolean check_box (pointer box_p);
 void adjust_hlist(pointer p, boolean pf);
-void print_dir(eight_bits dir);
-void print_direction(integer d);
-void print_direction_alt(integer d);
-void pdf_dir_out(void);
+
+void dir_out(void);
 void set_math_kchar(integer c);
 void print_kanji(KANJI_code s);
 boolean check_kcat_code(integer ct);
 boolean check_echar_range(integer c);
 // etex
 boolean eTeX_enabled (boolean b, quarterword j, halfword k);
-void print_group(boolean e);
-void group_trace(boolean e);
-void show_save_groups(void);
-void scan_general_text(void);
+//void print_group(boolean e);
+void group_trace (boolean e);
+void show_save_groups (void);
+void scan_general_text (void);
+
 static inline void print_if_line (integer val)
 {
   if (val != 0)
@@ -425,6 +249,7 @@ static inline void print_if_line (integer val)
     print_int(val);
   }
 }
+
 pointer new_edge(small_number s, scaled w);
 pointer reverse(pointer this_box, pointer t, scaled cur_g, real cur_glue);
 pointer new_segment(small_number s, pointer f);
@@ -448,7 +273,7 @@ void scan_register_num(void);
 void new_index(quarterword i, pointer q);
 void find_sa_element(small_number t, halfword n, boolean w);
 void delete_sa_ref(pointer q);
-void print_sa_num(pointer q);
+//void print_sa_num(pointer q);
 void show_sa(pointer p, const char * s);
 boolean do_marks(small_number a, small_number l, pointer q);
 void sa_save(pointer p);
@@ -458,92 +283,34 @@ void sa_w_def(pointer p, integer w);
 void gsa_def(pointer p, halfword e);
 void gsa_w_def(pointer p, integer w);
 void sa_restore(void);
-void pdf_synch_h(void);
-void pdf_synch_v(void);
-// for pdf backend.
-extern void pdf_init_fontmaps(void);
-extern void pdf_close_fontmaps(void);
-extern void pdf_doc_set_creator(const char * creator);
-extern void pdf_doc_set_producer(const char * producer);
-extern void pdf_set_version(unsigned version);
-extern void pdf_set_compression(int level);
-extern void pdf_files_init(void);
-extern void pdf_files_close(void);
-extern void graphics_mode (void);
-extern long pdf_output_stats (void);
-extern void pdf_init_device(double dvi2pts, int precision, int black_and_white);
-extern void pdf_close_device(void);
-extern void pdf_open_document(const char *filename,
-                              int do_encryption,
-                              double media_width,
-                              double media_height,
-                              double annot_grow_amount,
-                              int bookmark_open_depth,
-                              int check_gotos);
-extern void pdf_close_document(void);
-extern void pdf_doc_begin_page(double scale, double x_origin, double y_origin);
-extern void pdf_doc_end_page(void);
-extern int spc_exec_at_begin_document(void);
-extern int spc_exec_at_end_document(void);
-extern int spc_exec_at_begin_page(void);
-extern int spc_exec_at_end_page(void);
-typedef signed long spt_t;
-extern int spc_exec_special (const char *buffer, long size, double x_user, double y_user, double dpx_mag);
-extern int pdf_dev_locate_font(const char *font_name, spt_t ptsize);
-extern int dvi_locate_font(const char *tfm_name, spt_t ptsize);
-typedef long UNSIGNED_TRIPLE, SIGNED_TRIPLE, SIGNED_QUAD;
-extern void ng_set(SIGNED_QUAD ch, int ng_font_id, SIGNED_QUAD h, SIGNED_QUAD v);
-extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
-extern void pdf_dev_set_string (spt_t xpos,
-                                spt_t ypos,
-                                const void *instr_ptr,
-                                int instr_len,
-                                spt_t width,
-                                int font_id,
-                                int ctype);
-extern void pdf_synch_h (void);
-extern void pdf_synch_h (void);
-typedef struct pdf_rect
-{
-  double llx, lly, urx, ury;
-} pdf_rect;
-extern void pdf_dev_set_rect(pdf_rect *rect,
-                  spt_t x_user, spt_t y_user,
-                  spt_t width,  spt_t height, spt_t depth);
-extern void pdf_doc_expand_box(const pdf_rect *rect);
-extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
-extern void pdf_enc_compute_id_string(char *dviname, char *pdfname);
-extern void pdf_dev_set_dirmode(int dir_mode);
-extern int pdf_load_fontmap_file(const char *filename, int map_mode);
-// special out
-extern void pdf_special_exec(scaled h, scaled v);
-// kanji processing
-extern boolean check_kanji(integer c);
-extern boolean is_char_ascii(integer c);
-extern boolean is_char_kanji(integer c);
-extern boolean ismultiprn(integer c);
-extern integer calc_pos(integer c);
-extern integer kcatcodekey(integer c);
-extern integer multilenbuffchar(integer c);
-extern void init_default_kanji(const_string file_str, const_string internal_str);
-extern char * mbcs_utf8(const char * mbcs_str);
-extern char * utf8_mbcs(const char * utf8_str);
-/* sec 79 */
+
+extern void init_default_kanji (const_string file_str, const_string internal_str);
+extern char * mbcs_utf8 (const char * mbcs_str);
+extern char * utf8_mbcs (const char * utf8_str);
+
 // inline functions
 /* sec 0016 */
 static inline void do_nothing (void)
 {
   /* todo */
 }
-static inline void wake_up_terminal (void)
-{
-  /* todo */
-}
+
 /* sec 0034 */
 static inline void update_terminal (void)
 {
   fflush(stdout);
 }
+
+static inline void clear_terminal (void)
+{
+  /* todo */
+}
+
+static inline void wake_up_terminal(void)
+{
+  /* todo */
+}
+
 // web2c's specific
 static inline int do_final_end (void)
 {
@@ -798,7 +565,7 @@ static inline void print_plus (int i, const char * s)
   }
 }
 
-static inline void ptex_ng_error (const char * t, const char * p)
+static inline void aptex_error (const char * t, const char * p)
 {
   normalize_selector();
   print_err("Asian pTeX error");
@@ -817,7 +584,7 @@ static inline void ptex_ng_error (const char * t, const char * p)
 static inline str_number tokens_to_string (pointer p)
 {
   if (selector == new_string)
-    ptex_ng_error("tokens", "tokens_to_string() called while selector = new_string");
+    aptex_error("tokens", "tokens_to_string() called while selector = new_string");
 
   old_setting = selector;
   selector = new_string;
@@ -886,14 +653,6 @@ done:
   cur_val_level = int_val;
 }
 
-static inline void print_out_name (const char * str, str_number num)
-{
-  if (str != NULL)
-    prints(str);
-  else
-    slow_print(num);
-}
-
 static inline void write_log (const char * fmt, ...)
 {
   va_list m_ptr;
@@ -902,19 +661,13 @@ static inline void write_log (const char * fmt, ...)
   va_end(m_ptr);
 }
 
-static inline void dump_int (integer x)
+static inline void wlog_ln (const char * fmt, ...)
 {
-  generic_dump(x);
-}
-
-static inline void dump_hh (two_halves x)
-{
-  generic_dump(x);
-}
-
-static inline void dump_wd (memory_word x)
-{
-  generic_dump(x);
+  va_list m_ptr;
+  va_start(m_ptr, fmt);
+  vfprintf(log_file, fmt, m_ptr);
+  fprintf(log_file, "\n");
+  va_end(m_ptr);
 }
 
 static inline void wterm (ASCII_code s)
@@ -936,4 +689,5 @@ static inline void wlog_cr (void)
 {
   (void) fputc('\n', log_file);
 }
+
 #endif

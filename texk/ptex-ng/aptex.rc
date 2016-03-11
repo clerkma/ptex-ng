@@ -1,4 +1,4 @@
-/* Copyright 2014 Clerk Ma.
+/* Copyright 2014, 2015, 2016 Clerk Ma.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,10 +30,10 @@ VS_VERSION_INFO VERSIONINFO
       VALUE "CompanyName",        "Project Fandol.\0"
       VALUE "FileDescription",    "Asian pTeX based on Y&Y TeX 2.3.0\0"
       VALUE "FileVersion",        "0.3.0.0\0"
-      VALUE "LegalCopyright",     "(C) 2014 Clerk Ma.\0"
-      VALUE "OriginalFilename",   "ptex-ng.exe\0"
-      VALUE "ProductName",        "pTeX-ng\0"
-      VALUE "ProductVersion",     "2.3.0.0\0"
+      VALUE "LegalCopyright",     "(C) 2014, 2015, 2016 Clerk Ma.\0"
+      VALUE "OriginalFilename",   "aptex.exe\0"
+      VALUE "ProductName",        "Asian pTeX\0"
+      VALUE "ProductVersion",     "2.0.1.6\0"
     }
   }
   BLOCK "VarFileInfo"

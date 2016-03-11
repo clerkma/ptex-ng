@@ -1,5 +1,6 @@
 /*
-   Copyright 2014, 2015 Clerk Ma
+   Copyright 2007 TeX Users Group
+   Copyright 2014, 2015, 2016 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,9 +18,6498 @@
    02110-1301 USA.
 */
 
+/*
+
+      |             ||                               |''||''|         '||' '|' 
+     |||     ....  ...   ....   .. ...      ... ...     ||      ....    || |   
+    |  ||   ||. '   ||  '' .||   ||  ||      ||'  ||    ||    .|...||    ||    
+   .''''|.  . '|..  ||  .|' ||   ||  ||      ||    |    ||    ||        | ||   
+  .|.  .||. |'..|' .||. '|..'|' .||. ||.     ||...'    .||.    '|...' .|   ||. 
+                                             ||                                
+                                            ''''                      
+                          ___       __      _    ____    
+                        /'___`\   /'__`\  /' \  /'___\   
+                       /\_\ /\ \ /\ \/\ \/\_, \/\ \__/   
+                       \/_/// /__\ \ \ \ \/_/\ \ \  _``\ 
+                          // /_\ \\ \ \_\ \ \ \ \ \ \L\ \
+                         /\______/ \ \____/  \ \_\ \____/
+                         \/_____/   \/___/    \/_/\/___/ 
+                                                         
+*/
+
 #include "aptex.h"
 
-/* sec 0058 */
+static int mem_initex;
+
+#define REALLOC realloc
+
+#if   defined (__clang__)
+static const char * compiler = "Clang";
+#elif defined (__GNUC__) || defined(__GNUG__)
+static const char * compiler = "GCC";
+#elif defined (_MSC_VER)
+static const char * compiler = "MSVC";
+#else
+static const char * compiler = "Unknown";
+#endif
+
+#if   defined (_WIN64)
+static const char * dist = "Win64";
+#elif defined (_WIN32)
+static const char * dist = "Win32";
+#elif defined (__ANDROID__)
+static const char * dist = "Android";
+#elif defined (__APPLE__)
+static const char * dist = "Darwin";
+#elif defined (__gnu_linux__)
+static const char * dist = "Linux";
+#else
+static const char * dist = "Unknown";
+#endif
+
+#if defined (W32TeX)
+static const char * banner = "This is Asian pTeX, Version 3.14159265 (W32TeX)";
+#else
+static const char * banner = "This is Asian pTeX, Version 3.14159265";
+#endif
+
+static void aptex_utils_exit (int unix_code)
+{
+  int final_code;
+
+  update_terminal();
+
+  if (unix_code == 0)
+    final_code = EXIT_SUCCESS;
+  else if (unix_code == 1)
+    final_code = EXIT_FAILURE;
+  else
+    final_code = unix_code;
+
+  exit(final_code);
+}
+
+static void print_aptex_usage (void)
+{
+  printf("\n"
+      "Useage: aptex [OPTION]... [+fmt_file_name] [file]\n\n"
+      " --help          show this usage summary\n"
+      " --version       output version information and exit\n"
+      " --jobname=str   set the job name to str\n"
+      " --progname=str  set program (and fmt) name to str\n"
+      " --synctex=num   generate SyncTeX data for previewers if nonzero\n"
+      " --ini           start up as INITEX (create format file)\n"
+      " --patterns      (INITEX only) allow use of \\patterns after loading format\n"
+      " --main-mem      (INITEX only) initial main memory size in kilo words\n"
+      " --hyph-size     (INITEX only) hyphenation exception dictionary size\n"
+      " --trie-size     (INITEX only) hyphenation pattern trie size\n\n"
+      "Email bug reports to clerkma@gmail.com.\n");
+  aptex_utils_exit(EXIT_FAILURE);
+}
+
+static void print_aptex_version (void)
+{
+  printf("Copyright 2014, 2015 Clerk Ma.\n"
+    "%s\n"
+    "Compiled with %s\n"
+    "Compiled with %s\n"
+    "Compiled with zlib version %s\n"
+    "Compiled with synctex (build-in edition)\n",
+    banner, kpathsea_version_string,
+    ptexenc_version_string, zlib_version);
+  aptex_utils_exit(EXIT_FAILURE);
+}
+
+// Sep 27 1990 => 1990 Sep 27
+// 0123456789     0123456789
+static void scivilize (char * date)
+{
+  int k;
+  char pyear[6];
+
+  strcpy(pyear, date + 7);
+
+  for (k = 5; k >= 0; k--)
+    date[k + 5] = date[k];
+
+  for (k = 0; k < 4; k++)
+    date[k] = pyear[k];
+
+  date[4] = ' ';
+
+  if (date[9] == ' ')
+    date[9] = '0';
+}
+
+static void print_aptex_info (void)
+{
+  char date[11 + 1];
+  char * executable_path;
+
+  strcpy(date, __DATE__);
+  scivilize(date);
+  printf("Asian pTeX (compiled time: %s %s with %s/%s)\n",
+    date, __TIME__, dist, compiler);
+
+  executable_path = (char *) calloc(65536, 1);
+#if   defined (_WIN32) || defined (_WIN64)
+  GetModuleFileNameA(NULL, executable_path, 65536);
+#elif defined (__gnu_linux__) || defined (__ANDROID__)
+  readlink("/proc/self/exe", executable_path, 65536);
+#elif defined (__NetBSD__)
+  readlink("/proc/curproc/exe", executable_path, 65536);
+#elif defined (__DragonFly__)
+  readlink("/proc/curproc/file", executable_path, 65536);
+#elif defined (__APPLE__)
+  uint32_t executable_path_length;
+  _NSGetExecutablePath(executable_path, &executable_path_length);
+#endif
+
+#if defined (__sun)
+  printf("Executable PATH: '%s'.\n", getexecname());
+#else
+  printf("Executable PATH: '%s'.\n", executable_path);
+#endif
+  free(executable_path);
+}
+
+static void print_aptex_time (clock_t inter_val)
+{
+  int seconds, tenths, hundredth, thousands;
+
+  if (inter_val >= CLOCKS_PER_SEC * 10)
+  {
+    tenths = (inter_val * 10 + CLOCKS_PER_SEC / 2) / CLOCKS_PER_SEC; 
+    seconds = tenths / 10; 
+    tenths = tenths % 10;
+    printf("%d.%d", seconds, tenths);
+  }
+  else if (inter_val >= CLOCKS_PER_SEC)
+  {
+    hundredth = (inter_val * 100 + CLOCKS_PER_SEC / 2) / CLOCKS_PER_SEC;
+    seconds = hundredth / 100;
+    hundredth = hundredth % 100;
+    printf("%d.%02d", seconds, hundredth);
+  }
+  else if (inter_val > 0)
+  {
+    thousands = (inter_val * 1000 + CLOCKS_PER_SEC / 2) / CLOCKS_PER_SEC;
+    seconds = thousands / 1000;
+    thousands = thousands % 1000;
+    printf("%d.%03d", seconds, thousands);
+  }
+  else
+    printf("0");
+}
+
+#define MAXSPLITS 3
+
+/* ad hoc default minimum growth in memory realloc is 62% */
+/* golden ratio (1 + \sqrt{5}) / 2 = 1.618033989... */
+static int percent_grow    = 62; /* default minimum growth in memory realloc is 62% */
+static int total_allocated = 0;  /* total memory allocated so far */
+static int ini_max_address = 0;  /* maximum address when starting */
+static int max_address     = 0;  /* maximum address seen in allocated memory */
+
+static void aptex_trace (const char * fmt_str, ...)
+{
+  va_list m_ptr;
+  va_start(m_ptr, fmt_str);
+
+  if (aptex_env.trace_mem)
+  {
+    // format => "[Sun Aug 28 14:22:05 2015] (I/V): blabla"
+    time_t time_present;
+    time(&time_present);
+    fprintf(stderr, "[%.24s] (%s): ", asctime(localtime(&time_present)),
+      aptex_env.flag_initex == true ? "I" : "V");
+    vfprintf(stderr, fmt_str, m_ptr);
+  }
+  va_end(m_ptr);
+}
+
+static void aptex_memory_error (const char * s, int n)
+{
+  aptex_trace("Unable to allocate %d  bytes for %s\n", n, s);
+  aptex_trace("Max allocated %d -- max address %d\n", total_allocated, max_address);
+}
+
+static void aptex_memory_trace (const char * s, int n)
+{
+  aptex_trace("Allocating %d bytes for %s\n", n, s);
+}
+
+static void aptex_memory_update_statistics (long address, int size, int old_size)
+{
+  if (address + size > max_address)
+    max_address = address + size;
+
+  total_allocated = total_allocated + size - old_size;
+}
+
+static void aptex_memory_probe (void)
+{
+  if (aptex_env.trace_mem)
+  {
+    aptex_trace("Max allocated %d -- max address %d\n", total_allocated, max_address);
+  }
+}
+
+static size_t roundup (size_t n)
+{
+  if ((n % sizeof(void *)) == 0)
+    return n;
+  else
+    return ((n / sizeof(void *)) + 1) * sizeof(void *);
+}
+
+static boolean prime (int x)
+{
+  int k;
+  int sum = 1;    /* 1 + 3 + 5 + k = (k + 1) * (k + 1) / 4 */
+
+  if (x % 2 == 0)
+    return false;
+
+  for (k = 3; k < x; k = k + 2)
+  {
+    if (x % k == 0)
+      return false;
+
+    if (sum * 4 > x)
+      return true;
+
+    sum += k;
+  }
+
+  return true;
+}
+
+#ifdef APTEX_EXTENSION
+// -1 - fails
+//  0 - success
+
+int allocate_tries (int trie_max)
+{
+  int n, nl, no, nc;
+
+  if (trie_max > 1000000)
+    trie_max = 1000000;
+
+  nl = (trie_max + 1) * sizeof(halfword);
+  no = (trie_max + 1) * sizeof(halfword);
+  nc = (trie_max + 1) * sizeof(quarterword);
+  n = nl + no + nc;
+
+  aptex_memory_trace("hyphen trie", n);
+
+  trie_trl = (halfword *) malloc(roundup(nl));
+  trie_tro = (halfword *) malloc(roundup(no));
+  trie_trc = (quarterword *) malloc(roundup(nc));
+
+  if (trie_trl == NULL || trie_tro == NULL || trie_trc == NULL)
+  {
+    aptex_memory_error("hyphen trie", n);
+
+    return -1;
+  }
+
+  trie_size = trie_max;
+
+  aptex_trace("Addresses trie_trl %p \n", trie_trl);
+  aptex_trace("Addresses trie_tro %p \n", trie_tro);
+  aptex_trace("Addresses trie_trc %p \n", trie_trc);
+  aptex_memory_update_statistics((long) trie_trl, nl, 0);
+  aptex_memory_update_statistics((long) trie_tro, no, 0);
+  aptex_memory_update_statistics((long) trie_trc, nc, 0);
+  aptex_memory_probe();
+
+  return 0;
+}
+
+/* remember in case reallocated later */
+static int current_prime = 0;
+
+/* we don't return an address here, since TWO memory regions allocated */
+/* plus, we don't really reallocate, we FLUSH the old information totally */
+/* returns -1 if it fails */
+
+int realloc_hyphen (int hyphen_prime)
+{
+  int n, nw, nl;
+
+  if (!prime(hyphen_prime))
+  {
+    aptex_trace("ERROR: non-prime hyphen exception number (%d)\n", hyphen_prime);
+    return -1;
+  }
+
+/*  need not/cannot preserve old contents when hyphen prime is changed */
+/*  if (hyph_list != NULL) free(hyph_list); */
+/*  if (hyph_word != NULL) free(hyph_word); */
+  nw = (hyphen_prime + 1) * sizeof(str_number);
+  nl = (hyphen_prime + 1) * sizeof(halfword);
+  n = nw + nl;
+
+  aptex_memory_trace("hyphen exception", n);
+
+  hyph_word = (str_number *) REALLOC(hyph_word, nw);
+  hyph_list = (halfword *) REALLOC(hyph_list, nl);
+
+  if (hyph_word == NULL || hyph_list == NULL)
+  {
+    aptex_memory_error("hyphen exception", n);
+    return -1;
+  }
+
+  memset(hyph_word, 0, (hyphen_prime + 1) * sizeof (hyph_word[0]));
+  memset(hyph_list, 0, (hyphen_prime + 1) * sizeof (hyph_list[0]));
+
+  hyph_count = 0;
+
+  aptex_trace("Addresses hyph_word %p hyph_list %p\n", hyph_word, hyph_list);
+
+  if (current_prime != 0)
+  {
+    aptex_memory_update_statistics((long) hyph_word, nw, (current_prime + 1) * sizeof(str_number));
+    aptex_memory_update_statistics((long) hyph_list, nl, (current_prime + 1) * sizeof(halfword));
+  }
+  else
+  {
+    aptex_memory_update_statistics((long) hyph_word, nw, 0);
+    aptex_memory_update_statistics((long) hyph_list, nl, 0);
+  }
+
+  aptex_memory_probe();
+
+  current_prime = hyphen_prime;
+
+  return 0; // success
+}
+
+static memory_word * allocate_mem (int size)
+{
+  int n;
+
+  if (main_memory != NULL)
+    aptex_trace("Reallocating initial memory allocation");
+
+  mem_top = mem_bot + size;
+  mem_max = mem_top;
+  mem_start = 0;     /* bottom of memory allocated by system */
+  mem_min = 0;       /* bottom of area made available to TeX */
+  n = (mem_max - mem_start + 1) * ((int) sizeof(memory_word));
+
+  aptex_memory_trace("main memory", n);
+
+  main_memory = (memory_word *) REALLOC(main_memory, n);
+
+  if (main_memory == NULL)
+  {
+    aptex_memory_error("initial main memory", n);
+    return NULL;
+  }
+
+  aptex_trace("Address main memory == %p\n", main_memory);
+
+  mem = main_memory;
+
+  if (mem_start != 0 && !aptex_env.flag_initex)
+    mem = main_memory - mem_start;
+
+  aptex_trace("Offset address main memory == %p\n", mem);
+  aptex_memory_update_statistics((long) main_memory, n, (current_mem_size + 1) * sizeof (memory_word));
+  current_mem_size = mem_max - mem_start;   /* total number of words - 1 *//*  current_mem_size = (mem_max - mem_start + 1); */
+  aptex_memory_probe();
+
+  return mem;
+}
+
+/* increase main memory allocation at low end and high end */
+/* called with one of lo_size or hi_size == 0 */
+/* returns NULL if it fails */
+
+static memory_word * realloc_mem (int lo_size, int hi_size)
+{  
+  int k, min_size;
+  int new_size = 0;
+  int n = 0;
+  memory_word * new_memory = NULL;
+
+  aptex_trace("WARNING: Entering realloc_main lo %d hi %d\n", lo_size, hi_size);
+
+  if (aptex_env.flag_initex)
+  {
+    puts("ERROR: Cannot extent main memory in initex");
+    return NULL;
+  }
+
+  aptex_trace("Old Address %s == %p\n", "main memory", main_memory);
+
+  /* if we REALLY run up to limit ! */
+  if (current_mem_size + 1 == max_mem_size)
+  {
+    aptex_memory_error("main memory", (max_mem_size + 1) * sizeof(memory_word));
+    return NULL;
+  }
+
+/*  first allocation should expand *both* lo and hi */
+  if (hi_size == 0 && mem_end == mem_max)
+    hi_size = lo_size;
+
+  if (lo_size == 0 && mem_start == mem_min)
+    lo_size = hi_size;
+
+/*  try and prevent excessive frequent reallocations */
+/*  while avoiding over allocation by too much */
+  min_size = current_mem_size / 100 * percent_grow;
+
+  if (lo_size + hi_size < min_size)
+  {
+    if (lo_size > 0 && hi_size > 0)
+    {
+      lo_size = min_size / 2;
+      hi_size = min_size / 2;
+    }
+    else if (lo_size > 0)
+      lo_size = min_size;
+    else if (hi_size > 0)
+      hi_size = min_size;
+  }
+
+  if (lo_size > 0 && lo_size < mem_top / 2)
+    lo_size = mem_top / 2;
+
+  if (hi_size > 0 && hi_size < mem_top / 2)
+    hi_size = mem_top / 2;
+
+  for (k = 0; k < MAXSPLITS; k++)
+  {
+    new_size = current_mem_size + lo_size + hi_size;
+
+    if (new_size >= max_mem_size) /* bump against limit - ha ha ha */
+    {
+      while (new_size >= max_mem_size)
+      {
+        lo_size = lo_size / 2;
+        hi_size = hi_size / 2;
+        new_size = current_mem_size + lo_size + hi_size;
+      }
+    }
+
+    n = (new_size + 1) * sizeof (memory_word);
+
+    aptex_memory_trace("main memory", n);
+
+    new_memory = (memory_word *) REALLOC (main_memory, n);
+
+    if (new_memory != NULL)
+      break; /* did we get it ? */
+
+    if (current_mem_size == 0)
+      break; /* in case we ever use for initial */
+
+    lo_size = lo_size / 2; hi_size = hi_size / 2;
+  }
+
+  if (new_memory == NULL)
+  {
+    aptex_memory_error("main memory", n);
+    return mem;
+  }
+
+  aptex_trace("New Address %s == %p\n", "main memory", new_memory);
+
+  if (lo_size > 0)
+  {
+    aptex_trace("memmove %p %p %ld \n", new_memory + lo_size,
+          new_memory, (current_mem_size + 1) * sizeof(memory_word));
+    /* shift everything upward to make space for new low area */
+    memmove (new_memory + lo_size, new_memory, 
+      (current_mem_size + 1) * sizeof(memory_word));
+    /* could reduce words moved by (mem_max - mem_end) */
+  }
+
+  main_memory = new_memory;       /* remember for free later */
+
+  if (lo_size > 0)
+    mem_start = mem_start - lo_size; /* update lower limit */
+
+  if (hi_size > 0)
+    mem_max = mem_max + hi_size;   /* update upper limit */
+
+  aptex_memory_update_statistics ((long) main_memory, n,
+    (current_mem_size + 1) * sizeof (memory_word));
+  current_mem_size = new_size;
+
+  if (current_mem_size != mem_max - mem_start)
+    puts("ERROR: Impossible Memory Error");
+
+  if (mem_start != 0)
+    mem = main_memory - mem_start;
+  else
+    mem = main_memory;
+
+  aptex_memory_probe();
+
+  return mem;
+}
+
+memory_word * realloc_font_info (int size)
+{
+  memory_word * new_font_info = NULL;
+  int k, min_size;
+  int new_size = 0;
+  int n = 0;
+
+  aptex_trace("Old Address %s == %p\n", "font_info", font_info);
+
+  if (current_font_mem_size == font_mem_size)
+  {
+    /* aptex_memory_error("font", (font_mem_size + 1) * sizeof(memory_word)); */
+    return font_info;
+  }
+
+  min_size = current_font_mem_size / 100 * percent_grow;
+
+  if (size < min_size)
+    size = min_size;
+
+  if (size < initial_font_mem_size)
+    size = initial_font_mem_size;
+
+  for (k = 0; k < MAXSPLITS; k++)
+  {
+    new_size = current_font_mem_size + size;
+
+    if (new_size > font_mem_size)
+      new_size = font_mem_size; /* bump against limit */
+
+    n = (new_size + 1) * sizeof (memory_word);
+
+    aptex_memory_trace("font_info", n);
+
+    new_font_info = (memory_word *) REALLOC (font_info, n);
+
+    if (new_font_info != NULL)
+      break;   /* did we get it ? */
+
+    if (current_font_mem_size == 0)
+      break; /* initial allocation must work */
+
+    size = size / 2;
+  }
+
+  if (new_font_info == NULL)
+  {
+    aptex_memory_error("font", n);
+    return font_info;        /* try and continue !!! */
+  }
+
+  font_info = new_font_info;
+
+  aptex_trace("New Address %s == %p\n", "font_info", font_info);
+  aptex_memory_update_statistics ((long) font_info, n, current_font_mem_size * sizeof(memory_word));
+  aptex_memory_probe();
+
+  current_font_mem_size = new_size;
+
+  return font_info;
+}
+
+packed_ASCII_code * realloc_str_pool (int size)
+{
+  int k, min_size;
+  int new_size = 0;
+  int n = 0;
+  packed_ASCII_code * new_str_pool = NULL;
+
+  aptex_trace("Old Address %s == %p\n", "string pool", str_pool);
+
+  if (current_pool_size == pool_size)
+  {
+    /* aptex_memory_error ("string pool", (pool_size + 1) * sizeof(packed_ASCII_code)); */
+    return str_pool;
+  }
+
+  min_size =  current_pool_size / 100 * percent_grow;
+
+  if (size < min_size)
+    size = min_size;
+
+  if (size < initial_pool_size)
+    size = initial_pool_size;
+
+  for (k = 0; k < MAXSPLITS; k++)
+  {
+    new_size = current_pool_size + size;
+
+    if (new_size > pool_size)
+      new_size = pool_size;
+
+    n = (new_size + 1) * sizeof (packed_ASCII_code);
+
+    aptex_memory_trace("str_pool", n);
+
+    new_str_pool = (packed_ASCII_code *) REALLOC (str_pool, n);
+
+    if (new_str_pool != NULL)
+      break;    /* did we get it ? */
+
+    if (current_pool_size == 0)
+      break;  /* initial allocation must work */
+
+    size = size / 2; /* else can retry smaller */
+  }
+
+  if (new_str_pool == NULL)
+  {
+    aptex_memory_error("string pool", n);
+    return str_pool; /* try and continue !!! */
+  }
+
+  str_pool = new_str_pool;
+  current_pool_size = new_size;
+
+  aptex_trace("New Address %s == %p\n", "string pool", str_pool);
+  aptex_memory_update_statistics((long)str_pool, n, current_pool_size);
+  aptex_memory_probe();
+
+  return str_pool;
+}
+
+pool_pointer * realloc_str_start (int size)
+{
+  int k, min_size;
+  int n = 0;
+  int new_size = 0;
+  pool_pointer * new_str_start = NULL;
+
+  aptex_trace("Old Address %s == %p\n", "str_start", str_start);
+
+  if (current_max_strings == max_strings)
+  {
+    /* aptex_memory_error ("string pointer", (max_strings + 1) * sizeof(pool_pointer)); */
+    return str_start;
+  }
+
+  min_size = current_max_strings / 100 * percent_grow;
+
+  if (size < min_size)
+    size = min_size;
+
+  if (size < initial_max_strings)
+    size = initial_max_strings;
+
+  for (k = 0; k < MAXSPLITS; k++)
+  {
+    new_size = current_max_strings + size;
+
+    if (new_size > max_strings)
+      new_size = max_strings;
+
+    n = (new_size + 1) * sizeof (pool_pointer);
+
+    aptex_memory_trace("str_start", n);
+
+    new_str_start = (pool_pointer *) REALLOC (str_start, n);
+
+    if (new_str_start != NULL)
+      break;   /* did we get it ? */
+
+    if (current_max_strings == 0)
+      break;  /* initial allocation must work */
+
+    size = size / 2;          /* otherwise can try smaller */
+  }
+
+  if (new_str_start == NULL)
+  {
+    aptex_memory_error("string pointer", n);
+    return str_start;          /* try and continue */
+  }
+
+  str_start = new_str_start;
+  current_max_strings = new_size;
+
+  aptex_trace("New Address %s == %p\n", "string start", str_start);
+  aptex_memory_update_statistics((long)str_start, n, current_max_strings * sizeof(pool_pointer));
+  aptex_memory_probe();
+
+  return str_start;
+}
+
+/* returns -1 if it fails */
+/* size == trie_size */
+static int allocate_ini (int size)
+{
+  int n, nl, no, nc, nr, nh, nt;
+
+  nh = (size + 1) * sizeof(trie_pointer);
+  nr = (size + 1) * sizeof(trie_pointer);
+  nl = (size + 1) * sizeof(trie_pointer);
+  no = (size + 1) * sizeof(trie_op_code);
+  nc = (size + 1) * sizeof(packed_ASCII_code);
+  nt = (size + 1) * sizeof(char);
+  n = nl + no + nc + nr + nh + nt;
+
+  aptex_memory_trace("initex hyphen trie", n);
+
+  trie_l = (trie_pointer *) malloc (roundup(nl));
+  trie_o = (trie_op_code *) malloc (roundup(no));
+  trie_c = (packed_ASCII_code *) malloc (roundup(nc));
+  trie_r = (trie_pointer *) malloc (roundup(nr));
+  trie_hash = (trie_pointer *) malloc (roundup(nh));
+  trie_taken = (char *) malloc (roundup(nt));
+  
+  if (trie_c == NULL || trie_o == NULL || trie_l == NULL || trie_r == NULL ||
+      trie_hash == NULL || trie_taken == NULL)
+  {
+    aptex_memory_error("initex hyphen trie", n);
+    return -1;
+  }
+  
+  aptex_trace("Addresses: trie_l %p trie_o %p trie_c %p\n", trie_l, trie_o, trie_c);
+  aptex_trace("Addresses: trie_r %p trie_hash %p trie_taken %p\n", trie_r, trie_hash, trie_taken);
+  aptex_memory_update_statistics ((long) trie_l, nl, 0);
+  aptex_memory_update_statistics ((long) trie_o, no, 0);
+  aptex_memory_update_statistics ((long) trie_c, nc, 0);
+  aptex_memory_update_statistics ((long) trie_r, nr, 0);
+  aptex_memory_update_statistics ((long) trie_hash, nh, 0);
+  aptex_memory_update_statistics ((long) trie_taken, nt, 0);
+  aptex_memory_probe();
+
+  return 0; // success
+}
+
+memory_word * realloc_save_stack (int size)
+{
+  int k, min_size;
+  int n = 0, new_size = 0;
+  memory_word * new_save_stack = NULL;
+
+  aptex_trace("Old Address %s == %p\n", "save stack", save_stack);
+
+  if (current_save_size == save_size)
+  {
+    return save_stack;
+  }
+
+  min_size =  current_save_size / 100 * percent_grow;
+
+  if (size < min_size)
+    size = min_size;
+
+  if (size < initial_save_size)
+    size = initial_save_size;
+
+  for (k = 0; k < MAXSPLITS; k++)
+  {
+    new_size = current_save_size + size;
+
+    if (new_size > save_size)
+      new_size = save_size;
+
+    n = (new_size + 1) * sizeof (memory_word);
+
+    aptex_memory_trace("save_stack", n);
+
+    new_save_stack = (memory_word *) REALLOC (save_stack, n);
+
+    if (new_save_stack != NULL)
+      break;    /* did we get it ? */
+
+    if (current_save_size == 0)
+      break;  /* initial allocation must work */
+
+    size = size / 2;          /* else can retry smaller */
+  }
+
+  if (new_save_stack == NULL)
+  {
+    aptex_memory_error("save_stack", n);
+    return save_stack;           /* try and continue !!! */
+  }
+
+  save_stack = new_save_stack;
+  current_save_size = new_size;
+
+  aptex_trace("Current %s %d\n", "save_size", current_save_size);
+  aptex_trace("New Address %s == %p\n", "save stack", save_stack);
+  aptex_memory_update_statistics((long)save_stack, n, current_save_size);
+  aptex_memory_probe();
+
+  return save_stack;
+}
+
+in_state_record * realloc_input_stack (int size)
+{
+  int k, min_size;
+  int n = 0, new_size = 0;
+  in_state_record * new_input_stack = NULL;
+
+  aptex_trace("Old Address %s == %p\n", "input stack", input_stack);
+
+  if (current_stack_size == stack_size)
+  {
+    return input_stack;
+  }
+
+  min_size =  current_stack_size / 100 * percent_grow;
+
+  if (size < min_size)
+    size = min_size;
+
+  if (size < initial_stack_size)
+    size = initial_stack_size;
+
+  for (k = 0; k < MAXSPLITS; k++)
+  {
+    new_size = current_stack_size + size;
+
+    if (new_size > stack_size)
+      new_size = stack_size;
+
+    n = (new_size + 1) * sizeof(in_state_record);
+
+    aptex_memory_trace("input_stack", n);
+
+    new_input_stack = (in_state_record *) REALLOC (input_stack, n);
+
+    if (new_input_stack != NULL)
+      break;   /* did we get it ? */
+
+    if (current_stack_size == 0)
+      break; /* initial allocation must work */
+
+    size = size / 2;          /* else can retry smaller */
+  }
+
+  if (new_input_stack == NULL)
+  {
+    aptex_memory_error("input stack", n);
+    return input_stack;            /* try and continue !!! */
+  }
+
+  input_stack = new_input_stack;
+  current_stack_size = new_size;
+
+  aptex_trace("Current %s %d\n", "stack_size", current_stack_size);
+  aptex_trace("New Address %s == %p\n", "input stack", input_stack);
+  aptex_memory_update_statistics((long)input_stack, n, current_stack_size);
+  aptex_memory_probe();
+
+  return input_stack;
+}
+
+list_state_record * realloc_nest_stack (int size)
+{
+  int k, min_size;
+  int n = 0, new_size = 0;
+  list_state_record * new_nest = NULL;
+
+  aptex_trace("Old Address %s == %p\n", "nest stack", nest);
+
+  if (current_nest_size == nest_size)
+  {
+    return nest;
+  }
+
+  min_size =  current_nest_size / 100 * percent_grow;
+
+  if (size < min_size)
+    size = min_size;
+
+  if (size < initial_nest_size)
+    size = initial_nest_size;
+
+  for (k = 0; k < MAXSPLITS; k++)
+  {
+    new_size = current_nest_size + size;
+
+    if (new_size > nest_size)
+      new_size = nest_size;
+
+    n = (new_size + 1) * sizeof (list_state_record);
+    aptex_memory_trace("nest stack", n);
+    new_nest = (list_state_record *) REALLOC (nest, n);
+
+    if (new_nest != NULL)
+      break;   /* did we get it ? */
+
+    if (current_nest_size == 0)
+      break;  /* initial allocation must work */
+
+    size = size / 2;          /* else can retry smaller */
+  }
+
+  if (new_nest == NULL)
+  {
+    aptex_memory_error("nest stack", n);
+    return nest;            /* try and continue !!! */
+  }
+
+  nest = new_nest;
+  current_nest_size = new_size;
+
+  aptex_trace("Current %s %d\n", "nest_size", current_nest_size);
+  aptex_trace("New Address %s == %p\n", "nest stack", nest);
+  aptex_memory_update_statistics((long)nest, n, current_nest_size);
+  aptex_memory_probe();
+
+  return nest;
+}
+
+halfword * realloc_param_stack (int size)
+{
+  int k, min_size;
+  int n = 0, new_size = 0;
+  halfword * new_param = NULL;
+
+  aptex_trace("Old Address %s == %p\n", "param stack", param_stack);
+
+  if (current_param_size == param_size)
+  {
+    return param_stack;
+  }
+
+  min_size =  current_param_size / 100 * percent_grow;
+
+  if (size < min_size)
+    size = min_size;
+
+  if (size < initial_param_size)
+    size = initial_param_size;
+
+  for (k = 0; k < MAXSPLITS; k++)
+  {
+    new_size = current_param_size + size;
+
+    if (new_size > param_size)
+      new_size = param_size;
+
+    n = (new_size + 1) * sizeof(pointer);
+    aptex_memory_trace("param stack", n);
+    new_param = (pointer *) REALLOC (param_stack, n);
+
+    if (new_param != NULL)
+      break;    /* did we get it ? */
+
+    if (current_param_size == 0)
+      break; /* initial allocation must work */
+
+    size = size / 2; /* else can retry smaller */
+  }
+
+  if (new_param == NULL)
+  {
+    aptex_memory_error("param stack", n);
+    return param_stack;            /* try and continue !!! */
+  }
+
+  param_stack = new_param;
+  current_param_size = new_size;
+
+  aptex_trace("Current %s %d\n", "param_size", current_param_size);
+  aptex_trace("New Address %s == %p\n", "param stack", param_stack);
+  aptex_memory_update_statistics((long)param_stack, n, current_param_size);
+  aptex_memory_probe();
+
+  return param_stack;
+}
+
+ASCII_code * realloc_buffer (int size)
+{
+  int k, min_size;
+  int n = 0, new_size = 0;
+  ASCII_code * new_buffer = NULL;
+
+  aptex_trace("Old Address %s == %p\n", "buffer", buffer);
+
+  if (current_buf_size == buf_size)
+  {
+    return buffer;
+  }
+
+  min_size =  current_buf_size / 100 * percent_grow;
+
+  if (size < min_size)
+    size = min_size;
+
+  if (size < initial_buf_size)
+    size = initial_buf_size;
+
+  for (k = 0; k < MAXSPLITS; k++)
+  {
+    new_size = current_buf_size + size;
+
+    if (new_size > buf_size)
+      new_size = buf_size;
+
+    n = (new_size + 1) * sizeof(ASCII_code);
+
+    aptex_memory_trace("buffer", n);
+
+    new_buffer = (ASCII_code *) REALLOC (buffer, n);
+
+    if (new_buffer != NULL)
+      break;   /* did we get it ? */
+
+    if (current_buf_size == 0)
+      break;   /* initial allocation must work */
+
+    size = size / 2;
+  }
+
+  if (new_buffer == NULL)
+  {
+    aptex_memory_error("buffer", n);
+    return buffer;            /* try and continue !!! */
+  }
+
+  buffer = new_buffer;
+  memset(buffer + current_buf_size, 0, new_size - current_buf_size);
+  current_buf_size = new_size;
+
+  aptex_trace("Current buffer %d\n", current_buf_size);
+  aptex_trace("New Address buffer == %p\n", buffer);
+  aptex_memory_update_statistics((long)buffer, n, current_buf_size);
+  aptex_memory_probe();
+
+  return buffer;
+}
+#endif
+
+/* set initial memory allocations */
+static void aptex_memory_init (void)
+{
+  if (!aptex_env.flag_initex)
+  {
+    if (mem_initex != 0)
+    {
+      fprintf(stderr, "ERROR: Can only set initial main memory size in INITEX");
+      mem_initex = 0;
+    }
+
+    if (trie_size != 0)
+      fprintf(stderr, "ERROR: Need only set hyphenation trie size in INITEX");
+  }
+
+  if (mem_initex <= 0)
+    mem_initex = default_mem_top;
+  else if (mem_initex > 10000L * 1024L)
+    mem_initex = mem_initex / 1024;
+
+  if (trie_size <= 0)
+    trie_size = default_trie_size;
+
+  if (new_hyphen_prime < 0)
+    new_hyphen_prime = 0;
+
+  if (new_hyphen_prime > 0)
+  {
+    if (!aptex_env.flag_initex)
+      puts("ERROR: Can only set hyphen prime in INITEX");
+    else
+    {
+      if (new_hyphen_prime % 2 == 0)
+        new_hyphen_prime++;
+
+      while (!prime(new_hyphen_prime))
+        new_hyphen_prime = new_hyphen_prime + 2;
+
+      aptex_trace("Using %d as hyphen prime\n", new_hyphen_prime);
+    }
+  }
+
+  if (percent_grow > 100)
+    percent_grow = percent_grow - 100;
+
+  if (percent_grow > 100)
+    percent_grow = 100;
+
+  if (percent_grow < 10)
+    percent_grow = 10;
+
+#ifdef APTEX_EXTENSION
+  main_memory = NULL;
+  font_info   = NULL;
+  str_pool    = NULL;
+  str_start   = NULL;
+  save_stack  = NULL;
+  hyph_list   = NULL;
+  hyph_word   = NULL;
+  trie_taken  = NULL;
+  trie_hash   = NULL;
+  trie_r      = NULL;
+  trie_c      = NULL;
+  trie_o      = NULL;
+  trie_l      = NULL;
+  trie_trc    = NULL;
+  trie_tro    = NULL;
+  trie_trl    = NULL;
+
+  buffer = NULL;
+  current_buf_size = 0;
+  buffer = realloc_buffer(initial_buf_size);
+#endif
+
+  interaction = -1;
+  ini_max_address = max_address;
+  aptex_trace("Max allocated %d -- max address %d\n", total_allocated, max_address);
+}
+
+static void aptex_memory_allocate (void)
+{
+  current_mem_size = 0;
+
+#ifdef APTEX_EXTENSION
+  input_stack = NULL;
+  current_stack_size = 0;
+  input_stack = realloc_input_stack(initial_stack_size);
+
+  nest = NULL;
+  current_nest_size = 0;
+  nest = realloc_nest_stack(initial_nest_size);
+
+  param_stack = NULL;
+  current_param_size = 0;
+  param_stack = realloc_param_stack(initial_param_size);
+
+  save_stack = NULL;
+  current_save_size = 0;
+  save_stack = realloc_save_stack (initial_save_size);
+#endif
+
+  /* need to do earlier */
+#ifdef IGNORED
+  buffer = NULL;
+  current_buf_size = 0;
+  buffer = realloc_buffer (initial_buf_size);
+#endif
+
+#ifdef APTEX_EXTENSION
+  str_pool = NULL;
+  current_pool_size = 0;
+
+  str_start = NULL;
+  current_max_strings = 0;
+
+  if (aptex_env.flag_initex)
+  {
+    aptex_trace("INITEX pool and string allocation");
+    str_pool = realloc_str_pool(initial_pool_size);
+    str_start = realloc_str_start(initial_max_strings);
+  }
+
+  font_info = NULL;
+  current_font_mem_size = 0;
+
+  if (aptex_env.flag_initex)
+    font_info = realloc_font_info(initial_font_mem_size);
+
+  main_memory = NULL;
+  mem = NULL;
+  mem_min = mem_bot;
+  mem_top = mem_initex;
+  mem_max = mem_top;
+  hyph_word = NULL;
+  hyph_list = NULL;
+  hyphen_prime = default_hyphen_prime;
+
+  if (aptex_env.flag_initex)
+  {
+    /* avoid this if format specified on command line ??? */
+    mem = allocate_mem(mem_initex); /* made variable ! */
+
+    if (mem == NULL)
+      exit(1);
+  }
+
+  if (aptex_env.flag_initex)
+  {
+    if (new_hyphen_prime)
+      hyphen_prime = new_hyphen_prime;
+
+    if (realloc_hyphen(hyphen_prime)) /* allocate just in case no format */
+      exit(1);
+
+    if (allocate_tries(trie_size))
+      exit(1);
+
+    if (allocate_ini(trie_size))
+      exit(1);
+  }
+  else
+  {
+    trie_l = NULL;
+    trie_r = NULL;
+    trie_o = NULL;
+    trie_hash = NULL;
+    trie_c = NULL;
+    trie_taken = NULL;
+  }
+#endif
+}
+
+static void aptex_memory_free (void)
+{
+#define safe_free(a)  \
+do {                  \
+  if (a != NULL)      \
+    free(a);          \
+  a = NULL;           \
+} while (0)
+
+  aptex_trace("Max allocated %d -- max address %d\n", total_allocated, max_address);
+  aptex_trace("Heap total : %u bytes -- max address %u\n", 0, max_address);
+  aptex_trace("Main Memory: variable node %d (%d - %d)\n", (int)(lo_mem_max - mem_min), (int)mem_min, (int)lo_mem_max);
+  aptex_trace("Main Memory: one word node %d (%d - %d)\n", (int)(mem_end - hi_mem_min), (int)hi_mem_min, (int)mem_end);
+
+#ifdef APTEX_EXTENSION
+  if (aptex_env.flag_initex)
+  {
+    safe_free(trie_taken);
+    safe_free(trie_hash);
+    safe_free(trie_l);
+    safe_free(trie_r);
+    safe_free(trie_c);
+    safe_free(trie_o);
+  }
+
+  safe_free(trie_trc);
+  safe_free(trie_tro);
+  safe_free(trie_trl);
+  safe_free(hyph_list);
+  safe_free(hyph_word);
+  safe_free(main_memory);
+  safe_free(font_info);
+  safe_free(str_start);
+  safe_free(str_pool);
+  safe_free(param_stack);
+  safe_free(nest);
+  safe_free(input_stack);
+  safe_free(save_stack);
+#endif
+
+  safe_free(TEX_format_default);
+}
+
+static void aptex_commands_init (int ac, char **av)
+{
+  aptex_env.aptex_fmt             = NULL;
+  aptex_env.aptex_job             = NULL;
+  aptex_env.aptex_src             = NULL;
+
+  aptex_env.flag_initex           = false;
+  aptex_env.flag_suppress_f_ligs  = false;
+
+  aptex_env.flag_reset_trie       = false;
+  aptex_env.flag_reset_hyphen     = false;
+  aptex_env.flag_allow_quoted     = true;
+
+  aptex_env.flag_tex82            = false;
+  aptex_env.flag_compact_fmt      = true;
+
+  aptex_env.trace_realloc         = true;
+  aptex_env.trace_mem             = false;
+  aptex_env.trace_lbrk            = true;
+
+  new_hyphen_prime                = 0;
+#ifdef APTEX_EXTENSION
+  trie_size                       = 0;
+#endif
+  mem_initex                      = 0;
+
+  lbs_pass_fst  = 0;
+  lbs_pass_snd  = 0;
+  lbs_pass_fin  = 0;
+  lbs_sing_line = 0;
+
+  hps_overfull  = 0;
+  hps_underfull = 0;
+  vps_overfull  = 0;
+  vps_underfull = 0;
+
+  if (ac >= 2)
+  {
+    int c;
+    int option_idx = 0;
+
+#pragma push_macro("name")
+#undef name
+#define ARGUMENT_IS(a) !strcmp(long_options[option_idx].name, a)
+
+    struct option long_options[] =
+    {
+      { "main-memory",    required_argument, NULL, 0 },
+      { "hyph-size",      required_argument, NULL, 0 },
+      { "trie-size",      required_argument, NULL, 0 },
+      { "percent-grow",   required_argument, NULL, 0 },
+      { "progname",       required_argument, NULL, 0 },
+      { "jobname",        required_argument, NULL, 0 },
+      { "synctex",        required_argument, NULL, 0 },
+
+      //{ "fmt",            required_argument, NULL, 0 },
+      //{ "format",         required_argument, NULL, 0 },
+
+      { "patterns",       no_argument, NULL, 0 },
+      { "ini",            no_argument, NULL, 0 },
+      { "showlbstats",    no_argument, NULL, 0 },
+      { "suppressfligs",  no_argument, NULL, 0 },
+      { "trace",          no_argument, NULL, 0 },
+      { "help",           no_argument, NULL, 0 },
+      { "version",        no_argument, NULL, 0 },
+      { "usage",          no_argument, NULL, 0 },
+      { NULL, 0, 0, 0 }
+    };
+
+    while ((c = getopt_long_only(ac, av, "", long_options, &option_idx)) != EOF)
+    {
+      if (ARGUMENT_IS("progname"))
+        kpse_reset_program_name(xstrdup(optarg));
+      else if (ARGUMENT_IS("jobname"))
+        aptex_env.aptex_job = xstrdup(optarg);
+      else if (ARGUMENT_IS("synctex"))
+        synctex_option = (int) strtol(optarg, NULL, 0);
+      else if (ARGUMENT_IS("ini"))
+        aptex_env.flag_initex = true;
+      else if (ARGUMENT_IS("suppressfligs"))
+        aptex_env.flag_suppress_f_ligs = true;
+      else if (ARGUMENT_IS("patterns"))
+        aptex_env.flag_reset_trie = true;
+      else if (ARGUMENT_IS("trace"))
+        aptex_env.trace_mem = true;
+      else if (ARGUMENT_IS("trie-size"))
+        trie_size = (optarg == NULL) ? default_trie_size : atoi(optarg);
+      else if (ARGUMENT_IS("hyph-size"))
+        new_hyphen_prime = (optarg == NULL) ? hyphen_prime * 2 : atoi(optarg);
+      else if (ARGUMENT_IS("main-memory"))
+        mem_initex = (optarg == NULL) ? mem_top : atoi(optarg) * 1024;
+      else if (ARGUMENT_IS("percent-grow"))
+        percent_grow = (optarg == NULL) ? 62 : atoi(optarg);
+      else if (ARGUMENT_IS("help"))
+        print_aptex_info(), print_aptex_usage();
+      else if (ARGUMENT_IS("version"))
+        print_aptex_info(), print_aptex_version();
+    }
+#pragma pop_macro("name")
+
+    while (optind < ac)
+    {
+      if (*av[optind] == '&' || *av[optind] == '+')
+      {
+        if (aptex_env.aptex_fmt != NULL)
+          free(aptex_env.aptex_fmt);
+
+        aptex_env.aptex_fmt = xstrdup(av[optind] + 1);
+      }
+      else
+      {
+        if (aptex_env.aptex_src != NULL)
+          free(aptex_env.aptex_src);
+
+        aptex_env.aptex_src = (char *) malloc(strlen(av[optind] + 2));
+        sprintf(aptex_env.aptex_src, "%s ", av[optind]);
+      }
+
+      optind++;
+    }
+  }
+
+  {
+    typedef void * (*aptex_open_t) (const char *, const char *);
+    aptex_env.open_tex_file = (aptex_open_t) fopen;
+    aptex_env.open_tfm_file = (aptex_open_t) fopen;
+
+    if (aptex_env.flag_compact_fmt == true)
+      aptex_env.open_fmt_file = (aptex_open_t) gzopen;
+    else
+      aptex_env.open_fmt_file = (aptex_open_t) fopen;
+  }
+
+  if (aptex_env.aptex_src == NULL)
+    aptex_env.aptex_src = xstrdup(" ");
+
+  if (aptex_env.aptex_fmt == NULL)
+    format_name = remove_suffix(xbasename(av[0]));
+  else
+    format_name = xstrdup(aptex_env.aptex_fmt);
+
+  TEX_format_default = (char *) malloc(strlen(format_name) + 6);
+
+  if (TEX_format_default == NULL)
+  {
+    fprintf(stderr, "%s: something really went bad: cannot allocated mem for default format! Exiting.\n", av[0]);
+    exit(1);
+  }
+
+  sprintf(TEX_format_default, " %s.fmt", format_name);
+  format_default_length = strlen(TEX_format_default + 1);
+
+  aptex_env.time_start  = clock();
+  aptex_env.time_main   = aptex_env.time_start;
+}
+
+static void catch_interrupt (int err)
+{
+  (void) err;
+  (void) signal(SIGINT, SIG_IGN);
+
+  if (interrupt++ >= 3)
+    exit(EXIT_FAILURE);
+
+  (void) signal(SIGINT, catch_interrupt);
+}
+
+static void aptex_set_signal (void)
+{
+#ifdef _WIN32
+  if (signal(SIGINT, catch_interrupt) == SIG_ERR)
+  {
+    puts("ApTeX: CTRL-C handler not installed");
+    aptex_utils_exit(EXIT_FAILURE);
+  }
+#else
+  void(*old_handler)(int);
+
+  old_handler = signal(SIGINT, catch_interrupt);
+
+  if (old_handler != SIG_DFL)
+    (void) signal(SIGINT, old_handler);
+#endif
+}
+
+void aptex_set_env (int argc, char ** argv)
+{
+#ifdef _WIN32
+  int i;
+
+  aptex_env.argc = argc;
+  aptex_env.argv = (char **) malloc(argc * sizeof(char *));
+
+  for (i = 0; i < argc; i++)
+    aptex_env.argv[i] = mbcs_utf8(argv[i]);
+
+  _setmaxstdio(2048);
+  setmode(fileno(stdin), _O_BINARY);
+#else
+  aptex_env.argc = argc;
+  aptex_env.argv = argv;
+#endif
+}
+
+void aptex_init (void)
+{
+  // check of memory_word's size
+  assert(sizeof(memory_word)  == sizeof(halfword) * 2);
+  assert(sizeof(halfword)     == sizeof(quarterword) * 2);
+  assert(sizeof(integer)      == sizeof(real));
+
+  // for synctex
+  synctex_option = INT_MAX;
+  // for kpathsea init
+  kpse_set_program_name(aptex_env.argv[0], NULL);
+  kpse_set_program_enabled(kpse_fontmap_format, true, kpse_src_texmf_cnf);
+  // for ptexenc init: encoding
+  init_default_kanji("utf8", "uptex");
+  // for engine name
+  xputenv("engine", "ptex-ng");
+
+  aptex_set_signal();
+  aptex_commands_init(aptex_env.argc, aptex_env.argv);
+  aptex_memory_init();
+  aptex_memory_allocate();
+}
+
+void aptex_fini (void)
+{
+  aptex_env.time_finish = clock();
+
+  if (!aptex_env.flag_initex)
+  {
+    printf("Total ");
+    print_aptex_time(aptex_env.time_finish - aptex_env.time_start);
+    printf("s (");
+    print_aptex_time(aptex_env.time_main - aptex_env.time_start);
+    printf(" format load + ");
+    print_aptex_time(aptex_env.time_finish - aptex_env.time_main);
+    printf(" processing)");
+
+    if (total_pages > 0)
+    {
+      printf(" ");
+      print_aptex_time((aptex_env.time_finish - aptex_env.time_main) / total_pages);
+      printf("s per page");
+    }
+
+    printf(".\n");
+  }
+  
+  aptex_memory_free();
+
+#ifdef WIN32
+  int i;
+
+  for (i = 0; i < aptex_env.argc; i++)
+  {
+    if (aptex_env.argv[i] != NULL)
+      free(aptex_env.argv[i]);
+
+    aptex_env.argv[i] = NULL;
+  }
+
+  free(aptex_env.argv);
+#endif
+
+  safe_free(aptex_env.aptex_fmt);
+  safe_free(aptex_env.aptex_src);
+  safe_free(aptex_env.aptex_job);
+}
+
+static integer aptex_utils_round (real r)
+{
+  integer i;
+
+  if (r > 2147483647.0)
+    i = 2147483647;
+  else if (r < -2147483647.0)
+    i = -2147483647;
+  else if (r >= 0.0)
+    i = (integer) (r + 0.5);
+  else
+    i = (integer) (r - 0.5);
+
+  return i;
+}
+
+#define XXHi(x) BYTE1(x)
+#define Hi(x)   BYTE3(x)
+#define Lo(x)   BYTE4(x)
+#define nrestmultichr(x)  ((x) != 0 ? ((x) / 8) + 2 - ((x) % 8) : -1)
+#define CJK_TOKEN_FLAG  0xFFFFFF
+
+static boolean is_char_ascii (integer c)
+{
+  return (0 <= c && c < 0x100);
+}
+
+static boolean is_char_kanji (integer c)
+{
+  if (is_internalUPTEX())
+    return (c >= 0 && (c & CJK_TOKEN_FLAG) < max_cjk_val);
+  else
+    return iskanji1(Hi(c)) && iskanji2(Lo(c));
+}
+
+static boolean check_kanji (integer c)
+{
+  if (c > cs_token_flag)
+    return false;
+  else if (!(XXHi(c) >= kanji && XXHi(c) <= hangul))
+    return false;
+  else
+    return is_char_kanji(c);
+}
+
+static boolean ismultiprn (integer c)
+{
+  int i, j;
+
+  for (i = 2; i <= 4; i++)
+    for (j = 1; j <= i; j++)
+    {
+      if (ismultichr(i, j, c))
+        return true;
+    }
+
+  return false;
+}
+
+static integer calc_pos (integer c)
+{
+  unsigned char c1, c2;
+
+  if (c >= 0 && c <= 255)
+    return(c);
+
+  c1 = Hi(c);
+  c2 = Lo(c);
+
+  c1 = (c1 % 4) * 64;  // c1 = 0, 64, 128, 192
+  c2 = c2 % 64;        // c2 = 0..63
+  return (c1 + c2);     // ret = 0..255
+}
+
+// Ref. http://www.unicode.org/Public/UNIDATA/Blocks.txt
+static long ucs_range[] =
+{
+  0x0000, // Basic Latin   0x00
+  0x0080, // Latin-1 Supplement
+  0x0100, // Latin Extended-A
+  0x0180, // Latin Extended-B
+  0x0250, // IPA Extensions
+  0x02B0, // Spacing Modifier Letters
+  0x0300, // Combining Diacritical Marks
+  0x0370, // Greek and Coptic
+  0x0400, // Cyrillic  0x08
+  0x0500, // Cyrillic Supplement
+  0x0530, // Armenian
+  0x0590, // Hebrew
+  0x0600, // Arabic
+  0x0700, // Syriac
+  0x0750, // Arabic Supplement
+  0x0780, // Thaana
+  0x07C0, // NKo     0x10
+  0x0800, // Samaritan
+  0x0840, // Mandaic
+  0x08A0, // Arabic Extended-A
+  0x0900, // Devanagari
+  0x0980, // Bengali
+  0x0A00, // Gurmukhi
+  0x0A80, // Gujarati
+  0x0B00, // Oriya     0x18
+  0x0B80, // Tamil
+  0x0C00, // Telugu
+  0x0C80, // Kannada
+  0x0D00, // Malayalam
+  0x0D80, // Sinhala
+  0x0E00, // Thai
+  0x0E80, // Lao
+  0x0F00, // Tibetan   0x20
+  0x1000, // Myanmar
+  0x10A0, // Georgian
+  0x1100, // Hangul Jamo
+  0x1200, // Ethiopic
+  0x1380, // Ethiopic Supplement
+  0x13A0, // Cherokee
+  0x1400, // Unified Canadian Aboriginal Syllabics
+  0x1680, // Ogham     0x28
+  0x16A0, // Runic
+  0x1700, // Tagalog
+  0x1720, // Hanunoo
+  0x1740, // Buhid
+  0x1760, // Tagbanwa
+  0x1780, // Khmer
+  0x1800, // Mongolian
+  0x18B0, // Unified Canadian Aboriginal Syllabics Extended 0x30
+  0x1900, // Limbu
+  0x1950, // Tai Le
+  0x1980, // New Tai Lue
+  0x19E0, // Khmer Symbols
+  0x1A00, // Buginese
+  0x1A20, // Tai Tham
+  0x1AB0, // Combining Diacritical Marks Extended
+  0x1B00, // Balinese  0x38
+  0x1B80, // Sundanese
+  0x1BC0, // Batak
+  0x1C00, // Lepcha
+  0x1C50, // Ol Chiki
+  0x1CC0, // Sundanese Supplement
+  0x1CD0, // Vedic Extensions
+  0x1D00, // Phonetic Extensions
+  0x1D80, // Phonetic Extensions Supplement     0x40
+  0x1DC0, // Combining Diacritical Marks Supplement
+  0x1E00, // Latin Extended Additional
+  0x1F00, // Greek Extended
+  0x2000, // General Punctuation
+  0x2070, // Superscripts and Subscripts
+  0x20A0, // Currency Symbols
+  0x20D0, // Combining Diacritical Marks for Symbols
+  0x2100, // Letterlike Symbols0x48
+  0x2150, // Number Forms
+  0x2190, // Arrows
+  0x2200, // Mathematical Operators
+  0x2300, // Miscellaneous Technical
+  0x2400, // Control Pictures
+  0x2440, // Optical Character Recognition
+  0x2460, // Enclosed Alphanumerics
+  0x2500, // Box Drawing   0x50
+  0x2580, // Block Elements
+  0x25A0, // Geometric Shapes
+  0x2600, // Miscellaneous Symbols
+  0x2700, // Dingbats
+  0x27C0, // Miscellaneous Mathematical Symbols-A
+  0x27F0, // Supplemental Arrows-A
+  0x2800, // Braille Patterns
+  0x2900, // Supplemental Arrows-B 0x58
+  0x2980, // Miscellaneous Mathematical Symbols-B
+  0x2A00, // Supplemental Mathematical Operators
+  0x2B00, // Miscellaneous Symbols and Arrows
+  0x2C00, // Glagolitic
+  0x2C60, // Latin Extended-C
+  0x2C80, // Coptic
+  0x2D00, // Georgian Supplement
+  0x2D30, // Tifinagh  0x60
+  0x2D80, // Ethiopic Extended
+  0x2DE0, // Cyrillic Extended-A
+  0x2E00, // Supplemental Punctuation
+  0x2E80, // CJK Radicals Supplement
+  0x2F00, // Kangxi Radicals
+  0x2FF0, // Ideographic Description Characters
+  0x3000, // CJK Symbols and Punctuation
+  0x3040, // Hiragana  0x68
+  0x30A0, // Katakana
+  0x3100, // Bopomofo
+  0x3130, // Hangul Compatibility Jamo
+  0x3190, // Kanbun
+  0x31A0, // Bopomofo Extended
+  0x31C0, // CJK Strokes
+  0x31F0, // Katakana Phonetic Extensions
+  0x3200, // Enclosed CJK Letters and Months    0x70
+  0x3300, // CJK Compatibility
+  0x3400, // CJK Unified Ideographs Extension A
+  0x4DC0, // Yijing Hexagram Symbols
+  0x4E00, // CJK Unified Ideographs
+  0xA000, // Yi Syllables
+  0xA490, // Yi Radicals
+  0xA4D0, // Lisu
+  0xA500, // Vai     0x78 
+  0xA640, // Cyrillic Extended-B
+  0xA6A0, // Bamum
+  0xA700, // Modifier Tone Letters
+  0xA720, // Latin Extended-D
+  0xA800, // Syloti Nagri
+  0xA830, // Common Indic Number Forms
+  0xA840, // Phags-pa
+  0xA880, // Saurashtra  0x80
+  0xA8E0, // Devanagari Extended
+  0xA900, // Kayah Li
+  0xA930, // Rejang
+  0xA960, // Hangul Jamo Extended-A
+  0xA980, // Javanese
+  0xA9E0, // Myanmar Extended-B
+  0xAA00, // Cham
+  0xAA60, // Myanmar Extended-A0x88
+  0xAA80, // Tai Viet
+  0xAAE0, // Meetei Mayek Extensions
+  0xAB00, // Ethiopic Extended-A
+  0xAB30, // Latin Extended-E
+  0xABC0, // Meetei Mayek
+  0xAC00, // Hangul Syllables
+  0xD7B0, // Hangul Jamo Extended-B
+  0xD800, // High Surrogates 0x90
+  0xDB80, // High Private Use Surrogates
+  0xDC00, // Low Surrogates
+  0xE000, // Private Use Area
+  0xF900, // CJK Compatibility Ideographs
+  0xFB00, // Alphabetic Presentation Forms
+  0xFB50, // Arabic Presentation Forms-A
+  0xFE00, // Variation Selectors
+  0xFE10, // Vertical Forms  0x98
+  0xFE20, // Combining Half Marks
+  0xFE30, // CJK Compatibility Forms
+  0xFE50, // Small Form Variants
+  0xFE70, // Arabic Presentation Forms-B
+  0xFF00, // Halfwidth and Fullwidth Forms
+  0xFFF0, // Specials
+  0x10000, // Linear B Syllabary
+  0x10080, // Linear B Ideograms 0xa0
+  0x10100, // Aegean Numbers
+  0x10140, // Ancient Greek Numbers
+  0x10190, // Ancient Symbols
+  0x101D0, // Phaistos Disc
+  0x10280, // Lycian
+  0x102A0, // Carian
+  0x102E0, // Coptic Epact Numbers
+  0x10300, // Old Italic   0xa8
+  0x10330, // Gothic
+  0x10350, // Old Permic
+  0x10380, // Ugaritic
+  0x103A0, // Old Persian
+  0x10400, // Deseret
+  0x10450, // Shavian
+  0x10480, // Osmanya
+  0x10500, // Elbasan  0xb0
+  0x10530, // Caucasian Albanian
+  0x10600, // Linear A
+  0x10800, // Cypriot Syllabary
+  0x10840, // Imperial Aramaic
+  0x10860, // Palmyrene
+  0x10880, // Nabataean
+  0x10900, // Phoenician
+  0x10920, // Lydian   0xb8
+  0x10980, // Meroitic Hieroglyphs
+  0x109A0, // Meroitic Cursive
+  0x10A00, // Kharoshthi
+  0x10A60, // Old South Arabian
+  0x10A80, // Old North Arabian
+  0x10AC0, // Manichaean
+  0x10B00, // Avestan
+  0x10B40, // Inscriptional Parthian      0xc0
+  0x10B60, // Inscriptional Pahlavi
+  0x10B80, // Psalter Pahlavi
+  0x10C00, // Old Turkic
+  0x10E60, // Rumi Numeral Symbols
+  0x11000, // Brahmi
+  0x11080, // Kaithi
+  0x110D0, // Sora Sompeng
+  0x11100, // Chakma   0xc8
+  0x11150, // Mahajani
+  0x11180, // Sharada
+  0x111E0, // Sinhala Archaic Numbers
+  0x11200, // Khojki
+  0x112B0, // Khudawadi
+  0x11300, // Grantha
+  0x11480, // Tirhuta
+  0x11580, // Siddham  0xd0
+  0x11600, // Modi
+  0x11680, // Takri
+  0x118A0, // Warang Citi
+  0x11AC0, // Pau Cin Hau
+  0x12000, // Cuneiform
+  0x12400, // Cuneiform Numbers and Punctuation
+  0x13000, // Egyptian Hieroglyphs
+  0x16800, // Bamum Supplement 0xd8
+  0x16A40, // Mro
+  0x16AD0, // Bassa Vah
+  0x16B00, // Pahawh Hmong
+  0x16F00, // Miao
+  0x1B000, // Kana Supplement
+  0x1BC00, // Duployan
+  0x1BCA0, // Shorthand Format Controls
+  0x1D000, // Byzantine Musical Symbols     0xe0
+  0x1D100, // Musical Symbols
+  0x1D200, // Ancient Greek Musical Notation
+  0x1D300, // Tai Xuan Jing Symbols
+  0x1D360, // Counting Rod Numerals
+  0x1D400, // Mathematical Alphanumeric Symbols
+  0x1E800, // Mende Kikakui
+  0x1EE00, // Arabic Mathematical Alphabetic Symbols
+  0x1F000, // Mahjong Tiles  0xe8
+  0x1F030, // Domino Tiles
+  0x1F0A0, // Playing Cards
+  0x1F100, // Enclosed Alphanumeric Supplement
+  0x1F200, // Enclosed Ideographic Supplement
+  0x1F300, // Miscellaneous Symbols and Pictographs
+  0x1F600, // Emoticons
+  0x1F650, // Ornamental Dingbats
+  0x1F680, // Transport and Map Symbols     0xf0
+  0x1F700, // Alchemical Symbols
+  0x1F780, // Geometric Shapes Extended
+  0x1F800, // Supplemental Arrows-C
+  0x20000, // CJK Unified Ideographs Extension B
+  0x2A700, // CJK Unified Ideographs Extension C
+  0x2B740, // CJK Unified Ideographs Extension D
+  0x2F800, // CJK Compatibility Ideographs Supplement
+  0x30000, // reserved   0xf8
+  0x40000, // reserved
+  0x50000, // reserved
+  0x60000, // reserved
+  0x70000, // reserved
+  0x80000, // reserved
+  0x90000, // reserved
+  0xA0000, // reserved
+  0xB0000, // reserved   0x100
+  0xC0000, // reserved
+  0xD0000, // reserved
+  0xE0000, // Tags
+  0xE0100, // Variation Selectors Supplement
+  0xF0000, // Supplementary Private Use Area-A
+  0x100000, // Supplementary Private Use Area-B
+  0x110000, // Reserved
+  0x120000, // Reserved  0x108
+  0x130000, // Reserved
+  0x140000, // Reserved
+  0x150000, // Reserved
+  0x160000, // Reserved
+  0x170000, // Reserved
+  0x180000, // Reserved
+  0x190000, // Reserved
+  0x1A0000, // Reserved  0x110
+  0x1B0000, // Reserved
+  0x1C0000, // Reserved
+  0x1D0000, // Reserved
+  0x1E0000, // Reserved
+  0x1F0000, // Reserved
+  0x200000, // Reserved
+  0x210000, // Reserved
+  0x220000, // Reserved  0x118
+  max_cjk_val
+};
+
+#define NUCS_RANGE (sizeof(ucs_range)/sizeof(ucs_range[0]))
+
+static int binary_search (long x, long *a, int left, int right)
+{
+  right++;
+
+  while (left < right)
+  {
+    int mid = (left + right) / 2;
+
+    if (a[mid] <= x)
+      left = mid + 1;
+    else
+      right = mid;
+  }
+
+  return left - 1;
+}
+
+#define FULLWIDTH_DIGIT_0             0xFF10
+#define FULLWIDTH_DIGIT_9             0xFF19
+
+#define FULLWIDTH_CAPITAL_A           0xFF21
+#define FULLWIDTH_CAPITAL_Z           0xFF3A
+
+#define FULLWIDTH_SMALL_A             0xFF41
+#define FULLWIDTH_SMALL_Z             0xFF5A
+
+#define HALFWIDTH_KATAKANA_WO         0xFF66
+#define HALFWIDTH_KATAKANA_SMALL_TSU  0xFF6F
+
+#define HALFWIDTH_KATAKANA_A          0xFF71
+#define HALFWIDTH_KATAKANA_N          0xFF9D
+
+static integer kcatcodekey (integer c)
+{
+  if (is_internalUPTEX())
+  {
+    if ((FULLWIDTH_DIGIT_0 <= c && c <= FULLWIDTH_DIGIT_9)
+      || (FULLWIDTH_CAPITAL_A <= c && c <= FULLWIDTH_CAPITAL_Z)
+      || (FULLWIDTH_SMALL_A <= c && c <= FULLWIDTH_SMALL_Z))
+      return 0x1FE;
+
+    if ((HALFWIDTH_KATAKANA_WO <= c && c <= HALFWIDTH_KATAKANA_SMALL_TSU)
+      || (HALFWIDTH_KATAKANA_A <= c && c <= HALFWIDTH_KATAKANA_N))
+      return 0x1FF;
+
+    return binary_search((long)c, ucs_range, 0, NUCS_RANGE - 1);
+  }
+  else
+  {
+    return Hi(toDVI(c));
+  }
+}
+
+static integer multilenbuffchar (integer c)
+{
+  c = toBUFF(c);
+  if (BYTE1(c)) return 4;
+  if (BYTE2(c)) return 3;
+  if (BYTE3(c)) return 2;
+  if (BYTE4(c)) return 1;
+  return 0;
+}
+
+void init_default_kanji (const_string file_str, const_string internal_str)
+{
+  enable_UPTEX(true);
+
+  if (!set_enc_string(file_str, internal_str))
+  {
+    fprintf(stderr, "Bad kanji encoding \"%s\" or \"%s\".\n",
+      file_str ? file_str : "NULL",
+      internal_str ? internal_str : "NULL");
+    aptex_utils_exit(EXIT_FAILURE);
+  }
+}
+
+char * mbcs_utf8 (const char * mbcs_str)
+{
+#ifdef WIN32
+  if (mbcs_str == NULL)
+    return NULL;
+  else
+  {
+    int    utf8_len;
+    int    utf16_len;
+    size_t mbcs_len;
+    LPWSTR utf16_str;
+    char * utf8_str;
+    int    codepage;
+
+    mbcs_len = strlen(mbcs_str);
+    codepage = AreFileApisANSI() ? CP_ACP : CP_OEMCP;
+    utf16_len = MultiByteToWideChar(codepage, 0, mbcs_str, -1, NULL, 0);
+
+    if (utf16_len == 0)
+      return NULL;
+
+    utf16_str = (LPWSTR) malloc((utf16_len + 1) * sizeof(utf16_str[0]));
+
+    if (utf16_str == NULL)
+      return NULL;
+
+    MultiByteToWideChar(codepage, 0, mbcs_str, -1, utf16_str, utf16_len);
+    utf8_len = WideCharToMultiByte(CP_UTF8, 0, utf16_str, utf16_len, 0, 0, 0, 0);
+    utf8_str = utf8_len ? (char *) malloc(utf8_len + 1) : NULL;
+
+    if (utf8_str)
+    {
+      WideCharToMultiByte(CP_UTF8, 0, utf16_str, utf16_len, utf8_str, utf8_len, 0, 0);
+    }
+
+    free(utf16_str);
+
+    return utf8_str;
+  }
+#else
+  return xstrdup(mbcs_str);
+#endif
+}
+
+char * utf8_mbcs (const char * utf8_str)
+{
+#ifdef WIN32
+  if (utf8_str == NULL)
+    return NULL;
+  else
+  {
+    size_t utf8_len;
+    int    utf16_len;
+    int    mbcs_len;
+    LPWSTR utf16_str;
+    char * mbcs_str;
+    int    codepage;
+
+    utf8_len = strlen(utf8_str);
+    utf16_len = MultiByteToWideChar(CP_UTF8, 0, utf8_str, -1, NULL, 0);
+
+    if (utf16_len == 0)
+      return NULL;
+
+    utf16_str = (LPWSTR) malloc((utf16_len + 1) * sizeof(utf16_str[0]));
+
+    if (utf16_str == NULL)
+      return NULL;
+
+    MultiByteToWideChar(CP_UTF8, 0, utf8_str, -1, utf16_str, utf16_len);
+    codepage = AreFileApisANSI() ? CP_ACP : CP_OEMCP;
+    mbcs_len = WideCharToMultiByte(codepage, 0, utf16_str, utf16_len, 0, 0, 0, 0);
+    mbcs_str = mbcs_len ? (char *) malloc(mbcs_len + 1) : NULL;
+
+    if (mbcs_str)
+    {
+      WideCharToMultiByte(codepage, 0, utf16_str, utf16_len, mbcs_str, mbcs_len, 0, 0);
+    }
+
+    free(utf16_str);
+
+    return mbcs_str;
+  }
+#else
+  return xstrdup(utf8_str);
+#endif
+}
+
+static void t_open_in (void)
+{
+  buffer[first] = 0;
+
+  sprintf((char *) &buffer[first], "%s", aptex_env.aptex_src);
+
+  for (last = first; buffer[last]; ++last)
+    do_nothing();
+
+  for (--last; last >= first && ISBLANK(buffer[last]) && buffer[last] != '\r'; --last)
+    do_nothing();
+
+  last++;
+}
+
+/* sec 0031 */
+// inputs the next line or returns |false|
+static boolean input_ln (FILE * f, boolean bypass_eoln)
+{
+  int i = '\0';
+
+  (void) bypass_eoln;
+  last = first;
+
+#ifdef APTEX_EXTENSION
+  while (true)
+#else
+  while (last < buf_size)
+#endif
+  {
+    i = fgetc(f);
+
+    if ((i == EOF) || (i == '\n') || (i == '\r'))
+      break;
+    else
+    {
+      buffer[last++] = i;
+
+#ifdef APTEX_EXTENSION
+      if (last >= current_buf_size)
+        buffer = realloc_buffer(increment_buf_size);
+#endif
+    }
+  }
+
+  /*
+    LF    Unix
+    CRLF  Windows
+  */
+
+  if (i == '\r')
+  {
+    i = fgetc(f);
+
+    if (i != '\n')
+    {
+      ungetc(i, f);
+      i = '\r';
+    }
+  }
+
+  if (i == EOF && last == first)
+    return false;
+
+  buffer[last] = ' ';
+
+  if (last >= max_buf_stack)
+    max_buf_stack = last;
+
+  while (last > first)
+  {
+    i = buffer[last - 1];
+
+    if (i == ' ' || i == '\t')
+      --last;
+    else
+      break;
+  }
+
+  return true;
+}
+
+static boolean a_open_input (alpha_file * f)
+{
+  boolean openable = false;
+  char * file_name_kpse = NULL;
+  char * file_name_mbcs = NULL;
+
+  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
+
+  file_name_mbcs = utf8_mbcs(file_name_utf8);
+  file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tex_format, false);
+
+  if (file_name_kpse != NULL)
+  {
+    *f = aptex_env.open_tex_file(file_name_kpse, "rb");
+
+    if (*f)
+    {
+      openable = true;
+    }
+  }
+
+  if (file_name_mbcs != NULL)
+    free(file_name_mbcs);
+
+  if (file_name_utf8 != NULL)
+    free(file_name_utf8);
+
+  if (file_name_kpse != NULL)
+    free(file_name_kpse);
+
+  return openable;
+}
+
+static boolean b_open_input (byte_file * f)
+{
+  boolean openable = false;
+  char * file_name_kpse = NULL;
+  char * file_name_mbcs = NULL;
+
+  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
+
+  file_name_mbcs = utf8_mbcs(file_name_utf8);
+  file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tfm_format, true);
+
+  if (file_name_kpse != NULL)
+  {
+    *f = aptex_env.open_tfm_file(file_name_kpse, "rb");
+
+    if (*f)
+    {
+      fbyte = fgetc((FILE *) *f);
+      openable = true;
+    }
+  }
+
+  if (file_name_mbcs != NULL)
+    free(file_name_mbcs);
+
+  if (file_name_utf8 != NULL)
+    free(file_name_utf8);
+
+  if (file_name_kpse != NULL)
+    free(file_name_kpse);
+
+  return openable;
+}
+
+static boolean w_open_input (word_file * f)
+{
+  boolean openable = false;
+
+  char * file_name_kpse = NULL;
+  char * file_name_mbcs = NULL;
+  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+
+  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
+
+  file_name_mbcs = utf8_mbcs(file_name_utf8);
+  file_name_kpse = kpse_find_file(file_name_mbcs, kpse_fmt_format, true);
+
+  if (file_name_kpse != NULL)
+  {
+    *f = aptex_env.open_fmt_file(file_name_kpse, "rb");
+
+    if (*f)
+    {
+      openable = true;
+    }
+  }
+
+  if (file_name_mbcs != NULL)
+    free(file_name_mbcs);
+
+  if (file_name_utf8 != NULL)
+    free(file_name_utf8);
+
+  if (file_name_kpse != NULL)
+    free(file_name_kpse);
+
+  return openable;
+}
+
+void a_close (alpha_file f)
+{
+  if (f == NULL)
+    return;
+  else if (ferror(f) || fclose(f))
+  {
+    perror("\n! I/O Error");
+    aptex_utils_exit(EXIT_FAILURE);
+  }
+}
+
+void b_close (byte_file f)
+{
+  if (f == NULL)
+    return;
+  else if (ferror(f) || fclose(f))
+  {
+    perror("\n! I/O Error");
+    aptex_utils_exit(EXIT_FAILURE);
+  }
+}
+
+void w_close(word_file f)
+{
+  gzclose(f);
+}
+
+boolean a_open_output (alpha_file * f)
+{
+  char * file_name_mbcs = NULL;
+  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+
+  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
+
+  file_name_mbcs = utf8_mbcs(file_name_utf8);
+  *f = aptex_env.open_tex_file(file_name_mbcs, FOPEN_W_MODE);
+
+  if (*f == NULL)
+  {
+    string temp_dir = kpse_var_value("TEXMFOUTPUT");
+
+    if (temp_dir != NULL)
+    {
+      char * temp_name = (char *) calloc(1, strlen(temp_dir) + strlen(file_name_mbcs) + 2);
+      sprintf(temp_name, "%s%s%s", temp_dir, DIR_SEP_STRING, file_name_mbcs);
+      *f = aptex_env.open_tex_file(temp_name, FOPEN_W_MODE);
+      free(temp_name);
+    }
+  }
+
+  if (file_name_mbcs != NULL)
+    free(file_name_mbcs);
+
+  if (file_name_utf8 != NULL)
+    free(file_name_utf8);
+
+  return (*f != NULL);
+}
+
+boolean b_open_output (byte_file * f)
+{
+  char * file_name_mbcs = NULL;
+  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+
+  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
+
+  file_name_mbcs = utf8_mbcs(file_name_utf8);
+  *f = aptex_env.open_tex_file(file_name_mbcs, FOPEN_WBIN_MODE);
+
+  if (*f == NULL)
+  {
+    string temp_dir = kpse_var_value("TEXMFOUTPUT");
+
+    if (temp_dir != NULL)
+    {
+      char * temp_name = (char *) calloc(1, strlen(temp_dir) + strlen(file_name_mbcs) + 2);
+      sprintf(temp_name, "%s%s%s", temp_dir, DIR_SEP_STRING, file_name_mbcs);
+      *f = aptex_env.open_tex_file(temp_name, FOPEN_WBIN_MODE);
+      free(temp_name);
+    }
+  }
+
+  if (file_name_mbcs != NULL)
+    free(file_name_mbcs);
+
+  if (file_name_utf8 != NULL)
+    free(file_name_utf8);
+
+  return (*f != NULL);
+}
+
+boolean w_open_output (word_file * f)
+{
+  char * file_name_mbcs = NULL;
+  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+
+  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
+
+  file_name_mbcs = utf8_mbcs(file_name_utf8);
+  *f = aptex_env.open_fmt_file(file_name_mbcs, FOPEN_WBIN_MODE);
+
+  if (*f == NULL)
+  {
+    string temp_dir = kpse_var_value("TEXMFOUTPUT");
+
+    if (temp_dir != NULL)
+    {
+      char * temp_name = (char *) calloc(1, strlen(temp_dir) + strlen(file_name_mbcs) + 2);
+      sprintf(temp_name, "%s%s%s", temp_dir, DIR_SEP_STRING, file_name_mbcs);
+      *f = aptex_env.open_fmt_file(temp_name, FOPEN_WBIN_MODE);
+      free(temp_name);
+    }
+  }
+
+  if (file_name_mbcs != NULL)
+    free(file_name_mbcs);
+
+  if (file_name_utf8 != NULL)
+    free(file_name_utf8);
+
+  return (*f != NULL);
+}
+
+static const char * pool_file_arr[] =
+{
+/* 0256 */  "", //"buffer size",
+/* 0257 */  "", //"pool size",
+/* 0258 */  "", //"number of strings",
+/* 0259 */  "" "?" "?" "?",
+/* 0260 */  "m2d5c2l5x2v5i",
+/* 0261 */  "", //"End of file on the terminal!",
+/* 0262 */  "", //"! ",
+/* 0263 */  "", //"(That makes 100 errors; please try again.)",
+/* 0264 */  "", // "? ",
+/* 0265 */  "", //"Type <return> to proceed, S to scroll future error messages,",
+/* 0266 */  "", //"R to run without stopping, Q to run quietly,",
+/* 0267 */  "", //"I to insert something, ",
+/* 0268 */  "", //"E to edit your file,",
+/* 0269 */  "", //"1 or ... or 9 to ignore the next 1 to 9 tokens of input,",
+/* 0270 */  "", //"H for help, X to quit.",
+/* 0271 */  "", //"OK, entering ",
+/* 0272 */  "", //"batchmode",
+/* 0273 */  "", //"nonstopmode",
+/* 0274 */  "", //"scrollmode",
+/* 0275 */  "", //"...",
+/* 0276 */  "", //"insert>",
+/* 0277 */  "", //"I have just deleted some text, as you asked.",
+/* 0278 */  "", //"You can now delete more, or insert, or whatever.",
+/* 0279 */  "", //"Sorry, I don't know how to help in this situation.",
+/* 0280 */  "", //"Maybe you should try asking a human" "?",
+/* 0281 */  "", //"Sorry, I already gave what help I could...",
+/* 0282 */  "", //"An error might have occurred before I noticed any problems.",
+/* 0283 */  "", //"``If all else fails, read the instructions.''",
+/* 0284 */  "", //" (",
+/* 0285 */  "", //"Emergency stop",
+/* 0286 */  "", //"TeX capacity exceeded, sorry [",
+/* 0287 */  "", //"If you really absolutely need more capacity,",
+/* 0288 */  "", //"you can ask a wizard to enlarge me.",
+/* 0289 */  "", //"This can't happen (",
+/* 0290 */  "", //"I'm broken. Please show this to someone who can fix can fix",
+/* 0291 */  "", //"I can't go on meeting you like this",
+/* 0292 */  "", //"One of your faux pas seems to have wounded me deeply...",
+/* 0293 */  "", //"in fact, I'm barely conscious. Please fix it and try again.",
+/* 0294 */  "", //"Interruption",
+/* 0295 */  "", //"You rang" "?",
+/* 0296 */  "", //"Try to insert some instructions for me (e.g.,`I\\showlists'),",
+/* 0297 */  "", //"unless you just want to quit by typing `X'.",
+/* 0298 */  "", //"main memory size",
+/* 0299 */  "", //"AVAIL list clobbered at ",
+/* 0300 */  "", //"Double-AVAIL list clobbered at ",
+/* 0301 */  "", //"Doubly free location at ",
+/* 0302 */  "", //"Bad flag at ",
+/* 0303 */  "", //"New busy locs:",
+/* 0304 */  "", //"LINK(",
+/* 0305 */  "", //"INFO(",
+/* 0306 */  "", //"[]",
+/* 0307 */  "", //"CLOBBERED.",
+/* 0308 */  "", //"foul",
+/* 0309 */  "", //"fil",
+/* 0310 */  "", //" plus ",
+/* 0311 */  "", //" minus ",
+/* 0312 */  "", //" []",
+/* 0313 */  "", //"Bad link, display aborted.",
+/* 0314 */  "", //"etc.",
+/* 0315 */  "", //"Unknown node type!",
+/* 0316 */  "", //"unset",
+/* 0317 */  "", //"box(",
+/* 0318 */  "", //")x",
+/* 0319 */  "", //", shifted ",
+/* 0320 */  "", //" columns)",
+/* 0321 */  "", //", stretch ",
+/* 0322 */  "", //", shrink ",
+/* 0323 */  "", //", glue set ",
+/* 0324 */  "", //"- ",
+/* 0325 */  "", //"< -",
+/* 0326 */  "", //"rule(",
+/* 0327 */  "", //"insert",
+/* 0328 */  "", //", natural size ",
+/* 0329 */  "", //"; split(",
+/* 0330 */  "", //"); float cost ",
+/* 0331 */  "", //"glue",
+/* 0332 */  "", //"nonscript",
+/* 0333 */  "", //"mskip",
+/* 0334 */  "", //"mu",
+/* 0335 */  "",
+/* 0336 */  "", //"leaders ",
+/* 0337 */  "", //"kern",
+/* 0338 */  "", //" (for accent)",
+/* 0339 */  "", //"mkern",
+/* 0340 */  "", //"math",
+/* 0341 */  "", //"on",
+/* 0342 */  "", //"off",
+/* 0343 */  "", //", surrounded ",
+/* 0344 */  "", //" (ligature ",
+/* 0345 */  "", //"penalty ",
+/* 0346 */  "", //"discretionary",
+/* 0347 */  "", //" replacing ",
+/* 0348 */  "", //"mark",
+/* 0349 */  "", //"vadjust",
+/* 0350 */  "", //"flushing",
+/* 0351 */  "", //"copying",
+/* 0352 */  "", //"vertical",
+/* 0353 */  "", //"horizontal",
+/* 0354 */  "", //"display math",
+/* 0355 */  "", //"no",
+/* 0356 */  "", //"internal vertical",
+/* 0357 */  "", //"restricted horizontal",
+/* 0358 */  "", //" mode",
+/* 0359 */  "", //"semantic nest size",
+/* 0360 */  "", //"### ",
+/* 0361 */  "", //" entered at line ",
+/* 0362 */  "", //" (language",
+/* 0363 */  "", //":hyphenmin",
+/* 0364 */  "", //" (\\output routine)",
+/* 0365 */  "", //"### recent contributions:",
+/* 0366 */  "", //"prevdepth ",
+/* 0367 */  "", //"ignored",
+/* 0368 */  "", //", prevgraf ",
+/* 0369 */  "", //" line",
+/* 0370 */  "", //"spacefactor ",
+/* 0371 */  "", //", current language ",
+/* 0372 */  "", //"this will be denominator of:",
+/* 0373 */  "", //"lineskip",
+/* 0374 */  "", //"baselineskip",
+/* 0375 */  "", //"parskip",
+/* 0376 */  "", //"abovedisplayskip",
+/* 0377 */  "", //"belowdisplayskip",
+/* 0378 */  "", //"abovedisplayshortskip",
+/* 0379 */  "", //"belowdisplayshortskip",
+/* 0380 */  "", //"leftskip",
+/* 0381 */  "", //"rightskip",
+/* 0382 */  "", //"topskip",
+/* 0383 */  "", //"splittopskip",
+/* 0384 */  "", //"tabskip",
+/* 0385 */  "", //"spaceskip",
+/* 0386 */  "", //"xspaceskip",
+/* 0387 */  "", //"parfillskip",
+/* 0388 */  "", //"thinmuskip",
+/* 0389 */  "", //"medmuskip",
+/* 0390 */  "", //"thickmuskip",
+/* 0391 */  "", //"[unknown glue parameter!]",
+/* 0392 */  "", //"skip",
+/* 0393 */  "", //"muskip",
+/* 0394 */  "", //"pt",
+/* 0395 */  "", //"output",
+/* 0396 */  "", //"everypar",
+/* 0397 */  "", //"everymath",
+/* 0398 */  "", //"everydisplay",
+/* 0399 */  "", //"everyhbox",
+/* 0400 */  "", //"everyvbox",
+/* 0401 */  "", //"everyjob",
+/* 0402 */  "", //"everycr",
+/* 0403 */  "", //"errhelp",
+/* 0404 */  "", //"toks",
+/* 0405 */  "", //"parshape",
+/* 0406 */  "", //"box",
+/* 0407 */  "", //"void",
+/* 0408 */  "", //"current font",
+/* 0409 */  "", //"textfont",
+/* 0410 */  "", //"scriptfont",
+/* 0411 */  "", //"scriptscriptfont",
+/* 0412 */  "", //"catcode",
+/* 0413 */  "", //"lccode",
+/* 0414 */  "", //"uccode",
+/* 0415 */  "", //"sfcode",
+/* 0416 */  "", //"mathcode",
+/* 0417 */  "", //"pretolerance",
+/* 0418 */  "", //"tolerance",
+/* 0419 */  "", //"linepenalty",
+/* 0420 */  "", //"hyphenpenalty",
+/* 0421 */  "", //"exhyphenpenalty",
+/* 0422 */  "", //"clubpenalty",
+/* 0423 */  "", //"widowpenalty",
+/* 0424 */  "", //"displaywidowpenalty",
+/* 0425 */  "", //"brokenpenalty",
+/* 0426 */  "", //"binoppenalty",
+/* 0427 */  "", //"relpenalty",
+/* 0428 */  "", //"predisplaypenalty",
+/* 0429 */  "", //"postdisplaypenalty",
+/* 0430 */  "", //"interlinepenalty",
+/* 0431 */  "", //"doublehyphendemerits",
+/* 0432 */  "", //"finalhyphendemerits",
+/* 0433 */  "", //"adjdemerits",
+/* 0434 */  "", //"mag",
+/* 0435 */  "", //"delimiterfactor",
+/* 0436 */  "", //"looseness",
+/* 0437 */  "", //"time",
+/* 0438 */  "", //"day",
+/* 0439 */  "", //"month",
+/* 0440 */  "", //"year",
+/* 0441 */  "", //"showboxbreadth",
+/* 0442 */  "", //"showboxdepth",
+/* 0443 */  "", //"hbadness",
+/* 0444 */  "", //"vbadness",
+/* 0445 */  "", //"pausing",
+/* 0446 */  "", //"tracingonline",
+/* 0447 */  "", //"tracingmacros",
+/* 0448 */  "", //"tracingstats",
+/* 0449 */  "", //"tracingparagraphs",
+/* 0450 */  "", //"tracingpages",
+/* 0451 */  "", //"tracingoutput",
+/* 0452 */  "", //"tracinglostchars",
+/* 0453 */  "", //"tracingcommands",
+/* 0454 */  "", //"tracingrestores",
+/* 0455 */  "", //"uchyph",
+/* 0456 */  "", //"outputpenalty",
+/* 0457 */  "", //"maxdeadcycles",
+/* 0458 */  "", //"hangafter",
+/* 0459 */  "", //"floatingpenalty",
+/* 0460 */  "", //"globaldefs",
+/* 0461 */  "", //"fam",
+/* 0462 */  "", //"escapechar",
+/* 0463 */  "", //defaulthyphenchar",
+/* 0464 */  "", //"defaultskewchar",
+/* 0465 */  "", //"endlinechar",
+/* 0466 */  "", //"newlinechar",
+/* 0467 */  "", //"language",
+/* 0468 */  "", //"lefthyphenmin",
+/* 0469 */  "", //"righthyphenmin",
+/* 0470 */  "", //"holdinginserts",
+/* 0471 */  "", //"errorcontextlines",
+/* 0472 */  "", //"[unknown integer parameter!]",
+/* 0473 */  "", //"count",
+/* 0474 */  "", //"delcode",
+/* 0475 */  "", //"parindent",
+/* 0476 */  "", //"mathsurround",
+/* 0477 */  "", //"lineskiplimit",
+/* 0478 */  "", //"hsize",
+/* 0479 */  "", //"vsize",
+/* 0480 */  "", //"maxdepth",
+/* 0481 */  "", //"splitmaxdepth",
+/* 0482 */  "", //"boxmaxdepth",
+/* 0483 */  "", //"hfuzz",
+/* 0484 */  "", //"vfuzz",
+/* 0485 */  "", //"delimitershortfall",
+/* 0486 */  "", //"nulldelimiterspace",
+/* 0487 */  "", //"scriptspace",
+/* 0488 */  "", //"predisplaysize",
+/* 0489 */  "", //"displaywidth",
+/* 0490 */  "", //"displayindent",
+/* 0491 */  "", //"overfullrule",
+/* 0492 */  "", //"hangindent",
+/* 0493 */  "", //"hoffset",
+/* 0494 */  "", //"voffset",
+/* 0495 */  "", //"emergencystretch",
+/* 0496 */  "", //"[unknown dimen parameter!]",
+/* 0497 */  "", //"dimen",
+/* 0498 */  "", //"EQUIV(",
+/* 0499 */  "notexpanded:",
+/* 0500 */  "", //"hash size",
+/* 0501 */  "", //"csname",
+/* 0502 */  "", //"endcsname",
+/* 0503 */  "", //"IMPOSSIBLE.",
+/* 0504 */  "", //"NONEXISTENT.",
+/* 0505 */  "", //"accent",
+/* 0506 */  "", //"advance",
+/* 0507 */  "", //"afterassignment",
+/* 0508 */  "", //"aftergroup",
+/* 0509 */  "", //"begingroup",
+/* 0510 */  "", //"char",
+/* 0511 */  "", //"delimiter",
+/* 0512 */  "", //"divide",
+/* 0513 */  "", //"endgroup",
+/* 0514 */  "", //"expandafter",
+/* 0515 */  "", //"font",
+/* 0516 */  "", //"fontdimen",
+/* 0517 */  "", //"halign",
+/* 0518 */  "", //"hrule",
+/* 0519 */  "", //"ignorespaces",
+/* 0520 */  "", //"mathaccent",
+/* 0521 */  "", //"mathchar",
+/* 0522 */  "", //"mathchoice",
+/* 0523 */  "", //"multiply",
+/* 0524 */  "", //"noalign",
+/* 0525 */  "", //"noboundary",
+/* 0526 */  "", //"noexpand",
+/* 0527 */  "", //"omit",
+/* 0528 */  "", //"penalty",
+/* 0529 */  "", //"prevgraf",
+/* 0530 */  "", //"radical",
+/* 0531 */  "", //"read",
+/* 0532 */  "", //"relax",
+/* 0533 */  "", //"setbox",
+/* 0534 */  "", //"the",
+/* 0535 */  "", //"valign",
+/* 0536 */  "", //"vcenter",
+/* 0537 */  "", //"vrule",
+/* 0538 */  "", //"save size",
+/* 0539 */  "", //"grouping levels",
+/* 0540 */  "", //"curlevel",
+/* 0541 */  "", //"retaining",
+/* 0542 */  "", //"restoring",
+/* 0543 */  "", //"SAVE(",
+/* 0544 */  "", //"Incompatible magnification (",
+/* 0545 */  "", //");",
+/* 0546 */  "", //" the previous value will be retained",
+/* 0547 */  "", //"I can handle only one magnification ratio per job. So I've",
+/* 0548 */  "", //"reverted to the magnification you used earlier on this run.",
+/* 0549 */  "", //"Illegal magnification has been changed to 1000",
+/* 0550 */  "", //"The magnification ratio must be between 1 and 32768.",
+/* 0551 */  "", //"ETC.",
+/* 0552 */  "", //"BAD.",
+/* 0553 */  "", //"->",
+/* 0554 */  "", //"begin-group character ",
+/* 0555 */  "", //"end-group character ",
+/* 0556 */  "", //"math shift character ",
+/* 0557 */  "", //"macro parameter character ",
+/* 0558 */  "", //"superscript character ",
+/* 0559 */  "", //"subscript character ",
+/* 0560 */  "", //"end of alignment template",
+/* 0561 */  "", //"blank space ",
+/* 0562 */  "", //"the letter ",
+/* 0563 */  "", //"the character ",
+/* 0564 */  "", //"[unknown command code!]",
+/* 0565 */  "", //": ",
+/* 0566 */  "", //"Runaway ",
+/* 0567 */  "", //"definition",
+/* 0568 */  "", //"argument",
+/* 0569 */  "", //"preamble",
+/* 0570 */  "", //"text",
+/* 0571 */  "", //"<*>",
+/* 0572 */  "", //"<insert> ",
+/* 0573 */  "", //"<read ",
+/* 0574 */  "", //"l.",
+/* 0575 */  "", //"<argument> ",
+/* 0576 */  "", //"<template> ",
+/* 0577 */  "", //"<recently read> ",
+/* 0578 */  "", //"<to be read again> ",
+/* 0579 */  "", //"<inserted text> ",
+/* 0580 */  "", //"<output> ",
+/* 0581 */  "", //"<everypar> ",
+/* 0582 */  "", //"<everymath> ",
+/* 0583 */  "", //"<everydisplay> ",
+/* 0584 */  "", //"<everyhbox> ",
+/* 0585 */  "", //"<everyvbox> ",
+/* 0586 */  "", //"<everyjob> ",
+/* 0587 */  "", //"<everycr> ",
+/* 0588 */  "", //"<mark> ",
+/* 0589 */  "", //"<write> ",
+/* 0590 */  "", //"input stack size",
+/* 0591 */  "", //"write",
+/* 0592 */  "", //"(interwoven alignment preambles are not allowed)",
+/* 0593 */  "", //"text input levels",
+/* 0594 */  "", //"par",
+/* 0595 */  "", //"Incomplete ",
+/* 0596 */  "", //"; all text was ignored after line ",
+/* 0597 */  "", //"A forbidden control sequence occurred in skipped text.",
+/* 0598 */  "", //"This kind of error happens when you say `\\if...' and forget",
+/* 0599 */  "", //"the matching `\\fi'. I've inserted a `\\fi'; this might work.",
+/* 0600 */  "", //"The file ended while I was skipping conditional text.",
+/* 0601 */  "", //"File ended",
+/* 0602 */  "", //"Forbidden control sequence found",
+/* 0603 */  "", //" while scanning ",
+/* 0604 */  "", //" of ",
+/* 0605 */  "", //"I suspect you have forgotten a `}', causing me",
+/* 0606 */  "", //"to read past where you wanted me to stop.",
+/* 0607 */  "", //"I'll try to recover; but if the error is serious,",
+/* 0608 */  "", //"you'd better type `E' or `X' now and fix your file.",
+/* 0609 */  "", //"use",
+/* 0610 */  "", //"Text line contains an invalid character",
+/* 0611 */  "", //"A funny symbol that I can't read has just been input.",
+/* 0612 */  "", //"Continue, and I'll forget that it ever happened.",
+/* 0613 */  "", //"(Please type a command or say `\\end')",
+/* 0614 */  "", //"*** (job aborted, no legal \\end found)",
+/* 0615 */  "", //"=>",
+/* 0616 */  "", //"Undefined control sequence",
+/* 0617 */  "", //"The control sequence at the end of the top line",
+/* 0618 */  "", //"of your error message was never \\def'ed. If you have",
+/* 0619 */  "", //"misspelled it (e.g., `\\hobx'), type `I' and the correct",
+/* 0620 */  "", //"spelling (e.g., `I\\hbox'). Otherwise just continue,",
+/* 0621 */  "", //"and I'll forget about whatever was undefined.",
+/* 0622 */  "", //"Missing ",
+/* 0623 */  "", //" inserted",
+/* 0624 */  "", //"The control sequence marked <to be read again> should",
+/* 0625 */  "", //"not appear between \\csname and \\endcsname.",
+/* 0626 */  "", //"input",
+/* 0627 */  "", //"endinput",
+/* 0628 */  "", //"topmark",
+/* 0629 */  "", //"firstmark",
+/* 0630 */  "", //"botmark",
+/* 0631 */  "", //"splitfirstmark",
+/* 0632 */  "", //"splitbotmark",
+/* 0633 */  "", //"parameter stack size",
+/* 0634 */  "", //"Argument of ",
+/* 0635 */  "", //" has an extra }",
+/* 0636 */  "", //"I've run across a `}' that doesn't seem to match anything.",
+/* 0637 */  "", //"For example, `\\def\\a#1{...}' and `\\a}' would produce",
+/* 0638 */  "", //"this error. If you simply proceed now, the `\\par' that",
+/* 0639 */  "", //"I've just inserted will cause me to report a runaway",
+/* 0640 */  "", //"argument that might be the root of the problem. But if",
+/* 0641 */  "", //"your `}' was spurious, just type `2' and it will go away.",
+/* 0642 */  "", //"Paragraph ended before ",
+/* 0643 */  "", //" was complete",
+/* 0644 */  "", //"I suspect you've forgotten a `}', causing me to apply this",
+/* 0645 */  "", //"control sequence to too much text. How can we recover" "?",
+/* 0646 */  "", //"My plan is to forget the whole thing and hope for the best.",
+/* 0647 */  "", //"Use of ",
+/* 0648 */  "", //" doesn't match its definition",
+/* 0649 */  "", //"If you say, e.g., `\\def\\a1{...}', then you must always",
+/* 0650 */  "", //"put `1' after `\\a', since control sequence names are",
+/* 0651 */  "", //"made up of letters only. The macro here has not been",
+/* 0652 */  "", //"followed by the required stuff, so I'm ignoring it.",
+/* 0653 */  "", //"<-",
+/* 0654 */  "", //"Missing { inserted",
+/* 0655 */  "", //"A left brace was mandatory here, so I've put one in.",
+/* 0656 */  "", //"You might want to delete and/or insert some corrections",
+/* 0657 */  "", //"so that I will find a matching right brace soon.",
+/* 0658 */  "", //"(If you're confused by all this, try typing `I}' now.)",
+/* 0659 */  "", //"Incompatible glue units",
+/* 0660 */  "", //"I'm going to assume that 1mu=1pt when they're mixed.",
+/* 0661 */  "", //"Missing number, treated as zero",
+/* 0662 */  "", //"A number should have been here; I inserted `0'.",
+/* 0663 */  "", //"(If you can't figure out why I needed to see a number,",
+/* 0664 */  "", //"look up `weird error' in the index to The TeXbook.)",
+/* 0665 */  "", //"spacefactor",
+/* 0666 */  "", //"prevdepth",
+/* 0667 */  "", //"deadcycles",
+/* 0668 */  "", //"insertpenalties",
+/* 0669 */  "", //"wd",
+/* 0670 */  "", //"ht",
+/* 0671 */  "", //"dp",
+/* 0672 */  "", //"lastpenalty",
+/* 0673 */  "", //"lastkern",
+/* 0674 */  "", //"lastskip",
+/* 0675 */  "", //"inputlineno",
+/* 0676 */  "", //"badness",
+/* 0677 */  "", //"Improper ",
+/* 0678 */  "", //"You can refer to \\spacefactor only in horizontal mode;",
+/* 0679 */  "", //"you can refer to \\prevdepth only in vertical mode; and",
+/* 0680 */  "", //"neither of these is meaningful inside \\write. So",
+/* 0681 */  "", //"I'm forgetting what you said and using zero instead.",
+/* 0682 */  "", //"You can't use `",
+/* 0683 */  "", //"' after ",
+/* 0684 */  "", //"Bad register code",
+/* 0685 */  "", //"A register number must be between 0 and 255.",
+/* 0686 */  "", //"I changed this one to zero.",
+/* 0687 */  "", //"Bad character code",
+/* 0688 */  "", //"A character number must be between 0 and 255.",
+/* 0689 */  "", //"Bad number",
+/* 0690 */  "", //"Since I expected to read a number between 0 and 15,",
+/* 0691 */  "", //"Bad mathchar",
+/* 0692 */  "", //"A mathchar number must be between 0 and 32767.",
+/* 0693 */  "", //"Bad delimiter code",
+/* 0694 */  "", //"A numeric delimiter code must be between 0 and 2^{27}-1.",
+/* 0695 */  "", //"Improper alphabetic constant",
+/* 0696 */  "", //"A one-character control sequence belongs after a ` mark.",
+/* 0697 */  "", //"So I'm essentially inserting \\0 here.",
+/* 0698 */  "", //"Number too big",
+/* 0699 */  "", //"I can only go up to 2147483647='17777777777=\"7FFFFFFF,",
+/* 0700 */  "", //"so I'm using that number instead of yours.",
+/* 0701 */  "", //"true",
+/* 0702 */  "", //"Illegal unit of measure (",
+/* 0703 */  "", //"replaced by filll)",
+/* 0704 */  "", //"I dddon't go any higher than filll.",
+/* 0705 */  "", //"em",
+/* 0706 */  "", //"ex",
+/* 0707 */  "", //"mu inserted)",
+/* 0708 */  "", //"The unit of measurement in math glue must be mu.",
+/* 0709 */  "", //"To recover gracefully from this error, it's best to",
+/* 0710 */  "", //"delete the erroneous units; e.g., type `2' to delete",
+/* 0711 */  "", //"two letters. (See Chapter 27 of The TeXbook.)",
+/* 0712 */  "", //"in",
+/* 0713 */  "", //"pc",
+/* 0714 */  "", //"cm",
+/* 0715 */  "", //"mm",
+/* 0716 */  "", //"bp",
+/* 0717 */  "", //"dd",
+/* 0718 */  "", //"cc",
+/* 0719 */  "", //"sp",
+/* 0720 */  "", //"pt inserted)",
+/* 0721 */  "", //"Dimensions can be in units of em, ex, in, pt, pc,",
+/* 0722 */  "", //"cm, mm, dd, cc, bp, or sp; but yours is a new one!",
+/* 0723 */  "", //"I'll assume that you meant to say pt, for printer's points.",
+/* 0724 */  "", //"Dimension too large",
+/* 0725 */  "", //"I can't work with sizes bigger than about 19 feet.",
+/* 0726 */  "", //"Continue and I'll use the largest value I can.",
+/* 0727 */  "", //"plus",
+/* 0728 */  "", //"minus",
+/* 0729 */  "", //"width",
+/* 0730 */  "", //"height",
+/* 0731 */  "", //"depth",
+/* 0732 */  "", //"number",
+/* 0733 */  "", //"romannumeral",
+/* 0734 */  "", //"string",
+/* 0735 */  "", //"meaning",
+/* 0736 */  "", //"fontname",
+/* 0737 */  "", //"jobname",
+/* 0738 */  "", //" at ",
+/* 0739 */  "", //"Where was the left brace" "? You said something like `\\def\\a}',",
+/* 0740 */  "", //"which I'm going to interpret as `\\def\\a{}'.",
+/* 0741 */  "", //"You already have nine parameters",
+/* 0742 */  "", //"I'm going to ignore the # sign you just used.",
+/* 0743 */  "", //"Parameters must be numbered consecutively",
+/* 0744 */  "", //"I've inserted the digit you should have used after the #.",
+/* 0745 */  "", //"Type `1' to delete what you did use.",
+/* 0746 */  "", //"Illegal parameter number in definition of ",
+/* 0747 */  "", //"You meant to type ## instead of #, right" "?",
+/* 0748 */  "", //"Or maybe a } was forgotten somewhere earlier, and things",
+/* 0749 */  "", //"are all screwed up" "? I'm going to assume that you meant ##.",
+/* 0750 */  "", //"*** (cannot \\read from terminal in nonstop modes)",
+/* 0751 */  "", //"File ended within ",
+/* 0752 */  "", //"This \\read has unbalanced braces.",
+/* 0753 */  "", //"if",
+/* 0754 */  "", //"ifcat",
+/* 0755 */  "", //"ifnum",
+/* 0756 */  "", //"ifdim",
+/* 0757 */  "", //"ifodd",
+/* 0758 */  "", //"ifvmode",
+/* 0759 */  "", //"ifhmode",
+/* 0760 */  "", //"ifmmode",
+/* 0761 */  "", //"ifinner",
+/* 0762 */  "", //"ifvoid",
+/* 0763 */  "", //"ifhbox",
+/* 0764 */  "", //"ifvbox",
+/* 0765 */  "", //"ifx",
+/* 0766 */  "", //"ifeof",
+/* 0767 */  "", //"iftrue",
+/* 0768 */  "", //"iffalse",
+/* 0769 */  "", //"ifcase",
+/* 0770 */  "", //"fi",
+/* 0771 */  "", //"or",
+/* 0772 */  "", //"else",
+/* 0773 */  "", //"Extra ",
+/* 0774 */  "", //"I'm ignoring this; it doesn't match any \\if.",
+/* 0775 */  "", //"{true}",
+/* 0776 */  "", //"{false}",
+/* 0777 */  "", //"Missing = inserted for ",
+/* 0778 */  "", //"I was expecting to see `<', `=', or `>'. Didn't.",
+/* 0779 */  "", //"{case ",
+/* 0780 */  "", //".fmt",
+/* 0781 */  "", //"input file name",
+/* 0782 */  "", //"I can't find file `",
+/* 0783 */  "", //"I can't write on file `",
+/* 0784 */  "", //"'.",
+/* 0785 */  ".tex",
+/* 0786 */  "", //"Please type another ",
+/* 0787 */  "", //"*** (job aborted, file error in nonstop mode)",
+/* 0788 */  "", //".dvi",
+/* 0789 */  "", //"file name for output",
+/* 0790 */  "texput",
+/* 0791 */  "", //".log",
+/* 0792 */  "", //"**",
+/* 0793 */  "", //"transcript file name",
+/* 0794 */  "  ",
+/* 0795 */  "nullfont",
+/* 0796 */  "", //"Font ",
+/* 0797 */  "", //" scaled ",
+/* 0798 */  "", //" not loadable: Bad metric (TFM) file",
+/* 0799 */  "", //" not loadable: Metric (TFM) file not found",
+/* 0800 */  "", //"I wasn't able to read the size data for this font,",
+/* 0801 */  "", //"so I will ignore the font specification.",
+/* 0802 */  "", //"[Wizards can fix TFM files using TFtoPL/PLtoTF.]",
+/* 0803 */  "", //"You might try inserting a different font spec;",
+/* 0804 */  "", //"e.g., type `I\\font<same font id>=<substitute font name>'.",
+/* 0805 */  ".tfm",
+/* 0806 */  "", //" not loaded: Not enough room left",
+/* 0807 */  "", //"I'm afraid I won't be able to make use of this font,",
+/* 0808 */  "", //"because my memory for character-size data is too small.",
+/* 0809 */  "", //"If you're really stuck, ask a wizard to enlarge me.",
+/* 0810 */  "", //"Or maybe try `I\\font<same font id>=<name of loaded font>'.",
+/* 0811 */  "", //"Missing font identifier",
+/* 0812 */  "", //"I was looking for a control sequence whose",
+/* 0813 */  "", //"current meaning has been defined by \\font.",
+/* 0814 */  "", //" has only ",
+/* 0815 */  "", //" fontdimen parameters",
+/* 0816 */  "", //"To increase the number of font parameters, you must",
+/* 0817 */  "", //"use \\fontdimen immediately after the \\font is loaded.",
+/* 0818 */  "", //"font memory",
+/* 0819 */  "", //"Missing character: There is no ",
+/* 0820 */  "", //" in font ",
+/* 0821 */  "", //" TeX output ",
+/* 0822 */  "", //"vlistout",
+/* 0823 */  "", //"Completed box being shipped out",
+/* 0824 */  "", //"Memory usage before: ",
+/* 0825 */  "", //" after: ",
+/* 0826 */  "", //"; still untouched: ",
+/* 0827 */  "", //"Huge page cannot be shipped out",
+/* 0828 */  "", //"The page just created is more than 18 feet tall or",
+/* 0829 */  "", //"more than 18 feet wide, so I suspect something went wrong.",
+/* 0830 */  "", //"The following box has been deleted:",
+/* 0831 */  "", //"No pages of output.",
+/* 0832 */  "", //"Output written on ",
+/* 0833 */  "", //" page",
+/* 0834 */  "", //", ",
+/* 0835 */  "", //" bytes).",
+/* 0836 */  "", //"to",
+/* 0837 */  "", //"spread",
+/* 0838 */  "", //"Underfull",
+/* 0839 */  "", //"Loose",
+/* 0840 */  "", //" \\hbox (badness ",
+/* 0841 */  "", //") has occurred while \\output is active",
+/* 0842 */  "", //") in paragraph at lines ",
+/* 0843 */  "", //") in alignment at lines ",
+/* 0844 */  "", //"--",
+/* 0845 */  "", //") detected at line ",
+/* 0846 */  "", //"Overfull \\hbox (",
+/* 0847 */  "", //"pt too wide",
+/* 0848 */  "", //"Tight \\hbox (badness ",
+/* 0849 */  "", //"vpack",
+/* 0850 */  "", //" \\vbox (badness ",
+/* 0851 */  "", //"Overfull \\vbox (",
+/* 0852 */  "", //"pt too high",
+/* 0853 */  "", //"Tight \\vbox (badness ",
+/* 0854 */  "", //"{}",
+/* 0855 */  "", //"displaystyle",
+/* 0856 */  "", //"textstyle",
+/* 0857 */  "", //"scriptstyle",
+/* 0858 */  "", //"scriptscriptstyle",
+/* 0859 */  "", //"Unknown style!",
+/* 0860 */  "", //"mathord",
+/* 0861 */  "", //"mathop",
+/* 0862 */  "", //"mathbin",
+/* 0863 */  "", //"mathrel",
+/* 0864 */  "", //"mathopen",
+/* 0865 */  "", //"mathclose",
+/* 0866 */  "", //"mathpunct",
+/* 0867 */  "", //"mathinner",
+/* 0868 */  "", //"overline",
+/* 0869 */  "", //"underline",
+/* 0870 */  "", //"left",
+/* 0871 */  "", //"right",
+/* 0872 */  "", //"limits",
+/* 0873 */  "", //"nolimits",
+/* 0874 */  "", //"fraction, thickness ",
+/* 0875 */  "", //"= default",
+/* 0876 */  "", //", left-delimiter ",
+/* 0877 */  "", //", right-delimiter ",
+/* 0878 */  "", //" is undefined (character ",
+/* 0879 */  "", //"Somewhere in the math formula just ended, you used the",
+/* 0880 */  "", //"stated character from an undefined font family. For example,",
+/* 0881 */  "", //"plain TeX doesn't allow \\it or \\sl in subscripts. Proceed,",
+/* 0882 */  "", //"and I'll try to forget that I needed that character.",
+/* 0883 */  "", //"mlist1",
+/* 0884 */  "", //"mlist2",
+/* 0885 */  "", //"mlist3",
+/* 0886 */  "0234000122*4000133**3**344*0400400*000000234000111*1111112341011",
+/* 0887 */  "", //"mlist4",
+/* 0888 */  "", //" inside $$'s",
+/* 0889 */  "", //"Displays can use special alignments (like \\eqalignno)",
+/* 0890 */  "", //"only if nothing but the alignment itself is between $$'s.",
+/* 0891 */  "", //"So I've deleted the formulas that preceded this alignment.",
+/* 0892 */  "", //"span",
+/* 0893 */  "", //"cr",
+/* 0894 */  "", //"crcr",
+/* 0895 */  "endtemplate",
+/* 0896 */  "", //"alignment tab character ",
+/* 0897 */  "", //"Missing # inserted in alignment preamble",
+/* 0898 */  "", //"There should be exactly one # between &'s, when an",
+/* 0899 */  "", //"\\halign or \\valign is being set up. In this case you had",
+/* 0900 */  "", //"none, so I've put one in; maybe that will work.",
+/* 0901 */  "", //"Only one # is allowed per tab",
+/* 0902 */  "", //"more than one, so I'm ignoring all but the first.",
+/* 0903 */  "", //"endv",
+/* 0904 */  "", //"Extra alignment tab has been changed to ",
+/* 0905 */  "", //"You have given more \\span or & marks than there were",
+/* 0906 */  "", //"in the preamble to the \\halign or \\valign now in progress.",
+/* 0907 */  "", //"So I'll assume that you meant to type \\cr instead.",
+/* 0908 */  "", //"256 spans",
+/* 0909 */  "", //"align1",
+/* 0910 */  "", //"align0",
+/* 0911 */  "", //"Infinite glue shrinkage found in a paragraph",
+/* 0912 */  "", //"The paragraph just ended includes some glue that has",
+/* 0913 */  "", //"infinite shrinkability, e.g., `\\hskip 0pt minus 1fil'.",
+/* 0914 */  "", //"Such glue doesn't belong there---it allows a paragraph",
+/* 0915 */  "", //"of any length to fit on one line. But it's safe to proceed,",
+/* 0916 */  "", //"since the offensive shrinkability has been made finite.",
+/* 0917 */  "", //"disc1",
+/* 0918 */  "", //"disc2",
+/* 0919 */  "", //"@@",
+/* 0920 */  "", //": line ",
+/* 0921 */  "", //" t=",
+/* 0922 */  "", //" -> @@",
+/* 0923 */  "", //" via @@",
+/* 0924 */  "", //" b=",
+/* 0925 */  "", //" p=",
+/* 0926 */  "", //" d=",
+/* 0927 */  "", //"@firstpass",
+/* 0928 */  "", //"@secondpass",
+/* 0929 */  "", //"@emergencypass",
+/* 0930 */  "", //"paragraph",
+/* 0931 */  "", //"disc3",
+/* 0932 */  "", //"disc4",
+/* 0933 */  "", //"line breaking",
+/* 0934 */  "", //"HYPH(",
+/* 0935 */  "", //"hyphenation",
+/* 0936 */  "", //" will be flushed",
+/* 0937 */  "", //"Hyphenation exceptions must contain only letters",
+/* 0938 */  "", //"and hyphens. But continue; I'll forgive and forget.",
+/* 0939 */  "", //"Not a letter",
+/* 0940 */  "", //"Letters in \\hyphenation words must have \\lccode>0.",
+/* 0941 */  "", //"Proceed; I'll ignore the character I just read.",
+/* 0942 */  "", //"exception dictionary",
+/* 0943 */  "", //"pattern memory ops",
+/* 0944 */  "", //"pattern memory ops per language",
+/* 0945 */  "", //"pattern memory",
+/* 0946 */  "", //"Too late for ",
+/* 0947 */  "", //"patterns",
+/* 0948 */  "", //"All patterns must be given before typesetting begins.",
+/* 0949 */  "", //"Bad ",
+/* 0950 */  "", //"(See Appendix H.)",
+/* 0951 */  "", //"Nonletter",
+/* 0952 */  "", //"Duplicate pattern",
+/* 0953 */  "", //"pruning",
+/* 0954 */  "", //"vertbreak",
+/* 0955 */  "", //"Infinite glue shrinkage found in box being split",
+/* 0956 */  "", //"The box you are \\vsplitting contains some infinitely",
+/* 0957 */  "", //"shrinkable glue, e.g., `\\vss' or `\\vskip 0pt minus 1fil'.",
+/* 0958 */  "", //"Such glue doesn't belong there; but you can safely proceed,",
+/* 0959 */  "", //"vsplit",
+/* 0960 */  "", //" needs a ",
+/* 0961 */  "", //"vbox",
+/* 0962 */  "", //"The box you are trying to split is an \\hbox.",
+/* 0963 */  "", //"I can't split such a box, so I'll leave it alone.",
+/* 0964 */  "", //"pagegoal",
+/* 0965 */  "", //"pagetotal",
+/* 0966 */  "", //"pagestretch",
+/* 0967 */  "", //"pagefilstretch",
+/* 0968 */  "", //"pagefillstretch",
+/* 0969 */  "", //"pagefilllstretch",
+/* 0970 */  "", //"pageshrink",
+/* 0971 */  "", //"pagedepth",
+/* 0972 */  "", //"fill",
+/* 0973 */  "", //"filll",
+/* 0974 */  "", //"### current page:",
+/* 0975 */  "", //" (held over for next output)",
+/* 0976 */  "", //"total height ",
+/* 0977 */  "", //" goal height ",
+/* 0978 */  "", //" adds ",
+/* 0979 */  "", //", #",
+/* 0980 */  "", //" might split",
+/* 0981 */  "", //"%% goal height=",
+/* 0982 */  "", //", max depth=",
+/* 0983 */  "", //"Insertions can only be added to a vbox",
+/* 0984 */  "", //"Tut tut: You're trying to \\insert into a",
+/* 0985 */  "", //"\\box register that now contains an \\hbox.",
+/* 0986 */  "", //"Proceed, and I'll discard its present contents.",
+/* 0987 */  "", //"page",
+/* 0988 */  "", //"Infinite glue shrinkage found on current page",
+/* 0989 */  "", //"The page about to be output contains some infinitely",
+/* 0990 */  "", //" g=",
+/* 0991 */  "", //" c=",
+/* 0992 */  "", //"Infinite glue shrinkage inserted from ",
+/* 0993 */  "", //"The correction glue for page breaking with insertions",
+/* 0994 */  "", //"must have finite shrinkability. But you may proceed,",
+/* 0995 */  "", //"% split",
+/* 0996 */  "", //" to ",
+/* 0997 */  "", //"255 is not void",
+/* 0998 */  "", //"You shouldn't use \\box255 except in \\output routines.",
+/* 0999 */  "", //"Output loop---",
+/* 1000 */  "", //" consecutive dead cycles",
+/* 1001 */  "", //"I've concluded that your \\output is awry; it never does a",
+/* 1002 */  "", //"\\shipout, so I'm shipping \\box255 out myself. Next time",
+/* 1003 */  "", //"increase \\maxdeadcycles if you want me to be more patient!",
+/* 1004 */  "", //"Unbalanced output routine",
+/* 1005 */  "", //"Your sneaky output routine has problematic {'s and/or }'s.",
+/* 1006 */  "", //"I can't handle that very well; good luck.",
+/* 1007 */  "", //"Output routine didn't use all of ",
+/* 1008 */  "", //"Your \\output commands should empty \\box255,",
+/* 1009 */  "", //"e.g., by saying `\\shipout\\box255'.",
+/* 1010 */  "", //"Proceed; I'll discard its present contents.",
+/* 1011 */  "", //"Missing $ inserted",
+/* 1012 */  "", //"I've inserted a begin-math/end-math symbol since I think",
+/* 1013 */  "", //"you left one out. Proceed, with fingers crossed.",
+/* 1014 */  "", //"' in ",
+/* 1015 */  "", //"Sorry, but I'm not programmed to handle this case;",
+/* 1016 */  "", //"I'll just pretend that you didn't ask for it.",
+/* 1017 */  "", //"If you're in the wrong mode, you might be able to",
+/* 1018 */  "", //"return to the right one by typing `I}' or `I$' or `I\\par'.",
+/* 1019 */  "", //"end",
+/* 1020 */  "", //"dump",
+/* 1021 */  "", //"hskip",
+/* 1022 */  "", //"hfil",
+/* 1023 */  "", //"hfill",
+/* 1024 */  "", //"hss",
+/* 1025 */  "", //"hfilneg",
+/* 1026 */  "", //"vskip",
+/* 1027 */  "", //"vfil",
+/* 1028 */  "", //"vfill",
+/* 1029 */  "", //"vss",
+/* 1030 */  "", //"vfilneg",
+/* 1031 */  "", //"I've inserted something that you may have forgotten.",
+/* 1032 */  "", //"(See the <inserted text> above.)",
+/* 1033 */  "", //"With luck, this will get me unwedged. But if you",
+/* 1034 */  "", //"really didn't forget anything, try typing `2' now; then",
+/* 1035 */  "", //"my insertion and my current dilemma will both disappear.",
+/* 1036 */  "", //"right.",
+/* 1037 */  "", //"Things are pretty mixed up, but I think the worst is over.",
+/* 1038 */  "", //"Too many }'s",
+/* 1039 */  "", //"You've closed more groups than you opened.",
+/* 1040 */  "", //"Such booboos are generally harmless, so keep going.",
+/* 1041 */  "", //"rightbrace",
+/* 1042 */  "", //"Extra }, or forgotten ",
+/* 1043 */  "", //"I've deleted a group-closing symbol because it seems to be",
+/* 1044 */  "", //"spurious, as in `$x}$'. But perhaps the } is legitimate and",
+/* 1045 */  "", //"you forgot something else, as in `\\hbox{$x}'. In such cases",
+/* 1046 */  "", //"the way to recover is to insert both the forgotten and the",
+/* 1047 */  "", //"deleted material, e.g., by typing `I$}'.",
+/* 1048 */  "", //"moveleft",
+/* 1049 */  "", //"moveright",
+/* 1050 */  "", //"raise",
+/* 1051 */  "", //"lower",
+/* 1052 */  "", //"copy",
+/* 1053 */  "", //"lastbox",
+/* 1054 */  "", //"vtop",
+/* 1055 */  "", //"hbox",
+/* 1056 */  "", //"shipout",
+/* 1057 */  "", //"leaders",
+/* 1058 */  "", //"cleaders",
+/* 1059 */  "", //"xleaders",
+/* 1060 */  "", //"Leaders not followed by proper glue",
+/* 1061 */  "", //"You should say `\\leaders <box or rule><hskip or vskip>'.",
+/* 1062 */  "", //"I found the <box or rule>, but there's no suitable",
+/* 1063 */  "", //"<hskip or vskip>, so I'm ignoring these leaders.",
+/* 1064 */  "", //"Sorry; this \\lastbox will be void.",
+/* 1065 */  "", //"Sorry...I usually can't take things from the current page.",
+/* 1066 */  "", //"This \\lastbox will therefore be void.",
+/* 1067 */  "", //"Missing `to' inserted",
+/* 1068 */  "", //"I'm working on `\\vsplit<box number> to <dimen>';",
+/* 1069 */  "", //"will look for the <dimen> next.",
+/* 1070 */  "", //"A <box> was supposed to be here",
+/* 1071 */  "", //"I was expecting to see \\hbox or \\vbox or \\copy or \\box or",
+/* 1072 */  "", //"something like that. So you might find something missing in",
+/* 1073 */  "", //"your output. But keep trying; you can fix this later.",
+/* 1074 */  "", //"indent",
+/* 1075 */  "", //"noindent",
+/* 1076 */  "", //"' here except with leaders",
+/* 1077 */  "", //"To put a horizontal rule in an hbox or an alignment,",
+/* 1078 */  "", //"you should use \\leaders or \\hrulefill (see The TeXbook).",
+/* 1079 */  "", //"You can't ",
+/* 1080 */  "", //"I'm changing to \\insert0; box 255 is special.",
+/* 1081 */  "", //"Try `I\\vskip-\\lastskip' instead.",
+/* 1082 */  "", //"Try `I\\kern-\\lastkern' instead.",
+/* 1083 */  "", //"Perhaps you can make the output routine do it.",
+/* 1084 */  "", //"unpenalty",
+/* 1085 */  "", //"unkern",
+/* 1086 */  "", //"unskip",
+/* 1087 */  "", //"unhbox",
+/* 1088 */  "", //"unhcopy",
+/* 1089 */  "", //"unvbox",
+/* 1090 */  "", //"unvcopy",
+/* 1091 */  "", //"Incompatible list can't be unboxed",
+/* 1092 */  "", //"Sorry, Pandora. (You sneaky devil.)",
+/* 1093 */  "", //"I refuse to unbox an \\hbox in vertical mode or vice versa.",
+/* 1094 */  "", //"And I can't open any boxes in math mode.",
+/* 1095 */  "", //"Illegal math ",
+/* 1096 */  "", //"Sorry: The third part of a discretionary break must be",
+/* 1097 */  "", //"empty, in math formulas. I had to delete your third part.",
+/* 1098 */  "", //"Discretionary list is too long",
+/* 1099 */  "", //"Wow---I never thought anybody would tweak me here.",
+/* 1100 */  "", //"You can't seriously need such a huge discretionary list" "?",
+/* 1101 */  "", //"Improper discretionary list",
+/* 1102 */  "", //"Discretionary lists must contain only boxes and kerns.",
+/* 1103 */  "", //"The following discretionary sublist has been deleted:",
+/* 1104 */  "", //"Missing } inserted",
+/* 1105 */  "", //"I've put in what seems to be necessary to fix",
+/* 1106 */  "", //"the current column of the current alignment.",
+/* 1107 */  "", //"Try to go on, since this might almost work.",
+/* 1108 */  "", //"Misplaced ",
+/* 1109 */  "", //"I can't figure out why you would want to use a tab mark",
+/* 1110 */  "", //"here. If you just want an ampersand, the remedy is",
+/* 1111 */  "", //"simple: Just type `I\\&' now. But if some right brace",
+/* 1112 */  "", //"up above has ended a previous alignment prematurely,",
+/* 1113 */  "", //"you're probably due for more error messages, and you",
+/* 1114 */  "", //"might try typing `S' now just to see what is salvageable.",
+/* 1115 */  "", //"or \\cr or \\span just now. If something like a right brace",
+/* 1116 */  "", //"I expect to see \\noalign only after the \\cr of",
+/* 1117 */  "", //"an alignment. Proceed, and I'll ignore this case.",
+/* 1118 */  "", //"I expect to see \\omit only after tab marks or the \\cr of",
+/* 1119 */  "", // "I'm guessing that you meant to end an alignment here.",
+/* 1120 */  "", //"I'm ignoring this, since I wasn't doing a \\csname.",
+/* 1121 */  "", //"eqno",
+/* 1122 */  "", //"leqno",
+/* 1123 */  "", //"displaylimits",
+/* 1124 */  "", //"Limit controls must follow a math operator",
+/* 1125 */  "", //"I'm ignoring this misplaced \\limits or \\nolimits command.",
+/* 1126 */  "", //"Missing delimiter (. inserted)",
+/* 1127 */  "", //"I was expecting to see something like `(' or `\\{' or",
+/* 1128 */  "", //"`\\}' here. If you typed, e.g., `{' instead of `\\{', you",
+/* 1129 */  "", //"should probably delete the `{' by typing `1' now, so that",
+/* 1130 */  "", //"braces don't get unbalanced. Otherwise just proceed.",
+/* 1131 */  "", //"Acceptable delimiters are characters whose \\delcode is",
+/* 1132 */  "", //"nonnegative, or you can use `\\delimiter <delimiter code>'.",
+/* 1133 */  "", //"Please use ",
+/* 1134 */  "", //" for accents in math mode",
+/* 1135 */  "", //"I'm changing \\accent to \\mathaccent here; wish me luck.",
+/* 1136 */  "", //"(Accents are not the same in formulas as they are in text.)",
+/* 1137 */  "", //"Double superscript",
+/* 1138 */  "", //"I treat `x^1^2' essentially like `x^1{}^2'.",
+/* 1139 */  "", //"Double subscript",
+/* 1140 */  "", //"I treat `x_1_2' essentially like `x_1{}_2'.",
+/* 1141 */  "", //"above",
+/* 1142 */  "", //"over",
+/* 1143 */  "", //"atop",
+/* 1144 */  "", //"abovewithdelims",
+/* 1145 */  "", //"overwithdelims",
+/* 1146 */  "", //"atopwithdelims",
+/* 1147 */  "", //"Ambiguous; you need another { and }",
+/* 1148 */  "", //"I'm ignoring this fraction specification, since I don't",
+/* 1149 */  "", //"know whether a construction like `x \\over y \\over z'",
+/* 1150 */  "", //"means `{x \\over y} \\over z' or `x \\over {y \\over z}'.",
+/* 1151 */  "", //"I'm ignoring a \\right that had no matching \\left.",
+/* 1152 */  "", //"Math formula deleted: Insufficient symbol fonts",
+/* 1153 */  "", //"Sorry, but I can't typeset math unless \\textfont 2",
+/* 1154 */  "", //"and \\scriptfont 2 and \\scriptscriptfont 2 have all",
+/* 1155 */  "", //"the \\fontdimen values needed in math symbol fonts.",
+/* 1156 */  "", //"Math formula deleted: Insufficient extension fonts",
+/* 1157 */  "", //"Sorry, but I can't typeset math unless \\textfont 3",
+/* 1158 */  "", //"and \\scriptfont 3 and \\scriptscriptfont 3 have all",
+/* 1159 */  "", //"the \\fontdimen values needed in math extension fonts.",
+/* 1160 */  "", //"Display math should end with $$",
+/* 1161 */  "", //"The `$' that I just saw supposedly matches a previous `$$'.",
+/* 1162 */  "", //"So I shall assume that you typed `$$' both times.",
+/* 1163 */  "", //"display",
+/* 1164 */  "", //"Missing $$ inserted",
+/* 1165 */  "", //"long",
+/* 1166 */  "", //"outer",
+/* 1167 */  "", //"global",
+/* 1168 */  "", //"def",
+/* 1169 */  "", //"gdef",
+/* 1170 */  "", //"edef",
+/* 1171 */  "", //"xdef",
+/* 1172 */  "", //"prefix",
+/* 1173 */  "", //"You can't use a prefix with `",
+/* 1174 */  "", //"I'll pretend you didn't say \\long or \\outer or \\global.",
+/* 1175 */  "", //"' or `",
+/* 1176 */  "", //"' with `",
+/* 1177 */  "", //"I'll pretend you didn't say \\long or \\outer here.",
+/* 1178 */  "", //"Missing control sequence inserted",
+/* 1179 */  "", //"Please don't say `\\def cs{...}', say `\\def\\cs{...}'.",
+/* 1180 */  "", //"I've inserted an inaccessible control sequence so that your",
+/* 1181 */  "", //"definition will be completed without mixing me up too badly.",
+/* 1182 */  "", //"You can recover graciously from this error, if you're",
+/* 1183 */  "", //"careful; see exercise 27.2 in The TeXbook.",
+/* 1184 */  "inaccessible",
+/* 1185 */  "", //"let",
+/* 1186 */  "", //"futurelet",
+/* 1187 */  "", //"chardef",
+/* 1188 */  "", //"mathchardef",
+/* 1189 */  "", //"countdef",
+/* 1190 */  "", //"dimendef",
+/* 1191 */  "", //"skipdef",
+/* 1192 */  "", //"muskipdef",
+/* 1193 */  "", //"toksdef",
+/* 1194 */  "", //"You should have said `\\read<number> to \\cs'.",
+/* 1195 */  "", //"I'm going to look for the \\cs now.",
+/* 1196 */  "", //"Invalid code (",
+/* 1197 */  "", //"), should be in the range 0..",
+/* 1198 */  "", //"), should be at most ",
+/* 1199 */  "", //"I'm going to use 0 instead of that illegal code value.",
+/* 1200 */  "", //"by",
+/* 1201 */  "", //"Arithmetic overflow",
+/* 1202 */  "", //"I can't carry out that multiplication or division,",
+/* 1203 */  "", //"since the result is out of range.",
+/* 1204 */  "", //"I'm forgetting what you said and not changing anything.",
+/* 1205 */  "", //"Sorry, \\setbox is not allowed after \\halign in a display,",
+/* 1206 */  "", //"or between \\accent and an accented character.",
+/* 1207 */  "", //"Bad space factor",
+/* 1208 */  "", //"I allow only values in the range 1..32767 here.",
+/* 1209 */  "", //"I allow only nonnegative values here.",
+/* 1210 */  "", //"Patterns can be loaded only by INITEX",
+/* 1211 */  "", //"hyphenchar",
+/* 1212 */  "", //"skewchar",
+/* 1213 */  "FONT",
+/* 1214 */  "", //"at",
+/* 1215 */  "", //"scaled",
+/* 1216 */  "", //"Improper `at' size (",
+/* 1217 */  "", //"pt), replaced by 10pt",
+/* 1218 */  "", //"I can only handle fonts at positive sizes that are",
+/* 1219 */  "", //"less than 2048pt, so I've changed what you said to 10pt.",
+/* 1220 */  "", //"select font ",
+/* 1221 */  "", //"errorstopmode",
+/* 1222 */  "", //"openin",
+/* 1223 */  "", //"closein",
+/* 1224 */  "", //"message",
+/* 1225 */  "", //"errmessage",
+/* 1226 */  "", //"(That was another \\errmessage.)",
+/* 1227 */  "", //"This error message was generated by an \\errmessage",
+/* 1228 */  "", //"command, so I can't give any explicit help.",
+/* 1229 */  "", //"Pretend that you're Hercule Poirot: Examine all clues,",
+/* 1230 */  "", //"and deduce the truth by order and method.",
+/* 1231 */  "", //"lowercase",
+/* 1232 */  "", //"uppercase",
+/* 1233 */  "", //"show",
+/* 1234 */  "", //"showbox",
+/* 1235 */  "", //"showthe",
+/* 1236 */  "", //"showlists",
+/* 1237 */  "", //"This isn't an error message; I'm just \\showing something.",
+/* 1238 */  "", //"Type `I\\show...' to show more (e.g., \\show\\cs,",
+/* 1239 */  "", //"\\showthe\\count10, \\showbox255, \\showlists).",
+/* 1240 */  "", //"And type `I\\tracingonline=1\\show...' to show boxes and",
+/* 1241 */  "", //"lists on your terminal as well as in the transcript file.",
+/* 1242 */  "", //"> ",
+/* 1243 */  "", //"undefined",
+/* 1244 */  "", //"macro",
+/* 1245 */  "", //"long macro",
+/* 1246 */  "", //"outer macro",
+/* 1247 */  "", //"outer endtemplate",
+/* 1248 */  "", //"> \\box",
+/* 1249 */  "", //"OK",
+/* 1250 */  "", //" (see the transcript file)",
+/* 1251 */  " (INITEX)",
+/* 1252 */  "", //"You can't dump inside a group",
+/* 1253 */  "", //"`{...\\dump}' is a no-no.",
+/* 1254 */  "", //" strings of total length ",
+/* 1255 */  "", //" memory locations dumped; current usage is ",
+/* 1256 */  "", //" multiletter control sequences",
+/* 1257 */  "", //" words of font info for ",
+/* 1258 */  "", //" preloaded font",
+/* 1259 */  "", //"\\font",
+/* 1260 */  "", //" hyphenation exception",
+/* 1261 */  "", //"Hyphenation trie of length ",
+/* 1262 */  "", //" has ",
+/* 1263 */  "", //" op",
+/* 1264 */  "", //" out of ",
+/* 1265 */  "", //" for language ",
+/* 1266 */  "", //" (format=",
+/* 1267 */  "", //"format file name",
+/* 1268 */  "", //"Beginning to dump on file ",
+/* 1269 */  "", //"Transcript written on ",
+/* 1270 */  "", //" )",
+/* 1271 */  "", //"end occurred ",
+/* 1272 */  "", //"inside a group at level ",
+/* 1273 */  "", //"when ",
+/* 1274 */  "", //" on line ",
+/* 1275 */  "", //" was incomplete)",
+/* 1276 */  "", //"(see the transcript file for additional information)",
+/* 1277 */  "", //"(\\dump is performed only by INITEX)",
+/* 1278 */  "", //"debug # (-1 to exit):",
+/* 1279 */  "", //"openout",
+/* 1280 */  "", //"closeout",
+/* 1281 */  "", //"special",
+/* 1282 */  "", //"immediate",
+/* 1283 */  "", //"setlanguage",
+/* 1284 */  "", //"[unknown extension!]",
+/* 1285 */  "", //"ext1",
+/* 1286 */  "", //" (hyphenmin ",
+/* 1287 */  "", //"whatsit" "?",
+/* 1288 */  "", //"ext2",
+/* 1289 */  "", //"ext3",
+/* 1290 */  "endwrite",
+/* 1291 */  "", //"Unbalanced write command",
+/* 1292 */  "", //"On this page there's a \\write with fewer real {'s than }'s.",
+/* 1293 */  "", //"ext4",
+/* 1294 */  "", //"output file name",
+};
+
+static str_number load_pool_strings (integer spare_size)
+{
+  str_number g;
+  size_t k, l, i = 0;
+
+  for (k = 0; k < sizeof(pool_file_arr) / sizeof(char *); k++)
+  {
+    l = strlen(pool_file_arr[k]);
+    i += l;
+
+    if (i >= spare_size)
+      return 0;
+
+    memcpy(str_pool + pool_ptr, pool_file_arr[k], l);
+    pool_ptr += l;
+    g = make_string();
+  }
+
+  return g;
+}
+
+str_number make_str_string (const char * s)
+{
+  size_t slen = strlen(s);
+
+  if (slen == 1)
+  {
+    return ((str_number) s[0]);
+  }
+  else
+  {
+    memcpy(str_pool + pool_ptr, s, slen);
+    pool_ptr += slen;
+    return (make_string());
+  }
+}
+
+static str_number get_job_name (str_number job)
+{
+  if (aptex_env.aptex_job != NULL)
+    return make_str_string(aptex_env.aptex_job);
+  else
+    return job;
+}
+
+char * take_str_string (str_number s)
+{
+  char * a = (char *) malloc(length(s) + 1);
+  strncpy(a, (const char *)(str_pool + str_start[s]), length(s));
+  a[length(s)] = '\0';
+
+  return a;
+}
+
+static const integer BEGINFMTCHECKSUM = 367403084;
+static const integer ENDFMTCHECKSUM   = 69069;
+
+static void reset_trie(void);
+static boolean get_strings_started(void);
+static void init_prim(void);
+static void store_fmt_file(void);
+static void primitive_(str_number s, quarterword c, halfword o);
+static void fix_date_and_time(void);
+
+static int aptex_dump_put (void * out_file, void * p, int item_size)
+{
+  boolean fmt_stat; int nitems = 1;
+
+  if (aptex_env.flag_compact_fmt)
+    fmt_stat = (gzwrite(out_file, p, (item_size * nitems)) != (item_size * nitems));
+  else
+    fmt_stat = (fwrite(p, item_size, nitems, out_file) != nitems);
+
+  if (fmt_stat)
+  {
+    printf("\n! ApTeX: Could not write %d %d-byte item%s.\n", nitems, item_size, (nitems > 1) ? "s" : "");
+    aptex_utils_exit(EXIT_FAILURE);
+  }
+
+  return 0;
+}
+
+static int aptex_dump_get (void * in_file, void * p, int item_size)
+{
+  boolean fmt_stat; int nitems = 1;
+ 
+  if (aptex_env.flag_compact_fmt)
+    fmt_stat = (gzread(in_file, p, (item_size * nitems)) <= 0);
+  else
+    fmt_stat = (fread(p, item_size, nitems, in_file) != nitems);
+
+  if (fmt_stat)
+  {
+    printf("\n! ApTeX: Could not read %d %d-byte item%s.\n", nitems, item_size, (nitems > 1) ? "s" : "");
+    aptex_utils_exit(EXIT_FAILURE);
+  }
+
+  return 0;
+}
+
+static inline void dump_int (integer x)
+{
+  generic_dump(x);
+}
+
+static inline void dump_hh (two_halves x)
+{
+  generic_dump(x);
+}
+
+static inline void dump_wd (memory_word x)
+{
+  generic_dump(x);
+}
+
+/* split out to allow optimize for space, not time */
+static void do_initex (void)
+{
+  integer i;
+  integer k;
+
+  for (k = mem_bot + 1; k <= lo_mem_stat_max; k++)
+    mem[k].cint = 0;
+
+  k = mem_bot;
+
+  while (k <= lo_mem_stat_max)
+  {
+    glue_ref_count(k) = 1;
+    stretch_order(k) = normal;
+    shrink_order(k) = normal;
+    k = k + glue_spec_size;
+  }
+
+  stretch(fil_glue) = unity;
+  stretch_order(fil_glue) = fil;
+  stretch(fill_glue) = unity;
+  stretch_order(fill_glue) = fill;
+  stretch(ss_glue) = unity;
+  stretch_order(ss_glue) = fil;
+  shrink(ss_glue) = unity;
+  shrink_order(ss_glue) = fil;
+  stretch(fil_neg_glue) = -unity;
+  stretch_order(fil_neg_glue) = fil;
+  rover = lo_mem_stat_max + 1;
+  link(rover) = empty_flag;
+  node_size(rover) = block_size;
+  llink(rover) = rover;
+  rlink(rover) = rover;
+  lo_mem_max = rover + block_size;
+  link(lo_mem_max) = 0;
+  info(lo_mem_max) = 0;
+
+  for (k = hi_mem_stat_min; k <= mem_top; k++)
+    mem[k] = mem[lo_mem_max];
+
+  info(omit_template) = end_template_token;
+  link(end_span) = max_quarterword + 1;
+  info(end_span) = 0;
+  type(last_active) = hyphenated;
+  line_number(last_active) = max_halfword;
+  subtype(last_active) = 0;
+  subtype(page_ins_head) = 255;
+  type(page_ins_head) = split_up;
+  link(mem_top) = page_ins_head;
+  type(page_head) = glue_node;
+  subtype(page_head) = normal;
+  avail = 0;
+  mem_end = mem_top;
+  hi_mem_min = hi_mem_stat_min;
+  var_used = lo_mem_stat_max + 1 - mem_bot;
+  dyn_used = hi_mem_stat_usage;
+  eq_type(undefined_control_sequence) = undefined_cs;
+  equiv(undefined_control_sequence) = 0;
+  eq_level(undefined_control_sequence) = level_zero;
+
+  for (k = active_base; k <= undefined_control_sequence - 1; k++)
+    eqtb[k] = eqtb[undefined_control_sequence];
+
+  equiv(glue_base) = zero_glue;
+  eq_level(glue_base) = level_one;
+  eq_type(glue_base) = glue_ref;
+
+  for (k = glue_base + 1; k <= local_base - 1; k++)
+    eqtb[k] = eqtb[glue_base];
+
+  glue_ref_count(zero_glue) = glue_ref_count(zero_glue) + local_base - glue_base;
+
+  par_shape_ptr = 0;
+  eq_type(par_shape_loc) = shape_ref;
+  eq_level(par_shape_loc) = level_one;
+
+  for (k = etex_pen_base; k <= etex_pens - 1; k++)
+    eqtb[k] = eqtb[par_shape_loc];
+
+  for (k = output_routine_loc; k <= toks_base + 255; k++)
+    eqtb[k] = eqtb[undefined_control_sequence];
+
+  box(0) = 0;
+  eq_type(box_base) = box_ref;
+  eq_level(box_base) = level_one;
+
+  for (k = box_base + 1; k <= box_base + 255; k++)
+    eqtb[k] = eqtb[box_base];
+
+  cur_font = null_font;
+  eq_type(cur_font_loc) = data;
+  eq_level(cur_font_loc) = level_one;
+  cur_jfont = null_font;
+  eq_type(cur_jfont_loc) = data;
+  eq_level(cur_jfont_loc) = level_one;
+  cur_tfont = null_font;
+  eq_type(cur_tfont_loc) = data;
+  eq_level(cur_tfont_loc) = level_one;
+
+  for (k = math_font_base; k <= math_font_base + 47; k++)
+    eqtb[k] = eqtb[cur_font_loc];
+
+  equiv(cat_code_base) = 0;
+  eq_type(cat_code_base) = data;
+  eq_level(cat_code_base) = level_one;
+
+  for (k = cat_code_base; k <= int_base - 1; k++)
+    eqtb[k] = eqtb[cat_code_base];
+
+  eqtb[auto_spacing_code] = eqtb[cat_code_base];
+  eqtb[auto_xspacing_code] = eqtb[cat_code_base];
+  eqtb[enable_cjk_token_code] = eqtb[cat_code_base];
+
+  for (k = 0; k <= 255; k++)
+  {
+    cat_code(k) = other_char;
+    kcat_code(k) = other_kchar;
+    math_code(k) = k;
+    sf_code(k) = 1000;
+    auto_xsp_code(k) = 0;
+    inhibit_xsp_code(k) = 0;
+    inhibit_xsp_type(k) = 0;
+    kinsoku_code(k) = 0;
+    kinsoku_type(k) = 0;
+  }
+
+  for (k = 0; k <= 512; k++)
+    kcat_code(k) = other_kchar;
+
+  cat_code(carriage_return) = car_ret;
+  cat_code(' ') = spacer;
+  cat_code('\\') = escape;
+  cat_code('%') = comment;
+  cat_code(invalid_code) = invalid_char;
+  cat_code(null_code) = ignore;
+
+  for (k = '0'; k <= '9'; k++)
+  {
+    math_code(k) = k + var_code;
+    auto_xsp_code(k) = 3;
+  }
+
+  kansuji_char(0) = toDVI(fromJIS(0x213B));
+  kansuji_char(1) = toDVI(fromJIS(0x306C));
+  kansuji_char(2) = toDVI(fromJIS(0x4673));
+  kansuji_char(3) = toDVI(fromJIS(0x3B30));
+  kansuji_char(4) = toDVI(fromJIS(0x3B4D));
+  kansuji_char(5) = toDVI(fromJIS(0x385E));
+  kansuji_char(6) = toDVI(fromJIS(0x4F3B));
+  kansuji_char(7) = toDVI(fromJIS(0x3C37));
+  kansuji_char(8) = toDVI(fromJIS(0x482C));
+  kansuji_char(9) = toDVI(fromJIS(0x3665));
+
+  for (k = 'A'; k <= 'Z'; k++)
+  {
+    cat_code(k) = letter;
+    cat_code(k + 'a' - 'A') = letter;
+    math_code(k) = k + var_code + 0x100;
+    math_code(k + 'a' - 'A') = k + 'a' - 'A' + var_code + 0x100;
+    lc_code(k) = k + 'a' - 'A';
+    lc_code(k + 'a' - 'A') = k + 'a' - 'A';
+    uc_code(k) = k;
+    uc_code(k + 'a' - 'A') = k;
+    auto_xsp_code(k) = 3;
+    auto_xsp_code(k + 'a' - 'A') = 3;
+    sf_code(k) = 999;
+  }
+
+  if (is_internalUPTEX())
+  {
+    // { default: other_kchar }
+    kcat_code(0x0) = not_cjk;
+    // { Hangul Jamo }
+    kcat_code(0x23) = hangul;
+
+    // { CJK Radicals Supplement .. Ideographic Description Characters }
+    for (k = 0x64; k <= 0x66; k++)
+      kcat_code(k) = kanji;
+
+    // { Hiragana, Katakana }
+    for (k = 0x68; k <= 0x69; k++)
+      kcat_code(k) = kana;
+
+    // { Bopomofo }
+    kcat_code(0x6A) = kanji;
+    // { Hangul Compatibility Jamo }
+    kcat_code(0x6B) = hangul;
+
+    // { Kanbun .. CJK Strokes }
+    for (k = 0x6C; k <= 0x6E; k++)
+      kcat_code(k) = kanji;
+
+    // { Katakana Phonetic Extensions }
+    kcat_code(0x6F) = kana;
+    // { CJK Unified Ideographs Extension A }
+    kcat_code(0x72) = kanji;
+    // { CJK Unified Ideographs }
+    kcat_code(0x74) = kanji;
+    // { Hangul Jamo Extended-A }
+    kcat_code(0x84) = hangul;
+    // { Hangul Syllables }
+    kcat_code(0x8E) = hangul;
+    // { Hangul Jamo Extended-B }
+    kcat_code(0x8F) = hangul;
+    // { CJK Compatibility Ideographs }
+    kcat_code(0x94) = kanji;
+    // { kcat_code(0x9D) = other_kchar; Halfwidth and Fullwidth Forms }
+    // { Kana Supplement }
+    kcat_code(0xDD) = kana;
+
+    // { CJK Unified Ideographs Extension B .. CJK Compatibility Ideographs Supplement }
+    for (k = 0xF4; k <= 0xF7; k++)
+      kcat_code(k) = kanji;
+
+    // { Fullwidth digit and latin alphabet }
+    kcat_code(0x1FE) = kana;
+    // { Halfwidth katakana }
+    kcat_code(0x1FF) = kana;
+  }
+  else
+  {
+    kcat_code(0x20 + 1) = other_kchar; // {1 ku}
+    kcat_code(0x20 + 2) = other_kchar; // {2 ku}
+
+    for (k = 3; k <= 6; k++)
+      kcat_code(0x20 + k) = kana; // {3 ku ... 6 ku}
+
+    for (k = 7; k <= 13; k++)
+      kcat_code(0x20 + k) = other_kchar; // {7 ku ... 13 ku}
+
+    for (k = 14; k <= 120; k++)
+      kcat_code(0x20 + k) = kanji; // {14 ku ... 120 ku}
+    //{ $\.{@0x20}+|k| = |kcatcodekey|(|fromKUTEN|(|HILO|(k,1))$ }
+    for (k = 16; k <= 94; k++)
+      kcat_code(0xA0 + k) = kanji; // {2 men 16 ku ... 94 ku}
+  };
+
+
+  for (k = int_base; k <= del_code_base - 1; k++)
+    eqtb[k].cint = 0;
+
+  mag = 1000;
+  tolerance = 10000;
+  hang_after = 1;
+  max_dead_cycles = 25;
+  escape_char = '\\';
+  end_line_char = carriage_return;
+  pdf_compress_level = 9;
+  pdf_minor_version = 5;
+
+  for (k = 0; k <= 255; k++)
+    del_code(k) = -1;
+
+  del_code('.') = 0;
+
+  for (k = dimen_base; k <= eqtb_size; k++)
+    eqtb[k].cint = 0;
+
+  hash_used = frozen_control_sequence;
+  cs_count = 0;
+
+  if (aptex_env.trace_mem)
+    puts("initex cs_count = 0 ");
+
+  eq_type(frozen_dont_expand) = dont_expand;
+  text(frozen_dont_expand) = 499;  /* "notexpanded:" */
+
+  font_ptr                    = null_font;
+  fmem_ptr                    = 7;
+  font_dir[null_font]         = dir_default;
+  font_num_ext[null_font]     = 0;
+  font_name[null_font]        = 795; /* nullfont */
+  font_area[null_font]        = 335; /* "" */
+  hyphen_char[null_font]      = '-';
+  skew_char[null_font]        = -1; 
+  bchar_label[null_font]      = non_address;
+  font_bchar[null_font]       = non_char;
+  font_false_bchar[null_font] = non_char;
+  font_bc[null_font]          = 1;
+  font_ec[null_font]          = 0;
+  font_size[null_font]        = 0;
+  font_dsize[null_font]       = 0;
+  ctype_base[null_font]       = 0;
+  char_base[null_font]        = 0;
+  width_base[null_font]       = 0;
+  height_base[null_font]      = 0;
+  depth_base[null_font]       = 0;
+  italic_base[null_font]      = 0;
+  lig_kern_base[null_font]    = 0;
+  kern_base[null_font]        = 0;
+  exten_base[null_font]       = 0;
+  font_glue[null_font]        = 0;
+  font_params[null_font]      = 7;
+  param_base[null_font]       = -1;
+
+  for (k = 0; k <= 6; k++)
+    font_info[k].cint = 0;
+
+  reset_trie();
+  text(frozen_protection) = 1184; /* "inaccessible" */
+  format_ident = 1251;            /* " (INITEX)" */
+  text(end_write) = 1290;         /* "endwrite" */
+  eq_level(end_write) = level_one;
+  eq_type(end_write) = outer_call;
+  equiv(end_write) = 0;
+  eTeX_mode = false;
+  max_reg_num = 255;
+  max_reg_help_line = "A register number must be between 0 and 255.";
+
+  for (i = int_val; i <= tok_val; ++i)
+    sa_root[i] = null;
+
+  hyph_root = 0;
+  hyph_start = 0;
+}
+
+/* sec 0004 */
+static void initialize (void)
+{
+  integer i;
+  integer k;
+
+#ifndef APTEX_EXTENSION
+  hyph_pointer z;
+#endif
+
+  for (i = 0; i <= 255; i++)
+    xchr[i] = (char) i;
+
+#ifdef JOKE
+  xchr[32] = ' ';  xchr[33] = '!';  xchr[34] = '"';  xchr[35] = '#';
+  xchr[36] = '$';  xchr[37] = '%';  xchr[38] = '&';  xchr[39] = '\'';
+  xchr[40] = '(';  xchr[41] = ')';  xchr[42] = '*';  xchr[43] = '+';
+  xchr[44] = ',';  xchr[45] = '-';  xchr[46] = '.';  xchr[47] = '/';
+  xchr[48] = '0';  xchr[49] = '1';  xchr[50] = '2';  xchr[51] = '3';
+  xchr[52] = '4';  xchr[53] = '5';  xchr[54] = '6';  xchr[55] = '7';
+  xchr[56] = '8';  xchr[57] = '9';  xchr[58] = ':';  xchr[59] = ';';
+  xchr[60] = '<';  xchr[61] = '=';  xchr[62] = '>';  xchr[63] = '?';
+  xchr[64] = '@';  xchr[65] = 'A';  xchr[66] = 'B';  xchr[67] = 'C';
+  xchr[68] = 'D';  xchr[69] = 'E';  xchr[70] = 'F';  xchr[71] = 'G';
+  xchr[72] = 'H';  xchr[73] = 'I';  xchr[74] = 'J';  xchr[75] = 'K';
+  xchr[76] = 'L';  xchr[77] = 'M';  xchr[78] = 'N';  xchr[79] = 'O';
+  xchr[80] = 'P';  xchr[81] = 'Q';  xchr[82] = 'R';  xchr[83] = 'S';
+  xchr[84] = 'T';  xchr[85] = 'U';  xchr[86] = 'V';  xchr[87] = 'W';
+  xchr[88] = 'X';  xchr[89] = 'Y';  xchr[90] = 'Z';  xchr[91] = '[';
+  xchr[92] = '\\'; xchr[93] = ']';  xchr[94] = '^';  xchr[95] = '_';
+  xchr[96] = '`';  xchr[97] = 'a';  xchr[98] = 'b';  xchr[99] = 'c';
+  xchr[100] = 'd'; xchr[101] = 'e'; xchr[102] = 'f'; xchr[103] = 'g';
+  xchr[104] = 'h'; xchr[105] = 'i'; xchr[106] = 'j'; xchr[107] = 'k';
+  xchr[108] = 'l'; xchr[109] = 'm'; xchr[110] = 'n'; xchr[111] = 'o';
+  xchr[112] = 'p'; xchr[113] = 'q'; xchr[114] = 'r'; xchr[115] = 's';
+  xchr[116] = 't'; xchr[117] = 'u'; xchr[118] = 'v'; xchr[119] = 'w';
+  xchr[120] = 'x'; xchr[121] = 'y'; xchr[122] = 'z'; xchr[123] = '{';
+  xchr[124] = '|'; xchr[125] = '}'; xchr[126] = '~';
+
+  for (i = 0; i <= 31; i++)
+    xchr[i] = chr(i);
+
+  for (i = 127; i <= 255; i++)
+    xchr[i]= chr(i);
+#endif
+
+  for (i = 0; i <= 255; i++)
+    xord[chr(i)] = invalid_code;
+
+#ifdef JOKE
+  for (i = 128; i <= 255; i++)
+    xord[xchr[i]] = i;
+
+  for (i = 0; i <= 126; i++)
+    xord[xchr[i]] = i;
+#endif
+
+  for (i = 0; i <= 255; i++)
+    xord[xchr[i]] = (char) i;
+
+  xord[127] = 127;
+
+  if (interaction < batch_mode)
+    interaction = error_stop_mode;
+
+  deletions_allowed = true;
+  set_box_allowed = true;
+  error_count = 0;
+  help_ptr = 0;
+  use_err_help = false;
+  interrupt = 0;
+  OK_to_interrupt = true;
+
+#ifdef APTEX_DEBUG
+  was_mem_end = mem_min;
+  was_lo_max = mem_bot; // mem_min
+  was_hi_min = mem_top; // mem_max
+  panicking = false;
+#endif
+
+  nest_ptr = 0;
+  max_nest_stack = 0;
+  mode = vmode;
+  head = contrib_head;
+  tail = contrib_head;
+  eTeX_aux = 0;
+  prev_node = tail;
+  direction = dir_yoko;
+  adjust_dir = direction;
+  prev_disp = 0;
+  last_jchr = null;
+  prev_depth = ignore_depth;
+  mode_line = 0;
+  prev_graf = 0;
+  shown_mode = 0;
+  page_contents = 0;
+  page_tail = page_head;
+
+#ifdef APTEX_EXTENSION
+  if (aptex_env.flag_initex)
+#endif
+    link(page_head) = 0;
+
+  last_glue = max_halfword;
+  last_penalty = 0;
+  last_kern = 0;
+  last_node_type = -1;
+  page_depth = 0;
+  page_max_depth = 0;
+
+  for (k = int_base; k <= eqtb_size; k++)
+    xeq_level[k] = level_one;
+
+  no_new_control_sequence = true;
+  next(hash_base) = 0;
+  text(hash_base) = 0;
+
+  for (k = hash_base + 1; k <= undefined_control_sequence - 1; k++)
+    hash[k] = hash[hash_base];
+
+  save_ptr = 0;
+  cur_level = level_one;
+  cur_group = bottom_level;
+  cur_boundary = 0;
+  max_save_stack = 0;
+  mag_set = 0;
+  skip_mode = true;
+  top_mark = 0;
+  first_mark = 0;
+  bot_mark = 0;
+  split_first_mark = 0;
+  split_bot_mark = 0;
+  cur_val = 0;
+  cur_val_level = int_val;
+  radix = 0;
+  cur_order = normal;
+
+  for (k = 0; k <= 16; k++)
+    read_open[k] = closed;
+
+  cond_ptr = 0;
+  if_limit = normal;
+  cur_if = 0;
+  if_line = 0;
+
+  for (k = font_base; k <= font_max; k++)
+    font_used[k] = false;
+
+  null_character.b0 = min_quarterword;
+  null_character.b1 = min_quarterword;
+  null_character.b2 = min_quarterword;
+  null_character.b3 = min_quarterword;
+  total_pages = 0;
+  max_v = 0;
+  max_h = 0;
+  max_push = 0;
+  last_bop = -1;
+  doing_leaders = false;
+  dead_cycles = 0;
+  cur_s = -1;
+  dir_used = false;
+  half_buf = dvi_buf_size / 2;
+  dvi_limit = dvi_buf_size;
+  dvi_ptr = 0;
+  dvi_offset = 0;
+  dvi_gone = 0;
+  down_ptr = 0;
+  right_ptr = 0;
+  adjust_tail = 0;
+  last_badness = 0;
+  cur_kanji_skip = zero_glue;
+  cur_xkanji_skip = zero_glue;
+  pack_begin_line = 0;
+  empty_field.rh = 0;
+  empty_field.lh = 0;
+  null_delimiter.b0 = 0;
+  null_delimiter.b1 = 0;
+  null_delimiter.b2 = 0;
+  null_delimiter.b3 = 0;
+  align_ptr = 0;
+  cur_align = 0;
+  cur_span = 0;
+  cur_loop = 0;
+  cur_head = 0;
+  cur_tail = 0;
+
+/* *not* OK with APTEX_EXTENSION, since may not be allocated yet */
+#ifndef APTEX_EXTENSION
+  for (z = 0; z <= hyphen_prime; z++)
+  {
+    hyph_word[z] = 0;
+    hyph_list[z] = 0;
+  }
+#endif
+
+  hyph_count = 0;
+  output_active = false;
+  insert_penalties = 0;
+  ligature_present = false;
+  cancel_boundary = false;
+  lft_hit = false;
+  rt_hit = false;
+  ins_disc = false;
+  after_token = 0;
+  long_help_seen = false;
+  format_ident = 0;
+
+  for (k = 0; k <= 17; k++)
+    write_open[k] = false;
+
+  LR_ptr = null;
+  LR_problems = 0;
+  cur_dir = left_to_right;
+  pseudo_files = null;
+  sa_mark = null;
+  sa_null.hh.lh = null;
+  sa_null.hh.rh = null;
+  sa_chain = null;
+  sa_level = level_zero;
+  page_disc = null;
+  split_disc = null;
+  inhibit_glue_flag = false;
+  page_dir = dir_yoko;
+
+  if (aptex_env.flag_initex)
+    do_initex();
+}
+
+/* sec 1303 */
+static boolean load_fmt_file (void)
+{
+  integer j, k;
+  pointer p, q;
+  integer x;
+
+  // Undump constants for consistency check
+  undump_int(x);
+
+  if (x != BEGINFMTCHECKSUM)
+    goto bad_fmt;
+
+  undump(0, 1, eTeX_mode);
+
+  if (eTeX_ex)
+  {
+    max_reg_num = 32767;
+    max_reg_help_line = "A register number must be between 0 and 32767.";
+  }
+  else
+  {
+    max_reg_num = 255;
+    max_reg_help_line = "A register number must be between 0 and 255.";
+  }
+
+  undump_int(x); /* mem_bot */
+
+  if (x != mem_bot)
+    goto bad_fmt;
+
+  undump_int(x); /* mem_top */
+
+#ifdef APTEX_EXTENSION
+  mem = allocate_mem(x);
+
+  if (mem == NULL)
+    exit(EXIT_FAILURE);
+
+  /* do `mem' part of initialize */
+  {
+#ifdef APTEX_DEBUG
+    was_mem_end = mem_min;
+    was_lo_max = mem_bot; // mem_min
+    was_hi_min = mem_top; // mem_max
+    panicking = false;
+#endif
+
+    /*  nest_ptr = 0; */
+    /*  max_nest_stack = 0; */
+    mode = vmode;
+    head = contrib_head;
+    tail = contrib_head;
+    eTeX_aux = 0;
+    prev_node = tail;
+    direction = dir_yoko;
+    adjust_dir = direction;
+    prev_disp = 0;
+    last_jchr = null;
+    prev_depth = ignore_depth;
+    mode_line = 0;
+    prev_graf = 0;
+    /*  shown_mode = 0; */
+    /*  page_contents = 0; */
+    page_tail = page_head;
+    link(page_head) = 0;
+  }
+#endif
+
+  if (x != mem_top)
+    goto bad_fmt;
+
+  undump_int(x); /* eqtb_size */
+
+  if (x != eqtb_size)
+    goto bad_fmt;
+
+  undump_int(x); /* hash_prime */
+
+  if (x != hash_prime)
+    goto bad_fmt;
+
+  undump_int(x); /* hyphen_prime */
+
+#ifdef APTEX_EXTENSION
+/* allow format files dumped with arbitrary (prime) hyphenation exceptions */
+  realloc_hyphen(x);
+  hyphen_prime = x;
+#endif
+
+  if (x != hyphen_prime)
+    goto bad_fmt;
+
+  // Undump the string pool
+  {
+    undump_int(x); /* pool_size */
+
+    if (x < 0)
+      goto bad_fmt; 
+
+#ifdef APTEX_EXTENSION
+    if (x > current_pool_size)
+      str_pool = realloc_str_pool(x - current_pool_size + increment_pool_size);
+
+    if (x > current_pool_size)
+#else
+    if (x > pool_size)
+#endif
+    {
+      printf("%s%s\n", "---! Must increase the ", "string pool size");
+      goto bad_fmt;
+    }
+    else
+      pool_ptr = x;
+  }
+
+  {
+    undump_int(x);  /* max_strings */
+
+    if (x < 0)
+      goto bad_fmt;
+
+#ifdef APTEX_EXTENSION
+    if (x > current_max_strings)
+      str_start = realloc_str_start(x - current_max_strings + increment_max_strings);
+
+    if (x > current_max_strings)
+#else
+    if (x > max_strings)
+#endif
+    {
+      printf("%s%s\n", "---! Must increase the ", "max strings");
+      goto bad_fmt;
+    }
+    else
+      str_ptr = x;
+  }
+
+  undump_things(str_start[0], str_ptr + 1);
+  undump_things(str_pool[0], pool_ptr);
+  init_str_ptr = str_ptr;
+  init_pool_ptr = pool_ptr;
+  // Undump the dynamic memory
+  undump(lo_mem_stat_max + 1000, hi_mem_stat_min - 1, lo_mem_max);
+  undump(lo_mem_stat_max + 1, lo_mem_max, rover);
+
+  if (eTeX_ex)
+  {
+    for (k = int_val; k <= tok_val; ++k)
+      undump(0, lo_mem_max, sa_root[k]);
+  }
+
+  p = mem_bot;
+  q = rover;
+
+  do {
+    if (undump_things(mem[p], q + 2 - p))
+      return -1;
+
+    p = q + node_size(q);
+
+    if ((p > lo_mem_max) || ((q >= rlink(q)) && (rlink(q) != rover)))
+      goto bad_fmt;
+
+    q = rlink(q);
+  } while (!(q == rover));
+
+  if (undump_things(mem[p], lo_mem_max + 1 - p))
+    return -1;
+
+  if (mem_min < mem_bot - 2)
+  {
+/*  or call add_variable_space(mem_bot - (mem_min + 1)) */
+    p = llink(rover);
+    q = mem_min + 1;
+    link(mem_min) = 0;  /* null */
+    info(mem_min) = 0;  /* null */
+    rlink(p) = q;
+    llink(rover) = q;
+    rlink(q) = rover;
+    llink(q) = p;
+    link(q) = empty_flag;
+    node_size(q) = mem_bot - q;
+  }
+
+  undump(lo_mem_max + 1, hi_mem_stat_min, hi_mem_min);
+  undump(mem_bot, mem_top, avail);
+  mem_end = mem_top;
+
+  if (undump_things(mem[hi_mem_min], mem_end + 1 - hi_mem_min))
+    return -1;
+
+  undump_int(var_used);
+  undump_int(dyn_used);
+
+  // Undump the table of equivalents
+  // Undump regions 1 to 6 of eqtb
+  k = active_base;
+
+  do {
+    undump_int(x);
+
+    if ((x < 1) || (k + x > eqtb_size + 1))
+      goto bad_fmt;
+
+    if (undump_things(eqtb[k], x))
+      return -1;
+
+    k = k + x;
+    undump_int(x);
+
+    if ((x < 0) || (k + x > eqtb_size + 1))
+      goto bad_fmt;
+
+    for (j = k; j <= k + x - 1; j++)
+      eqtb[j] = eqtb[k - 1];
+
+    k = k + x;
+  } while (!(k > eqtb_size));
+
+  undump(hash_base, frozen_control_sequence, par_loc);
+  par_token = cs_token_flag + par_loc;
+  undump(hash_base, frozen_control_sequence, write_loc);
+  undump(hash_base, frozen_control_sequence, hash_used);
+
+  // Undump the hash table
+  p = hash_base - 1;
+
+  do {
+    undump(p + 1, hash_used, p);
+    undump_hh(hash[p]);
+  } while (!(p == hash_used));
+
+  if (undump_things(hash[hash_used + 1], undefined_control_sequence - 1 - hash_used))
+    return -1;
+
+  undump_int(cs_count);
+
+  // Undump the font information
+  {
+    undump_int(x); /* font_mem_size */
+
+    if (x < 7)
+      goto bad_fmt;
+
+#ifdef APTEX_EXTENSION
+    if (x > current_font_mem_size)
+      font_info = realloc_font_info (x - current_font_mem_size + increment_font_mem_size);
+
+    if (x > current_font_mem_size)
+#else
+    if (x > font_mem_size)
+#endif
+    {
+      puts("---! Must increase the font mem size");
+      goto bad_fmt;
+    }
+    else
+      fmem_ptr = x;
+  }
+
+  undump_things(font_info[0], fmem_ptr);
+  undump_size(font_base, font_max, "font max", font_ptr);
+
+  {
+    undump_things(font_dir[null_font], font_ptr + 1);
+    undump_things(font_num_ext[null_font], font_ptr + 1);
+    undump_things(font_check[null_font], font_ptr + 1);
+    undump_things(font_size[null_font], font_ptr + 1);
+    undump_things(font_dsize[null_font], font_ptr + 1);
+    undump_things(font_params[null_font], font_ptr + 1);
+    undump_things(hyphen_char[null_font], font_ptr + 1);
+    undump_things(skew_char[null_font], font_ptr + 1);
+    undump_things(font_name[null_font], font_ptr + 1);
+    undump_things(font_area[null_font], font_ptr + 1);
+    undump_things(font_bc[null_font], font_ptr + 1);
+    undump_things(font_ec[null_font], font_ptr + 1);
+    undump_things(ctype_base[null_font], font_ptr + 1);
+    undump_things(char_base[null_font], font_ptr + 1);
+    undump_things(width_base[null_font], font_ptr + 1);
+    undump_things(height_base[null_font], font_ptr + 1);
+    undump_things(depth_base[null_font], font_ptr + 1);
+    undump_things(italic_base[null_font], font_ptr + 1);
+    undump_things(lig_kern_base[null_font], font_ptr + 1);
+    undump_things(kern_base[null_font], font_ptr + 1);
+    undump_things(exten_base[null_font], font_ptr + 1);
+    undump_things(param_base[null_font], font_ptr + 1);
+    undump_things(font_glue[null_font], font_ptr + 1);
+    undump_things(bchar_label[null_font], font_ptr + 1);
+    undump_things(font_bchar[null_font], font_ptr + 1);
+    undump_things(font_false_bchar[null_font], font_ptr + 1);
+  }
+
+#ifdef APTEX_EXTENSION
+  {
+    integer count = 0, oldfont_mem_size = 0;
+
+    for (x = 0; x <= font_ptr; x++)
+    {
+      if (bchar_label[x] > oldfont_mem_size)
+        oldfont_mem_size = bchar_label[x];
+    }
+
+    if ((oldfont_mem_size != non_address) && (oldfont_mem_size > font_max))
+    {
+      for (x = 0; x <= font_ptr; x++)
+      {
+        if (bchar_label[x] == oldfont_mem_size)
+        {
+          bchar_label[x] = non_address;
+          count++;
+        }
+      }
+
+      if (aptex_env.trace_mem)
+        printf("oldfont_mem_size is %"PRId64" --- hit %"PRId64" times. Using non_address %d\n",
+          oldfont_mem_size, count, non_address);
+    }
+  }
+#endif
+
+  // Undump the hyphenation tables
+  undump(0, hyphen_prime, hyph_count);
+
+  for (k = 1; k <= hyph_count; k++)
+  {
+    undump(0, hyphen_prime, j);
+    undump(0, str_ptr, hyph_word[j]);
+    undump(0, max_halfword, hyph_list[j]);
+  }
+
+#ifdef APTEX_EXTENSION
+/* if user specified new hyphen prime - flush existing exception patterns ! */
+/* but, we can reclaim the string storage wasted ... */
+  if (aptex_env.flag_initex)
+  {
+    if (new_hyphen_prime != 0)
+    {
+      realloc_hyphen(new_hyphen_prime); /* reset_hyphen(); */
+      hyphen_prime = new_hyphen_prime;
+    }
+  }
+#endif
+
+  {
+    undump_int(x);
+
+    if (x < 0)
+      goto bad_fmt;
+
+#ifdef APTEX_EXTENSION
+    if (!aptex_env.flag_initex)
+    {
+      allocate_tries(x); /* allocate only as much as is needed */
+    }
+#endif
+
+    if (x > trie_size)
+    {
+      puts("---! Must increase the trie size");
+      goto bad_fmt;
+    }
+    else
+      j = x;
+  }
+
+  if (aptex_env.flag_initex)
+    trie_max = j;
+
+  undump(0, j, hyph_start);
+  undump_things(trie_trl[0], j + 1);
+  undump_things(trie_tro[0], j + 1);
+  undump_things(trie_trc[0], j + 1);
+  undump_size(0, trie_op_size, "trie op size", j);
+
+  if (aptex_env.flag_initex)
+    trie_op_ptr = j;
+
+  undump_things(hyf_distance[1], j);
+  undump_things(hyf_num[1], j);
+  undump_things(hyf_next[1], j);
+
+  if (aptex_env.flag_initex)
+  {
+    for (k = 0; k <= 255; k++)
+      trie_used[k] = min_quarterword;
+  }
+
+  k = 256;
+
+  while (j > 0)
+  {
+    undump(0, k - 1, k);
+    undump(1, j, x);
+
+    if (aptex_env.flag_initex)
+      trie_used[k] = x;
+
+    j = j - x;
+    op_start[k] = j;
+  }
+
+  if (aptex_env.flag_initex)
+    trie_not_ready = false;
+
+  undump(batch_mode, error_stop_mode, interaction);
+  undump(0, str_ptr, format_ident);
+  undump_int(x);
+  
+  if ((x != ENDFMTCHECKSUM) || w_eof(fmt_file))
+    goto bad_fmt;
+
+  return true;
+
+bad_fmt:
+  wake_up_terminal();
+  puts("(Fatal format file error; I'm stymied)");
+
+  return false;
+}
+
+/* sec 1335 */
+static void final_cleanup (void)
+{
+  small_number c;
+
+  c = cur_chr;
+
+  if (job_name == 0)
+    open_log_file();
+
+  while (input_ptr > 0)
+  {
+    if (state == token_list)
+      end_token_list();
+    else
+      end_file_reading();
+  }
+
+  while (open_parens > 0)
+  {
+    prints(" )");
+    decr(open_parens);
+  }
+
+  if (cur_level > level_one)
+  {
+    print_nl("(");
+    print_esc("end occurred ");
+    prints("inside a group at level ");
+    print_int(cur_level - level_one);
+    print_char(')');
+
+    if (eTeX_ex)
+      show_save_groups();
+  }
+
+  while (cond_ptr != 0)
+  {
+    print_nl("(");
+    print_esc("end occurred ");
+    prints("when ");
+    print_cmd_chr(if_test, cur_if);
+
+    if (if_line != 0)
+    {
+      prints("on line ");
+      print_int(if_line);
+    }
+
+    prints(" was incomplete)");
+    if_line = if_line_field(cond_ptr);
+    cur_if = subtype(cond_ptr);
+    temp_ptr = cond_ptr;
+    cond_ptr = link(cond_ptr);
+    free_node(temp_ptr, if_node_size);
+  }
+
+  if (history != spotless)
+  {
+    if ((history == warning_issued) || (interaction < error_stop_mode))
+    {
+      if (selector == term_and_log)
+      {
+        selector = term_only;
+        print_nl("(see the transcript file for additional information)");
+        selector = term_and_log;
+      }
+    }
+  }
+
+  if (c == 1)
+  {
+    if (aptex_env.flag_initex)
+    {
+      for (c = top_mark_code; c <= split_bot_mark_code; c++)
+      {
+        if (cur_mark[c] != 0)
+          delete_token_ref(cur_mark[c]);
+      }
+
+      if (sa_mark != null)
+      {
+        if (do_marks(destroy_marks, 0, sa_mark))
+          sa_mark = null;
+      }
+
+      for (c = last_box_code; c <= vsplit_code; ++c)
+        flush_node_list(disc_ptr[c]);
+
+      if (last_glue != max_halfword)
+        delete_glue_ref(last_glue);
+
+      store_fmt_file();
+    }
+    else
+      print_nl("(\\dump is performed only by INITEX)");
+  }
+}
+
+int aptex_program (void)
+{
+  history = fatal_error_stop;
+
+  if (ready_already == 314159)
+    goto start_of_TEX;
+
+  bad = 0;
+
+  if ((half_error_line < 30) || (half_error_line > error_line - 15))
+    bad = 1;
+
+  if (max_print_line < 60)
+    bad = 2;
+
+  if (dvi_buf_size % 8 != 0)
+    bad = 3;
+
+  if (mem_bot + 1100 > mem_top)
+    bad = 4;
+
+  if (hash_prime > hash_size)
+    bad = 5;
+
+  if (max_in_open >= 128)
+    bad = 6;
+
+  if (mem_top < 256 + 11)
+    bad = 7;
+
+  if (aptex_env.flag_initex)
+  {
+    if ((mem_min != 0) || (mem_max != mem_top))
+      bad = 10;
+  }
+
+  if ((mem_min > mem_bot) || (mem_max < mem_top))
+    bad = 10;
+
+  if ((min_quarterword > 0) || (max_quarterword < 255))
+    bad = 11;
+
+  if ((min_halfword > 0) || (max_halfword < 32767))
+    bad = 12;
+
+  if ((min_quarterword < min_halfword) || (max_quarterword > max_halfword))
+    bad = 13;
+
+  if ((mem_min < min_halfword) || (mem_max >= max_halfword) || (mem_bot - mem_min >= max_halfword))
+    bad = 14;
+
+  if (mem_max > mem_top)
+    bad = 14;
+
+  if ((0 < min_quarterword) || (font_max > max_quarterword))
+    bad = 15;
+
+#ifdef APTEX_EXTENSION
+  if (font_max > 65535)
+#else
+  if (font_max > 256)
+#endif
+    bad = 16;
+
+  if ((save_size > max_halfword) || (max_strings > max_halfword))
+    bad = 17;
+
+  if (buf_size > max_halfword)
+    bad = 18;
+
+  if (max_quarterword - min_quarterword < 255)
+    bad = 19;
+
+  if (cs_token_flag + undefined_control_sequence > max_halfword)
+    bad = 21;
+
+  if (format_default_length > file_name_size)
+    bad = 31;
+
+  if (max_halfword < (mem_top - mem_min) / 2)
+    bad = 41;
+
+  if (bad > 0)
+  {
+    printf("%s%s%" PRId64 "\n", "Ouch---my internal constants have been clobbered!",
+        "---case ", bad);
+
+    goto final_end;
+  }
+
+  initialize();
+
+  if (aptex_env.flag_initex)
+  {
+    if (!get_strings_started())
+      goto final_end;
+
+    init_prim();
+    init_str_ptr = str_ptr;
+    init_pool_ptr = pool_ptr;
+    fix_date_and_time();
+  }
+
+  ready_already = 314159;
+
+start_of_TEX:
+  selector = term_only;
+  tally = 0;
+  term_offset = 0;
+  file_offset = 0;
+  kcode_pos = 0;
+  prints(banner);
+
+  if (format_ident == 0)
+  {
+    prints(" (preloaded format=");
+    prints(format_name);
+    prints(")");
+    print_ln();
+  }
+  else
+  {
+    slow_print(format_ident);
+    print_ln();
+  }
+
+  update_terminal();
+  job_name = 0;
+  name_in_progress = false;
+  log_opened = false;
+  output_file_name = 0;
+
+  {
+    {
+      input_ptr = 0;
+      max_in_stack = 0;
+      in_open = 0;
+      high_in_open = 0;
+      open_parens = 0;
+      max_buf_stack = 0;
+      grp_stack[0] = 0;
+      if_stack[0] = null;
+      param_ptr = 0;
+      max_param_stack = 0;
+
+#ifdef APTEX_EXTENSION
+      memset(buffer, 0, current_buf_size);
+#else
+      memset(buffer, 0, buf_size);
+#endif
+
+      first = 0;
+      scanner_status = normal;
+      warning_index = 0;
+      first = 1;
+      state = new_line;
+      start = 1;
+      index = 0;
+      line = 0;
+      name = 0;
+      force_eof = false;
+      align_state = 1000000;
+
+      if (!init_terminal())
+        goto final_end;
+
+      limit = last;
+      first = last + 1;
+    }
+
+    if (aptex_env.flag_initex)
+    {
+      if (true || ((buffer[loc] == '*') && (format_ident == 1251)))
+      {
+        no_new_control_sequence = false;
+        primitive("lastnodetype", last_item, last_node_type_code);
+        primitive("eTeXversion", last_item, eTeX_version_code);
+        primitive("eTeXrevision", convert, eTeX_revision_code);
+        primitive("everyeof", assign_toks, every_eof_loc);
+        primitive("tracingassigns", assign_int, int_base + tracing_assigns_code);
+        primitive("tracinggroups", assign_int, int_base + tracing_groups_code);
+        primitive("tracingifs", assign_int, int_base + tracing_ifs_code);
+        primitive("tracingscantokens", assign_int, int_base + tracing_scan_tokens_code);
+        primitive("tracingnesting", assign_int, int_base + tracing_nesting_code);
+        primitive("predisplaydirection", assign_int, int_base + pre_display_direction_code);
+        primitive("lastlinefit", assign_int, int_base + last_line_fit_code);
+        primitive("savingvdiscards", assign_int, int_base + saving_vdiscards_code);
+        primitive("savinghyphcodes", assign_int, int_base + saving_hyph_codes_code);
+        primitive("currentgrouplevel", last_item, current_group_level_code);
+        primitive("currentgrouptype", last_item, current_group_type_code);
+        primitive("currentiflevel", last_item, current_if_level_code);
+        primitive("currentiftype", last_item, current_if_type_code);
+        primitive("currentifbranch", last_item, current_if_branch_code);
+        primitive("fontcharwd", last_item, font_char_wd_code);
+        primitive("fontcharht", last_item, font_char_ht_code);
+        primitive("fontchardp", last_item, font_char_dp_code);
+        primitive("fontcharic", last_item, font_char_ic_code);
+        primitive("parshapelength", last_item, par_shape_length_code);
+        primitive("parshapeindent", last_item, par_shape_indent_code);
+        primitive("parshapedimen", last_item, par_shape_dimen_code);
+        primitive("showgroups", xray, show_groups);
+        primitive("showtokens", xray, show_tokens);
+        primitive("unexpanded", the, 1);
+        primitive("detokenize", the, show_tokens);
+        primitive("showifs", xray, show_ifs);
+        primitive("interactionmode", set_page_int, 2);
+        primitive("middle", left_right, middle_noad);
+        primitive("TeXXeTstate", assign_int, eTeX_state_base + TeXXeT_code);
+        primitive("beginL", valign, begin_L_code);
+        primitive("endL", valign, end_L_code);
+        primitive("beginR", valign, begin_R_code);
+        primitive("endR", valign, end_R_code);
+        primitive("scantokens", input, 2);
+        primitive("readline", read_to_cs, 1);
+        primitive("unless", expand_after, 1);
+        primitive("ifdefined", if_test, if_def_code);
+        primitive("ifcsname", if_test, if_cs_code);
+        primitive("iffontchar", if_test, if_font_char_code);
+        primitive("protected", prefix, 8);
+        primitive("numexpr", last_item, eTeX_expr - int_val + int_val);
+        primitive("dimexpr", last_item, eTeX_expr - int_val + dimen_val);
+        primitive("glueexpr", last_item, eTeX_expr - int_val + glue_val);
+        primitive("muexpr", last_item, eTeX_expr - int_val + mu_val);
+        primitive("gluestretchorder", last_item, glue_stretch_order_code);
+        primitive("glueshrinkorder", last_item, glue_shrink_order_code);
+        primitive("gluestretch", last_item, glue_stretch_code);
+        primitive("glueshrink", last_item, glue_shrink_code);
+        primitive("mutoglue", last_item, mu_to_glue_code);
+        primitive("gluetomu", last_item, glue_to_mu_code);
+        primitive("marks", mark, marks_code);
+        primitive("topmarks", top_bot_mark, top_mark_code + marks_code);
+        primitive("firstmarks", top_bot_mark, first_mark_code + marks_code);
+        primitive("botmarks", top_bot_mark, bot_mark_code + marks_code);
+        primitive("splitfirstmarks", top_bot_mark, split_first_mark_code + marks_code);
+        primitive("splitbotmarks", top_bot_mark, split_bot_mark_code + marks_code);
+        primitive("pagediscards", un_vbox, last_box_code);
+        primitive("splitdiscards", un_vbox, vsplit_code);
+        primitive("interlinepenalties", set_shape, inter_line_penalties_loc);
+        primitive("clubpenalties", set_shape, club_penalties_loc);
+        primitive("widowpenalties", set_shape, widow_penalties_loc);
+        primitive("displaywidowpenalties", set_shape, display_widow_penalties_loc);
+
+        if (buffer[loc] == '*')
+          incr(loc);
+
+        eTeX_mode = true;
+        max_reg_num = 32767;
+        max_reg_help_line = "A register number must be between 0 and 32767.";
+      }
+    }
+
+    if (!no_new_control_sequence)
+      no_new_control_sequence = true;
+    else if ((format_ident == 0) || (buffer[loc] == '&') || (buffer[loc] == '+'))
+    {
+      if (format_ident != 0)
+        initialize();
+
+      if (!open_fmt_file())
+        goto final_end;
+
+      if (!load_fmt_file())
+      {
+        w_close(fmt_file);
+        goto final_end;
+      }
+
+      w_close(fmt_file);
+
+      while ((loc < limit) && (buffer[loc] == ' '))
+        incr(loc);
+    }
+
+    if (eTeX_ex)
+      printf("entering extended mode\n");
+
+    if (end_line_char_inactive())
+      decr(limit);
+    else
+      buffer[limit] = end_line_char;
+
+    fix_date_and_time();
+    magic_offset = str_start[886] - 9 * ord_noad;
+
+    if (interaction == batch_mode)
+      selector = no_print;
+    else
+      selector = term_only;
+
+    if ((loc < limit) && (cat_code(buffer[loc]) != escape))
+      start_input();
+  }
+
+  aptex_env.time_main = clock();
+  history = spotless;
+  synctex_init();
+  main_control();
+  final_cleanup();
+  close_files_and_terminate();
+
+final_end:
+  return do_final_end();
+}
+
+#ifdef APTEX_EXTENSION
+/* add a block of variable size node space below mem_bot(0) */
+static void add_variable_space (int size)
+{
+  halfword p;
+  halfword q;
+  integer t;
+
+  if (mem_min == 0)
+    t = mem_min;
+  else
+    t = mem_min + 1;
+
+  mem_min = t - (size + 1);     /* first word in new block - 1 */
+
+  if (mem_min < mem_start)
+  {
+    if (aptex_env.trace_mem)
+      puts("WARNING: mem_min < mem_start!");
+
+    mem_min = mem_start;
+  }
+
+  p = llink(rover);
+  q = mem_min + 1;
+  link(mem_min) = 0; /* insert blank word below ??? */
+  info(mem_min) = 0; /* insert blank word below ??? */
+  rlink(p) = q;
+  llink(rover) = q;
+  rlink(q) = rover;
+  llink(q) = p;
+  link(q) = empty_flag;
+  info(q) = t - q; /* block size */
+  rover = q;
+}
+#endif
+
+#ifdef INITEX
+static void reset_trie (void)
+{
+  integer k;
+
+  for (k = -trie_op_size; k <= trie_op_size; k++)
+    trie_op_hash[k] = 0;
+
+  for (k = 0; k <= 255; k++)
+    trie_used[k] = min_trie_op;
+
+  max_op_used = min_trie_op;
+  trie_op_ptr = 0;
+  trie_not_ready = true;
+  trie_root = 0;
+  trie_c[0] = 0;
+  trie_ptr = 0;
+  trie_not_ready = true;
+}
+
+/* borrowed code from initialize() */
+static void reset_hyphen(void)
+{
+  hyph_pointer z;
+
+  for (z = 0; z <= hyphen_prime; z++)
+  {
+    hyph_word[z] = 0;
+    hyph_list[z] = 0;
+  }
+
+  hyph_count = 0;
+}
+
+/* sec 0047 */
+static boolean get_strings_started (void)
+{
+  integer k;
+  str_number g;
+
+  pool_ptr = 0;
+  str_ptr = 0;
+  str_start[0] = 0;
+
+  for (k = 0; k <= 255; k++)
+  {
+    if (((k < ' ') || (k > '~')) && !(ismultiprn(k)))
+    {
+      append_char('^');
+      append_char('^');
+
+      if (k < 64)
+        append_char(k + 64);
+      else if (k < 128)
+        append_char(k - 64);
+      else
+      {
+        append_lc_hex(k / 16);
+        append_lc_hex(k % 16);
+      }
+    }
+    else
+      append_char(k);
+
+    g = make_string();
+  }
+
+  g = load_pool_strings(pool_size - string_vacancies);
+
+  if (g == 0)
+  {
+    printf("%s\n", "! You have to increase POOLSIZE.");
+    return false;
+  }
+
+  return true;
+}
+
+/* sec 0131 */
+static void sort_avail (void)
+{
+  pointer p, q, r;
+  pointer old_rover;
+
+  p = get_node(010000000000);
+  p = rlink(rover);
+  rlink(rover) = empty_flag;
+  old_rover = rover;
+
+  while (p != old_rover)
+  {
+    if (p < rover)
+    {
+      q = p;
+      p = rlink(q);
+      rlink(q) = rover;
+      rover = q;
+    }
+    else
+    {
+      q = rover;
+
+      while (rlink(q) < p)
+        q = rlink(q);
+
+      r = rlink(p);
+      rlink(p) = rlink(q);
+      rlink(q) = p;
+      p = r;
+    }
+  }
+
+  p = rover;
+
+  while (rlink(p) != empty_flag)
+  {
+    llink(rlink(p)) = p;
+    p = rlink(p);
+  }
+
+  rlink(p) = rover;
+  llink(rover) = p;
+}
+/* sec 0241 */
+static void fix_date_and_time (void)
+{
+  time_t clock;
+  struct tm * tm_ptr;
+
+  if ((clock = time(NULL)) < 0)
+    puts("Time not available!");
+
+  tm_ptr = localtime(&clock);
+
+  if (tm_ptr == NULL)
+  {
+    year     = 2038;
+    month    = 1;
+    day      = 18;
+    tex_time = 22 * 60 + 14;
+  }
+  else
+  {
+    tex_time = tm_ptr->tm_hour * 60 + tm_ptr->tm_min;
+    day      = tm_ptr->tm_mday;
+    month    = tm_ptr->tm_mon + 1;
+    year     = tm_ptr->tm_year + 1900;
+  }
+}
+/* sec 0264 */
+static void primitive_ (str_number s, quarterword c, halfword o)
+{ 
+  pool_pointer k;
+  int j;
+  /* small_number l; */
+  int l;
+
+  if (s < 256)
+    cur_val = s + single_base;
+  else
+  {
+    k = str_start[s];
+    l = str_start[s + 1] - k;
+
+#ifdef APTEX_EXTENSION
+    if (first + l > current_buf_size + 1)
+      buffer = realloc_buffer(increment_buf_size);
+
+    if (first + l > current_buf_size + 1)
+      overflow("buffer size", current_buf_size);
+#else
+    if (first + l > buf_size + 1)
+      overflow("buffer size", buf_size);
+#endif
+
+    for (j = 0; j <= l - 1; j++)
+      buffer[first + j] = str_pool[k + j];
+
+    cur_val = id_lookup(first, l);
+    flush_string();
+    text(cur_val) = s;
+  }
+
+  eq_level(cur_val) = level_one;
+  eq_type(cur_val) = c;
+  equiv(cur_val) = o;
+}
+/* sec 0944 */
+static trie_op_code new_trie_op (small_number d, small_number n, trie_op_code v)
+{
+  integer h;
+  trie_op_code u;
+  integer l;
+
+  h = abs(n + 313 * d + 361 * v + 1009 * cur_lang) % (trie_op_size + trie_op_size) + neg_trie_op_size;
+
+  while (true)
+  {
+    l = trie_op_hash[h];
+
+    if (l == 0)
+    {
+      if (trie_op_ptr == trie_op_size)
+        overflow("pattern memory ops", trie_op_size);
+
+      u = trie_used[cur_lang];
+
+      if (u == max_trie_op)
+        overflow("pattern memory ops per language", max_trie_op - min_trie_op);
+
+      incr(trie_op_ptr);
+      incr(u);
+      trie_used[cur_lang] = u;
+
+      if (u > max_op_used)
+        max_op_used = u;
+
+      hyf_distance[trie_op_ptr] = d;
+      hyf_num[trie_op_ptr] = n;
+      hyf_next[trie_op_ptr] = v;
+      trie_op_lang[trie_op_ptr] = cur_lang;
+      trie_op_hash[h] = trie_op_ptr;
+      trie_op_val[trie_op_ptr] = u;
+      return u;
+    }
+
+    if ((hyf_distance[l] == d) && (hyf_num[l] == n) &&
+      (hyf_next[l] == v) && (trie_op_lang[l] == cur_lang))
+    {
+      return trie_op_val[l];
+    }
+
+    if (h > -trie_op_size)
+      decr(h);
+    else
+      h = trie_op_size;
+  }
+}
+/* sec 0948 */
+static trie_pointer trie_node (trie_pointer p)
+{
+  trie_pointer h;
+  trie_pointer q;
+
+  /* compute hash value */
+  h = abs(trie_c[p] + 1009 * trie_o[p] + 2718 * trie_l[p] + 3142 * trie_r[p]) % trie_size;
+
+  while (true)
+  {
+    q = trie_hash[h];
+
+    if (q == 0)
+    {
+      trie_hash[h] = p;
+      return p;
+    }
+
+    if ((trie_c[q] == trie_c[p]) && (trie_o[q] == trie_o[p]) &&
+      (trie_l[q] == trie_l[p]) && (trie_r[q] == trie_r[p]))
+    {
+      return q;
+    }
+
+    if (h > 0)
+      decr(h);
+    else
+      h = trie_size;
+  }
+}
+/* sec 0949 */
+static trie_pointer compress_trie (trie_pointer p)
+{
+  if (p == 0)
+    return 0;
+  else
+  {
+    trie_l[p] = compress_trie(trie_l[p]);
+    trie_r[p] = compress_trie(trie_r[p]);
+
+    return trie_node(p);
+  }
+}
+/* sec 0953 */
+static void first_fit (trie_pointer p)
+{
+  trie_pointer h;
+  trie_pointer z;
+  trie_pointer q;
+  ASCII_code c;
+  trie_pointer l, r;
+  short ll;
+
+  c = trie_c[p];
+  z = trie_min[c];
+
+  while (true)
+  {
+    h = z - c;
+
+    if (trie_max < h + 256)
+    {
+      if (trie_size <= h + 256)
+        overflow("pattern memory", trie_size);
+
+      do {
+        incr(trie_max);
+        trie_taken[trie_max] = false;
+        trie_link(trie_max) = trie_max + 1;
+        trie_tro[trie_max] = trie_max - 1;
+      } while (!(trie_max == h + 256));
+    }
+
+    if (trie_taken[h])
+      goto not_found;
+
+    q = trie_r[p];
+
+    while (q > 0)
+    {
+      if (trie_link(h + trie_c[q]) == 0)
+        goto not_found;
+
+      q = trie_r[q];
+    }
+
+    goto found;
+
+not_found:
+    z = trie_link(z);
+  }
+
+found:
+  trie_taken[h] = true;
+  trie_hash[p] = h;
+  q = p;
+
+  do {
+    z = h + trie_c[q];
+    l = trie_tro[z];
+    r = trie_link(z);
+    trie_tro[r] = l;
+    trie_link(l) = r;
+    trie_link(z) = 0;
+
+    if (l < 256)
+    {
+      if (z < 256)
+        ll = z;
+      else
+        ll = 256;
+      
+      do {
+        trie_min[l] = r;
+        incr(l);
+      } while (!(l == ll));
+    }
+
+    q = trie_r[q];
+  } while (!(q == 0));
+}
+/* sec 0957 */
+static void trie_pack (trie_pointer p)
+{
+  trie_pointer q;
+
+  do {
+    q = trie_l[p];
+
+    if ((q > 0) && (trie_hash[q] == 0))
+    {
+      first_fit(q);
+      trie_pack(q);
+    }
+
+    p = trie_r[p];
+  } while (!(p == 0));
+}
+/* sec 0959 */
+static void trie_fix (trie_pointer p)
+{
+  trie_pointer q;
+  ASCII_code c;
+  trie_pointer z;
+
+  z = trie_hash[p];
+
+  do {
+    q = trie_l[p];
+    c = trie_c[p];
+    trie_link(z + c) = trie_hash[q];
+    trie_char(z + c) = c;
+    trie_op(z + c) = trie_o[p];
+
+    if (q > 0)
+      trie_fix(q);
+
+    p = trie_r[p];
+  } while (!(p == 0));
+}
+/* sec 0960 */
+void new_patterns (void)
+{
+  char k, l;
+  boolean digit_sensed;
+  trie_op_code v;
+  trie_pointer p, q;
+  boolean first_child;
+  /* ASCII_code c; */
+  int c;
+
+  if (!trie_not_ready)
+  {
+    if (aptex_env.flag_reset_trie)
+    {
+      if (aptex_env.trace_mem)
+        puts("Resetting patterns");
+
+      reset_trie();
+
+      if (aptex_env.flag_reset_hyphen)
+      {
+        if (aptex_env.trace_mem)
+          puts("Resetting exceptions");
+
+        reset_hyphen();
+      }
+    }
+  }
+
+  if (trie_not_ready)
+  {
+    set_cur_lang();
+    scan_left_brace();
+    k = 0;
+    hyf[0] = 0;
+    digit_sensed = false;
+
+    while (true)
+    {
+      get_x_token();
+
+      switch (cur_cmd)
+      {
+        case letter:
+        case other_char:
+          if (digit_sensed || (cur_chr < '0') || (cur_chr > '9'))
+          {
+            if (cur_chr == '.')
+              cur_chr = 0;
+            else
+            {
+              cur_chr = lc_code(cur_chr);
+
+              if (cur_chr == 0)
+              {
+                print_err("Nonletter");
+                help1("(See Appendix H.)");
+                error();
+              }
+            }
+
+            if (k < 63)
+            {
+              incr(k);
+              hc[k] = cur_chr;
+              hyf[k] = 0;
+              digit_sensed = false;
+            }
+          }
+          else if (k < 63)
+          {
+            hyf[k] = cur_chr - '0';
+            digit_sensed = true;
+          }
+          break;
+
+        case spacer:
+        case right_brace:
+          {
+            if (k > 0)
+            {
+              if (hc[1] == 0)
+                hyf[0] = 0;
+
+              if (hc[k] == 0)
+                hyf[k] = 0;
+
+              l = k;
+              v = min_trie_op;
+
+              while (true)
+              {
+                if (hyf[l]!= 0)
+                  v = new_trie_op(k - l, hyf[l], v);
+
+                if (l > 0)
+                  decr(l);
+                else
+                  goto done1;
+              }
+done1:
+              q = 0;
+              hc[0] = cur_lang;
+
+              while (l <= k)
+              {
+                c = hc[l];
+                incr(l);
+                p = trie_l[q];
+                first_child = true;
+
+                while ((p > 0) && (c > trie_c[p]))
+                {
+                  q = p;
+                  p = trie_r[q];
+                  first_child = false;
+                }
+
+                if ((p == 0) || (c < trie_c[p]))
+                {
+                  if (trie_ptr == trie_size)
+                    overflow("pattern memory", trie_size);
+
+                  incr(trie_ptr);
+                  trie_r[trie_ptr] = p;
+                  p = trie_ptr;
+                  trie_l[p] = 0;
+
+                  if (first_child)
+                    trie_l[q] = p;
+                  else
+                    trie_r[q] = p;
+
+                  trie_c[p] = c;
+                  trie_o[p] = min_quarterword;
+                }
+
+                q = p;
+              }
+
+              if (trie_o[q] != min_trie_op)
+              {
+                print_err("Duplicate pattern");
+                help1("(See Appendix H.)");
+                error();
+              }
+
+              trie_o[q] = v;
+            }
+
+            if (cur_cmd == right_brace)
+              goto done;
+
+            k = 0;
+            hyf[0] = 0;
+            digit_sensed = false;
+          }
+          break;
+
+        default:
+          {
+            print_err("Bad ");
+            print_esc("patterns");
+            help1("(See Appendix H.)");
+            error();
+          }
+          break;
+      }
+    }
+
+done:
+    if (saving_hyph_codes > 0)
+    {
+      c = cur_lang;
+      first_child = false;
+      p = 0;
+
+      do {
+        q = p;
+        p = trie_r[q];
+      } while (!((p == 0) || (c <= trie_c[p])));
+
+      if ((p == 0) || (c < trie_c[p]))
+      {
+        if (trie_ptr == trie_size)
+          overflow("pattern memory", trie_size);
+
+        incr(trie_ptr);
+        trie_r[trie_ptr] = p;
+        p = trie_ptr;
+        trie_l[p] = 0;
+
+        if (first_child)
+          trie_l[q] = p;
+        else
+          trie_r[q] = p;
+
+        trie_c[p] = c;
+        trie_o[p] = min_quarterword;
+      }
+
+      q = p;
+      p = trie_l[q];
+      first_child = true;
+
+      for (c = 0; c <= 255; ++c)
+      {
+        if ((lc_code(c) > 0) || ((c == 255) && first_child))
+        {
+          if (p == 0)
+          {
+            if (trie_ptr == trie_size)
+              overflow("pattern memory", trie_size);
+
+            incr(trie_ptr);
+            trie_r[trie_ptr] = p;
+            p = trie_ptr;
+            trie_l[p] = 0;
+
+            if (first_child)
+              trie_l[q] = p;
+            else
+              trie_r[q] = p;
+
+            trie_c[p] = c;
+            trie_o[p] = min_quarterword;
+          }
+          else
+            trie_c[p] = c;
+
+          trie_o[p] = lc_code(c);
+          q = p;
+          p = trie_r[q];
+          first_child = false;
+        }
+      }
+
+      if (first_child)
+        trie_l[q] = 0;
+      else
+        trie_r[q] = 0;
+    }
+  }
+  else
+  {
+    print_err("Too late for ");
+    print_esc("patterns");
+    help1("All patterns must be given before typesetting begins.");
+    error();
+    link(garbage) = scan_toks(false, false);
+    flush_list(def_ref);
+  }
+}
+/* sec 0966 */
+void init_trie (void)
+{
+  trie_pointer p;
+  integer j, k, t;
+  trie_pointer r, s;
+
+  op_start[0] = -min_trie_op;
+
+  for (j = 1; j <= 255; j++)
+    op_start[j] = op_start[j - 1] + trie_used[j - 1];
+
+  for (j = 1; j <= trie_op_ptr; j++)
+    trie_op_hash[j] = op_start[trie_op_lang[j]] + trie_op_val[j];
+
+  for (j = 1; j <= trie_op_ptr; j++)
+  {
+    while (trie_op_hash[j] > j)
+    {
+      k = trie_op_hash[j];
+      t = hyf_distance[k];
+      hyf_distance[k] = hyf_distance[j];
+      hyf_distance[j] = t;
+      t = hyf_num[k];
+      hyf_num[k] = hyf_num[j];
+      hyf_num[j] = t;
+      t = hyf_next[k];
+      hyf_next[k] = hyf_next[j];
+      hyf_next[j]= t;
+      trie_op_hash[j] = trie_op_hash[k];
+      trie_op_hash[k] = k;
+    }
+  }
+
+  for (p = 0; p <= trie_size; p++)
+    trie_hash[p] = 0;
+
+  hyph_root = compress_trie(hyph_root);
+  trie_root = compress_trie(trie_root);
+
+  for (p = 0; p <= trie_ptr; p++)
+    trie_hash[p] = 0;
+
+  for (p = 0; p <= 255; p++)
+    trie_min[p] = p + 1;
+
+  trie_link(0) = 1;
+  trie_max = 0;
+
+  if (trie_root != 0)
+  {
+    first_fit(trie_root);
+    trie_pack(trie_root);
+  }
+
+  if (hyph_root > 0)
+  {
+    if (trie_root == 0)
+    {
+      for (p = 0; p <= 255; ++p)
+        trie_min[p] = p + 2;
+    }
+
+    first_fit(hyph_root);
+    trie_pack(hyph_root);
+    hyph_start = trie_hash[hyph_root];
+  }
+
+  if (trie_max == 0)
+  {
+    for (r = 0; r <= 256; r++)
+    {
+      trie_link(r) = 0;
+      trie_op(r) = min_trie_op;
+      trie_char(r) = min_quarterword;
+    }
+
+    trie_max = 256;
+  }
+  else
+  {
+    if (hyph_root > 0)
+      trie_fix(hyph_root);
+
+    if (trie_root > 0)
+      trie_fix(trie_root);
+
+    r = 0;
+
+    do {
+      s = trie_link(r);
+
+      {
+        trie_link(r) = 0;
+        trie_op(r) = min_trie_op;
+        trie_char(r) = min_quarterword;
+      }
+
+      r = s;
+    } while (!(r > trie_max));
+  }
+
+  trie_char(0) = '?';
+  trie_not_ready = false;
+}
+/* sec 1302 */
+static void store_fmt_file (void)
+{
+  integer j, k, l;
+  pointer p, q;
+  integer x;
+
+  if (!aptex_env.flag_initex)
+  {
+    puts("! \\dump is performed only by INITEX");
+
+    return;
+  }
+
+  if (save_ptr != 0)
+  {
+    print_err("You can't dump inside a group");
+    help1("`{...\\dump}' is a no-no.");
+    succumb();
+  }
+
+  selector = new_string;
+  prints(" (preloaded format=");
+  print(job_name);
+  print_char(' ');
+  print_int(year);
+  print_char('.');
+  print_int(month);
+  print_char('.');
+  print_int(day);
+  print_char(')');
+
+  if (interaction == batch_mode)
+    selector = log_only;
+  else
+    selector = term_and_log;
+
+  str_room(1);
+  format_ident = make_string();
+  pack_job_name(".fmt");
+
+  while (!w_open_out(fmt_file))
+    prompt_file_name("format file name", ".fmt");
+
+  print_nl("Beginning to dump on file ");
+  slow_print(w_make_name_string(fmt_file));
+  flush_string();
+  print_nl("");
+  slow_print(format_ident);
+
+  // Dump constants for consistency check
+  dump_int(BEGINFMTCHECKSUM);
+
+  while (pseudo_files != null)
+    pseudo_close();
+
+  dump_int(eTeX_mode);
+  eTeX_state(0) = 0;
+  dump_int(mem_bot);
+  dump_int(mem_top);
+  dump_int(eqtb_size);
+  dump_int(hash_prime);
+  dump_int(hyphen_prime);
+
+  // Dump the string pool
+  dump_int(pool_ptr);
+  dump_int(str_ptr);
+
+  for (k = 0; k <= str_ptr; k++)
+    dump_int(str_start[k]);
+
+  dump_things(str_pool[0], pool_ptr);
+  print_ln();
+  print_int(str_ptr);
+  prints(" strings of total length ");
+  print_int(pool_ptr);
+
+  // Dump the dynamic memory
+  sort_avail();
+  var_used = 0;
+  dump_int(lo_mem_max);
+  dump_int(rover);
+
+  if (eTeX_ex)
+  {
+    for (k = int_val; k <= tok_val; ++k)
+      dump_int(sa_root[k]);
+  }
+
+  p = mem_bot;
+  q = rover;
+  x = 0;
+
+  do {
+    for (k = p; k <= q + 1; k++)
+      dump_wd(mem[k]);
+
+    x = x + q + 2 - p;
+    var_used = var_used + q - p;
+    p = q + node_size(q);
+    q = rlink(q);
+  } while (!(q == rover));
+
+  var_used = var_used + lo_mem_max - p;
+  dyn_used = mem_end + 1 - hi_mem_min;
+
+  for (k = p; k <= lo_mem_max; k++)
+    dump_wd(mem[k]);
+
+  x = x + lo_mem_max + 1 - p;
+  dump_int(hi_mem_min);
+  dump_int(avail); 
+
+  for (k = hi_mem_min; k <= mem_end; k++)
+    dump_wd(mem[k]);
+
+  x = x + mem_end + 1 - hi_mem_min;
+  p = avail;
+
+  while (p != 0)
+  {
+    decr(dyn_used);
+    p = link(p);
+  }
+
+  dump_int(var_used);
+  dump_int(dyn_used);
+  print_ln();
+  print_int(x);
+  prints(" memory locations dumped; current usage is ");
+  print_int(var_used);
+  print_char('&');
+  print_int(dyn_used);
+
+  // Dump the table of equivalents
+  // Dump regions 1 to 4 of eqtb
+  k = active_base;
+
+  do {
+    j = k;
+
+    while (j < int_base - 1)
+    {
+      if ((equiv(j) == equiv(j + 1)) &&
+          (eq_type(j) == eq_type(j + 1)) &&
+          (eq_level(j) == eq_level(j + 1)))
+          goto found1;
+
+      incr(j);
+    }
+
+    l = int_base;
+    goto done1;
+
+found1:
+    incr(j);
+    l = j;
+
+    while (j < int_base - 1)
+    {
+      if ((equiv(j) != equiv(j + 1)) ||
+          (eq_type(j) != eq_type(j + 1)) ||
+          (eq_level(j) != eq_level(j + 1)))
+          goto done1;
+
+      incr(j);
+    }
+
+done1:
+    dump_int(l - k);
+
+    while (k < l)
+    {
+      dump_wd(eqtb[k]);
+      incr(k);
+    }
+
+    k = j + 1;
+    dump_int(k - l);
+  } while (!(k == int_base));
+
+  // Dump regions 5 and 6 of eqtb
+  do {
+    j = k;
+
+    while (j < eqtb_size)
+    {
+      if (eqtb[j].cint == eqtb[j + 1].cint)
+        goto found2;
+
+      incr(j);
+    }
+
+    l = eqtb_size + 1;
+    goto done2;
+
+found2:
+    incr(j);
+    l = j;
+
+    while (j < eqtb_size)
+    {
+      if (eqtb[j].cint != eqtb[j + 1].cint)
+        goto done2;
+
+      incr(j);
+    }
+
+done2:
+    dump_int(l - k);
+
+    while (k < l)
+    {
+      dump_wd(eqtb[k]);
+      incr(k);
+    }
+
+    k = j + 1;
+    dump_int(k - l);
+  } while (!(k > eqtb_size));
+
+  dump_int(par_loc);
+  dump_int(write_loc);
+
+  // Dump the hash table
+  dump_int(hash_used);
+  cs_count = frozen_control_sequence - 1 - hash_used;
+
+  for (p = hash_base; p <= hash_used; p++)
+  {
+    if (text(p) != 0)
+    {
+      dump_int(p);
+      dump_hh(hash[p]);
+      incr(cs_count);
+    }
+  }
+
+  for (p = hash_used + 1; p <= undefined_control_sequence - 1; p++)
+    dump_hh(hash[p]);
+
+  dump_int(cs_count);
+  print_ln();
+  print_int(cs_count);
+  prints(" multiletter control sequences");
+
+  // Dump the font information
+  dump_int(fmem_ptr);
+
+  for (k = 0; k <= fmem_ptr - 1; k++)
+    dump_wd(font_info[k]);
+
+  dump_int(font_ptr);
+
+  {
+    dump_things(font_dir[null_font], font_ptr + 1);
+    dump_things(font_num_ext[null_font], font_ptr + 1);
+    dump_things(font_check[null_font], font_ptr + 1);
+    dump_things(font_size[null_font], font_ptr + 1);
+    dump_things(font_dsize[null_font], font_ptr + 1);
+    dump_things(font_params[null_font], font_ptr + 1);
+    dump_things(hyphen_char[null_font], font_ptr + 1);
+    dump_things(skew_char[null_font], font_ptr + 1);
+    dump_things(font_name[null_font], font_ptr + 1);
+    dump_things(font_area[null_font], font_ptr + 1);
+    dump_things(font_bc[null_font], font_ptr + 1);
+    dump_things(font_ec[null_font], font_ptr + 1);
+    dump_things(ctype_base[null_font], font_ptr + 1);
+    dump_things(char_base[null_font], font_ptr + 1);
+    dump_things(width_base[null_font], font_ptr + 1);
+    dump_things(height_base[null_font], font_ptr + 1);
+    dump_things(depth_base[null_font], font_ptr + 1);
+    dump_things(italic_base[null_font], font_ptr + 1);
+    dump_things(lig_kern_base[null_font], font_ptr + 1);
+    dump_things(kern_base[null_font], font_ptr + 1);
+    dump_things(exten_base[null_font], font_ptr + 1);
+    dump_things(param_base[null_font], font_ptr + 1);
+    dump_things(font_glue[null_font], font_ptr + 1);
+    dump_things(bchar_label[null_font], font_ptr + 1);
+    dump_things(font_bchar[null_font], font_ptr + 1);
+    dump_things(font_false_bchar[null_font], font_ptr + 1);
+
+    for (k = 0; k <= font_ptr; k++)
+    {
+      print_nl("\\font");
+      sprint_esc(font_id_text(k));
+      print_char('=');
+      print_file_name(font_name[k], font_area[k], 335);
+
+      if (font_size[k] != font_dsize[k])
+      {
+        prints(" at ");
+        print_scaled(font_size[k]);
+        prints("pt");
+      }
+    }
+  }
+
+  print_ln();
+  print_int(fmem_ptr - 7);
+  prints(" words of font info for ");
+  print_int(font_ptr - font_base);
+  prints(" preloaded font");
+
+  if (font_ptr != font_base + 1)
+    print_char('s');
+
+  // Dump the hyphenation tables
+  dump_int(hyph_count);
+
+  for (k = 0; k <= hyphen_prime; k++)
+  {
+    if (hyph_word[k] != 0)
+    {
+      dump_int(k);
+      dump_int(hyph_word[k]);
+      dump_int(hyph_list[k]);
+    }
+  }
+
+  print_ln();
+  print_int(hyph_count);
+  prints(" hyphenation exception");
+
+  if (hyph_count != 1)
+    print_char('s');
+
+  if (trie_not_ready)
+    init_trie();
+
+  dump_int(trie_max);
+  dump_int(hyph_start);
+  dump_things(trie_trl[0], trie_max + 1);
+  dump_things(trie_tro[0], trie_max + 1);
+  dump_things(trie_trc[0], trie_max + 1);
+  dump_int(trie_op_ptr);
+  dump_things(hyf_distance[1], trie_op_ptr);
+  dump_things(hyf_num[1], trie_op_ptr);
+  dump_things(hyf_next[1], trie_op_ptr);
+  print_nl("Hyphenation trie of length ");
+  print_int(trie_max);
+  prints(" has ");
+  print_int(trie_op_ptr);
+  prints(" op");
+
+  if (trie_op_ptr != 1)
+    print_char('s');
+
+  prints(" out of ");
+  print_int(trie_op_size);
+
+  for (k = 255; k >= 0; k--)
+  {
+    if (trie_used[k] > 0)
+    {
+      print_nl("  ");
+      print_int(trie_used[k]);
+      prints(" for language ");
+      print_int(k);
+      dump_int(k);
+      dump_int(trie_used[k]);
+    }
+  }
+
+  // Dump a couple more things and the closing check word
+  dump_int(interaction);
+  dump_int(format_ident);
+  dump_int(ENDFMTCHECKSUM);
+  tracing_stats = 0;
+  w_close(fmt_file);
+}
+
+/* sec 01336 */
+static void init_prim (void)
+{
+  no_new_control_sequence = false;
+  first = 0;
+  /* sec 0266 */
+  primitive("lineskip", assign_glue, glue_base + line_skip_code);
+  primitive("baselineskip", assign_glue, glue_base + baseline_skip_code);
+  primitive("parskip", assign_glue, glue_base + par_skip_code);
+  primitive("abovedisplayskip", assign_glue, glue_base + above_display_skip_code);
+  primitive("belowdisplayskip", assign_glue, glue_base + below_display_skip_code);
+  primitive("abovedisplayshortskip", assign_glue, glue_base + above_display_short_skip_code);
+  primitive("belowdisplayshortskip", assign_glue, glue_base + below_display_short_skip_code);
+  primitive("leftskip", assign_glue, glue_base + left_skip_code);
+  primitive("rightskip", assign_glue, glue_base + right_skip_code);
+  primitive("topskip", assign_glue, glue_base + top_skip_code);
+  primitive("splittopskip", assign_glue, glue_base + split_top_skip_code);
+  primitive("tabskip", assign_glue, glue_base + tab_skip_code);
+  primitive("spaceskip", assign_glue, glue_base + space_skip_code);
+  primitive("xspaceskip", assign_glue, glue_base + xspace_skip_code);
+  primitive("parfillskip", assign_glue, glue_base + par_fill_skip_code);
+  primitive("kanjiskip", assign_glue, glue_base + kanji_skip_code);
+  primitive("xkanjiskip", assign_glue, glue_base + xkanji_skip_code);
+  primitive("thinmuskip", assign_mu_glue, glue_base + thin_mu_skip_code);
+  primitive("medmuskip", assign_mu_glue, glue_base + med_mu_skip_code);
+  primitive("thickmuskip", assign_mu_glue, glue_base + thick_mu_skip_code);
+  /* sec 0230 */
+  primitive("output", assign_toks, output_routine_loc);
+  primitive("everypar", assign_toks, every_par_loc);
+  primitive("everymath", assign_toks, every_math_loc);
+  primitive("everydisplay", assign_toks, every_display_loc);
+  primitive("everyhbox", assign_toks, every_hbox_loc);
+  primitive("everyvbox", assign_toks, every_vbox_loc);
+  primitive("everyjob", assign_toks, every_job_loc);
+  primitive("everycr", assign_toks, every_cr_loc);
+  primitive("errhelp", assign_toks, err_help_loc);
+  /* sec 0238 */
+  primitive("pretolerance", assign_int, int_base + pretolerance_code);
+  primitive("tolerance", assign_int, int_base + tolerance_code);
+  primitive("linepenalty", assign_int, int_base + line_penalty_code);
+  primitive("hyphenpenalty", assign_int, int_base + hyphen_penalty_code);
+  primitive("exhyphenpenalty", assign_int, int_base + ex_hyphen_penalty_code);
+  primitive("clubpenalty", assign_int, int_base + club_penalty_code);
+  primitive("widowpenalty", assign_int, int_base + widow_penalty_code);
+  primitive("displaywidowpenalty", assign_int, int_base + display_widow_penalty_code);
+  primitive("brokenpenalty", assign_int, int_base + broken_penalty_code);
+  primitive("binoppenalty", assign_int, int_base + bin_op_penalty_code);
+  primitive("relpenalty", assign_int, int_base + rel_penalty_code);
+  primitive("predisplaypenalty", assign_int, int_base + pre_display_penalty_code);
+  primitive("postdisplaypenalty", assign_int, int_base + post_display_penalty_code);
+  primitive("interlinepenalty", assign_int, int_base + inter_line_penalty_code);
+  primitive("doublehyphendemerits", assign_int, int_base + double_hyphen_demerits_code);
+  primitive("finalhyphendemerits", assign_int, int_base + final_hyphen_demerits_code);
+  primitive("adjdemerits", assign_int, int_base + adj_demerits_code);
+  primitive("mag", assign_int, int_base + mag_code);
+  primitive("delimiterfactor", assign_int, int_base + delimiter_factor_code);
+  primitive("looseness", assign_int, int_base + looseness_code);
+  primitive("time", assign_int, int_base + time_code);
+  primitive("day", assign_int, int_base + day_code);
+  primitive("month", assign_int, int_base + month_code);
+  primitive("year", assign_int, int_base + year_code);
+  primitive("showboxbreadth", assign_int, int_base + show_box_breadth_code);
+  primitive("showboxdepth", assign_int, int_base + show_box_depth_code);
+  primitive("hbadness", assign_int, int_base + hbadness_code);
+  primitive("vbadness", assign_int, int_base + vbadness_code);
+  primitive("pausing", assign_int, int_base + pausing_code);
+  primitive("tracingonline", assign_int, int_base + tracing_online_code);
+  primitive("tracingmacros", assign_int, int_base + tracing_macros_code);
+  primitive("tracingstats", assign_int, int_base + tracing_stats_code);
+  primitive("tracingparagraphs", assign_int, int_base + tracing_paragraphs_code);
+  primitive("tracingpages", assign_int, int_base + tracing_pages_code);
+  primitive("tracingoutput", assign_int, int_base + tracing_output_code);
+  primitive("tracinglostchars", assign_int, int_base + tracing_lost_chars_code);
+  primitive("tracingcommands", assign_int, int_base + tracing_commands_code);
+  primitive("tracingrestores", assign_int, int_base + tracing_restores_code);
+  primitive("tracingfontloaders", assign_int, int_base + tracing_fontloaders_code);
+  primitive("uchyph", assign_int, int_base + uc_hyph_code);
+  primitive("outputpenalty", assign_int, int_base + output_penalty_code);
+  primitive("maxdeadcycles", assign_int, int_base + max_dead_cycles_code);
+  primitive("hangafter", assign_int, int_base + hang_after_code);
+  primitive("floatingpenalty", assign_int, int_base + floating_penalty_code);
+  primitive("globaldefs", assign_int, int_base + global_defs_code);
+  primitive("fam", assign_int, int_base + cur_fam_code);
+  primitive("jfam", assign_int, int_base + cur_jfam_code);
+  primitive("escapechar", assign_int, int_base + escape_char_code);
+  primitive("defaulthyphenchar", assign_int, int_base + default_hyphen_char_code);
+  primitive("defaultskewchar", assign_int, int_base + default_skew_char_code);
+  primitive("endlinechar", assign_int, int_base + end_line_char_code);
+  primitive("newlinechar", assign_int, int_base + new_line_char_code);
+  primitive("language", assign_int, int_base + language_code);
+  primitive("lefthyphenmin", assign_int, int_base + left_hyphen_min_code);
+  primitive("righthyphenmin", assign_int, int_base + right_hyphen_min_code);
+  primitive("holdinginserts", assign_int, int_base + holding_inserts_code);
+  primitive("errorcontextlines", assign_int, int_base + error_context_lines_code);
+  primitive("jcharwidowpenalty", assign_int, int_base + jchr_widow_penalty_code);
+  primitive("pdfcompresslevel", assign_int, int_base + pdf_compress_level_code);
+  primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
+  primitive("synctex", assign_int, int_base + synctex_code);
+  /* sec 0248 */
+  primitive("parindent", assign_dimen, dimen_base + par_indent_code);
+  primitive("mathsurround", assign_dimen, dimen_base + math_surround_code);
+  primitive("lineskiplimit", assign_dimen, dimen_base + line_skip_limit_code);
+  primitive("hsize", assign_dimen, dimen_base + hsize_code);
+  primitive("vsize", assign_dimen, dimen_base + vsize_code);
+  primitive("maxdepth", assign_dimen, dimen_base + max_depth_code);
+  primitive("splitmaxdepth", assign_dimen, dimen_base + split_max_depth_code);
+  primitive("boxmaxdepth", assign_dimen, dimen_base + box_max_depth_code);
+  primitive("hfuzz", assign_dimen, dimen_base + hfuzz_code);
+  primitive("vfuzz", assign_dimen, dimen_base + vfuzz_code);
+  primitive("delimitershortfall", assign_dimen, dimen_base + delimiter_shortfall_code);
+  primitive("nulldelimiterspace", assign_dimen, dimen_base + null_delimiter_space_code);
+  primitive("scriptspace", assign_dimen, dimen_base + script_space_code);
+  primitive("predisplaysize", assign_dimen, dimen_base + pre_display_size_code);
+  primitive("displaywidth", assign_dimen, dimen_base + display_width_code);
+  primitive("displayindent", assign_dimen, dimen_base + display_indent_code);
+  primitive("overfullrule", assign_dimen, dimen_base + overfull_rule_code);
+  primitive("hangindent", assign_dimen, dimen_base + hang_indent_code);
+  primitive("hoffset", assign_dimen, dimen_base + h_offset_code);
+  primitive("voffset", assign_dimen, dimen_base + v_offset_code);
+  primitive("tbaselineshift", assign_dimen, dimen_base + t_baseline_shift_code);
+  primitive("ybaselineshift", assign_dimen, dimen_base + y_baseline_shift_code);
+  primitive("pdfhorigin", assign_dimen, dimen_base + pdf_h_origin_code);
+  primitive("pdfvorigin", assign_dimen, dimen_base + pdf_v_origin_code);
+  primitive("pdfpagewidth", assign_dimen, dimen_base + pdf_page_width_code);
+  primitive("pdfpageheight", assign_dimen, dimen_base + pdf_page_height_code);
+  primitive("emergencystretch", assign_dimen, dimen_base + emergency_stretch_code);
+  primitive(" ", ex_space, 0);
+  primitive("/", ital_corr, 0);
+  primitive("accent", accent, 0);
+  primitive("advance", advance, 0);
+  primitive("afterassignment", after_assignment, 0);
+  primitive("aftergroup", after_group, 0);
+  primitive("begingroup", begin_group, 0);
+  primitive("char", char_num, 0);
+  primitive("kchar", kchar_num, 0);
+  primitive("csname", cs_name, 0);
+  primitive("delimiter", delim_num, 0);
+  primitive("divide", divide, 0);
+  primitive("endcsname", end_cs_name, 0);
+  primitive("endgroup", end_group, 0);
+  text(frozen_end_group) = make_str_string("endgroup");
+  eqtb[frozen_end_group] = eqtb[cur_val]; 
+  primitive("expandafter", expand_after, 0);
+  primitive("font", def_font, 0);
+  primitive("jfont", def_jfont, 0);
+  primitive("tfont", def_tfont, 0);
+  primitive("fontdimen", assign_font_dimen, 0);
+  primitive("halign", halign, 0);
+  primitive("hrule", hrule, 0);
+  primitive("ignorespaces", ignore_spaces, 0);
+  primitive("insert", insert, 0);
+  primitive("mark", mark, 0);
+  primitive("mathaccent", math_accent, 0);
+  primitive("mathchar", math_char_num, 0);
+  primitive("mathchoice", math_choice, 0);
+  primitive("multiply", multiply, 0);
+  primitive("noalign", no_align, 0);
+  primitive("noboundary", no_boundary, 0);
+  primitive("noexpand", no_expand, 0);
+  primitive("nonscript", non_script, 0);
+  primitive("omit", omit, 0);
+  primitive("parshape", set_shape, par_shape_loc);
+  primitive("penalty", break_penalty, 0);
+  primitive("prevgraf", set_prev_graf, 0);
+  primitive("radical", radical, 0);
+  primitive("read", read_to_cs, 0);
+  primitive("relax", relax, 256);
+  text(frozen_relax) = make_str_string("relax");
+  eqtb[frozen_relax] = eqtb[cur_val];
+  primitive("setbox", set_box, 0);
+  primitive("the", the, 0);
+  primitive("toks", toks_register, mem_bot);
+  primitive("vadjust", vadjust, 0);
+  primitive("valign", valign, 0);
+  primitive("vcenter", vcenter, 0);
+  primitive("vrule", vrule, 0);
+  primitive("par", par_end, 256);
+  par_loc = cur_val; 
+  par_token = cs_token_flag + par_loc;
+  primitive("input", input, 0);
+  primitive("endinput", input, 1);
+  primitive("topmark", top_bot_mark, top_mark_code);
+  primitive("firstmark", top_bot_mark, first_mark_code);
+  primitive("botmark", top_bot_mark, bot_mark_code);
+  primitive("splitfirstmark", top_bot_mark, split_first_mark_code);
+  primitive("splitbotmark", top_bot_mark, split_bot_mark_code);
+  primitive("count", tex_register, mem_bot + int_val);
+  primitive("dimen", tex_register, mem_bot + dimen_val);
+  primitive("skip", tex_register, mem_bot + glue_val);
+  primitive("muskip", tex_register, mem_bot + mu_val);
+  primitive("spacefactor", set_aux, hmode);
+  primitive("prevdepth", set_aux, vmode);
+  primitive("deadcycles", set_page_int, 0);
+  primitive("insertpenalties", set_page_int, 1);
+  primitive("wd", set_box_dimen, width_offset);
+  primitive("ht", set_box_dimen, height_offset);
+  primitive("dp", set_box_dimen, depth_offset);
+  primitive("lastpenalty", last_item, int_val);
+  primitive("lastkern", last_item, dimen_val);
+  primitive("lastskip", last_item, glue_val);
+  primitive("inputlineno", last_item, input_line_no_code);
+  primitive("badness", last_item, badness_code);
+  primitive("number", convert, number_code);
+  primitive("romannumeral", convert, roman_numeral_code);
+  primitive("kansuji", convert, kansuji_code);
+  primitive("string", convert, string_code);
+  primitive("meaning", convert, meaning_code);
+  primitive("fontname", convert, font_name_code);
+  primitive("euc", convert, euc_code);
+  primitive("sjis", convert, sjis_code);
+  primitive("jis", convert, jis_code);
+  primitive("kuten", convert, kuten_code);
+  primitive("ucs", convert, ucs_code);
+  primitive("pdfstrcmp", convert, ng_strcmp_code);
+  primitive("ngbanner", convert, ng_banner_code);
+  primitive("ngostype", convert, ng_os_type_code);
+  primitive("jobname", convert, job_name_code);
+  primitive("if", if_test, if_char_code);
+  primitive("ifcat", if_test, if_cat_code);
+  primitive("ifnum", if_test, if_int_code);
+  primitive("ifdim", if_test, if_dim_code);
+  primitive("ifodd", if_test, if_odd_code);
+  primitive("ifvmode", if_test, if_vmode_code);
+  primitive("ifhmode", if_test, if_hmode_code);
+  primitive("ifmmode", if_test, if_mmode_code);
+  primitive("ifinner", if_test, if_inner_code);
+  primitive("ifvoid", if_test, if_void_code);
+  primitive("ifhbox", if_test, if_hbox_code);
+  primitive("ifvbox", if_test, if_vbox_code);
+  primitive("ifx", if_test, ifx_code);
+  primitive("ifeof", if_test, if_eof_code);
+  primitive("iftrue", if_test, if_true_code);
+  primitive("iffalse", if_test, if_false_code);
+  primitive("ifcase", if_test, if_case_code);
+  primitive("iftdir", if_test, if_tdir_code);
+  primitive("ifydir", if_test, if_ydir_code);
+  primitive("ifddir", if_test, if_ddir_code);
+  primitive("ifmdir", if_test, if_mdir_code);
+  primitive("iftbox", if_test, if_tbox_code);
+  primitive("ifybox", if_test, if_ybox_code);
+  primitive("ifdbox", if_test, if_dbox_code);
+  primitive("fi", fi_or_else, fi_code);
+  text(frozen_fi) = make_str_string("fi");
+  eqtb[frozen_fi] = eqtb[cur_val];
+  primitive("or", fi_or_else, or_code);
+  primitive("else", fi_or_else, else_code);
+  primitive("nullfont", set_font, null_font);
+  text(frozen_null_font) = 795;
+  eqtb[frozen_null_font] = eqtb[cur_val];
+  primitive("span", tab_mark, span_code);
+  primitive("cr", car_ret, cr_code);
+  text(frozen_cr) = make_str_string("cr");
+  eqtb[frozen_cr] = eqtb[cur_val];
+  primitive("crcr", car_ret, cr_cr_code);
+  text(frozen_end_template) = make_str_string("endtemplate");
+  text(frozen_endv) = make_str_string("endtemplate");
+  eq_type(frozen_endv) = endv;
+  equiv(frozen_endv) = null_list; 
+  eq_level(frozen_endv) = level_one; 
+  eqtb[frozen_end_template] = eqtb[frozen_endv]; 
+  eq_type(frozen_end_template) = end_template;
+  primitive("pagegoal", set_page_dimen, 0);
+  primitive("pagetotal", set_page_dimen, 1);
+  primitive("pagestretch", set_page_dimen, 2);
+  primitive("pagefilstretch", set_page_dimen, 3);
+  primitive("pagefillstretch", set_page_dimen, 4);
+  primitive("pagefilllstretch", set_page_dimen, 5);
+  primitive("pageshrink", set_page_dimen, 6);
+  primitive("pagedepth", set_page_dimen, 7);
+  primitive("end", stop, 0);
+  primitive("dump", stop, 1);
+  primitive("hskip", hskip, skip_code);
+  primitive("hfil", hskip, fil_code);
+  primitive("hfill", hskip, fill_code);
+  primitive("hss", hskip, ss_code);
+  primitive("hfilneg", hskip, fil_neg_code);
+  primitive("vskip", vskip, skip_code);
+  primitive("vfil", vskip, fil_code);
+  primitive("vfill", vskip, fill_code);
+  primitive("vss", vskip, ss_code);
+  primitive("vfilneg", vskip, fil_neg_code);
+  primitive("mskip", mskip, mskip_code);
+  primitive("kern", kern, explicit);
+  primitive("mkern", mkern, mu_glue);
+  primitive("moveleft", hmove, 1);
+  primitive("moveright", hmove, 0);
+  primitive("raise", vmove, 1);
+  primitive("lower", vmove, 0);
+  primitive("box", make_box, box_code);
+  primitive("copy", make_box, copy_code);
+  primitive("lastbox", make_box, last_box_code);
+  primitive("vsplit", make_box, vsplit_code);
+  primitive("vtop", make_box, vtop_code);
+  primitive("vbox", make_box, vtop_code + vmode);
+  primitive("hbox", make_box, vtop_code + hmode);
+  primitive("tate", chg_dir, dir_tate);
+  primitive("yoko", chg_dir, dir_yoko);
+  primitive("dtou", chg_dir, dir_dtou);
+  primitive("shipout", leader_ship, a_leaders - 1);
+  primitive("leaders", leader_ship, a_leaders);
+  primitive("cleaders", leader_ship, c_leaders);
+  primitive("xleaders", leader_ship, x_leaders);
+  primitive("indent", start_par, 1);
+  primitive("noindent", start_par, 0);
+  primitive("quitvmode", start_par, 2);
+  primitive("unpenalty", remove_item, penalty_node);
+  primitive("unkern", remove_item, kern_node);
+  primitive("unskip", remove_item, glue_node);
+  primitive("unhbox", un_hbox, box_code);
+  primitive("unhcopy", un_hbox, copy_code);
+  primitive("unvbox", un_vbox, box_code);
+  primitive("unvcopy", un_vbox, copy_code);
+  primitive("-", discretionary, 1);
+  primitive("discretionary", discretionary, 0);
+  primitive("eqno", eq_no, 0);
+  primitive("leqno", eq_no, 1);
+  primitive("mathord", math_comp, ord_noad);
+  primitive("mathop", math_comp, op_noad);
+  primitive("mathbin", math_comp, bin_noad);
+  primitive("mathrel", math_comp, rel_noad);
+  primitive("mathopen", math_comp, open_noad);
+  primitive("mathclose", math_comp, close_noad);
+  primitive("mathpunct", math_comp, punct_noad);
+  primitive("mathinner", math_comp, inner_noad);
+  primitive("underline", math_comp, under_noad);
+  primitive("overline", math_comp, over_noad);
+  primitive("displaylimits", limit_switch, normal);
+  primitive("limits", limit_switch, limits);
+  primitive("nolimits", limit_switch, no_limits);
+  primitive("displaystyle", math_style, display_style);
+  primitive("textstyle", math_style, text_style);
+  primitive("scriptstyle", math_style, script_style);
+  primitive("scriptscriptstyle", math_style, script_script_style);
+  primitive("above", above, above_code);
+  primitive("over", above, over_code);
+  primitive("atop", above, atop_code);
+  primitive("abovewithdelims", above, delimited_code + above_code);
+  primitive("overwithdelims", above, delimited_code + over_code);
+  primitive("atopwithdelims", above, delimited_code + atop_code);
+  primitive("left", left_right, left_noad);
+  primitive("right", left_right, right_noad);
+  text(frozen_right) = make_str_string("right");
+  eqtb[frozen_right] = eqtb[cur_val]; 
+  primitive("long", prefix, 1);
+  primitive("outer", prefix, 2);
+  primitive("global", prefix, 4);
+  primitive("def", def, 0);
+  primitive("gdef", def, 1);
+  primitive("edef", def, 2);
+  primitive("xdef", def, 3);
+  primitive("let", let, normal);
+  primitive("futurelet", let, normal + 1);
+  primitive("chardef", shorthand_def, char_def_code);
+  primitive("kchardef", shorthand_def, kchar_def_code);
+  primitive("mathchardef", shorthand_def, math_char_def_code);
+  primitive("countdef", shorthand_def, count_def_code);
+  primitive("dimendef", shorthand_def, dimen_def_code);
+  primitive("skipdef", shorthand_def, skip_def_code);
+  primitive("muskipdef", shorthand_def, mu_skip_def_code);
+  primitive("toksdef", shorthand_def, toks_def_code);
+  primitive("catcode", def_code, cat_code_base);
+  primitive("kcatcode", def_code, kcat_code_base);
+  primitive("xspcode", def_code, auto_xsp_code_base);
+  primitive("mathcode", def_code, math_code_base);
+  primitive("lccode", def_code, lc_code_base);
+  primitive("uccode", def_code, uc_code_base);
+  primitive("sfcode", def_code, sf_code_base);
+  primitive("delcode", def_code, del_code_base);
+  primitive("textfont", def_family, math_font_base);
+  primitive("scriptfont", def_family, math_font_base + script_size);
+  primitive("scriptscriptfont", def_family, math_font_base + script_script_size);
+  primitive("hyphenation", hyph_data, 0);
+  primitive("patterns", hyph_data, 1);
+  primitive("hyphenchar", assign_font_int, 0);
+  primitive("skewchar", assign_font_int, 1);
+  primitive("batchmode", set_interaction, batch_mode);
+  primitive("nonstopmode", set_interaction, nonstop_mode);
+  primitive("scrollmode", set_interaction, scroll_mode);
+  primitive("errorstopmode", set_interaction, error_stop_mode);
+  primitive("openin", in_stream, 1);
+  primitive("closein", in_stream, 0);
+  primitive("message", message, 0);
+  primitive("errmessage", message, 1);
+  primitive("lowercase", case_shift, lc_code_base);
+  primitive("uppercase", case_shift, uc_code_base);
+  primitive("show", xray, show_code);
+  primitive("showbox", xray, show_box_code);
+  primitive("showthe", xray, show_the_code);
+  primitive("showlists", xray, show_lists);
+  primitive("showmode", xray, show_mode);
+  primitive("openout", extension, open_node);
+  primitive("write", extension, write_node);
+  write_loc = cur_val;
+  primitive("closeout", extension, close_node);
+  primitive("special", extension, special_node);
+  primitive("immediate", extension, immediate_code);
+  primitive("setlanguage", extension, set_language_code);
+  primitive("kansujichar", set_kansuji_char, 0);
+  primitive("autospacing", set_auto_spacing, set_auto_spacing_code);
+  primitive("noautospacing", set_auto_spacing, reset_auto_spacing_code);
+  primitive("autoxspacing", set_auto_spacing, set_auto_xspacing_code);
+  primitive("noautoxspacing", set_auto_spacing, reset_auto_xspacing_code);
+  primitive("enablecjktoken", set_enable_cjk_token, reset_enable_cjk_token_code);
+  primitive("disablecjktoken", set_enable_cjk_token, set_enable_cjk_token_code);
+  primitive("forcecjktoken", set_enable_cjk_token, set_force_cjk_token_code);
+  primitive("inhibitglue", inhibit_glue, 0);
+  primitive("inhibitxspcode", assign_inhibit_xsp_code, inhibit_xsp_code_base);
+  primitive("prebreakpenalty", assign_kinsoku, pre_break_penalty_code);
+  primitive("postbreakpenalty", assign_kinsoku, post_break_penalty_code);
+  no_new_control_sequence = true; 
+}
+#endif
+
 // prints an end-of-line
 void print_ln (void)
 {
@@ -30,13 +6520,11 @@ void print_ln (void)
     case term_and_log:
       {
         if (nrestmultichr(kcode_pos) > 0)
-        {
           for (ii = 0; ii <= nrestmultichr(kcode_pos) - 1; ii++)
           {
             wterm(' ');
             wlog(' ');
           }
-        }
 
         wterm_cr();
         wlog_cr();
@@ -48,10 +6536,8 @@ void print_ln (void)
     case log_only:
       {
         if (nrestmultichr(kcode_pos) > 0)
-        {
           for (ii = 0; ii <= nrestmultichr(kcode_pos) - 1; ii++)
             wlog(' ');
-        }
 
         wlog_cr();
         file_offset = 0;
@@ -61,10 +6547,8 @@ void print_ln (void)
     case term_only:
       {
         if (nrestmultichr(kcode_pos) > 0)
-        {
           for (ii = 0; ii <= nrestmultichr(kcode_pos) - 1; ii++)
             wterm(' ');
-        }
 
         wterm_cr();
         term_offset = 0;
@@ -83,8 +6567,9 @@ void print_ln (void)
   }
 
   kcode_pos = 0;
+  // {|tally| is not affected}
 }
-/* sec 0058 */
+
 // prints a single character
 void print_char (ASCII_code s)
 {
@@ -97,8 +6582,8 @@ void print_char (ASCII_code s)
     }
   }
 
-  if ((kcode_pos == 1) || ((kcode_pos >= 011) && (kcode_pos <= 012)) ||
-    ((kcode_pos >= 021) && (kcode_pos <= 023)))
+  if ((kcode_pos == 1) || ((kcode_pos >= 011) && (kcode_pos <= 012))
+    || ((kcode_pos >= 021) && (kcode_pos <= 023)))
     incr(kcode_pos);
   else if (iskanji1(xchr[s]))
   {
@@ -136,14 +6621,15 @@ void print_char (ASCII_code s)
       {
         wterm(xchr[s]);
         incr(term_offset);
-        wlog(xchr[s]);
-        incr(file_offset);
 
         if (term_offset == max_print_line)
         {
           wterm_cr();
           term_offset = 0;
         }
+
+        wlog(xchr[s]);
+        incr(file_offset);
 
         if (file_offset == max_print_line)
         {
@@ -195,6 +6681,7 @@ void print_char (ASCII_code s)
 #else
       if (pool_ptr < pool_size)
         append_char(s);
+      // {we drop characters if the string space is full}
 #endif
       break;
 
@@ -205,15 +6692,15 @@ void print_char (ASCII_code s)
 
   incr(tally);
 }
-/* sec 0059 */
+
 // prints string |s|
 void print_ (integer s)
 {
-  pool_pointer j;
-  integer nl;
+  pool_pointer j; // {current character code position}
+  integer nl;     // {new-line character to restore}
 
   if (s >= str_ptr)
-    s = 259;
+    s = 259; // '???' {this can't happen}
   else
   {
     if (s < 256)
@@ -224,7 +6711,7 @@ void print_ (integer s)
       {
         if (selector > pseudo)
         {
-          print_char(s);
+          print_char(s); // {internal strings are not expanded}
           return;
         }
 
@@ -238,7 +6725,7 @@ void print_ (integer s)
         }
 
         nl = new_line_char;
-        new_line_char = -1;
+        new_line_char = -1; // {temporarily disable new-line character}
         j = str_start[s];
 
         while (j < str_start[s + 1])
@@ -261,17 +6748,18 @@ void print_ (integer s)
     incr(j);
   }
 }
+
 // string version print.
 void prints_ (const char * s)
 {
   while (*s)
     print_char(*s++);
 }
-/* sec 0060 */
+
 // prints string |s|
 void slow_print (integer s)
 {
-  pool_pointer j;
+  pool_pointer j; // {current character code position}
 
   if ((s >= str_ptr) || (s < 256))
     print(s);
@@ -286,7 +6774,7 @@ void slow_print (integer s)
     }
   }
 }
-/* sec 0062 */
+
 // prints string |s| at beginning of line
 void print_nl (const char * s)
 {
@@ -296,11 +6784,11 @@ void print_nl (const char * s)
 
   prints(s);
 }
-/* sec 0063 */
+
 // prints escape character, then |s|
 void print_esc (const char * s)
 {
-  integer c;
+  integer c; // {the escape character code}
 
   c = escape_char;
 
@@ -312,9 +6800,10 @@ void print_esc (const char * s)
 
   prints(s);
 }
+
 void sprint_esc (str_number s)
 {
-  integer c;
+  integer c; // {the escape character code}
 
   c = escape_char;
 
@@ -326,9 +6815,9 @@ void sprint_esc (str_number s)
 
   print(s);
 }
-/* sec 0064 */
+
 // prints |dig[k-1]|$\,\ldots\,$|dig[0]|
-void print_the_digs (eight_bits k)
+static void print_the_digs (eight_bits k)
 {
   while (k > 0)
   {
@@ -340,12 +6829,12 @@ void print_the_digs (eight_bits k)
       print_char('A' + dig[k]);
   }
 }
-/* sec 0065 */
+
 // prints an integer in decimal form
 void print_int (integer n)
 {
-  char k;
-  integer m;
+  char k;     // var k:0..23; {index to current digit; we assume that $|n|<10^{23}$}
+  integer m;  // {used to negate |n| in possibly dangerous cases}
 
   k = 0;
 
@@ -363,7 +6852,7 @@ void print_int (integer n)
       k = 1;
 
       if (m < 10)
-        dig[0] = (char) m;
+        dig[0] = m;
       else
       {
         dig[0] = 0;
@@ -373,19 +6862,20 @@ void print_int (integer n)
   }
 
   do {
-    dig[k] = (char) (n % 10);
+    dig[k] = (n % 10);
     n = n / 10;
     incr(k);
   } while (!(n == 0));
 
   print_the_digs(k);
 }
-/* sec 0262 */
+
 // prints a purported control sequence
-void print_cs (integer p)
+static void print_cs (integer p)
 {
   if (p < hash_base)
   {
+    // {single character}
     if (p >= single_base)
     {
       if (p == null_cs)
@@ -417,9 +6907,9 @@ void print_cs (integer p)
     print_char(' ');
   }
 }
-/* sec 0263 */
+
 // prints a control sequence
-void sprint_cs (pointer p)
+static void sprint_cs (pointer p)
 {
   if (p < hash_base)
   {
@@ -436,15 +6926,15 @@ void sprint_cs (pointer p)
   else
     sprint_esc(text(p));
 }
-/* sec 0518 */
+
 void print_file_name (integer n, integer a, integer e)
 {
   slow_print(a);
   slow_print(n);
   slow_print(e);
 }
-/* sec 0699 */
-void print_size (integer s)
+
+static void print_size (integer s)
 {
   if (s == text_size)
     print_esc("textfont");
@@ -453,8 +6943,8 @@ void print_size (integer s)
   else
     print_esc("scriptscriptfont");
 }
-/* sec 1355 */
-void print_write_whatsit (const char * s, pointer p)
+
+static void print_write_whatsit (const char * s, pointer p)
 {
   print_esc(s);
 
@@ -465,13 +6955,14 @@ void print_write_whatsit (const char * s, pointer p)
   else
     print_char('-');
 }
-//
-void print_sa_num (pointer q)
+
+// {print register number}
+static void print_sa_num (pointer q)
 {
-  halfword n;
+  halfword n; // {the register number}
 
   if (sa_index(q) < dimen_val_limit)
-    n = sa_num(q);
+    n = sa_num(q); // {the easy case}
   else
   {
     n = hex_dig4(sa_index(q));
@@ -483,8 +6974,9 @@ void print_sa_num (pointer q)
 
   print_int(n);
 }
+
 // prints |dir| data
-void print_dir (eight_bits dir)
+static void print_dir (eight_bits dir)
 {
   if (dir == dir_yoko)
     print_char('Y');
@@ -493,8 +6985,9 @@ void print_dir (eight_bits dir)
   else if (dir == dir_dtou)
     print_char('D');
 }
+
 //
-void print_direction_alt (integer d)
+static void print_direction_alt (integer d)
 {
   boolean x;
 
@@ -532,8 +7025,9 @@ void print_direction_alt (integer d)
     prints(" direction");
   }
 }
+
 // print the direction represented by d
-void print_direction (integer d)
+static void print_direction (integer d)
 {
   switch (abs(d))
   {
@@ -555,16 +7049,17 @@ void print_direction (integer d)
 
   prints(" direction");
 }
+
 //
-void print_kansuji (integer n)
+static void print_kansuji (integer n)
 {
-  char k;
-  KANJI_code cx;
+  char k;         // {index to current digit; we assume that $|n|<10^{23}$}
+  KANJI_code cx;  // {temporary register for KANJI}
 
   k = 0;
 
   if (n < 0)
-    return;
+    return; // {nonpositive input produces no output}
 
   do {
     dig[k] = n % 10;
@@ -579,7 +7074,7 @@ void print_kansuji (integer n)
     print_kanji(fromDVI(cx));
   }
 }
-//
+
 // prints a single character
 void print_kanji (KANJI_code s)
 {
@@ -599,19 +7094,19 @@ void print_kanji (KANJI_code s)
 
   print_char(BYTE4(s));
 }
-/* sec 0081 */
+
 // todo: noreturn
-void jump_out(void)
+void jump_out (void)
 {
   close_files_and_terminate();
   aptex_utils_exit(do_final_end());
 }
-/* sec 0082 */
+
 // completes the job of error reporting
 void error (void)
 {
-  ASCII_code c;
-  integer s1, s2, s3, s4;
+  ASCII_code c;           // {what the user types}
+  integer s1, s2, s3, s4; // {used to save global variables when deleting tokens}
 
   if (history < error_message_issued)
     history = error_message_issued;
@@ -623,7 +7118,7 @@ void error (void)
   {
     while (true)
     {
-    continu:
+continu:
       clear_for_error_prompt();
       prompt_input("? ");
 
@@ -633,7 +7128,7 @@ void error (void)
       c = buffer[first];
 
       if (c >= 'a')
-        c = (c + 'A' - 'a');
+        c = c + 'A' - 'a'; // {convert to uppercase}
 
       switch (c)
       {
@@ -658,13 +7153,13 @@ void error (void)
 
             if ((last > first + 1) && (buffer[first + 1] >= '0') &&
               (buffer[first + 1] <= '9'))
-              c = (c * 10 + buffer[first + 1] - '0' * 11);
+              c = c * 10 + buffer[first + 1] - '0' * 11;
             else
-              c = (c - '0');
+              c = c - '0';
 
             while (c > 0)
             {
-              get_token();
+              get_token(); // {one-level recursive call of |error| is possible}
               decr(c);
             }
 
@@ -731,7 +7226,7 @@ void error (void)
 
         case 'I':
           {
-            begin_file_reading();
+            begin_file_reading(); // {enter a new syntactic level for terminal input}
 
             if (last > first + 1)
             {
@@ -745,7 +7240,7 @@ void error (void)
             }
 
             first = last;
-            cur_input.limit_field = last - 1;
+            cur_input.limit_field = last - 1; // {no |end_line_char| ends this line}
 
             return;
           }
@@ -756,7 +7251,7 @@ void error (void)
         case 'S':
           {
             error_count = 0;
-            interaction = 0 + c - 'Q';
+            interaction = batch_mode + c - 'Q';
             prints("OK, entering ");
 
             switch (c)
@@ -796,7 +7291,7 @@ void error (void)
           do_nothing();
           break;
       }
-
+      // Print the menu of available options
       {
         prints("Type <return> to proceed, S to scroll future error messages,");
         print_nl("R to run without stopping, Q to run quietly,");
@@ -823,7 +7318,7 @@ void error (void)
   }
 
   if (interaction > batch_mode)
-    decr(selector);
+    decr(selector); // {avoid terminal output}
 
   if (use_err_help)
   {
@@ -839,20 +7334,20 @@ void error (void)
   print_ln();
 
   if (interaction > batch_mode)
-    incr(selector);
+    incr(selector); // {re-enable terminal output}
   
   print_ln();
 }
-/* sec 0093 */
+
 // prints |s|, and that's it
-void fatal_error (const char * s)
+static void fatal_error (const char * s)
 {
   normalize_selector();
   print_err("Emergency stop");
   help1(s);
   succumb();
 }
-/* sec 0094 */
+
 // stop due to finiteness
 void overflow (const char * s, integer n)
 {
@@ -875,9 +7370,9 @@ void overflow (const char * s, integer n)
 
   succumb();
 }
-/* sec 0095 */
+
 // consistency check violated; |s| tells where
-void confusion (const char * s)
+static void confusion (const char * s)
 {
   normalize_selector();
 
@@ -897,7 +7392,7 @@ void confusion (const char * s)
 
   succumb();
 }
-/* sec 0037 */
+
 // gets the terminal input started
 boolean init_terminal (void)
 {
@@ -920,7 +7415,7 @@ boolean init_terminal (void)
     fputs("**", stdout);
     update_terminal();
 
-    if (!input_ln(stdin, true))
+    if (!input_ln(stdin, true)) // {this shouldn't happen}
     {
       wterm_cr();
       puts("! End of file on the terminal... why?");
@@ -938,7 +7433,7 @@ boolean init_terminal (void)
     puts("Please type the name of your input file.");
   }
 }
-/* sec 0043 */
+
 // current string enters the pool
 str_number make_string (void)
 {
@@ -958,12 +7453,12 @@ str_number make_string (void)
 
   return (str_ptr - 1);
 }
-/* sec 0044 */
+
 // test equality of strings
-boolean str_eq_buf (str_number s, integer k)
+static boolean str_eq_buf (str_number s, integer k)
 {
-  pool_pointer j;
-  boolean result;
+  pool_pointer j; // {running index}
+  boolean result; // {result of comparison}
 
   j = str_start[s];
 
@@ -984,12 +7479,12 @@ boolean str_eq_buf (str_number s, integer k)
 not_found:
   return result;
 }
-/* sec 0045 */
+
 // test equality of strings
-boolean str_eq_str (str_number s, str_number t)
+static boolean str_eq_str (str_number s, str_number t)
 {
-  pool_pointer j, k;
-  boolean result;
+  pool_pointer j, k;  // {running indices}
+  boolean result;     // {result of comparison}
 
   result = false;
 
@@ -1013,19 +7508,19 @@ boolean str_eq_str (str_number s, str_number t)
 not_found:
   return result;
 }
-/* sec 0066 */
+
 // prints two least significant digits
-void print_two (integer n)
+static void print_two (integer n)
 {
   n = abs(n) % 100;
   print_char('0' + (n / 10));
   print_char('0' + (n % 10));
 }
-/* sec 0067 */
+
 // prints a positive integer in hexadecimal form
-void print_hex (integer n)
+static void print_hex (integer n)
 {
-  char k;
+  char k; // {index to current digit; we assume that $0\L n<16^{22}$}
 
   k = 0;
   print_char('"');
@@ -1038,11 +7533,11 @@ void print_hex (integer n)
 
   print_the_digs(k);
 }
-/* sec 0069 */
-void print_roman_int (integer n)
+
+static void print_roman_int (integer n)
 {
-  pool_pointer j, k;
-  nonnegative_integer u, v;
+  pool_pointer j, k; // {mysterious indices into |str_pool|}
+  nonnegative_integer u, v; // {mysterious numbers}
 
   j = str_start[260]; /* m2d5c2l5x2v5i */
   v = 1000;
@@ -1079,11 +7574,11 @@ void print_roman_int (integer n)
     }
   }
 }
-/* sec 0070 */
+
 // prints a yet-unmade string
-void print_current_string (void)
+static void print_current_string (void)
 {
-  pool_pointer j;
+  pool_pointer j; // {points to current character code}
 
   j = str_start[str_ptr];
 
@@ -1093,36 +7588,36 @@ void print_current_string (void)
     incr(j);
   }
 }
-/* sec 0071 */
+
 // gets a line from the terminal
 void term_input (void)
 { 
-  integer k;
+  integer k; // {index into |buffer|}
 
   update_terminal();
 
   if (!input_ln(stdin, true))
     fatal_error("End of file on the terminal!");
 
-  term_offset = 0;
-  decr(selector);
+  term_offset = 0;  // {the user's line ended with \<\rm return>}
+  decr(selector);   // {prepare to echo the input}
 
   if (last != first)
     for (k = first; k <= last - 1; k++)
       print(buffer[k]);
 
   print_ln();
-  incr(selector);
+  incr(selector); // {restore previous status}
 }
-/* sec 0091 */
-void int_error (integer n)
+
+static void int_error (integer n)
 {
   prints(" (");
   print_int(n);
   print_char(')');
   error();
 }
-/* sec 0092 */
+
 void normalize_selector (void)
 {
   if (log_opened)
@@ -1136,7 +7631,7 @@ void normalize_selector (void)
   if (interaction == batch_mode)
     decr(selector);
 }
-/* sec 0098 */
+
 void pause_for_instructions (void)
 {
   if (OK_to_interrupt)
@@ -1156,18 +7651,18 @@ void pause_for_instructions (void)
     interrupt = 0;
   }
 }
-/* sec 0100 */
-integer half (integer x)
+
+static integer half (integer x)
 {
   if (odd(x))
     return ((x + 1) / 2);
   else
     return (x / 2);
 }
-/* sec 0102 */
-scaled round_decimals (small_number k)
+
+static scaled round_decimals (small_number k)
 {
-  integer a;
+  integer a; // {the accumulator}
 
   a = 0;
 
@@ -1179,34 +7674,34 @@ scaled round_decimals (small_number k)
   
   return ((a + 1) / 2);
 }
-/* sec 0103 */
+
 // prints scaled real, rounded to five digits
 void print_scaled (scaled s)
 {
-  scaled delta;
+  scaled delta; // {amount of allowable inaccuracy}
 
   if (s < 0)
   {
     print_char('-');
-    negate(s);
+    negate(s); // {print the sign, if negative}
   }
 
-  print_int(s / unity);
+  print_int(s / unity); // {print the integer part}
   print_char('.');
   s = 10 * (s % unity) + 5;
   delta = 10;
 
   do {
     if (delta > unity)
-      s = s + 0100000 - 50000;
+      s = s + 0100000 - 50000; // {round the last digit}
 
     print_char('0' + (s / unity));
     s = 10 * (s % unity);
     delta = delta * 10;
   } while (!(s <= delta));
 }
-/* sec 0105 */
-scaled mult_and_add (integer n, scaled x, scaled y, scaled max_answer)
+
+static scaled mult_and_add (integer n, scaled x, scaled y, scaled max_answer)
 {
   if (n < 0)
   {
@@ -1224,11 +7719,11 @@ scaled mult_and_add (integer n, scaled x, scaled y, scaled max_answer)
     return 0;
   }
 }
-/* sec 0106 */
-scaled x_over_n (scaled x, integer n)
+
+static scaled x_over_n (scaled x, integer n)
 {
   scaled Result;
-  boolean negative;
+  boolean negative; // {should |remainder| be negated?}
 
   negative = false;
 
@@ -1264,12 +7759,12 @@ scaled x_over_n (scaled x, integer n)
 
   return Result;
 }
-/* sec 0107 */
-scaled xn_over_d (scaled x, integer n, integer d)
+
+static scaled xn_over_d (scaled x, integer n, integer d)
 {
   scaled Result;
-  boolean positive;
-  nonnegative_integer t, u, v;
+  boolean positive; // {was |x>=0|?}
+  nonnegative_integer t, u, v; // {intermediate quantities}
 
   if (x >= 0)
     positive = true;
@@ -1301,11 +7796,11 @@ scaled xn_over_d (scaled x, integer n, integer d)
 
   return Result;
 }
-/* sec 0108 */
+
 // compute badness, given |t>=0|
-halfword badness (scaled t, scaled s)
+static halfword badness (scaled t, scaled s)
 {
-  integer r;
+  integer r; // {approximation to $\alpha t/s$, where $\alpha^3\approx 100\cdot2^{18}$}
 
   if (t == 0)
     return 0;
@@ -1314,21 +7809,20 @@ halfword badness (scaled t, scaled s)
   else
   {
     if (t <= 7230584)
-      r = (t * 297) / s;
+      r = (t * 297) / s; // {$297^3=99.94\times2^{18}$}
     else if (s >= 1663497)
       r = t / (s / 297);
     else
       r = t;
 
     if (r > 1290)
-      return inf_bad; 
+      return inf_bad; // {$1290^3<2^{31}<1291^3$}
     else
-      return (r * r * r + 0400000) / 01000000;
+      return (r * r * r + 0400000) / 01000000; // {that was $r^3/2^{18}$, rounded to the nearest integer}
   }
 }
-/* sec 0114 */
-#ifdef APTEX_DEBUG
-void print_word (memory_word w)
+
+static void print_word (memory_word w)
 { 
   print_int(w.cint); 
   print_char(' ');
@@ -1352,23 +7846,23 @@ void print_word (memory_word w)
   print_char(':');
   print_int(w.qqqq.b3);
 }
-#endif
-/* sec 0292 */
+
 void show_token_list (integer p, integer q, integer l)
 {
-  integer m, c;
-  ASCII_code match_chr;
-  ASCII_code n;
+  integer m, c; // {pieces of a token}
+  ASCII_code match_chr; // {character used in a `|match|'}
+  ASCII_code n; // {the highest parameter number, as an ASCII digit}
 
   match_chr = '#';
   n = '0';
   tally = 0;
 
-  while ((p != 0) && (tally < l))
+  while ((p != null) && (tally < l))
   {
     if (p == q)
       set_trick_count();
 
+    // Display token |p|, and |return| if there are problems
     if ((p < hi_mem_min) || (p > mem_end))
     {
       print_esc("CLOBBERED.");
@@ -1376,10 +7870,10 @@ void show_token_list (integer p, integer q, integer l)
     }
 
     if (info(p) >= cs_token_flag)
-      print_cs(info(p) - cs_token_flag);
+      print_cs(info(p) - cs_token_flag); // {|wchar_token|}
     else
     {
-      if (check_kanji(info(p)))
+      if (check_kanji(info(p))) // {|wchar_token|}
       {
         m = info(p) / max_cjk_val;
         c = info(p) % max_cjk_val;
@@ -1460,13 +7954,13 @@ void show_token_list (integer p, integer q, integer l)
     p = link(p);
   }
 
-  if (p != 0)
+  if (p != null)
     print_esc("ETC.");
 }
-/* sec 0306 */
-void runaway (void)
+
+static void runaway (void)
 {
-  pointer p;
+  pointer p; // {head of runaway list}
 
   if (scanner_status > skipping)
   {
@@ -1505,19 +7999,19 @@ void runaway (void)
 
     print_char('?');
     print_ln();
-    show_token_list(link(p), 0, error_line - 10);
+    show_token_list(link(p), null, error_line - 10);
   }
 }
-/* sec 0120 */
+
 pointer get_avail (void)
 {
-  pointer p;
+  pointer p; // {the new node being got}
 
-  p = avail;
+  p = avail; // {get top location in the |avail| stack}
 
-  if (p != 0)
-    avail = link(avail);
-  else if (mem_end < mem_max)
+  if (p != null)
+    avail = link(avail); // {and pop it off}
+  else if (mem_end < mem_max) // {or go into virgin territory}
   {
     incr(mem_end);
     p = mem_end;
@@ -1530,15 +8024,15 @@ pointer get_avail (void)
     if (hi_mem_min <= lo_mem_max)
     {
       incr(hi_mem_min);
-      mem = realloc_main(0, mem_top / 2);
+      mem = realloc_mem(0, mem_top / 2);
 
       if (mem == NULL)
         return 0;
 
       if (mem_end >= mem_max)
       {
-        runaway();
-        overflow("main memory size", mem_max + 1 - mem_min);
+        runaway();  // {if memory is exhausted, display possible runaway text}
+        overflow("main memory size", mem_max + 1 - mem_min);  // {quit; all one-word nodes are busy}
       }
 
       incr(mem_end);
@@ -1546,7 +8040,7 @@ pointer get_avail (void)
     }
   }
 
-  link(p) = 0;
+  link(p) = null;  // {provide an oft-desired initialization of the new node}
 
 #ifdef STAT
   incr(dyn_used);
@@ -1554,13 +8048,13 @@ pointer get_avail (void)
 
   return p;
 } 
-/* sec 0123 */
+
 // makes list of single-word nodes
 void flush_list (pointer p)
 { 
-  pointer q, r;
+  pointer q, r; // {list traversers}
 
-  if (p != 0)
+  if (p != null)
   {
     r = p;
 
@@ -1570,23 +8064,23 @@ void flush_list (pointer p)
 #ifdef STAT
       decr(dyn_used);
 #endif
-    } while (!(r == 0));
+    } while (!(r == null)); // {now |q| is the last node on the list}
 
     link(q) = avail;
     avail = p;
   }
 }
-/* sec 0125 */
+
 // variable-size node allocation
 pointer get_node (integer s)
 {
-  pointer p;
-  pointer q;
-  integer r;
-  integer t;
+  pointer p; // {the node currently under inspection}
+  pointer q; // {the node physically after node |p|}
+  integer r; // {the newly allocated node, or a candidate for this honor}
+  integer t; // {temporary register}
 
 restart:
-  p = rover;
+  p = rover; // {start at some free node in the ring}
 
   do {
     q = p + node_size(p);
@@ -1630,9 +8124,6 @@ restart:
 
   if (s == 010000000000)
   {
-    if (aptex_env.trace_mem)
-      puts("Merged adjacent multi-word nodes");
-
     return max_halfword;
   }
 
@@ -1668,7 +8159,7 @@ restart:
   /* extend lower memory downwards */
   if (mem_min - (block_size + 1) <= mem_start)
   {
-    mem = realloc_main (mem_top / 2 + block_size, 0);
+    mem = realloc_mem (mem_top / 2 + block_size, 0);
 
     if (mem == NULL)
       return 0;
@@ -1697,11 +8188,11 @@ found:
 
   return r;
 }
-/* sec 0130 */
+
 // variable-size node liberation
 void free_node (pointer p, halfword s)
 {
-  pointer q;
+  pointer q; // {|llink(rover)|}
 
   node_size(p) = s;
   link(p) = empty_flag;
@@ -1715,11 +8206,11 @@ void free_node (pointer p, halfword s)
   var_used = var_used - s;
 #endif
 }
-/* sec 0136 */
+
 // creates a new box node
-pointer new_null_box (void)
+static pointer new_null_box (void)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(box_node_size);
   type(p) = hlist_node;
@@ -1739,10 +8230,10 @@ pointer new_null_box (void)
 
   return p;
 }
-/* sec 0139 */
-pointer new_rule (void)
+
+static pointer new_rule (void)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(rule_node_size);
   type(p) = rule_node;
@@ -1753,10 +8244,10 @@ pointer new_rule (void)
 
   return p;
 }
-/* sec 0144 */
-pointer new_ligature (quarterword f, quarterword c, pointer q)
+
+static pointer new_ligature (quarterword f, quarterword c, pointer q)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(small_node_size);
   type(p) = ligature_node;
@@ -1767,10 +8258,10 @@ pointer new_ligature (quarterword f, quarterword c, pointer q)
 
   return p;
 }
-/* sec 0144 */
-pointer new_lig_item (quarterword c)
+
+static pointer new_lig_item (quarterword c)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(small_node_size);
   character(p) = c;
@@ -1778,11 +8269,11 @@ pointer new_lig_item (quarterword c)
 
   return p;
 }
-/* sec 0145 */
+
 // creates an empty |disc_node|
-pointer new_disc (void)
+static pointer new_disc (void)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(small_node_size);
   type(p) = disc_node;
@@ -1792,10 +8283,10 @@ pointer new_disc (void)
 
   return p;
 }
-/* sec 0147 */
-pointer new_math (scaled w, small_number s)
+
+static pointer new_math (scaled w, small_number s)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(medium_node_size);
   type(p) = math_node;
@@ -1804,11 +8295,11 @@ pointer new_math (scaled w, small_number s)
 
   return p;
 }
-/* sec 0151 */
+
 // duplicates a glue specification
-pointer new_spec (pointer p)
+static pointer new_spec (pointer p)
 {
-  pointer q;
+  pointer q; // {the new spec}
 
   q = get_node(glue_spec_size);
   mem[q] = mem[p];
@@ -1819,11 +8310,11 @@ pointer new_spec (pointer p)
 
   return q;
 }
-/* se 0152 */
-pointer new_param_glue (small_number n)
+
+static pointer new_param_glue (small_number n)
 {
-  pointer p;
-  pointer q;
+  pointer p; // {the new node}
+  pointer q; // {the glue specification}
 
   p = get_node(medium_node_size);
   type(p) = glue_node;
@@ -1835,10 +8326,10 @@ pointer new_param_glue (small_number n)
 
   return p;
 }
-/* sec 0153 */
-pointer new_glue (pointer q)
+
+static pointer new_glue (pointer q)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(medium_node_size);
   type(p) = glue_node;
@@ -1849,10 +8340,10 @@ pointer new_glue (pointer q)
 
   return p;
 }
-/* sec 0154 */
-pointer new_skip_param (small_number n)
+
+static pointer new_skip_param (small_number n)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   temp_ptr = new_spec(glue_par(n));
   p = new_glue(temp_ptr);
@@ -1861,10 +8352,10 @@ pointer new_skip_param (small_number n)
 
   return p;
 }
-/* sec 0155 */
-pointer new_kern (scaled w)
+
+static pointer new_kern (scaled w)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(medium_node_size);
   type(p) = kern_node;
@@ -1873,10 +8364,10 @@ pointer new_kern (scaled w)
 
   return p;
 }
-/* sec 0158 */
-pointer new_penalty (integer m)
+
+static pointer new_penalty (integer m)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(medium_node_size);
   type(p) = penalty_node;
@@ -1885,7 +8376,7 @@ pointer new_penalty (integer m)
 
   return p;
 }
-//
+
 #ifdef APTEX_DEBUG
 /* sec 0167 */
 void check_mem (boolean print_locs)
@@ -2010,7 +8501,7 @@ done2:
   was_lo_max = lo_mem_max;
   was_hi_min = hi_mem_min;
 }
-/* sec 0172 */
+
 void search_mem (pointer p)
 {
   integer q;
@@ -2083,11 +8574,11 @@ void search_mem (pointer p)
   }
 }
 #endif
-/* sec 0174 */
+
 // prints highlights of list |p|
-void short_display (integer p)
+static void short_display (integer p)
 {
-  integer n;
+  integer n; // {for replacement counts}
 
   while (p != 0) /* want p != null here ! */
   {
@@ -2172,9 +8663,9 @@ void short_display (integer p)
     p = link(p);
   }
 }
-/* sec 0176 */
+
 // prints |char_node| data
-void print_font_and_char (integer p)
+static void print_font_and_char (integer p)
 {
   if (p > mem_end)
     print_esc("CLOBBERED.");
@@ -2196,30 +8687,30 @@ void print_font_and_char (integer p)
       print(character(p));
   }
 }
-/* sec 0176 */
+
 // prints token list data in braces
-void print_mark (integer p)
+static void print_mark (integer p)
 {
   print_char('{');
 
   if ((p < hi_mem_min) || (p > mem_end))
     print_esc("CLOBBERED.");
   else
-    show_token_list(link(p), 0, max_print_line - 10);
+    show_token_list(link(p), null, max_print_line - 10);
 
   print_char('}');
 }
-/* sec 0176 */
+
 // prints dimension in rule node
-void print_rule_dimen (scaled d)
+static void print_rule_dimen (scaled d)
 {
   if (is_running(d))
     print_char('*');
   else
     print_scaled(d);
 }
-/* sec 0177 */
-void print_glue (scaled d, integer order, const char * s)
+
+static void print_glue (scaled d, integer order, const char * s)
 {
   print_scaled(d);
 
@@ -2238,8 +8729,8 @@ void print_glue (scaled d, integer order, const char * s)
   else if (*s != '\0')
     prints(s);
 }
-/* sec 0178 */
-void print_spec (integer p, const char * s)
+
+static void print_spec (integer p, const char * s)
 {
   if ((p < mem_min) || (p >= lo_mem_max))
     print_char('*');
@@ -2263,11 +8754,11 @@ void print_spec (integer p, const char * s)
     }
   }
 }
-/* sec 0691 */
+
 // prints family and character
-void print_fam_and_char (pointer p, small_number t)
+static void print_fam_and_char (pointer p, small_number t)
 {
-  KANJI_code cx;
+  KANJI_code cx; // {temporary register for KANJI}
 
   print_esc("fam");
   print_int(fam(p));
@@ -2281,11 +8772,11 @@ void print_fam_and_char (pointer p, small_number t)
     print_kanji(cx);
   }
 }
-/* sec 0691 */
+
 // prints a delimiter as 24-bit hex value
-void print_delimiter (pointer p)
+static void print_delimiter (pointer p)
 {
-  integer a;
+  integer a; // {accumulator}
 
   a = small_fam(p) * 256 + small_char(p);
   a = a * 0x1000 + large_fam(p) * 256 + large_char(p);
@@ -2295,9 +8786,9 @@ void print_delimiter (pointer p)
   else
     print_hex(a);
 }
-/* sec 0692 */
+
 // display a noad field
-void print_subsidiary_data (pointer p, ASCII_code c)
+static void print_subsidiary_data (pointer p, ASCII_code c)
 {
   if (cur_length >= depth_threshold)
   {
@@ -2306,8 +8797,8 @@ void print_subsidiary_data (pointer p, ASCII_code c)
   }
   else
   {
-    append_char(c);
-    temp_ptr = p;
+    append_char(c); // {include |c| in the recursion history}
+    temp_ptr = p; // {prepare for |show_info| if recursion is needed}
 
     switch (math_type(p))
     {
@@ -2343,25 +8834,25 @@ void print_subsidiary_data (pointer p, ASCII_code c)
     flush_char();
   }
 }
-/* sec 0694 */
-void print_style (integer c)
+
+static void print_style (integer c)
 {
   switch (c / 2)
   {
     case 0:
-      print_esc("displaystyle");
+      print_esc("displaystyle"); // {|display_style=0|}
       break;
 
     case 1:
-      print_esc("textstyle");
+      print_esc("textstyle"); // {|text_style=2|}
       break;
 
     case 2:
-      print_esc("scriptstyle");
+      print_esc("scriptstyle"); // {|script_style=4|}
       break;
 
     case 3:
-      print_esc("scriptscriptstyle");
+      print_esc("scriptscriptstyle"); // {|script_script_style=6|}
       break;
 
     default:
@@ -2369,8 +8860,8 @@ void print_style (integer c)
       break;
   }
 }
-/* sec 0225 */
-void print_skip_param (integer n)
+
+static void print_skip_param (integer n)
 {
   switch (n)
   {
@@ -2463,18 +8954,18 @@ void print_skip_param (integer n)
       break;
   }
 }
-/* sec 0182 */
+
 // prints a node list symbolically
 void show_node_list (integer p)
 {
-  integer n;
-  real g;
+  integer n; // {the number of items already printed at this level}
+  real g; // {a glue ratio, as a floating point number}
 
   if (cur_length > depth_threshold)
   {
-    if (p > 0)
+    if (p > null)
       prints(" []");
-
+    //{indicate that there's been some truncation}
     return;
   }
 
@@ -2483,11 +8974,12 @@ void show_node_list (integer p)
   while (p != 0)
   {
     print_ln();
-    print_current_string();
+    print_current_string(); // {display the nesting history}
 
     if (p > mem_end)
     {
       prints("Bad link, display aborted.");
+
       return;
     }
 
@@ -2496,6 +8988,7 @@ void show_node_list (integer p)
     if (n > breadth_max)
     {
       prints("etc.");
+
       return;
     }
 
@@ -3028,9 +9521,13 @@ void show_node_list (integer p)
     p = link(p);
   }
 }
-/* sec 0198 */
+
 void show_box (pointer p)
 {
+  /*
+    @<Assign the values |depth_threshold:=show_box_depth| and
+    |breadth_max:=show_box_breadth|@>
+  */
   depth_threshold = show_box_depth;
   breadth_max = show_box_breadth;
 
@@ -3048,35 +9545,36 @@ void show_box (pointer p)
     depth_threshold = pool_size - pool_ptr - 1;
 #endif
 
-  show_node_list(p);
+  // {now there's enough room for prefix string}
+  show_node_list(p);  // {the show starts at |p|}
   print_ln();
 }
-/* sec 0200 */
+
 // |p| points to the reference count
 // of a token list that is losing one reference
 void delete_token_ref (pointer p)
 {
-  if (token_ref_count(p) == 0)
+  if (token_ref_count(p) == null)
     flush_list(p);
   else
     decr(token_ref_count(p));
 }
-/* sec 0201 */
+
 // |p| points to a glue specification
 void delete_glue_ref (pointer p)
 {
-  if (glue_ref_count(p) == 0)
+  if (glue_ref_count(p) == null)
     free_node(p, glue_spec_size);
   else
     decr(glue_ref_count(p));
 }
-/* sec 0202 */
+
 // erase list of nodes starting at |p|
 void flush_node_list (pointer p)
 {
-  pointer q;
+  pointer q;  // {successor to node |p|}
 
-  while (is_char_node(p))
+  while (p != null)
   {
     q = link(p);
 
@@ -3116,6 +9614,7 @@ void flush_node_list (pointer p)
           break;
 
         case whatsit_node:
+          // @<Wipe out the whatsit node |p| and |goto done|@>
           {
             switch (subtype(p))
             {
@@ -3148,9 +9647,9 @@ void flush_node_list (pointer p)
 
         case glue_node:
           {
-            fast_delete_glue_ref(p);
+            fast_delete_glue_ref(glue_ptr(p));
 
-            if (leader_ptr(p) != 0)
+            if (leader_ptr(p) != null)
               flush_node_list(leader_ptr(p));
 
             free_node(p, medium_node_size);
@@ -3222,13 +9721,19 @@ void flush_node_list (pointer p)
         case vcenter_noad:
         case accent_noad:
           {
-            if (math_type(nucleus(p)) >= sub_box)
+            if ((math_type(nucleus(p)) >= sub_box)
+              && (math_type(nucleus(p)) != math_jchar)
+              && (math_type(nucleus(p) != math_text_jchar)))
               flush_node_list(info(nucleus(p)));
 
-            if (math_type(supscr(p)) >= sub_box)
+            if ((math_type(supscr(p)) >= sub_box)
+              && (math_type(supscr(p)) != math_jchar)
+              && (math_type(supscr(p) != math_text_jchar)))
               flush_node_list(info(supscr(p)));
 
-            if (math_type(subscr(p)) >= sub_box)
+            if ((math_type(subscr(p)) >= sub_box)
+              && (math_type(subscr(p)) != math_jchar)
+              && (math_type(subscr(p) != math_text_jchar)))
               flush_node_list(info(subscr(p)));
 
             if (type(p) == radical_noad)
@@ -3271,27 +9776,32 @@ done:;
     p = q;
   }
 }
-/* sec 0204 */
+
 // makes a duplicate of the node list that starts
 // at |p| and returns a pointer to the new lis
-pointer copy_node_list (pointer p)
+static pointer copy_node_list (pointer p)
 {
-  pointer h;
-  pointer q;
-  pointer r;
-  char words;
+  pointer h;  // {temporary head of copied list}
+  pointer q;  // {previous position in new list}
+  pointer r;  // {current node being fabricated for new list}
+  char words; // {number of words remaining to be copied}
 
   h = get_avail();
   q = h;
 
-  while (p != 0)
+  while (p != null)
   {
-    words = 1;
+    // @<Make a copy of node |p| in node |r|@>
+    words = 1;  // {this setting occurs in more branches than any other}
 
     if (is_char_node(p))
       r = get_avail();
     else switch (type(p))
     {
+      /*
+        @<Case statement to copy different types and set |words| to the number
+        of initial words not yet copied@>
+      */
       case dir_node:
       case hlist_node:
       case vlist_node:
@@ -3302,10 +9812,10 @@ pointer copy_node_list (pointer p)
           sync_line(r + box_node_size) = sync_line(p + box_node_size);
           mem[r + 7] = mem[p + 7];
           mem[r + 6] = mem[p + 6];
-          mem[r + 5] = mem[p + 5];
+          mem[r + 5] = mem[p + 5];  // {copy the last three words}
           add_glue_ref(space_ptr(r));
           add_glue_ref(xspace_ptr(r));
-          list_ptr(r) = copy_node_list(list_ptr(p));
+          list_ptr(r) = copy_node_list(list_ptr(p));  // {this affects |mem[r+5]|}
           words = 5;
         }
         break;
@@ -3325,12 +9835,16 @@ pointer copy_node_list (pointer p)
           mem[r + 5] = mem[p + 5];
           mem[r + 4] = mem[p + 4];
           add_glue_ref(split_top_ptr(p));
-          ins_ptr(r) = copy_node_list(ins_ptr(p));
+          ins_ptr(r) = copy_node_list(ins_ptr(p));  // {this affects |mem[r+4]|}
           words = ins_node_size - 2;
         }
         break;
 
       case whatsit_node:
+        /*
+          @<Make a partial copy of the whatsit node |p| and make |r|
+          point to it; set |words| to the number of initial words not yet copied@>
+        */
         switch (subtype(p))
         {
           case open_node:
@@ -3393,7 +9907,7 @@ pointer copy_node_list (pointer p)
       case ligature_node:
         {
           r = get_node(small_node_size);
-          mem[lig_char(r)] = mem[lig_char(p)];
+          mem[lig_char(r)] = mem[lig_char(p)];  // {copy |font| and |character|}
           lig_ptr(r) = copy_node_list(lig_ptr(p));
         }
         break;
@@ -3419,6 +9933,7 @@ pointer copy_node_list (pointer p)
           r = get_node(small_node_size);
           adjust_ptr(r) = copy_node_list(adjust_ptr(p));
         }
+        // {|words=1=small_node_size-1|}
         break;
 
       default:
@@ -3437,15 +9952,15 @@ pointer copy_node_list (pointer p)
     p = link(p);
   }
 
-  link(q) = 0;
+  link(q) = null;
   q = link(h);
   free_avail(h);
 
   return q;
 }
-/* sec 0211 */
+
 // prints the mode represented by |m|
-void print_mode (integer m)
+static void print_mode (integer m)
 { 
   if (m > 0)
   {
@@ -3489,9 +10004,9 @@ void print_mode (integer m)
 
   prints(" mode");
 }
-/* sec 0216 */
+
 // enter a new semantic level, save the old
-void push_nest (void) 
+static void push_nest (void) 
 {
   if (nest_ptr > max_nest_stack)
   {
@@ -3520,7 +10035,7 @@ void push_nest (void)
   mode_line = line;
   eTeX_aux = 0;
 }
-/* sec 0217 */
+
 // leave a semantic level, re-enter the old
 void pop_nest (void) 
 {
@@ -3530,16 +10045,16 @@ void pop_nest (void)
   decr(nest_ptr);
   cur_list = nest[nest_ptr];
 }
-/* sec 0218 */
-void show_activities (void)
-{
-  integer p;
-  short m;
-  memory_word a;
-  pointer q, r;
-  integer t;
 
-  nest[nest_ptr] = cur_list;
+static void show_activities (void)
+{
+  integer p;  // {index into |nest|}
+  short m;  // {mode}
+  memory_word a;  // {auxiliary}
+  pointer q, r; // {for showing the current page}
+  integer t;  // {ditto}
+
+  nest[nest_ptr] = cur_list;  // {put the top level into the array}
   print_nl("");
   print_ln();
 
@@ -3559,11 +10074,11 @@ void show_activities (void)
       if (nest[p].pg_field != 040600000)
       {
         prints(" (language");
-        print_int(nest[p].pg_field % 65536L);
+        print_int(nest[p].pg_field % 0200000);
         prints(":hyphenmin");
         print_int(nest[p].pg_field / 020000000);
         print_char(',');
-        print_int((nest[p].pg_field / 65536L) % 64);
+        print_int((nest[p].pg_field / 0200000) % 0100);
         print_char(')');
       }
     }
@@ -3573,6 +10088,7 @@ void show_activities (void)
 
     if (p == 0)
     {
+      // @<Show the status of the current page@>
       if (page_head != page_tail)
       {
         print_nl("### current page:");
@@ -3627,12 +10143,13 @@ void show_activities (void)
         }
       }
 
-      if (link(contrib_head) != 0)
+      if (link(contrib_head) != null)
         print_nl("### recent contributions:");
     }
 
     show_box(link(nest[p].head_field));
 
+    // @<Show the auxiliary field, |a|@>
     switch (abs(m) / (max_command + 1))
     {
       case 0:
@@ -3680,8 +10197,8 @@ void show_activities (void)
     }
   }
 }
-/* sec 0237 */
-void print_param (integer n)
+
+static void print_param (integer n)
 {
   switch (n)
   {
@@ -3974,7 +10491,7 @@ void print_param (integer n)
       break;
   }
 }
-/* sec 0245 */
+
 // prepare to do some tracing
 void begin_diagnostic (void)
 {
@@ -3988,7 +10505,7 @@ void begin_diagnostic (void)
       history = warning_issued;
   }
 }
-/* sec 0245 */
+
 // restore proper conditions after tracing
 void end_diagnostic (boolean blank_line)
 {
@@ -3999,8 +10516,8 @@ void end_diagnostic (boolean blank_line)
 
   selector = old_setting;
 }
-/* sec 0247 */
-void print_length_param (integer n)
+
+static void print_length_param (integer n)
 {
   switch (n)
   {
@@ -4117,7 +10634,7 @@ void print_length_param (integer n)
       break;
   }
 }
-/* sec 0298 */
+
 void print_cmd_chr (quarterword cmd, halfword chr_code)
 {
   integer n;
@@ -4150,6 +10667,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
     case endv:
       chr_cmd("end of alignment template");
+      printf("DEBUG: %d.", chr_code);
       break;
 
     case spacer:
@@ -5594,9 +12112,9 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
   }
 }
+
 #ifdef STAT
-/* sec 0252 */
-void show_eqtb (pointer n)
+static void show_eqtb (pointer n)
 { 
   if (n < active_base)
     print_char('?');
@@ -5609,7 +12127,7 @@ void show_eqtb (pointer n)
     if (eq_type(n) >= call)
     {
       print_char(':');
-      show_token_list(link(equiv(n)), 0, 32);
+      show_token_list(link(equiv(n)), null, 32);
     }
   }
   else if (n < local_base)
@@ -5810,14 +12328,14 @@ void show_eqtb (pointer n)
     print_char('?');
 }
 #endif
-/* sec 0259 */
+
 // search the hash table
 pointer id_lookup (integer j, integer l)
 {
-  integer h;
-  integer d;
-  pointer p;
-  pointer k;
+  integer h;  // {hash code}
+  integer d;  // {number of characters in incomplete current string}
+  pointer p;  // {index in |hash| array}
+  pointer k;  // {index in |buffer| array}
 
   h = buffer[j];
 
@@ -5890,9 +12408,9 @@ pointer id_lookup (integer j, integer l)
 found:
   return p;
 }
-/* sec 0274 */
+
 // begin a new level of grouping
-void new_save_level (group_code c)
+static void new_save_level (group_code c)
 {
   check_full_save_stack();
 
@@ -5920,9 +12438,9 @@ void new_save_level (group_code c)
   incr(cur_level);
   incr(save_ptr);
 }
-/* sec 0275 */
+
 // gets ready to forget |w|
-void eq_destroy (memory_word w)
+static void eq_destroy (memory_word w)
 {
   pointer q;
 
@@ -5962,9 +12480,9 @@ void eq_destroy (memory_word w)
       break;
   }
 }
-/* sec 0276 */
+
 // saves |eqtb[p]|
-void eq_save (pointer p, quarterword l)
+static void eq_save (pointer p, quarterword l)
 {
   check_full_save_stack();
 
@@ -5981,9 +12499,9 @@ void eq_save (pointer p, quarterword l)
   save_index(save_ptr) = p;
   incr(save_ptr);
 }
-/* sec 0277 */
+
 // new data for |eqtb|
-void eq_define (pointer p, quarterword t, halfword e)
+static void eq_define (pointer p, quarterword t, halfword e)
 {
   if (eTeX_ex && (eq_type(p) == t) && (equiv(p) == e))
   {
@@ -6004,8 +12522,8 @@ void eq_define (pointer p, quarterword t, halfword e)
   equiv(p) = e;
   assign_trace(p, "into");
 }
-/* sec 0278 */
-void eq_word_define (pointer p, integer w)
+
+static void eq_word_define (pointer p, integer w)
 {
   if (eTeX_ex && (eqtb[p].cint == w))
   {
@@ -6024,9 +12542,9 @@ void eq_word_define (pointer p, integer w)
   eqtb[p].cint = w;
   assign_trace(p, "into");
 }
-/* sec 0279 */
+
 // global |eq_define|
-void geq_define (pointer p, quarterword t, halfword e)
+static void geq_define (pointer p, quarterword t, halfword e)
 {
   assign_trace(p, "globally changing");
 
@@ -6039,9 +12557,9 @@ void geq_define (pointer p, quarterword t, halfword e)
 
   assign_trace(p, "into");
 }
-/* sec 0279 */
+
 // global |eq_word_define|
-void geq_word_define (pointer p, integer w)
+static void geq_word_define (pointer p, integer w)
 {
   assign_trace(p, "globally changing");
 
@@ -6052,8 +12570,8 @@ void geq_word_define (pointer p, integer w)
 
   assign_trace(p, "into");
 }
-/* sec 0280 */
-void save_for_after (halfword t)
+
+static void save_for_after (halfword t)
 { 
   if (cur_level > level_one)
   {
@@ -6064,10 +12582,10 @@ void save_for_after (halfword t)
     incr(save_ptr);
   }
 }
+
 #ifdef STAT
-/* sec 0284 */
 // |eqtb[p]| has just been restored or retained
-void restore_trace (pointer p, const char * s)
+static void restore_trace (pointer p, const char * s)
 {
   begin_diagnostic();
   print_char('{');
@@ -6077,6 +12595,7 @@ void restore_trace (pointer p, const char * s)
   print_char('}');
   end_diagnostic(false);
 }
+
 // macros -> function
 void assign_trace (pointer p, const char * s)
 {
@@ -6084,14 +12603,14 @@ void assign_trace (pointer p, const char * s)
     restore_trace(p, s);
 }
 #endif
-/* sec 0281 */
+
 // pops the top level off the save stack
-void unsave (void)
+static void unsave (void)
 {
-  pointer p;
-  quarterword l;
-  halfword t;
-  boolean a;
+  pointer p;      // {position to be restored}
+  quarterword l;  // {saved level, if in fullword regions of |eqtb|}
+  halfword t;     // {saved value of |cur_tok|}
+  boolean a;      // {have we already processed an \.{\\aftergroup} ?}
 
   a = false;
 
@@ -6213,8 +12732,8 @@ done:
   else
     confusion("curlevel");
 }
-/* sec 0288 */
-void prepare_mag (void) 
+
+static void prepare_mag (void) 
 {
   if ((mag_set > 0) && (mag != mag_set))
   {
@@ -6225,7 +12744,7 @@ void prepare_mag (void)
     help2("I can handle only one magnification ratio per job. So I've",
         "reverted to the magnification you used earlier on this run.");
     int_error(mag_set);
-    geq_word_define(int_base + mag_code, mag_set);
+    geq_word_define(int_base + mag_code, mag_set);  // {|mag:=mag_set|}
   }
 
   if ((mag <= 0) || (mag > 32768))
@@ -6238,14 +12757,14 @@ void prepare_mag (void)
 
   mag_set = mag;
 }
-/* sec 0295 */
-void token_show (pointer p)
+
+static void token_show (pointer p)
 {
-  if (p != 0)
-    show_token_list(link(p), 0, 10000000);
+  if (p != null)
+    show_token_list(link(p), null, 10000000);
 }
-/* sec 0296 */
-void print_meaning (void)
+
+static void print_meaning (void)
 {
   print_cmd_chr(cur_cmd, cur_chr);
 
@@ -6262,11 +12781,11 @@ void print_meaning (void)
     token_show(cur_mark[cur_chr]);
   }
 }
-/* sec 0299 */
-void show_cur_cmd_chr (void)
+
+static void show_cur_cmd_chr (void)
 {
-  integer n;
-  integer l;
+  integer n;  // {level of \.{\\if...\\fi} nesting}
+  integer l;  // {line where \.{\\if} started}
   pointer p;
 
   begin_diagnostic();
@@ -6304,7 +12823,7 @@ void show_cur_cmd_chr (void)
 
         p = cond_ptr;
 
-        while (p != 0)
+        while (p != null)
         {
           incr(n);
           p = link(p);
@@ -6321,30 +12840,31 @@ void show_cur_cmd_chr (void)
   print_char('}');
   end_diagnostic(false);
 }
-/* sec 0311 */
+
 // prints where the scanner is
 void show_context (void)
 {
-  char old_setting;
-  pointer s;
-  integer nn;
-  boolean bottom_line;
-  integer i;
-  integer j;
-  integer l;
-  integer m;
-  integer n;
-  integer p;
-  integer q;
+  char old_setting; // {saved |selector| setting}
+  pointer s;  // {temporary pointer}
+  integer nn; // {number of contexts shown so far, less one}
+  boolean bottom_line;  // {have we reached the final context to be shown?}
+  integer i;  // {index into |buffer|}
+  integer j;  // {end of current line in |buffer|}
+  integer l;  // {length of descriptive information on line 1}
+  integer m;  // {context information gathered for line 2}
+  integer n;  // {length of line 1}
+  integer p;  // {starting or ending place in |trick_buf|}
+  integer q;  // {temporary index}
 
   base_ptr = input_ptr;
   input_stack[base_ptr] = cur_input;
+  // {store current state}
   nn = -1;
   bottom_line = false;
 
   while (true)
   {
-    cur_input = input_stack[base_ptr];
+    cur_input = input_stack[base_ptr];  // {enter into the context}
 
     if (state != token_list)
     {
@@ -6354,17 +12874,20 @@ void show_context (void)
 
     if ((base_ptr == input_ptr) || bottom_line || (nn < error_context_lines))
     {
+      // @<Display the current context@>
       if ((base_ptr == input_ptr) || (state != token_list) ||
           (token_type != backed_up) || (loc != 0))
       {
-        tally = 0;
+        // {we omit backed-up token lists that have already been read}
+        tally = 0;  // {get ready to count characters}
         old_setting = selector;
 
         if (state != token_list)
         {
+          // @<Print location of current line@>
           if (name <= 17)
           {
-            if (name == 0)
+            if (terminal_input)
             {
               if (base_ptr == 0)
                 print_nl("<*>");
@@ -6385,40 +12908,22 @@ void show_context (void)
           }
           else
           {
-            if (aptex_env.flag_c_style)
-            {
-              print_ln();
+            print_nl("l.");
 
-              if (name > 17)
-                print(name);
-
-              print_char('(');
-
-              if (index == in_open)
-                print_int(line);
-              else
-                print_int(line_stack[index + 1]);
-
-              prints(") :");
-            }
+            if (index == in_open)
+              print_int(line);
             else
-            {
-              print_nl("l.");
-
-              if (index == in_open)
-                print_int(line);
-              else
-                print_int(line_stack[index + 1]);
-            }
+              print_int(line_stack[index + 1]); // {input from a pseudo file}
           }
 
           print_char(' ');
+          // @<Pseudoprint the line@>
           begin_pseudoprint();
 
           if (buffer[limit] == end_line_char)
             j = limit;
           else
-            j = limit + 1;
+            j = limit + 1;  // {determine the effective end of the line}
 
           if (j > 0)
           {
@@ -6433,6 +12938,7 @@ void show_context (void)
         }
         else
         {
+          // @<Print type of token list@>
           switch (token_type)
           {
             case parameter:
@@ -6445,7 +12951,7 @@ void show_context (void)
               break;
 
             case backed_up:
-              if (loc == 0)
+              if (loc == null)
                 print_nl("<recently read> ");
               else
                 print_nl("<to be read again> ");
@@ -6507,10 +13013,11 @@ void show_context (void)
               break;
 
             default:
-              print_nl("?");
+              print_nl("?");  // {this should never happen}
               break;
           }
 
+          // @<Pseudoprint the token list@>
           begin_pseudoprint();
 
           if (token_type < macro)
@@ -6534,20 +13041,22 @@ void show_context (void)
             show_token_list(start, loc, 100000);
           }
           else
-            show_token_list(link(start), loc, 100000);
+            show_token_list(link(start), loc, 100000);  // {avoid reference count}
 
 done1:;
         }
 
-        selector = old_setting;
+        selector = old_setting; // {stop pseudoprinting}
 
+        // @<Print two lines using the tricky pseudoprinted information@>
         if (trick_count == 1000000)
           set_trick_count();
+        // {|set_trick_count| must be performed}
 
         if (tally < trick_count)
           m = tally - first_count;
         else
-          m = trick_count - first_count;
+          m = trick_count - first_count;  // {context on line 2}
 
         if (l + first_count <= half_error_line)
         {
@@ -6575,7 +13084,7 @@ done1:;
         print_ln();
 
         for (q = 1; q <= n; q++)
-          print_char(' ');
+          print_char(' ');  // {print |n| spaces to begin line~2}
 
         if (m + n <= error_line)
           p = first_count + m;
@@ -6599,7 +13108,7 @@ done1:;
     else if (nn == error_context_lines)
     {
       print_nl("...");
-      incr(nn); 
+      incr(nn); // {omitted if |error_context_lines<0|}
     }
 
     if (bottom_line)
@@ -6609,9 +13118,9 @@ done1:;
   }
 
 done:
-  cur_input = input_stack[input_ptr];
+  cur_input = input_stack[input_ptr]; // {restore original state}
 }
-/* sec 0323 */
+
 void begin_token_list (pointer p, quarterword t)
 {
   push_input();
@@ -6658,7 +13167,7 @@ void begin_token_list (pointer p, quarterword t)
   else
     loc = p;
 }
-/* sec 0324 */
+
 // leave a token-list input level
 void end_token_list (void)
 {
@@ -6689,14 +13198,14 @@ void end_token_list (void)
   pop_input();
   check_interrupt();
 }
-/* sec 0325 */
+
 // undoes one token of input
 void back_input (void)
 {
-  pointer p;
+  pointer p;  // {a token list of length one}
 
-  while ((state == token_list) && (loc == 0) && (token_type != v_template))
-    end_token_list();
+  while ((state == token_list) && (loc == null) && (token_type != v_template))
+    end_token_list(); // {conserve stack space}
 
   p = get_avail();
   info(p) = cur_tok;
@@ -6713,9 +13222,9 @@ void back_input (void)
   state = token_list;
   start = p;
   token_type = backed_up;
-  loc = p;
+  loc = p;  // {that was |back_list(p)|, without procedure overhead}
 }
-/* sec 0327 */
+
 // back up one token and call |error|
 void back_error (void)
 {
@@ -6724,9 +13233,9 @@ void back_error (void)
   OK_to_interrupt = true;
   error();
 }
-/* sec 0327 */
+
 // back up one inserted token and call |error|
-void ins_error (void) 
+static void ins_error (void) 
 {
   OK_to_interrupt = false;
   back_input();
@@ -6734,7 +13243,7 @@ void ins_error (void)
   OK_to_interrupt = true;
   error();
 }
-/* sec 0328 */
+
 void begin_file_reading (void)
 {
   if (in_open == max_in_open)
@@ -6764,10 +13273,10 @@ void begin_file_reading (void)
   line_stack[index] = line;
   start = first;
   state = mid_line;
-  name = 0;
+  name = 0; // {|terminal_input| is now |true|}
   synctex_tag = 0;
 }
-/* sec 0329 */
+
 void end_file_reading (void)
 {
   first = start;
@@ -6776,30 +13285,32 @@ void end_file_reading (void)
   if ((name == 18) || (name == 19))
     pseudo_close();
   else if (name > 17)
-    a_close(cur_file);
+    a_close(cur_file);  // {forget it}
 
   pop_input();
   decr(in_open);
 }
-/* sec 0330 */
+
 void clear_for_error_prompt (void)
 {
-  while ((state != token_list) && (name == 0) &&
+  while ((state != token_list) && terminal_input &&
       (input_ptr > 0) && (loc > limit))
     end_file_reading();
 
   print_ln();
+  clear_terminal();
 }
-/* sec 0336 */
-void check_outer_validity (void)
+
+static void check_outer_validity (void)
 {
-  pointer p;
-  pointer q;
+  pointer p;  // {points to inserted token list}
+  pointer q;  // {auxiliary pointer}
 
   if (scanner_status != normal)
   {
     deletions_allowed = false;
 
+    // @<Back up an outer control sequence so that it can be reread@>
     if (cur_cs != 0)
     {
       if ((state == token_list) || (name < 1) || (name > 17))
@@ -6810,12 +13321,13 @@ void check_outer_validity (void)
       }
 
       cur_cmd = spacer;
-      cur_chr = ' ';
+      cur_chr = ' ';  // {replace it by a space}
     }
 
     if (scanner_status > skipping)
     {
-      runaway();
+      // @<Tell the user what has run away and try to recover@>
+      runaway();  // {print a definition, argument, or preamble}
 
       if (cur_cs == 0)
         print_err("File ended");
@@ -6825,6 +13337,10 @@ void check_outer_validity (void)
         print_err("Forbidden control sequence found");
       }
 
+      /*
+        @<Print either `\.{definition}' or `\.{use}' or `\.{preamble}' or `\.{text}',
+        and insert tokens that should lead to recovery@>
+      */
       prints(" while scanning ");
       p = get_avail();
 
@@ -6896,10 +13412,10 @@ void check_outer_validity (void)
     deletions_allowed = true;
   }
 }
-/* sec 0363 */
-void firm_up_the_line (void)
+
+static void firm_up_the_line (void)
 {
-  integer k;
+  integer k;  // {an index into |buffer|}
 
   limit = last;
 
@@ -6915,11 +13431,11 @@ void firm_up_the_line (void)
           print(buffer[k]);
 
       first = limit;
-      prompt_input("=>");
+      prompt_input("=>"); // {wait for user response}
 
       if (last > first)
       {
-        for (k = first; k <= last - 1; k++)
+        for (k = first; k <= last - 1; k++) // {move line down in buffer}
           buffer[k + start - first] = buffer[k];
 
         limit = start + last - first;
@@ -6927,7 +13443,7 @@ void firm_up_the_line (void)
     }
   }
 }
-/* sec 0365 */
+
 // sets |cur_cmd|, |cur_chr|, |cur_tok|
 void get_token (void)
 {
@@ -6945,24 +13461,24 @@ void get_token (void)
   else
     cur_tok = cs_token_flag + cur_cs;
 }
-/* sec 0389 */
+
 // invokes a user-defined control sequence
-void macro_call (void)
+static void macro_call (void)
 {
-  pointer r;
-  pointer p;
-  pointer q;
-  pointer s;
-  pointer t;
-  pointer u, v;
-  pointer rbrace_ptr;
-  small_number n;
-  halfword unbalance;
-  halfword m;
-  pointer ref_count;
-  small_number save_scanner_status;
-  pointer save_warning_index;
-  ASCII_code match_chr;
+  pointer r;  // {current node in the macro's token list}
+  pointer p;  // {current node in parameter token list being built}
+  pointer q;  // {new node being put into the token list}
+  pointer s;  // {backup pointer for parameter matching}
+  pointer t;  // {cycle pointer for backup recovery}
+  pointer u, v; // {auxiliary pointers for backup recovery}
+  pointer rbrace_ptr; // {one step before the last |right_brace| token}
+  small_number n; // {the number of parameters scanned}
+  halfword unbalance; // {unmatched left braces in current parameter}
+  halfword m; // {the number of tokens or groups (usually)}
+  pointer ref_count;  // {start of the token list}
+  small_number save_scanner_status; // {|scanner_status| upon entry}
+  pointer save_warning_index; // {|warning_index| upon entry}
+  ASCII_code match_chr; // {character used in parameter}
 
   save_scanner_status = scanner_status;
   save_warning_index = warning_index;
@@ -6973,6 +13489,7 @@ void macro_call (void)
 
   if (tracing_macros > 0)
   {
+    // @<Show the text of the macro being expanded@>
     begin_diagnostic();
     print_ln();
     print_cs(warning_index);
@@ -7257,8 +13774,8 @@ exit:
   scanner_status = save_scanner_status;
   warning_index = save_warning_index;
 }
-/* sec 0379 */
-void insert_relax (void)
+
+static void insert_relax (void)
 {
   cur_tok = cs_token_flag + cur_cs;
   back_input();
@@ -7266,16 +13783,16 @@ void insert_relax (void)
   back_input();
   token_type = inserted;
 }
-/* sec 0366 */
-void expand (void)
+
+static void expand (void)
 {
-  halfword t;
-  pointer p, q, r;
-  integer j;
-  integer cv_backup;
-  small_number cvl_backup, radix_backup, co_backup;
-  pointer backup_backup;
-  small_number save_scanner_status;
+  halfword t; // {token that is being ``expanded after''}
+  pointer p, q, r;  // {for list manipulation}
+  integer j;  // {index into |buffer|}
+  integer cv_backup;  // {to save the global quantity |cur_val|}
+  small_number cvl_backup, radix_backup, co_backup; // {to save |cur_val_level|, etc.}
+  pointer backup_backup;  // {to save |link(backup_head)|}
+  small_number save_scanner_status; // {temporary storage of |scanner_status|}
 
   cv_backup = cur_val;
   cvl_backup = cur_val_level;
@@ -7286,12 +13803,15 @@ void expand (void)
 reswitch:
   if (cur_cmd < call)
   {
+    // @<Expand a nonmacro@>
+
     if (tracing_commands > 1)
       show_cur_cmd_chr();
 
     switch (cur_cmd)
     {
       case top_bot_mark:
+        // @<Insert the \(a)appropriate mark text into the scanner@>
         {
           t = cur_chr % marks_code;
 
@@ -7565,7 +14085,7 @@ reswitch:
   cur_order = co_backup;
   link(backup_head) = backup_backup;
 }
-/* sec 0380 */
+
 // sets |cur_cmd|, |cur_chr|, |cur_tok|, and expands macros
 void get_x_token (void)
 {
@@ -7602,7 +14122,7 @@ done:
   else
     cur_tok = cs_token_flag + cur_cs;
 }
-/* sec 0381 */
+
 // |get_x_token| without the initial |get_next|
 void x_token (void)
 {
@@ -7622,7 +14142,7 @@ void x_token (void)
   else
     cur_tok = cs_token_flag + cur_cs;
 }
-/* sec 0403 */
+
 // reads a mandatory |left_brace|
 void scan_left_brace (void)
 {
@@ -7644,8 +14164,8 @@ void scan_left_brace (void)
     incr(align_state);
   }
 }
-/* sec 0405 */
-void scan_optional_equals (void)
+
+static void scan_optional_equals (void)
 {
   do {
     get_x_token();
@@ -7654,13 +14174,13 @@ void scan_optional_equals (void)
   if (cur_tok != other_token + '=')
     back_input();
 }
-/* sec 0407 */
+
 // look for a given string
-boolean scan_keyword (const char * s)
+static boolean scan_keyword (const char * s)
 {
-  pointer p;
-  pointer q;
-  const char * k;
+  pointer p;  // {tail of the backup list}
+  pointer q;  // {new node being added to the token list via |store_new_token|}
+  const char * k; // {index into |str_pool|}
 
   p = backup_head;
   link(p) = 0;
@@ -7668,7 +14188,7 @@ boolean scan_keyword (const char * s)
 
   while (*k)
   {
-    get_x_token();
+    get_x_token();  // {recursion is possible here}
 
     if ((cur_cs == 0) && ((cur_chr == (*k)) || (cur_chr == (*k) - 'a' + 'A')))
     {
@@ -7690,15 +14210,15 @@ boolean scan_keyword (const char * s)
 
   return true;
 }
-/* sec 0408 */
-void mu_error (void)
+
+static void mu_error (void)
 {
   print_err("Incompatible glue units");
   help1("I'm going to assume that 1mu=1pt when they're mixed.");
   error();
 }
-/* sec 0433 */
-void scan_eight_bit_int (void)
+
+static void scan_eight_bit_int (void)
 {
   scan_int();
 
@@ -7711,7 +14231,7 @@ void scan_eight_bit_int (void)
     cur_val = 0;
   }
 }
-/* sec 0434 */
+
 void scan_char_num (void)
 {
   scan_int();
@@ -7725,7 +14245,7 @@ void scan_char_num (void)
     cur_val = 0;
   }
 }
-/* sec 0435 */
+
 void scan_four_bit_int (void)
 {
   scan_int();
@@ -7739,7 +14259,7 @@ void scan_four_bit_int (void)
     cur_val = 0;
   }
 }
-/* sec 0436 */
+
 void scan_fifteen_bit_int (void)
 {
   scan_int();
@@ -7753,8 +14273,8 @@ void scan_fifteen_bit_int (void)
     cur_val = 0;
   }
 }
-/* sec 0437 */
-void scan_twenty_seven_bit_int (void)
+
+static void scan_twenty_seven_bit_int (void)
 {
   scan_int();
 
@@ -7767,7 +14287,7 @@ void scan_twenty_seven_bit_int (void)
     cur_val = 0;
   }
 }
-/* sec 0577 */
+
 void scan_font_ident (void)
 {
   internal_font_number f;
@@ -7802,12 +14322,12 @@ void scan_font_ident (void)
 
   cur_val = f;
 }
-/* sec 0578 */
+
 // sets |cur_val| to |font_info| location
 void find_font_dimen (boolean writing)
 {
   internal_font_number f;
-  integer n;
+  integer n;  // {the parameter number}
 
   scan_int();
   n = cur_val;
@@ -7821,7 +14341,7 @@ void find_font_dimen (boolean writing)
     if (writing && (n <= space_shrink_code) && (n >= space_code) && (font_glue[f] != 0))
     {
       delete_glue_ref(font_glue[f]);
-      font_glue[f] = 0;
+      font_glue[f] = null;
     }
 
     if (n > font_params[f])
@@ -7841,18 +14361,18 @@ void find_font_dimen (boolean writing)
           if (fmem_ptr == font_mem_size)
             overflow("font memory", font_mem_size);
 #endif
-          font_info[fmem_ptr].cint = 0;
+          font_info[fmem_ptr].sc = 0;
           incr(fmem_ptr);
           incr(font_params[f]);
         } while (!(n == font_params[f]));
 
-        cur_val = fmem_ptr - 1;
+        cur_val = fmem_ptr - 1; // {this equals |param_base[f]+font_params[f]|}
       }
     }
     else
       cur_val = n + param_base[f];
   }
-
+  // @<Issue an error message if |cur_val=fmem_ptr|@>
   if (cur_val == fmem_ptr)
   {
     print_err("Font ");
@@ -7865,9 +14385,9 @@ void find_font_dimen (boolean writing)
     error();
   }
 }
-/* sec 0413 */
+
 // fetch an internal parameter
-void scan_something_internal (small_number level, boolean negative)
+static void scan_something_internal (small_number level, boolean negative)
 {
   halfword m;
   pointer tx;
@@ -8580,7 +15100,7 @@ void scan_something_internal (small_number level, boolean negative)
   else if ((cur_val_level >= glue_val) && (cur_val_level <= mu_val))
     add_glue_ref(cur_val);
 }
-/* sec 0341 */
+
 // sets |cur_cmd|, |cur_chr|, |cur_cs| to next token
 void get_next (void)
 {
@@ -9049,7 +15569,7 @@ found:
       }
       else
       {
-        if (!(name == 0))
+        if (!terminal_input)
         {
           cur_cmd = 0;
           cur_chr = 0;
@@ -9186,7 +15706,7 @@ found:
     }
   }
 }
-/* sec 0440 */
+
 // sets |cur_val| to an integer
 void scan_int (void)
 {
@@ -9335,7 +15855,7 @@ done:
   if (negative)
     negate(cur_val);
 }
-/* sec 0448 */
+
 // sets |cur_val| to a dimension
 void scan_dimen (boolean mu, boolean inf, boolean shortcut)
 {
@@ -9659,7 +16179,7 @@ attach_sign:
   if (negative)
     negate(cur_val);
 }
-/* sec 0461 */
+
 // sets |cur_val| to a glue spec pointer
 void scan_glue (small_number level)
 {
@@ -9727,8 +16247,10 @@ void scan_glue (small_number level)
 
   cur_val = q;
 }
-/* sec 0463 */
-pointer scan_rule_spec (void)
+
+#define default_rule 26214
+
+static pointer scan_rule_spec (void)
 {
   pointer q;
 
@@ -9766,9 +16288,9 @@ reswitch:
 
   return q;
 }
-/* sec 0464 */
+
 // changes the string |str_pool[b..pool_ptr]| to a token list
-pointer str_toks (pool_pointer b)
+static pointer str_toks (pool_pointer b)
 {
   pointer p;
   pointer q;
@@ -9812,14 +16334,15 @@ pointer str_toks (pool_pointer b)
 
   return p;
 }
-/* sec 0465 */
-pointer the_toks (void)
-{
-  char old_setting;
-  pointer p, q, r;
-  pool_pointer b;
-  small_number c;
 
+static pointer the_toks (void)
+{
+  char old_setting; // {holds |selector| setting}
+  pointer p, q, r;  // {used for copying a token list}
+  pool_pointer b; // {base of temporary string}
+  small_number c; // {value of |cur_chr|}
+
+  // @<Handle \.{\\unexpanded} or \.{\\detokenize} and |return|@>
   if (odd(cur_chr))
   {
     c = cur_chr;
@@ -9837,6 +16360,7 @@ pointer the_toks (void)
       token_show(p);
       flush_list(p);
       selector = old_setting;
+     
       return str_toks(b);
     }
   }
@@ -9846,16 +16370,17 @@ pointer the_toks (void)
 
   if (cur_val_level >= ident_val)
   {
+    // @<Copy the token list@>
     p = temp_head;
-    link(p) = 0;
+    link(p) = null;
 
     if (cur_val_level == ident_val)
       store_new_token(cs_token_flag + cur_val);
-    else if (cur_val != 0)
+    else if (cur_val != null)
     {
-      r = link(cur_val);
+      r = link(cur_val);  // {do not copy the reference count}
 
-      while (r != 0)
+      while (r != null)
       {
         fast_store_new_token(info(r));
         r = link(r);
@@ -9902,13 +16427,13 @@ pointer the_toks (void)
     return str_toks(b);
   }
 }
-/* sec 0467 */
+
 void ins_the_toks (void) 
 { 
   link(garbage) = the_toks();
   ins_list(link(temp_head));
 }
-/* sec 0470 */
+
 void conv_toks (void)
 {
   char old_setting;
@@ -10079,15 +16604,15 @@ void conv_toks (void)
   link(garbage) = str_toks(b);
   ins_list(link(temp_head));
 }
-/* sec 0473 */
+
 pointer scan_toks (boolean macro_def, boolean xpand)
 {
-  halfword t;
-  halfword s;
-  pointer p;
-  pointer q;
-  halfword unbalance;
-  halfword hash_brace;
+  halfword t; // {token representing the highest parameter number}
+  halfword s; // {saved token}
+  pointer p;  // {tail of the token list being built}
+  pointer q;  // {new node being added to the token list via |store_new_token|}
+  halfword unbalance;   // {number of unmatched left braces}
+  halfword hash_brace;  // {possible `\.{\#\{}' token}
 
   if (macro_def)
     scanner_status = defining;
@@ -10096,22 +16621,28 @@ pointer scan_toks (boolean macro_def, boolean xpand)
 
   warning_index = cur_cs;
   def_ref = get_avail();
-  token_ref_count(def_ref) = 0;
+  token_ref_count(def_ref) = null;
   p = def_ref;
   hash_brace = 0;
   t = zero_token;
 
   if (macro_def)
   {
+    // @<Scan and build the parameter part of the macro definition@>
     while (true)
     {
-      get_token();
+      get_token();  // {set |cur_cmd|, |cur_chr|, |cur_tok|}
 
       if (cur_tok < right_brace_limit)
         goto done1;
 
       if (cur_cmd == mac_param)
       {
+        /*
+          @<If the next character is a parameter number, make |cur_tok|
+          a |match| token; but if it is a left brace, store
+          `|left_brace|, |end_match|', set |hash_brace|, and |goto done|@>
+        */
         s = match_token + cur_chr;
         get_token();
 
@@ -10153,6 +16684,7 @@ done1:
 
     if (cur_cmd == right_brace)
     {
+      // @<Express shock at the missing left brace; |goto found|@>
       print_err("Missing { inserted");
       incr(align_state);
       help2("Where was the left brace? You said something like `\\def\\a}',",
@@ -10163,14 +16695,16 @@ done1:
 done:;
   }
   else
-    scan_left_brace();
+    scan_left_brace();  // {remove the compulsory left brace}
 
+  // @<Scan and build the body of the token list; |goto found| when finished@>
   unbalance = 1;
 
   while (true)
   {
     if (xpand)
     {
+      // @<Expand the next part of the input@>
       while (true)
       {
         get_next();
@@ -10193,7 +16727,7 @@ done:;
         {
           q = the_toks();
 
-          if (link(temp_head) != 0)
+          if (link(temp_head) != null)
           {
             link(p) = link(temp_head);
             p = q;
@@ -10223,6 +16757,7 @@ done2:
     {
       if (macro_def)
       {
+        // @<Look for parameter number or \.{\#\#}@>
         s = cur_tok;
 
         if (xpand)
@@ -10259,20 +16794,20 @@ found:
 
   return p;
 }
-/* sec 0482 */
+
 void read_toks (integer n, pointer r, halfword j)
 {
-  pointer p;
-  pointer q;
-  integer s;
+  pointer p;  // {tail of the token list}
+  pointer q;  // {new node being added to the token list via |store_new_token|}
+  integer s;  // {saved value of |align_state|}
   /* small_number m; */
-  int m;
+  int m;  // {stream number}
 
   scanner_status = defining;
   warning_index = r;
   def_ref = get_avail();
-  token_ref_count(def_ref) = 0;
-  p = def_ref;
+  token_ref_count(def_ref) = null;
+  p = def_ref;  // {the reference count}
   store_new_token(end_match_token);
 
   if ((n < 0) || (n > 15))
@@ -10281,14 +16816,16 @@ void read_toks (integer n, pointer r, halfword j)
     m = n;
 
   s = align_state;
-  align_state = 1000000;
+  align_state = 1000000;  // {disable tab marks, etc.}
 
   do {
+    // @<Input and store tokens from the next line of the file@>
     begin_file_reading();
     name = m + 1;
 
     if (read_open[m] == closed)
     {
+      // @<Input for \.{\\read} from the terminal@>
       if (interaction > nonstop_mode)
       {
         if (n < 0)
@@ -10307,6 +16844,7 @@ void read_toks (integer n, pointer r, halfword j)
     }
     else if (read_open[m] == just_open)
     {
+      // @<Input the first line of |read_file[m]|@>
       if (input_ln(read_file[m], false))
         read_open[m] = normal;
       else
@@ -10317,6 +16855,7 @@ void read_toks (integer n, pointer r, halfword j)
     }
     else
     {
+      // @<Input the next line of |read_file[m]|@>
       if (!input_ln(read_file[m], true))
       {
         a_close(read_file[m]);
@@ -10345,9 +16884,10 @@ void read_toks (integer n, pointer r, halfword j)
     loc = start;
     state = new_line;
 
+    // @<Handle \.{\\readline} and |goto done|@>
     if (j == 1)
     {
-      while (loc <= limit)
+      while (loc <= limit)  // {current line not yet finished}
       {
         cur_chr = buffer[loc];
         incr(loc);
@@ -10369,8 +16909,9 @@ void read_toks (integer n, pointer r, halfword j)
 
       if (cur_tok == 0)
         goto done;
+      // {|cur_cmd=cur_chr=0| will occur at the end of the line}
 
-      if (align_state < 1000000)
+      if (align_state < 1000000)  // {unmatched `\.\}' aborts the line}
       {
         do {
           get_token();
@@ -10391,11 +16932,11 @@ done:
   scanner_status = normal;
   align_state = s;
 }
-/* sec 0494 */
+
 void pass_text (void)
 {
-  integer l;
-  small_number save_scanner_status;
+  integer l;  // {level of $\.{\\if}\ldots\.{\\fi}$ nesting}
+  small_number save_scanner_status; // {|scanner_status| upon entry}
 
   save_scanner_status = scanner_status;
   scanner_status = skipping;
@@ -10424,20 +16965,20 @@ done:
   if (tracing_ifs > 0)
     show_cur_cmd_chr();
 }
-/* sec 0497 */
-void change_if_limit (small_number l, pointer p)
+
+static void change_if_limit (small_number l, pointer p)
 {
   pointer q;
 
   if (p == cond_ptr)
-    if_limit = l;
+    if_limit = l; // {that's the easy case}
   else
   {
     q = cond_ptr;
 
     while (true)
     {
-      if (q == 0)
+      if (q == null)
         confusion("if");
 
       if (link(q) == p)
@@ -10450,17 +16991,17 @@ void change_if_limit (small_number l, pointer p)
     }
   }
 }
-/* sec 0498 */
+
 void conditional (void)
 {
-  boolean b;
-  char r;
-  integer m, n;
-  pointer p, q;
-  small_number save_scanner_status;
-  pointer save_cond_ptr;
-  small_number this_if;
-  boolean is_unless;
+  boolean b;  // {is the condition true?}
+  char r; // {relation to be evaluated}
+  integer m, n; // {to be tested against the second operand}
+  pointer p, q; // {for traversing token lists in \.{\\ifx} tests}
+  small_number save_scanner_status; // {|scanner_status| upon entry}
+  pointer save_cond_ptr;  // {|cond_ptr| corresponding to this conditional}
+  small_number this_if; // {type of this conditional}
+  boolean is_unless;  // {was this if preceded by `\.{\\unless}' ?}
 
   if (tracing_ifs > 0)
   {
@@ -10922,15 +17463,15 @@ common_ending:
   else
     if_limit = fi_code;
 }
-/* sec 0515 */
-void begin_name (void)
+
+static void begin_name (void)
 {
   area_delimiter = 0;
   ext_delimiter = 0;
   prev_char = 0;
 }
-/* sec 0516 */
-boolean more_name (ASCII_code c)
+
+static boolean more_name (ASCII_code c)
 {
   if (!quoted_file_name && c == ' ')
     return false;
@@ -10956,8 +17497,8 @@ boolean more_name (ASCII_code c)
     return true;
   }
 }
-/* sec 0517 */
-void end_name (void) 
+
+static void end_name (void) 
 {
 #ifdef APTEX_EXTENSION
   if (str_ptr + 3 > current_max_strings)
@@ -10992,12 +17533,12 @@ void end_name (void)
     cur_ext = make_string();
   }
 }
-/* sec 0519 */
+
 void pack_file_name (str_number n, str_number a, str_number e)
 {
-  integer k;
-  ASCII_code c;
-  pool_pointer j;
+  integer k;  // {number of positions filled in |name_of_file|}
+  ASCII_code c; // {character being packed}
+  pool_pointer j; // {index into |str_pool|}
 
   k = 0;
 
@@ -11020,12 +17561,12 @@ void pack_file_name (str_number n, str_number a, str_number e)
 
   name_of_file[file_name_size] = '\0';
 }
-/* sec 0523 */
-void pack_buffered_name (small_number n, integer a, integer b)
+
+static void pack_buffered_name (small_number n, integer a, integer b)
 {
-  integer k;
-  ASCII_code c;
-  integer j;
+  integer k;  // {number of positions filled in |name_of_file|}
+  ASCII_code c; // {character being packed}
+  integer j;  // {index into |buffer| or |TEX_format_default|}
 
   if (n + b - a + 5 > file_name_size)
     b = a + file_name_size - n - 5;
@@ -11051,8 +17592,8 @@ void pack_buffered_name (small_number n, integer a, integer b)
 
   name_of_file[file_name_size] = '\0';
 }
-/* sec 0525 */
-str_number make_name_string (void)
+
+static str_number make_name_string (void)
 {
   integer k;
 
@@ -11078,26 +17619,26 @@ str_number make_name_string (void)
     return make_string();
   }
 }
-/* sec 0525 */
-//str_number a_make_name_string (alpha_file * f)
-str_number a_make_name_string_(void)
+
+static str_number a_make_name_string (alpha_file f)
 {
+  (void) f;
   return make_name_string();
 }
-/* sec 0525 */
-//str_number b_make_name_string_(byte_file * f)
-str_number b_make_name_string_(void)
+
+str_number b_make_name_string (byte_file f)
 {
+  (void) f;
   return make_name_string(); 
 }
-/* sec 0525 */
-//str_number w_make_name_string_(word_file * f)
-str_number w_make_name_string_(void)
+
+str_number w_make_name_string (word_file f)
 {
+  (void) f;
   return make_name_string();
 }
-/* sec 0526 */
-void scan_file_name (void)
+
+static void scan_file_name (void)
 {
   name_in_progress = true;
   begin_name();
@@ -11108,7 +17649,7 @@ void scan_file_name (void)
 
   quoted_file_name = false;
 
-  if (flag_allow_quoted)
+  if (aptex_env.flag_allow_quoted)
   {
     if (cur_chr == '"')
     {
@@ -11153,7 +17694,7 @@ done:
   name_in_progress = false;
   skip_mode = true;
 }
-/* sec 0529 */
+
 void pack_job_name_(str_number s)
 {
   cur_area = 335; /* "" */
@@ -11161,7 +17702,7 @@ void pack_job_name_(str_number s)
   cur_name = job_name;
   pack_cur_name();
 }
-/* sec 0530 */
+
 void prompt_file_name_(const char * s, str_number e)
 {
   integer k;
@@ -11186,6 +17727,7 @@ void prompt_file_name_(const char * s, str_number e)
   if (interaction < scroll_mode)
     fatal_error("*** (job aborted, file error in nonstop mode)");
 
+  clear_terminal();
   prompt_input(": ");
 
   {
@@ -11197,7 +17739,7 @@ void prompt_file_name_(const char * s, str_number e)
 
     quoted_file_name = false;
 
-    if (flag_allow_quoted && (k < last))
+    if (aptex_env.flag_allow_quoted && (k < last))
     {
       if (buffer[k] == '"')
       {
@@ -11226,7 +17768,7 @@ done:
 
   pack_cur_name();
 }
-/* sec 0534 */
+
 void open_log_file (void)
 {
   char old_setting;
@@ -11258,12 +17800,7 @@ void open_log_file (void)
       slow_print(format_ident);
 
     prints("  ");
-
-    if (aptex_env.flag_civilize_date)
-      print_int(year);
-    else
-      print_int(day);
-
+    print_int(day);
     print_char(' ');
     months = " JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
 
@@ -11271,12 +17808,7 @@ void open_log_file (void)
       wlog(months[k]);
 
     print_char(' ');
-
-    if (aptex_env.flag_civilize_date)
-      print_int(day);
-    else
-      print_int(year);
-
+    print_int(year);
     print_char(' ');
     print_two(tex_time / 60);
     print_char(':');
@@ -11302,7 +17834,7 @@ void open_log_file (void)
   print_ln();
   selector = old_setting + 2;
 }
-/* sec 0537 */
+
 // \TeX\ will \.{\\input} something
 void start_input (void)
 {
@@ -11359,9 +17891,9 @@ done:
     loc = start;
   }
 }
-/* sec 0560 */
+
 // input a \.{TFM} file
-internal_font_number read_font_info (pointer u, str_number nom, str_number aire, scaled s)
+static internal_font_number read_font_info (pointer u, str_number nom, str_number aire, scaled s)
 {
   font_index k;
   int jfm_flag;
@@ -11850,11 +18382,11 @@ done:
 
   return g;
 }
-/* sec 0581 */
-void char_warning (internal_font_number f, eight_bits c)
+
+static void char_warning (internal_font_number f, eight_bits c)
 {
-  ASCII_code l;
-  integer old_setting;
+  ASCII_code l; // {small indices or counters}
+  integer old_setting;  // {saved value of |tracing_online|}
 
   if (tracing_lost_chars > 0)
   {
@@ -11863,18 +18395,10 @@ void char_warning (internal_font_number f, eight_bits c)
     if (eTeX_ex && (tracing_lost_chars > 1))
       tracing_online = 1;
 
-    if (aptex_env.trace_caret == 0)
-      begin_diagnostic();
+    begin_diagnostic();
+    print_nl("Missing character: there is no ");
 
-    if (aptex_env.trace_caret)
-    {
-      print_nl("! ");
-      prints("Missing character: there is no ");
-    }
-    else
-      print_nl("Missing character: there is no ");
-
-    if ((c < ' ') || (c > '-'))
+    if ((c < ' ') || (c > '~'))
     {
       print_char('^');
       print_char('^');
@@ -11892,50 +18416,17 @@ void char_warning (internal_font_number f, eight_bits c)
     else
       print(c);
 
-    if (aptex_env.flag_caret_dec)
-    {
-      print_char(' ');
-      print_char('(');
-
-      if (c / 100 > 0)
-      {
-        print_char('0' + c / 100);
-        c = c - (c / 100) * 100;
-        print_char('0' + c / 10);
-      }
-      else
-      {
-        c = c - (c / 100) * 100;
-
-        if (c / 10 > 0)
-          print_char('0' + c / 10);
-      }
-
-      print_char('0' + c % 10);
-      print_char(')');
-    }
-
     prints(" in font ");
     slow_print(font_name[f]);
     print_char('!');
-
-    if (aptex_env.trace_caret)
-    {
-      if (f != null_font)
-        show_context();
-    }
-
-    if (aptex_env.trace_caret == 0)
-      end_diagnostic(false);
-
-    missing_characters++;
+    end_diagnostic(false);
     tracing_online = old_setting;
   }
 }
-/* sec 0582 */
-pointer new_character (internal_font_number f, eight_bits c)
+
+static pointer new_character (internal_font_number f, eight_bits c)
 {
-  pointer p;
+  pointer p;  // {newly allocated node}
 
   if (font_bc[f] <= c)
   {
@@ -11954,7 +18445,8 @@ pointer new_character (internal_font_number f, eight_bits c)
   char_warning(f, c);
   return 0;
 }
-/* sec 0598 */
+
+// {outputs half of the buffer}
 void dvi_swap (void)
 {
   if (dvi_limit == dvi_buf_size)
@@ -11972,8 +18464,8 @@ void dvi_swap (void)
 
   dvi_gone = dvi_gone + half_buf;
 }
-/* sec 0600 */
-void dvi_four_(integer x)
+
+static void dvi_four (integer x)
 { 
   if (x >= 0)
     dvi_out(x / 0100000000);
@@ -11990,52 +18482,15 @@ void dvi_four_(integer x)
   dvi_out(x / 0400);
   dvi_out(x % 0400);
 }
-/* sec 0601 */
-void dvi_pop_(integer l)
+
+static void dvi_pop (integer l)
 {
   if ((l == dvi_offset + dvi_ptr) && (dvi_ptr > 0))
     decr(dvi_ptr);
   else
     dvi_out(pop);
 }
-/* sec 0602 */
-void dvi_font_def (internal_font_number f)
-{
-  pool_pointer k;
 
-#ifdef APTEX_EXTENSION
-  if (f <= 256)
-  {
-    dvi_out(fnt_def1);
-    dvi_out(f - 1);
-  }
-  else
-  {
-    dvi_out(fnt_def2);
-    dvi_out(((f - 1) >> 8));
-    dvi_out(((f - 1) & 255));
-  }
-#else
-  dvi_out(fnt_def1);
-  dvi_out(f - 1);
-#endif
-
-  dvi_out(font_check[f].b0);
-  dvi_out(font_check[f].b1);
-  dvi_out(font_check[f].b2);
-  dvi_out(font_check[f].b3);
-  dvi_four(font_size[f]); 
-  dvi_four(font_dsize[f]);
-  dvi_out(length(font_area[f]));
-  dvi_out(length(font_name[f]));
-
-  for (k = str_start[font_area[f]]; k <= str_start[font_area[f] + 1] - 1; k++)
-    dvi_out(str_pool[k]);
-
-  for (k = str_start[font_name[f]]; k <= str_start[font_name[f] + 1] - 1; k++)
-    dvi_out(str_pool[k]);
-}
-/* sec 0607 */
 void movement (scaled w, eight_bits o)
 {
   small_number mstate;
@@ -12063,6 +18518,7 @@ void movement (scaled w, eight_bits o)
   while (p != 0)
   {
     if (width(p) == w)
+    {
       switch (mstate + info(p))
       {
         case none_seen + yz_OK:
@@ -12110,9 +18566,12 @@ void movement (scaled w, eight_bits o)
           break;
 
         default:
+          do_nothing();
           break;
       }
+    }
     else
+    {
       switch (mstate + info(p))
       {
         case none_seen + y_here:
@@ -12129,8 +18588,10 @@ void movement (scaled w, eight_bits o)
           break;
 
         default:
+          do_nothing();
           break;
       }
+    }
 
     p = link(p);
   }
@@ -12139,19 +18600,20 @@ not_found:
 
   info(q) = yz_OK;
 
-  if (abs(w) >= 8388608L) /* 2^23 */
+  if (abs(w) >= 040000000)
   {
     dvi_out(o + 3);
     dvi_four(w);
+
     return;
   }
 
-  if (abs(w) >= 32768L)
+  if (abs(w) >= 0100000)
   {
     dvi_out(o + 2);
 
     if (w < 0)
-      w = w + 16777216L;  /* 2^24 */
+      w = w + 0100000000;
     //dvi_out(w / 65536L);
     dvi_out((w >> 16));
     //w = w % 65536L;
@@ -12205,6 +18667,7 @@ found:
           break;
 
         default:
+          do_nothing();
           break;
       }
     }
@@ -12228,12 +18691,13 @@ found:
           break;
 
         default:
+          do_nothing();
           break;
       }
     }
   }
 }
-/* sec 0615 */
+
 void prune_movements (integer l)
 {
   pointer p;
@@ -12259,14 +18723,1522 @@ done:
     free_node(p, movement_node_size);
   }
 }
-/* sec 1368 */
-void special_out (pointer p)
+
+#ifndef APTEX_DVI_ONLY
+
+// PDF output functions
+extern void pdf_files_init(void);
+extern void pdf_files_close(void);
+
+extern void pdf_init_device(double dvi2pts, int precision, int black_and_white);
+extern void pdf_close_device(void);
+
+extern void pdf_init_fontmaps(void);
+extern void pdf_close_fontmaps(void);
+
+extern void pdf_open_document(const char *filename,
+  int do_encryption,
+  double media_width,
+  double media_height,
+  double annot_grow_amount,
+  int bookmark_open_depth,
+  int check_gotos);
+extern void pdf_close_document(void);
+
+extern void pdf_doc_set_creator(const char * creator);
+extern void pdf_doc_set_producer(const char * producer);
+extern void pdf_set_version(unsigned version);
+extern void pdf_set_compression(int level);
+
+extern void graphics_mode(void);
+extern long pdf_output_stats(void);
+
+extern int spc_exec_at_begin_document(void);
+extern void spc_exec_at_end_document(void);
+
+extern void pdf_doc_begin_page(double scale, double x_origin, double y_origin);
+extern void pdf_doc_end_page(void);
+
+extern int spc_exec_at_begin_page(void);
+extern int spc_exec_at_end_page(void);
+
+typedef signed long spt_t;
+typedef long UNSIGNED_TRIPLE, SIGNED_TRIPLE, SIGNED_QUAD;
+typedef struct pdf_rect {
+  double llx, lly, urx, ury;
+} pdf_rect;
+
+extern int spc_exec_special(const char *buffer, long size, double x_user, double y_user, double dpx_mag);
+
+extern int dvi_locate_font(const char *tfm_name, spt_t ptsize);
+
+extern void ng_set(SIGNED_QUAD ch, int ng_font_id, SIGNED_QUAD h, SIGNED_QUAD v);
+extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
+
+extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
+extern void pdf_enc_compute_id_string(char *dviname, char *pdfname);
+extern void pdf_dev_set_dirmode(int dir_mode);
+extern int pdf_load_fontmap_file(const char *filename, int map_mode);
+
+static const double sp2bp = 0.000015202;
+static int    font_id[65536];
+
+static void pdf_locate_font (internal_font_number f)
+{
+  char * sbuf = take_str_string(font_name[f]);
+  font_id[f] = dvi_locate_font(sbuf, font_size[f]);
+  free(sbuf);
+}
+
+static void pdf_char_out (internal_font_number f, ASCII_code c)
+{
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      pdf_dev_set_dirmode(dvi_yoko);
+      ng_set(c, font_id[f], cur_h, -cur_v);
+      break;
+
+    case dir_tate:
+      pdf_dev_set_dirmode(dvi_tate);
+      ng_set(c, font_id[f], -cur_v, -cur_h);
+      break;
+
+    case dir_dtou:
+      pdf_dev_set_dirmode(dvi_dtou);
+      ng_set(c, font_id[f], cur_v, cur_h);
+      break;
+  }
+}
+
+static void pdf_kanji_out (internal_font_number f, KANJI_code c)
+{
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      pdf_dev_set_dirmode(dvi_yoko);
+      ng_set(c, font_id[f], cur_h, -cur_v);
+      break;
+
+    case dir_tate:
+      pdf_dev_set_dirmode(dvi_tate);
+      ng_set(c, font_id[f], -cur_v, -cur_h);
+      break;
+
+    case dir_dtou:
+      pdf_dev_set_dirmode(dvi_dtou);
+      ng_set(c, font_id[f], cur_v, cur_h);
+      break;
+  }
+}
+
+void pdf_rule_out (scaled rule_wd, scaled rule_ht)
+{
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      pdf_dev_set_rule(cur_h, -cur_v, rule_wd, rule_ht);
+      break;
+
+    case dir_tate:
+      pdf_dev_set_rule(-cur_v, -cur_h - rule_wd, rule_ht, rule_wd);
+      break;
+
+    case dir_dtou:
+      pdf_dev_set_rule(cur_v, cur_h, rule_ht, rule_wd);
+      break;
+  }
+}
+
+static void pdf_set_cur_page (scaled cur_wd, scaled cur_ht)
+{
+  pdf_rect mediabox;
+
+  mediabox.llx = 0.0;
+  mediabox.lly = 0.0;
+  mediabox.urx = cur_wd * sp2bp;
+  mediabox.ury = cur_ht * sp2bp;
+  pdf_doc_set_mediabox(total_pages + 1, &mediabox);
+}
+
+#endif
+
+// ship out part
+static void dvi_font_def (internal_font_number f)
+{
+  pool_pointer k;
+
+#ifdef APTEX_EXTENSION
+  if (f <= 256)
+  {
+    dvi_out(fnt_def1);
+    dvi_out(f - 1);
+  }
+  else
+  {
+    dvi_out(fnt_def2);
+    dvi_out(((f - 1) >> 8));
+    dvi_out(((f - 1) & 255));
+  }
+#else
+  dvi_out(fnt_def1);
+  dvi_out(f - 1);
+#endif
+
+  dvi_out(font_check[f].b0);
+  dvi_out(font_check[f].b1);
+  dvi_out(font_check[f].b2);
+  dvi_out(font_check[f].b3);
+  dvi_four(font_size[f]);
+  dvi_four(font_dsize[f]);
+  dvi_out(length(font_area[f]));
+  dvi_out(length(font_name[f]));
+
+  for (k = str_start[font_area[f]]; k <= str_start[font_area[f] + 1] - 1; k++)
+    dvi_out(str_pool[k]);
+
+  for (k = str_start[font_name[f]]; k <= str_start[font_name[f] + 1] - 1; k++)
+    dvi_out(str_pool[k]);
+}
+
+// {output the box |p|}
+static void ship_out (pointer p)
+{
+  integer page_loc; // {location of the current |bop|}
+  pointer del_node; // {used when delete the |dir_node| continued box}
+  char j, k;  // {indices to first ten count registers}
+  pool_pointer s; // {index into |str_pool|}
+  char old_setting; // {saved |selector| setting}
+
+  // @<Start sheet {\sl Sync\TeX} information record@>
+  synctex_sheet(mag);
+
+  if (tracing_output > 0)
+  {
+    print_nl("");
+    print_ln();
+    prints("Completed box being shipped out");
+  }
+
+  if (term_offset > max_print_line - 9)
+    print_ln();
+  else if ((term_offset > 0) || (file_offset > 0))
+    print_char(' ');
+
+  print_char('[');
+  j = 9;
+
+  while ((count(j) == 0) && (j > 0))
+    decr(j);
+
+  for (k = 0; k <= j; k++)
+  {
+    print_int(count(k));
+
+    if (k < j)
+      print_char('.');
+  }
+
+  update_terminal();
+
+  if (tracing_output > 0)
+  {
+    print_char(']');
+    begin_diagnostic();
+    show_box(p);
+    end_diagnostic(true);
+  }
+
+  if (type(p) == dir_node)
+  {
+    del_node = p;
+    p = list_ptr(p);
+    delete_glue_ref(space_ptr(del_node));
+    delete_glue_ref(xspace_ptr(del_node));
+    free_node(del_node, box_node_size);
+  }
+
+  flush_node_list(link(p));
+  link(p) = null;
+
+  if (box_dir(p) != dir_yoko)
+    p = new_dir_node(p, dir_yoko);
+
+  if ((height(p) > max_dimen) || (depth(p) > max_dimen) ||
+    (height(p) + depth(p) + v_offset > max_dimen) ||
+    (width(p) + h_offset > max_dimen))
+  {
+    print_err("Huge page cannot be shipped out");
+    help2("The page just created is more than 18 feet tall or",
+      "more than 18 feet wide, so I suspect something went wrong.");
+    error();
+
+    if (tracing_output <= 0)
+    {
+      begin_diagnostic();
+      print_nl("The following box has been deleted:");
+      show_box(p);
+      end_diagnostic(true);
+    }
+
+    goto done;
+  }
+
+  if (height(p) + depth(p) + v_offset > max_v)
+    max_v = height(p) + depth(p) + v_offset;
+
+  if (width(p) + h_offset > max_h)
+    max_h = width(p) + h_offset;
+
+  dvi_h = 0;
+  dvi_v = 0;
+  cur_h = h_offset;
+  dvi_f = null_font;
+  dvi_dir = dir_yoko;
+  cur_dir_hv = dvi_dir;
+  ensure_dvi_open();
+
+  if (total_pages == 0)
+  {
+    dvi_out(pre);
+    dvi_out(id_byte);
+    dvi_four(25400000);
+    dvi_four(473628672);
+    prepare_mag();
+    dvi_four(mag);
+    old_setting = selector;
+    selector = new_string;
+    prints(" TeX output ");
+    print_int(year);
+    print_char('.');
+    print_two(month);
+    print_char('.');
+    print_two(day);
+    print_char(':');
+    print_two(tex_time / 60);
+    print_two(tex_time % 60);
+    selector = old_setting;
+    dvi_out(cur_length);
+
+    for (s = str_start[str_ptr]; s <= pool_ptr - 1; s++)
+      dvi_out(str_pool[s]);
+
+    pool_ptr = str_start[str_ptr];
+
+#ifndef APTEX_DVI_ONLY
+    {
+      char * pdf_file_name = (char *) calloc(1, name_length + 1);
+      strncpy(pdf_file_name, (const char *) name_of_file + 1, name_length - 4);
+      strcat(pdf_file_name, ".pdf");
+
+      pdf_enc_compute_id_string(pdf_file_name, pdf_file_name);
+
+      if ((pdf_minor_version < 0) || (pdf_minor_version > 7))
+        pdf_set_version(5);
+      else
+        pdf_set_version(pdf_minor_version);
+
+      if ((pdf_compress_level < 0) || (pdf_compress_level > 9))
+        pdf_set_compression(9);
+      else
+        pdf_set_compression(pdf_compress_level);
+
+      pdf_init_fontmaps();
+      pdf_load_fontmap_file("pdftex.map", '+');
+      pdf_load_fontmap_file("kanjix.map", '+');
+      pdf_load_fontmap_file("ckx.map", '+');
+      pdf_doc_set_producer("Asian pTeX");
+      pdf_doc_set_creator("Asian pTeX");
+      pdf_files_init();
+      pdf_init_device(sp2bp, 2, 0);
+      pdf_open_document(utf8_mbcs(pdf_file_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
+      spc_exec_at_begin_document();
+      free(pdf_file_name);
+    }
+#endif
+  }
+
+#ifndef APTEX_DVI_ONLY
+  {
+    scaled cur_page_width;
+    scaled cur_page_height;
+    scaled cur_h_origin;
+    scaled cur_v_origin;
+
+    //if (pdf_h_origin != 0)
+      cur_h_origin = pdf_h_origin;
+    //else
+    //  cur_h_origin = 4736286;
+
+    //if (pdf_v_origin != 0)
+      cur_v_origin = pdf_v_origin;
+    //else
+    //  cur_v_origin = 4736286;
+
+      if (pdf_page_width != 0)
+        cur_page_width = pdf_page_width;
+      else
+        cur_page_width = width(p);// +2 * (abs(cur_h_origin) + h_offset);
+
+      if (pdf_page_height != 0)
+        cur_page_height = pdf_page_height;
+      else
+        cur_page_height = height(p) + depth(p);// +2 * (abs(cur_v_origin) + v_offset);
+
+    pdf_set_cur_page(cur_page_width, cur_page_height);
+    pdf_doc_begin_page(1.0, cur_h_origin * sp2bp,
+      (cur_page_height - cur_v_origin) * sp2bp);
+    spc_exec_at_begin_page();
+    //pdf_dev_set_rule(0, 0, width(p), 26214);
+    //pdf_dev_set_rule(0, 0, 26214, -depth(p)-height(p));
+    //pdf_dev_set_rule(0 + width(p), - depth(p) - height(p), -width(p), 26214);
+    //pdf_dev_set_rule(0 + width(p), - depth(p) - height(p), 26214, depth(p) + height(p));
+  }
+#endif
+  page_loc = dvi_offset + dvi_ptr;
+  dvi_out(bop);
+
+  for (k = 0; k <= 9; k++)
+    dvi_four(count(k));
+
+  dvi_four(last_bop);
+  last_bop = page_loc;
+  cur_v = height(p) + v_offset;
+  temp_ptr = p;
+
+  switch (type(p))
+  {
+    case hlist_node:
+      hlist_out();
+      break;
+
+    case vlist_node:
+      vlist_out();
+      break;
+
+    case dir_node:
+      dir_out();
+      break;
+  }
+
+#ifndef APTEX_DVI_ONLY
+  {
+    spc_exec_at_end_page();
+    pdf_doc_end_page();
+  }
+#endif
+  dvi_out(eop);
+
+  incr(total_pages);
+  cur_s = -1;
+
+  if (eTeX_ex)
+  {
+    if (LR_problems > 0)
+    {
+      report_LR_problems();
+      print_char(')');
+      print_ln();
+    }
+
+    if ((LR_ptr != null) || (cur_dir != left_to_right))
+      confusion("LR3");
+  }
+
+done:
+  if (tracing_output <= 0)
+    print_char(']');
+
+  dead_cycles = 0;
+  update_terminal();
+  synctex_teehs();
+
+#ifdef STAT
+  if (tracing_stats > 1)
+  {
+    print_nl("Memory usage before: ");
+    print_int(var_used);
+    print_char('&');
+    print_int(dyn_used);
+    print_char(';');
+  }
+#endif
+
+  flush_node_list(p);
+
+#ifdef STAT
+  if (tracing_stats > 1)
+  {
+    prints(" after: ");
+    print_int(var_used);
+    print_char('&');
+    print_int(dyn_used);
+    prints("; still utouched: ");
+    print_int(hi_mem_min - lo_mem_max - 1);
+    print_ln();
+  }
+#endif
+}
+
+static void synch_dir (void)
+{
+  scaled tmp; // {temporary resister}
+
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      if (dvi_dir != cur_dir_hv)
+      {
+        synch_h();
+        synch_v();
+        dvi_out(dirchg);
+        dvi_out(dvi_yoko);
+        dir_used = true;
+
+        switch (dvi_dir)
+        {
+          case dir_tate:
+            {
+              tmp = cur_h;
+              cur_h = -cur_v;
+              cur_v = tmp;
+            }
+            break;
+
+          case dir_dtou:
+            {
+              tmp = cur_h;
+              cur_h = cur_v;
+              cur_v = -tmp;
+            }
+            break;
+        }
+
+        dvi_h = cur_h;
+        dvi_v = cur_v;
+        dvi_dir = cur_dir_hv;
+      }
+      break;
+
+    case dir_tate:
+      if (dvi_dir != cur_dir_hv)
+      {
+        synch_h();
+        synch_v();
+        dvi_out(dirchg);
+        dvi_out(dvi_tate);
+        dir_used = true;
+
+        switch (dvi_dir)
+        {
+          case dir_yoko:
+            {
+              tmp = cur_h;
+              cur_h = cur_v;
+              cur_v = -tmp;
+            }
+            break;
+
+          case dir_dtou:
+            {
+              cur_v = -cur_v;
+              cur_h = -cur_h;
+            }
+            break;
+        }
+
+        dvi_h = cur_h;
+        dvi_v = cur_v;
+        dvi_dir = cur_dir_hv;
+      }
+      break;
+
+    case dir_dtou:
+      if (dvi_dir != cur_dir_hv)
+      {
+        synch_h();
+        synch_v();
+        dvi_out(dirchg);
+        dvi_out(dvi_dtou);
+        dir_used = true;
+
+        switch (dvi_dir)
+        {
+          case dir_yoko:
+            {
+              tmp = cur_h;
+              cur_h = -cur_v;
+              cur_v = tmp;
+            }
+            break;
+
+          case dir_tate:
+            {
+              cur_v = -cur_v;
+              cur_h = -cur_h;
+            }
+            break;
+        }
+
+        dvi_h = cur_h;
+        dvi_v = cur_v;
+        dvi_dir = cur_dir_hv;
+      }
+      break;
+
+    default:
+      confusion("synch_dir");
+      break;
+  }
+}
+
+// output an |hlist_node| box
+void hlist_out (void)
+{
+  scaled base_line; // {the baseline coordinate for this box}
+  scaled disp;  // {displacement}
+  eight_bits save_dir;  // {what |dvi_dir| should pop to}
+  KANJI_code jc;  // {temporary register for KANJI codes}
+  pointer ksp_ptr;  // {position of |auto_spacing_glue| in the hlist}
+  scaled left_edge; // {the left coordinate for this box}
+  scaled save_h, save_v;  // {what |dvi_h| and |dvi_v| should pop to}
+  pointer this_box; // {pointer to containing box}
+  // glue_ord g_order;
+  int g_order;  // {applicable order of infinity for glue}
+  // char g_sign;
+  int g_sign; // {selects type of glue}
+  pointer p;  // {current position in the hlist}
+  integer save_loc; // {\.{DVI} byte location upon entry}
+  pointer leader_box; // {the leader box being replicated}
+  scaled leader_wd; // {width of leader box being replicated}
+  scaled lx;  // {extra space between leader boxes}
+  boolean outer_doing_leaders;  // {were we doing leaders?}
+  scaled edge;  // {right edge of sub-box or leader space}
+  pointer prev_p; // {one step behind |p|}
+  real glue_temp; // {glue value before rounding}
+  real cur_glue;  // {glue seen so far}
+  scaled cur_g; // {rounded equivalent of |cur_glue| times the glue ratio}
+
+  cur_g = 0;
+  cur_glue = 0.0;
+  this_box = temp_ptr;
+  g_order = glue_order(this_box);
+  g_sign = glue_sign(this_box);
+  p = list_ptr(this_box);
+  ksp_ptr = space_ptr(this_box);
+  incr(cur_s);
+
+  if (cur_s > 0)
+    dvi_out(push);
+
+  if (cur_s > max_push)
+    max_push = cur_s;
+
+  save_loc = dvi_offset + dvi_ptr;
+  synch_dir();
+  base_line = cur_v;
+  disp = 0;
+  revdisp = 0;
+  prev_p = this_box + list_offset;
+
+  // @<Initialize |hlist_out| for mixed direction typesetting@>
+  if (eTeX_ex)
+  {
+    put_LR(before);
+  
+    if (box_lr(this_box) == dlist)
+    {
+      if (cur_dir == right_to_left)
+      {
+        cur_dir = left_to_right;
+        cur_h = cur_h - width(this_box);
+      }
+      else
+        set_box_lr(this_box, 0);
+    }
+
+    if ((cur_dir == right_to_left) && (box_lr(this_box) != reversed))
+    {
+      save_h = cur_h;
+      temp_ptr = p;
+      p = new_kern(0);
+      link(prev_p) = p;
+      cur_h = 0;
+      link(p) = reverse(this_box, null, cur_g, cur_glue);
+      width(p) = -cur_h;
+      cur_h = save_h;
+      set_box_lr(this_box, reversed);
+    }
+  }
+
+  left_edge = cur_h;
+  // @<Start hlist {\sl Sync\TeX} information record@>
+  synctex_hlist(this_box);
+
+  /*
+    @<Output node |p| for |hlist_out| and move to the next node,
+    maintaining the condition |cur_v=base_line|@>
+  */
+  while (p != null)
+reswitch:
+  if (is_char_node(p))
+  {
+    synch_h();
+    synch_v();
+    chain = false;
+
+    do {
+      f = font(p);
+      c = character(p);
+
+      // @<Change font |dvi_f| to |f|@>
+      if (f != dvi_f)
+      {
+        if (!font_used[f])
+        {
+          dvi_font_def(f);
+#ifndef APTEX_DVI_ONLY
+          pdf_locate_font(f);
+#endif
+          font_used[f] = true;
+        }
+
+        if (f <= 64 + font_base)
+          dvi_out(f - font_base - 1 + fnt_num_0);
+#ifdef INCREASEFONTS
+        else if (f <= 256)
+        {
+          dvi_out(fnt1);
+          dvi_out(f - 1);
+        }
+        else
+        {
+          dvi_out(fnt2);
+          dvi_out(((f - 1) >> 8));  /* top byte */
+          dvi_out(((f - 1) & 255)); /* bottom byte */
+        }
+#else
+        else
+        {
+          dvi_out(fnt1);
+          dvi_out(f - 1);
+        }
+#endif
+
+        dvi_f = f;
+      }
+
+      if (font_dir[f] == dir_default)
+      {
+        chain = false;
+
+        if (c >= 128)
+          dvi_out(set1);
+
+        dvi_out(c);
+#ifndef APTEX_DVI_ONLY
+        pdf_char_out(dvi_f, c);
+#endif
+        cur_h = cur_h + char_width(f, char_info(f, c));
+      }
+      else
+      {
+        if (chain == false)
+          chain = true;
+        else
+        {
+          cur_h = cur_h + width(ksp_ptr);
+
+          if (g_sign != normal)
+          {
+            if (g_sign == stretching)
+            {
+              if (stretch_order(ksp_ptr) == g_order)
+                cur_h = cur_h + round(tex_float(glue_set(this_box)) * stretch(ksp_ptr));
+            }
+            else
+            {
+              if (shrink_order(ksp_ptr) == g_order)
+                cur_h = cur_h - round(tex_float(glue_set(this_box)) * shrink(ksp_ptr));
+            }
+          }
+
+          synch_h();
+        }
+
+        prev_p = link(prev_p);  // {N.B.: not |prev_p:=p|, |p| might be |lig_trick|}
+        p = link(p);
+        jc = toDVI(KANJI(info(p)) % max_cjk_val);
+
+        if (jc < 0x10000)
+        {
+          dvi_out(set2);
+        }
+        else
+        {
+          dvi_out(set3);
+          dvi_out(BYTE2(jc));
+        }
+
+        dvi_out(BYTE3(jc));
+        dvi_out(BYTE4(jc));
+#ifndef APTEX_DVI_ONLY
+        pdf_kanji_out(dvi_f, jc);
+#endif
+        cur_h = cur_h + char_width(f, char_info(f, c));
+      }
+
+      dvi_h = cur_h;
+      prev_p = link(prev_p);
+      p = link(p);
+    } while (!(!is_char_node(p)));
+
+    // @<Record current point {\sl Sync\TeX} information@>
+    synctex_current();
+    chain = false;
+  }
+  else
+  {
+    switch (type(p))
+    {
+      case hlist_node:
+      case vlist_node:
+      case dir_node:
+        // @<Output a box in an hlist@>
+        if (list_ptr(p) == null)
+        {
+          if (type(p) != dir_node)
+          {
+            // @<Record void list {\sl Sync\TeX} information@>
+            if (type(p) == vlist_node)
+              synctex_void_vlist(p, this_box);
+            else
+              synctex_void_hlist(p, this_box);
+          }
+
+          cur_h = cur_h + width(p);
+        }
+        else
+        {
+          save_h = dvi_h;
+          save_v = dvi_v;
+          save_dir = dvi_dir;
+          cur_v = base_line + disp + shift_amount(p); // {shift the box down}
+          temp_ptr = p;
+          edge = cur_h + width(p);
+
+          if (cur_dir == right_to_left)
+            cur_h = edge;
+
+          switch (type(p))
+          {
+            case hlist_node:
+              hlist_out();
+              break;
+
+            case vlist_node:
+              vlist_out();
+              break;
+
+            case dir_node:
+              dir_out();
+              break;
+          }
+
+          dvi_h = save_h;
+          dvi_v = save_v;
+          dvi_dir = save_dir;
+          cur_h = edge;
+          cur_v = base_line + disp;
+          cur_dir_hv = save_dir;
+        }
+        break;
+
+      case rule_node:
+        {
+          rule_ht = height(p);
+          rule_dp = depth(p);
+          rule_wd = width(p);
+          goto fin_rule;
+        }
+        break;
+
+      case whatsit_node:
+        // @<Output the whatsit node |p| in an hlist@>
+        out_what(p);
+        break;
+
+      case disp_node:
+        {
+          disp = disp_dimen(p);
+          revdisp = disp;
+          cur_v = base_line + disp;
+        }
+        break;
+
+      case glue_node:
+        // @<Move right or output leaders@>
+        {
+          round_glue();
+
+          if (eTeX_ex)
+            handle_a_glue_node();
+
+          /*
+            @<Output leaders in an hlist, |goto fin_rule| if a rule
+            or to |next_p| if done@>
+          */
+          if (subtype(p) >= a_leaders)
+          {
+            leader_box = leader_ptr(p); 
+
+            if (type(leader_box) == rule_node)
+            {
+              rule_ht = height(leader_box);
+              rule_dp = depth(leader_box);
+              goto fin_rule;
+            }
+
+            leader_wd = width(leader_box);
+
+            if ((leader_wd > 0) && (rule_wd > 0))
+            {
+              rule_wd = rule_wd + 10; // {compensate for floating-point rounding}
+
+              if (cur_dir == right_to_left)
+                cur_h = cur_h - 10;
+
+              edge = cur_h + rule_wd;
+              lx = 0;
+
+              /*
+                @<Let |cur_h| be the position of the first box, and set |leader_wd+lx|
+                to the spacing between corresponding parts of boxes@>
+              */
+              if (subtype(p) == a_leaders)
+              {
+                save_h = cur_h;
+                cur_h = left_edge + leader_wd * ((cur_h - left_edge) / leader_wd);
+
+                if (cur_h < save_h)
+                  cur_h = cur_h + leader_wd;
+              }
+              else
+              {
+                lq = rule_wd / leader_wd; // {the number of box copies}
+                lr = rule_wd % leader_wd; // {the remaining space}
+
+                if (subtype(p) == c_leaders)
+                  cur_h = cur_h + (lr / 2);
+                else
+                {
+                  lx = lr / (lq + 1);
+                  cur_h = cur_h + ((lr - (lq - 1) * lx) / 2);
+                }
+              }
+
+              while (cur_h + leader_wd <= edge)
+              {
+                /*
+                  @<Output a leader box at |cur_h|,
+                  then advance |cur_h| by |leader_wd+lx|@>
+                */
+                cur_v = base_line + disp + shift_amount(leader_box);
+                synch_v();
+                save_v = dvi_v;
+                synch_h();
+                save_h = dvi_h;
+                save_dir = dvi_dir;
+                temp_ptr = leader_box;
+
+                if (cur_dir == right_to_left)
+                  cur_h = cur_h + leader_wd;
+
+                outer_doing_leaders = doing_leaders;
+                doing_leaders = true;
+
+                switch (type(leader_box))
+                {
+                  case hlist_node:
+                    hlist_out();
+                    break;
+
+                  case vlist_node:
+                    vlist_out();
+                    break;
+
+                  case dir_node:
+                    dir_out();
+                    break;
+                }
+
+                doing_leaders = outer_doing_leaders;
+                dvi_v = save_v;
+                dvi_h = save_h;
+                dvi_dir = save_dir;
+                cur_v = base_line;
+                cur_h = save_h + leader_wd + lx;
+                cur_dir_hv = save_dir;
+              }
+
+              if (cur_dir == right_to_left)
+                cur_h = edge;
+              else
+                cur_h = edge - 10;
+
+              goto next_p;
+            }
+          }
+
+          goto move_past;
+        }
+        break;
+
+      case kern_node:
+        // @<Record |kern_node| {\sl Sync\TeX} information@>
+        synctex_kern(p, this_box);
+        cur_h = cur_h + width(p);
+        break;
+
+      case math_node:
+        {
+          // @<Record |math_node| {\sl Sync\TeX} information@>
+          synctex_math(p, this_box);
+
+          // @<Handle a math node in |hlist_out|@>
+          if (eTeX_ex)
+          {
+            if (end_LR(p))
+            {
+              if (info(LR_ptr) == end_LR_type(p))
+                pop_LR();
+              else
+              {
+                if (subtype(p) > L_code)
+                  incr(LR_problems);
+              }
+            }
+            else
+            {
+              push_LR(p);
+
+              if (LR_dir(p) != cur_dir)
+              {
+                save_h = cur_h;
+                temp_ptr = link(p);
+                rule_wd = width(p);
+                free_node(p, small_node_size);
+                cur_dir = reflected;
+                p = new_edge(cur_dir, rule_wd);
+                link(prev_p) = p;
+                cur_h = cur_h - left_edge + rule_wd;
+                link(p) = reverse(this_box, new_edge(reflected, 0), cur_g, cur_glue);
+                edge_dist(p) = cur_h;
+                cur_dir = reflected;
+                cur_h = save_h;
+                goto reswitch;
+              }
+            }
+
+            type(p) = kern_node;
+          }
+
+          cur_h = cur_h + width(p);
+        }
+        break;
+
+      case ligature_node:
+        // @<Make node |p| look like a |char_node| and |goto reswitch|@>
+        {
+          mem[lig_trick] = mem[lig_char(p)];
+          link(lig_trick) = link(p);
+          p = lig_trick;
+          goto reswitch;
+        }
+        break;
+
+      case edge_node:
+        {
+          cur_h = cur_h + width(p);
+          left_edge = cur_h + edge_dist(p);
+          cur_dir = subtype(p);
+        }
+
+      default:
+        do_nothing();
+        break;
+    }
+
+    goto next_p;
+
+  fin_rule:
+    // @<Output a rule in an hlist@>
+    if (is_running(rule_ht))
+      rule_ht = height(this_box) + disp;
+
+    if (is_running(rule_dp))
+      rule_dp = depth(this_box) - disp;
+
+    rule_ht = rule_ht + rule_dp;
+
+    if ((rule_ht > 0) && (rule_wd > 0))
+    {
+      synch_h();
+      cur_v = base_line + rule_dp;
+      synch_v();
+      dvi_out(set_rule);
+      dvi_four(rule_ht);
+      dvi_four(rule_wd);
+#ifndef APTEX_DVI_ONLY
+      pdf_rule_out(rule_wd, rule_ht);
+#endif
+      cur_v = base_line;
+      dvi_h = dvi_h + rule_wd;
+    }
+
+move_past:
+    cur_h = cur_h + rule_wd;
+    // @<Record horizontal |rule_node| or |glue_node| {\sl Sync\TeX} information@>
+    synctex_horizontal_rule_or_glue(p, this_box);
+
+next_p:
+    prev_p = p;
+    p = link(p);
+  }
+
+  if (eTeX_ex)
+  {
+    {
+      while (info(LR_ptr) != before)
+      {
+        if (info(LR_ptr) > L_code)
+          LR_problems = LR_problems + 10000;
+
+        pop_LR();
+      }
+
+      pop_LR();
+    }
+
+    if (box_lr(this_box) == dlist)
+      cur_dir = right_to_left;
+  }
+
+  synctex_tsilh(this_box);
+  prune_movements(save_loc);
+
+  if (cur_s > 0)
+    dvi_pop(save_loc);
+
+  decr(cur_s);
+}
+
+// output an |vlist_node| box
+void vlist_out (void)
+{
+  scaled left_edge; // {the left coordinate for this box}
+  scaled top_edge;  // {the top coordinate for this box}
+  scaled save_h, save_v;  // {what |dvi_h| and |dvi_v| should pop to}
+  pointer this_box; // {pointer to containing box}
+  // glue_ord g_order;
+  int g_order;  // {applicable order of infinity for glue}
+  // char g_sign;
+  int g_sign; // {selects type of glue}
+  pointer p;  // {current position in the vlist}
+  integer save_loc; // {\.{DVI} byte location upon entry}
+  pointer leader_box; // {the leader box being replicated}
+  scaled leader_ht; // {height of leader box being replicated}
+  scaled lx;  // {extra space between leader boxes}
+  boolean outer_doing_leaders;  // {were we doing leaders?}
+  scaled edge;  // {bottom boundary of leader space}
+  real glue_temp; // {glue value before rounding}
+  real cur_glue;  // {glue seen so far}
+  scaled cur_g; // {rounded equivalent of |cur_glue| times the glue ratio}
+  integer save_dir; // {what |dvi_dir| should pop to}
+
+  cur_g = 0;
+  cur_glue = 0.0;
+  this_box = temp_ptr;
+  g_order = glue_order(this_box);
+  g_sign = glue_sign(this_box);
+  p = list_ptr(this_box);
+  incr(cur_s);
+
+  if (cur_s > 0)
+    dvi_out(push);
+
+  if (cur_s > max_push)
+    max_push = cur_s;
+
+  save_loc = dvi_offset + dvi_ptr;
+  synch_dir();
+  left_edge = cur_h;
+  left_edge = cur_h;
+  // @<Start vlist {\sl Sync\TeX} information record@>
+  synctex_vlist(this_box);
+  cur_v = cur_v - height(this_box);
+  top_edge = cur_v;
+
+  while (p != null)
+  {
+    /*
+      @<Output node |p| for |vlist_out| and move to the next node,
+      maintaining the condition |cur_h=left_edge|@>
+    */
+    if (is_char_node(p))
+      confusion("vlistout");
+    else
+    {
+      switch (type(p))
+      {
+        case hlist_node:
+        case vlist_node:
+        case dir_node:
+          // @<Output a box in a vlist@>
+          if (list_ptr(p) == null)
+          {
+            cur_v = cur_v + height(p);
+
+            if (type(p) != dir_node)
+            {
+              // @<Record void list {\sl Sync\TeX} information@>
+              if (type(p) == vlist_node)
+                synctex_void_vlist(p, this_box);
+              else
+                synctex_void_hlist(p, this_box);
+            }
+
+            cur_v = cur_v + depth(p);
+          }
+          else
+          {
+            cur_v = cur_v + height(p);
+            synch_v();
+            save_h = dvi_h;
+            save_v = dvi_v;
+            save_dir = dvi_dir;
+
+            if (cur_dir == right_to_left)
+              cur_h = left_edge - shift_amount(p);
+            else
+              cur_h = left_edge + shift_amount(p);  // {shift the box right}
+
+            temp_ptr = p;
+
+            switch (type(p))
+            {
+              case hlist_node:
+                hlist_out();
+                break;
+
+              case vlist_node:
+                vlist_out();
+                break;
+
+              case dir_node:
+                dir_out();
+                break;
+            }
+
+            dvi_h = save_h;
+            dvi_v = save_v;
+            dvi_dir = save_dir;
+            cur_v = save_v + depth(p);
+            cur_h = left_edge;
+            cur_dir_hv = save_dir;
+          }
+          break;
+
+        case rule_node:
+          {
+            rule_ht = height(p);
+            rule_dp = depth(p);
+            rule_wd = width(p);
+            goto fin_rule;
+          }
+          break;
+
+        case whatsit_node:
+          // @<Output the whatsit node |p| in a vlist@>
+          out_what(p);
+          break;
+
+        case glue_node:
+          // @<Move down or output leaders@>
+          {
+            g = glue_ptr(p);
+            rule_ht = width(g) - cur_g;
+
+            if (g_sign != normal)
+            {
+              if (g_sign == stretching)
+              {
+                if (stretch_order(g) == g_order)
+                {
+                  cur_glue = cur_glue + stretch(g);
+                  vet_glue(glue_set(this_box) * cur_glue);
+                  cur_g = round(glue_temp);
+                }
+              }
+              else if (shrink_order(g) == g_order)
+              {
+                cur_glue = cur_glue - shrink(g);
+                vet_glue(glue_set(this_box) * cur_glue);
+                cur_g = round(glue_temp);
+              }
+            }
+
+            rule_ht = rule_ht + cur_g;
+
+            /*
+              @<Output leaders in a vlist, |goto fin_rule| if a rule
+              or to |next_p| if done@>
+            */
+            if (subtype(p) >= a_leaders)
+            {
+              leader_box = leader_ptr(p);
+
+              if (type(leader_box) == rule_node)
+              {
+                rule_wd = width(leader_box);
+                rule_dp = 0;
+                goto fin_rule;
+              }
+
+              leader_ht = height(leader_box) + depth(leader_box);
+
+              if ((leader_ht > 0) && (rule_ht > 0))
+              {
+                rule_ht = rule_ht + 10; // {compensate for floating-point rounding}
+                edge = cur_v + rule_ht;
+                lx = 0;
+
+                /*
+                  @<Let |cur_v| be the position of the first box, and set |leader_ht+lx|
+                  to the spacing between corresponding parts of boxes@>
+                */
+                if (subtype(p) == a_leaders)
+                {
+                  save_v = cur_v;
+                  cur_v = top_edge + leader_ht * ((cur_v - top_edge) / leader_ht);
+
+                  if (cur_v < save_v)
+                    cur_v = cur_v + leader_ht;
+                }
+                else
+                {
+                  lq = rule_ht / leader_ht; // {the number of box copies}
+                  lr = rule_ht % leader_ht; // {the remaining space}
+
+                  if (subtype(p) == c_leaders)
+                    cur_v = cur_v + (lr / 2);
+                  else
+                  {
+                    lx = lr / (lq + 1);
+                    cur_v = cur_v + ((lr - (lq - 1) * lx) / 2);
+                  }
+                }
+
+                /*
+                  @<Output a leader box at |cur_v|,
+                  then advance |cur_v| by |leader_ht+lx|@>
+                */
+                while (cur_v + leader_ht <= edge)
+                {
+                  if (cur_dir == right_to_left)
+                    cur_h = left_edge - shift_amount(leader_box);
+                  else
+                    cur_h = left_edge + shift_amount(leader_box);
+
+                  synch_h();
+                  save_h = dvi_h;
+                  cur_v = cur_v + height(leader_box);
+                  synch_v();
+                  save_v = dvi_v;
+                  save_dir = dvi_dir;
+                  temp_ptr = leader_box;
+                  outer_doing_leaders = doing_leaders;
+                  doing_leaders = true;
+
+                  switch (type(leader_box))
+                  {
+                    case hlist_node:
+                      hlist_out();
+                      break;
+
+                    case vlist_node:
+                      vlist_out();
+                      break;
+
+                    case dir_node:
+                      dir_out();
+                      break;
+                  }
+
+                  doing_leaders = outer_doing_leaders;
+                  dvi_v = save_v;
+                  dvi_h = save_h;
+                  dvi_dir = save_dir;
+                  cur_h = left_edge;
+                  cur_v = save_v - height(leader_box) + leader_ht + lx;
+                  cur_dir_hv = save_dir;
+                }
+
+                cur_v = edge - 10;
+                goto next_p;
+              }
+            }
+
+            goto move_past;
+          }
+          break;
+
+        case kern_node:
+          cur_v = cur_v + width(p);
+          break;
+
+        default:
+          do_nothing();
+          break;
+      }
+
+      goto next_p;
+
+fin_rule:
+      // @<Output a rule in a vlist, |goto next_p|@>
+      if (is_running(rule_wd))
+        rule_wd = width(this_box);
+
+      rule_ht = rule_ht + rule_dp;  // {this is the rule thickness}
+      cur_v = cur_v + rule_ht;
+
+      if ((rule_ht > 0) && (rule_wd > 0)) // {we don't output empty rules}
+      {
+        if (cur_dir == right_to_left)
+          cur_h = cur_h - rule_wd;
+
+        synch_h();
+        synch_v();
+        dvi_out(put_rule);
+        dvi_four(rule_ht);
+        dvi_four(rule_wd);
+#ifndef APTEX_DVI_ONLY
+        pdf_rule_out(rule_wd, rule_ht);
+#endif
+        cur_h = left_edge;
+      }
+
+      goto next_p;
+
+move_past:
+      cur_v = cur_v + rule_ht;
+    }
+
+next_p:
+    p = link(p);
+  }
+
+  // @<Finish vlist {\sl Sync\TeX} information record@>
+  synctex_tsilv(this_box);
+  prune_movements(save_loc);
+
+  if (cur_s > 0)
+    dvi_pop(save_loc);
+
+  decr(cur_s);
+}
+
+void dir_out (void)
+{
+  pointer this_box; // {pointer to containing box}
+
+  this_box = temp_ptr;
+  temp_ptr = list_ptr(this_box);
+
+  if ((type(temp_ptr) != hlist_node) && (type(temp_ptr) != vlist_node))
+    confusion("dir_out");
+
+  switch (box_dir(this_box))
+  {
+    case dir_yoko:
+      switch (box_dir(temp_ptr))
+      {
+        case dir_tate:
+          // {Tate in Yoko}
+          {
+            cur_v = cur_v - height(this_box);
+            cur_h = cur_h + depth(temp_ptr);
+          }
+          break;
+
+        case dir_dtou:
+          // {DtoU in Yoko}
+          {
+            cur_v = cur_v + depth(this_box);
+            cur_h = cur_h + height(temp_ptr);
+          }
+          break;
+      }
+      break;
+
+    case dir_tate:
+      switch (box_dir(temp_ptr))
+      {
+        case dir_yoko:
+          // {Yoko in Tate}
+          {
+            cur_v = cur_v + depth(this_box);
+            cur_h = cur_h + height(temp_ptr);
+          }
+          break;
+
+        case dir_dtou:
+          // {DtoU in Tate}
+          {
+            cur_v = cur_v + depth(this_box) - height(temp_ptr);
+            cur_h = cur_h + width(temp_ptr);
+          }
+          break;
+      }
+      break;
+
+    case dir_dtou:
+      switch (box_dir(temp_ptr))
+      {
+        case dir_yoko:
+          // {Yoko in DtoU}
+          {
+            cur_v = cur_v - height(this_box);
+            cur_h = cur_h + depth(temp_ptr);
+          }
+          break;
+
+        case dir_tate:
+          // {Tate in DtoU}
+          {
+            cur_v = cur_v + depth(this_box) - height(temp_ptr);
+            cur_h = cur_h + width(temp_ptr);
+          }
+          break;
+      }
+      break;
+  }
+
+  cur_dir_hv = box_dir(temp_ptr);
+
+  if (type(temp_ptr) == vlist_node)
+    vlist_out();
+  else
+    hlist_out();
+}
+
+static void special_out (pointer p)
 {
   char old_setting;
-  //pool_pointer k;
+  pool_pointer k;
 
-  pdf_synch_h();//synch_h();
-  pdf_synch_h();//synch_v();
+  synch_h();
+  synch_h();
   old_setting = selector;
   selector = new_string;
 
@@ -12281,8 +20253,7 @@ void special_out (pointer p)
 
   selector = old_setting;
   str_room(1);
-  pdf_special_exec(cur_h, cur_v);
-/*
+
   if (cur_length < 256)
   {
     dvi_out(xxx1);
@@ -12296,11 +20267,38 @@ void special_out (pointer p)
 
   for (k = str_start[str_ptr]; k <= pool_ptr - 1; k++)
     dvi_out(str_pool[k]);
-*/
+#ifndef APTEX_DVI_ONLY
+  {
+    double sp2bp = 0.000015202;
+    double spc_h;
+    double spc_v;
+
+    switch (cur_dir_hv)
+    {
+      case dir_yoko:
+        spc_h = cur_h * sp2bp;
+        spc_v = -cur_v * sp2bp;
+        break;
+
+      case dir_tate:
+        spc_h = -cur_v * sp2bp;
+        spc_v = -cur_h * sp2bp;
+        break;
+
+      case dir_dtou:
+        spc_h = cur_v * sp2bp;
+        spc_v = cur_h * sp2bp;
+        break;
+    }
+
+    graphics_mode();
+    spc_exec_special((const char *) str_pool + str_start[str_ptr], cur_length, spc_h, spc_v, 1.0);
+  }
+#endif
   pool_ptr = str_start[str_ptr];
 }
-/* sec 1370 */
-void write_out (pointer p)
+
+static void write_out (pointer p)
 {
   char old_setting;
   integer old_mode;
@@ -12356,7 +20354,7 @@ void write_out (pointer p)
   flush_list(def_ref);
   selector = old_setting;
 }
-/* sec 1373 */
+
 void out_what (pointer p)
 {
   /* small_number j; */
@@ -12401,7 +20399,7 @@ void out_what (pointer p)
       break;
 
     case special_node:
-      pdf_special_out(p);
+      special_out(p);
       break;
 
     case language_node:
@@ -12413,14 +20411,9 @@ void out_what (pointer p)
       break;
   }
 }
-/* sec 0638 */
-void ship_out (pointer p)
-{
-  pdf_ship_out(p);
-}
-/* sec 0645 */
+
 // scans a box specification and left brace
-void scan_spec (group_code c, boolean three_codes)
+static void scan_spec (group_code c, boolean three_codes)
 {
   integer s;
   char spec_code;
@@ -12454,21 +20447,20 @@ found:
   new_save_level(c);
   scan_left_brace();
 }
-/* sec 0649 */
-pointer hpack (pointer p, scaled w, small_number m)
+
+static pointer hpack (pointer p, scaled w, small_number m)
 {
-  pointer r;
-  pointer k;
-  scaled disp;
-  pointer q;
-  scaled h, d, x;
-  scaled s;
-  pointer g;
-  /* glue_ord o; */
-  int o;
-  internal_font_number f;
-  four_quarters i;
-  eight_bits hd;
+  pointer r;              // {the box node that will be returned}
+  pointer k;              // {points to a |kanji_space| specification}
+  scaled disp;            // {displacement}
+  pointer q;              // {trails behind |p|}
+  scaled h, d, x;         // {height, depth, and natural width}
+  scaled s;               // {shift amount}
+  pointer g;              // {points to a glue specification}
+  glue_ord o;             // {order of infinity}
+  internal_font_number f; //  {the font in a |char_node|}
+  four_quarters i;        // {font information about a |char_node|}
+  eight_bits hd;          // {height and depth indices for a character}
 
   last_badness = 0;
   r = get_node(box_node_size);
@@ -12732,7 +20724,7 @@ reswitch:
           print_int(last_badness);
 
           if (last_badness > 100)
-            count_underfull_hbox++;
+            hps_underfull++;
 
           goto common_ending;
         }
@@ -12783,7 +20775,7 @@ reswitch:
         print_scaled(-x - total_shrink[normal]);
         prints("pt too wide");
         
-        count_overfull_hbox++;
+        hps_overfull++;
         goto common_ending;
       }
     }
@@ -12866,15 +20858,14 @@ exit:
 
   return r;
 }
-/* sec 0668 */
-pointer vpackage (pointer p, scaled h, small_number m, scaled l)
+
+static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
 {
   pointer r;
   scaled w, d, x;
   scaled s;
   pointer g;
-  /* glue_ord o; */
-  int o;
+  glue_ord o;
 
   last_badness = 0;
   r = get_node(box_node_size);
@@ -13026,7 +21017,7 @@ pointer vpackage (pointer p, scaled h, small_number m, scaled l)
           print_int(last_badness);
 
           if (last_badness > 100)
-            count_underfull_vbox++;
+            vps_underfull++;
 
           goto common_ending;
         }
@@ -13068,7 +21059,7 @@ pointer vpackage (pointer p, scaled h, small_number m, scaled l)
         print_scaled(-x - total_shrink[0]);
         prints("pt too high");
 
-        count_overfull_vbox++;
+        vps_overfull++;
 
         goto common_ending;
       }
@@ -13115,8 +21106,8 @@ common_ending:
 exit:
   return r;
 }
-/* sec 0679 */
-void append_to_vlist (pointer b)
+
+static void append_to_vlist (pointer b)
 {
   scaled d;
   pointer p;
@@ -13141,8 +21132,8 @@ void append_to_vlist (pointer b)
   tail = b;
   prev_depth = depth(b);
 }
-/* sec 0686 */
-pointer new_noad (void)
+
+static pointer new_noad (void)
 {
   pointer p;
 
@@ -13156,29 +21147,29 @@ pointer new_noad (void)
 
   return p;
 }
-/* sec 0688 */
+
 // create a style node
-pointer new_style (small_number s)
+static pointer new_style (small_number s)
 {
-  pointer p;
+  pointer p;  // {the new node}
 
   p = get_node(style_node_size);
   type(p) = style_node;
   subtype(p) = s;
   width(p) = 0;
-  depth(p) = 0;
+  depth(p) = 0; // {the |width| and |depth| are not used}
 
   return p;
 }
-/* sec 0689 */
+
 // create a choice node
-pointer new_choice (void)
+static pointer new_choice (void)
 {
-  pointer p;
+  pointer p;  // {the new node}
 
   p = get_node(style_node_size);
   type(p) = choice_node;
-  subtype(p) = 0;
+  subtype(p) = 0; // {the |subtype| is not used}
   display_mlist(p) = 0;
   text_mlist(p) = 0;
   script_mlist(p) = 0;
@@ -13186,17 +21177,17 @@ pointer new_choice (void)
 
   return p;
 }
-/* sec 0693 */
+
 // the reader will kindly forgive this
 void show_info (void)
 {
   show_node_list(info(temp_ptr));
 }
-/* sec 0704 */
+
 // construct the bar for a fraction
-pointer fraction_rule (scaled t)
+static pointer fraction_rule (scaled t)
 {
-  pointer p;
+  pointer p;  // {the new node}
 
   p = new_rule();
   height(p) = t;
@@ -13204,10 +21195,10 @@ pointer fraction_rule (scaled t)
 
   return p;
 }
-/* sec 0705 */
-pointer overbar (pointer b, scaled k, scaled t)
+
+static pointer overbar (pointer b, scaled k, scaled t)
 {
-  pointer p, q;
+  pointer p, q; // {nodes being constructed}
 
   p = new_kern(k);
   link(p) = b;
@@ -13218,12 +21209,12 @@ pointer overbar (pointer b, scaled k, scaled t)
 
   return vpackage(p, 0, 1, max_dimen);
 }
-/* sec 0709 */
-pointer char_box (internal_font_number f, quarterword c)
+
+static pointer char_box (internal_font_number f, quarterword c)
 {
   four_quarters q;
-  eight_bits hd;
-  pointer b, p;
+  eight_bits hd;  // {|height_depth| byte}
+  pointer b, p;   // {the new box and its character node}
 
   q = char_info(f, c);
   hd = height_depth(q);
@@ -13238,42 +21229,41 @@ pointer char_box (internal_font_number f, quarterword c)
 
   return b;
 }
-/* sec 0711 */
-void stack_into_box (pointer b, internal_font_number f, quarterword c)
+
+static void stack_into_box (pointer b, internal_font_number f, quarterword c)
 {
-  pointer p;
+  pointer p;  // {new node placed into |b|}
 
   p = char_box(f, c);
   link(p) = list_ptr(b);
   list_ptr(b) = p;
   height(b) = height(p);
 }
-/* sec 0712 */
-scaled height_plus_depth (internal_font_number f, quarterword c)
+
+static scaled height_plus_depth (internal_font_number f, quarterword c)
 {
   four_quarters q;
-  eight_bits hd;
+  eight_bits hd;  // {|height_depth| byte}
 
   q = char_info(f, c);
   hd = height_depth(q);
 
   return char_height(f, hd) + char_depth(f, hd);
 }
-/* sec 0706 */
-pointer var_delimiter (pointer d, small_number s, scaled v)
+
+static pointer var_delimiter (pointer d, small_number s, scaled v)
 {
-  pointer b;
-  internal_font_number f, g;
-  quarterword c, x, y;
-  integer m, n;
-  scaled u;
-  scaled w;
-  four_quarters q;
-  four_quarters r;
-  eight_bits hd;
-  /* small_number z; */
-  int z;
-  boolean large_attempt;
+  pointer b;                // {the box that will be constructed}
+  internal_font_number f, g;// {best-so-far and tentative font codes}
+  quarterword c, x, y;      // {best-so-far and tentative character codes}
+  integer m, n;             // {the number of extensible pieces}
+  scaled u;                 // {height-plus-depth of a tentative character}
+  scaled w;                 // {largest height-plus-depth so far}
+  four_quarters q;          // {character info}
+  eight_bits hd;            // {height-depth byte}
+  four_quarters r;          // {extensible pieces}
+  small_number z;           // {runs through font family members}
+  boolean large_attempt;    // {are we trying the ``large'' variant?}
 
   f = null_font;
   w = 0;
@@ -13281,6 +21271,11 @@ pointer var_delimiter (pointer d, small_number s, scaled v)
   z = small_fam(d);
   x = small_char(d);
 
+  /*
+    @<Look at the variants of |(z,x)|; set |f| and |c| whenever
+    a better character is found; |goto found| as soon as a
+    large enough variant is encountered@>;
+  */
   while (true)
   {
     if ((z != 0) || (x != min_quarterword))
@@ -13290,6 +21285,13 @@ pointer var_delimiter (pointer d, small_number s, scaled v)
       do {
         z = z - 16;
         g = fam_fnt(z);
+
+        /*
+          @<Look at the list of characters starting with |x| in
+          font |g|; set |f| and |c| whenever
+          a better character is found; |goto found| as soon as a
+          large enough variant is encountered@>;
+        */
 
         if (g != null_font)
         {
@@ -13334,7 +21336,7 @@ continu:
     }
 
     if (large_attempt)
-      goto found;
+      goto found; // {there were none large enough}
 
     large_attempt = true;
     z = large_fam(d);
@@ -13342,12 +21344,21 @@ continu:
   }
 
 found:
+  // @<Make variable |b| point to a box for |(f,c)|@>
   if (f != null_font)
     if (char_tag(q) == ext_tag)
     {
+      /*
+        @<Construct an extensible character in a new box |b|,
+        using recipe |rem_byte(q)| and font |f|@>
+      */
       b = new_null_box();
       type(b) = vlist_node;
       r = font_info[exten_base[f] + rem_byte(q)].qqqq;
+      /*
+        @<Compute the minimum suitable height, |w|, and the corresponding
+        number of extension steps, |n|; also set |width(b)|@>;
+      */
       c = ext_rep(r);
       u = height_plus_depth(f, c);
       w = 0;
@@ -13413,21 +21424,21 @@ found:
   else
   {
     b = new_null_box();
-    width(b) = null_delimiter_space;
+    width(b) = null_delimiter_space;  // {use this width if no delimiter was found}
   }
 
   shift_amount(b) = half(height(b) - depth(b)) - axis_height(s);
 
   return b;
 }
-/* sec 0715 */
-pointer rebox (pointer b, scaled w)
-{
-  pointer p;
-  internal_font_number f;
-  scaled v;
 
-  if ((width(b) != w) && (list_ptr(b) != 0))
+static pointer rebox (pointer b, scaled w)
+{
+  pointer p;              // {temporary register for list manipulation}
+  internal_font_number f; // {font in a one-character box}
+  scaled v;               // {width of a character without italic correction}
+
+  if ((width(b) != w) && (list_ptr(b) != null))
   {
     if (type(b) != hlist_node)
       b = hpack(b, 0, 1);
@@ -13463,36 +21474,38 @@ pointer rebox (pointer b, scaled w)
     b = new_glue(ss_glue);
     link(b) = p;
 
-    while (link(p) != 0)
+    while (link(p) != null)
       p = link(p);
 
     link(p) = new_glue(ss_glue);
+
     return hpack(b, w, exactly);
   }
   else
   {
     width(b) = w;
+
     return b;
   }
 }
-/* sec 0716 */
-pointer math_glue (pointer g, scaled m)
-{
-  pointer p;
-  integer n;
-  scaled f;
 
-  n = x_over_n(m, 65536);
+static pointer math_glue (pointer g, scaled m)
+{
+  pointer p;  // {the new glue specification}
+  integer n;  // {integer part of |m|}
+  scaled f;   // {fraction part of |m|}
+
+  n = x_over_n(m, 0200000);
   f = ng_remainder;
 
   if (f < 0)
   {
     decr(n);
-    f = f + 65536;
+    f = f + 0200000;
   }
 
   p = get_node(glue_spec_size);
-  width(p) = mu_mult(width(g));
+  width(p) = mu_mult(width(g)); // {convert \.{mu} to \.{pt}}
   stretch_order(p) = stretch_order(g);
 
   if (stretch_order(p) == normal)
@@ -13509,29 +21522,29 @@ pointer math_glue (pointer g, scaled m)
 
   return p;
 }
-/* sec 0717 */
-void math_kern (pointer p, scaled m)
+
+static void math_kern (pointer p, scaled m)
 {
-  integer n;
-  scaled f;
+  integer n;  // {integer part of |m|}
+  scaled f;   // {fraction part of |m|}
 
   if (subtype(p) == mu_glue)
   {
-    n = x_over_n(m, 65536);
+    n = x_over_n(m, 0200000);
     f = ng_remainder;
 
     if (f < 0)
     {
       decr(n);
-      f = f + 65536;
+      f = f + 0200000;
     }
 
     width(p) = mu_mult(width(p));
     subtype(p) = explicit;
   }
 }
-/* sec 0718 */
-void flush_math (void)
+
+static void flush_math (void)
 {
   flush_node_list(link(head));
   flush_node_list(incompleat_noad);
@@ -13539,13 +21552,13 @@ void flush_math (void)
   tail = head;
   incompleat_noad = 0;
 }
-/* sec 0720 */
-pointer clean_box (pointer p, small_number s, halfword jc)
+
+static pointer clean_box (pointer p, small_number s, halfword jc)
 {
-  pointer q;
-  small_number save_style;
-  pointer x;
-  pointer r;
+  pointer q;              // {beginning of a list to be boxed}
+  small_number save_style;// {|cur_style| to be restored}
+  pointer x;              // {box to be returned}
+  pointer r;              // {temporary pointer}
 
   switch (math_type(p))
   {
@@ -13587,9 +21600,10 @@ pointer clean_box (pointer p, small_number s, halfword jc)
   cur_style = s;
   mlist_penalties = false;
   mlist_to_hlist();
-  q = link(temp_head);
-  cur_style = save_style;
+  q = link(temp_head);  // {recursive call}
+  cur_style = save_style; // {restore the style}
 
+  // @<Set up the values of |cur_size| and |cur_mu|, based on |cur_style|@>
   {
     if (cur_style < script_style)
       cur_size = text_size;
@@ -13600,13 +21614,14 @@ pointer clean_box (pointer p, small_number s, halfword jc)
   }
 
 found:
-  if (is_char_node(q) || (q == 0))
+  if (is_char_node(q) || (q == null))
     x = hpack(q, 0, 1);
-  else if ((link(q) == 0) && (type(q) <= dir_node) && (shift_amount(q) == 0))
-    x = q;
+  else if ((link(q) == null) && (type(q) <= dir_node) && (shift_amount(q) == 0))
+    x = q;  // {it's already clean}
   else
     x = hpack(q, 0, 1);
 
+  // @<Simplify a trivial box@>;
   q = list_ptr(x);
 
   if (is_char_node(q))
@@ -13616,25 +21631,25 @@ found:
 
     r = link(q);
 
-    if (r != 0)
-      if (link(r) == 0)
+    if (r != null)
+      if (link(r) == null)
         if (!is_char_node(r))
-          if (type(r) == kern_node)
+          if (type(r) == kern_node) // {unneeded italic correction}
           {
             free_node(r, medium_node_size);
-            link(q) = 0;
+            link(q) = null;
           }
   }
 
   return x;
 }
-/* sec 0722 */
+
 // unpack the |math_char| field |a|
-void fetch (pointer a)
+static void fetch (pointer a)
 {
   cur_c = character(a);
   cur_f = fam_fnt(fam(a) + cur_size);
-
+  //  @<Complain about an undefined family and set |cur_i| null@>
   if (cur_f == null_font)
   {
     print_err("");
@@ -13650,7 +21665,7 @@ void fetch (pointer a)
         "and I'll try to forget that I needed that character.");
     error();
     cur_i = null_character;
-    math_type(a) = 0;
+    math_type(a) = empty;
   }
   else
   {
@@ -13665,22 +21680,22 @@ void fetch (pointer a)
     if (!char_exists(cur_i))
     {
       char_warning(cur_f, cur_c);
-      math_type(a) = 0;
+      math_type(a) = empty;
     }
   }
 }
-/* sec 0734 */
-void make_over (pointer q)
+
+static void make_over (pointer q)
 {
   info(nucleus(q)) = overbar(clean_box(nucleus(q), cramped_style(cur_style), math_kcode(q)),
       3 * default_rule_thickness, default_rule_thickness);
   math_type(nucleus(q)) = sub_box;
 }
-/* sec 0735 */
-void make_under (pointer q)
+
+static void make_under (pointer q)
 {
-  pointer p, x, y;
-  scaled delta;
+  pointer p, x, y;  // {temporary registers for box construction}
+  scaled delta;     // {overall height plus depth}
 
   x = clean_box(nucleus(q), cur_style, math_kcode(q));
   p = new_kern(3 * default_rule_thickness);
@@ -13693,11 +21708,11 @@ void make_under (pointer q)
   info(nucleus(q)) = y;
   math_type(nucleus(q)) = sub_box;
 }
-/* sec 0736 */
-void make_vcenter (pointer q)
+
+static void make_vcenter (pointer q)
 { 
-  pointer v;
-  scaled delta;
+  pointer v;    // {the box that should be centered vertically}
+  scaled delta; // {its height plus depth}
 
   v = info(nucleus(q));
 
@@ -13716,11 +21731,11 @@ void make_vcenter (pointer q)
   height(v) = axis_height(cur_size) + half(delta);
   depth(v) = delta - height(v);
 }
-/* sec 0737 */
-void make_radical (pointer q)
+
+static void make_radical (pointer q)
 {
-  pointer x, y;
-  scaled delta, clr;
+  pointer x, y;       // {temporary registers for box construction}
+  scaled delta, clr;  // {dimensions involved in the calculation}
 
   x = clean_box(nucleus(q), cramped_style(cur_style), math_kcode(q));
 
@@ -13736,25 +21751,25 @@ void make_radical (pointer q)
   delta = depth(y) - (height(x) + depth(x) + clr);
 
   if (delta > 0)
-    clr = clr + half(delta);
+    clr = clr + half(delta);  // {increase the actual clearance}
 
   shift_amount(y) = -(height(x) + clr);
   link(y) = overbar(x, clr, height(y));
   info(nucleus(q)) = hpack(y, 0, 1);
   math_type(nucleus(q)) = sub_box;
 }
-/* sec 0738 */
-void make_math_accent (pointer q)
+
+static void make_math_accent (pointer q)
 {
-  pointer p, x, y;
-  integer a;
-  quarterword c;
-  internal_font_number f;
-  four_quarters i;
-  scaled s;
-  scaled h;
-  scaled delta;
-  scaled w;
+  pointer p, x, y;        // {temporary registers for box construction}
+  integer a;              // {address of lig/kern instruction}
+  quarterword c;          // {accent character}
+  internal_font_number f; // {its font}
+  four_quarters i;        // {its |char_info|}
+  scaled s;               // {amount to skew the accent to the right}
+  scaled h;               // {height of character being accented}
+  scaled delta;           // {space to remove between accent and accentee}
+  scaled w;               // {width of the accentee, not including sub/superscripts}
 
   fetch(accent_chr(q));
 
@@ -13763,6 +21778,8 @@ void make_math_accent (pointer q)
     i = cur_i;
     c = cur_c;
     f = cur_f;
+
+    // @<Compute the amount of skew@>;
     s = 0;
 
     if (math_type(nucleus(q)) == math_char)
@@ -13805,6 +21822,7 @@ done1:
     w = width(x);
     h = height(x);
 
+    // @<Switch to a larger accent if available and appropriate@>;
     while (true)
     {
       if (char_tag(i) != list_tag)
@@ -13854,6 +21872,7 @@ done:
     y = vpackage(y, 0, 1, max_dimen);
     width(y) = width(x);
 
+    // @<Make the height of box |y| equal to |h|@>;
     if (height(y) < h)
     {
       p = new_kern(h - height(y));
@@ -13866,14 +21885,20 @@ done:
     math_type(nucleus(q)) = sub_box;
   }
 }
-/* sec 0743 */
-void make_fraction (pointer q)
+
+static void make_fraction (pointer q)
 {
-  pointer p, v, x, y, z;
-  scaled delta, delta1, delta2, shift_up, shift_down, clr;
+  pointer p, v, x, y, z; // {temporary registers for box construction}
+  scaled delta, delta1, delta2, shift_up, shift_down, clr; // {dimensions for box calculations}
   
   if (thickness(q) == default_code)
     thickness(q) = default_rule_thickness;
+
+  /*
+    @<Create equal-width boxes |x| and |z| for the numerator and denominator,
+    and compute the default amounts |shift_up| and |shift_down| by which they
+    are displaced from the baseline@>;
+  */
 
   x = clean_box(numerator(q), num_style(cur_style), math_kcode(q));
   z = clean_box(denominator(q), denom_style(cur_style), math_kcode(q));
@@ -13897,6 +21922,11 @@ void make_fraction (pointer q)
     else
       shift_up = num3(cur_size);
   }
+
+  /*
+    @<Adjust \(s)|shift_up| and |shift_down| for the case
+    of no fraction line@>
+  */
 
   if (thickness(q) == 0)
   {
@@ -13931,6 +21961,10 @@ void make_fraction (pointer q)
       shift_down = shift_down + delta2;
   }
 
+  /*
+    @<Construct a vlist box for the fraction, according to |shift_up| and
+    |shift_down|@>;
+  */
   v = new_null_box();
   type(v) = vlist_node;
   height(v) = shift_up + height(x);
@@ -13955,6 +21989,11 @@ void make_fraction (pointer q)
   link(x) = p;
   list_ptr(v) = x;
 
+  /*
+    @<Put the \(f)fraction into a box with its delimiters, and make |new_hlist(q)|
+    point to it@>;
+  */
+
   if (cur_style < text_style)
     delta = delim1(cur_size);
   else
@@ -13966,11 +22005,125 @@ void make_fraction (pointer q)
   link(v) = z;
   new_hlist(q) = hpack(x, 0, 1);
 }
-/* sec 0752 */
-void make_ord (pointer q)
+
+static scaled make_op (pointer q)
 {
-  integer a;
-  pointer gp, gq, p, r;
+  scaled delta; // {offset between subscript and superscript}
+  pointer p, v, x, y, z;  // {temporary registers for box construction}
+  quarterword c;  // {registers for character examination}
+  four_quarters i;
+  scaled shift_up, shift_down;  // {dimensions for box calculation}
+
+  if ((subtype(q) == normal) && (cur_style < text_style))
+    subtype(q) = limits;
+
+  if (math_type(nucleus(q)) == math_char)
+  {
+    fetch(nucleus(q));
+
+    if ((cur_style < text_style) && (char_tag(cur_i) == list_tag))
+    {
+      c = rem_byte(cur_i);
+      i = char_info(cur_f, c);
+
+      if (char_exists(i))
+      {
+        cur_c = c;
+        cur_i = i;
+        character(nucleus(q)) = c;
+      }
+    }
+
+    delta = char_italic(cur_f, cur_i);
+    x = clean_box(nucleus(q), cur_style, math_kcode(q));
+
+    if ((math_type(subscr(q)) != empty) && (subtype(q) != limits))
+      width(x) = width(x) - delta;
+
+    shift_amount(x) = half(height(x) - depth(x)) - axis_height(cur_size);
+    math_type(nucleus(q)) = sub_box;
+    info(nucleus(q)) = x;
+  }
+  else
+    delta = 0;
+
+  if (subtype(q) == limits)
+  {
+    x = clean_box(supscr(q), sup_style(cur_style), math_kcode(q));
+    y = clean_box(nucleus(q), cur_style, math_kcode(q));
+    z = clean_box(subscr(q), sub_style(cur_style), math_kcode(q));
+    v = new_null_box();
+    type(v) = vlist_node;
+    width(v) = width(y);
+
+    if (width(x) > width(v))
+      width(v) = width(x);
+
+    if (width(z) > width(v))
+      width(v) = width(z);
+
+    x = rebox(x, width(v));
+    y = rebox(y, width(v));
+    z = rebox(z, width(v));
+    shift_amount(x) = half(delta);
+    shift_amount(z) = -shift_amount(x);
+    height(v) = height(y);
+    depth(v) = depth(y);
+
+    if (math_type(supscr(q)) == empty)
+    {
+      delete_glue_ref(space_ptr(x));
+      delete_glue_ref(xspace_ptr(x));
+      free_node(x, box_node_size);
+      list_ptr(v) = y;
+    }
+    else
+    {
+      shift_up = big_op_spacing3 - depth(x);
+
+      if (shift_up < big_op_spacing1)
+        shift_up = big_op_spacing1;
+
+      p = new_kern(shift_up);
+      link(p) = y;
+      link(x) = p;
+      p = new_kern(big_op_spacing5);
+      link(p) = x;
+      list_ptr(v) = p;
+      height(v) = height(v) + big_op_spacing5 + height(x) + depth(x) + shift_up;
+    }
+
+    if (math_type(subscr(q)) == empty)
+    {
+      delete_glue_ref(space_ptr(z));
+      delete_glue_ref(xspace_ptr(z));
+      free_node(z, box_node_size);
+    }
+    else
+    {
+      shift_down = big_op_spacing4 - height(z);
+
+      if (shift_down < big_op_spacing2)
+        shift_down = big_op_spacing2;
+
+      p = new_kern(shift_down);
+      link(y) = p;
+      link(p) = z;
+      p = new_kern(big_op_spacing5);
+      link(z) = p;
+      depth(v) = depth(v) + big_op_spacing5 + height(z) + depth(z) + shift_down;
+    }
+
+    new_hlist(q) = v;
+  }
+
+  return delta;
+}
+
+static void make_ord (pointer q)
+{
+  integer a; // {address of lig/kern instruction}
+  pointer gp, gq, p, r; // {temporary registers for list manipulation}
   halfword rr;
 
 restart:
@@ -13979,7 +22132,7 @@ restart:
   {
     p = link(q);
 
-    if (p != 0)
+    if (p != null)
       if ((type(p) >= ord_noad) && (type(p) <= punct_noad))
         if (fam(nucleus(p)) == fam(nucleus(q)))
           if (math_type(nucleus(p)) == math_char)
@@ -13999,6 +22152,13 @@ restart:
                 cur_i = font_info[a].qqqq;
               }
               
+              /*
+                @<If instruction |cur_i| is a kern with |cur_c|, attach
+                the kern after~|q|; or if it is a ligature with |cur_c|, combine
+                noads |q| and~|p| appropriately; then |return| if the cursor has
+                moved past a noad, or |goto restart|@>;
+              */
+
               while (true)
               {
                 if (next_char(cur_i) == cur_c)
@@ -14009,24 +22169,26 @@ restart:
                       p = new_kern(char_kern(cur_f, cur_i));
                       link(p) = link(q);
                       link(q) = p;
+
                       return;
                     }
                     else
                     {
-                      check_interrupt();
+                      check_interrupt(); // {allow a way out of infinite ligature loop}
 
                       switch (op_byte(cur_i))
                       {
+                        // {\.{=:\?}, \.{=:\?>}}
                         case 1:
                         case 5:
                           character(nucleus(q)) = rem_byte(cur_i);
                           break;
-
+                        // {\.{\?=:}, \.{\?=:>}}
                         case 2:
                         case 6:
                           character(nucleus(p)) = rem_byte(cur_i);
                           break;
-
+                        // {\.{\?=:\?}, \.{\?=:\?>}, \.{\?=:\?>>}}
                         case 3:
                         case 7:
                         case 11:
@@ -14040,14 +22202,14 @@ restart:
                             if (op_byte(cur_i) < 11)
                               math_type(nucleus(r)) = math_char;
                             else
-                              math_type(nucleus(r)) = math_text_char;
+                              math_type(nucleus(r)) = math_text_char; // {prevent combination}
                           }
                           break;
 
                         default:
                           {
                             link(q) = link(p);
-                            character(nucleus(q)) = rem_byte(cur_i);
+                            character(nucleus(q)) = rem_byte(cur_i); // {\.{=:}}
                             mem[subscr(q)] = mem[subscr(p)];
                             mem[supscr(q)] = mem[supscr(p)];
                             free_node(p, noad_size);
@@ -14127,6 +22289,7 @@ restart:
                     p = new_glue(gq);
                     link(p) = link(q);
                     link(q) = p;
+
                     return;
                   }
                   else
@@ -14134,6 +22297,7 @@ restart:
                     p = new_kern(char_kern(cur_f, cur_i));
                     link(p) = link(q);
                     link(q) = p;
+
                     return;
                   }
 
@@ -14143,10 +22307,123 @@ restart:
           }
       }
 }
-/* sec 0762 */
-small_number make_left_right (pointer q, small_number style, scaled max_d, scaled max_h)
+
+static void make_scripts (pointer q, scaled delta)
 {
-  scaled delta, delta1, delta2;
+  pointer p, x, y, z; // {temporary registers for box construction}
+  scaled shift_up, shift_down, clr; // {dimensions in the calculation}
+  small_number t; // {subsidiary size code}
+
+  p = new_hlist(q);
+
+  if (is_char_node(p))
+  {
+    shift_up = 0;
+    shift_down = 0;
+  }
+  else
+  {
+    z = hpack(p, 0, 1);
+
+    if (cur_style < script_style)
+      t = script_size;
+    else
+      t = script_script_size;
+
+    shift_up = height(z) - sup_drop(t);
+    shift_down = depth(z) + sub_drop(t);
+    delete_glue_ref(space_ptr(z));
+    delete_glue_ref(xspace_ptr(z));
+    free_node(z, box_node_size);
+  }
+
+  if (math_type(supscr(q)) == empty)
+  {
+    x = clean_box(subscr(q), sub_style(cur_style), math_kcode(q));
+    width(x) = width(x) + script_space;
+
+    if (shift_down < sub1(cur_size))
+      shift_down = sub1(cur_size);
+
+    clr = height(x) - (abs(math_x_height(cur_size) * 4) / 5);
+
+    if (shift_down < clr)
+      shift_down = clr;
+
+    shift_amount(x) = shift_down;
+  }
+  else
+  {
+    {
+      x = clean_box(supscr(q), sup_style(cur_style), math_kcode(q));
+      width(x) = width(x) + script_space;
+
+      if (odd(cur_style))
+        clr = sup3(cur_size);
+      else if (cur_style < text_style)
+        clr = sup1(cur_size);
+      else
+        clr = sup2(cur_size);
+
+      if (shift_up < clr)
+        shift_up = clr;
+
+      clr = depth(x) + (abs(math_x_height(cur_size)) / 4);
+
+      if (shift_up < clr)
+        shift_up = clr;
+    }
+
+    if (math_type(subscr(q)) == empty)
+      shift_amount(x) = -shift_up;
+    else
+    {
+      y = clean_box(subscr(q), sub_style(cur_style), math_kcode(q));
+      width(y) = width(y) + script_space;
+
+      if (shift_down < sub2(cur_size))
+        shift_down = sub2(cur_size);
+
+      clr = 4 * default_rule_thickness - ((shift_up - depth(x)) - (height(y) - shift_down));
+
+      if (clr > 0)
+      {
+        shift_down = shift_down + clr;
+
+        clr = (abs(math_x_height(cur_size) * 4) / 5) - (shift_up - depth(x));
+
+        if (clr > 0)
+        {
+          shift_up = shift_up + clr;
+          shift_down = shift_down - clr;
+        }
+      }
+
+      shift_amount(x) = delta;
+      p = new_kern((shift_up - depth(x)) - (height(y) - shift_down));
+      link(x) = p;
+      link(p) = y;
+      x = vpackage(x, 0, 1, max_dimen);
+      shift_amount(x) = shift_down;
+    }
+  }
+
+  if (new_hlist(q) == 0)
+    new_hlist(q) = x;
+  else
+  {
+    p = new_hlist(q);
+
+    while (link(p) != 0)
+      p = link(p);
+
+    link(p) = x;
+  }
+}
+
+static small_number make_left_right (pointer q, small_number style, scaled max_d, scaled max_h)
+{
+  scaled delta, delta1, delta2; // {dimensions used in the calculation}
 
   cur_style = style;
 
@@ -14163,7 +22440,7 @@ small_number make_left_right (pointer q, small_number style, scaled max_d, scale
   delta1 = max_h + max_d - delta2;
 
   if (delta2 > delta1)
-    delta1 = delta2;
+    delta1 = delta2; // {|delta1| is max distance from axis}
 
   delta = (delta1 / 500) * delimiter_factor;
   delta2 = delta1 + delta1 - delimiter_shortfall;
@@ -14173,37 +22450,40 @@ small_number make_left_right (pointer q, small_number style, scaled max_d, scale
 
   new_hlist(q) = var_delimiter(delimiter(q), cur_size, delta);
 
-  return type(q) - (left_noad - open_noad);
+  return type(q) - (left_noad - open_noad); // {|open_noad| or |close_noad|}
 }
-/* sec 0726 */
+
+#if defined (_MSC_VER)
+  #pragma optimize("", off)
+#endif
+
 void mlist_to_hlist (void)
 {
-  pointer mlist;
-  boolean penalties;
-  small_number style;
-  pointer u;
-  small_number save_style;
-  pointer q;
-  pointer r;
-  /* small_number r_type; */
-  int r_type;
-  /* small_number t; */
-  int t;
-  pointer p, x, y, z;
-  integer pen;
-  small_number s;
-  scaled max_h, max_d;
-  scaled delta;
+  pointer mlist;            // {beginning of the given list}
+  boolean penalties;        // {should penalty nodes be inserted?}
+  small_number style;       // {the given style}
+  pointer u;                // {temporary register}
+  small_number save_style;  // {holds |cur_style| during recursion}
+  pointer q;                // {runs through the mlist}
+  pointer r;                // {the most recent noad preceding |q|}
+  small_number r_type;      // {the |type| of noad |r|, or |op_noad| if |r=null|}
+  small_number t;           // {the effective |type| of noad |q| during the second pass}
+  pointer p, x, y, z;       // {temporary registers for list construction}
+  integer pen;              // {a penalty to be inserted}
+  small_number s;           // {the size of a noad to be deleted}
+  scaled max_h, max_d;      // {maximum height and depth of the list translated so far}
+  scaled delta;             // {offset between subscript and superscript}
 
   mlist = cur_mlist;
   penalties = mlist_penalties;
-  style = cur_style;
+  style = cur_style; // {tuck global parameters away as local variables}
   q = mlist;
-  r = 0;
+  r = null;
   r_type = op_noad;
   max_h = 0;
   max_d = 0;
 
+  // @<Set up the values of |cur_size| and |cur_mu|, based on |cur_style|@>;
   {
     if (cur_style < script_style)
       cur_size = text_size;
@@ -14213,8 +22493,20 @@ void mlist_to_hlist (void)
     cur_mu = x_over_n(math_quad(cur_size), 18);
   }
 
-  while (q != 0)
+  /*
+    @<Process node-or-noad |q| as much as possible in preparation
+    for the second pass of |mlist_to_hlist|, then move to the next
+    item in the mlist@>;
+  */
+
+  while (q != null)
   {
+    /*
+      @<Do first-pass processing based on |type(q)|; |goto done_with_noad|
+      if a noad has been fully processed, |goto check_dimensions| if it
+      has been translated into |new_hlist(q)|, or |goto done_with_node|
+      if a node has been fully processed@>
+    */
 reswitch:
     delta = 0;
 
@@ -14246,6 +22538,7 @@ reswitch:
       case punct_noad:
       case right_noad:
         {
+          // @<Convert \(a)a final |bin_noad| to an |ord_noad|@>
           if (r_type == bin_noad)
             type(r) = ord_noad;
 
@@ -14254,6 +22547,7 @@ reswitch:
         }
         break;
 
+      // @<Cases for noads that can follow a |bin_noad|@>
       case left_noad:
         goto done_with_noad;
         break;
@@ -14303,10 +22597,15 @@ reswitch:
         make_vcenter(q);
         break;
 
+      /*
+        @<Cases for nodes that can appear in an mlist, after which we
+        |goto done_with_node|@>
+      */
       case style_node:
         {
           cur_style = subtype(q);
 
+          // @<Set up the values of |cur_size| and |cur_mu|, based on |cur_style|@>
           {
             if (cur_style < script_style)
               cur_size = text_size;
@@ -14320,24 +22619,28 @@ reswitch:
         }
         break;
 
+      /*
+        @<Change this node to a style node followed by the correct choice,
+        then |goto done_with_node|@>
+      */
       case choice_node:
         {
           switch (cur_style / 2)
           {
             case 0:
-              choose_mlist(display_mlist);
+              choose_mlist(display_mlist); // {|display_style=0|}
               break;
 
             case 1:
-              choose_mlist(text_mlist);
+              choose_mlist(text_mlist); // {|text_style=2|}
               break;
 
             case 2:
-              choose_mlist(script_mlist);
+              choose_mlist(script_mlist); // {|script_style=4|}
               break;
 
             case 3:
-              choose_mlist(script_script_mlist);
+              choose_mlist(script_script_mlist); // {|script_script_style=6|}
               break;
           }
 
@@ -14350,12 +22653,12 @@ reswitch:
           width(q) = 0;
           depth(q) = 0;
 
-          if (p != 0)
+          if (p != null)
           {
             z = link(q);
             link(q) = p;
 
-            while (link(p) != 0)
+            while (link(p) != null)
               p = link(p);
 
             link(p) = z;
@@ -14388,6 +22691,7 @@ reswitch:
 
       case glue_node:
         {
+          // @<Convert \(m)math glue to ordinary glue@>
           if (subtype(q) == mu_glue)
           {
             x = glue_ptr(q);
@@ -14400,11 +22704,11 @@ reswitch:
           {
             p = link(q);
 
-            if (p != 0)
+            if (p != null)
               if ((type(q) == glue_node) || (type(p) == kern_node))
               {
                 link(q) = link(p);
-                link(p) = 0;
+                link(p) = null;
                 flush_node_list(p);
               }
           }
@@ -14429,6 +22733,7 @@ reswitch:
         break;
     }
 
+    // @<Convert \(n)|nucleus(q)| to an hlist and attach the sub/superscripts@>
     switch (math_type(nucleus(q)))
     {
       case math_char:
@@ -14436,6 +22741,11 @@ reswitch:
       case math_jchar:
       case math_text_jchar:
         {
+          /*
+            @<Create a character node |p| for |nucleus(q)|, possibly followed
+            by a kern node for the italic correction, and set |delta| to the
+            italic correction if a subscript is present@>
+          */
           fetch(nucleus(q));
 
           if (char_exists(cur_i))
@@ -14452,9 +22762,8 @@ reswitch:
             }
 
             if (((math_type(nucleus(q)) == math_text_char) ||
-              (math_type(nucleus(q)) == math_text_jchar))
-              && (space(cur_f) != 0))
-              delta = 0;
+                (math_type(nucleus(q)) == math_text_jchar)) && (space(cur_f) != 0))
+              delta = 0;  // {no italic correction in mid-word of text font}
 
             if ((math_type(subscr(q)) == empty) && (delta != 0))
             {
@@ -14463,12 +22772,12 @@ reswitch:
             }
           }
           else
-            p = 0;
+            p = null;
         }
         break;
 
       case empty:
-        p = 0;
+        p = null;
         break;
 
       case sub_box:
@@ -14480,7 +22789,7 @@ reswitch:
           cur_mlist = info(nucleus(q));
           save_style = cur_style;
           mlist_penalties = false;
-          mlist_to_hlist();
+          mlist_to_hlist(); // {recursive call}
           cur_style = save_style;
 
           {
@@ -14508,6 +22817,7 @@ reswitch:
 
     make_scripts(q, delta);
 
+    // {go here to update |max_h| and |max_d|}
 check_dimensions:
     z = hpack(new_hlist(q), 0, 1);
 
@@ -14521,6 +22831,7 @@ check_dimensions:
     delete_glue_ref(xspace_ptr(z));
     free_node(z, box_node_size);
 
+    // {go here when a noad has been fully translated}
 done_with_noad:
     r = q;
     r_type = type(r);
@@ -14540,15 +22851,22 @@ done_with_noad:
       }
     }
 
+    // {go here when a node has been fully converted}
 done_with_node:
     q = link(q);
   }
 
+  // @<Convert \(a)a final |bin_noad| to an |ord_noad|@>;
   if (r_type == bin_noad)
     type(r) = ord_noad;
+  
+  /*
+    @<Make a second pass over the mlist, removing all noads and inserting the
+    proper spacing and penalties@>;
+  */
 
   p = temp_head;
-  link(p) = 0;
+  link(p) = null;
   q = mlist;
   r_type = 0;
   cur_style = style;
@@ -14557,13 +22875,20 @@ done_with_node:
     if (cur_style < script_style)
       cur_size = text_size;
     else
-      cur_size = 16 *((cur_style - text_style) / 2);
+      cur_size = 16 * ((cur_style - text_style) / 2);
 
     cur_mu = x_over_n(math_quad(cur_size), 18);
   }
 
-  while (q != 0)
+  while (q != null)
   {
+    /*
+      @<If node |q| is a style node, change the style and |goto delete_q|;
+      otherwise if it is not a noad, put it into the hlist,
+      advance |q|, and |goto done|; otherwise set |s| to the size
+      of noad |q|, set |t| to the associated type (|ord_noad..
+      inner_noad|), and set |pen| to the associated penalty@>;
+    */
     t = ord_noad;
     s = noad_size;
     pen = inf_penalty;
@@ -14621,6 +22946,7 @@ done_with_node:
 
       case style_node:
         {
+          // @<Change the current style and |goto delete_q|@>
           cur_style = subtype(q);
           s = style_node_size;
 
@@ -14628,7 +22954,7 @@ done_with_node:
             if (cur_style < script_style)
               cur_size = text_size;
             else
-              cur_size = 16 *((cur_style - text_style) / 2);
+              cur_size = 16 * ((cur_style - text_style) / 2);
 
             cur_mu = x_over_n(math_quad(cur_size), 18);
           }
@@ -14650,7 +22976,7 @@ done_with_node:
           link(p) = q;
           p = q;
           q = link(q);
-          link(p) = 0;
+          link(p) = null;
           goto done;
         }
         break;
@@ -14670,6 +22996,7 @@ done_with_node:
         break;
     }
 
+    // @<Append inter-element spacing based on |r_type| and |t|@>;
     if (r_type > 0)
     {
       switch (str_pool[r_type * 8 + t + magic_offset])
@@ -14712,24 +23039,25 @@ done_with_node:
       {
         y = math_glue(glue_par(x), cur_mu);
         z = new_glue(y);
-        glue_ref_count(y) = 0;
+        glue_ref_count(y) = null;
         link(p) = z;
         p = z;
-        subtype(z) = x + 1;
+        subtype(z) = x + 1; // {store a symbolic subtype}
       }
     }
 
-    if (new_hlist(q) != 0)
+    // @<Append any |new_hlist| entries for |q|, and any appropriate penalties@>;
+    if (new_hlist(q) != null)
     {
       link(p) = new_hlist(q);
 
       do {
         p = link(p);
-      } while (!(link(p) == 0));
+      } while (!(link(p) == null));
     }
 
     if (penalties)
-      if (link(q) != 0)
+      if (link(q) != null)
         if (pen < inf_penalty)
         {
           r_type = type(link(q));
@@ -14748,6 +23076,7 @@ done_with_node:
 
     r_type = t;
 
+    // {go here to delete |q| and move to the next node}
 delete_q:
     r = q;
     q = link(q);
@@ -14763,10 +23092,14 @@ done:;
   delete_glue_ref(xspace_ptr(p));
   free_node(p, box_node_size);
 }
-/* sec 0772 */
-void push_alignment (void)
+
+#if defined (_MSC_VER)
+  #pragma optimize("", on)
+#endif
+
+static void push_alignment (void)
 {
-  pointer p;
+  pointer p;  // {the new alignment stack node}
 
   p = get_node(align_stack_node_size);
   link(p) = align_ptr;
@@ -14780,10 +23113,10 @@ void push_alignment (void)
   align_ptr = p;
   cur_head = get_avail();
 }
-/* sec 0772 */
-void pop_alignment (void)
+
+static void pop_alignment (void)
 {
-  pointer p;
+  pointer p;  // {the top alignment stack node}
 
   free_avail(cur_head);
   p = align_ptr;
@@ -14797,15 +23130,15 @@ void pop_alignment (void)
   align_ptr = link(p);
   free_node(p, align_stack_node_size);
 }
-/* sec 0782 */
-void get_preamble_token (void)
+
+static void get_preamble_token (void)
 {
 restart:
   get_token();
 
   while ((cur_chr == span_code) && (cur_cmd == tab_mark))
   {
-    get_token();
+    get_token();  // {this token will be expanded once}
 
     if (cur_cmd > max_command)
     {
@@ -14830,16 +23163,17 @@ restart:
     goto restart;
   }
 }
-/* sec 0774 */
-void init_align (void)
+
+static void init_align (void)
 {
-  pointer save_cs_ptr;
-  pointer p;
+  pointer save_cs_ptr;  // {|warning_index| value for error messages}
+  pointer p;  // {for short-term temporary use}
 
-  save_cs_ptr = cur_cs;
+  save_cs_ptr = cur_cs; // {\.{\\halign} or \.{\\valign}, usually}
   push_alignment();
-  align_state = -1000000;
+  align_state = -1000000; // {enter a new alignment level}
 
+  // @<Check for improper alignment in displayed math@>;
   if ((mode == mmode) && ((tail != head) || (incompleat_noad != 0)))
   {
     print_err("Improper ");
@@ -14852,8 +23186,9 @@ void init_align (void)
     flush_math();
   }
 
-  push_nest();
+  push_nest();  // {enter a new semantic level}
 
+  // @<Change current mode to |-vmode| for \.{\\halign}, |-hmode| for \.{\\valign}@>
   if (mode == mmode)
   {
     mode = -vmode;
@@ -14863,21 +23198,31 @@ void init_align (void)
     negate(mode);
 
   scan_spec(align_group, false);
-  preamble = 0;
+
+  // @<Scan the preamble and record it in the |preamble| list@>
+  preamble = null;
   cur_align = align_head;
-  cur_loop = 0;
+  cur_loop = null;
   scanner_status = aligning;
   warning_index = save_cs_ptr;
   align_state = -1000000;
 
   while (true)
   {
+    // @<Append the current tabskip glue to the preamble list@>
     link(cur_align) = new_param_glue(tab_skip_code);
     cur_align = link(cur_align);
 
+    // {\.{\\cr} ends the preamble}
     if (cur_cmd == car_ret)
       goto done;
 
+    /*
+      @<Scan preamble text until |cur_cmd| is |tab_mark| or |car_ret|,
+      looking for changes in the tabskip glue; append an
+      alignrecord to the preamble list@>
+    */
+    // @<Scan the template \<u_j>, putting the resulting token list in |hold_head|@>
     p = hold_head;
     link(p) = 0;
 
@@ -14910,12 +23255,13 @@ void init_align (void)
 
 done1:
     link(cur_align) = new_null_box();
-    cur_align = link(cur_align);
+    cur_align = link(cur_align);  // {a new alignrecord}
     info(cur_align) = end_span;
     width(cur_align) = null_flag;
     u_part(cur_align) = link(hold_head);
+    // @<Scan the template \<v_j>, putting the resulting token list in |hold_head|@>
     p = hold_head;
-    link(p) = 0;
+    link(p) = null;
 
     while (true)
     {
@@ -14943,7 +23289,7 @@ continu:
 done2:
     link(p) = get_avail();
     p = link(p);
-    info(p) = end_template_token;
+    info(p) = end_template_token; // {put \.{\\endtemplate} at the end}
     v_part(cur_align) = link(hold_head);
   }
 
@@ -14951,13 +23297,13 @@ done:
   scanner_status = normal;
   new_save_level(align_group);
 
-  if (every_cr != 0)
+  if (every_cr != null)
     begin_token_list(every_cr, every_cr_text);
 
-  align_peek();
+  align_peek(); // {look for \.{\\noalign} or \.{\\omit}}
 }
-/* sec 0787 */
-void init_span (pointer p)
+
+static void init_span (pointer p)
 {
   push_nest();
 
@@ -14971,8 +23317,8 @@ void init_span (pointer p)
 
   cur_span = p;
 }
-/* sec 0786 */
-void init_row (void)
+
+static void init_row (void)
 {
   push_nest();
   mode = (-hmode - vmode) - mode;
@@ -14988,8 +23334,8 @@ void init_row (void)
   cur_tail = cur_head;
   init_span(cur_align);
 }
-/* sec 0788 */
-void init_col (void)
+
+static void init_col (void)
 {
   extra_info(cur_align) = cur_cmd;
 
@@ -15000,11 +23346,12 @@ void init_col (void)
     back_input();
     begin_token_list(u_part(cur_align), u_template);
   }
+  // {now |align_state=1000000|}
 }
-/* sec 0799 */
-void fin_row (void)
+
+static void fin_row (void)
 {
-  pointer p;
+  pointer p;  // {the new unset box}
 
   if (mode == -hmode)
   {
@@ -15041,31 +23388,37 @@ void fin_row (void)
     begin_token_list(every_cr, every_cr_text);
 
   align_peek();
+  // {note that |glue_shrink(p)=0| since |glue_shrink==shift_amount|}
 }
-/* sec 0800 */
-void fin_align (void)
+
+static void fin_align (void)
 {
-  pointer p, q, r, s, u, v, z;
-  scaled t, w;
-  scaled o;
-  halfword n;
-  scaled rule_save;
-  memory_word aux_save;
+  pointer p, q, r, s, u, v, z;  // {registers for the list operations}
+  scaled t, w;  // {width of column}
+  scaled o; // {shift offset for unset boxes}
+  halfword n; // {matching span amount}
+  scaled rule_save; // {temporary storage for |overfull_rule|}
+  memory_word aux_save; // {temporary storage for |aux|}
 
   if (cur_group != align_group)
     confusion("align1");
 
-  unsave();
+  unsave(); // {that |align_group| was for individual entries}
 
   if (cur_group != align_group)
     confusion("align0");
 
-  unsave();
+  unsave(); // {that |align_group| was for the whole alignment}
 
   if (nest[nest_ptr - 1].mode_field == mmode)
     o = display_indent;
   else
     o = 0;
+
+  /*
+    @<Go through the preamble list, determining the column widths and
+    changing the alignrecords to dummy unset boxes@>
+  */
 
   q = link(preamble);
 
@@ -15076,6 +23429,7 @@ void fin_align (void)
 
     if (width(q) == null_flag)
     {
+      // @<Nullify |width(q)| and the tabskip glue following this column@>
       width(q) = 0;
       r = link(q);
       s = glue_ptr(r);
@@ -15090,6 +23444,10 @@ void fin_align (void)
 
     if (info(q) != end_span)
     {
+      /*
+        @<Merge the widths in the span nodes of |q| with those of |p|,
+        destroying the span nodes of |q|@>
+      */
       t = width(q) + width(glue_ptr(link(q)));
       r = info(q);
       s = end_span;
@@ -15136,13 +23494,18 @@ void fin_align (void)
     q = p;
   } while (!(q == 0));
 
+  /*
+    @<Package the preamble list, to determine the actual tabskip glue amounts,
+    and let |p| point to this prototype box@>
+  */
+
   save_ptr = save_ptr - 2;
   pack_begin_line = -mode_line;
 
   if (mode == -vmode)
   {
     rule_save = overfull_rule;
-    overfull_rule = 0;
+    overfull_rule = 0;  // {prevent rule from being packaged}
     z = new_null_box();
     link(z) = preamble;
     adjust_hlist(z, false);
@@ -15179,10 +23542,11 @@ void fin_align (void)
   }
 
   pack_begin_line = 0;
+  // @<Set the glue in all the unset boxes of the current list@>
   q = link(head);
   s = head;
 
-  while (q != 0)
+  while (q != null)
   {
     if (!is_char_node(q))
       if (type(q) == unset_node)
@@ -15369,6 +23733,7 @@ void fin_align (void)
 
   flush_node_list(p);
   pop_alignment();
+  // @<Insert the \(c)current list into its environment@>
   aux_save = aux;
   p = link(head);
   q = tail;
@@ -15424,18 +23789,18 @@ void fin_align (void)
       build_page();
   }
 }
-/* sec 0791 */
-boolean fin_col (void)
-{
-  pointer p;
-  pointer q, r;
-  pointer s;
-  pointer u;
-  scaled w;
-  glue_ord o;
-  halfword n;
 
-  if (cur_align == 0)
+static boolean fin_col (void)
+{
+  pointer p;  // {the alignrecord after the current one}
+  pointer q, r; // {temporary pointers for list manipulation}
+  pointer s;  // {a new span node}
+  pointer u;  // {a new unset box}
+  scaled w; // {natural width}
+  glue_ord o; // {order of infinity}
+  halfword n; // {span counter}
+
+  if (cur_align == null)
     confusion("endv");
 
   q = link(cur_align);
@@ -15447,9 +23812,9 @@ boolean fin_col (void)
     fatal_error("(interwoven alignment preambles are not allowed)");
 
   p = link(q);
-
-  if ((p == 0) && (extra_info(cur_align) < cr_code))
-    if (cur_loop != 0)
+  // @<If the preamble list has been traversed, check that the row has ended@>
+  if ((p == null) && (extra_info(cur_align) < cr_code))
+    if (cur_loop != null)
     {
       link(q) = new_null_box();
       p = link(q);
@@ -15609,234 +23974,7 @@ boolean fin_col (void)
 
   return false;
 }
-/* sec 0749 */
-scaled make_op (pointer q)
-{
-  scaled delta;
-  pointer p, v, x, y, z;
-  quarterword c;
-  four_quarters i;
-  scaled shift_up, shift_down;
 
-  if ((subtype(q) == normal) && (cur_style < text_style))
-    subtype(q) = limits;
-
-  if (math_type(nucleus(q)) == math_char)
-  {
-    fetch(nucleus(q));
-
-    if ((cur_style < text_style) && (char_tag(cur_i) == list_tag))
-    {
-      c = rem_byte(cur_i);
-      i = char_info(cur_f, c);
-
-      if (char_exists(i))
-      {
-        cur_c = c;
-        cur_i = i;
-        character(nucleus(q)) = c;
-      }
-    }
-
-    delta = char_italic(cur_f, cur_i);
-    x = clean_box(nucleus(q), cur_style, math_kcode(q));
-
-    if ((math_type(subscr(q)) != empty) && (subtype(q) != limits))
-      width(x) = width(x) - delta;
-
-    shift_amount(x) = half(height(x) - depth(x)) - axis_height(cur_size);
-    math_type(nucleus(q)) = sub_box;
-    info(nucleus(q)) = x;
-  }
-  else
-    delta = 0;
-
-  if (subtype(q) == limits)
-  {
-    x = clean_box(supscr(q), sup_style(cur_style), math_kcode(q));
-    y = clean_box(nucleus(q), cur_style, math_kcode(q));
-    z = clean_box(subscr(q), sub_style(cur_style), math_kcode(q));
-    v = new_null_box();
-    type(v) = vlist_node;
-    width(v) = width(y);
-
-    if (width(x) > width(v))
-      width(v) = width(x);
-
-    if (width(z) > width(v))
-      width(v) = width(z);
-
-    x = rebox(x, width(v));
-    y = rebox(y, width(v));
-    z = rebox(z, width(v));
-    shift_amount(x) = half(delta);
-    shift_amount(z) = -shift_amount(x);
-    height(v) = height(y);
-    depth(v) = depth(y);
-
-    if (math_type(supscr(q)) == empty)
-    {
-      delete_glue_ref(space_ptr(x));
-      delete_glue_ref(xspace_ptr(x));
-      free_node(x, box_node_size);
-      list_ptr(v) = y;
-    }
-    else
-    {
-      shift_up = big_op_spacing3 - depth(x);
-
-      if (shift_up < big_op_spacing1)
-        shift_up = big_op_spacing1;
-
-      p = new_kern(shift_up);
-      link(p) = y;
-      link(x) = p;
-      p = new_kern(big_op_spacing5);
-      link(p) = x;
-      list_ptr(v) = p;
-      height(v) = height(v) + big_op_spacing5 + height(x) + depth(x) + shift_up;
-    }
-
-    if (math_type(subscr(q)) == empty)
-    {
-      delete_glue_ref(space_ptr(z));
-      delete_glue_ref(xspace_ptr(z));
-      free_node(z, box_node_size);
-    }
-    else
-    {
-      shift_down = big_op_spacing4 - height(z);
-
-      if (shift_down < big_op_spacing2)
-        shift_down = big_op_spacing2;
-
-      p = new_kern(shift_down);
-      link(y) = p;
-      link(p) = z;
-      p = new_kern(big_op_spacing5);
-      link(z) = p;
-      depth(v) = depth(v) + big_op_spacing5 + height(z) + depth(z) + shift_down;
-    }
-
-    new_hlist(q) = v;
-  }
-
-  return delta;
-}
-/* sec 0756 */
-void make_scripts (pointer q, scaled delta)
-{
-  pointer p, x, y, z;
-  scaled shift_up, shift_down, clr;
-  small_number t;
-
-  p = new_hlist(q);
-
-  if (is_char_node(p))
-  {
-    shift_up = 0;
-    shift_down = 0;
-  }
-  else
-  {
-    z = hpack(p, 0, 1);
-
-    if (cur_style < script_style)
-      t = script_size;
-    else
-      t = script_script_size;
-
-    shift_up = height(z) - sup_drop(t);
-    shift_down = depth(z) + sub_drop(t);
-    delete_glue_ref(space_ptr(z));
-    delete_glue_ref(xspace_ptr(z));
-    free_node(z, box_node_size);
-  }
-
-  if (math_type(supscr(q)) == empty)
-  {
-    x = clean_box(subscr(q), sub_style(cur_style), math_kcode(q));
-    width(x) = width(x) + script_space;
-
-    if (shift_down < sub1(cur_size))
-      shift_down = sub1(cur_size);
-
-    clr = height(x) - (abs(math_x_height(cur_size) * 4) / 5);
-
-    if (shift_down < clr)
-      shift_down = clr;
-
-    shift_amount(x) = shift_down;
-  }
-  else
-  {
-    {
-      x = clean_box(supscr(q), sup_style(cur_style), math_kcode(q));
-      width(x) = width(x) + script_space;
-
-      if (odd(cur_style))
-        clr = sup3(cur_size);
-      else if (cur_style < text_style)
-        clr = sup1(cur_size);
-      else
-        clr = sup2(cur_size);
-
-      if (shift_up < clr)
-        shift_up = clr;
-
-      clr = depth(x) + (abs(math_x_height(cur_size)) / 4);
-
-      if (shift_up < clr)
-        shift_up = clr;
-    }
-
-    if (math_type(subscr(q)) == empty)
-      shift_amount(x) = -shift_up;
-    else
-    {
-      y = clean_box(subscr(q), sub_style(cur_style), math_kcode(q));
-      width(y) = width(y) + script_space;
-
-      if (shift_down < sub2(cur_size))
-        shift_down = sub2(cur_size);
-
-      clr = 4 * default_rule_thickness - ((shift_up - depth(x)) - (height(y) - shift_down));
-
-      if (clr > 0)
-      {
-        shift_down = shift_down + clr;
-
-        clr = (abs(math_x_height(cur_size) * 4) / 5) - (shift_up - depth(x));
-
-        if (clr > 0)
-        {
-          shift_up = shift_up + clr;
-          shift_down = shift_down - clr;
-        }
-      }
-
-      shift_amount(x) = delta;
-      p = new_kern((shift_up - depth(x)) - (height(y) - shift_down));
-      link(x) = p;
-      link(p) = y;
-      x = vpackage(x, 0, 1, max_dimen);
-      shift_amount(x) = shift_down;
-    }
-  }
-
-  if (new_hlist(q) == 0)
-    new_hlist(q) = x;
-  else
-  {
-    p = new_hlist(q);
-
-    while (link(p) != 0)
-      p = link(p);
-
-    link(p) = x;
-  }
-}
-/* sec 0785 */
 void align_peek (void)
 {
 restart:
@@ -15857,18 +23995,906 @@ restart:
   else if (cur_cmd == right_brace)
     fin_align();
   else if ((cur_cmd == car_ret) && (cur_chr == cr_cr_code))
-    goto restart;
+    goto restart; // {ignore \.{\\crcr}}
   else
   {
-    init_row();
-    init_col();
+    init_row(); // {start a new row}
+    init_col(); // {start a new column and replace what we peeked at}
   }
 }
-/* sec 0826 */
+
+/* sec 0815 */
+static void line_break (boolean d)
+{
+  boolean auto_breaking;
+  pointer prev_p;
+  pointer q, r, s, prev_s;
+  internal_font_number f, post_f;
+  pointer post_p;
+  ASCII_code cc;
+  boolean first_use;
+  /* small_number j; */
+  int j;
+  /* unsigned char c; */
+  unsigned int c;
+
+  pack_begin_line = mode_line;
+  first_use = true;
+  chain = false;
+  delete_glue_ref(cur_kanji_skip);
+  delete_glue_ref(cur_xkanji_skip);
+  cur_kanji_skip = space_ptr(head);
+  cur_xkanji_skip = xspace_ptr(head);
+  add_glue_ref(cur_kanji_skip);
+  add_glue_ref(cur_xkanji_skip);
+  link(temp_head) = link(head);
+
+  if (!is_char_node(tail) && (type(tail) == disp_node))
+  {
+    free_node(tail, small_node_size);
+    tail = prev_node;
+    link(tail) = null;
+  }
+
+  if (is_char_node(tail))
+    tail_append(new_penalty(inf_penalty));
+  else if (type(tail) != glue_node)
+    tail_append(new_penalty(inf_penalty));
+  else
+  {
+    type(tail) = penalty_node;
+    delete_glue_ref(glue_ptr(tail));
+    flush_node_list(leader_ptr(tail));
+    penalty(tail) = inf_penalty;
+  }
+
+  link(tail) = new_param_glue(par_fill_skip_code);
+  last_line_fill = link(tail);
+  init_cur_lang = prev_graf % 65536;
+  init_l_hyf = prev_graf / 4194304; /* 2^22 */
+  init_r_hyf = (prev_graf / 65536) % 64;
+  pop_nest();
+  no_shrink_error_yet = true;
+  check_shrinkage(left_skip);
+  check_shrinkage(right_skip);
+  q = left_skip;
+  r = right_skip;
+  background[1] = width(q) + width(r);
+  background[2] = 0;
+  background[3] = 0;
+  background[4] = 0;
+  background[5] = 0;
+  background[2 + stretch_order(q)] = stretch(q);
+  background[2 + stretch_order(r)] = background[2 + stretch_order(r)] + stretch(r);
+  background[6] = shrink(q) + shrink(r);
+  do_last_line_fit = false;
+  active_node_size = active_node_size_normal;
+
+  if (last_line_fit > 0)
+  {
+    q = glue_ptr(last_line_fill);
+
+    if ((stretch(q) > 0) && (stretch_order(q) > normal))
+	  {
+      if ((background[3] == 0) && (background[4] == 0) && (background[5] == 0))
+      {
+        do_last_line_fit = true;
+        active_node_size = active_node_size_extended;
+        fill_width[0] = 0;
+        fill_width[1] = 0;
+        fill_width[2] = 0;
+        fill_width[stretch_order(q) - 1] = stretch(q);
+      }
+	  }
+  }
+
+  minimum_demerits = awful_bad;
+  minimal_demerits[tight_fit] = awful_bad;
+  minimal_demerits[decent_fit] = awful_bad;
+  minimal_demerits[loose_fit] = awful_bad;
+  minimal_demerits[very_loose_fit] = awful_bad;
+
+  if (par_shape_ptr == 0)
+  {
+    if (hang_indent == 0)
+    {
+      last_special_line = 0;
+      second_width = hsize;
+      second_indent = 0;
+    }
+    else
+    {
+      last_special_line = abs(hang_after);
+
+      if (hang_after < 0)
+      {
+        first_width = hsize - abs(hang_indent);
+
+        if (hang_indent >= 0)
+          first_indent = hang_indent;
+        else
+          first_indent = 0;
+
+        second_width = hsize;
+        second_indent = 0;
+      }
+      else
+      {
+        first_width = hsize;
+        first_indent = 0;
+        second_width = hsize - abs(hang_indent);
+
+        if (hang_indent >= 0)
+          second_indent = hang_indent;
+        else
+          second_indent = 0;
+      }
+    }
+  }
+  else
+  {
+    last_special_line = info(par_shape_ptr) - 1;
+    second_width = mem[par_shape_ptr + 2 * (last_special_line + 1)].cint;
+    second_indent = mem[par_shape_ptr + 2 * last_special_line + 1].cint;
+  }
+
+  if (looseness == 0)
+    easy_line = last_special_line;
+  else
+    easy_line = empty_flag;
+
+  threshold = pretolerance;
+
+  if (threshold >= 0)
+  {
+#ifdef STAT
+    if (tracing_paragraphs > 0)
+    {
+      begin_diagnostic();
+      print_nl("@firstpass");
+    }
+#endif
+
+    second_pass = false;
+    final_pass = false;
+    lbs_pass_fst++;
+  }
+  else
+  {
+    threshold = tolerance;
+    second_pass = true;
+    final_pass = (emergency_stretch <= 0);
+
+#ifdef STAT
+    if (tracing_paragraphs > 0)
+      begin_diagnostic();
+#endif
+  }
+
+  while (true)
+  {
+    if (threshold > inf_bad)
+      threshold = inf_bad;
+
+    if (second_pass)
+    {
+      if (aptex_env.flag_initex)
+      {
+        if (trie_not_ready)
+          init_trie();
+      }
+
+      cur_lang = init_cur_lang;
+      l_hyf = init_l_hyf;
+      r_hyf = init_r_hyf;
+      set_hyph_index();
+    }
+
+    q = get_node(active_node_size);
+    type(q) = unhyphenated;
+    fitness(q) = decent_fit;
+    link(q) = active;
+    break_node(q) = 0;
+    line_number(q) = prev_graf + 1;
+    total_demerits(q) = 0;
+    link(active) = q;
+
+    if (do_last_line_fit)
+    {
+      active_short(q) = 0;
+      active_glue(q) = 0;
+    }
+
+    act_width = background[1];
+    do_all_six(store_background);
+    passive = 0;
+    printed_node = temp_head;
+    pass_number = 0;
+    font_in_short_display = null_font;
+    cur_p = link(temp_head);
+    auto_breaking = true;
+    prev_p = cur_p;
+
+    while ((cur_p != 0) && (link(active) != active))
+    {
+      if (is_char_node(cur_p))
+      {
+        chain = false;
+
+        if (is_char_node(cur_p))
+        {
+          if (font_dir[font(cur_p)] != dir_default)
+          {
+            switch (type(prev_p))
+            {
+              case hlist_node:
+              case vlist_node:
+              case dir_node:
+              case rule_node:
+              case ligature_node:
+              case disc_node:
+              case math_node:
+                {
+                  cur_p = prev_p;
+                  try_break(0, unhyphenated);
+                  cur_p = link(cur_p);
+                }
+                break;
+
+              default:
+                do_nothing();
+                break;
+            }
+          }
+        }
+
+        prev_p = cur_p;
+        post_p = cur_p;
+        post_f = font(post_p);
+
+        do {
+          f = post_f;
+          cc = character(post_p);
+          act_width = act_width + char_width(f, char_info(f, cc));
+          post_p = link(cur_p);
+
+          if (font_dir[f] != dir_default)
+          {
+            prev_p = cur_p;
+            cur_p = post_p;
+            post_p = link(post_p);
+
+            if (is_char_node(post_p))
+            {
+              post_f = font(post_p);
+
+              if (font_dir[post_f] != dir_default)
+                chain = true;
+              else
+                chain = false;
+
+              try_break(0, unhyphenated);
+            }
+            else
+            {
+              chain = false;
+
+              switch (type(post_p))
+              {
+                case hlist_node:
+                case vlist_node:
+                case dir_node:
+                case rule_node:
+                case ligature_node:
+                case disc_node:
+                case math_node:
+                  try_break(0, unhyphenated);
+                  break;
+
+                default:
+                  do_nothing();
+                  break;
+              }
+            }
+
+            if (chain)
+            {
+              if (first_use)
+              {
+                check_shrinkage(cur_kanji_skip);
+                first_use = false;
+              }
+
+              act_width = act_width + width(cur_kanji_skip);
+              active_width[2 + stretch_order(cur_kanji_skip)] =
+                active_width[2 + stretch_order(cur_kanji_skip)] + stretch(cur_kanji_skip);
+              active_width[6] = active_width[6] + shrink(cur_kanji_skip);
+            }
+
+            prev_p = cur_p;
+          }
+          else if (is_char_node(post_p))
+          {
+            post_f = font(post_p);
+            chain = false;
+
+            if (font_dir[post_f] != dir_default)
+              try_break(0, unhyphenated);
+          }
+
+          cur_p = post_p;
+        } while (!(!is_char_node(cur_p)));
+
+        chain = false;
+      }
+
+      switch (type(cur_p))
+      {
+        case hlist_node:
+        case vlist_node:
+        case dir_node:
+        case rule_node:
+          act_width = act_width + width(cur_p);
+          break;
+
+        case whatsit_node:
+          if (subtype(cur_p) == language_node)
+          {
+            cur_lang = what_lang(cur_p);
+            l_hyf = what_lhm(cur_p);
+            r_hyf = what_rhm(cur_p);
+            set_hyph_index();
+          }
+          break;
+
+        case glue_node:
+          {
+            if (auto_breaking)
+            {
+              if (is_char_node(prev_p))
+                try_break(0, unhyphenated);
+              else if (precedes_break(prev_p))
+                try_break(0, unhyphenated);
+              else if (type(prev_p) == kern_node)
+              {
+                if ((subtype(prev_p) != explicit) && (subtype(prev_p) != ita_kern))
+                  try_break(0, unhyphenated);
+              }
+            }
+
+            check_shrinkage(glue_ptr(cur_p));
+            q = glue_ptr(cur_p);
+            act_width = act_width+ width(q);
+            active_width[2 + stretch_order(q)] = active_width[2 + stretch_order(q)] + stretch(q);
+            active_width[6] = active_width[6] + shrink(q);
+
+            if (second_pass && auto_breaking)
+            {
+              prev_s = cur_p;
+              s = link(prev_s);
+
+              if (s != 0)
+              {
+                while (true)
+                {
+                  if (is_char_node(s))
+                  {
+                    hf = font(s);
+
+                    if (font_dir[hf] != dir_default)
+                    {
+                      prev_s = s;
+                      s = link(prev_s);
+                      c = info(s);
+                      goto continu;
+                    }
+                    else
+                      c = character(s);
+                  }
+                  else if (type(s) == disp_node)
+                  {
+                    goto continu;
+                  }
+                  else if ((type(s) == penalty_node) && !(subtype(s) == normal))
+                  {
+                    goto continu;
+                  }
+                  else if (type(s) == ligature_node)
+                  {
+                    if (lig_ptr(s) == 0)
+                      goto continu;
+                    else
+                    {
+                      q = lig_ptr(s);
+                      c = character(q);
+                      hf = font(q);
+                    }
+                  }
+                  else if ((type(s) == kern_node) && (subtype(s) == normal))
+                    goto continu;
+                  else if ((type(s) == math_node) && (subtype(s) >= L_code))
+                    goto continu;
+                  else if (type(s) == whatsit_node)
+                  {
+                    if (subtype(s) == language_node)
+                    {
+                      cur_lang = what_lang(s);
+                      l_hyf = what_lhm(s);
+                      r_hyf = what_rhm(s);
+                      set_hyph_index();
+                    }
+                    goto continu;
+                  }
+                  else
+                    goto done1;
+
+                  set_lc_code(c);
+
+                  if (hc[0] != 0)
+                  {
+                    if ((hc[0] == (halfword) c) || (uc_hyph > 0))
+                      goto done2;
+                    else
+                      goto done1;
+                  }
+continu:
+                  prev_s = s;
+                  s = link(prev_s);
+                }
+done2:
+                hyf_char = hyphen_char[hf];
+
+                if (hyf_char < 0)
+                  goto done1; 
+
+                if (hyf_char > 255)
+                  goto done1;
+
+                ha = prev_s;
+
+                if (l_hyf + r_hyf > 63)
+                  goto done1;
+
+                hn = 0;
+
+                while (true)
+                {
+                  if (is_char_node(s))
+                  {
+                    if (font(s) != hf)
+                      goto done3;
+
+                    hyf_bchar = character(s);
+
+                    c = hyf_bchar;
+                    set_lc_code(c);
+
+                    if (hc[0] == 0)
+                      goto done3;
+
+                    if (hn == 63)
+                      goto done3;
+
+                    hb = s;
+                    incr(hn);
+                    hu[hn] = c;
+                    hc[hn]= hc[0];
+                    hyf_bchar = non_char;
+                  }
+                  else if (type(s) == ligature_node)
+                  {
+                    if (font(lig_char(s)) != hf)
+                      goto done3;
+
+                    j = hn;
+                    q = lig_ptr(s);
+
+                    if (q != 0)
+                      hyf_bchar = character(q);
+
+                    while (q != 0)
+                    {
+                      c = character(q);
+                      set_lc_code(c);
+
+                      if (hc[0] == 0)
+                        goto done3;
+
+                      if (j == 63)
+                        goto done3;
+
+                      incr(j);
+                      hu[j] = c;
+                      hc[j] = hc[0];
+                      q = link(q);
+                    }
+
+                    hb = s;
+                    hn = j;
+
+                    if (odd(subtype(s)))
+                      hyf_bchar = font_bchar[hf];
+                    else
+                      hyf_bchar = non_char;
+                  }
+                  else if ((type(s) == kern_node) && (subtype(s) == normal))
+                  {
+                    hb = s;
+                    hyf_bchar = font_bchar[hf];
+                  }
+                  else
+                    goto done3;
+
+                  s = link(s);
+                }
+done3:
+                if (hn < l_hyf + r_hyf)
+                  goto done1;
+
+                while (true)
+                {
+                  if (!(is_char_node(s)))
+                  {
+                    switch (type(s))
+                    {
+                      case ligature_node:
+                        do_nothing();
+                        break;
+    
+                      case kern_node:
+                        if (subtype(s) != normal)
+                          goto done4;
+                        break;
+
+                      case disp_node:
+                        do_nothing();
+                        break;
+
+                      case whatsit_node:
+                      case glue_node:
+                      case penalty_node:
+                      case ins_node:
+                      case adjust_node:
+                      case mark_node:
+                        goto done4;
+                        break;
+
+                      case math_node:
+                        if (subtype(s) >= L_code)
+                          goto done4;
+                        else
+                          goto done1;
+                        break;
+
+                      default:
+                        goto done1;
+                        break;
+                    }
+                  }
+
+                  s = link(s);
+                }
+done4:
+                hyphenate();
+              }
+done1:;
+            }
+          }
+          break;
+
+        case kern_node:
+          if ((subtype(cur_p) == explicit) || (subtype(cur_p) == ita_kern))
+            kern_break();
+          else
+            act_width = act_width + width(cur_p);
+          break;
+
+        case ligature_node:
+          {
+            f = font(lig_char(cur_p));
+            act_width = act_width + char_width(f, char_info(f, character(lig_char(cur_p))));
+          }
+          break;
+
+        case disc_node:
+          {
+            s = pre_break(cur_p);
+            disc_width = 0;
+
+            if (s == 0)
+              try_break(ex_hyphen_penalty, hyphenated);
+            else
+            {
+              do {
+                if (is_char_node(s))
+                {
+                  f = font(s);
+                  disc_width = disc_width + char_width(f, char_info(f, character(s)));
+
+                  if (font_dir[f] != dir_default)
+                    s = link(s);
+                }
+                else switch (type(s))
+                {
+                  case ligature_node:
+                    {
+                      f = font(lig_char(s));
+                      disc_width = disc_width + char_width(f, char_info(f, character(lig_char(s))));
+                    }
+                    break;
+
+                  case hlist_node:
+                  case vlist_node:
+                  case dir_node:
+                  case rule_node:
+                  case kern_node:
+                    disc_width = disc_width + width(s);
+                    break;
+
+                  case disc_node:
+                    do_nothing();
+                    break;
+
+                  default:
+                    confusion("disc3");
+                    break;
+                }
+
+                s = link(s);
+              } while (!(s == 0));
+
+              act_width = act_width + disc_width;
+              try_break(hyphen_penalty, hyphenated);
+              act_width = act_width - disc_width;
+            }
+
+            r = replace_count(cur_p);
+            s = link(cur_p);
+
+            while (r > 0)
+            {
+              if (is_char_node(s))
+              {
+                f = font(s);
+                act_width = act_width + char_width(f, char_info(f, character(s)));
+
+                if (font_dir[f] != dir_default)
+                  s = link(s);
+              }
+              else switch (type(s))
+              {
+                case ligature_node:
+                  {
+                    f = font(lig_char(s));
+                    act_width = act_width + char_width(f, char_info(f, character(lig_char(s))));
+                  }
+                  break;
+
+                case hlist_node:
+                case vlist_node:
+                case dir_node:
+                case rule_node:
+                case kern_node:
+                  act_width = act_width + width(s);
+                  break;
+
+                case disp_node:
+                  do_nothing();
+                  break;
+
+                default:
+                  confusion("disc4");
+                  break;
+              }
+
+              decr(r);
+              s = link(s);
+            }
+
+            prev_p = cur_p;
+            cur_p = s;
+            goto done5;
+          }
+          break;
+
+        case math_node:
+          {
+            if (subtype(cur_p) < L_code)
+              auto_breaking = odd(subtype(cur_p));
+            kern_break();
+          }
+          break;
+
+        case penalty_node:
+          try_break(penalty(cur_p), unhyphenated);
+          break;
+
+        case disp_node:
+        case mark_node:
+        case ins_node:
+        case adjust_node:
+          do_nothing();
+          break;
+
+        default:
+          confusion("paragraph");
+          break;
+      }
+
+      prev_p = cur_p;
+      cur_p = link(cur_p);
+done5:;
+    }
+
+    if (cur_p == 0)
+    {
+      try_break(eject_penalty, hyphenated);
+
+      if (link(active) != active)
+      {
+        r = link(active);
+        fewest_demerits = awful_bad;
+
+        do {
+          if (type(r) != delta_node)
+          {
+            if (total_demerits(r) < fewest_demerits)
+            {
+              fewest_demerits = total_demerits(r);
+              best_bet = r;
+            }
+          }
+
+          r = link(r);
+        } while (!(r == active));
+
+        best_line = line_number(best_bet);
+
+        if (looseness == 0)
+        {
+          goto done;
+        }
+
+        {
+          r = link(active);
+          actual_looseness = 0;
+
+          do {
+            if (type(r) != delta_node)
+            {
+              line_diff = line_number(r) - best_line;
+
+              if (((line_diff < actual_looseness) && (looseness <= line_diff)) ||
+                  ((line_diff > actual_looseness) && (looseness >= line_diff)))
+              {
+                best_bet = r;
+                actual_looseness = line_diff;
+                fewest_demerits = total_demerits(r);
+              }
+              else if ((line_diff == actual_looseness) && (total_demerits(r) < fewest_demerits))
+              {
+                best_bet = r;
+                fewest_demerits = total_demerits(r);
+              }
+            }
+
+            r = link(r);
+          } while (!(r == active));
+
+          best_line = line_number(best_bet);
+        }
+
+        if ((actual_looseness == looseness) || final_pass)
+        {
+          goto done;
+        }
+      }
+    }
+
+    q = link(active);
+
+    while (q != active)
+    {
+      cur_p = link(q);
+
+      if (type(q) == delta_node)
+        free_node(q, delta_node_size);
+      else
+        free_node(q, active_node_size);
+
+      q = cur_p;
+    }
+
+    q = passive;
+
+    while (q != 0)
+    {
+      cur_p = link(q);
+      free_node(q, passive_node_size);
+      q = cur_p;
+    }
+
+    if (!second_pass)
+    {
+#ifdef STAT
+      if (tracing_paragraphs > 0)
+        print_nl("@secondpass");
+#endif
+
+      threshold = tolerance;
+      second_pass = true;
+      lbs_pass_snd++;
+      final_pass = (emergency_stretch <= 0);
+    }
+    else
+    {
+#ifdef STAT
+      if (tracing_paragraphs > 0)
+        print_nl("@emergencypass");
+#endif
+
+      background[2] = background[2] + emergency_stretch;
+      final_pass = true;
+      ++lbs_pass_fin;
+    }
+  }
+
+done:
+  if (best_line == decent_fit)
+    lbs_sing_line++;
+
+#ifdef STAT
+  if (tracing_paragraphs > 0)
+  {
+    end_diagnostic(true);
+    normalize_selector();
+  }
+#endif
+
+  if (do_last_line_fit)
+  {
+    if (active_short(best_bet) == 0)
+      do_last_line_fit = false;
+    else
+    {
+      q = new_spec(glue_ptr(last_line_fill));
+      delete_glue_ref(glue_ptr(last_line_fill));
+      width(q) = width(q) + active_short(best_bet) - active_glue(best_bet);
+      stretch(q) = 0; glue_ptr(last_line_fill) = q;
+    }
+  }
+
+  post_line_break(d);
+  q = link(active);
+
+  while (q != active)
+  {
+    cur_p = link(q);
+
+    if (type(q) == delta_node)
+      free_node(q, delta_node_size);
+    else
+      free_node(q, active_node_size);
+
+    q = cur_p;
+  }
+
+  q = passive;
+
+  while (q != 0)
+  {
+    cur_p = link(q);
+    free_node(q, passive_node_size);
+    q = cur_p;
+  }
+
+  pack_begin_line = 0;
+}
+
 // recovers from infinite shrinkage
 pointer finite_shrink (pointer p)
 {
-  pointer q;
+  pointer q;  // {new glue specification}
 
   if (no_shrink_error_yet)
   {
@@ -15888,35 +24914,36 @@ pointer finite_shrink (pointer p)
 
   return q;
 }
-/* sec 0829 */
+
 void try_break (integer pi, small_number break_type)
 {
-  pointer r;
-  pointer prev_r;
-  halfword old_l;
-  boolean no_break_yet;
-  pointer prev_prev_r;
-  pointer s;
-  pointer q;
-  pointer v;
-  integer t;
-  internal_font_number f;
-  halfword l;
-  boolean node_r_stays_active;
-  scaled line_width;
-  char fit_class;
-  halfword b;
-  integer d;
-  boolean artificial_demerits;
-  pointer save_link;
-  scaled shortfall;
-  scaled g;
+  pointer r;                    // {runs through the active list}
+  pointer prev_r;               // {stays a step behind |r|}
+  halfword old_l;               // {maximum line number in current equivalence class of lines}
+  boolean no_break_yet;         // {have we found a feasible break at |cur_p|?}
+  pointer prev_prev_r;          // {a step behind |prev_r|, if |type(prev_r)=delta_node|}
+  pointer s;                    // {runs through nodes ahead of |cur_p|}
+  pointer q;                    // {points to a new node being created}
+  pointer v;                    // {points to a glue specification or a node ahead of |cur_p|}
+  integer t;                    // {node count, if |cur_p| is a discretionary node}
+  internal_font_number f;       // {used in character width calculation}
+  halfword l;                   // {line number of current active node}
+  boolean node_r_stays_active;  // {should node |r| remain in the active list?}
+  scaled line_width;            // {the current line will be justified to this width}
+  char fit_class;               // {possible fitness class of test line}
+  halfword b;                   // {badness of test line}
+  integer d;                    // {demerits of test line}
+  boolean artificial_demerits;  // {has |d| been forced to zero?}
+  pointer save_link;            // {temporarily holds value of |link(cur_p)|}
+  scaled shortfall;             // {used in badness calculations}
+  scaled g;                     // {glue stretch or shrink of test line, adjustment for last line}
 
+  // @<Make sure that |pi| is in the proper range@>
   if (abs(pi) >= inf_penalty)
     if (pi > 0)
-      goto exit;
+      goto exit;  // {this breakpoint is inhibited by infinite penalty}
     else
-      pi = eject_penalty;
+      pi = eject_penalty; // {this breakpoint will be forced}
 
   no_break_yet = true;
   prev_r = active;
@@ -15928,6 +24955,11 @@ void try_break (integer pi, small_number break_type)
 continu:
     r = link(prev_r);
 
+    /*
+      @<If node |r| is of type |delta_node|, update |cur_active_width|,
+      set |prev_r| and |prev_prev_r|, then |goto continue|@>
+    */
+
     if (type(r) == delta_node)
     {
       do_all_six(update_width);
@@ -15936,6 +24968,11 @@ continu:
       goto continu;
     }
 
+    /*
+      @<If a line number class has ended, create new active nodes for
+      the best feasible breaks in that class; then |return|
+      if |r=last_active|, otherwise compute the new |line_width|@>
+    */
     {
       l = line_number(r);
 
@@ -16408,7 +25445,7 @@ found:
           else
             d = d + final_hyphen_demerits;
 
-        if (abs(toint(fit_class) - toint(fitness(r))) > 1)
+        if (abs(fit_class - fitness(r)) > 1)
           d = d + adj_demerits;
       }
 
@@ -16549,18 +25586,18 @@ exit:
       }
 #endif
 }
-/* sec 0877 */
+
 void post_line_break (boolean d)
 {
-  pointer q, r, s;
-  boolean disc_break;
-  boolean post_disc_break;
-  scaled cur_width;
-  scaled cur_indent;
-  quarterword t;
-  integer pen;
-  halfword cur_line;
-  pointer LR_ptr;
+  pointer q, r, s;          // {temporary registers for list manipulation}
+  boolean disc_break;       // {was the current break at a discretionary node?}
+  boolean post_disc_break;  // {and did it have a nonempty post-break part?}
+  scaled cur_width;         // {width of line number |cur_line|}
+  scaled cur_indent;        // {left margin of line number |cur_line|}
+  quarterword t;            // {used for replacement counts in discretionary nodes}
+  integer pen;              // {use when calculating penalties between lines}
+  halfword cur_line;        // {the current line number being justified}
+  pointer LR_ptr;           // {stack of LR codes}
 
   LR_ptr = LR_save;
   q = break_node(best_bet);
@@ -16883,16 +25920,16 @@ done1:
   prev_graf = best_line - 1;
   LR_save = LR_ptr;
 }
-/* sec 0906 */
-small_number reconstitute (small_number j, small_number n, halfword bchar, halfword hchar)
+
+static small_number reconstitute (small_number j, small_number n, halfword bchar, halfword hchar)
 {
-  pointer p;
-  pointer t;
-  four_quarters q;
-  halfword cur_rh;
-  halfword test_char;
-  scaled w;
-  font_index k;
+  pointer p;          // {temporary register for list manipulation}
+  pointer t;          // {a node being appended to}
+  four_quarters q;    // {character information or a lig/kern instruction}
+  halfword cur_rh;    // {hyphen character for ligature testing}
+  halfword test_char; // {hyphen or other character for ligature testing}
+  scaled w;           // {amount of kerning}
+  font_index k;       // {position of current lig/kern instruction}
 
   hyphen_passed = 0;
   t = hold_head;
@@ -17102,7 +26139,7 @@ done:
 
   return j;
 }
-/* sec 0895 */
+
 void hyphenate (void)
 {
   /* char i, j, l; */
@@ -17431,7 +26468,7 @@ common_ending:
   link(s) = q;
   flush_list(init_list);
 }
-/* sec 0934 */
+
 // enters new exceptions
 void new_hyph_exceptions (void)
 {
@@ -17596,8 +26633,8 @@ not_found:
     }
   }
 }
-/* sec 0968 */
-pointer prune_page_top (pointer p, boolean s)
+
+static pointer prune_page_top (pointer p, boolean s)
 {
   pointer prev_p;
   pointer q, r;
@@ -17665,19 +26702,20 @@ pointer prune_page_top (pointer p, boolean s)
 
   return link(temp_head);
 }
-/* sec 0970 */
+
 // finds optimum page break
-pointer vert_break (pointer p, scaled h, scaled d)
+static pointer vert_break (pointer p, scaled h, scaled d)
 {
-  pointer prev_p;
-  pointer q, r;
-  integer pi;
-  integer b;
-  integer least_cost;
-  pointer best_place;
-  scaled prev_dp; 
+  pointer prev_p; // {if |p| is a glue node, |type(prev_p)| determines
+                  // whether |p| is a legal breakpoint}
+  pointer q, r;   // {glue specifications}
+  integer pi;     // {penalty value}
+  integer b;      // {badness at a trial breakpoint}
+  integer least_cost; // {the smallest badness plus penalties found so far}
+  pointer best_place; // {the most recent break that leads to |least_cost|}
+  scaled prev_dp;   // {depth of previous box in the list}
   /* small_number t; */
-  int t;
+  int t;  // {|type| of the node following a kern}
 
   prev_p = p;
   least_cost = awful_bad;
@@ -17818,14 +26856,14 @@ not_found:
 done:
   return best_place;
 }
-/* sec 0977 */
+
 // extracts a page of height |h| from box |n|
-pointer vsplit (halfword n, scaled h)
+static pointer vsplit (halfword n, scaled h)
 {
-  pointer v;
-  pointer w;
-  pointer p;
-  pointer q;
+  pointer v;  // {the box to be split}
+  pointer w;  // {|dir_node|}
+  pointer p;  // {runs through the vlist}
+  pointer q;  // {points to where the break occurs}
 
   cur_val = n;
   fetch_box(v);
@@ -17936,7 +26974,7 @@ done:
 
   return q;
 }
-/* sec 0985 */
+
 void print_totals (void)
 {
   print_scaled(page_so_far[1]);
@@ -17951,8 +26989,8 @@ void print_totals (void)
     print_scaled(page_shrink);
   }
 }
-/* sec 0987 */
-void freeze_page_specs (small_number s)
+
+static void freeze_page_specs (small_number s)
 {
   page_contents = s;
   page_goal = vsize;
@@ -17973,8 +27011,8 @@ void freeze_page_specs (small_number s)
   }
 #endif
 }
-/* sec 0992 */
-void box_error (eight_bits n)
+
+static void box_error (eight_bits n)
 {
   error();
   begin_diagnostic();
@@ -17984,8 +27022,8 @@ void box_error (eight_bits n)
   flush_node_list(box(n));
   box(n) = 0;
 }
-/* sec 0993 */
-void ensure_vbox (eight_bits n)
+
+static void ensure_vbox (eight_bits n)
 {
   pointer p;
 
@@ -18011,8 +27049,8 @@ void ensure_vbox (eight_bits n)
       box_error(n);
     }
 }
-/* sec 1012 */
-void fire_up (pointer c)
+
+static void fire_up (pointer c)
 {
   pointer p, q, r, s;
   pointer prev_p;
@@ -18342,25 +27380,26 @@ void fire_up (pointer c)
     box(255) = 0;
   }
 }
-/* sec 0994 */
+
 // append contributions to the current page
 void build_page (void)
 {
-  pointer p;
-  pointer q, r;
-  integer b, c;
-  integer pi;
+  pointer p;  // {the node being appended}
+  pointer q, r; // {nodes being examined}
+  integer b, c; // {badness and cost of current page}
+  integer pi; // {penalty to be added to the badness}
   /* unsigned char n; */
-  unsigned int n;
-  scaled delta, h, w;
+  unsigned int n; // {insertion box number}
+  scaled delta, h, w; // {sizes used for insertion calculations}
 
-  if ((link(contrib_head) == 0) || output_active)
+  if ((link(contrib_head) == null) || output_active)
     return;
 
   do {
 continu:
     p = link(contrib_head);
 
+    // @<Update the values of |last_glue|, |last_penalty|, and |last_kern|@>
     if (last_glue != max_halfword)
       delete_glue_ref(last_glue);
 
@@ -18374,7 +27413,7 @@ continu:
     else if (type(p) < disp_node)
       last_node_type = type(p);
     else
-      last_node_type = type(p) - 1;
+      last_node_type = type(p) - 1; // {no |disp_node| in a vertical list}
 
     if (type(p) == glue_node)
     {
@@ -18391,6 +27430,19 @@ continu:
         last_kern = width(p);
     }
 
+    /*
+      @<Move node |p| to the current page; if it is time for a page break,
+      put the nodes following the break back onto the contribution list,
+      and |return| to the user's output routine if there is one@>
+    */
+
+    /*
+      @<If the current page is empty and node |p| is to be deleted, |goto done1|;
+      otherwise use node |p| to update the state of the current page;
+      if this node is an insertion, |goto contribute|; otherwise if this node
+      is not a legal breakpoint, |goto contribute| or |update_heights|;
+      otherwise set |pi| to the penalty associated with this breakpoint@>
+    */
     switch (type(p))
     {
       case hlist_node:
@@ -18399,12 +27451,16 @@ continu:
       case rule_node:
         if (page_contents < box_there)
         {
-          if (page_contents == 0)
+          /*
+            @<Initialize the current page, insert the \.{\\topskip} glue
+            ahead of |p|, and |goto continue|@>
+          */
+          if (page_contents == empty)
             freeze_page_specs(box_there);
           else
             page_contents = box_there;
 
-          q = new_skip_param(top_skip_code);
+          q = new_skip_param(top_skip_code);  // {now |temp_ptr=glue_ptr(q)|}
 
           if (width(temp_ptr) > height(p))
             width(temp_ptr) = width(temp_ptr) - height(p);
@@ -18417,6 +27473,10 @@ continu:
         }
         else
         {
+          /*
+            @<Prepare to move a box or rule node to the current page,
+            then |goto contribute|@>
+          */
           page_total = page_total + page_depth + height(p);
           page_depth = depth(p);
           goto contribute;
@@ -18424,6 +27484,10 @@ continu:
         break;
 
       case whatsit_node:
+        /*
+          @<Prepare to move whatsit |p| to the current page,
+          then |goto contribute|@>
+        */
         goto contribute;
         break;
 
@@ -18439,7 +27503,7 @@ continu:
       case kern_node:
         if (page_contents < box_there)
           goto done1;
-        else if (link(p) == 0)
+        else if (link(p) == null)
           return;
         else if (type(link(p)) == glue_node)
           pi = 0;
@@ -18459,8 +27523,9 @@ continu:
         break;
 
       case ins_node:
+        // @<Append an insertion to the current page and |goto contribute|@>
         {
-          if (page_contents == 0)
+          if (page_contents == empty)
             freeze_page_specs(inserts_only);
 
           n = subtype(p);
@@ -18471,6 +27536,11 @@ continu:
 
           n = n;
 
+          /*
+            @<Create a page insertion node with |subtype(r)=qi(n)|, and
+            include the glue correction for box |n| in the
+            current page state@>
+          */
           if (subtype(r) != n)
           {
             q = get_node(page_ins_node_size);
@@ -18481,7 +27551,7 @@ continu:
             type(r) = inserting;
             ensure_vbox(n);
 
-            if (box(n) == 0)
+            if (box(n) == null)
               height(r) = 0;
             else
             {
@@ -18497,7 +27567,7 @@ continu:
                 height(r) = height(box(n)) + depth(box(n));
             }
 
-            best_ins_ptr(r) = 0;
+            best_ins_ptr(r) = null;
             q = skip(n);
 
             if (count(n) == 1000)
@@ -18527,6 +27597,7 @@ continu:
           {
             last_ins_ptr(r) = p;
             delta = page_goal - page_total - page_depth + page_shrink;
+            // {this much room is left if we shrink the maximum}
 
             if (count(n) == 1000)
               h = height(p);
@@ -18540,6 +27611,10 @@ continu:
             }
             else
             {
+              /*
+                @<Find the best way to split the insertion, and change
+                |type(r)| to |split_up|@>
+              */
               if (count(n) <= 0)
                 w = max_dimen;
               else
@@ -18585,7 +27660,7 @@ continu:
               broken_ptr(r) = q;
               broken_ins(r) = p;
 
-              if (q == 0)
+              if (q == null)
                 insert_penalties = insert_penalties + (eject_penalty);
               else if (type(q) == penalty_node)
                 insert_penalties = insert_penalties + penalty(q);
@@ -18601,11 +27676,16 @@ continu:
         break;
     }
 
+    /*
+      @<Check if node |p| is a new champion breakpoint; then \(if)if it is time for
+      a page break, prepare for output, and either fire up the user's
+      output routine and |return| or ship out the page and |goto done|@>
+    */
+
     if (pi < inf_penalty)
     {
       if (page_total < page_goal)
-        if ((page_so_far[3] != 0) || (page_so_far[4] != 0) ||
-          (page_so_far[5] != 0))
+        if ((page_so_far[3] != 0) || (page_so_far[4] != 0) || (page_so_far[5] != 0))
           b = 0;
         else
           b = badness(page_goal - page_total, page_so_far[2]);
@@ -18675,19 +27755,23 @@ continu:
 
       if ((c == awful_bad) || (pi <= eject_penalty))
       {
-        fire_up(p);
+        fire_up(p); // {output the current page at the best place}
 
         if (output_active)
-          return;
+          return; // {user's output routine will act}
 
-        goto done;
+        goto done;  // {the page has been shipped out by default output routine}
       }
     }
 
     if ((type(p) < glue_node) || (type(p) > kern_node))
       goto contribute;
 
-update_heights:
+  update_heights:
+    /*
+      @<Update the current page measurements with respect to the
+      glue or kern specified by node~|p|@>
+    */
     if (type(p) == kern_node)
       q = p;
     else
@@ -18715,22 +27799,24 @@ update_heights:
     page_total = page_total + page_depth + width(q);
     page_depth = 0;
 
-contribute:
+  contribute:
+    // @<Make sure that |page_max_depth| is not exceeded@>;
     if (page_depth > page_max_depth)
     {
       page_total = page_total + page_depth - page_max_depth;
       page_depth = page_max_depth;
     }
-
+    // @<Link node |p| into the current page and |goto done|@>
     link(page_tail) = p;
     page_tail = p;
     link(contrib_head) = link(p);
-    link(p) = 0;
+    link(p) = null;
     goto done;
 
-done1:
+  done1:
+    // @<Recycle node |p|@>
     link(contrib_head) = link(p);
-    link(p) = 0;
+    link(p) = null;
 
     if (saving_vdiscards > 0)
     {
@@ -18744,16 +27830,17 @@ done1:
     else
       flush_node_list(p);
 done:;
-  } while (!(link(contrib_head) == 0));
+  } while (!(link(contrib_head) == null));
 
+  // @<Make the contribution list empty by setting its tail to |contrib_head|@>
   if (nest_ptr == 0)
     tail = contrib_head;
   else
     contrib_tail = contrib_head;
 } 
-/* sec 1043 */
+
 // handle spaces when |space_factor<>1000
-void app_space (void)
+static void app_space (void)
 {
   pointer q;
 
@@ -18801,8 +27888,8 @@ void app_space (void)
     tail = q;
   }
 }
-/* sec 1047 */
-void insert_dollar_sign (void)
+
+static void insert_dollar_sign (void)
 {
   back_input();
   cur_tok = math_shift_token + '$';
@@ -18811,16 +27898,16 @@ void insert_dollar_sign (void)
       "you left one out. Proceed, with fingers crossed.");
   ins_error();
 }
-/* sec 1049 */
-void you_cant (void)
+
+static void you_cant (void)
 {
   print_err("You can't use `");
   print_cmd_chr(cur_cmd, cur_chr);
   prints("' in ");
   print_mode(mode);
 }
-/* sec 1050 */
-void report_illegal_case (void)
+
+static void report_illegal_case (void)
 {
   you_cant();
   help4("Sorry, but I'm not programmed to handle this case;",
@@ -18829,8 +27916,8 @@ void report_illegal_case (void)
       "return to the right one by typing `I}' or `I$' or `I\\par'.");
   error();
 }
-/* sec 1051 */
-boolean privileged (void)
+
+static boolean privileged (void)
 {
   if (mode > 0)
     return true;
@@ -18840,9 +27927,9 @@ boolean privileged (void)
     return false;
   }
 }
-/* sec 1054 */
+
 // do this when \.{\\end} or \.{\\dump} occurs
-boolean its_all_over (void)
+static boolean its_all_over (void)
 {
   if (privileged())
   {
@@ -18851,20 +27938,20 @@ boolean its_all_over (void)
       return true;
     }
 
-    back_input();
+    back_input(); // {we will try to end again after ejecting residual material}
     tail_append(new_null_box());
     width(tail) = hsize;
     tail_append(new_glue(fill_glue));
-    tail_append(new_penalty(-1073741824));
-    build_page();
+    tail_append(new_penalty(-010000000000));
+    build_page(); // {append \.{\\hbox to \\hsize\{\}\\vfill\\penalty-'10000000000}}
   }
 
   return false;
 }
-/* sec 1060 */
-void append_glue (void)
+
+static void append_glue (void)
 {
-  small_number s;
+  small_number s; // {modifier of skip command}
 
   s = cur_chr;
 
@@ -18894,6 +27981,7 @@ void append_glue (void)
       scan_glue(mu_val);
       break;
   }
+  // {now |cur_val| points to the glue specification}
 
   tail_append(new_glue(cur_val));
   inhibit_glue_flag = false;
@@ -18906,10 +27994,10 @@ void append_glue (void)
       subtype(tail) = mu_glue;
   }
 }
-/* sec 1061 */
-void append_kern (void)
+
+static void append_kern (void)
 { 
-  quarterword s;
+  quarterword s;  // {|subtype| of the kern node}
 
   s = cur_chr;
   scan_dimen((s == mu_glue), false, false);
@@ -18926,13 +28014,14 @@ void append_kern (void)
     subtype(tail) = s;
   }
 }
-/* sec 1064 */
-void off_save (void)
+
+static void off_save (void)
 {
-  pointer p;
+  pointer p;  // {inserted token}
 
   if (cur_group == bottom_level)
   {
+    // @<Drop current token and complain that it was unmatched@>
     print_err("Extra ");
     print_cmd_chr(cur_cmd, cur_chr);
     help1("Things are pretty mixed up, but I think the worst is over.");
@@ -18945,6 +28034,10 @@ void off_save (void)
     link(temp_head) = p;
     print_err("Missing ");
 
+    /*
+      @<Prepare to insert a token that matches |cur_group|,
+      and print what it is@>
+    */
     switch (cur_group)
     {
       case semi_simple_group:
@@ -18989,8 +28082,8 @@ void off_save (void)
     error();
   }
 }
-/* sec 1069 */
-void extra_right_brace (void)
+
+static void extra_right_brace (void)
 {
   print_err("Extra }, or forgotten ");
 
@@ -19017,7 +28110,7 @@ void extra_right_brace (void)
   error();
   incr(align_state);
 }
-/* sec 1070 */
+
 void normal_paragraph (void)
 {
   if (looseness != 0)
@@ -19035,8 +28128,8 @@ void normal_paragraph (void)
   if (inter_line_penalties_ptr != 0)
     eq_define(inter_line_penalties_loc, shape_ref, null);
 }
-/* sec 1075 */
-void box_end (integer box_context)
+
+static void box_end (integer box_context)
 {
   pointer p;
   small_number a;
@@ -19182,8 +28275,8 @@ void box_end (integer box_context)
     else
       ship_out(cur_box);
 }
-/* sec 1079 */
-void begin_box (integer box_context)
+
+static void begin_box (integer box_context)
 {
   pointer p, q;
   pointer r;
@@ -19331,7 +28424,7 @@ done:;
 
   box_end(box_context);
 }
-/* sec 1084 */
+
 // the next input should specify a box or perhaps a rule
 void scan_box (integer box_context)
 {
@@ -19355,8 +28448,8 @@ void scan_box (integer box_context)
     back_error();
   }
 }
-/* sec 1091 */
-small_number norm_min (integer h)
+
+static small_number norm_min (integer h)
 {
   if (h <= 0)
     return 1;
@@ -19365,8 +28458,8 @@ small_number norm_min (integer h)
   else
     return h;
 }
-/* sec 1091 */
-void new_graf (boolean indented)
+
+static void new_graf (boolean indented)
 {
   prev_graf = 0;
 
@@ -19395,8 +28488,8 @@ void new_graf (boolean indented)
   if (nest_ptr == 1)
     build_page();
 }
-/* sec 1093 */
-void indent_in_hmode (void)
+
+static void indent_in_hmode (void)
 {
   pointer p, q;
 
@@ -19418,8 +28511,8 @@ void indent_in_hmode (void)
     tail_append(p);
   }
 }
-/* sec 1095 */
-void head_for_vmode (void)
+
+static void head_for_vmode (void)
 {
   if (mode < 0)
   {
@@ -19443,8 +28536,8 @@ void head_for_vmode (void)
     token_type = inserted;
   }
 }
-/* sec 1096 */
-void end_graf (void)
+
+static void end_graf (void)
 {
   if (mode == hmode)
   {
@@ -19466,8 +28559,8 @@ void end_graf (void)
     error_count = 0;
   }
 }
-/* sec 1099 */
-void begin_insert_or_adjust (void)
+
+static void begin_insert_or_adjust (void)
 {
   if (cur_cmd == vadjust)
     cur_val = 255;
@@ -19496,8 +28589,8 @@ void begin_insert_or_adjust (void)
   direction = adjust_dir;
   prev_depth = ignore_depth;
 }
-/* sec 1101 */
-void make_mark (void)
+
+static void make_mark (void)
 {
   pointer p;
   halfword c;
@@ -19522,8 +28615,8 @@ void make_mark (void)
   else
     tail_append(p);
 }
-/* sec 1103 */
-void append_penalty (void)
+
+static void append_penalty (void)
 {
   scan_int();
 
@@ -19535,8 +28628,8 @@ void append_penalty (void)
   if (mode == vmode)
     build_page();
 }
-/* sec 1105 */
-void delete_last (void)
+
+static void delete_last (void)
 {
   pointer p, q;
   pointer r;
@@ -19577,11 +28670,11 @@ void delete_last (void)
       }
   }
 }
-/* sec 1110 */
-void unpackage (void)
+
+static void unpackage (void)
 {
-  pointer p;
-  char c;
+  pointer p;  // {the box}
+  char c;     // {should we copy?}
   scaled disp;
 
   if (cur_chr > copy_code)
@@ -19688,8 +28781,8 @@ done:
     }
   }
 }
-/* sec 1113 */
-void append_italic_correction (void)
+
+static void append_italic_correction (void)
 {
   pointer p;
   internal_font_number f;
@@ -19725,8 +28818,8 @@ void append_italic_correction (void)
     }
   }
 }
-/* sec 1117 */
-void append_discretionary (void)
+
+static void append_discretionary (void)
 {
   integer c;
 
@@ -19751,8 +28844,8 @@ void append_discretionary (void)
     space_factor = 1000;
   }
 }
-/* sec 1119 */
-void build_discretionary (void)
+
+static void build_discretionary (void)
 {
   pointer p, q;
   integer n;
@@ -19852,8 +28945,9 @@ done:
   mode = -hmode;
   space_factor = 1000;
 }
-//cm/* sec 1123 */
-void make_accent (void)
+
+/* sec 1123 */
+static void make_accent (void)
 {
   real s, t;
   scaled disp;
@@ -20042,8 +29136,8 @@ void make_accent (void)
     space_factor = 1000;
   }
 }
-/* sec 1127 */
-void align_error (void)
+
+static void align_error (void)
 {
   if (abs(align_state) > 2)
   {
@@ -20093,8 +29187,8 @@ void align_error (void)
     ins_error();
   }
 }
-/* sec 1129 */
-void no_align_error (void)
+
+static void no_align_error (void)
 {
   print_err("Misplaced ");
   print_esc("noalign");
@@ -20102,8 +29196,8 @@ void no_align_error (void)
       "an alignment. Proceed, and I'll ignore this case.");
   error();
 }
-/* sec 1129 */
-void omit_error (void)
+
+static void omit_error (void)
 {
   print_err("Misplaced ");
   print_esc("omit");
@@ -20111,8 +29205,8 @@ void omit_error (void)
       "an alignment. Proceed, and I'll ignore this case.");
   error();
 }
-/* sec 1131 */
-void do_endv (void)
+
+static void do_endv (void)
 {
   base_ptr = input_ptr;
   input_stack[base_ptr] = cur_input;
@@ -20137,46 +29231,48 @@ void do_endv (void)
   else
     off_save();
 }
-/* sec 1135 */
-void cs_error (void)
+
+static void cs_error (void)
 {
   print_err("Extra ");
   print_esc("endcsname");
   help1("I'm ignoring this, since I wasn't doing a \\csname."); 
   error();
 }
-/* sec 1136 */
-void push_math (group_code c)
+
+static void push_math (group_code c)
 {
   push_nest();
   mode = -mmode;
   incompleat_noad = 0;
   new_save_level(c);
 }
-/* sec 1138 */
-void init_math (void)
-{
-  scaled w;
-  pointer j;
-  integer x;
-  scaled l;
-  scaled s;
-  pointer p;
-  pointer q;
-  internal_font_number f;
-  integer n;
-  scaled v;
-  scaled d;
 
-  get_token();
+static void init_math (void)
+{
+  scaled w; // {new or partial |pre_display_size|}
+  pointer j;  // {prototype box for display}
+  integer x;  // {new |pre_display_direction|}
+  scaled l; // {new |display_width|}
+  scaled s; // {new |display_indent|}
+  pointer p;  // {current node when calculating |pre_display_size|}
+  pointer q;  // {glue specification when calculating |pre_display_size|}
+  internal_font_number f; // {font in current |char_node|}
+  integer n;  // {scope of paragraph shape specification}
+  scaled v; // {|w| plus possible glue amount}
+  scaled d; // {increment to |v|}
+
+  get_token(); // {|get_x_token| would fail on \.{\\ifmmode}\thinspace!}
 
   if ((cur_cmd == math_shift) && (mode > 0))
   {
+    // @<Go into display math mode@>
     j = null;
     w = -max_dimen;
-
+    // {`\.{\\noindent\$\$}' or `\.{\$\${ }\$\$}'}
     if (head == tail)
     {
+      // @<Prepare for display after an empty paragraph@>
       pop_nest();
       set_value_of_x();
     }
@@ -20184,7 +29280,13 @@ void init_math (void)
     {
       adjust_hlist(head, true);
       line_break(true);
-
+      /*
+        @<Calculate the natural width, |w|, by which the characters of the
+        final line extend to the right of the reference point,
+        plus two ems; or set |w:=max_dimen| if the non-blank information
+        on that line is affected by stretching or shrinking@>
+      */
+      // @<Prepare for display after a non-empty paragraph@>
       if (eTeX_ex)
       {
         if (right_skip == zero_glue)
@@ -20229,8 +29331,13 @@ void init_math (void)
       if (TeXXeT_en)
         put_LR(before);
 
-      while (p != 0)
+      while (p != null)
       {
+        /*
+          @<Let |d| be the natural width of node |p|;
+          if the node is ``visible,'' |goto found|;
+          if the node is glue that stretches or shrinks, set |v:=max_dimen|@>
+        */
 reswitch:
         if (is_char_node(p))
         {
@@ -20427,20 +29534,20 @@ done:
   else
   {
     back_input();
-
+    // @<Go into ordinary math mode@>
     {
       push_math(math_shift_group);
       eq_word_define(int_base + cur_fam_code, -1);
 
-      if (every_math != 0)
+      if (every_math != null)
         begin_token_list(every_math, every_math_text);
     }
   }
 
   direction = -abs(direction);
 }
-/* sec 1142 */
-void start_eq_no (void)
+
+static void start_eq_no (void)
 {
   saved(0) = cur_chr;
   incr(save_ptr);
@@ -20453,11 +29560,11 @@ void start_eq_no (void)
       begin_token_list(every_math, every_math_text);
   }
 }
-/* sec 1151 */
-void scan_math (pointer p, pointer q)
+
+static void scan_math (pointer p, pointer q)
 {
-  integer c;
-  KANJI_code cx;
+  integer c;  // {math character code}
+  KANJI_code cx;  // {temporary register for KANJI}
 
   KANJI(cx) = 0;
 
@@ -20472,12 +29579,13 @@ reswitch:
     case letter:
     case other_char:
     case char_given:
-      if ((cur_chr >= 0) || (cur_chr <= 256))
+      if ((cur_chr >= 0) && (cur_chr <= 256))
       {
         c = math_code(cur_chr);
 
-        if (c == 32768L)
+        if (c == 0100000)
         {
+          // @<Treat |cur_chr| as an active character@>
           {
             cur_cs = cur_chr + active_base;
             cur_cmd = eq_type(cur_cs);
@@ -20527,11 +29635,12 @@ reswitch:
     case delim_num:
       {
         scan_twenty_seven_bit_int();
-        c = cur_val / 4096;
+        c = cur_val / 010000;
       }
       break;
 
     default:
+      // @<Scan a subformula enclosed in braces and |return|@>
       {
         back_input();
         scan_left_brace();
@@ -20583,12 +29692,12 @@ reswitch:
     }
   }
 }
-/* sec 1155 */
-void set_math_char (integer c)
-{
-  pointer p;
 
-  if (c >= 32768L)
+static void set_math_char (integer c)
+{
+  pointer p;  // {the new noad}
+
+  if (c >= 0100000)
   {
     cur_cs = cur_chr + active_base;
     cur_cmd = eq_type(cur_cs);
@@ -20611,7 +29720,7 @@ void set_math_char (integer c)
       type(p) = ord_noad;
     }
     else
-      type(p) = ord_noad + (c / 4096);
+      type(p) = ord_noad + (c / 010000);
 
     link(tail) = p;
     tail = p;
@@ -20626,8 +29735,8 @@ void set_math_char (integer c)
     inhibit_glue_flag = false;
   }
 }
-/* sec 1159 */
-void math_limit_switch (void)
+
+static void math_limit_switch (void)
 {
   if (head != tail)
     if (type(tail) == op_noad)
@@ -20640,8 +29749,8 @@ void math_limit_switch (void)
   help1("I'm ignoring this misplaced \\limits or \\nolimits command.");
   error();
 }
-/* sec 1160 */
-void scan_delimiter (pointer p, boolean r)
+
+static void scan_delimiter (pointer p, boolean r)
 {
    if (r)
      scan_twenty_seven_bit_int();
@@ -20681,13 +29790,13 @@ void scan_delimiter (pointer p, boolean r)
      cur_val = 0;
    }
 
-   small_fam(p) = (cur_val / 1048576L) % 16;
-   small_char(p) = (cur_val / 4096) % 256;
+   small_fam(p) = (cur_val / 04000000) % 16;
+   small_char(p) = (cur_val / 010000) % 256;
    large_fam(p) = (cur_val / 256) % 16;
    large_char(p) = cur_val % 256;
 }
-/* sec 1163 */
-void math_radical (void)
+
+static void math_radical (void)
 {
   tail_append(get_node(radical_noad_size));
   type(tail) = radical_noad;
@@ -20698,8 +29807,8 @@ void math_radical (void)
   scan_delimiter(left_delimiter(tail), true);
   scan_math(nucleus(tail), kcode_noad(tail));
 }
-/* sec 1165 */
-void math_ac (void)
+
+static void math_ac (void)
 {
   if (cur_cmd == accent)
   {
@@ -20728,8 +29837,8 @@ void math_ac (void)
 
   scan_math(nucleus(tail), kcode_noad(tail));
 }
-/* sec 1172 */
-void append_choices (void)
+
+static void append_choices (void)
 {
   tail_append(new_choice());
   incr(save_ptr);
@@ -20737,17 +29846,18 @@ void append_choices (void)
   push_math(math_choice_group);
   scan_left_brace();
 }
-/* sec 1184 */
-pointer fin_mlist (pointer p)
-{
-  pointer q;
 
-  if (incompleat_noad != 0)
+static pointer fin_mlist (pointer p)
+{
+  pointer q; // {the mlist to return}
+
+  if (incompleat_noad != null)
   {
+    // @<Compleat the incompleat noad@>
     math_type(denominator(incompleat_noad)) = sub_mlist;
     info(denominator(incompleat_noad)) = link(head);
 
-    if (p == 0)
+    if (p == null)
       q = incompleat_noad;
     else
     {
@@ -20771,13 +29881,13 @@ pointer fin_mlist (pointer p)
 
   return q;
 }
-/* sec 1174 */
-void build_choices (void)
+
+static void build_choices (void)
 {
-  pointer p;
+  pointer p;  // {the current mlist}
 
   unsave();
-  p = fin_mlist(0);
+  p = fin_mlist(null);
 
   switch (saved(-1))
   {
@@ -20806,30 +29916,30 @@ void build_choices (void)
   push_math(math_choice_group);
   scan_left_brace();
 }
-/* sec 1176 */
-void sub_sup (void)
-{
-  /* small_number t; */
-  int t;
-  pointer p;
 
-  t = 0;
-  p = 0;
+static void sub_sup (void)
+{
+  small_number t; // {type of previous sub/superscript}
+  pointer p;  // {field to be filled by |scan_math|}
+
+  t = empty;
+  p = null;
   inhibit_glue_flag = false;
 
   if (tail != head)
     if (script_allowed(tail))
     {
-      p = supscr(tail) + cur_cmd - sup_mark;
+      p = supscr(tail) + cur_cmd - sup_mark;  // {|supscr| or |subscr|}
       t = math_type(p);
     }
 
-  if ((p == 0) || (t != 0))
+  if ((p == null) || (t != empty))
   {
+    // @<Insert a dummy noad to be sub/superscripted@>
     tail_append(new_noad());
-    p = supscr(tail) + cur_cmd - sup_mark;
+    p = supscr(tail) + cur_cmd - sup_mark;  // {|supscr| or |subscr|}
 
-    if (t != 0)
+    if (t != empty)
     {
       if (cur_cmd == sup_mark)
       {
@@ -20848,12 +29958,12 @@ void sub_sup (void)
 
   scan_math(p, null);
 }
-/* sec 1086 */
-void package (small_number c)
+
+static void package (small_number c)
 {
-  scaled h;
-  pointer p;
-  scaled d;
+  scaled h; // {height of box}
+  pointer p;  // {first node in a box}
+  scaled d; // {max depth}
 
   d = box_max_depth;
   delete_glue_ref(cur_kanji_skip);
@@ -20888,10 +29998,11 @@ void package (small_number c)
 
     if (c == vtop_code)
     {
+      // @<Readjust the height and depth of |cur_box|, for \.{\\vtop}@>
       h = 0;
       p = list_ptr(cur_box);
 
-      if (p != 0)
+      if (p != null)
         if (type(p) <= rule_node)
           h = height(p);
 
@@ -20902,16 +30013,17 @@ void package (small_number c)
 
   box_end(saved(0));
 }
-/* sec 1181 */
-void math_fraction (void)
+
+static void math_fraction (void)
 {
-  small_number c;
+  small_number c; // {the type of generalized fraction we are scanning}
 
   c = cur_chr;
   inhibit_glue_flag = false;
 
-  if (incompleat_noad != 0)
+  if (incompleat_noad != null)
   {
+    // @<Ignore the fraction operation and complain about this ambiguous case@>
     if (c >= delimited_code)
     {
       scan_delimiter(garbage, false);
@@ -20937,9 +30049,9 @@ void math_fraction (void)
     mem[denominator(incompleat_noad)].hh = empty_field;
     mem[left_delimiter(incompleat_noad)].qqqq = null_delimiter;
     mem[right_delimiter(incompleat_noad)].qqqq = null_delimiter;
-    link(head) = 0;
+    link(head) = null;
     tail = head;
-
+    // @<Use code |c| to distinguish between generalized fractions@>
     if (c >= delimited_code)
     {
       scan_delimiter(left_delimiter(incompleat_noad), false);
@@ -20963,18 +30075,19 @@ void math_fraction (void)
     }
   }
 }
-/* sec 1191 */
-void math_left_right (void)
+
+static void math_left_right (void)
 {
-  small_number t;
-  pointer p;
-  pointer q;
+  small_number t; // {|left_noad| or |right_noad|}
+  pointer p;  // {new noad}
+  pointer q;  // {resulting mlist}
 
   t = cur_chr;
   inhibit_glue_flag = false;
 
   if ((t != left_noad) && (cur_group != math_left_group))
   {
+    // @<Try to recover from mismatched \.{\\right}@>
     if (cur_group == math_shift_group)
     {
       scan_delimiter(garbage, false);
@@ -21013,7 +30126,7 @@ void math_left_right (void)
     else
     {
       q = fin_mlist(p);
-      unsave();
+      unsave(); // {end of |math_left_group|}
     }
 
     if (t != right_noad)
@@ -21032,32 +30145,35 @@ void math_left_right (void)
     }
   }
 }
-/* sec 1194 */
-void after_math (void)
+
+static void after_math (void)
 {
-  boolean l;
-  scaled disp;
-  boolean danger;
-  integer m;
-  pointer p;
-  pointer a;
-  pointer b;
-  scaled w;
-  scaled z;
-  scaled e;
-  scaled q;
-  scaled d;
-  scaled s;
-  small_number g1, g2;
-  pointer r;
-  pointer t;
-  pointer j;
+  boolean l;  // {`\.{\\leqno}' instead of `\.{\\eqno}'}
+  scaled disp;  // {displacement}
+  boolean danger; // {not enough symbol fonts are present}
+  integer m;  // {|mmode| or |-mmode|}
+  pointer p;  // {the formula}
+  pointer a;  // {box containing equation number}
+  pointer b;  // {box containing the equation}
+  scaled w; // {width of the equation}
+  scaled z; // {width of the line}
+  scaled e; // {width of equation number}
+  scaled q; // {width of equation number plus space to separate from equation}
+  scaled d; // {displacement of equation in the line}
+  scaled s; // {move the line right this much}
+  small_number g1, g2;  // {glue parameter codes for before and after}
+  pointer r;  // {kern node used to position the display}
+  pointer t;  // {tail of adjustment list}
+  pointer j;  // {prototype box}
 
   danger = false;
-
+  // @<Retrieve the prototype box@>
   if (mode == mmode)
     j = LR_box;
-  
+  /*
+    @<Check that the necessary fonts for math symbols are present;
+    if not, flush the current math lists and set |danger:=true|@>
+  */
   if ((font_params[fam_fnt(2 + text_size)] < total_mathsy_params) ||
     (font_params[fam_fnt(2 + script_size)] < total_mathsy_params) ||
     (font_params[fam_fnt(2 + script_script_size)] < total_mathsy_params))
@@ -21100,10 +30216,11 @@ void after_math (void)
   add_glue_ref(cur_xkanji_skip);
   m = mode;
   l = false;
-  p = fin_mlist(0);
-
+  p = fin_mlist(null);  // {this pops the nest}
+  // {end of equation number}
   if (mode == -m)
   {
+    // @<Check that another \.\$ follows@>
     {
       get_x_token();
 
@@ -21123,16 +30240,19 @@ void after_math (void)
     a = hpack(link(temp_head), 0, 1);
     set_box_lr(a, dlist);
     unsave();
-    decr(save_ptr);
+    decr(save_ptr); // {now |cur_group=math_shift_group|}
 
     if (saved(0) == 1)
       l = true;
 
     danger = false;
-
+    // @<Retrieve the prototype box@>
     if (mode == mmode)
       j = LR_box;
-
+    /*
+      @<Check that the necessary fonts for math symbols are present;
+      if not, flush the current math lists and set |danger:=true|@>
+    */
     if ((font_params[fam_fnt(2 + text_size)] < total_mathsy_params) ||
       (font_params[fam_fnt(2 + script_size)] < total_mathsy_params) ||
       (font_params[fam_fnt(2 + script_script_size)] < total_mathsy_params))
@@ -21159,13 +30279,14 @@ void after_math (void)
     }
 
     m = mode;
-    p = fin_mlist(0);
+    p = fin_mlist(null);
   }
   else
-    a = 0;
+    a = null;
 
   if (m < 0)
   {
+    // @<Finish math in text@>
     if (direction == dir_tate)
       disp = t_baseline_shift;
     else
@@ -21179,7 +30300,7 @@ void after_math (void)
     mlist_to_hlist();
     link(tail) = link(temp_head);
 
-    while (link(tail) != 0)
+    while (link(tail) != null)
       tail = link(tail);
 
     tail_append(new_math(math_surround, after));
@@ -21189,7 +30310,7 @@ void after_math (void)
   }
   else
   {
-    if (a == 0)
+    if (a == null)
     {
       get_x_token();
 
@@ -21201,7 +30322,7 @@ void after_math (void)
         back_error();
       }
     }
-
+    // @<Finish displayed math@>
     cur_mlist = p;
     cur_style = display_style;
     mlist_penalties = false;
@@ -21211,7 +30332,7 @@ void after_math (void)
     b = hpack(p, 0, 1);
     p = list_ptr(b);
     t = adjust_tail;
-    adjust_tail = 0;
+    adjust_tail = null;
     w = width(b);
     z = display_width;
     s = display_indent;
@@ -21219,7 +30340,7 @@ void after_math (void)
     if (pre_display_direction < 0)
       s = -s - z;
 
-    if ((a == 0) || danger)
+    if ((a == null) || danger)
     {
       e = 0;
       q = 0;
@@ -21232,13 +30353,18 @@ void after_math (void)
 
     if (w + q > z)
     {
+      /*
+        @<Squeeze the equation as much as possible; if there is an equation
+        number that should go on a separate line by itself,
+        set~|e:=0|@>
+      */
       if ((e != 0) && ((w - total_shrink[normal] + q <= z) || (total_shrink[fil] != 0) ||
         (total_shrink[fill] != 0) || (total_shrink[filll] != 0)))
       {
         delete_glue_ref(space_ptr(b));
         delete_glue_ref(xspace_ptr(b));
         free_node(b, box_node_size);
-        b = hpack(p, z - q, 0);
+        b = hpack(p, z - q, exactly);
       }
       else
       {
@@ -21249,13 +30375,16 @@ void after_math (void)
           delete_glue_ref(space_ptr(b));
           delete_glue_ref(xspace_ptr(b));
           free_node(b, box_node_size);
-          b = hpack(p, z, 0);
+          b = hpack(p, z, exactly);
         }
       }
 
       w = width(b);
     }
-
+    /*
+      @<Determine the displacement, |d|, of the left edge of the equation, with
+      respect to the line size |z|, assuming that |l=false|@>
+    */
     set_box_lr(b, dlist);
     d = half(z - w);
 
@@ -21263,14 +30392,14 @@ void after_math (void)
     {
       d = half(z - w - e);
 
-      if (p != 0)
+      if (p != null)
         if (!is_char_node(p))
           if (type(p) == glue_node)
             d = 0;
     }
-
+    // @<Append the glue or equation number preceding the display@>
     tail_append(new_penalty(pre_display_penalty));
-
+    // {not enough clearance}
     if ((d + s <= pre_display_size) || l)
     {
       g1 = above_display_skip_code;
@@ -21281,15 +30410,15 @@ void after_math (void)
       g1 = above_display_short_skip_code;
       g2 = below_display_short_skip_code;
     }
-
+    // {it follows that |type(a)=hlist_node|}
     if (l && (e == 0))
     {
       app_display(j, a, 0);
-      tail_append(new_penalty(10000));
+      tail_append(new_penalty(inf_penalty));
     }
     else
       tail_append(new_param_glue(g1));
-
+    // @<Append the display and perhaps also the equation number@>
     if (e != 0)
     {
       r = new_kern(z - w - e - d);
@@ -21311,14 +30440,14 @@ void after_math (void)
     }
 
     app_display(j, b, d);
-
-    if ((a != 0) && (e == 0) && !l)
+    // @<Append the glue or equation number following the display@>
+    if ((a != null) && (e == 0) && !l)
     {
       tail_append(new_penalty(inf_penalty));
       app_display(j, a, z - width(a));
       g2 = 0;
     }
-
+    // {migrating material comes after equation number}
     if (t != adjust_head)
     {
       link(tail) = link(adjust_head);
@@ -21329,12 +30458,805 @@ void after_math (void)
 
     if (g2 > 0)
       tail_append(new_param_glue(g2));
-
+    // @<Flush the prototype box@>
     flush_node_list(j);
     resume_after_display();
   }
 }
-/* sec 1200 */
+
+/* sec 1211 */
+static void prefixed_command (void)
+{
+  small_number a;
+  integer m;
+  internal_font_number f;
+  halfword j;
+  font_index k;
+  pointer p, q;
+  integer n;
+  boolean e;
+
+  a = 0;
+
+  while (cur_cmd == prefix)
+  {
+    if (!odd(a / cur_chr))
+      a = a + cur_chr;
+
+    do {
+      get_x_token();
+    } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+
+    if (cur_cmd <= max_non_prefixed_command)
+    {
+      print_err("You can't use a prefix with `");
+      print_cmd_chr(cur_cmd, cur_chr);
+      print_char('\'');
+      help1("I'll pretend you didn't say \\long or \\outer or \\global.");
+
+      if (eTeX_ex)
+        help_line[0] = "I'll pretend you didn't say \\long or \\outer \\global or \\protected.";
+
+      back_error();
+      return;
+    }
+
+    if (tracing_commands > 2)
+    {
+      if (eTeX_ex)
+        show_cur_cmd_chr();
+    }
+  }
+
+  if (a >= 8)
+  {
+    j = protected_token;
+    a = a - 8;
+  }
+  else
+    j = 0;
+
+  if ((cur_cmd != def) && ((a % 4 != 0) || (j != 0)))
+  {
+    print_err("You can't use `");
+    print_esc("long");
+    prints("' or `");
+    print_esc("outer");
+    help1("I'll pretend you didn't say \\long or \\outer here.");
+
+    if (eTeX_ex)
+    {
+      help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\protected here.";
+      prints("' or `");
+      print_esc("protected");
+    }
+
+    prints("' with `");
+    print_cmd_chr(cur_cmd, cur_chr);
+    print_char('\'');
+    error();
+  }
+
+  if (global_defs != 0)
+  {
+    if (global_defs < 0)
+    {
+      if (global)
+        a = a - 4;
+    }
+    else
+    {
+      if (!global)
+        a = a + 4;
+    }
+  }
+
+  switch (cur_cmd)
+  {
+    case set_font:
+      {
+        if (font_dir[cur_chr] == dir_yoko)
+          define(cur_jfont_loc, data, cur_chr);
+        else if (font_dir[cur_chr] == dir_tate)
+          define(cur_tfont_loc, data, cur_chr);
+        else
+          define(cur_font_loc, data, cur_chr);
+      }
+      break;
+
+    case def:
+      {
+        if (odd(cur_chr) && !global && (global_defs >= 0))
+          a = a + 4;
+
+        e = (cur_chr >= 2);
+        get_r_token();
+        p = cur_cs;
+        q = scan_toks(true, e);
+
+        if (j != 0)
+        {
+          q = get_avail();
+          info(q) = j;
+          link(q) = link(def_ref);
+          link(def_ref) = q;
+        }
+
+        define(p, call + (a % 4), def_ref);
+      }
+      break;
+
+    case let:
+      {
+        n = cur_chr;
+        get_r_token();
+        p = cur_cs;
+
+        if (n == normal)
+        {
+          do {
+            get_token();
+          } while (!(cur_cmd != spacer));
+
+          if (cur_tok == other_token + '=')
+          {
+            get_token();
+
+            if (cur_cmd == spacer)
+              get_token();
+          }
+        }
+        else
+        {
+          get_token();
+          q = cur_tok;
+          get_token();
+          back_input();
+          cur_tok = q;
+          back_input();
+        }
+
+        if (cur_cmd >= call)
+          add_token_ref(cur_chr);
+        else if ((cur_cmd == tex_register) || (cur_cmd == toks_register))
+        {
+          if ((cur_chr < mem_bot) || (cur_chr > lo_mem_stat_max))
+            add_sa_ref(cur_chr);
+        }
+
+        define(p, cur_cmd, cur_chr);
+      }
+      break;
+
+    case shorthand_def:
+      {
+        n = cur_chr;
+        get_r_token();
+        p = cur_cs;
+        define(p, relax, 256);
+        scan_optional_equals();
+
+        switch (n)
+        {
+          case char_def_code:
+            {
+              scan_char_num();
+              define(p, char_given, cur_val);
+            }
+            break;
+
+          case kchar_def_code:
+            {
+              scan_char_num();
+              define(p, kchar_given, cur_val);
+            }
+            break;
+
+          case math_char_def_code:
+            {
+              scan_fifteen_bit_int();
+              define(p, math_given, cur_val);
+            }
+            break;
+
+          default:
+            {
+              scan_register_num();
+
+              if (cur_val > 255)
+              {
+                j = n - count_def_code;
+
+                if (j > mu_val)
+                  j = tok_val;
+
+                find_sa_element(j, cur_val, true);
+                add_sa_ref(cur_ptr);
+
+                if (j == tok_val)
+                  j = toks_register;
+                else
+                  j = tex_register;
+
+                define(p, j, cur_ptr);
+              }
+              else switch (n)
+              {
+                case count_def_code:
+                  define(p, assign_int, count_base + cur_val);
+                  break;
+
+                case dimen_def_code:
+                  define(p, assign_dimen, scaled_base + cur_val);
+                  break;
+
+                case skip_def_code:
+                  define(p, assign_glue, skip_base + cur_val);
+                  break;
+
+                case mu_skip_def_code:
+                  define(p, assign_mu_glue, mu_skip_base + cur_val);
+                  break;
+
+                case toks_def_code:
+                  define(p, assign_toks, toks_base + cur_val);
+                  break;
+              }
+            }
+            break;
+        }
+      }
+      break;
+
+    case read_to_cs:
+      {
+        j = cur_chr;
+        scan_int();
+        n = cur_val;
+
+        if (!scan_keyword("to"))
+        {
+          print_err("Missing `to' inserted");
+          help2("You should have said `\\read<number> to \\cs'.",
+              "I'm going to look for the \\cs now.");
+          error();
+        }
+
+        get_r_token();
+        p = cur_cs;
+        read_toks(n, p, j);
+        define(p, call, cur_val);
+      }
+      break;
+
+    case toks_register:
+    case assign_toks:
+      {
+        q = cur_cs;
+        e = false;
+
+        if (cur_cmd == toks_register)
+        {
+          if (cur_chr == mem_bot)
+          {
+            scan_register_num();
+
+            if (cur_val > 255)
+            {
+              find_sa_element(tok_val, cur_val, true);
+              cur_chr = cur_ptr;
+              e = true;
+            }
+            else
+              cur_chr = toks_base + cur_val;
+          }
+          else
+            e = true;
+        }
+
+        p = cur_chr;
+        scan_optional_equals();
+
+        do {
+          get_x_token();
+        } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+
+        if (cur_cmd != left_brace)
+        {
+          if ((cur_cmd == toks_register) || (cur_cmd == assign_toks))
+          {
+            if (cur_cmd == toks_register)
+            {
+              if (cur_chr == mem_bot)
+              {
+                scan_register_num();
+
+                if (cur_val < 256)
+                  q = equiv(toks_base + cur_val);
+                else
+                {
+                  find_sa_element(tok_val, cur_val, false);
+
+                  if (cur_ptr == null)
+                    q = null;
+                  else
+                    q = sa_ptr(cur_ptr);
+                }
+              }
+              else
+                q = sa_ptr(cur_chr);
+            }
+            else
+              q = equiv(cur_chr);
+
+            if (q == null)
+              sa_define(p, null, p, undefined_cs, null);
+            else
+            {
+              add_token_ref(q);
+              sa_define(p, q, p, call, q);
+            }
+
+            goto done;
+          }
+        }
+
+        back_input();
+        cur_cs = q;
+        q = scan_toks(false, false);
+
+        if (link(def_ref) == 0)
+        {
+          sa_define(p, null, p, undefined_cs, 0);
+          free_avail(def_ref);
+        }
+        else
+        {
+          if ((p == output_routine_loc) && !e)
+          {
+            link(q) = get_avail();
+            q = link(q);
+            info(q) = right_brace_token + '}';
+            q = get_avail();
+            info(q) = left_brace_token + '{';
+            link(q) = link(def_ref);
+            link(def_ref) = q;
+          }
+
+          sa_define(p, def_ref, p, call, def_ref);
+        }
+      }
+      break;
+
+    case assign_int:
+      {
+        p = cur_chr;
+        scan_optional_equals();
+        scan_int();
+
+        if (p == int_base + cur_fam_code)
+        {
+          if (font_dir[fam_fnt(cur_val)] != dir_default)
+            word_define(int_base + cur_jfam_code, cur_val);
+          else
+            word_define(p, cur_val);
+        }
+        else
+          word_define(p, cur_val);
+      }
+      break;
+
+    case assign_dimen:
+      {
+        p = cur_chr;
+        scan_optional_equals();
+        scan_normal_dimen();
+        word_define(p, cur_val);
+      }
+      break;
+
+    case assign_glue:
+    case assign_mu_glue:
+      {
+        p = cur_chr;
+        n = cur_cmd;
+        scan_optional_equals();
+
+        if (n == assign_mu_glue)
+          scan_glue(mu_val);
+        else
+          scan_glue(glue_val);
+
+        trap_zero_glue();
+        define(p, glue_ref, cur_val);
+      }
+      break;
+
+    case def_code:
+      {
+        if (cur_chr == kcat_code_base)
+          m = not_cjk;
+        else
+          m = 0;
+
+        if (cur_chr == cat_code_base)
+          n = invalid_code;
+        else if (cur_chr == kcat_code_base)
+          n = max_char_code;
+        else if (cur_chr == math_code_base)
+          n = 32768; /* 2^15 */
+        else if (cur_chr == sf_code_base)
+          n = 32767; /* 2^15 - 1*/
+        else if (cur_chr == del_code_base)
+          n = 16777215; /* 2^24 - 1 */
+        else
+          n = 255;
+
+        p = cur_chr;
+        scan_char_num();
+
+        if (p == kcat_code_base)
+          p = p + kcatcodekey(cur_val);
+        else if (!is_char_ascii(cur_val))
+          p = p + Hi(cur_val);
+        else
+          p = p + cur_val;
+
+        scan_optional_equals();
+        scan_int();
+
+        if (((cur_val < m) && (p < del_code_base)) || (cur_val > n))
+        {
+          print_err("Invalid code(");
+          print_int(cur_val);
+
+          if (p < del_code_base)
+          {
+            prints("), should be in the range ");
+            print_int(m);
+            prints("..");
+          }
+          else
+            prints("), should be at most ");
+
+          print_int(n);
+
+          if (m == 0)
+          {
+            help1("I'm going to use 0 instead of that illegal code value.");
+            error();
+          }
+          else
+          {
+            help1("I'm going to use 16 instead of that illegal code value.");
+            error();
+          }
+
+          cur_val = m;
+        }
+
+        if (p < math_code_base)
+          define(p, data, cur_val);
+        else if (p < del_code_base)
+          define(p, data, cur_val);
+        else 
+          word_define(p, cur_val);
+      }
+      break;
+
+    case def_family:
+      {
+        p = cur_chr;
+        scan_four_bit_int();
+        p = p + cur_val;
+        scan_optional_equals();
+        scan_font_ident();
+        define(p, data, cur_val);
+      }
+      break;
+
+    case tex_register:
+    case advance:
+    case multiply:
+    case divide:
+      do_register_command(a);
+      break;
+
+    case set_box:
+      {
+        scan_register_num();
+
+        if (global)
+          n = global_box_flag + cur_val;
+        else
+          n = box_flag + cur_val;
+
+        scan_optional_equals();
+
+        if (set_box_allowed)
+          scan_box(n);
+        else
+        {
+          print_err("Improper ");
+          print_esc("setbox");
+          help2("Sorry, \\setbox is not allowed after \\halign in a display,",
+              "or between \\accent and an accented character.");
+          error();
+        }
+      }
+      break;
+
+    case set_aux:
+      alter_aux();
+      break;
+
+    case set_prev_graf:
+      alter_prev_graf();
+      break;
+
+    case set_page_dimen:
+      alter_page_so_far();
+      break;
+
+    case set_page_int:
+      alter_integer();
+      break;
+
+    case set_box_dimen:
+      alter_box_dimen();
+      break;
+
+    case set_shape:
+      {
+        q = cur_chr;
+        scan_optional_equals();
+        scan_int();
+        n = cur_val;
+
+        if (n <= 0)
+          p = null;
+        else if (q > par_shape_loc)
+        {
+          n = (cur_val / 2) + 1;
+          p = get_node(2 * n + 1);
+          info(p) = n;
+          n = cur_val;
+          mem[p + 1].cint = n;
+
+          for (j = p + 2; j <= p + n + 1; ++j)
+          {
+            scan_int();
+            mem[j].cint = cur_val;
+          }
+
+          if (!odd(n))
+            mem[p + n + 2].cint = 0;
+        }
+        else
+        {
+          p = get_node(2 * n + 1);
+          info(p) = n;
+
+          for (j = 1; j <= n; j++)
+          {
+            scan_normal_dimen();
+            mem[p + 2 * j - 1].cint = cur_val;
+            scan_normal_dimen();
+            mem[p + 2 * j].cint = cur_val;
+          }
+        }
+
+        define(q, shape_ref, p);
+      }
+      break;
+
+    case hyph_data:
+      if (cur_chr == 1)
+      {
+        if (aptex_env.flag_initex)
+        {
+          new_patterns();
+          goto done;
+        }
+
+        print_err("Patterns can be loaded only by INITEX");
+        help0();
+        error();
+
+        do {
+          get_token();
+        } while (!(cur_cmd == right_brace));
+
+        return;
+      }
+      else
+      {
+        new_hyph_exceptions();
+        goto done;
+      }
+      break;
+
+    case assign_font_dimen:
+      {
+        find_font_dimen(true);
+        k = cur_val;
+        scan_optional_equals();
+        scan_normal_dimen();
+        font_info[k].cint = cur_val;
+      }
+      break;
+
+    case assign_font_int:
+      {
+        n = cur_chr;
+        scan_font_ident();
+        f = cur_val;
+        scan_optional_equals();
+        scan_int();
+
+        if (n == 0)
+          hyphen_char[f] = cur_val;
+        else
+          skew_char[f] = cur_val;
+      }
+      break;
+
+    case def_tfont:
+    case def_jfont:
+    case def_font:
+      new_font(a);
+      break;
+
+    case set_interaction:
+      new_interaction();
+      break;
+
+    case set_kansuji_char:
+      {
+        p = cur_chr;
+        scan_int();
+        n = cur_val;
+        scan_optional_equals();
+        scan_int();
+
+        if (!is_char_kanji(cur_val))
+        {
+          print_err("Invalid KANSUJI char (");
+          print_hex(cur_val);
+          print_char(')');
+          help1("I'm skip this control sequences.");
+          error();
+          return;
+        }
+        else if ((n < 0) || (n > 9))
+        {
+          print_err("Invalid KANSUJI number (");
+          print_int(n);
+          print_char(')');
+          help1("I'm skip this control sequences.");
+          error();
+          return;
+        }
+        else
+          define(kansuji_base + n, n, tokanji(toDVI(cur_val)));
+      }
+      break;
+
+    case set_auto_spacing:
+      {
+        if (cur_chr < 2)
+          p = auto_spacing_code;
+        else
+        {
+          p = auto_xspacing_code;
+          cur_chr = (cur_chr % 2);
+        }
+        
+        define(p, data, cur_chr);
+      }
+      break;
+
+    case set_enable_cjk_token:
+      define(enable_cjk_token_code, data, cur_chr);
+      break;
+
+    case assign_inhibit_xsp_code:
+      {
+        p = cur_chr;
+        scan_int();
+        n = cur_val;
+        scan_optional_equals();
+        scan_int();
+
+        if (is_char_kanji(n))
+        {
+          j = get_inhibit_pos(tokanji(n), new_pos);
+
+          if (j == no_entry)
+          {
+            print_err("Inhibit table is full!!");
+            help1("I'm skip this control sequences.");
+            error();
+            return;
+          }
+
+          define(inhibit_xsp_code_base + j, cur_val, n);
+        }
+        else
+        {
+          print_err("Invalid KANJI code (");
+          print_hex(n);
+          print_char(')');
+          help1("I'm skip this control sequences.");
+          error();
+          return;
+        }
+      }
+      break;
+
+    case assign_kinsoku:
+      {
+        p = cur_chr;
+        scan_int();
+        n = cur_val;
+        scan_optional_equals();
+        scan_int();
+
+        if (is_char_ascii(n) || is_char_kanji(n))
+        {
+          j = get_kinsoku_pos(tokanji(n), new_pos);
+
+          if (j == no_entry)
+          {
+            print_err("KINSOKU table is full!!");
+            help1("I'm skip this control sequences.");
+            error();
+            return;
+          }
+
+          if ((p == pre_break_penalty_code) || (p == post_break_penalty_code))
+          {
+            define(kinsoku_base + j, p, tokanji(n));
+            word_define(kinsoku_penalty_base + j, cur_val);
+          }
+          else
+            confusion("kinsoku");
+        }
+        else
+        {
+          print_err("Invalid KANJI code for ");
+
+          if (p == pre_break_penalty_code)
+            prints("pre");
+          else if (p == post_break_penalty_code)
+            prints("post");
+          else
+            print_char('?');
+
+          prints("breakpenalty (");
+          print_hex(n);
+          print_char(')');
+          help1("I'm skip this control sequences.");
+          error();
+          return;
+        }
+      }
+      break;
+
+    default:
+      confusion("prefix");
+      break;
+  }
+
+done:
+  if (after_token != 0)
+  {
+    cur_tok = after_token;
+    back_input();
+    after_token = 0;
+  }
+}
+
 void resume_after_display (void)
 {
   if (cur_group != math_shift_group)
@@ -21348,8 +31270,8 @@ void resume_after_display (void)
   space_factor = 1000;
   set_cur_lang();
   clang = cur_lang;
-  prev_graf = (norm_min(left_hyphen_min) * 64 + norm_min(right_hyphen_min)) * 65536 + cur_lang;
-
+  prev_graf = (norm_min(left_hyphen_min) * 0100 + norm_min(right_hyphen_min)) * 0200000 + cur_lang;
+  // @<Scan an optional space@>
   {
     get_x_token();
 
@@ -21360,7 +31282,7 @@ void resume_after_display (void)
   if (nest_ptr == 1)
     build_page();
 }
-/* sec 1215 */
+
 void get_r_token (void)
 {
 restart:
@@ -21385,7 +31307,7 @@ restart:
     goto restart;
   }
 }
-/* sec 1229 */
+
 void trap_zero_glue (void)
 {
   if ((width(cur_val) == 0) && (stretch(cur_val) == 0) && (shrink(cur_val) == 0))
@@ -21395,17 +31317,17 @@ void trap_zero_glue (void)
     cur_val = zero_glue;
   }
 }
-/* sec 1236 */
+
 void do_register_command (small_number a)
 {
-  pointer l, q, r, s;
-  char p;
-  boolean e;
-  integer w;
+  pointer l, q, r, s; // {for list manipulation}
+  char p; // {type of register involved}
+  boolean e;  // {does |l| refer to a sparse array element?}
+  integer w;  // {integer or dimen value of |l|}
 
   q = cur_cmd;
-  e = false;
-
+  e = false;  // {just in case, will be set |true| for sparse array elements}
+  // @<Compute the register location |l| and its type |p|; but |return| if invalid@>
   {
     if (q != tex_register)
     {
@@ -21587,10 +31509,10 @@ found:
     sa_define(l, cur_val, l, glue_ref, cur_val);
   }
 }
-/* sec 1243 */
+
 void alter_aux (void)
 {
-  halfword c;
+  halfword c; // {|hmode| or |vmode|
 
   if (cur_chr != abs(mode))
     report_illegal_case();
@@ -21619,10 +31541,10 @@ void alter_aux (void)
     }
   }
 }
-/* sec 1244 */
+
 void alter_prev_graf (void)
 {
-  integer p;
+  integer p;  // {index into |nest|}
 
   nest[nest_ptr] = cur_list;
   p = nest_ptr;
@@ -21646,20 +31568,20 @@ void alter_prev_graf (void)
     cur_list = nest[nest_ptr];
   }
 }
-/* sec 1245 */
+
 void alter_page_so_far (void)
 {
-  char c;
+  char c; // {index into |page_so_far|}
 
   c = cur_chr;
   scan_optional_equals();
   scan_normal_dimen();
   page_so_far[c] = cur_val;
 }
-/* sec 1246 */
+
 void alter_integer (void)
 {
-  small_number c;
+  small_number c; // {0 for \.{\\deadcycles}, 1 for \.{\\insertpenalties}, etc.}
 
   c = cur_chr;
   scan_optional_equals();
@@ -21685,12 +31607,12 @@ void alter_integer (void)
   else
     insert_penalties = cur_val;
 }
-/* sec 1247 */
+
 void alter_box_dimen (void)
 {
-  small_number c;
-  pointer p, q;
-  pointer b;
+  small_number c; // {|width_offset| or |height_offset| or |depth_offset|}
+  pointer p, q; // {temporary registers}
+  pointer b;  // {box register}
 
   c = cur_chr;
   scan_register_num();
@@ -21724,18 +31646,18 @@ void alter_box_dimen (void)
     mem[q + c].cint = cur_val;
   }
 }
-/* sec 1257 */
+
 void new_font (small_number a)
 {
-  pointer u;
-  scaled s;
-  internal_font_number f;
-  str_number t;
-  char old_setting;
+  pointer u;  // {user's font identifier}
+  scaled s; // {stated ``at'' size, or negative of scaled magnification}
+  internal_font_number f; // {runs through existing fonts}
+  str_number t; // {name for the frozen font identifier}
+  char old_setting; // {holds |selector| setting}
   str_number flushable_string;
 
   if (job_name == 0)
-    open_log_file();
+    open_log_file();  // {avoid confusing \.{texput} with the font name}
 
   get_r_token();
   u = cur_cs;
@@ -21763,14 +31685,16 @@ void new_font (small_number a)
   define(u, set_font, null_font);
   scan_optional_equals();
   scan_file_name();
-  name_in_progress = true;
+  // @<Scan the font size specification@>
+  name_in_progress = true;  // {this keeps |cur_name| from being changed}
 
   if (scan_keyword("at"))
   {
+    // @<Put the \(p)(positive) `at' size into |s|@>
     scan_normal_dimen();
     s = cur_val; 
 
-    if ((s <= 0) || (s >= 134217728L)) /* 2^27 */
+    if ((s <= 0) || (s >= 01000000000))
     {
       print_err("Improper `at' size (");
       print_scaled(s);
@@ -21798,6 +31722,10 @@ void new_font (small_number a)
     s = -1000;
 
   name_in_progress = false;
+  /*
+    @<If this font has already been loaded, set |f| to the internal
+    font number and |goto common_ending|@>
+  */
   flushable_string = str_ptr - 1;
 
   for (f = font_base + 1; f < font_ptr; f++)
@@ -21827,7 +31755,7 @@ common_ending:
   eqtb[font_id_base + f] = eqtb[u];
   font_id_text(f) = t;
 }
-/* sec 1265 */
+
 void new_interaction (void)
 {
   print_ln();
@@ -21841,7 +31769,7 @@ void new_interaction (void)
   if (log_opened)
     selector = selector + 2;
 }
-/* sec 1270 */
+
 void do_assignments (void)
 {
   while (true)
@@ -21858,11 +31786,11 @@ void do_assignments (void)
     set_box_allowed = true;
   }
 }
-/* sec 1275 */
-void open_or_close_in (void)
+
+static void open_or_close_in (void)
 {
-  char c;
-  char n;
+  char c; // {1 for \.{\\openin}, 0 for \.{\\closein}}
+  char n; // 1..15 {stream number}
 
   c = cur_chr;
   scan_four_bit_int();
@@ -21900,12 +31828,12 @@ void open_or_close_in (void)
     }
   }
 }
-/* sec 1279 */
-void issue_message (void)
+
+static void issue_message (void)
 {
-  char old_setting;
-  char c;
-  str_number s;
+  char old_setting; // {holds |selector| setting}
+  char c; // {identifies \.{\\message} and \.{\\errmessage}}
+  str_number s; // {the message}
 
   c = cur_chr;
   link(garbage) = scan_toks(false, true);
@@ -21953,8 +31881,8 @@ void issue_message (void)
 
   flush_string();
 }
-/* sec 1288 */
-void shift_case (void)
+
+static void shift_case (void)
 {
   pointer b;
   pointer p;
@@ -21983,14 +31911,14 @@ void shift_case (void)
   back_list(link(def_ref));
   free_avail(def_ref);
 }
-/* sec 1293 */
-void show_whatever (void)
+
+static void show_whatever (void)
 {
-  pointer p;
-  small_number t;
-  int m;
-  integer l;
-  integer n;
+  pointer p;  // {tail of a token list to show}
+  small_number t; // {type of conditional being shown}
+  int m;  // {upper bound on |fi_or_else| codes}
+  integer l;  // {line where that conditional began}
+  integer n;  // {level of \.{\\if...\\fi} nesting}
 
   switch (cur_chr)
   {
@@ -22002,6 +31930,7 @@ void show_whatever (void)
       break;
 
     case show_box_code:
+      // @<Show the current contents of a box@>
       {
         scan_register_num();
         fetch_box(p);
@@ -22010,7 +31939,7 @@ void show_whatever (void)
         print_int(cur_val);
         print_char('=');
 
-        if (p == 0)
+        if (p == null)
           prints("void");
         else
           show_box(p);
@@ -22018,6 +31947,7 @@ void show_whatever (void)
       break;
 
     case show_code:
+      // @<Show the current meaning of a token, then |goto common_ending|@>
       {
         get_token();
 
@@ -22038,6 +31968,7 @@ void show_whatever (void)
       break;
 
     case show_mode:
+      // @<Show the current japanese processing mode@>
       {
         print_nl("> ");
 
@@ -22111,6 +32042,10 @@ void show_whatever (void)
       break;
 
     default:
+      /*
+        @<Show the current value of some parameter or register,
+        then |goto common_ending|@>
+      */
       {
         p = the_toks();
 
@@ -22125,6 +32060,7 @@ void show_whatever (void)
       break;
   }
 
+  // @<Complete a potentially long \.{\\show} command@>
   end_diagnostic(true);
   print_err("OK");
 
@@ -22159,10 +32095,10 @@ common_ending:
 
   error();
 }
-/* sec 1349 */
-void new_whatsit (small_number s, small_number w)
+
+static void new_whatsit (small_number s, small_number w)
 {
-  pointer p;
+  pointer p;  // {the new node}
 
   p = get_node(w);
   type(p) = whatsit_node;
@@ -22170,8 +32106,8 @@ void new_whatsit (small_number s, small_number w)
   link(tail) = p;
   tail = p;
 }
-/* sec 1350 */
-void new_write_whatsit (small_number w)
+
+static void new_write_whatsit (small_number w)
 {
   new_whatsit(cur_chr, w);
 
@@ -22189,15 +32125,16 @@ void new_write_whatsit (small_number w)
 
   write_stream(tail) = cur_val;
 }
-/* sec 1348 */
-void do_extension (void)
+
+static void do_extension (void)
 {
-  integer k;
-  pointer p;
+  integer k;  // {all-purpose integers}
+  pointer p;  // {all-purpose pointers}
 
   switch (cur_chr)
   {
     case open_node:
+      // @<Implement \.{\\openout}@>
       {
         new_write_whatsit(open_node_size);
         scan_optional_equals();
@@ -22209,6 +32146,7 @@ void do_extension (void)
       break;
 
     case write_node:
+      // @<Implement \.{\\write}@>
       {
         k = cur_cs;
         new_write_whatsit(write_node_size);
@@ -22219,6 +32157,7 @@ void do_extension (void)
       break;
 
     case close_node:
+      // @<Implement \.{\\closeout}@>
       {
         new_write_whatsit(write_node_size);
         write_tokens(tail) = 0;
@@ -22226,6 +32165,7 @@ void do_extension (void)
       break;
 
     case special_node:
+      // @<Implement \.{\\special}@>
       {
         new_whatsit(special_node, write_node_size);
         write_stream(tail) = 0;
@@ -22235,6 +32175,7 @@ void do_extension (void)
       break;
 
     case immediate_code:
+      // @<Implement \.{\\immediate}@>
       {
         get_x_token();
 
@@ -22253,6 +32194,7 @@ void do_extension (void)
       break;
 
     case set_language_code:
+      // @<Implement \.{\\setlanguage}@>
       if (abs(mode) != hmode)
         report_illegal_case();
       else
@@ -22278,8 +32220,8 @@ void do_extension (void)
       break;
   }
 }
-/* sec 1376 */
-void fix_language (void)
+
+static void fix_language (void)
 {
   /* ASCII_code l; */
   int l;
@@ -22300,13 +32242,13 @@ void fix_language (void)
     what_rhm(tail) = norm_min(right_hyphen_min);
   }
 }
-/* sec 1068 */
-void handle_right_brace (void)
+
+static void handle_right_brace (void)
 {
-  pointer p, q;
-  pointer r;
-  scaled d;
-  integer f;
+  pointer p, q; // {for short-term use}
+  pointer r;    // {temporaly}
+  scaled d;     // {holds |split_max_depth| in |insert_group|}
+  integer f;    // {holds |floating_penalty| in |insert_group|}
 
   switch (cur_group)
   {
@@ -22568,16 +32510,17 @@ void handle_right_brace (void)
       break;
   }
 }
-/* sec 1030 */
+
 // governs \TeX's activities
 void main_control (void) 
 {
-  integer t;
-  KANJI_code cx;
-  pointer kp;
-  pointer gp, gq;
-  scaled disp;
-  boolean ins_kp;
+  integer t;      // {general-purpose temporary variable}
+  KANJI_code cx;  // {kanji character}
+  pointer kp;     // {kinsoku penalty register}
+  pointer gp, gq; // {temporary registers for list manipulation}
+  scaled disp;    // {displacement register}
+  boolean ins_kp; // {whether insert kinsoku penalty}
+
   boolean bSuppress;
 
   if (every_job != 0)
@@ -23419,7 +33362,7 @@ main_lig_loop_1:
 main_lig_loop_2:
   bSuppress = false;
 
-  if (flag_suppress_f_ligs && next_char(main_j) == cur_r && op_byte(main_j) == no_tag)
+  if (aptex_env.flag_suppress_f_ligs && next_char(main_j) == cur_r && op_byte(main_j) == no_tag)
   {
     if (cur_l == 'f')
       bSuppress = true;
@@ -23592,12 +33535,12 @@ append_normal_space:
 
   goto big_switch;
 }
-/* sec 1284 */
+
 void give_err_help (void)
 {
   token_show(err_help);
 }
-/* sec 0524 */
+
 boolean open_fmt_file (void)
 {
   integer j;
@@ -23670,11 +33613,11 @@ found:
 
 #define mem_size (mem_end + 1 - mem_min)
 
-/* sec 1333 */
 void close_files_and_terminate (void)
 {
-  integer k; 
+  integer k;  // {all-purpose index}
 
+  // @<Finish the extensions@>
   for (k = 0; k <= 15; k++)
   {
     if (write_open[k])
@@ -23682,36 +33625,35 @@ void close_files_and_terminate (void)
   }
 
 #ifdef STAT
-  if (tracing_stats > 0 || aptex_env.flag_verbose != 0)
+  // @<Output statistics about this job@>
+  if (tracing_stats > 0)
   {
     if (log_opened)
     {
-      write_log(" \n");
-      write_log("\n");
-      write_log("Here is how much of TeX's memory you used:\n");
+      wlog_ln(" ");
+      wlog_ln("Here is how much of TeX's memory you used:");
       write_log(" %d string", (int)(str_ptr - init_str_ptr));
 
       if (str_ptr != init_str_ptr + 1)
         wlog('s');
 
-      write_log(" out of %d\n", (int)(ng_stat(max_strings) - init_str_ptr));
-      write_log(" %d string characters out of %d\n", (int)(pool_ptr - init_pool_ptr), (int)(ng_stat(pool_size) - init_pool_ptr));
-      write_log(" %d words of memory out of %d\n", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), ng_stat(mem_size));
-      write_log(" %d multiletter control sequences out of %d\n", (int)(cs_count), (int) (hash_size));
+      wlog_ln(" out of %d", (int)(ng_stat(max_strings) - init_str_ptr));
+      wlog_ln(" %d string characters out of %d", (int)(pool_ptr - init_pool_ptr), (int)(ng_stat(pool_size) - init_pool_ptr));
+      wlog_ln(" %d words of memory out of %d", (int)(lo_mem_max - mem_min + mem_end - hi_mem_min + 2), ng_stat(mem_size));
+      wlog_ln(" %d multiletter control sequences out of %d", (int)(cs_count), (int)(hash_size));
       write_log(" %d words of font info for %d font", (int)(fmem_ptr), (int)(font_ptr - font_base));
 
       if (font_ptr != 1)
         wlog('s');
 
-      write_log(", out of %d for %d\n", ng_stat(font_mem_size), (int)(font_max - font_base));
+      wlog_ln(", out of %d for %d", ng_stat(font_mem_size), (int)(font_max - font_base));
       write_log(" %"PRId64" hyphenation exception", hyph_count);
 
       if (hyph_count != 1)
         wlog('s');
 
-      write_log(" out of %"PRId64"\n", hyphen_prime);
-      write_log(" ");
-      write_log("%"PRId64"i,", max_in_stack);
+      wlog_ln(" out of %"PRId64"", hyphen_prime);
+      write_log(" %"PRId64"i,", max_in_stack);
       write_log("%"PRId64"n,", max_nest_stack);
       write_log("%"PRId64"p,", max_param_stack);
       write_log("%"PRId64"b,", max_buf_stack + 1);
@@ -23730,51 +33672,48 @@ void close_files_and_terminate (void)
         write_log(" %d inputs open max out of %d\n", (int) high_in_open, (int) max_in_open);
       }
 
-      if (aptex_env.trace_linebreak && (count_first_pass > 0))
+      if (aptex_env.trace_lbrk && (lbs_pass_fst > 0))
       {
         int first_count, second_count, third_count;
 
-        write_log("\nSuccess at breaking %d paragraph%s:", count_first_pass, (count_first_pass == 1) ? "" : "s");
+        write_log("\nSuccess at breaking %d paragraph%s:", lbs_pass_fst, (lbs_pass_fst == 1) ? "" : "s");
 
-        if (count_single_line > 0)
-          write_log("\n %d single line `paragraph%s'", count_single_line, (count_single_line == 1) ? "" : "s");
+        if (lbs_sing_line > 0)
+          write_log("\n %d single line `paragraph%s'", lbs_sing_line, (lbs_sing_line == 1) ? "" : "s");
 
-        first_count = count_first_pass - count_single_line - count_second_pass;
+        first_count = lbs_pass_fst - lbs_sing_line - lbs_pass_snd;
 
         if (first_count < 0)
           first_count = 0;
 
-        second_count = count_second_pass - count_final_pass;
-        third_count = count_final_pass - count_paragraph_failed;
+        second_count = lbs_pass_snd - lbs_pass_fin;
+        third_count = lbs_pass_fin;
 
-        if (count_first_pass > 0)
-          write_log("\n %d first pass (\\pretolerance = %d)", count_first_pass, (int) pretolerance);
+        if (lbs_pass_fst > 0)
+          write_log("\n %d first pass (\\pretolerance = %d)", lbs_pass_fst, (int) pretolerance);
 
-        if (count_second_pass > 0)
-          write_log("\n %d second pass (\\tolerance = %d)", count_second_pass, (int) tolerance);
+        if (lbs_pass_snd > 0)
+          write_log("\n %d second pass (\\tolerance = %d)", lbs_pass_snd, (int) tolerance);
 
-        if (count_final_pass > 0 || emergency_stretch > 0)
+        if (lbs_pass_fin > 0 || emergency_stretch > 0)
           write_log("\n %d third pass (\\emergencystretch = %lgpt)",
-            count_final_pass, (double) emergency_stretch / 65536.0);
-
-        if (count_paragraph_failed > 0)
-          write_log("\n %d failed", count_paragraph_failed);
+            lbs_pass_fin, (double) emergency_stretch / 65536.0);
 
         wlog_cr();
 
-        if (count_overfull_hbox > 0)
-          write_log("\n %d overfull \\hbox%s", count_overfull_hbox, (count_overfull_hbox > 1) ? "es" : "");
+        if (hps_overfull > 0)
+          write_log("\n %d overfull \\hbox%s", hps_overfull, (hps_overfull > 1) ? "es" : "");
 
-        if (count_underfull_hbox > 0)
-          write_log("\n %d underfull \\hbox%s", count_underfull_hbox, (count_underfull_hbox > 1) ? "es" : "");
+        if (hps_underfull > 0)
+          write_log("\n %d underfull \\hbox%s", hps_underfull, (hps_underfull > 1) ? "es" : "");
 
-        if (count_overfull_vbox > 0)
-          write_log("\n %d overfull \\vbox%s", count_overfull_vbox, (count_overfull_vbox > 1) ? "es" : "");
+        if (vps_overfull > 0)
+          write_log("\n %d overfull \\vbox%s", vps_overfull, (vps_overfull > 1) ? "es" : "");
 
-        if (count_underfull_vbox > 0)
-          write_log("\n %d underfull \\vbox%s", count_underfull_vbox, (count_underfull_vbox > 1) ? "es" : "");
+        if (vps_underfull > 0)
+          write_log("\n %d underfull \\vbox%s", vps_underfull, (vps_underfull > 1) ? "es" : "");
 
-        if (count_overfull_hbox || count_underfull_hbox || count_overfull_vbox || count_underfull_vbox)
+        if (hps_overfull || hps_underfull || vps_overfull || vps_underfull)
           wlog_cr();
       }
     }
@@ -23783,18 +33722,77 @@ void close_files_and_terminate (void)
   
   wake_up_terminal();
 
+  // @<Finish the \.{DVI} file@>
   {
+    while (cur_s > -1)
+    {
+      if (cur_s > 0)
+        dvi_out(pop);
+      else
+      {
+        dvi_out(eop);
+        incr(total_pages);
+      }
+
+      decr(cur_s);
+    }
+
     if (total_pages == 0)
       print_nl("No pages of output.");
     else
     {
-      spc_exec_at_end_document();
-      pdf_close_document();
-      pdf_close_device();
-      pdf_files_close();
-      pdf_close_fontmaps();
+      dvi_out(post);  // {beginning of the postamble}
+      dvi_four(last_bop);
+      last_bop = dvi_offset + dvi_ptr - 5;  // {|post| location}
+      dvi_four(25400000);
+      dvi_four(473628672);  // {conversion ratio for sp}
+      prepare_mag();
+      dvi_four(mag);  // {magnification factor}
+      dvi_four(max_v);
+      dvi_four(max_h);
+      dvi_out(max_push / 256);
+      dvi_out(max_push % 256);
+      dvi_out((total_pages / 256) % 256);
+      dvi_out(total_pages % 256);
+
+      // if (log_opened) show_font_info();
+
+      // @<Output the font definitions for all fonts that were used@>
+      while (font_ptr > font_base)
+      {
+        if (font_used[font_ptr])
+          dvi_font_def(font_ptr);
+
+        decr(font_ptr);
+      }
+
+      dvi_out(post_post);
+      dvi_four(last_bop);
+
+      if (dir_used)
+        dvi_out(ex_id_byte);
+      else
+        dvi_out(id_byte);
+
+      k = 4 + ((dvi_buf_size - dvi_ptr) % 4); // {the number of 223's}
+
+      while (k > 0)
+      {
+        dvi_out(223);
+        decr(k);
+      }
+
+      //if (aptex_env.flag_trace) printf("\ndvi_write %lld", dvi_gone);
+
+      // @<Empty the last bytes out of |dvi_buf|@>
+      if (dvi_limit == half_buf)
+        write_dvi(half_buf, dvi_buf_size - 1);
+
+      if (dvi_ptr > 0)
+        write_dvi(0, dvi_ptr - 1);
+
       print_nl("Output written on ");
-      print_out_name(pdf_file_name, output_file_name);
+      slow_print(output_file_name);
       prints(" (");
       print_int(total_pages);
       prints(" page");
@@ -23803,12 +33801,23 @@ void close_files_and_terminate (void)
         print_char('s');
 
       prints(", ");
-      print_int(pdf_output_stats());
+      print_int(dvi_offset + dvi_ptr);
       prints(" bytes).");
-      b_close(pdf_file);
+      b_close(dvi_file);
+
+#ifndef APTEX_DVI_ONLY
+      {
+        spc_exec_at_end_document();
+        pdf_close_document();
+        pdf_close_device();
+        pdf_files_close();
+        pdf_close_fontmaps();
+      }
+#endif
     }
   }
 
+  // @<Close {\sl Sync\TeX} file and write status@>
   synctex_terminate();
 
   if (log_opened)
@@ -23820,20 +33829,23 @@ void close_files_and_terminate (void)
     if (selector == term_only)
     {
       print_nl("Transcript written on ");
-      print_out_name(log_file_name, log_name);
+      slow_print(log_name);
       print_char('.');
     }
   }
 
   print_ln();
 }
+
+
 #ifdef APTEX_DEBUG
-// web2c's specific
+
 #ifndef unix
   #define dumpcore() exit(EXIT_FAILURE)
 #else
   #define dumpcore abort
 #endif
+
 /* sec 1338 */
 void debug_help (void) 
 {
@@ -23844,7 +33856,7 @@ void debug_help (void)
     wake_up_terminal();
     print_nl(" debug # (-1 to exit):");
     update_terminal();
-    read(stdin, m);  // ???
+    scanf("%"PRId64, &m); // read(stdin, m);
 
     if (m < 0)
       return;
@@ -23852,7 +33864,7 @@ void debug_help (void)
       dumpcore();
     else
     {
-      read(stdin, n);
+      scanf("%"PRId64, &n); // read(stdin, n);
 
       switch (m)
       {
@@ -23908,16 +33920,16 @@ void debug_help (void)
           break;
         
         case 11:
-          check_mem(n > 0);
+          //check_mem(n > 0);
           break;
         
         case 12:
-          search_mem(n);
+          //search_mem(n);
           break;
         
         case 13:
           {
-            read(stdin, l);
+            scanf("%"PRId64, &l); //read(stdin, l);
             print_cmd_chr(n, l);
           }
           break;
@@ -23951,7 +33963,7 @@ void debug_help (void)
 
 pointer new_dir_node (pointer b, eight_bits dir)
 {
-  pointer p;
+  pointer p;  // {the new node}
 
   if (type(b) > vlist_node)
     confusion("new_dir_node:not box");
@@ -23963,6 +33975,7 @@ pointer new_dir_node (pointer b, eight_bits dir)
   switch (box_dir(b))
   {
     case dir_yoko:
+      // @<Yoko to other direction@>
       switch (dir)
       {
         case dir_tate:
@@ -23988,6 +34001,7 @@ pointer new_dir_node (pointer b, eight_bits dir)
       break;
 
     case dir_tate:
+      // @<Tate to other direction@>
       switch (dir)
       {
         case dir_yoko:
@@ -24013,6 +34027,7 @@ pointer new_dir_node (pointer b, eight_bits dir)
       break;
 
     case dir_dtou:
+      // @<DtoU to other direction@>
       switch (dir)
       {
         case dir_yoko:
@@ -24047,10 +34062,10 @@ pointer new_dir_node (pointer b, eight_bits dir)
 
   return p;
 }
-/* sec 1416 */
+
 eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f)
 {
-  KANJI_code jc;
+  KANJI_code jc;  // {temporary register for KANJI}
   pointer sp, mp, ep;
 
   if (f == null_font)
@@ -24059,8 +34074,8 @@ eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f)
   }
 
   jc = toDVI(kcode);
-  sp = 1;
-  ep = font_num_ext[f] - 1;
+  sp = 1; // { start position }
+  ep = font_num_ext[f] - 1; // { end position }
 
   if ((ep >= 1) && (kchar_code(f, sp) <= jc) && (jc <= kchar_code(f, ep)))
   {
@@ -24081,7 +34096,7 @@ eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f)
 
   return kchar_type(f, 0);
 }
-/* sec 1435 */
+
 pointer get_inhibit_pos (KANJI_code c, small_number n)
 {
   pointer p, s;
@@ -24125,7 +34140,7 @@ done1:
 done:
   return p;
 }
-/* sec 1440 */
+
 pointer get_kinsoku_pos (KANJI_code c, small_number n)
 {
   pointer p, s;
@@ -24183,109 +34198,7 @@ done1:
 done:
   return p;
 }
-/* sec 1448 */
-void pdf_synch_dir (void)
-{
-  scaled tmp;
 
-  switch (cur_dir_hv)
-  {
-    case dir_yoko:
-      if (dvi_dir != cur_dir_hv)
-      {
-        pdf_synch_h();
-        pdf_synch_v();
-
-        switch (dvi_dir)
-        {
-          case dir_tate:
-            {
-              tmp = cur_h;
-              cur_h = -cur_v;
-              cur_v = tmp;
-            }
-            break;
-
-          case dir_dtou:
-            {
-              tmp = cur_h;
-              cur_h = cur_v;
-              cur_v = -tmp;
-            }
-            break;
-        }
-
-        dvi_h = cur_h;
-        dvi_v = cur_v;
-        dvi_dir = cur_dir_hv;
-      }
-      break;
-
-    case dir_tate:
-      if (dvi_dir != cur_dir_hv)
-      {
-        pdf_synch_h();
-        pdf_synch_v();
-
-        switch (dvi_dir)
-        {
-          case dir_yoko:
-            {
-              tmp = cur_h;
-              cur_h = cur_v;
-              cur_v = -tmp;
-            }
-            break;
-
-          case dir_dtou:
-            {
-              cur_h = -cur_h;
-              cur_v = -cur_v;
-            }
-            break;
-        }
-
-        dvi_h = cur_h;
-        dvi_v = cur_v;
-        dvi_dir = cur_dir_hv;
-      }
-      break;
-
-    case dir_dtou:
-      if (dvi_dir != cur_dir_hv)
-      {
-        pdf_synch_h();
-        pdf_synch_v();
-
-        switch (dvi_dir)
-        {
-          case dir_yoko:
-            {
-              tmp = cur_h;
-              cur_h = -cur_v;
-              cur_v = tmp;
-            }
-            break;
-          case dir_tate:
-            {
-              cur_v = -cur_v;
-              cur_h = -cur_h;
-            }
-            break;
-        }
-
-        dvi_h = cur_h;
-        dvi_v = cur_v;
-        dvi_dir = cur_dir_hv;
-      }
-      break;
-
-    default:
-      confusion("synch_dir");
-      break;
-  }
-}
-/* sec 1450 */
 boolean check_box (pointer box_p)
 {
   pointer p;
@@ -24384,7 +34297,7 @@ boolean check_box (pointer box_p)
 done:
   return flag;
 }
-/* sec 1451 */
+
 void adjust_hlist (pointer p, boolean pf)
 {
   pointer q, s, t, u, v, x, z;
@@ -24560,7 +34473,7 @@ void adjust_hlist (pointer p, boolean pf)
     make_jchr_widow_penalty_node();
 exit:;
 }
-/* sec 1468 */
+
 void set_math_kchar (integer c)
 {
   pointer p;
@@ -24614,7 +34527,7 @@ boolean eTeX_enabled (boolean b, quarterword j, halfword k)
   return b;
 }
 
-void print_group (boolean e)
+static void print_group (boolean e)
 {
   switch (cur_group)
   {
@@ -25032,6 +34945,7 @@ found:
   warning_index = w;
   def_ref = d;
 }
+
 // create an edge nod
 pointer new_edge (small_number s, scaled w)
 {
@@ -25237,6 +35151,7 @@ done:
   else
     return l;
 }
+
 // create a segment node
 pointer new_segment (small_number s, pointer f)
 {
@@ -25718,6 +35633,10 @@ void pseudo_close (void)
   }
 }
 
+/*
+  {sets |cur_cmd|, |cur_chr|, |cur_tok|,
+  and expands non-protected macros}
+*/
 void get_x_or_protected (void)
 {
   while (true)
