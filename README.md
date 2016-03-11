@@ -1,5 +1,5 @@
 
-## CI Status
+## Travis CI Status
 
 [![Build Status](https://travis-ci.org/clerkma/ptex-ng.svg?branch=master)](https://travis-ci.org/clerkma/ptex-ng)
 
