@@ -1785,6 +1785,7 @@ static long ucs_range[] =
   0xAAE0, // Meetei Mayek Extensions
   0xAB00, // Ethiopic Extended-A
   0xAB30, // Latin Extended-E
+  0xAB70, // Cherokee Supplement
   0xABC0, // Meetei Mayek
   0xAC00, // Hangul Syllables
   0xD7B0, // Hangul Jamo Extended-B
@@ -1827,6 +1828,7 @@ static long ucs_range[] =
   0x10840, // Imperial Aramaic
   0x10860, // Palmyrene
   0x10880, // Nabataean
+  0x108E0, // Hatran
   0x10900, // Phoenician
   0x10920, // Lydian   0xb8
   0x10980, // Meroitic Hieroglyphs
@@ -1840,6 +1842,7 @@ static long ucs_range[] =
   0x10B60, // Inscriptional Pahlavi
   0x10B80, // Psalter Pahlavi
   0x10C00, // Old Turkic
+  0x10C80, // Old Hungarian
   0x10E60, // Rumi Numeral Symbols
   0x11000, // Brahmi
   0x11080, // Kaithi
@@ -1849,6 +1852,7 @@ static long ucs_range[] =
   0x11180, // Sharada
   0x111E0, // Sinhala Archaic Numbers
   0x11200, // Khojki
+  0x11280, // Multani
   0x112B0, // Khudawadi
   0x11300, // Grantha
   0x11480, // Tirhuta
@@ -1859,6 +1863,7 @@ static long ucs_range[] =
   0x11AC0, // Pau Cin Hau
   0x12000, // Cuneiform
   0x12400, // Cuneiform Numbers and Punctuation
+  0x12480, // Early Dynastic Cuneiform
   0x13000, // Egyptian Hieroglyphs
   0x16800, // Bamum Supplement 0xd8
   0x16A40, // Mro
@@ -1874,6 +1879,7 @@ static long ucs_range[] =
   0x1D300, // Tai Xuan Jing Symbols
   0x1D360, // Counting Rod Numerals
   0x1D400, // Mathematical Alphanumeric Symbols
+  0x1D800, // Sutton SignWriting
   0x1E800, // Mende Kikakui
   0x1EE00, // Arabic Mathematical Alphabetic Symbols
   0x1F000, // Mahjong Tiles  0xe8
@@ -1888,9 +1894,11 @@ static long ucs_range[] =
   0x1F700, // Alchemical Symbols
   0x1F780, // Geometric Shapes Extended
   0x1F800, // Supplemental Arrows-C
+  0x1F900, // Supplemental Symbols and Pictographs
   0x20000, // CJK Unified Ideographs Extension B
   0x2A700, // CJK Unified Ideographs Extension C
   0x2B740, // CJK Unified Ideographs Extension D
+  0x2B820, // CJK Unified Ideographs Extension E
   0x2F800, // CJK Compatibility Ideographs Supplement
   0x30000, // reserved   0xf8
   0x40000, // reserved
@@ -3688,7 +3696,7 @@ static void do_initex (void)
     kinsoku_type(k) = 0;
   }
 
-  for (k = 0; k <= 512; k++)
+  for (k = 0; k <= 511; k++)
     kcat_code(k) = other_kchar;
 
   cat_code(carriage_return) = car_ret;
@@ -3763,17 +3771,17 @@ static void do_initex (void)
     // { Hangul Jamo Extended-A }
     kcat_code(0x84) = hangul;
     // { Hangul Syllables }
-    kcat_code(0x8E) = hangul;
-    // { Hangul Jamo Extended-B }
     kcat_code(0x8F) = hangul;
+    // { Hangul Jamo Extended-B }
+    kcat_code(0x90) = hangul;
     // { CJK Compatibility Ideographs }
-    kcat_code(0x94) = kanji;
+    kcat_code(0x95) = kanji;
     // { kcat_code(0x9D) = other_kchar; Halfwidth and Fullwidth Forms }
     // { Kana Supplement }
-    kcat_code(0xDD) = kana;
+    kcat_code(0xE4) = kana;
 
     // { CJK Unified Ideographs Extension B .. CJK Compatibility Ideographs Supplement }
-    for (k = 0xF4; k <= 0xF7; k++)
+    for (k = 0xFD; k <= 0x101; k++)
       kcat_code(k) = kanji;
 
     // { Fullwidth digit and latin alphabet }
