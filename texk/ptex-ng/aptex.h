@@ -66,15 +66,13 @@
 #include <math.h>
 #include <signal.h>
 #include <assert.h>
+#include <ctype.h>
 
 // TeX Live's kpathsea
 #include <kpathsea/config.h>
 #include <kpathsea/c-pathmx.h> // PATH_MAX
-#include <kpathsea/c-pathch.h> // ISBLANK
-#include <kpathsea/c-fopen.h>  // FOPEN_WBIN_MODE
 #include <kpathsea/getopt.h>   // get_opt
 #include <kpathsea/tex-file.h> // kpse_find_file
-#include <kpathsea/variable.h> // kpse_var_value
 #include <kpathsea/types.h>    // RPId64
 #include <kpathsea/version.h>  // kpathsea_version_string
 
@@ -82,7 +80,7 @@
 #include <ptexenc/ptexenc.h>
 #include <ptexenc/unicode.h>
 
-// zlib for fmt file and synctex
+// zlib for format file and synctex
 #include "zlib.h"
 
 #ifdef __cplusplus

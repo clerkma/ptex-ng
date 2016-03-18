@@ -201,12 +201,12 @@ static void * synctex_dot_open (void)
 
       if (synctex_flag_flate)
       {
-        synctex_file = fopen(the_busy_name, FOPEN_W_MODE);
+        synctex_file = fopen(the_busy_name, "wb");
         synctex_printf = (synctex_writer_t) (&fprintf);
       }
       else
       {
-        synctex_file = gzopen(the_busy_name, FOPEN_WBIN_MODE);
+        synctex_file = gzopen(the_busy_name, "wb");
         synctex_printf = (synctex_writer_t) (&gzprintf);
       }
 

@@ -2111,7 +2111,7 @@ static void t_open_in (void)
   for (last = first; buffer[last]; ++last)
     do_nothing();
 
-  for (--last; last >= first && ISBLANK(buffer[last]) && buffer[last] != '\r'; --last)
+  for (--last; last >= first && isblank(buffer[last]) && buffer[last] != '\r'; --last)
     do_nothing();
 
   last++;
@@ -2323,20 +2323,7 @@ boolean a_open_output (alpha_file * f)
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
 
   file_name_mbcs = utf8_mbcs(file_name_utf8);
-  *f = aptex_env.open_tex_file(file_name_mbcs, FOPEN_W_MODE);
-
-  if (*f == NULL)
-  {
-    string temp_dir = kpse_var_value("TEXMFOUTPUT");
-
-    if (temp_dir != NULL)
-    {
-      char * temp_name = (char *) calloc(1, strlen(temp_dir) + strlen(file_name_mbcs) + 2);
-      sprintf(temp_name, "%s%s%s", temp_dir, DIR_SEP_STRING, file_name_mbcs);
-      *f = aptex_env.open_tex_file(temp_name, FOPEN_W_MODE);
-      free(temp_name);
-    }
-  }
+  *f = aptex_env.open_tex_file(file_name_mbcs, "wb");
 
   if (file_name_mbcs != NULL)
     free(file_name_mbcs);
@@ -2355,20 +2342,7 @@ boolean b_open_output (byte_file * f)
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
 
   file_name_mbcs = utf8_mbcs(file_name_utf8);
-  *f = aptex_env.open_tex_file(file_name_mbcs, FOPEN_WBIN_MODE);
-
-  if (*f == NULL)
-  {
-    string temp_dir = kpse_var_value("TEXMFOUTPUT");
-
-    if (temp_dir != NULL)
-    {
-      char * temp_name = (char *) calloc(1, strlen(temp_dir) + strlen(file_name_mbcs) + 2);
-      sprintf(temp_name, "%s%s%s", temp_dir, DIR_SEP_STRING, file_name_mbcs);
-      *f = aptex_env.open_tex_file(temp_name, FOPEN_WBIN_MODE);
-      free(temp_name);
-    }
-  }
+  *f = aptex_env.open_tex_file(file_name_mbcs, "wb");
 
   if (file_name_mbcs != NULL)
     free(file_name_mbcs);
@@ -2387,20 +2361,7 @@ boolean w_open_output (word_file * f)
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
 
   file_name_mbcs = utf8_mbcs(file_name_utf8);
-  *f = aptex_env.open_fmt_file(file_name_mbcs, FOPEN_WBIN_MODE);
-
-  if (*f == NULL)
-  {
-    string temp_dir = kpse_var_value("TEXMFOUTPUT");
-
-    if (temp_dir != NULL)
-    {
-      char * temp_name = (char *) calloc(1, strlen(temp_dir) + strlen(file_name_mbcs) + 2);
-      sprintf(temp_name, "%s%s%s", temp_dir, DIR_SEP_STRING, file_name_mbcs);
-      *f = aptex_env.open_fmt_file(temp_name, FOPEN_WBIN_MODE);
-      free(temp_name);
-    }
-  }
+  *f = aptex_env.open_fmt_file(file_name_mbcs, "wb");
 
   if (file_name_mbcs != NULL)
     free(file_name_mbcs);
