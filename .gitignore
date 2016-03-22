@@ -313,3 +313,11 @@ texk/ptexenc/libtool
 texk/ptexenc/ptexenc.pc
 texk/ptexenc/ptexenc/c-auto.h
 texk/ptexenc/ptexenc/stamp-h1
+texk/ptex-ng/GPATH
+texk/ptex-ng/GRTAGS
+texk/ptex-ng/GSYMS
+texk/ptex-ng/GTAGS
+texk/ptex-ng/aptex
+texk/ptex-ng/aptex-src.o
+texk/ptex-ng/aptex-synctex.o
+texk/ptex-ng/aptex.o
