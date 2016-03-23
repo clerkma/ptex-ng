@@ -33,28 +33,39 @@
 
 // headers and pragmas
 #if defined (_MSC_VER)
+  // MSVC
+  //  https://msdn.microsoft.com/en-us/library/d9x1s805.aspx
 
-  #if _MSC_VER != 1900
+  #if _MSC_VER == 1900
+    #pragma warning(disable:4459) // declaration of 'identifier' hides global declaration
+    #pragma warning(disable:4311) // 'variable': pointer truncation from 'type1' to 'type2'
+  #else
+    // https://msdn.microsoft.com/en-us/library/ms235356.aspx
+    // Disables performance-critical locking in I/O operations.
     #define _CRT_DISABLE_PERFCRIT_LOCKS
   #endif
 
+  // https://msdn.microsoft.com/en-us/library/ms175759.aspx
+  // Secure Template Overloads
   #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+  #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES_COUNT 1
 
+  // https://msdn.microsoft.com/en-us/library/8x5x43k7.aspx
+  // C/C++ Build Errors
   #pragma warning(disable:4201) // nameless struct/union
   #pragma warning(disable:4996) // a function that was marked with deprecated
   #pragma warning(disable:4701) // potentially uninitialized local variable 'name' used
-  //#pragma warning(disable:4135) // conversion between different integral types
+  #pragma warning(disable:4135) // conversion between different integral types
   #pragma warning(disable:4127) // conditional expression is constant
 
-  #if _MSC_VER == 1900
-    #pragma warning(disable:4459) // VS 2015
-    #pragma warning(disable:4311) // VS 2015
-  #endif
 #elif defined (__clang__)
   // Clang
+  //  http://clang.llvm.org/docs/UsersManual.html
   #pragma clang diagnostic ignored "-Wdangling-else"
 #elif defined (__GNUC__) || defined (__GNUG__)
   // GCC
+  //  https://gcc.gnu.org/onlinedocs/gcc/Pragmas.html
+  //  https://gcc.gnu.org/onlinedocs/cpp/Pragmas.html
   #pragma GCC diagnostic ignored "-Wunused-result"
 #endif
 
@@ -143,7 +154,7 @@ def_const(error_line,         79,     79);          // {width of context lines o
 def_const(half_error_line,    50,     50);          // {width of first lines of contexts in terminal error messages; should be between 30 and |error_line-15|}
 def_const(max_print_line,     79,     79);          // {width of longest text lines output; should be at least 60}
 def_const(mem_bot,            0,      0);
-def_const(int_size,           4,      8);
+
 def_const(font_max,           255,    65535);
 def_const(string_vacancies,   100000, 100000);
 def_const(trie_op_size,       751,    35111);
@@ -154,14 +165,14 @@ def_const(dvi_buf_size,       16384,  16384);
 def_const(hash_prime,         55711,  445631);
 def_const(hash_size,          65536,  524288);
 
-def_alloc(buf_size,       200000, 2000000,                        1000,   2000);
-def_alloc(font_mem_size,  100000, (max_halfword / int_size - 1),  20000,  40000);
-def_alloc(pool_size,      124000, (max_halfword - 1),             40000,  80000);
-def_alloc(max_strings,    16384,  (max_halfword / int_size - 1),  5000,   10000);
-def_alloc(save_size,      8000,   65536,                          1000,   2000);
-def_alloc(nest_size,      200,    65536,                          100,    200);
-def_alloc(param_size,     500,    65536,                          100,    200);
-def_alloc(stack_size,     800,    65536,                          100,    200);
+def_alloc(buf_size,       200000, 2000000,                1000,   2000);
+def_alloc(font_mem_size,  100000, (max_halfword / 8 - 1), 20000,  40000);
+def_alloc(pool_size,      124000, (max_halfword - 1),     40000,  80000);
+def_alloc(max_strings,    16384,  (max_halfword / 8 - 1), 5000,   10000);
+def_alloc(save_size,      8000,   65536,                  1000,   2000);
+def_alloc(nest_size,      200,    65536,                  100,    200);
+def_alloc(param_size,     500,    65536,                  100,    200);
+def_alloc(stack_size,     800,    65536,                  100,    200);
 
 EXTERN int current_mem_size;
 
@@ -180,15 +191,11 @@ def_alter(mem_top, integer, 262140);
 def_alter(mem_max, integer, 262140);
 def_alter(mem_min, integer, 0);
 
-#ifdef APTEX_EXTENSION
-  #define max_mem_size (max_halfword / sizeof(memory_word) - 1)
-#endif
+def_const(max_mem_size, 0, (max_halfword / 8 - 1));
 
 def_alter(trie_size, integer, 30000);
 
-#ifdef APTEX_EXTENSION
-  #define default_trie_size 1000000 // 60000
-#endif
+def_const(default_trie_size, 0, 1000000); // 60000
 
 /* mem_min may be < 0 */
 /* sec 0113 */
