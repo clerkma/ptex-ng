@@ -23407,7 +23407,7 @@ static void fin_align (void)
       {
         add_glue_ref(zero_glue);
         delete_glue_ref(s);
-        glue_ptr(c) = zero_glue;
+        glue_ptr(r) = zero_glue;
       }
     }
 
