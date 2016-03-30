@@ -10635,8 +10635,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case endv:
-      chr_cmd("end of alignment template");
-      printf("DEBUG: %d.", chr_code);
+      prints("end of alignment template");
       break;
 
     case spacer:
@@ -15050,7 +15049,7 @@ static void scan_something_internal (small_number level, boolean negative)
 
     decr(cur_val_level);
   }
-
+ 
   if (negative)
   {
     if (cur_val_level >= glue_val)
@@ -15658,7 +15657,7 @@ found:
     {
       if (align_state == 0)
       {
-        if ((scanner_status == aligning) || (cur_align == 0))
+        if ((scanner_status == aligning) || (cur_align == null))
           fatal_error("(interwoven alignment preambles are not allowed)");
 
         cur_cmd = extra_info(cur_align);
@@ -20459,7 +20458,7 @@ static pointer hpack (pointer p, scaled w, small_number m)
   if (TeXXeT_en)
     put_LR(before);
 
-  while (p != 0)
+  while (p != null)
   {
 reswitch:
     chain = false;
@@ -20501,7 +20500,7 @@ reswitch:
       p = link(p);
     }
 
-    if (p != 0)
+    if (p != null)
     {
       switch (type(p))
       {
@@ -20529,7 +20528,7 @@ reswitch:
         case ins_node:
         case mark_node:
         case adjust_node:
-          if (adjust_tail != 0)
+          if (adjust_tail != null)
           {
             while (link(q) != p)
               q = link(q);
@@ -20538,7 +20537,7 @@ reswitch:
             {
               link(adjust_tail) = adjust_ptr(p);
 
-              while (link(adjust_tail) != 0)
+              while (link(adjust_tail) != null)
                 adjust_tail = link(adjust_tail);
 
               p = link(p);
@@ -20634,8 +20633,8 @@ reswitch:
     }
   }
 
-  if (adjust_tail != 0)
-    link(adjust_tail) = 0;
+  if (adjust_tail != null)
+    link(adjust_tail) = null;
 
   height(r) = h;
   depth(r) = d;
@@ -20732,7 +20731,7 @@ reswitch:
       {
         if ((overfull_rule > 0) && (-x - total_shrink[normal] > hfuzz))
         {
-          while (link(q) != 0)
+          while (link(q) != null)
             q = link(q);
           
           link(q) = new_rule();
@@ -20749,7 +20748,7 @@ reswitch:
       }
     }
     else if (o == normal)
-      if (list_ptr(r) != 0)
+      if (list_ptr(r) != null)
       {
         last_badness = badness(-x, total_shrink[normal]);
 
@@ -20830,11 +20829,11 @@ exit:
 
 static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
 {
-  pointer r;
-  scaled w, d, x;
-  scaled s;
-  pointer g;
-  glue_ord o;
+  pointer r;  // {the box node that will be returned}
+  scaled w, d, x; // {width, depth, and natural height}
+  scaled s; // {shift amount}
+  pointer g;  // {points to a glue specification}
+  glue_ord o; // {order of infinity}
 
   last_badness = 0;
   r = get_node(box_node_size);
@@ -20858,7 +20857,7 @@ static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
   total_stretch[filll] = 0;
   total_shrink[filll] = 0;
 
-  while (p != 0)
+  while (p != null)
   {
     if (is_char_node(p))
       confusion("vpack");
@@ -23143,7 +23142,7 @@ static void init_align (void)
   align_state = -1000000; // {enter a new alignment level}
 
   // @<Check for improper alignment in displayed math@>;
-  if ((mode == mmode) && ((tail != head) || (incompleat_noad != 0)))
+  if ((mode == mmode) && ((tail != head) || (incompleat_noad != null)))
   {
     print_err("Improper ");
     print_esc("halign");
@@ -23193,7 +23192,7 @@ static void init_align (void)
     */
     // @<Scan the template \<u_j>, putting the resulting token list in |hold_head|@>
     p = hold_head;
-    link(p) = 0;
+    link(p) = null;
 
     while (true)
     {
@@ -23203,7 +23202,7 @@ static void init_align (void)
         goto done1;
 
       if ((cur_cmd <= car_ret) && (cur_cmd >= tab_mark) && (align_state == -1000000))
-        if ((p == hold_head) && (cur_loop == 0) && (cur_cmd == tab_mark))
+        if ((p == hold_head) && (cur_loop == null) && (cur_cmd == tab_mark))
           cur_loop = cur_align;
         else
         {
@@ -23353,7 +23352,7 @@ static void fin_row (void)
   type(p) = unset_node;
   glue_stretch(p) = 0;
 
-  if (every_cr != 0)
+  if (every_cr != null)
     begin_token_list(every_cr, every_cr_text);
 
   align_peek();
@@ -23461,7 +23460,7 @@ static void fin_align (void)
     glue_stretch(q) = 0;
     glue_shrink(q) = 0;
     q = p;
-  } while (!(q == 0));
+  } while (!(q == null));
 
   /*
     @<Package the preamble list, to determine the actual tabskip glue amounts,
@@ -23498,7 +23497,7 @@ static void fin_align (void)
       height(q) = width(q);
       width(q) = 0;
       q = link(link(q));
-    } while (!(q == 0));
+    } while (!(q == null));
 
     p = vpackage(preamble, saved(1), saved(0), max_dimen);
     q = link(preamble);
@@ -23507,7 +23506,7 @@ static void fin_align (void)
       width(q) = height(q);
       height(q) = 0;
       q = link(link(q));
-    } while (!(q == 0));
+    } while (!(q == null));
   }
 
   pack_begin_line = 0;
@@ -23774,26 +23773,27 @@ static boolean fin_col (void)
 
   q = link(cur_align);
 
-  if (q == 0)
+  if (q == null)
     confusion("endv");
 
   if (align_state < 500000)
     fatal_error("(interwoven alignment preambles are not allowed)");
 
   p = link(q);
+
   // @<If the preamble list has been traversed, check that the row has ended@>
   if ((p == null) && (extra_info(cur_align) < cr_code))
     if (cur_loop != null)
     {
       link(q) = new_null_box();
-      p = link(q);
+      p = link(q);  // {a new alignrecord}
       info(p) = end_span;
       width(p) = null_flag;
       cur_loop = link(cur_loop);
       q = hold_head;
       r = u_part(cur_loop);
 
-      while (r != 0)
+      while (r != null)
       {
         link(q) = get_avail();
         q = link(q);
@@ -23801,12 +23801,12 @@ static boolean fin_col (void)
         r = link(r);
       }
 
-      link(q) = 0;
+      link(q) = null;
       u_part(p) = link(hold_head);
       q = hold_head;
       r = v_part(cur_loop);
 
-      while (r != 0)
+      while (r != null)
       {
         link(q) = get_avail();
         q = link(q);
@@ -23814,7 +23814,7 @@ static boolean fin_col (void)
         r = link(r);
       }
 
-      link(q) = 0;
+      link(q) = null;
       v_part(p) = link(hold_head);
       cur_loop = link(cur_loop);
       link(p) = new_glue(glue_ptr(cur_loop));
@@ -23835,6 +23835,7 @@ static boolean fin_col (void)
     unsave();
     new_save_level(align_group);
 
+    // @<Package an unset box for the current column and record its width@>
     {
       if (mode == -hmode)
       {
@@ -23849,7 +23850,7 @@ static boolean fin_col (void)
         u = hpack(link(head), 0, 1);
         w = width(u);
         cur_tail = adjust_tail;
-        adjust_tail = 0;
+        adjust_tail = null;
       }
       else
       {
@@ -23975,19 +23976,21 @@ restart:
 /* sec 0815 */
 static void line_break (boolean d)
 {
-  boolean auto_breaking;
-  pointer prev_p;
-  pointer q, r, s, prev_s;
-  internal_font_number f, post_f;
+  boolean auto_breaking;  // {is node |cur_p| outside a formula?}
+  pointer prev_p; // {helps to determine when glue nodes are breakpoints}
+  pointer q, r, s, prev_s;  // {miscellaneous nodes of temporary interest}
+  internal_font_number f, post_f; // {used when calculating character widths}
   pointer post_p;
   ASCII_code cc;
   boolean first_use;
   /* small_number j; */
-  int j;
+  int j;  // {an index into |hc| or |hu|}
   /* unsigned char c; */
-  unsigned int c;
+  unsigned int c; // {character being considered for hyphenation}
 
-  pack_begin_line = mode_line;
+  pack_begin_line = mode_line;  // {this is for over/underfull box messages}
+
+  // @<Get ready to start line breaking@>;
   first_use = true;
   chain = false;
   delete_glue_ref(cur_kanji_skip);
@@ -24019,9 +24022,9 @@ static void line_break (boolean d)
 
   link(tail) = new_param_glue(par_fill_skip_code);
   last_line_fill = link(tail);
-  init_cur_lang = prev_graf % 65536;
-  init_l_hyf = prev_graf / 4194304; /* 2^22 */
-  init_r_hyf = (prev_graf / 65536) % 64;
+  init_cur_lang = prev_graf % 0200000;
+  init_l_hyf = prev_graf / 020000000;
+  init_r_hyf = (prev_graf / 0200000) % 0100;
   pop_nest();
   no_shrink_error_yet = true;
   check_shrinkage(left_skip);
@@ -24063,7 +24066,7 @@ static void line_break (boolean d)
   minimal_demerits[loose_fit] = awful_bad;
   minimal_demerits[very_loose_fit] = awful_bad;
 
-  if (par_shape_ptr == 0)
+  if (par_shape_ptr == null)
   {
     if (hang_indent == 0)
     {
@@ -24073,6 +24076,7 @@ static void line_break (boolean d)
     }
     else
     {
+      // @<Set line length parameters in preparation for hanging indentation@>
       last_special_line = abs(hang_after);
 
       if (hang_after < 0)
@@ -24103,15 +24107,16 @@ static void line_break (boolean d)
   else
   {
     last_special_line = info(par_shape_ptr) - 1;
-    second_width = mem[par_shape_ptr + 2 * (last_special_line + 1)].cint;
-    second_indent = mem[par_shape_ptr + 2 * last_special_line + 1].cint;
+    second_width = mem[par_shape_ptr + 2 * (last_special_line + 1)].sc;
+    second_indent = mem[par_shape_ptr + 2 * last_special_line + 1].sc;
   }
 
   if (looseness == 0)
     easy_line = last_special_line;
   else
-    easy_line = empty_flag;
+    easy_line = max_halfword;
 
+  // @<Find optimal breakpoints@>;
   threshold = pretolerance;
 
   if (threshold >= 0)
@@ -24147,6 +24152,7 @@ static void line_break (boolean d)
 
     if (second_pass)
     {
+      // @<Initialize for hyphenating a paragraph@>
       if (aptex_env.flag_initex)
       {
         if (trie_not_ready)
@@ -24159,11 +24165,12 @@ static void line_break (boolean d)
       set_hyph_index();
     }
 
+    // @<Create an active breakpoint representing the beginning of the paragraph@>;
     q = get_node(active_node_size);
     type(q) = unhyphenated;
     fitness(q) = decent_fit;
     link(q) = active;
-    break_node(q) = 0;
+    break_node(q) = null;
     line_number(q) = prev_graf + 1;
     total_demerits(q) = 0;
     link(active) = q;
@@ -24176,16 +24183,23 @@ static void line_break (boolean d)
 
     act_width = background[1];
     do_all_six(store_background);
-    passive = 0;
+    passive = null;
     printed_node = temp_head;
     pass_number = 0;
     font_in_short_display = null_font;
     cur_p = link(temp_head);
     auto_breaking = true;
-    prev_p = cur_p;
+    prev_p = cur_p; // {glue at beginning is not a legal breakpoint}
 
-    while ((cur_p != 0) && (link(active) != active))
+    while ((cur_p != null) && (link(active) != last_active))
     {
+      /*
+        @<Call |try_break| if |cur_p| is a legal breakpoint;
+        on the second pass, also try to hyphenate the next
+        word, if |cur_p| is a glue node;
+        then advance |cur_p| to the next node of the paragraph
+        that could possibly be a legal breakpoint@>;
+      */
       if (is_char_node(cur_p))
       {
         chain = false;
@@ -24850,7 +24864,7 @@ done:
 
   q = passive;
 
-  while (q != 0)
+  while (q != null)
   {
     cur_p = link(q);
     free_node(q, passive_node_size);
@@ -26989,12 +27003,12 @@ static void box_error (eight_bits n)
   show_box(box(n));
   end_diagnostic(true);
   flush_node_list(box(n));
-  box(n) = 0;
+  box(n) = null;
 }
 
 static void ensure_vbox (eight_bits n)
 {
-  pointer p;
+  pointer p;  // {the box register contents}
 
   p = box(n);
 
@@ -27008,7 +27022,7 @@ static void ensure_vbox (eight_bits n)
       box(n) = p;
     }
 
-  if (p != 0)
+  if (p != null)
     if (type(p) != vlist_node)
     {
       print_err("Insertions can only be added to a vbox");
@@ -29181,12 +29195,12 @@ static void do_endv (void)
   input_stack[base_ptr] = cur_input;
 
   while ((input_stack[base_ptr].index_field != v_template) &&
-    (input_stack[base_ptr].loc_field == 0) &&
+    (input_stack[base_ptr].loc_field == null) &&
     (input_stack[base_ptr].state_field == token_list))
     decr(base_ptr);
 
   if ((input_stack[base_ptr].index_field != v_template) ||
-    (input_stack[base_ptr].loc_field != 0) ||
+    (input_stack[base_ptr].loc_field != null) ||
     (input_stack[base_ptr].state_field != token_list))
     fatal_error("(interwoven alignment preambles are not allowed)");
 
@@ -34299,7 +34313,7 @@ void adjust_hlist (pointer p, boolean pf)
   s = xspace_ptr(p);
   add_glue_ref(s);
 
-  if (!is_char_node(link(p)) && (type(link(p) == glue_node)) &&
+  if (!is_char_node(link(p)) && (type(link(p)) == glue_node) &&
     (subtype(link(p)) == jfm_skip + 1))
   {
     v = link(p);
