@@ -114,6 +114,11 @@ typedef void * word_file;  // stdio/zlib
   #undef link
 #endif
 
+#ifdef abs
+  #undef abs
+  #define abs llabs
+#endif
+
 #ifdef APTEX_EXTENSION
   #define def_const(sym, val0, val1) \
     enum {sym = val1}
@@ -762,6 +767,7 @@ EXTERN struct {
   char * aptex_fmt;
   char * aptex_src;
   char * aptex_job;
+  char * aptex_map;
   // time variables
   clock_t time_start;
   clock_t time_main;

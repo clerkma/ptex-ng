@@ -95,10 +95,17 @@ static void print_aptex_usage (void)
       "Useage: aptex [OPTION]... [+fmt_file_name] [file]\n\n"
       " --help          show this usage summary\n"
       " --version       output version information and exit\n"
+      " --ini           start up as INITEX (create format file)\n"
+      "\n"
       " --jobname=str   set the job name to str\n"
+      "                 e.g.: '--jobname=book2016'\n"
       " --progname=str  set program (and fmt) name to str\n"
       " --synctex=num   generate SyncTeX data for previewers if nonzero\n"
-      " --ini           start up as INITEX (create format file)\n"
+      " --fontmap=map   +mapfile (append mode), !mapfile (replace mode)\n"
+      "                 e.g.: '--fontmap=!replace.map'\n"
+      " --format=fmt    set preloaded format\n"
+      "                 e.g.: 'aptex --format=plain name.tex'\n"
+      "\n"
       " --patterns      (INITEX only) allow use of \\patterns after loading format\n"
       " --main-mem      (INITEX only) initial main memory size in kilo words\n"
       " --hyph-size     (INITEX only) hyphenation exception dictionary size\n"
@@ -1300,6 +1307,7 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.aptex_fmt             = NULL;
   aptex_env.aptex_job             = NULL;
   aptex_env.aptex_src             = NULL;
+  aptex_env.aptex_map             = NULL;
 
   aptex_env.flag_initex           = false;
   aptex_env.flag_suppress_f_ligs  = false;
@@ -1349,10 +1357,8 @@ static void aptex_commands_init (int ac, char **av)
       { "progname",       required_argument, NULL, 0 },
       { "jobname",        required_argument, NULL, 0 },
       { "synctex",        required_argument, NULL, 0 },
-
-      //{ "fmt",            required_argument, NULL, 0 },
-      //{ "format",         required_argument, NULL, 0 },
-
+      { "fontmap",        required_argument, NULL, 0 },
+      { "format",         required_argument, NULL, 0 },
       { "patterns",       no_argument, NULL, 0 },
       { "ini",            no_argument, NULL, 0 },
       { "showlbstats",    no_argument, NULL, 0 },
@@ -1370,8 +1376,12 @@ static void aptex_commands_init (int ac, char **av)
         kpse_reset_program_name(xstrdup(optarg));
       else if (ARGUMENT_IS("jobname"))
         aptex_env.aptex_job = xstrdup(optarg);
+      else if (ARGUMENT_IS("fontmap"))
+        aptex_env.aptex_map = xstrdup(optarg);
       else if (ARGUMENT_IS("synctex"))
         synctex_option = (int) strtol(optarg, NULL, 0);
+      else if (ARGUMENT_IS("format"))
+        aptex_env.aptex_fmt = xstrdup(optarg);
       else if (ARGUMENT_IS("ini"))
         aptex_env.flag_initex = true;
       else if (ARGUMENT_IS("suppressfligs"))
@@ -1565,6 +1575,7 @@ void aptex_fini (void)
   safe_free(aptex_env.aptex_fmt);
   safe_free(aptex_env.aptex_src);
   safe_free(aptex_env.aptex_job);
+  safe_free(aptex_env.aptex_map);
 }
 
 static integer aptex_utils_round (real r)
@@ -2262,9 +2273,8 @@ static boolean w_open_input (word_file * f)
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
 
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-
   file_name_mbcs = utf8_mbcs(file_name_utf8);
-  file_name_kpse = kpse_find_file(file_name_mbcs, kpse_fmt_format, true);
+  file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_fmt_format, false);
 
   if (file_name_kpse != NULL)
   {
@@ -19015,6 +19025,15 @@ static void ship_out (pointer p)
       pdf_load_fontmap_file("pdftex.map", '+');
       pdf_load_fontmap_file("kanjix.map", '+');
       pdf_load_fontmap_file("ckx.map", '+');
+
+      if (aptex_env.aptex_map != NULL)
+      {
+        if (aptex_env.aptex_map[0] == '+')
+          pdf_load_fontmap_file(aptex_env.aptex_map + 1, '+');
+        else if (aptex_env.aptex_map[0] == '!')
+          pdf_load_fontmap_file(aptex_env.aptex_map + 1, 0);
+      }
+
       pdf_doc_set_producer("Asian pTeX");
       pdf_doc_set_creator("Asian pTeX");
       pdf_files_init();
@@ -19028,41 +19047,12 @@ static void ship_out (pointer p)
 
 #ifndef APTEX_DVI_ONLY
   {
-    scaled cur_page_width;
-    scaled cur_page_height;
-    scaled cur_h_origin;
-    scaled cur_v_origin;
-
-    //if (pdf_h_origin != 0)
-      cur_h_origin = pdf_h_origin;
-    //else
-    //  cur_h_origin = 4736286;
-
-    //if (pdf_v_origin != 0)
-      cur_v_origin = pdf_v_origin;
-    //else
-    //  cur_v_origin = 4736286;
-
-      if (pdf_page_width != 0)
-        cur_page_width = pdf_page_width;
-      else
-        cur_page_width = width(p);// +2 * (abs(cur_h_origin) + h_offset);
-
-      if (pdf_page_height != 0)
-        cur_page_height = pdf_page_height;
-      else
-        cur_page_height = height(p) + depth(p);// +2 * (abs(cur_v_origin) + v_offset);
-
-    pdf_set_cur_page(cur_page_width, cur_page_height);
-    pdf_doc_begin_page(1.0, cur_h_origin * sp2bp,
-      (cur_page_height - cur_v_origin) * sp2bp);
+    pdf_set_cur_page(pdf_page_width, pdf_page_height);
+    pdf_doc_begin_page(1.0, pdf_h_origin * sp2bp, (pdf_page_height - pdf_v_origin) * sp2bp);
     spc_exec_at_begin_page();
-    //pdf_dev_set_rule(0, 0, width(p), 26214);
-    //pdf_dev_set_rule(0, 0, 26214, -depth(p)-height(p));
-    //pdf_dev_set_rule(0 + width(p), - depth(p) - height(p), -width(p), 26214);
-    //pdf_dev_set_rule(0 + width(p), - depth(p) - height(p), 26214, depth(p) + height(p));
   }
 #endif
+
   page_loc = dvi_offset + dvi_ptr;
   dvi_out(bop);
 
@@ -19404,6 +19394,7 @@ reswitch:
           dvi_out(set1);
 
         dvi_out(c);
+
 #ifndef APTEX_DVI_ONLY
         pdf_char_out(dvi_f, c);
 #endif
@@ -19450,6 +19441,7 @@ reswitch:
 
         dvi_out(BYTE3(jc));
         dvi_out(BYTE4(jc));
+
 #ifndef APTEX_DVI_ONLY
         pdf_kanji_out(dvi_f, jc);
 #endif
@@ -20230,11 +20222,12 @@ static void special_out (pointer p)
   else
   {
     dvi_out(xxx4);
-    dvi_four(cur_length); 
-  } 
+    dvi_four(cur_length);
+  }
 
   for (k = str_start[str_ptr]; k <= pool_ptr - 1; k++)
     dvi_out(str_pool[k]);
+
 #ifndef APTEX_DVI_ONLY
   {
     double sp2bp = 0.000015202;
@@ -33738,8 +33731,6 @@ void close_files_and_terminate (void)
       dvi_out((total_pages / 256) % 256);
       dvi_out(total_pages % 256);
 
-      // if (log_opened) show_font_info();
-
       // @<Output the font definitions for all fonts that were used@>
       while (font_ptr > font_base)
       {
@@ -33764,8 +33755,6 @@ void close_files_and_terminate (void)
         dvi_out(223);
         decr(k);
       }
-
-      //if (aptex_env.flag_trace) printf("\ndvi_write %lld", dvi_gone);
 
       // @<Empty the last bytes out of |dvi_buf|@>
       if (dvi_limit == half_buf)
@@ -33795,6 +33784,24 @@ void close_files_and_terminate (void)
         pdf_close_device();
         pdf_files_close();
         pdf_close_fontmaps();
+
+        char * pdf_file_name = (char *) calloc(1, name_length + 1);
+        strncpy(pdf_file_name, (const char *) name_of_file + 1, name_length - 4);
+        strcat(pdf_file_name, ".pdf");
+        print_nl("Output written on ");
+        prints(pdf_file_name);
+        prints(" (");
+        print_int(total_pages);
+        prints(" page");
+        free(pdf_file_name);
+
+        if (total_pages != 1)
+          print_char('s');
+
+        extern long pdf_output_stats(void);
+        prints(", ");
+        print_int(pdf_output_stats());
+        prints(" bytes).");
       }
 #endif
     }
