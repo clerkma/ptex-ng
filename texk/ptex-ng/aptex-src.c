@@ -1164,10 +1164,7 @@ static void aptex_memory_init (void)
   interaction = -1;
   ini_max_address = max_address;
   aptex_trace("Max allocated %d -- max address %d\n", total_allocated, max_address);
-}
 
-static void aptex_memory_allocate (void)
-{
   current_mem_size = 0;
 
 #ifdef APTEX_EXTENSION
@@ -1230,7 +1227,7 @@ static void aptex_memory_allocate (void)
     mem = allocate_mem(mem_initex); /* made variable ! */
 
     if (mem == NULL)
-      exit(1);
+      aptex_utils_exit(EXIT_FAILURE);
   }
 
   if (aptex_env.flag_initex)
@@ -1239,13 +1236,13 @@ static void aptex_memory_allocate (void)
       hyphen_prime = new_hyphen_prime;
 
     if (realloc_hyphen(hyphen_prime)) /* allocate just in case no format */
-      exit(1);
+      aptex_utils_exit(EXIT_FAILURE);
 
     if (allocate_tries(trie_size))
-      exit(1);
+      aptex_utils_exit(EXIT_FAILURE);
 
     if (allocate_ini(trie_size))
-      exit(1);
+      aptex_utils_exit(EXIT_FAILURE);
   }
   else
   {
@@ -1451,7 +1448,7 @@ static void aptex_commands_init (int ac, char **av)
   if (TEX_format_default == NULL)
   {
     fprintf(stderr, "%s: something really went bad: cannot allocated mem for default format! Exiting.\n", av[0]);
-    exit(1);
+    aptex_utils_exit(EXIT_FAILURE);
   }
 
   sprintf(TEX_format_default, " %s.fmt", format_name);
@@ -1467,7 +1464,7 @@ static void catch_interrupt (int err)
   (void) signal(SIGINT, SIG_IGN);
 
   if (interrupt++ >= 3)
-    exit(EXIT_FAILURE);
+    aptex_utils_exit(EXIT_FAILURE);
 
   (void) signal(SIGINT, catch_interrupt);
 }
@@ -1529,7 +1526,6 @@ void aptex_init (void)
   aptex_set_signal();
   aptex_commands_init(aptex_env.argc, aptex_env.argv);
   aptex_memory_init();
-  aptex_memory_allocate();
 }
 
 void aptex_fini (void)
