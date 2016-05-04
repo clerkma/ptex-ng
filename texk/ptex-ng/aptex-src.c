@@ -1416,7 +1416,7 @@ static void aptex_commands_init (int ac, char **av)
         if (aptex_env.aptex_src != NULL)
           free(aptex_env.aptex_src);
 
-        aptex_env.aptex_src = (char *) malloc(strlen(av[optind] + 2));
+        aptex_env.aptex_src = (char *) calloc(strlen(av[optind]) + 2, sizeof(char));
         sprintf(aptex_env.aptex_src, "%s ", av[optind]);
       }
 
