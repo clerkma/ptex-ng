@@ -95,66 +95,6 @@ extern void pdf_rule_out (scaled rule_wd, scaled rule_ht);
 extern spt_t ng_packet_width (SIGNED_QUAD ch, int ng_font_id);
 extern void ng_set (SIGNED_QUAD ch, int ng_font_id, SIGNED_QUAD h, SIGNED_QUAD v);
 
-static SIGNED_QUAD ng_get_oprand_u (int len, unsigned char **start, unsigned char *end)
-{
-  SIGNED_QUAD num;
-
-  switch (len)
-  {
-    case 1:
-      num = unsigned_byte(start, end);
-      break;
-
-    case 2:
-      num = get_pkt_signed_num(start, end, 1);
-      break;
-
-    case 3:
-      num = get_pkt_signed_num(start, end, 2);
-      break;
-
-    case 4:
-      num = get_pkt_signed_num(start, end, 3);
-      break;
-
-    default:
-      num = 0;
-      break;
-  }
-
-  return num;
-}
-
-static SIGNED_QUAD ng_get_oprand_s (int len, unsigned char **start, unsigned char *end)
-{
-  SIGNED_QUAD num;
-
-  switch (len)
-  {
-    case 1:
-      num = get_pkt_signed_num(start, end, 0);
-      break;
-
-    case 2:
-      num = get_pkt_signed_num(start, end, 1);
-      break;
-
-    case 3:
-      num = get_pkt_signed_num(start, end, 2);
-      break;
-
-    case 4:
-      num = get_pkt_signed_num(start, end, 3);
-      break;
-
-    default:
-      num = 0;
-      break;
-  }
-
-  return num;
-}
-
 #define dvi_yoko 0
 #define dvi_tate 1
 #define dvi_dtou 3
@@ -239,7 +179,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case SET1:
         case SET2:
         case SET3:
-          packet_word = ng_get_oprand_u(opcode - SET1 + 1, &start, end);
+          packet_word = get_pkt_unsigned_num(&start, end, opcode - SET1);
           ng_set(packet_word, packet_font, packet_h, packet_v);
           ng_adjust_hpos(&packet_h, &packet_v, ng_packet_width(packet_word, packet_font));
           break;
@@ -247,7 +187,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case PUT1:
         case PUT2:
         case PUT3:
-          packet_word = ng_get_oprand_u(opcode - PUT1 + 1, &start, end);
+          packet_word = get_pkt_unsigned_num(&start, end, opcode - PUT1);
           ng_set(packet_word, packet_font, packet_h, packet_v);
           break;
 
@@ -259,8 +199,8 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case SET_RULE:
           {
             SIGNED_QUAD width, height, s_width;
-            height = get_pkt_signed_num(&start, end, 4);
-            width = get_pkt_signed_num(&start, end, 4);
+            height = get_pkt_signed_num(&start, end, 3);
+            width = get_pkt_signed_num(&start, end, 3);
             s_width = sqxfw(ptsize, width);
             pdf_rule_out(s_width, sqxfw(ptsize, height));
             ng_adjust_hpos(&packet_h, &packet_v, s_width);
@@ -270,8 +210,8 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case PUT_RULE:
           {
             SIGNED_QUAD width, height, s_width;
-            height = get_pkt_unsigned_num(&start, end, 4);
-            width = get_pkt_unsigned_num(&start, end, 4);
+            height = get_pkt_signed_num(&start, end, 3);
+            width = get_pkt_signed_num(&start, end, 3);
             pdf_rule_out(sqxfw(ptsize, width), sqxfw(ptsize, height));
           }
           break;
@@ -307,7 +247,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case RIGHT2:
         case RIGHT3:
         case RIGHT4:
-          packet_word = ng_get_oprand_s(opcode - RIGHT1 + 1, &start, end);
+          packet_word = get_pkt_signed_num(&start, end, opcode - RIGHT1);
           ng_adjust_hpos(&packet_h, &packet_v, sqxfw(ptsize, packet_word));
           break;
 
@@ -318,7 +258,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case W4:
           if (opcode != W0)
           {
-            packet_word = ng_get_oprand_s(opcode - W1 + 1, &start, end);
+            packet_word = get_pkt_signed_num(&start, end, opcode - W1);
             packet_w = sqxfw(ptsize, packet_word);
           }
 
@@ -332,7 +272,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case X4:
           if (opcode != X0)
           {
-            packet_word = ng_get_oprand_s(opcode - X1 + 1, &start, end);
+            packet_word = get_pkt_signed_num(&start, end, opcode - X1);
             packet_x = sqxfw(ptsize, packet_word);
           }
 
@@ -343,7 +283,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case DOWN2:
         case DOWN3:
         case DOWN4:
-          packet_word = ng_get_oprand_s(opcode - DOWN1 + 1, &start, end);
+          packet_word = get_pkt_signed_num(&start, end, opcode - DOWN1);
           ng_adjust_vpos(&packet_h, &packet_v, sqxfw(ptsize, packet_word));
           break;
 
@@ -354,7 +294,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case Y4:
           if (opcode != Y0)
           {
-            packet_word = ng_get_oprand_s(opcode - Y1 + 1, &start, end);
+            packet_word =get_pkt_signed_num(&start, end, opcode - Y1);
             packet_y = sqxfw(ptsize, packet_word);
           }
 
@@ -368,7 +308,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case Z4:
           if (opcode != Z0)
           {
-            packet_word = ng_get_oprand_s(opcode - Z1 + 1, &start, end);
+            packet_word = get_pkt_signed_num(&start, end, opcode - Z1);
             packet_z = sqxfw(ptsize, packet_word);
           }
 
@@ -379,7 +319,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case FNT2:
         case FNT3:
         case FNT4:
-          packet_word = ng_get_oprand_u(opcode - FNT1 + 1, &start, end);
+          packet_word = get_pkt_unsigned_num(&start, end, opcode - FNT1);
           packet_font = ng_packet_font(packet_word, vf_font);
           break;
 
@@ -387,7 +327,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case XXX2:
         case XXX3:
         case XXX4:
-          packet_word = ng_get_oprand_u(opcode - XXX1 + 1, &start, end);
+          packet_word = get_pkt_unsigned_num(&start, end, opcode - XXX1);
           ng_special_out(packet_word, &start, end, packet_h, packet_v);
           break;
 
