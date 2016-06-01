@@ -420,7 +420,7 @@ const char * tag_map_language[583][2] =
   {"ALT", "Altai"},
   {"AMH", "Amharic"},
   {"ANG", "Anglo-Saxon"},
-  {"APPH", "Phonetic transcription¡ªAmericanist conventions"},
+  {"APPH", "Phonetic transcriptionâ€”Americanist conventions"},
   {"ARA", "Arabic"},
   {"ARG", "Aragonese"},
   {"ARI", "Aari"},
@@ -439,7 +439,7 @@ const char * tag_map_language[583][2] =
   {"BAL", "Balkar"},
   {"BAN", "Balinese"},
   {"BAR", "Bavarian"},
-  {"BAU", "Baul¨¦"},
+  {"BAU", "BaulÃ©"},
   {"BBC", "Batak Toba"},
   {"BBR", "Berber"},
   {"BCH", "Bench"},
@@ -614,7 +614,7 @@ const char * tag_map_language[583][2] =
   {"ING", "Ingush"},
   {"INU", "Inuktitut"},
   {"IPK", "Inupiat"},
-  {"IPPH", "Phonetic transcription¡ªIPA conventions"},
+  {"IPPH", "Phonetic transcriptionâ€”IPA conventions"},
   {"IRI", "Irish"},
   {"IRT", "Irish Traditional"},
   {"ISL", "Icelandic"},
@@ -682,7 +682,7 @@ const char * tag_map_language[583][2] =
   {"KSH0", "Ripuarian"},
   {"KSI", "Khasi"},
   {"KSM", "Kildin Sami"},
-  {"KSW", "S¡¯gaw Karen"},
+  {"KSW", "Sâ€™gaw Karen"},
   {"KUA", "Kuanyama"},
   {"KUI", "Kui"},
   {"KUL", "Kulvi"},
@@ -837,7 +837,7 @@ const char * tag_map_language[583][2] =
   {"PTG", "Portuguese"},
   {"PWO", "Western Pwo Karen"},
   {"QIN", "Chin"},
-  {"QUC", "K¡¯iche¡¯"},
+  {"QUC", "Kâ€™icheâ€™"},
   {"QUH", "Quechua (Bolivia)"},
   {"QUZ", "Quechua"},
   {"QVI", "Quechua (Ecuador)"},
@@ -945,7 +945,7 @@ const char * tag_map_language[583][2] =
   {"TUV", "Tuvin"},
   {"TVL", "Tuvalu"},
   {"TWI", "Twi"},
-  {"TYZ", "T¨¤y"},
+  {"TYZ", "TÃ y"},
   {"TZM", "Tamazight"},
   {"TZO", "Tzotzil"},
   {"UDM", "Udmurt"},
@@ -958,7 +958,7 @@ const char * tag_map_language[583][2] =
   {"VEC", "Venetian"},
   {"VEN", "Venda"},
   {"VIT", "Vietnamese"},
-  {"VOL", "Volap¨¹k"},
+  {"VOL", "VolapÃ¼k"},
   {"VRO", "V?ro"},
   {"WA", "Wa"},
   {"WAG", "Wagdi"},
@@ -967,7 +967,7 @@ const char * tag_map_language[583][2] =
   {"WEL", "Welsh"},
   {"WLN", "Walloon"},
   {"WLF", "Wolof"},
-  {"XBD", "L¨¹"},
+  {"XBD", "LÃ¼"},
   {"XHS", "Xhosa"},
   {"XJB", "Minjangbal"},
   {"XOG", "Soga"},
@@ -1002,7 +1002,7 @@ const char * tag_map_baseline[7][2] =
   { "romn", "The baseline used by simple alphabetic scripts such as Latin, Cyrillic and Greek." },
 };
 
-void list_gsub_features(OTF * ot)
+void list_GSUB_features(OTF * ot)
 {
   int si, li, fi, di;
   char facture[5];
@@ -1041,7 +1041,7 @@ void list_gsub_features(OTF * ot)
   }
 }
 
-void list_gpos_features(OTF * ot)
+void list_GPOS_features(OTF * ot)
 {
   int si, li, fi, di;
   char facture[5];
@@ -1102,13 +1102,13 @@ int main (int ac, char ** av)
     if (OTF_get_table(ot, "GSUB") == 0 && ot->gsub->ScriptList.ScriptCount > 0)
     {
       printf("All GSUB (Glyph Substitution) Infomation\n");
-      list_gsub_features(ot);
+      list_GSUB_features(ot);
     }
 
     if (OTF_get_table(ot, "GPOS") == 0 && ot->gpos->ScriptList.ScriptCount > 0)
     {
       printf("All GPOS (Glyph Positioning) Infomation\n");
-      list_gsub_features(ot);
+      list_GPOS_features(ot);
     }
 
     OTF_close(ot);
