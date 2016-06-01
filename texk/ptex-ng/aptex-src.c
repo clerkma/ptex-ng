@@ -2234,6 +2234,24 @@ static boolean b_open_input (byte_file * f)
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
 
+  /*
+    Reference:
+      * https://www.microsoft.com/en-us/Typography/OpenTypeSpecification.aspx
+      * https://developer.apple.com/fonts/TrueType-Reference-Manual/
+    Note on OpenType and TrueType (AAT)
+      * support of OpenType is done with libotf.
+      * support of TrueType/AAT will to be implemented in future.
+    Name Syntax (TODO):
+      example: \jfont\t=ot:simsun.ttf[1]:upjisr-h at 20pt
+               \jfont\t=ot:yumin.ttf;'kana',jp90:upjisr-h at 20pt
+      OTF       := 'ot:' OTFSPEC ':' JFM
+      OTFSPEC   := OTFNAME | OTFNAME ';' OTSCRIPT OTLANG OTFEALIST
+      OTFNAME   := NAME | NAME '[' + index + ']'
+      OTSCRIPT  := 'name'
+      OTLANG    := 'name'
+      OTFEALIST := TAG *
+  */
+
   file_name_mbcs = utf8_mbcs(file_name_utf8);
   file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tfm_format, true);
 
