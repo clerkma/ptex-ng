@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -36,6 +36,8 @@
 #include "fontmap.h"
 #include "dpxfile.h"
 #include "dpxutil.h"
+
+#include "unicode.h"
 
 #include "pdfobj.h"
 #include "pdfparse.h"
@@ -126,6 +128,9 @@ static int
 spc_handler_pdfm__init (void *dp)
 {
   struct spc_pdf_ *sd = dp;
+  /* The folllowing dictionary entry keys are considered as keys for
+   * text strings. Be sure that string object is NOT always a text string.
+   */
   static const char *default_taintkeys[] = {
     "Title",   "Author",   "Subject", "Keywords",
     "Creator", "Producer", "Contents", "Subj",
@@ -193,7 +198,7 @@ spc_handler_pdfm_bop (struct spc_env *spe, struct spc_arg *args)
 {
   if (args->curptr < args->endptr) {
     pdf_doc_set_bop_content(args->curptr,
-			    (long) (args->endptr - args->curptr));
+			    (int) (args->endptr - args->curptr));
   }
 
   args->curptr = args->endptr;
@@ -206,7 +211,7 @@ spc_handler_pdfm_eop (struct spc_env *spe, struct spc_arg *args)
 {
   if (args->curptr < args->endptr) {
     pdf_doc_set_eop_content(args->curptr,
-			    (long) (args->endptr - args->curptr));
+			    (int) (args->endptr - args->curptr));
   }
 
   args->curptr = args->endptr;
@@ -373,7 +378,7 @@ reencodestring (CMap *cmap, pdf_obj *instring)
   unsigned char  wbuf[WBUF_SIZE];
   unsigned char *obufcur;
   const unsigned char *inbufcur;
-  long inbufleft, obufleft;
+  int inbufleft, obufleft;
 
   if (!cmap || !instring)
     return 0;
@@ -398,31 +403,6 @@ reencodestring (CMap *cmap, pdf_obj *instring)
 
   return 0;
 }
-
-/* tables/values used in UTF-8 interpretation -
-   code is based on ConvertUTF.[ch] sample code
-   published by the Unicode consortium */
-static unsigned long
-offsetsFromUTF8[6] =    {
-        0x00000000UL,
-        0x00003080UL,
-        0x000E2080UL,
-        0x03C82080UL,
-        0xFA082080UL,
-        0x82082080UL
-};
-
-static unsigned char
-bytesFromUTF8[256] = {
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-        2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
-};
 
 static int
 maybe_reencode_utf8(pdf_obj *instring)
@@ -449,40 +429,31 @@ maybe_reencode_utf8(pdf_obj *instring)
   if (non_ascii == 0)
     return 0; /* no need to reencode ASCII strings */
 
+  /* Check if the input string is valid UTF8 string
+   * This routine may be called against non-text strings.
+   * We need to re-encode string only when string is a text string
+   * endcoded in UTF8.
+   */
+  if (!UC_UTF8_is_valid_string(inbuf, inbuf + inlen))
+    return 0;
+  else if (inbuf[0] == 0xfe && inbuf[1] == 0xff &&
+      UC_UTF16BE_is_valid_string(inbuf + 2, inbuf + inlen))
+    return 0; /* no need to reencode UTF16BE with BOM */
+
   cp = inbuf;
   op = wbuf;
   *op++ = 0xfe;
   *op++ = 0xff;
   while (cp < inbuf + inlen) {
-    unsigned long usv = *cp++;
-    int extraBytes = bytesFromUTF8[usv];
-    if (cp + extraBytes > inbuf + inlen)
-      return -1; /* ill-formed, so give up reencoding */
-    switch (extraBytes) {   /* note: code falls through cases! */
-      case 5: usv <<= 6; usv += *cp++;
-      case 4: usv <<= 6; usv += *cp++;
-      case 3: usv <<= 6; usv += *cp++;
-      case 2: usv <<= 6; usv += *cp++;
-      case 1: usv <<= 6; usv += *cp++;
-      case 0: ;
-    };
-    usv -= offsetsFromUTF8[extraBytes];
-    if (usv > 0x10FFFF)
-      return -1; /* out of valid Unicode range, give up */
-    if (usv > 0xFFFF) {
-      /* supplementary-plane character: generate high surrogate */
-      unsigned long hi = 0xdc00 + (usv - 0x10000) % 0x0400;
-      if (op > wbuf + WBUF_SIZE - 2)
-        return -1; /* out of space */
-      *op++ = hi / 256;
-      *op++ = hi % 256;
-      usv = 0xd800 + (usv - 0x10000) / 0x0400;
-      /* remaining value in usv is the low surrogate */
-    }
-    if (op > wbuf + WBUF_SIZE - 2)
-      return -1; /* out of space */
-    *op++ = usv / 256;
-    *op++ = usv % 256;
+    int32_t usv;
+    int     len;
+
+    usv = UC_UTF8_decode_char((const unsigned char **)&cp, inbuf + inlen);
+    if (!UC_is_valid(usv))
+      return -1; /* out of valid Unicode range, give up (redundant) */
+    len = UC_UTF16BE_encode_char(usv, &op, wbuf + WBUF_SIZE);
+    if (len == 0)
+      return -1;
   }
 
   pdf_set_string(instring, wbuf, op - wbuf);
@@ -490,6 +461,11 @@ maybe_reencode_utf8(pdf_obj *instring)
   return 0;
 }
 
+/* The purpose of this routine is to check if given string object is
+ * surely an object for *text* strings. It does not do a complete check
+ * but does a quick check. Please add entries for taintkeys if you have found
+ * additional dictionary entries which is considered as a text string.
+ */
 static int
 needreencode (pdf_obj *kp, pdf_obj *vp, struct tounicode *cd)
 {
@@ -532,8 +508,14 @@ modstrings (pdf_obj *kp, pdf_obj *vp, void *dp)
       CMap *cmap = CMap_cache_get(cd->cmap_id);
       if (needreencode(kp, vp, cd))
         r = reencodestring(cmap, vp);
-    } else if (is_xdv)
-      r = maybe_reencode_utf8(vp);
+    } else if (is_xdv && cd && cd->taintkeys) {
+      /* Please fix this... PDF string object is not always a text string.
+       * needreencode() is assumed to do a simple check if given string
+       * object is actually a text string.
+       */
+      if (needreencode(kp, vp, cd))
+        r = maybe_reencode_utf8(vp);
+    }
     if (r < 0) /* error occured... */
       WARN("Failed to convert input string to UTF16...");
     break;
@@ -586,7 +568,7 @@ spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
   }
 
   transform_info_clear(&ti);
-  if (spc_util_read_dimtrns(spe, &ti, args, NULL, 0) < 0) {
+  if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
     if (ident)
       RELEASE(ident);
     return  -1;
@@ -764,7 +746,7 @@ spc_handler_pdfm_btrans (struct spc_env *spe, struct spc_arg *args)
   transform_info  ti;
 
   transform_info_clear(&ti);
-  if (spc_util_read_dimtrns(spe, &ti, args, NULL, 0) < 0) {
+  if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
     return -1;
   }
 
@@ -908,7 +890,7 @@ spc_handler_pdfm_bead (struct spc_env *spe, struct spc_arg *args)
   pdf_obj         *article_info;
   char            *article_name;
   pdf_rect         rect;
-  long             page_no;
+  int              page_no;
   transform_info   ti;
   pdf_coord        cp;
 
@@ -927,7 +909,7 @@ spc_handler_pdfm_bead (struct spc_env *spe, struct spc_arg *args)
 
   /* If okay so far, try to get a bounding box */
   transform_info_clear(&ti);
-  if (spc_util_read_dimtrns(spe, &ti, args, NULL, 0) < 0) {
+  if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
     RELEASE(article_name);
     return  -1;
   }
@@ -989,7 +971,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   char            *ident = NULL;
   pdf_obj         *fspec, *attr = NULL;
   transform_info   ti;
-  long             page_no;
+  load_options     options = {1, 0, NULL};
 
   skip_white(&args->curptr, args->endptr);
   if (args->curptr[0] == '@') {
@@ -1002,9 +984,15 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
     }
   }
 
+  /* 2015/12/29
+   * There should not be "page" and "pagebox" in read_dimtrns().
+   * It is for reading "dimensions" and "transformations" and "page" is
+   * completely unrelated.
+   */
   transform_info_clear(&ti);
-  page_no = 1;
-  if (spc_util_read_dimtrns(spe, &ti, args, &page_no, 0) < 0) {
+  if (spc_util_read_blahblah(spe, &ti,
+                             &options.page_no, &options.bbox_type, args) < 0) {
+    spc_warn(spe, "Reading option field in pdf:image failed.");
     if (ident)
       RELEASE(ident);
     return  -1;
@@ -1027,16 +1015,25 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
 
   skip_white(&args->curptr, args->endptr);
   if (args->curptr < args->endptr) {
-    attr = parse_pdf_object(&args->curptr, args->endptr, NULL);
+    options.dict = parse_pdf_object(&args->curptr, args->endptr, NULL);
     if (!attr || !PDF_OBJ_DICTTYPE(attr)) {
       spc_warn(spe, "Ignore invalid attribute dictionary.");
       if (attr) pdf_release_obj(attr);
     }
   }
 
-  xobj_id = pdf_ximage_findresource(pdf_string_value(fspec), page_no, attr);
+  xobj_id = pdf_ximage_findresource(pdf_string_value(fspec), options);
+
   if (xobj_id < 0) {
     spc_warn(spe, "Could not find image resource...");
+    pdf_release_obj(fspec);
+    if (ident)
+      RELEASE(ident);
+    return  -1;
+  }
+
+  if (xobj_id > MAX_IMAGES - 1) {
+    spc_warn(spe, "Too many images...");
     pdf_release_obj(fspec);
     if (ident)
       RELEASE(ident);
@@ -1077,8 +1074,10 @@ spc_handler_pdfm_dest (struct spc_env *spe, struct spc_arg *args)
     return  -1;
   }
 
+#if 0
   if (is_xdv && maybe_reencode_utf8(name) < 0)
     WARN("Failed to convert input string to UTF16...");
+#endif
 
   array = parse_pdf_object(&args->curptr, args->endptr, NULL);
   if (!array) {
@@ -1272,7 +1271,7 @@ spc_handler_pdfm_object (struct spc_env *spe, struct spc_arg *args)
 static int
 spc_handler_pdfm_content (struct spc_env *spe, struct spc_arg *args)
 {
-  long  len = 0;
+  int  len = 0;
 
   skip_white(&args->curptr, args->endptr);
   if (args->curptr < args->endptr) {
@@ -1289,7 +1288,7 @@ spc_handler_pdfm_content (struct spc_env *spe, struct spc_arg *args)
     work_buffer[len++] = ' ';
 
     pdf_doc_add_page_content(work_buffer, len);  /* op: q cm */
-    len = (long) (args->endptr - args->curptr);
+    len = (int) (args->endptr - args->curptr);
     pdf_doc_add_page_content(args->curptr, len);  /* op: ANY */
     pdf_doc_add_page_content(" Q", 2);  /* op: Q */
   }
@@ -1327,7 +1326,7 @@ spc_handler_pdfm_literal (struct spc_env *spe, struct spc_arg *args)
       pdf_dev_concat(&M);
     }
     pdf_doc_add_page_content(" ", 1);  /* op: */
-    pdf_doc_add_page_content(args->curptr, (long) (args->endptr - args->curptr));  /* op: ANY */
+    pdf_doc_add_page_content(args->curptr, (int) (args->endptr - args->curptr));  /* op: ANY */
     if (!direct) {
       M.e = -spe->x_user; M.f = -spe->y_user;
       pdf_dev_concat(&M);
@@ -1370,7 +1369,7 @@ spc_handler_pdfm_code (struct spc_env *spe, struct spc_arg *args)
 
   if (args->curptr < args->endptr) {
     pdf_doc_add_page_content(" ", 1);  /* op: */
-    pdf_doc_add_page_content(args->curptr, (long) (args->endptr - args->curptr));  /* op: ANY */
+    pdf_doc_add_page_content(args->curptr, (int) (args->endptr - args->curptr));  /* op: ANY */
     args->curptr = args->endptr;
   }
 
@@ -1391,7 +1390,7 @@ static int
 spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, int type)
 {
   pdf_obj *fstream;
-  long     nb_read;
+  int      nb_read;
   char    *ident, *instring, *fullname;
   pdf_obj *tmp;
   FILE    *fp;
@@ -1552,7 +1551,7 @@ spc_handler_pdfm_bform (struct spc_env *spe, struct spc_arg *args)
   }
 
   transform_info_clear(&ti);
-  if (spc_util_read_dimtrns(spe, &ti, args, NULL, 0) < 0) {
+  if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
     RELEASE(ident);
     return  -1;
   }
@@ -1652,6 +1651,7 @@ spc_handler_pdfm_uxobj (struct spc_env *spe, struct spc_arg *args)
   int              xobj_id;
   char            *ident;
   transform_info   ti;
+  load_options     options = {1, 0, NULL};
 
   skip_white(&args->curptr, args->endptr);
 
@@ -1663,7 +1663,7 @@ spc_handler_pdfm_uxobj (struct spc_env *spe, struct spc_arg *args)
 
   transform_info_clear(&ti);
   if (args->curptr < args->endptr) {
-    if (spc_util_read_dimtrns(spe, &ti, args, NULL, 0) < 0) {
+    if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
       RELEASE(ident);
       return  -1;
     }
@@ -1675,7 +1675,7 @@ spc_handler_pdfm_uxobj (struct spc_env *spe, struct spc_arg *args)
    */
   xobj_id = findresource(sd, ident);
   if (xobj_id < 0) {
-    xobj_id = pdf_ximage_findresource(ident, 0, NULL);
+    xobj_id = pdf_ximage_findresource(ident, options);
     if (xobj_id < 0) {
       spc_warn(spe, "Specified (image) object doesn't exist: %s", ident);
       RELEASE(ident);
@@ -1772,7 +1772,7 @@ spc_handler_pdfm_mapline (struct spc_env *spe, struct spc_arg *ap)
     *q = '\0';
     mrec = NEW(1, fontmap_rec);
     pdf_init_fontmap_record(mrec);
-    error = pdf_read_fontmap_line(mrec, buffer, (long) (ap->endptr - ap->curptr), is_pdfm_mapline(buffer));
+    error = pdf_read_fontmap_line(mrec, buffer, (int) (ap->endptr - ap->curptr), is_pdfm_mapline(buffer));
     if (error)
       spc_warn(spe, "Invalid fontmap line.");
     else if (opchr == '+')
@@ -1987,7 +1987,7 @@ static struct spc_handler pdfm_handlers[] = {
 };
 
 int
-spc_pdfm_check_special (const char *buf, long len)
+spc_pdfm_check_special (const char *buf, int len)
 {
   int    r = 0;
   const char *p, *endptr;
@@ -2040,4 +2040,3 @@ spc_pdfm_setup_handler (struct spc_handler *sph,
 
   return  error;
 }
-

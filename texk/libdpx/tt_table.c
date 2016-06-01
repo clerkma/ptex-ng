@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     This program is free software; you can redistribute it and/or modify
@@ -424,7 +424,7 @@ tt_read_os2__table (sfnt *sfont)
   return table;
 }
 
-USHORT
+static USHORT
 tt_get_name (sfnt *sfont, char *dest, USHORT destlen,
 	     USHORT plat_id, USHORT enco_id,
 	     USHORT lang_id, USHORT name_id)

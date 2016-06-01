@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -50,14 +50,14 @@
 
 #include "epdf.h"
 
+static int  rect_equal       (pdf_obj *rect1, pdf_obj *rect2);
+#if 0
 #if HAVE_ZLIB
 #include <zlib.h>
-static int  add_stream_flate (pdf_obj *dst, const void *data, long len);
+static int  add_stream_flate (pdf_obj *dst, const void *data, int len);
 #endif
-static int  rect_equal       (pdf_obj *rect1, pdf_obj *rect2);
-
 static int  concat_stream    (pdf_obj *dst, pdf_obj *src);
-
+#endif
 /*
  * From PDFReference15_v6.pdf (p.119 and p.834)
  *
@@ -80,13 +80,13 @@ static int  concat_stream    (pdf_obj *dst, pdf_obj *src);
  * in the absence of additional information (such as imposition instructions
  * specified in a JDF or PJTF job ticket), the crop box will determine how
  * the page's contents are to be positioned on the output medium. The default
- * value is the page's media box. 
+ * value is the pageâ€™s media box. 
  *
  * BleedBox rectangle (Optional; PDF 1.3)
  *
  * The bleed box (PDF 1.3) defines the region to which the contents of the
  * page should be clipped when output in a production environment. This may
- * include any extra "bleed area" needed to accommodate the physical
+ * include any extra bleed area needed to accommodate the physical
  * limitations of cutting, folding, and trimming equipment. The actual printed
  * page may include printing marks that fall outside the bleed box.
  * The default value is the page's crop box. 
@@ -96,7 +96,7 @@ static int  concat_stream    (pdf_obj *dst, pdf_obj *src);
  * The trim box (PDF 1.3) defines the intended dimensions of the finished page
  * after trimming. It may be smaller than the media box, to allow for
  * production-related content such as printing instructions, cut marks, or
- * color bars. The default value is the page's crop box. 
+ * color bars. The default value is the pageâ€™s crop box. 
  *
  * ArtBox rectangle (Optional; PDF 1.3)
  *
@@ -127,12 +127,12 @@ rect_equal (pdf_obj *rect1, pdf_obj *rect2)
 }
 
 static pdf_obj*
-pdf_get_page_obj (pdf_file *pf, long page_no,
+pdf_get_page_obj (pdf_file *pf, int page_no,
                   pdf_obj **ret_bbox, pdf_obj **ret_resources)
 {
   pdf_obj *page_tree;
   pdf_obj *bbox = NULL, *resources = NULL, *rotate = NULL;
-  long page_idx;
+  int page_idx;
 
   /*
    * Get Page Tree.
@@ -164,7 +164,7 @@ pdf_get_page_obj (pdf_file *pf, long page_no,
     if (markinfo) {
       tmp = pdf_lookup_dict(markinfo, "Marked");
       if (PDF_OBJ_BOOLEANTYPE(tmp) && pdf_boolean_value(tmp))
-	WARN("File contains tagged PDF. Ignoring tags.");
+        WARN("PDF file is tagged... Ignoring tags.");
       pdf_release_obj(markinfo);
     }
 
@@ -180,7 +180,7 @@ pdf_get_page_obj (pdf_file *pf, long page_no,
    * Negative page numbers are counted from the back.
    */
   {
-    long count = pdf_number_value(pdf_lookup_dict(page_tree, "Count"));
+    int count = pdf_number_value(pdf_lookup_dict(page_tree, "Count"));
     page_idx = page_no + (page_no >= 0 ? -1 : count);
     if (page_idx < 0 || page_idx >= count) {
 	WARN("Page %ld does not exist.", page_no);
@@ -203,7 +203,7 @@ pdf_get_page_obj (pdf_file *pf, long page_no,
     resources = tmp ? pdf_deref_obj(tmp) : pdf_new_dict();
 
     while (1) {
-      long kids_length, i;
+      int kids_length, i;
  
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "MediaBox")))) {
 	if (bbox)
@@ -215,24 +215,27 @@ pdf_get_page_obj (pdf_file *pf, long page_no,
 	  if (bbox)
 	    pdf_release_obj(bbox);
 	  bbox = tmp;
-        } else
+        } else {
           pdf_release_obj(tmp);
+      }
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "TrimBox")))) {
         if (!rect_equal(tmp, bbox)) {
 	  if (bbox)
 	    pdf_release_obj(bbox);
 	  bbox = tmp;
-        } else
+        } else {
           pdf_release_obj(tmp);
+      }
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "ArtBox")))) {
         if (!rect_equal(tmp, bbox)) {
 	  if (bbox)
 	    pdf_release_obj(bbox);
 	  bbox = tmp;
-        } else
+        } else {
           pdf_release_obj(tmp);
+      }
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "CropBox")))) {
 	if (crop_box)
@@ -260,7 +263,7 @@ pdf_get_page_obj (pdf_file *pf, long page_no,
       kids_length = pdf_array_length(kids);
 
       for (i = 0; i < kids_length; i++) {
-	long count;
+	int count;
 
 	pdf_release_obj(page_tree);
 	page_tree = pdf_deref_obj(pdf_get_array(kids, i));
@@ -270,10 +273,10 @@ pdf_get_page_obj (pdf_file *pf, long page_no,
 	  /* Pages object */
 	  count = pdf_number_value(tmp);
 	  pdf_release_obj(tmp);
-	} else
+        } else {
 	  /* Page object */
 	  count = 1;
-
+        }
 	if (page_idx < count)
 	  break;
 
@@ -312,7 +315,8 @@ pdf_get_page_obj (pdf_file *pf, long page_no,
 
   if (rotate) {
     if (pdf_number_value(rotate) != 0.0)
-      WARN("<< /Rotate %d >> found. (Not supported yet)",  (int)pdf_number_value(rotate));
+      WARN("<< /Rotate %d >> found. (Not supported yet)",
+            (int)pdf_number_value(rotate));
     pdf_release_obj(rotate);
     rotate = NULL;
   }
@@ -358,7 +362,7 @@ pdf_get_page_content (pdf_obj* page)
 	pdf_release_obj(content_new);
         pdf_release_obj(contents);
 	return NULL;
-      } else if (concat_stream(content_new, content_seg) < 0) {
+      } else if (pdf_concat_stream(content_new, content_seg) < 0) {
 	WARN("Could not handle content stream with multiple segments.");
         pdf_release_obj(content_seg);
 	pdf_release_obj(content_new);
@@ -378,7 +382,7 @@ pdf_get_page_content (pdf_obj* page)
     }
     /* Flate the contents if necessary. */
     content_new = pdf_new_stream(STREAM_COMPRESS);
-    if (concat_stream(content_new, contents) < 0) {
+    if (pdf_concat_stream(content_new, contents) < 0) {
       WARN("Could not handle a content stream.");
       pdf_release_obj(contents);
       pdf_release_obj(content_new);
@@ -391,32 +395,35 @@ pdf_get_page_content (pdf_obj* page)
   return contents;
 }
 
+/* ximage here is the result. DONT USE IT FOR PASSING OPTIONS! */
 int
-pdf_include_page (pdf_ximage *ximage, FILE *image_file, const char *filename)
+pdf_include_page (pdf_ximage        *ximage,
+                  FILE              *image_file,
+                  const char        *ident,
+                  load_options       options)
 {
   pdf_file *pf;
   xform_info info;
   pdf_obj *contents = NULL, *catalog;
   pdf_obj *page = NULL, *resources = NULL, *markinfo = NULL;
-  long page_no;
 
-  pf = pdf_open(filename, image_file);
+  pf = pdf_open(ident, image_file);
   if (!pf)
     return -1;
 
-  if (pdf_file_get_version(pf) > pdf_get_version())
-    goto too_recent;
+  if (pdf_file_get_version(pf) > pdf_get_version()) {
+    WARN("Trying to include PDF file which has newer version number " \
+         "than output PDF: 1.%d.", pdf_get_version());
+  }
 
   pdf_ximage_init_form_info(&info);
 
-  /*
-   * Get Page.
-   */
-  page_no = pdf_ximage_get_page(ximage);
-  if (page_no == 0)
-    page_no = 1;
+  if (options.page_no == 0)
+    options.page_no = 1;
+  page = pdf_doc_get_page(pf,
+                          options.page_no, options.bbox_type,
+                          &info.bbox, &resources);
 
-  page = pdf_doc_get_page(pf, page_no, NULL, &info.bbox, &resources);
   if(!page)
     goto error_silent;
 
@@ -429,8 +436,9 @@ pdf_include_page (pdf_ximage *ximage, FILE *image_file, const char *filename)
       if (tmp)
 	pdf_release_obj(tmp);
       goto error;
-    } else if (pdf_boolean_value(tmp))
-      WARN("File contains tagged PDF. Ignoring tags.");
+    } else if (pdf_boolean_value(tmp)) {
+      WARN("PDF file is tagged... Ignoring tags.");
+    }
     pdf_release_obj(tmp);
   }
 
@@ -472,8 +480,9 @@ pdf_include_page (pdf_ximage *ximage, FILE *image_file, const char *filename)
 	}
 	pdf_release_obj(content_seg);
       }
-    } else
+    } else {
       goto error;
+    }
 
     if (contents)
       pdf_release_obj(contents);
@@ -488,14 +497,11 @@ pdf_include_page (pdf_ximage *ximage, FILE *image_file, const char *filename)
 
     contents_dict = pdf_stream_dict(contents);
     pdf_add_dict(contents_dict,
-		 pdf_new_name("Type"), 
-		 pdf_new_name("XObject"));
+                 pdf_new_name("Type"), pdf_new_name("XObject"));
     pdf_add_dict(contents_dict,
-		 pdf_new_name("Subtype"),
-		 pdf_new_name("Form"));
+                 pdf_new_name("Subtype"), pdf_new_name("Form"));
     pdf_add_dict(contents_dict,
-		 pdf_new_name("FormType"),
-		 pdf_new_number(1.0));
+                 pdf_new_name("FormType"), pdf_new_number(1.0));
 
     bbox = pdf_new_array();
     pdf_add_array(bbox, pdf_new_number(info.bbox.llx));
@@ -541,17 +547,6 @@ pdf_include_page (pdf_ximage *ximage, FILE *image_file, const char *filename)
   pdf_close(pf);
 
   return -1;
-
- too_recent:
-  pdf_close(pf);
-  WARN("PDF version of input file more recent than in output file.");
-  if (compat_mode) {
-    WARN("Converting. Use \"-V\" switch to change output PDF version.");
-    return 1;
-  } else {
-    WARN("Use \"-V\" switch to change output PDF version.");
-    return -1;
-  }
 }
 
 typedef enum {
@@ -864,103 +859,4 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
   pdf_close(pf);
 
   return 0;
-}
-
-#define WBUF_SIZE 4096
-#if HAVE_ZLIB
-static int
-add_stream_flate (pdf_obj *dst, const void *data, long len)
-{
-  z_stream z;
-  Bytef wbuf[WBUF_SIZE];
-
-  z.zalloc = Z_NULL; z.zfree = Z_NULL; z.opaque = Z_NULL;
-
-  z.next_in  = (z_const Bytef *) data; z.avail_in  = len;
-  z.next_out = (Bytef *) wbuf; z.avail_out = WBUF_SIZE;
-
-  if (inflateInit(&z) != Z_OK) {
-    WARN("inflateInit() failed.");
-    return -1;
-  }
-
-  for (;;) {
-    int status;
-    status = inflate(&z, Z_NO_FLUSH);
-    if (status == Z_STREAM_END)
-      break;
-    else if (status != Z_OK) {
-      WARN("inflate() failed. Broken PDF file?");
-      inflateEnd(&z);
-      return -1;
-    }
-
-    if (z.avail_out == 0) {
-      pdf_add_stream(dst, wbuf, WBUF_SIZE);
-      z.next_out  = wbuf;
-      z.avail_out = WBUF_SIZE;
-    }
-  }
-
-  if (WBUF_SIZE - z.avail_out > 0)
-    pdf_add_stream(dst, wbuf, WBUF_SIZE - z.avail_out);
-
-  return (inflateEnd(&z) == Z_OK ? 0 : -1);
-}
-#endif
-
-static int
-concat_stream (pdf_obj *dst, pdf_obj *src)
-{
-  const char *stream_data;
-  long        stream_length;
-  pdf_obj    *stream_dict;
-  pdf_obj    *filter;
-
-  if (!PDF_OBJ_STREAMTYPE(dst) || !PDF_OBJ_STREAMTYPE(src))
-    ERROR("Invalid type.");
-
-  stream_data   = pdf_stream_dataptr(src);
-  stream_length = pdf_stream_length (src);
-  stream_dict   = pdf_stream_dict   (src);
-
-  if (pdf_lookup_dict(stream_dict, "DecodeParms")) {
-    WARN("DecodeParams not supported.");
-    return -1;
-  }
-
-  filter = pdf_lookup_dict(stream_dict, "Filter");
-  if (!filter) {
-    pdf_add_stream(dst, stream_data, stream_length);
-    return 0;
-#if HAVE_ZLIB
-  } else {
-    char *filter_name;
-    if (PDF_OBJ_NAMETYPE(filter)) {
-      filter_name = pdf_name_value(filter);
-      if (filter_name && !strcmp(filter_name, "FlateDecode"))
-	return add_stream_flate(dst, stream_data, stream_length);
-      else {
-	WARN("DecodeFilter \"%s\" not supported.", filter_name);
-	return -1;
-      }
-    } else if (PDF_OBJ_ARRAYTYPE(filter)) {
-      if (pdf_array_length(filter) > 1) {
-	WARN("Multiple DecodeFilter not supported.");
-	return -1;
-      } else {
-	filter_name = pdf_name_value(pdf_get_array(filter, 0));
-	if (filter_name && !strcmp(filter_name, "FlateDecode"))
-	  return add_stream_flate(dst, stream_data, stream_length);
-	else {
-	  WARN("DecodeFilter \"%s\" not supported.", filter_name);
-	  return -1;
-	}
-      }
-    } else
-      ERROR("Broken PDF file?");
-#endif /* HAVE_ZLIB */
-  }
-
-  return -1;
 }

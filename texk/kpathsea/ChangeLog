@@ -1,3 +1,130 @@
+2016-05-20  Karl Berry  <karl@tug.org>
+
+	* Version 6.2.2 for TeX Live 2016.
+
+2016-05-13  Karl Berry  <karl@tug.org>
+
+	* texmf.cnf (RISINPUTS, BLTXMLINPUTS): $TEXMF/biber
+	rather than $TEXMF/bibtex.
+
+2016-02-03  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	*knj.c: Disable unnecessary warning (w32 only).
+
+2016-04-06  Karl Berry  <karl@tug.org>
+
+	* texmf.cnf (TEXMFVAR, TEXMFCONFIG): 2016.
+	(shell_escape_commands): add gregorio, fingers crossed.
+
+	* cnf.c (do_line): do not keep checking ISSPACE beyond
+	end of string.  (Can crash on lines without spaces.)
+	Return error string if problems.
+	* kpathsea_cnf_get: give warning, with line number,
+        if do_line returns a message.
+
+2016-02-03  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* texmf.cnf: Typo.
+
+2016-04-06  Karl Berry  <karl@tug.org>
+
+	* kpsewhich.c, et al.: copyright 2016.
+
+2016-03-06  Karl Berry  <karl@tug.org>
+
+	* version.ac: remove /dev for start of 2016 builds.
+
+2016-02-27  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* kpsewhich.c: Allow Unicode file name for upmendex in kpsewhich.
+	(Windows only)
+
+2016-02-03  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* win32lib.[ch], mingw32.[ch]: Define a function
+	double win32_floor (double x), since floor is defined in cpascal.h.
+
+2015-12-29  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* win32lib.h: Update (w32 only).
+
+2015-10-01  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* kpsewhich.c (USAGE): Say "list shown by -help-formats".
+
+2015-07-07  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* Makefile.am: Better dependencies for 'make check'.
+
+2015-06-18  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* configure.ac: Define WEB2CVERSION for WIN32 programs.
+
+2015-06-12  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* version.ac: Update version number 6.2.1 => 6.2.2dev.
+	* configure.ac: Drop test for isascii (now in KPSE_COMMON).
+
+2015-05-21  Karl Berry  <karl@tug.org>
+
+	* TL'15.
+
+2015-05-03  Karl Berry  <karl@tug.org>
+
+	* kpsewhich.c: copyright 2015.
+	* doc/kpathsea.texi (version, month-year): now 6.2.1, May 2015.
+	(Auxiliary tasks): add --help-formats, sort.
+	(Supported file formats): add bltxml, clua, ris.
+	* NEWS: mention --help-formats.
+
+2015-05-03  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* file-p.c: Implement same_file_p () for windows.
+
+2015-04-17  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* configure.ac: Test if isascii is declared.
+	* c-ctype.h: Correctly define isascii, if not declared.
+
+2015-04-14  Norbert Preining  <norbert@preining.info>
+
+	* mktexlsr (treefile): switch back to hard-coded path, as
+	indeed it seems there are several systems without support for
+	mktemp --tmpdir, just mktemp. TL2015 pretest emails.
+
+2015-04-12  Karl Berry  <karl@tug.org>
+
+	* texmf.cnf: update for TL'15.
+	(shell_escape_commands): include extractbb, fingers crossed.
+
+2015-04-12  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* version.ac: 6.2.1 (without the dev) for 2015 pretest.
+
+2015-03-25  Karl Berry  <karl@tug.org>
+
+	* mktexlsr (treefile): use shell mktemp; patch from Debian
+	via tlbuild mail from Norbert, 6 Mar 2015 09:13:06.
+	Per Nelson Beebe, the program is available on a wide variety of
+	systems nowadays, excluding only SGI IRIX MIPS, which we have
+	not built binaries for in several years.
+	(tlbuild reply, 6 Mar 2015 06:22:21)
+
+2015-03-14  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* Makefile.am, kpathsea.pc.in: Install <kpathsea/c-auto.h> under
+	${libdir}.
+
+2015-03-10  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* configure.ac: Drop checks for strcasecmp, strtol, and strstr.
+	* lib.h: Drop the strstr() prototype.
+	* Makefile.am: No need to distribute the replacement functions.
+
+2014-12-13  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* texmf.cnf: Sync with master which is changed by Norbert.
+
 2014-12-06  Peter Breitenlohner  <peb@mppmu.mpg.de>
 
 	* Makefile.am [kpathsea.h]: Improved output for silent rules.
@@ -1242,7 +1369,7 @@
 	* texmf.cnf (shell_escape_commands): turns out fc-list is not
 	needed after all.
 
-2010-05-30  Manuel Pégourié-Gonnard <mpg@elzevir.fr>
+2010-05-30  Manuel PÃ©gouriÃ©-Gonnard <mpg@elzevir.fr>
 
 	* texmf.cnf: relax LUAINPUTS not to require and extra "lua"
 	subdirectory for modules in texmfscripts.
@@ -1349,7 +1476,7 @@
 	from 'string *' to 'const_string *', drop kpse_fontmap_lookup.
 	* tex-file.c (target_fontmaps), tex-glyph.c (try_fontmap): Adjust.
 
-2010-04-27  Manuel Pégourié-Gonnard <mpg@elzevir.fr>
+2010-04-27  Manuel PÃ©gouriÃ©-Gonnard <mpg@elzevir.fr>
 
 	* texmf.cnf: - s/pdf(lua(la)?tex)/dvi\1/
 	- add luatex before generic (for generic package specific to luatex) and
@@ -1796,11 +1923,11 @@
 
 	* texmf.cnf (shell_escape): doc fixes to discourage shell_escape=p.
 
-2009-10-19  Manuel Pégourié-Gonnard <mpg@elzevir.fr>
+2009-10-19  Manuel PÃ©gouriÃ©-Gonnard <mpg@elzevir.fr>
 
 	* texmf.cnf: set shell_escape back to 'f': 'p' is broken on Unix.
 
-2009-10-15  Manuel Pégourié-Gonnard <mpg@elzevir.fr>
+2009-10-15  Manuel PÃ©gouriÃ©-Gonnard <mpg@elzevir.fr>
 
 	* texmf.cnf (shell_escape_commands): add repstopdf, a version of
 	epstopdf with restrictions intended to make it safer.
@@ -2384,15 +2511,15 @@
 	autoheader templates ...
 	* acconfig.h: ... removed.
 
-2008-02-24  Martin Schröder <martin@pdftex.org>
+2008-02-24  Martin SchrÃ¶der <martin@pdftex.org>
 
 	* lib.h: systypes.h instead of c-std.h
 
-2008-02-23  Martin Schröder <martin@pdftex.org>
+2008-02-23  Martin SchrÃ¶der <martin@pdftex.org>
 
 	* lib.h: include c-std.h to get off_t from stdio.h
 
-2008-02-21  Martin Schröder <martin@pdftex.org>
+2008-02-21  Martin SchrÃ¶der <martin@pdftex.org>
 
 	* lib.h, xfseek.c, xftell.c: LFS support: use off_t instead of long
 	and fseeko instead of fseek
@@ -2891,7 +3018,7 @@
 	addition to the compiler name.  From Harald Koenig
 	<koenig@science-computing.de>.
 
-	* mktexpk: Add guesses for dpi 360 and 720.  From Frank Küster
+	* mktexpk: Add guesses for dpi 360 and 720.  From Frank KÃ¼ster
 	<frank@kuesterei.ch> (Debian maintainer).
 
 	* mktexlsr: Write all regular progress messages to stderr, instead
@@ -3681,7 +3808,7 @@
 
 2002-05-28  Olaf Weber  <olaf@infovore.xs4all.nl>
 
-	* mktexdir: Guard $KPSE_DOT with quotes.  From Emmanuel_Thomé
+	* mktexdir: Guard $KPSE_DOT with quotes.  From Emmanuel_ThomÃ©
 	<thome@lix.polytechnique.fr>.
 
 2002-04-01  Olaf Weber  <olaf@infovore.xs4all.nl>
@@ -4091,7 +4218,7 @@
 
 	* Makefile.in: TEXMF_CNF -> VARTEXMF
 
-	* mktexmf: Small fix to a case statement from Berthold Höllmann
+	* mktexmf: Small fix to a case statement from Berthold HÃ¶llmann
 	<bhoel@starship.python.net>.
 
 1999-03-15  Olaf Weber  <olaf@infovore.xs4all.nl>
@@ -8725,3 +8852,5 @@ Fri Apr 23 16:11:13 1993  Karl Berry  (karl@cs.umb.edu)
 	* pathsrch.c: paths.h need not be included.
 
 	* Created.
+
+(This ChangeLog file public domain.)

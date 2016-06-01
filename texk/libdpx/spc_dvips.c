@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -140,6 +140,7 @@ spc_handler_ps_file (struct spc_env *spe, struct spc_arg *args)
   int            form_id;
   char          *filename;
   transform_info ti;
+  load_options   options = {1, 0, NULL};
 
   ASSERT(spe && args);
 
@@ -158,12 +159,12 @@ spc_handler_ps_file (struct spc_env *spe, struct spc_arg *args)
   }
 
   transform_info_clear(&ti);
-  if (spc_util_read_dimtrns(spe, &ti, args, NULL, 1) < 0) {
+  if (spc_util_read_dimtrns(spe, &ti, args, 1) < 0) {
     RELEASE(filename);
     return  -1;
   }
 
-  form_id = pdf_ximage_findresource(filename, 1, NULL);
+  form_id = pdf_ximage_findresource(filename, options);
   if (form_id < 0) {
     spc_warn(spe, "Failed to read image file: %s", filename);
     RELEASE(filename);
@@ -184,6 +185,7 @@ spc_handler_ps_plotfile (struct spc_env *spe, struct spc_arg *args)
   int            form_id;
   char          *filename;
   transform_info p;
+  load_options   options = {1, 0, NULL};
 
   ASSERT(spe && args);
 
@@ -196,7 +198,7 @@ spc_handler_ps_plotfile (struct spc_env *spe, struct spc_arg *args)
     return -1;
   }
 
-  form_id = pdf_ximage_findresource(filename, 1, NULL);
+  form_id = pdf_ximage_findresource(filename, options);
   if (form_id < 0) {
     spc_warn(spe, "Could not open PS file: %s", filename);
     error = -1;
@@ -596,6 +598,13 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
     }
   }
 #endif
+/*
+  Ghostscript 9.15 needs showpage
+*/
+  fp = fopen(gs_in, "ab");
+  fprintf(fp, " showpage\n");
+  fclose(fp);
+
   error = dpx_file_apply_filter(distiller_template, gs_in, gs_out,
                                (unsigned char) pdf_get_version());
   if (error) {
@@ -625,9 +634,10 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
 static int
 spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
 {
-  FILE* fp;
+  FILE        *fp;
   int k;
   pdf_tmatrix M;
+  load_options options = {1, 0, NULL};
 
   if (!distiller_template)
     distiller_template = get_distiller_template();
@@ -683,6 +693,13 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
       }
     }
 #endif
+/*
+    Ghostscript 9.15 needs showpage
+*/
+    fp = fopen(gs_in, "ab");
+    fprintf(fp, " showpage\n");
+    fclose(fp);
+
     error = dpx_file_apply_filter(distiller_template, gs_in, gs_out,
                                  (unsigned char) pdf_get_version());
     if (error) {
@@ -692,7 +709,7 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
       return error;
     }
 
-    form_id = pdf_ximage_findresource(gs_out, 1, NULL);
+    form_id = pdf_ximage_findresource(gs_out, options);
     if (form_id < 0) {
       spc_warn(spe, "Failed to read converted PSTricks image file.");
       RELEASE(gs_in);
@@ -914,7 +931,7 @@ int
 spc_dvips_at_end_page (void)
 {
   mps_eop_cleanup();
-  if (!temporary_defs) {
+  if (temporary_defs) {
     dpx_delete_temp_file(temporary_defs, true);
     temporary_defs = 0;
   }
@@ -922,7 +939,7 @@ spc_dvips_at_end_page (void)
 }
 
 int
-spc_dvips_check_special (const char *buf, long len)
+spc_dvips_check_special (const char *buf, int len)
 {
   const char *p, *endptr;
   int   i;
@@ -934,7 +951,7 @@ spc_dvips_check_special (const char *buf, long len)
   if (p >= endptr)
     return  0;
 
-  len = (long) (endptr - p);
+  len = (int) (endptr - p);
   for (i = 0;
        i < sizeof(dvips_handlers)/sizeof(struct spc_handler); i++) {
     if (len >= strlen(dvips_handlers[i].key) &&

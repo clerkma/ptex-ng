@@ -1,5 +1,5 @@
 # Private macros for the TeX Live (TL) tree.
-# Copyright (C) 2009-2014 Peter Breitenlohner <tex-live@tug.org>
+# Copyright (C) 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 #
 # This file is free software; the copyright holder
 # gives unlimited permission to copy and/or distribute it,
@@ -53,9 +53,9 @@ AS_CASE([$enable_libtool_hack],
                    [enable_libtool_hack=no],
                  [enable_libtool_hack=yes])
          ac_configure_args="$ac_configure_args '--enable-libtool-hack=$enable_libtool_hack'"])
-AS_CASE([$enable_shared],
-        [no], [:],
-        [yes ], [AS_IF([test "x$enable_native_texlive_build" = xyes],
+AS_CASE([$enable_shared:$host_os],
+        [no:* | yes:mingw* | yes:cygwin*], [:],
+        [yes:* ], [AS_IF([test "x$enable_native_texlive_build" = xyes],
                        [AC_MSG_ERROR([you can not use a shared Kpathsea library for a native TeX Live build])])],
         [enable_shared=no
          ac_configure_args="$ac_configure_args '--disable-shared'"])
@@ -81,12 +81,14 @@ AS_CASE([$with_x:$kpse_cv_have_win32],
         [with_x=no
          AC_MSG_NOTICE([WIN32 -> `--without-x'])
          ac_configure_args="$ac_configure_args '--without-x'"])
-AS_CASE([$enable_luajittex],
+AC_FOREACH([Kpse_Pkg], [luajittex mfluajit], [dnl
+AS_CASE([$enable_]Kpse_Pkg,
         [yes | no], [:],
           [AS_CASE([$host],
-                   [alpha* | sparc* | x86_64-*-cygwin],
-                     [AC_MSG_NOTICE([$host -> `--disable-luajittex'])
-                      ac_configure_args="$ac_configure_args '--disable-luajittex'"])])        
+                   [alpha* | sparc* | x86_64-*-solaris* | powerpc-*-darwin* ],
+                     [AC_MSG_NOTICE([$host -> `--disable-]Kpse_Pkg['])
+                      ac_configure_args="$ac_configure_args '--disable-]Kpse_Pkg['"])])
+])
 KPSE_FOR_PKGS([utils], [m4_sinclude(kpse_TL[utils/]Kpse_Pkg[/ac/withenable.ac])])
 KPSE_FOR_PKGS([texk], [m4_sinclude(kpse_TL[texk/]Kpse_Pkg[/ac/withenable.ac])])
 KPSE_FOR_PKGS([libs], [m4_sinclude(kpse_TL[libs/]Kpse_Pkg[/ac/withenable.ac])])

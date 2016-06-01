@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -46,7 +46,8 @@ pdf_color_set_verbose (void)
 }
 
 /* This function returns PDF_COLORSPACE_TYPE_GRAY,
- * PDF_COLORSPACE_TYPE_RGB or PDF_COLORSPACE_TYPE_CMYK.
+ * PDF_COLORSPACE_TYPE_RGB, PDF_COLORSPACE_TYPE_CMYK or
+ * PDF_COLORSPACE_TYPE_SPOT.
  */
 int
 pdf_color_type (const pdf_color *color)
@@ -78,6 +79,8 @@ pdf_color_rgbcolor (pdf_color *color, double r, double g, double b)
   color->values[2] = b;
 
   color->num_components = 3;
+
+  color->spot_color_name = NULL;
 
   return 0;
 }
@@ -112,6 +115,8 @@ pdf_color_cmykcolor (pdf_color *color,
 
   color->num_components = 4;
 
+  color->spot_color_name = NULL;
+
   return 0;
 }
 
@@ -128,6 +133,28 @@ pdf_color_graycolor (pdf_color *color, double g)
   color->values[0] = g;
 
   color->num_components = 1;
+
+  color->spot_color_name = NULL;
+
+  return 0;
+}
+
+int
+pdf_color_spotcolor (pdf_color *color, char* name, double c)
+{
+  ASSERT(color);
+
+  if (c < 0.0 || c > 1.0) {
+    WARN("Invalid color value specified: grade=%g", c);
+    return -1;
+  }
+
+  color->values[0] = c;
+  color->values[1] = 0.0; /* Dummy */
+
+  color->num_components = 2;
+
+  color->spot_color_name = name;
 
   return 0;
 }
@@ -191,23 +218,34 @@ pdf_color_is_white (const pdf_color *color)
 }
 
 int
-pdf_color_to_string (const pdf_color *color, char *buffer)
+pdf_color_to_string (const pdf_color *color, char *buffer, char mask)
 {
   int i, len = 0;
 
-  for (i = 0; i < color->num_components; i++) {
-    len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+  if (pdf_color_type(color) == PDF_COLORSPACE_TYPE_SPOT) {
+    len = sprintf(buffer, " /%s %c%c %g %c%c",
+                          color->spot_color_name,
+                          'C' | mask, 'S' | mask,
+                          ROUND(color->values[0], 0.001),
+                          'S' | mask, 'C' | mask);
+  } else {
+     for (i = 0; i < color->num_components; i++) {
+       len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+      }
   }
+
   return len;
 }
 
 pdf_color current_fill   = {
   1,
+  NULL,
   {0.0, 0.0, 0.0, 0.0}
 };
 
 pdf_color current_stroke = {
   1,
+  NULL,
   {0.0, 0.0, 0.0, 0.0}
 };
 
@@ -222,6 +260,7 @@ pdf_color_compare (const pdf_color *color1, const pdf_color *color2)
   n = color1->num_components;
   switch (n) {
   case 1:  /* Gray */
+  case 2:  /* Spot */
   case 3:  /* RGB */
   case 4:  /* CMYK */
     break;
@@ -236,6 +275,9 @@ pdf_color_compare (const pdf_color *color1, const pdf_color *color2)
     if (color1->values[n] != color2->values[n])
       return -1;
 
+  if (color1->spot_color_name && color2->spot_color_name)
+    return strcmp(color1->spot_color_name, color2->spot_color_name);
+
   return 0;
 }
 
@@ -247,6 +289,7 @@ pdf_color_is_valid (const pdf_color *color)
   n = color->num_components;
   switch (n) {
   case 1:  /* Gray */
+  case 2:  /* Spot */
   case 3:  /* RGB */
   case 4:  /* CMYK */
     break;
@@ -260,20 +303,22 @@ pdf_color_is_valid (const pdf_color *color)
       return 0;
     }
 
+  if (pdf_color_type(color) == PDF_COLORSPACE_TYPE_SPOT) {
+    if (!color->spot_color_name || color->spot_color_name[0] == '\0') {
+      WARN("Invalid spot color: empty name");
+      return 0;
+    }
+  }
+
   return 1;
 }
 
 /* Dvipdfm special */
 pdf_color default_color = {
   1,
+  NULL,
   {0.0, 0.0, 0.0, 0.0}
 };
-
-void
-pdf_color_set_default (const pdf_color *color)
-{
-  pdf_color_copycolor(&default_color, color);
-}
 
 #define DEV_COLOR_STACK_MAX 128
 
@@ -290,6 +335,10 @@ pdf_color_clear_stack (void)
 {
   if (color_stack.current > 0) {
     WARN("You've mistakenly made a global color change within nested colors.");
+  }
+  while (color_stack.current--) {
+    free(color_stack.stroke[color_stack.current].spot_color_name);
+    free(color_stack.fill[color_stack.current].spot_color_name);
   }
   color_stack.current = 0;
   pdf_color_black(color_stack.stroke);
@@ -544,7 +593,9 @@ static struct
   {0, 0}, /* PDF-1.2, we don't support them */
   {0x02, 0x10}, /* PDF-1.3 */
   {0x02, 0x20}, /* PDF-1.4 */
-  {0x04, 0x00}  /* PDF-1.5 */
+  {0x04, 0x00}, /* PDF-1.5 */
+  {0x04, 0x00}, /* PDF-1.6 */
+  {0x04, 0x20}, /* PDF-1.7 */
 };
 
 static int
@@ -553,11 +604,11 @@ iccp_version_supported (int major, int minor)
   int  pdf_ver;
 
   pdf_ver = pdf_get_version();
-  if (pdf_ver < 6) {
+  if (pdf_ver < 8) {
     if (icc_versions[pdf_ver].major < major)
       return 0;
     else if (icc_versions[pdf_ver].major == major &&
-	     icc_versions[pdf_ver].minor <  minor)
+             icc_versions[pdf_ver].minor <  minor)
       return 0;
     else {
       return 1;
@@ -567,7 +618,7 @@ iccp_version_supported (int major, int minor)
   return 0;
 }
 
-typedef unsigned long iccSig;
+typedef uint32_t iccSig;
 static iccSig
 str2iccSig (const void *s)
 {
@@ -580,14 +631,14 @@ str2iccSig (const void *s)
 
 typedef struct
 {
-  long X, Y, Z; /* s15Fixed16Numeber */
+  int32_t X, Y, Z; /* s15Fixed16Number */
 } iccXYZNumber;
 
 typedef struct
 {
-  long          size;
+  int           size;
   iccSig        CMMType;
-  long          version;
+  int32_t       version;
   iccSig        devClass;
   iccSig        colorSpace;
   iccSig        PCS;    /* Profile Connection Space */
@@ -598,7 +649,7 @@ typedef struct
   iccSig        devMnfct;
   iccSig        devModel;
   char          devAttr[8];
-  long          intent;
+  int32_t       intent;
   iccXYZNumber  illuminant;
   iccSig        creator;
   unsigned char ID[16]; /* MD5 checksum with Rendering intent,
@@ -649,7 +700,7 @@ iccp_init_iccHeader (iccHeader *icch)
  */
 struct iccbased_cdata
 {
-  long           sig; /* 'i' 'c' 'c' 'b' */
+  int32_t        sig; /* 'i' 'c' 'c' 'b' */
 
   unsigned char  checksum[16]; /* 16 bytes MD5 Checksum   */
   int            colorspace;   /* input colorspace:
@@ -734,7 +785,7 @@ compare_iccbased (const char *ident1, const struct iccbased_cdata *cdata1,
 }
 
 int
-iccp_check_colorspace (int colortype, const void *profile, long proflen)
+iccp_check_colorspace (int colortype, const void *profile, int proflen)
 {
   iccSig  colorspace;
   const unsigned char  *p;
@@ -772,11 +823,11 @@ iccp_check_colorspace (int colortype, const void *profile, long proflen)
 }
 
 pdf_obj *
-iccp_get_rendering_intent (const void *profile, long proflen)
+iccp_get_rendering_intent (const void *profile, int proflen)
 {
   pdf_obj       *ri = NULL;
   const unsigned char *p;
-  long           intent;
+  int32_t        intent;
 
   if (!profile || proflen < 128)
     return NULL;
@@ -805,13 +856,13 @@ iccp_get_rendering_intent (const void *profile, long proflen)
   return ri;
 }
 
-#define sget_signed_long(p)  ((long)   ((p)[0] << 24|(p)[1] << 16|(p)[2] << 8|(p)[3]))
+#define sget_signed_long(p)  ((int32_t)   ((p)[0] << 24|(p)[1] << 16|(p)[2] << 8|(p)[3]))
 #define sget_signed_short(p) ((short)  ((p)[0] << 8|(p)[1]))
 #define get_iccSig(p)        ((iccSig) ((p)[0] << 24|(p)[1] << 16|(p)[2] << 8|(p)[3]))
 
 static int
 iccp_unpack_header (iccHeader *icch,
-		    const void *profile, long proflen, int check_size)
+		    const void *profile, int proflen, int check_size)
 {
   const unsigned char *p, *endptr;
 
@@ -880,8 +931,8 @@ iccp_unpack_header (iccHeader *icch,
   /* 28 bytes reserved - must be set to zeros */
   for (; p < endptr; p++) {
     if (*p != '\0') {
-      WARN("Reserved pad not zero: %02x (at offset %ld in ICC profile header.)",
-	   *p, 128 - ((long) (endptr - p)));
+      WARN("Reserved pad not zero: %02x (at offset %d in ICC profile header.)",
+	   *p, 128 - ((int) (endptr - p)));
       return -1;
     }
   }
@@ -904,7 +955,7 @@ iccp_unpack_header (iccHeader *icch,
 
 #include "dpxcrypt.h"
 static void
-iccp_get_checksum (unsigned char *checksum, const void *profile, long proflen)
+iccp_get_checksum (unsigned char *checksum, const void *profile, int proflen)
 {
   const unsigned char *p;
   MD5_CONTEXT    md5;
@@ -1064,7 +1115,7 @@ iccp_devClass_allowed (int dev_class)
 
 int
 iccp_load_profile (const char *ident,
-		   const void *profile, long proflen)
+		   const void *profile, int proflen)
 {
   int       cspc_id;
   pdf_obj  *resource;
@@ -1162,11 +1213,11 @@ iccp_load_profile (const char *ident,
 static unsigned char wbuf[WBUF_SIZE];
 
 static pdf_obj *
-iccp_load_file_stream (unsigned char *checksum, long length, FILE *fp)
+iccp_load_file_stream (unsigned char *checksum, int length, FILE *fp)
 {
   pdf_obj       *stream;
   MD5_CONTEXT    md5;
-  long           nb_read;
+  int            nb_read;
 
   rewind(fp);
 
@@ -1210,7 +1261,7 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
   pdf_obj  *stream_dict;
   iccHeader icch;
   int       colorspace;
-  long      size;
+  int       size;
   unsigned char checksum[16];
   struct iccbased_cdata *cdata;
 

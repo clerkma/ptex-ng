@@ -18720,7 +18720,6 @@ extern void pdf_open_document(const char *filename,
 extern void pdf_close_document(void);
 
 extern void pdf_doc_set_creator(const char * creator);
-extern void pdf_doc_set_producer(const char * producer);
 extern void pdf_set_version(unsigned version);
 extern void pdf_set_compression(int level);
 
@@ -19030,7 +19029,6 @@ static void ship_out (pointer p)
           pdf_load_fontmap_file(aptex_env.aptex_map + 1, 0);
       }
 
-      pdf_doc_set_producer("Asian pTeX");
       pdf_doc_set_creator("Asian pTeX");
       pdf_files_init();
       pdf_init_device(sp2bp, 2, 0);

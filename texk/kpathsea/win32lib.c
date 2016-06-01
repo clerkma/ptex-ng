@@ -1,6 +1,6 @@
 /* win32lib.c: bits and pieces for win32 and msvc.
 
-   Copyright 2006, 2011-2013 Akira Kakuto.
+   Copyright 2006, 2011-2016 Akira Kakuto.
    Copyright 1996, 1997, 1998, 1999 Fabrice Popineau.
 
    This library is free software; you can redistribute it and/or
@@ -29,6 +29,11 @@ static int is_include_space(const char *s)
   p = strchr(s, '\t');
   if(p) return 1;
   return 0;
+}
+
+double win32_floor (double x)
+{
+  return floor (x);
 }
 
 FILE * win32_popen (const char *cmd, const char *fmode)

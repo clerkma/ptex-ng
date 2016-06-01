@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -35,17 +35,12 @@
 #define FONTMAP_STYLE_ITALIC     2
 #define FONTMAP_STYLE_BOLDITALIC 3
 
-#ifdef XETEX
-#include "ft2build.h"
-#include FT_FREETYPE_H
-#endif
-
 /* Options */
 typedef struct fontmap_opt {
   /* Synthetic font */
   double slant, extend, bold;
   /* comaptibility and other flags */
-  long   mapc,  flags;
+  int    mapc,  flags;
 
   char  *otl_tags;    /* currently unused */
   char  *tounicode;   /* not implemented yet */
@@ -58,9 +53,6 @@ typedef struct fontmap_opt {
   int    index;       /* TTC index */
   int    style;       /* ,Bold, etc. */
   int    stemv;       /* StemV value especially for CJK fonts */
-#ifdef XETEX
-  FT_Face ft_face;
-#endif
 } fontmap_opt;
 
 typedef struct fontmap_rec {
@@ -92,18 +84,16 @@ extern void         pdf_init_fontmap_record   (fontmap_rec *mrec);
 extern void         pdf_clear_fontmap_record  (fontmap_rec *mrec);
 
 extern int          pdf_load_fontmap_file     (const char  *filename, int mode);
-extern int          pdf_read_fontmap_line     (fontmap_rec *mrec, const char *mline, long mline_strlen, int format);
+extern int          pdf_read_fontmap_line     (fontmap_rec *mrec, const char *mline, int mline_strlen, int format);
 
 extern int          pdf_append_fontmap_record (const char  *kp, const fontmap_rec *mrec);
 extern int          pdf_remove_fontmap_record (const char  *kp);
-extern int          pdf_insert_fontmap_record (const char  *kp, const fontmap_rec *mrec);
+extern fontmap_rec *pdf_insert_fontmap_record (const char  *kp, const fontmap_rec *mrec);
 extern fontmap_rec *pdf_lookup_fontmap_record (const char  *kp);
 
 extern int          is_pdfm_mapline           (const char  *mline);
 
-#ifdef XETEX
-extern int          pdf_load_native_font      (const char *ps_name,
-                                               int layout_dir, int extend, int slant, int embolden);
-#endif
+extern fontmap_rec *pdf_insert_native_fontmap_record (const char *filename, uint32_t index,
+                                                      int layout_dir, int extend, int slant, int embolden);
 
 #endif /* _FONTMAP_H_ */

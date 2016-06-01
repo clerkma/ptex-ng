@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -50,6 +50,7 @@
 #include "pdfximage.h"
 
 #include "mpost.h"
+#include "dvipdfmx.h"
 
 /*
  * Define the origin as (llx, lly) in order to
@@ -242,18 +243,27 @@ mps_scan_bbox (const char **pp, const char *endptr, pdf_rect *bbox)
 	return -1;
       } else {
 	/* The new xetex.def and dvipdfmx.def require bbox->llx = bbox->lly = 0.  */
-	bbox->llx = 0;
-	bbox->lly = 0;
-	bbox->urx = values[2] - values[0];
-	bbox->ury = values[3] - values[1];
+        if (translate_origin) {
+          bbox->llx = 0;
+          bbox->lly = 0;
+          bbox->urx = values[2] - values[0];
+          bbox->ury = values[3] - values[1];
 
-	Xorigin = (double)values[0];
-	Yorigin = (double)values[1];
+          Xorigin = (double)values[0];
+          Yorigin = (double)values[1];
+        } else {
+          bbox->llx = values[0];
+          bbox->lly = values[1];
+          bbox->urx = values[2];
+          bbox->ury = values[3];
 
-	return 0;
+          Xorigin = 0.0;
+          Yorigin = 0.0;
+        }
+        return 0;
       }
     }
-    dpx_skip_line (pp, endptr);
+    pdfparse_skip_line (pp, endptr);
     while (*pp < endptr && isspace((unsigned char)**pp))
       (*pp)++;
   }
@@ -275,13 +285,13 @@ skip_prolog (const char **start, const char *end)
       break;
     if (!strncmp(*start, "%%EndProlog", 11)) {
       found_prolog = 1;
-      dpx_skip_line(start, end);
+      pdfparse_skip_line(start, end);
       break;
     } else if (!strncmp(*start, "%%Page:", 7)) {
-      dpx_skip_line(start, end);
+      pdfparse_skip_line(start, end);
       break;
     }
-    dpx_skip_line(start, end);
+    pdfparse_skip_line(start, end);
   }
   if (!found_prolog) {
     *start = save;
@@ -291,6 +301,11 @@ skip_prolog (const char **start, const char *end)
 }
 
 /* PostScript Operators */
+
+/* Acoid conflict with SET... from <wingdi.h>.  */
+#undef SETLINECAP
+#undef SETLINEJOIN
+#undef SETMITERLIMIT
 
 #define ADD          	1
 #define SUB		2
@@ -1529,7 +1544,7 @@ mps_include_page (const char *ident, FILE *fp)
   int        st_depth, gs_depth;
   char      *buffer;
   const char *p, *endptr;
-  long       length, nb_read;
+  int        length, nb_read;
   int        dirmode, autorotate, error;
 
   rewind(fp);
@@ -1607,7 +1622,7 @@ mps_do_page (FILE *image_file)
   pdf_rect  bbox;
   char     *buffer;
   const char *start, *end;
-  long      size;
+  int       size;
   int       dir_mode;
 
   rewind(image_file);
@@ -1657,27 +1672,4 @@ mps_do_page (FILE *image_file)
    * PDF inclusion may not be made so.
    */
   return (error ? -1 : 0);
-}
-
-int
-check_for_mp (FILE *image_file) 
-{
-  int try_count = 10;
-
-  rewind (image_file);
-  mfgets(work_buffer, WORK_BUFFER_SIZE, image_file);
-  if (strncmp(work_buffer, "%!PS", 4))
-    return 0;
-
-  while (try_count > 0) {
-    mfgets(work_buffer, WORK_BUFFER_SIZE, image_file);
-    if (!strncmp(work_buffer, "%%Creator:", 10)) {
-      if (strlen(work_buffer+10) >= 8 &&
-	  strstr(work_buffer+10, "MetaPost"))
-	break;
-    }
-    try_count--;
-  }
-
-  return ((try_count > 0) ? 1 : 0);
 }

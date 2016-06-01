@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -42,9 +42,7 @@ extern int      pdf_names_close_object     (struct ht_table *names,
 
 /* Really create name tree... */
 extern pdf_obj *pdf_names_create_tree      (struct ht_table *names,
-					    long *count,
+					    int *count,
 					    struct ht_table *filter);
-
-extern char    *printable_key (const char *key, int keylen);
 
 #endif /*  _PDF_NAMES_H_ */

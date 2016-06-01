@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,7 @@ CIDFont_type2_set_verbose (void)
 }
 
 void
-CIDFont_type2_set_flags (long flags)
+CIDFont_type2_set_flags (int32_t flags)
 {
   opt_flags = flags;
 }
@@ -228,7 +228,7 @@ static void
 add_TTCIDHMetrics (pdf_obj *fontdict, struct tt_glyphs *g,
 		   char *used_chars, unsigned char *cidtogidmap, unsigned short last_cid)
 {
-  long cid, start = 0, prev = 0;
+  int cid, start = 0, prev = 0;
   pdf_obj *w_array, *an_array = NULL;
   double   dw;
   int      empty = 1;
@@ -299,9 +299,9 @@ add_TTCIDVMetrics (pdf_obj *fontdict, struct tt_glyphs *g,
 		   char *used_chars, unsigned short last_cid)
 {
   pdf_obj *w2_array, *an_array = NULL;
-  long cid;
+  int    cid;
 #if 0
-  long prev = 0, start = 0;
+  int    prev = 0, start = 0;
 #endif
   double defaultVertOriginY, defaultAdvanceHeight;
   int    empty = 1;
@@ -452,11 +452,11 @@ fix_CJK_symbols (unsigned short code)
   return alt_code;
 }
 
-static long
+static int
 cid_to_code (CMap *cmap, CID cid)
 {
   unsigned char  inbuf[2], outbuf[32];
-  long           inbytesleft = 2, outbytesleft = 32;
+  int            inbytesleft = 2, outbytesleft = 32;
   const unsigned char *p;
   unsigned char *q;
 
@@ -472,17 +472,17 @@ cid_to_code (CMap *cmap, CID cid)
   if (inbytesleft != 0)
     return 0;
   else if (outbytesleft == 31)
-    return (long) outbuf[0];
+    return (int) outbuf[0];
   else if (outbytesleft == 30)
-    return (long) (outbuf[0] << 8|outbuf[1]);
+    return (int) (outbuf[0] << 8|outbuf[1]);
   else if (outbytesleft == 28) { /* We assume the output encoding is UTF-16. */
     CID hi, lo;
     hi = outbuf[0] << 8|outbuf[1];
     lo = outbuf[2] << 8|outbuf[3];
     if (hi >= 0xd800 && hi <= 0xdbff && lo >= 0xdc00 && lo <= 0xdfff)
-      return (long) ((hi - 0xd800) * 0x400 + 0x10000 + lo - 0xdc00);
+      return (int) ((hi - 0xd800) * 0x400 + 0x10000 + lo - 0xdc00);
     else
-      return (long) (hi << 16|lo);
+      return (int) (hi << 16|lo);
   }
 
   return 0;
@@ -499,7 +499,7 @@ CIDFont_type2_dofont (CIDFont *font)
   struct tt_glyphs *glyphs;
   CMap    *cmap = NULL;
   tt_cmap *ttcmap = NULL;
-  unsigned long offset = 0;
+  ULONG    offset = 0;
   CID      cid, last_cid;
   unsigned char *cidtogidmap;
   USHORT   num_glyphs;
@@ -653,10 +653,14 @@ CIDFont_type2_dofont (CIDFont *font)
 	c = h_used_chars[i];
 	break;
       }
+    }
+    for (i = 8191; i >= 0; i--) {
       if (v_used_chars && v_used_chars[i] != 0) {
-	last_cid = i * 8 + 7;
-	c = v_used_chars[i];
-	break;
+	if (i * 8 + 7 >= last_cid) {
+	  c = (i * 8 + 7 > last_cid) ? (v_used_chars[i]) : (c | v_used_chars[i]);
+	  last_cid = i * 8 + 7;
+	  break;
+	}
       }
     }
     if (last_cid > 0) {
@@ -689,7 +693,7 @@ CIDFont_type2_dofont (CIDFont *font)
   if (h_used_chars) {
     used_chars = h_used_chars;
     for (cid = 1; cid <= last_cid; cid++) {
-      long           code;
+      int            code;
       unsigned short gid;
 
       if (!is_used_char2(h_used_chars, cid))
@@ -703,7 +707,7 @@ CIDFont_type2_dofont (CIDFont *font)
 	gid  = tt_cmap_lookup(ttcmap, code);
 #ifdef FIX_CJK_UNIOCDE_SYMBOLS
 	if (gid == 0 && unicode_cmap) {
-	  long alt_code;
+	  int alt_code;
 
 	  alt_code = fix_CJK_symbols((unsigned short)code);
 	  if (alt_code != code) {
@@ -763,7 +767,7 @@ CIDFont_type2_dofont (CIDFont *font)
     }
 
     for (cid = 1; cid <= last_cid; cid++) {
-      long           code;
+      int            code;
       unsigned short gid;
 
       if (!is_used_char2(v_used_chars, cid))
@@ -785,7 +789,7 @@ CIDFont_type2_dofont (CIDFont *font)
 	gid  = tt_cmap_lookup(ttcmap, code);
 #ifdef FIX_CJK_UNIOCDE_SYMBOLS
 	if (gid == 0 && unicode_cmap) {
-	  long alt_code;
+	  int alt_code;
 
 	  alt_code = fix_CJK_symbols((unsigned short)code);
 	  if (alt_code != code) {
@@ -933,7 +937,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
 {
   char    *fontname;
   sfnt    *sfont;
-  unsigned long offset = 0;
+  ULONG    offset = 0;
   FILE    *fp = NULL;
 
   ASSERT(font && opt);
@@ -975,9 +979,17 @@ CIDFont_type2_open (CIDFont *font, const char *name,
     ERROR("Reading TrueType table directory failed.");
   }
 
+  /* Ignore TrueType Collection with CFF table. */
+  if (sfont->type == SFNT_TYPE_TTC && sfnt_find_table_pos(sfont, "CFF ")) {
+    sfnt_close(sfont);
+    if (fp)
+      DPXFCLOSE(fp);
+    return -1;
+  }
+
   {
     char *shortname;
-    long  namelen;
+    int   namelen;
 
     /* MAC-ROMAN-EN-POSTSCRIPT or WIN-UNICODE-EN(US)-POSTSCRIPT */
     shortname = NEW(PDF_NAME_LEN_MAX, char);

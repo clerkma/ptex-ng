@@ -1,6 +1,6 @@
 # Public macros for the TeX Live (TL) tree.
 # Copyright (C) 1995-2009 Karl Berry <tex-live@tug.org>
-# Copyright (C) 2009-2014 Peter Breitenlohner <tex-live@tug.org>
+# Copyright (C) 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 #
 # This file is free software; the copyright holders
 # give unlimited permission to copy and/or distribute it,
@@ -248,7 +248,7 @@ AC_FUNC_CLOSEDIR_VOID
 AC_CHECK_HEADERS([assert.h float.h limits.h pwd.h stdlib.h sys/param.h])
 dnl
 dnl Replacement functions that may be required on ancient broken system.
-AC_CHECK_FUNCS([putenv strcasecmp strtol strstr])
+AC_CHECK_FUNCS([putenv])
 dnl
 dnl More common functions
 AC_CHECK_FUNCS([getcwd getwd memcmp memcpy mkstemp mktemp strchr strrchr])
@@ -260,6 +260,9 @@ AC_TYPE_INT64_T
 AC_TYPE_UINT64_T
 AS_CASE([:$ac_cv_c_int64_t:$ac_cv_c_int64_t:],
         [*':no:'*], [AC_MSG_ERROR([Sorry, your compiler does not support 64-bit integer types.])])
+dnl
+dnl Check if <ctype.h> declares isascii.
+AC_CHECK_DECLS([isascii], [], [], [[#include <ctype.h>]])
 dnl
 dnl Check whether struct stat provides high-res time.
 AC_CHECK_MEMBERS([struct stat.st_mtim])
@@ -288,10 +291,23 @@ AC_DEFUN([_KPSE_MSG_WARN_PREPARE],
 # _KPSE_CHECK_PKG_CONFIG
 # ----------------------
 # Check for pkg-config
-AC_DEFUN([_KPSE_CHECK_PKG_CONFIG],
-[AC_REQUIRE([AC_CANONICAL_HOST])[]dnl
+AC_DEFUN([_KPSE_CHECK_PKG_CONFIG], [dnl
+AC_REQUIRE([AC_CANONICAL_HOST])[]dnl
 AC_CHECK_TOOL([PKG_CONFIG], [pkg-config], [false])[]dnl
 ]) # _KPSE_CHECK_PKG_CONFIG
+
+# _KPSE_PKG_CONFIG_FLAGS(PACKAGE-NAME, PKG_CONFIG_NAME, [AT_LEAST])
+# -----------------------------------------------------------------
+# Use pkg-config to determine INCLUDES and LIBS for a system library.
+AC_DEFUN([_KPSE_PKG_CONFIG_FLAGS], [dnl
+AC_REQUIRE([_KPSE_CHECK_PKG_CONFIG])[]dnl  
+if $PKG_CONFIG $2[]m4_ifval([$3], [ --atleast-version=$3]); then
+  AS_TR_CPP($1)_INCLUDES=`$PKG_CONFIG $2 --cflags`
+  AS_TR_CPP($1)_LIBS=`$PKG_CONFIG $2 --libs`
+elif test "x$need_[]AS_TR_SH($1):$with_system_[]AS_TR_SH($1)" = xyes:yes; then
+  AC_MSG_ERROR([did not find $2[]m4_ifval([$3], [ $3 or better])]) 
+fi
+]) # _KPSE_PKG_CONFIG_FLAGS
 
 # KPSE_CANONICAL_HOST
 # -------------------

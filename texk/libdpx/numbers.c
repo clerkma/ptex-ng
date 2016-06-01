@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -29,122 +29,120 @@
 #include "mfileio.h"
 #include "numbers.h"
 
-UNSIGNED_BYTE get_unsigned_byte (FILE *file)
+unsigned char get_unsigned_byte (FILE *file)
 {
   int ch;
   if ((ch = fgetc (file)) < 0)
     ERROR ("File ended prematurely\n");
-  return (UNSIGNED_BYTE) ch;
+  return (unsigned char) ch;
 }
 
-#if 0
-UNSIGNED_BYTE sget_unsigned_byte (char *s)
+void skip_bytes (unsigned int n, FILE *file)
 {
-  return *((unsigned char *) s);
+  while (n-- > 0)
+    get_unsigned_byte(file);
 }
-#endif
 
-SIGNED_BYTE get_signed_byte (FILE *file)
+signed char get_signed_byte (FILE *file)
 {
   int byte;
   byte = get_unsigned_byte(file);
   if (byte >= 0x80) 
     byte -= 0x100;
-  return (SIGNED_BYTE) byte;
+  return (signed char) byte;
 }
 
-UNSIGNED_PAIR get_unsigned_pair (FILE *file)
+unsigned short get_unsigned_pair (FILE *file)
 {
-  int i;
-  UNSIGNED_BYTE byte;
-  UNSIGNED_PAIR pair = 0;
-  for (i=0; i<2; i++) {
-    byte = get_unsigned_byte(file);
-    pair = pair*0x100u + byte;
-  }
+  unsigned short pair = get_unsigned_byte(file);
+  pair = (pair << 8) | get_unsigned_byte(file);
   return pair;
 }
 
-UNSIGNED_PAIR sget_unsigned_pair (unsigned char *s)
+unsigned short sget_unsigned_pair (unsigned char *s)
 {
-  int i;
-  UNSIGNED_BYTE byte;
-  UNSIGNED_PAIR pair = 0;
-  for (i=0; i<2; i++) {
-    byte = *(s++);
-    pair = pair*0x100u + byte;
-  }
+  unsigned short pair = *(s++);
+  pair = (pair << 8) | *(s++);
   return pair;
 }
 
-SIGNED_PAIR get_signed_pair (FILE *file)
+signed short get_signed_pair (FILE *file)
+{
+  signed short pair = get_signed_byte(file);
+  pair = (pair << 8) | get_unsigned_byte(file);
+  return pair;
+}
+
+
+unsigned int get_unsigned_triple(FILE *file)
 {
   int i;
-  long pair = 0;
+  unsigned int triple = 0;
+  for (i=0; i<3; i++) {
+    triple = (triple << 8) | get_unsigned_byte(file);
+  }
+  return triple;
+}
+
+signed int get_signed_triple(FILE *file)
+{
+  int i;
+  signed int triple = get_signed_byte(file);
   for (i=0; i<2; i++) {
-    pair = pair*0x100 + get_unsigned_byte(file);
+    triple = (triple << 8) | get_unsigned_byte(file);
   }
-  if (pair >= 0x8000) {
-    pair -= 0x10000l;
-  }
-  return (SIGNED_PAIR) pair;
+  return triple;
 }
 
-
-UNSIGNED_TRIPLE get_unsigned_triple(FILE *file)
+int32_t get_signed_quad(FILE *file)
 {
   int i;
-  long triple = 0;
+  int32_t quad = get_signed_byte(file);
   for (i=0; i<3; i++) {
-    triple = triple*0x100u + get_unsigned_byte(file);
+    quad = (quad << 8) | get_unsigned_byte(file);
   }
-  return (UNSIGNED_TRIPLE) triple;
+  return quad;
 }
 
-SIGNED_TRIPLE get_signed_triple(FILE *file)
+uint32_t get_unsigned_quad(FILE *file)
 {
   int i;
-  long triple = 0;
-  for (i=0; i<3; i++) {
-    triple = triple*0x100 + get_unsigned_byte(file);
-  }
-  if (triple >= 0x800000l) 
-    triple -= 0x1000000l;
-  return (SIGNED_TRIPLE) triple;
-}
-
-SIGNED_QUAD get_signed_quad(FILE *file)
-{
-  int byte, i;
-  long quad = 0;
-
-  /* Check sign on first byte before reading others */
-  byte = get_unsigned_byte(file);
-  quad = byte;
-  if (quad >= 0x80) 
-    quad = byte - 0x100;
-  for (i=0; i<3; i++) {
-    quad = quad*0x100 + get_unsigned_byte(file);
-  }
-  return (SIGNED_QUAD) quad;
-}
-
-UNSIGNED_QUAD get_unsigned_quad(FILE *file)
-{
-  int i;
-  unsigned long quad = 0;
+  uint32_t quad = 0;
   for (i=0; i<4; i++) {
-    quad = quad*0x100u + get_unsigned_byte(file);
+    quad = (quad << 8) | get_unsigned_byte(file);
   }
-  return (UNSIGNED_QUAD) quad;
+  return quad;
 }
 
-SIGNED_QUAD sqxfw (SIGNED_QUAD sq, fixword fw)
+int32_t get_unsigned_num (FILE *file, unsigned char num)
+{
+  int32_t val = get_unsigned_byte (file);
+  switch (num) {
+  case 3: if (val > 0x7f)
+            val -= 0x100;
+          val = (val << 8) | get_unsigned_byte (file);
+  case 2: val = (val << 8) | get_unsigned_byte (file);
+  case 1: val = (val << 8) | get_unsigned_byte (file);
+  default: break;
+  }
+  return val;
+}
+
+/* Compute a signed quad that must be positive */
+uint32_t get_positive_quad (FILE *file, const char *type, const char *name)
+{
+  int32_t val = get_signed_quad (file);
+  if (val < 0)
+    ERROR ("Bad %s: negative %s: %d", type, name, val);
+  return (uint32_t)val;
+}
+
+int32_t sqxfw (int32_t sq, fixword fw)
 {
   int sign = 1;
-  unsigned long a, b, c, d, ad, bd, bc, ac;
-  unsigned long e, f, g, h, i, j, k;
-  unsigned long result;
+  uint32_t a, b, c, d, ad, bd, bc, ac;
+  uint32_t e, f, g, h, i, j, k;
+  int32_t result;
   /* Make positive. */
   if (sq < 0) {
     sign = -sign;
@@ -154,77 +152,21 @@ SIGNED_QUAD sqxfw (SIGNED_QUAD sq, fixword fw)
     sign = -sign;
     fw = -fw;
   }
-  a = ((unsigned long) sq) >> 16u;
-  b = ((unsigned long) sq) & 0xffffu;
-  c = ((unsigned long) fw) >> 16u;
-  d = ((unsigned long) fw) & 0xffffu;
+  a = ((uint32_t) sq) >> 16;
+  b = ((uint32_t) sq) & 0xffffu;
+  c = ((uint32_t) fw) >> 16;
+  d = ((uint32_t) fw) & 0xffffu;
   ad = a*d; bd = b*d; bc = b*c; ac = a*c;
-  e = bd >> 16u;
-  f = ad >> 16u;
+  e = bd >> 16;
+  f = ad >> 16;
   g = ad & 0xffffu;
-  h = bc >> 16u;
+  h = bc >> 16;
   i = bc & 0xffffu;
-  j = ac >> 16u;
+  j = ac >> 16;
   k = ac & 0xffffu;
-  result = (e+g+i + (1<<3)) >> 4u;  /* 1<<3 is for rounding */
-  result += (f+h+k) << 12u;
-  result += j << 28u;
-  return (sign > 0) ? result : result * -1L;
+  result = (e+g+i + (1<<3)) >> 4;  /* 1<<3 is for rounding */
+  result += (f+h+k) << 12;
+  result += j << 28;
+  return (sign > 0) ? result : -result;
 }
-
-#if 0
-SIGNED_QUAD axboverc (SIGNED_QUAD n1, SIGNED_QUAD n2, SIGNED_QUAD divide)
-{
-  int sign = 1;
-  unsigned long a, b, c, d, ad, bd, bc, ac, e, f, g, h, i, j, o;
-  unsigned long high, low;
-  SIGNED_QUAD result = 0;
-  /*  Make positive. */
-  if (n1 < 0) {
-    sign = -sign;
-    n1 = -n1;
-  }
-  if (n2 < 0) {
-    sign = -sign;
-    n2 = -n2;
-  }
-  if (divide < 0) {
-    sign = -sign;
-    divide = -divide;
-  }
-  a = ((unsigned long) n1) >> 16u;
-  b = ((unsigned long) n1) & 0xffffu;
-  c = ((unsigned long) n2) >> 16u;
-  d = ((unsigned long) n2) & 0xffffu;
-  ad = a*d; bd = b*d; bc = b*c; ac = a*c;
-  e = bd >> 16u; f = bd & 0xffffu;
-  g = ad >> 16u; h = ad & 0xffffu;
-  i = bc >> 16u; j = bc & 0xffffu;
-  o = e+h+j;
-  high = g+i+(o>>16u)+ac; o &= 0xffffu;
-  low = (o << 16) + f;
-  if (high >= divide)
-    ERROR ("Overflow in axboc");
-  {
-    int k;
-    for (k=0; k<32; k++) {
-      high *= 2;
-      result *= 2;
-      if (low >= 0x80000000) {
-	low -= 0x80000000;
-	high += 1;
-      }
-      low *= 2;
-      if (high > divide) {
-	high -= divide;
-	result += 1;
-      }
-    }
-  }
-  high *= 2;
-  if (high >= divide)
-    result += 1;
-  return (sign>0)?result:-result;
-}
-#endif
 

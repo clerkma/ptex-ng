@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2008-2014 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+    Copyright (C) 2008-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -66,7 +66,6 @@ pdf_font_set_verbose (void)
   Type0Font_set_verbose();
   CIDFont_set_verbose  ();
   pdf_encoding_set_verbose();
-  UC_set_verbose ();
   agl_set_verbose();
   otl_conf_set_verbose();
   otf_cmap_set_verbose ();
@@ -84,6 +83,41 @@ pdf_font_set_dpi (int font_dpi)
   PKFont_set_dpi(font_dpi);
 }
 
+
+#if defined(_MSC_VER)
+#define strtoll _strtoi64
+#endif
+
+/* If an environment variable SOURCE_DATE_EPOCH is correctly defined like
+ * SOURCE_DATE_EPOCH=1456304492, then returns this value, to be used as the
+ * 'current time', otherwise returns INVALID_EPOCH_VALUE (= 0x7fffffffffffffffULL).
+ * In the case of Microsoft Visual Studio 2010, the value should be less
+ * than 32535291600.
+ */
+
+time_t
+get_unique_time_if_given(void)
+{
+  const char *source_date_epoch;
+  int64_t epoch;
+  char *endptr;
+  time_t ret = INVALID_EPOCH_VALUE;
+
+  source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+  if (source_date_epoch) {
+    errno = 0;
+    epoch = strtoll(source_date_epoch, &endptr, 10);
+    if (!(epoch < 0 || *endptr != '\0' || errno != 0)) {
+      ret = (time_t) epoch;
+#if defined(_MSC_VER)
+      if (ret > 32535291599ULL)
+        ret = 32535291599ULL;
+#endif
+    }
+  }
+  return ret;
+}
+
 void
 pdf_font_make_uniqueTag (char *tag)
 {
@@ -92,7 +126,11 @@ pdf_font_make_uniqueTag (char *tag)
   static char first = 1;
 
   if (first) {
-    srand(time(NULL));
+    time_t current_time;
+    current_time = get_unique_time_if_given();
+    if (current_time == INVALID_EPOCH_VALUE)
+      current_time = time(NULL);
+    srand(current_time);
     first = 0;
   }
 
@@ -332,24 +370,6 @@ pdf_get_font_usedchars (int font_id)
     }
     return font->usedchars;
   }
-}
-
-char *
-pdf_get_font_usedglyphs (int font_id)
-{
-  pdf_font *font;
-
-  CHECK_ID(font_id);
-
-  font = GET_FONT(font_id);
-  if (font->subtype == PDF_FONT_FONTTYPE_TYPE0) {
-    Type0Font *t0font;
-
-    t0font = Type0Font_cache_get(font->font_id);
-    return Type0Font_get_usedglyphs(t0font);
-  }
-
-  return NULL;
 }
 
 int

@@ -1,6 +1,6 @@
 /* mingw32.h: declarations for mingw32.
 
-   Copyright 2009-2014 Taco Hoekwater <taco@luatex.org>.
+   Copyright 2009-2016 Taco Hoekwater <taco@luatex.org>.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -72,7 +72,8 @@ extern char *quote_args(char **);
 #endif /* MAKE_KPSE_DLL */
 
 extern KPSEDLL BOOL win32_get_long_filename (char *, char *, int);
-extern KPSEDLL void texlive_gs_init(void);
+extern KPSEDLL void texlive_gs_init (void);
+extern KPSEDLL double win32_floor (double);
 
 static inline FILE *
 win32_popen (const char *command, const char *fmode)

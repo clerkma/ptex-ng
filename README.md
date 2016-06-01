@@ -13,6 +13,7 @@ Run the shell script:
 
 * zlib
 * libpng
+* libpaper
 * kpathsea
 * ptexenc
 * libdpx

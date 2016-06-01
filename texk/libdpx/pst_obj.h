@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -30,10 +30,5 @@ extern pst_obj *pst_parse_boolean(unsigned char **inbuf, unsigned char *inbufend
 extern pst_obj *pst_parse_name   (unsigned char **inbuf, unsigned char *inbufend);
 extern pst_obj *pst_parse_number (unsigned char **inbuf, unsigned char *inbufend);
 extern pst_obj *pst_parse_string (unsigned char **inbuf, unsigned char *inbufend);
-
-#if 0
-extern int   pst_name_is_valid (const char *name);
-extern char *pst_name_encode   (const char *name);
-#endif
 
 #endif /* _PST_OBJ_H_ */

@@ -1,6 +1,6 @@
 ## Makefile.am for the TeX Live subdirectory texk/kpathsea/
 ##
-## Copyright (C) 2009-2014 Peter Breitenlohner <tex-live@tug.org>
+## Copyright (C) 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##
 SUBDIRS = . doc man
@@ -106,19 +106,20 @@ endif !WIN32
 $(libkpathsea_la_OBJECTS): paths.h kpathsea.h
 
 EXTRA_DIST += \
-	putenv.c \
-	strcasecmp.c \
-	strtol.c \
-	strstr.c
+	putenv.c
 
 kpseincludedir = ${includedir}/kpathsea
 
 nodist_kpseinclude_HEADERS = \
-	c-auto.h \
 	kpathsea.h \
 	paths.h
 
 kpseinclude_HEADERS = config.h $(direct_headers) $(indirect_headers)
+
+kpselibdir = ${libdir}/kpathsea
+
+nodist_kpselib_HEADERS = \
+	c-auto.h
 
 # Headers included directly into kpathsea.h
 #
@@ -308,6 +309,10 @@ uninstall-hook: uninstall-bin-links
 TESTS  = tests/cnfnewline.test tests/kpseaccess.test
 TESTS += tests/kpsereadlink.test tests/kpsestat.test tests/kpsewhich.test
 TESTS_ENVIRONMENT = LN_S='$(LN_S)' LT_OBJDIR='$(LT_OBJDIR)'
+tests/cnfnewline.log tests/kpsewhich.log: kpsewhich$(EXEEXT)
+tests/kpseaccess.log: kpseaccess$(EXEEXT)
+tests/kpsereadlink.log: kpsereadlink$(EXEEXT)
+tests/kpsestat.log: kpsestat$(EXEEXT)
 EXTRA_DIST += $(TESTS)
 EXTRA_DIST += tests/cnfnewline/texmf.cnf
 

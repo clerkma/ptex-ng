@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -27,7 +27,7 @@
 #include "pdfobj.h"
 #include "pdfcolor.h"
 
-typedef signed long spt_t;
+typedef int spt_t;
 
 typedef struct pdf_tmatrix
 {
@@ -151,8 +151,6 @@ extern int    pdf_dev_put_image  (int xobj_id,
  */
 extern int    pdf_dev_locate_font (const char *font_name, spt_t ptsize);
 
-extern int    pdf_dev_setfont     (const char *font_name, spt_t ptsize);
-
 /* The following two routines are NOT WORKING.
  * Dvipdfmx doesn't manage gstate well..
  */
@@ -196,7 +194,6 @@ extern void   pdf_dev_set_param (int param_type, int value);
  * auto_rotate is unset.
  */
 #define pdf_dev_set_autorotate(v) pdf_dev_set_param(PDF_DEV_PARAM_AUTOROTATE, (v))
-#define pdf_dev_set_colormode(v)  pdf_dev_set_param(PDF_DEV_PARAM_COLORMODE,  (v))
 
 /*
  * For pdf_doc, pdf_draw and others.
@@ -205,7 +202,7 @@ extern void   pdf_dev_set_param (int param_type, int value);
 /* Force reselecting font and color:
  * XFrom (content grabbing) and Metapost support want them.
  */
-extern void   pdf_dev_reset_fonts (void);
+extern void   pdf_dev_reset_fonts (int newpage);
 extern void   pdf_dev_reset_color (int force);
 
 /* Initialization of transformation matrix with M and others.
@@ -223,5 +220,8 @@ extern void   graphics_mode (void);
 extern void   pdf_dev_get_coord(double *xpos, double *ypos);
 extern void   pdf_dev_push_coord(double xpos, double ypos);
 extern void   pdf_dev_pop_coord(void);
+
+extern void   pdf_dev_begin_actualtext (uint16_t *unicodes, int len);
+extern void   pdf_dev_end_actualtext ();
 
 #endif /* _PDFDEV_H_ */

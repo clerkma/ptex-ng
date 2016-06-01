@@ -15,7 +15,7 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA.  */
 
-spt_t ng_packet_width (SIGNED_QUAD ch, int ng_font_id)
+spt_t ng_packet_width (int32_t ch, int ng_font_id)
 {
   struct loaded_font * font;
   spt_t width;
@@ -27,9 +27,9 @@ spt_t ng_packet_width (SIGNED_QUAD ch, int ng_font_id)
   return width;
 }
 
-extern void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v);
+extern void ng_set_packet (int32_t ch, int vf_font, int32_t h, int32_t v);
 
-void ng_set (SIGNED_QUAD ch, int ng_font_id, SIGNED_QUAD h, SIGNED_QUAD v)
+void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v)
 {
   struct loaded_font * font;
   spt_t width, height, depth;

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@ extern void CIDFont_set_verbose     (void);
 #if 0
 extern int  CIDFont_require_version (void);
 #endif
-extern void CIDFont_set_flags       (long flags);
+extern void CIDFont_set_flags       (int flags);
 
 #define CIDFONT_FORCE_FIXEDPITCH (1 << 1)
 
@@ -52,10 +52,6 @@ extern void CIDFont_set_flags       (long flags);
 #define CIDFONT_FLAG_TYPE1      (1 << 8)
 #define CIDFONT_FLAG_TYPE1C     (1 << 9)
 #define CIDFONT_FLAG_TRUETYPE   (1 << 10)
-
-extern CIDFont *CIDFont_new     (void);
-extern void     CIDFont_release (CIDFont *font);
-extern void     CIDFont_flush   (CIDFont *font);
 
 extern char       *CIDFont_get_fontname   (CIDFont *font);
 
@@ -77,7 +73,6 @@ extern int      CIDFont_is_ACCFont  (CIDFont *font);
 extern int      CIDFont_is_UCSFont  (CIDFont *font);
 
 #include "fontmap.h"
-extern void     CIDFont_cache_init  (void);
 extern int      CIDFont_cache_find  (const char *map_name, CIDSysInfo *cmap_csi, fontmap_opt *fmap_opt);
 extern CIDFont *CIDFont_cache_get   (int fnt_id);
 extern void     CIDFont_cache_close (void);

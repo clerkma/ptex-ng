@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -50,27 +50,7 @@
 
 #include "agl.h"
 
-typedef struct
-{
-  const char * glyph_name;
-  const int    uni_len;
-  const char * uni_data;
-} agl_data;
-
-typedef struct
-{
-  const int        sums;
-  const agl_data * data;
-} agl_statics;
-
-#include "agl_static_data_glyphlist.c"
-#include "agl_static_data_pdfglyphlist.c"
-
-static void
-agl_load_static_data (agl_statics data, int is_predef);
-
-static long
-xtol (const char *start, int len);
+static int agl_load_listfile (const char *filename, int format);
 
 static int verbose = 0;
 
@@ -165,9 +145,9 @@ static const char * const modifiers[] = {
 static int
 skip_capital (const char **p, const char *endptr)
 {
-  long slen = 0, len;
+  int slen = 0, len;
 
-  len = (long) (endptr - (*p));
+  len = (int) (endptr - (*p));
 
   if (len >= 2 &&
       ((**p == 'A' && *(*p+1) == 'E') ||
@@ -200,10 +180,10 @@ skip_capital (const char **p, const char *endptr)
 static int
 skip_modifier (const char **p, const char *endptr)
 {
-  long slen = 0, len;
+  int  slen = 0, len;
   int  i;
 
-  len = (long) (endptr - (*p));
+  len = (int) (endptr - (*p));
 
   for (i = 0; modifiers[i] != NULL; i++) {
     if ((len >= strlen(modifiers[i]) &&
@@ -220,7 +200,7 @@ skip_modifier (const char **p, const char *endptr)
 static int
 is_smallcap (const char *glyphname)
 {
-  long  len, slen;
+  int  len, slen;
   const char *p, *endptr;
 
   if (!glyphname)
@@ -384,7 +364,7 @@ agl_normalized_name (char *glyphname)
 
 static struct ht_table aglmap;
 
-static void CDECL
+static inline void
 hval_free (void *hval)
 {
   agl_release_name((struct agl_name *) hval);
@@ -394,12 +374,13 @@ void
 agl_init_map (void)
 {
   ht_init_table(&aglmap, hval_free);
-  agl_load_listfile   ("texglyphlist.txt", 0);
-  //agl_load_listfile   ("pdfglyphlist.txt", 1);
-  //agl_load_listfile   ("glyphlist.txt",    0);
-  //agl_load_static_data(dpx_texglyphlist_data, 0);
-  agl_load_static_data(dpx_pdfglyphlist_data, 1);
-  agl_load_static_data(dpx_glyphlist_data,    0);
+  agl_load_listfile(AGL_EXTRA_LISTFILE, 0);
+  if (agl_load_listfile(AGL_PREDEF_LISTFILE, 1) < 0) {
+    WARN("Failed to load AGL file \"%s\"...", AGL_PREDEF_LISTFILE);
+  }
+  if (agl_load_listfile(AGL_DEFAULT_LISTFILE, 0) < 0) {
+    WARN("Failed to load AGL file \"%s\"...", AGL_DEFAULT_LISTFILE);
+  }
 }
 
 void
@@ -408,41 +389,9 @@ agl_close_map (void)
   ht_clear_table(&aglmap);
 }
 
-void
-agl_load_static_data (agl_statics data, int is_predef)
-{
-  agl_name *agln, *duplicate;
-  int       i, j;
-
-  for (i = 0; i < data.sums; i++)
-  {
-    char * name        = (char *)(data.data)[i].glyph_name;
-    agln               = agl_normalized_name(name);
-    agln->is_predef    = is_predef;
-    agln->n_components = (data.data)[i].uni_len;
-   
-    for (j = 0; j < (data.data)[i].uni_len; j++)
-    {
-      agln->unicodes[j] = xtol((data.data)[i].uni_data + j * 4, 4);
-    }
-   
-    duplicate = ht_lookup_table(&aglmap, name, strlen(name));
-    
-    if (!duplicate)
-      ht_append_table(&aglmap, name, strlen(name), agln);
-    else
-    {
-      while (duplicate->alternate)
-        duplicate = duplicate->alternate;
-
-      duplicate->alternate = agln;
-    }
-  }
-}
-
 #define WBUF_SIZE 1024
 
-int
+static int
 agl_load_listfile (const char *filename, int is_predef)
 {
   int   count = 0;
@@ -466,7 +415,7 @@ agl_load_listfile (const char *filename, int is_predef)
     agl_name *agln, *duplicate;
     char     *name;
     int       n_unicodes, i;
-    long      unicodes[AGL_MAX_UNICODES];
+    int32_t   unicodes[AGL_MAX_UNICODES];
 
     endptr = p + strlen(p);
     skip_white(&p, endptr);
@@ -606,10 +555,10 @@ agl_name_is_unicode (const char *glyphname)
   return 0;
 }
 
-long
+int32_t
 agl_name_convert_unicode (const char *glyphname)
 {
-  long  ucv = -1;
+  int32_t ucv = -1;
   const char *p;
 
   if (!agl_name_is_unicode(glyphname))
@@ -649,10 +598,10 @@ agl_name_convert_unicode (const char *glyphname)
 
 
 
-static long
+static int
 xtol (const char *start, int len)
 {
-  long v = 0;
+  int v = 0;
 
   while (len-- > 0) {
     v <<= 4;
@@ -674,12 +623,12 @@ xtol (const char *start, int len)
   ((u) >= 0x100000L && (u) <= 0x10FFFDL) \
 )
 
-static long
+static int32_t
 put_unicode_glyph (const char *name,
 		   unsigned char **dstpp, unsigned char *limptr)
 {
   const char *p;
-  long  len = 0, ucv;
+  int32_t len = 0, ucv;
 
   p   = name;
   ucv = 0;
@@ -687,12 +636,12 @@ put_unicode_glyph (const char *name,
   if (p[1] != 'n') {
     p   += 1;
     ucv  = xtol(p, strlen(p));
-    len += UC_sput_UTF16BE (ucv, dstpp, limptr);
+    len += UC_UTF16BE_encode_char(ucv, dstpp, limptr);
   } else {
     p += 3;
     while (*p != '\0') {
       ucv  = xtol(p, 4);
-      len += UC_sput_UTF16BE (ucv, dstpp, limptr);
+      len += UC_UTF16BE_encode_char(ucv, dstpp, limptr);
       p   += 4;
     }
   }
@@ -700,12 +649,12 @@ put_unicode_glyph (const char *name,
   return len;
 }
 
-long
+int32_t
 agl_sput_UTF16BE (const char *glyphstr,
 		  unsigned char **dstpp, unsigned char *limptr,
 		  int *fail_count)
 {
-  long  len   = 0;
+  int32_t len   = 0;
   int   count = 0;
   const char *p, *endptr;
 
@@ -719,7 +668,7 @@ agl_sput_UTF16BE (const char *glyphstr,
   while (p < endptr) {
     char     *name;
     const char *delim;
-    long      sub_len;
+    int32_t   sub_len;
     int       i;
     agl_name *agln0, *agln1 = NULL;
 
@@ -737,7 +686,7 @@ agl_sput_UTF16BE (const char *glyphstr,
     } else if (!delim || delim > endptr) {
       delim = endptr;
     }
-    sub_len = (long) (delim - p);
+    sub_len = (int32_t) (delim - p);
 
     name = NEW(sub_len+1, char);
     memcpy(name, p, sub_len);
@@ -766,7 +715,7 @@ agl_sput_UTF16BE (const char *glyphstr,
       }
       if (agln1) {
 	for (i = 0; i < agln1->n_components; i++) {
-	  len += UC_sput_UTF16BE (agln1->unicodes[i], dstpp, limptr);
+	  len += UC_UTF16BE_encode_char(agln1->unicodes[i], dstpp, limptr);
 	}
       } else {
 	if (verbose) {
@@ -786,7 +735,7 @@ agl_sput_UTF16BE (const char *glyphstr,
 
 int
 agl_get_unicodes (const char *glyphstr,
-		  long *unicodes, int max_unicodes)
+		  int32_t *unicodes, int max_unicodes)
 {
   int   count = 0;
   const char *p, *endptr;
@@ -799,7 +748,7 @@ agl_get_unicodes (const char *glyphstr,
   while (p < endptr) {
     char     *name;
     const char *delim;
-    long      sub_len;
+    int32_t   sub_len;
     int       i;
     agl_name *agln0, *agln1 = NULL;
 
@@ -814,7 +763,7 @@ agl_get_unicodes (const char *glyphstr,
     } else if (!delim || delim > endptr) {
       delim = endptr;
     }
-    sub_len = (long) (delim - p);
+    sub_len = (int32_t) (delim - p);
 
     name = NEW(sub_len+1, char);
     memcpy(name, p, sub_len);

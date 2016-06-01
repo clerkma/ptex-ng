@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -76,7 +76,7 @@ pdf_dev_scale (void)
 #define TEX_ONE_HUNDRED_BP 6578176
 static struct {
   double dvi2pts;
-  long   min_bp_val; /* Shortest resolvable distance in the output PDF.     */
+  int    min_bp_val; /* Shortest resolvable distance in the output PDF.     */
   int    precision;  /* Number of decimal digits (in fractional part) kept. */
 } dev_unit = {
   0.0,
@@ -92,8 +92,8 @@ dev_unit_dviunit (void)
 }
 
 #define DEV_PRECISION_MAX  8
-static unsigned long ten_pow[10] = {
-  1ul, 10ul, 100ul, 1000ul, 10000ul, 100000ul, 1000000ul, 10000000ul, 100000000ul, 1000000000ul
+static uint32_t ten_pow[10] = {
+  1u, 10u, 100u, 1000u, 10000u, 100000u, 1000000u, 10000000u, 100000000u, 1000000000u
 };
 
 static double ten_pow_inv[10] = {
@@ -105,7 +105,7 @@ static double ten_pow_inv[10] = {
 #define dround_at(v,p) (ROUND( (v), ten_pow_inv[(p)] ))
 
 static int
-p_itoa (long value, char *buf)
+p_itoa (int value, char *buf)
 {
   int   sign, ndigits;
   char *p = buf;
@@ -140,51 +140,56 @@ p_itoa (long value, char *buf)
   return  (sign ? ndigits + 1 : ndigits);
 }
 
-/* ... */
+/* NOTE: Acrobat 5 and prior uses 16.16 fixed point representation for
+ * real numbers.
+ */
 static int
 p_dtoa (double value, int prec, char *buf)
 {
-  const long p[10] = { 1, 10, 100, 1000, 10000,
-		       100000, 1000000, 10000000, 100000000, 1000000000 };
-  long i, f;
-  char *c = buf;
-  int n;
+  const int32_t p[10] = { 1, 10, 100, 1000, 10000,
+		                   100000, 1000000, 10000000,
+                       100000000, 1000000000 };
+  double i, f;
+  int32_t g;
+  char  *c = buf;
+  int    n;
 
   if (value < 0) {
     value = -value;
     *c++ = '-';
     n = 1;
-  } else
+  } else {
     n = 0;
+  }
 
-  i = (long) value;
-  f = (long) ((value-i)*p[prec] + 0.5);
+  f = modf(value, &i);
+  g = (int32_t) (f * p[prec] + 0.5);
 
-  if (f == p[prec]) {
-    f = 0;
-    i++;
+  if (g == p[prec]) {
+    g  = 0;
+    i += 1;
   }
 
   if (i) {
-    int m = p_itoa(i, c);
+    int m = sprintf(c, "%.0f", i);
     c += m;
     n += m;
-  } else if (!f) {
+  } else if (g == 0) {
     *(c = buf) = '0';
     n = 1;
   }
 
-  if (f) {
+  if (g) {
     int j = prec;
 
     *c++ = '.';
 
     while (j--) {
-      c[j] = (f % 10) + '0';
-      f /= 10;
+      c[j] = (g % 10) + '0';
+      g /= 10;
     }
-    c += prec-1;
-    n += 1+prec;
+    c += prec - 1;
+    n += 1 + prec;
 
     while (*c == '0') {
       c--;
@@ -463,7 +468,6 @@ struct dev_font {
 
   pdf_obj *resource;
   char    *used_chars;
-  char    *used_glyphs;
 
   /* Font format:
    * simple, composite or bitmap.
@@ -877,8 +881,6 @@ dev_set_font (int font_id)
   if (!real_font->resource) {
     real_font->resource   = pdf_get_font_reference(real_font->font_id);
     real_font->used_chars = pdf_get_font_usedchars(real_font->font_id);
-    if (real_font->cff_charsets)
-      real_font->used_glyphs = pdf_get_font_usedglyphs(real_font->font_id);
   }
 
   if (!real_font->used_on_this_page) { 
@@ -1043,14 +1045,10 @@ handle_multibyte_string (struct dev_font *font,
    * encoding.
    * TODO: A character decomposed to multiple characters.
    */
-#ifdef XETEX
   if (ctype != -1 && font->enc_id >= 0) {
-#else
-  if (font->enc_id >= 0) {
-#endif
     const unsigned char *inbuf;
     unsigned char *outbuf;
-    long           inbytesleft, outbytesleft;
+    int            inbytesleft, outbytesleft;
     CMap          *cmap;
 
     cmap         = CMap_cache_get(font->enc_id);
@@ -1107,9 +1105,8 @@ void pdf_dev_pop_coord(void)
 
 /*
  * ctype:
-#ifdef XETEX
  *  -1 input string contains 2-byte Freetype glyph index values
-#endif
+ *     (XeTeX only)
  *  0  byte-width of char can be variable and input string
  *     is properly encoded.
  *  n  Single character cosumes n bytes in input string.
@@ -1158,12 +1155,6 @@ pdf_dev_set_string (spt_t xpos, spt_t ypos,
   length  = instr_len;
 
   if (font->format == PDF_FONTTYPE_COMPOSITE) {
-    if (real_font->used_glyphs != NULL && ctype == -1) {
-      for (i = 0; i < length; i += 2) {
-        unsigned short gid = (str_ptr[i] << 8) | str_ptr[i + 1];
-        add_to_used_chars2(real_font->used_glyphs, gid);
-      }
-    }
     if (handle_multibyte_string(font, &str_ptr, &length, ctype) < 0) {
       ERROR("Error in converting input string...");
       return;
@@ -1171,10 +1162,6 @@ pdf_dev_set_string (spt_t xpos, spt_t ypos,
     if (real_font->used_chars != NULL) {
       for (i = 0; i < length; i += 2) {
         unsigned short cid = (str_ptr[i] << 8) | str_ptr[i + 1];
-        if (ctype == 2 && font->cff_charsets) {
-          unsigned short gid = cff_charsets_lookup_gid(font->cff_charsets, cid);
-          add_to_used_chars2(real_font->used_glyphs, gid);
-        }
         add_to_used_chars2(real_font->used_chars, cid);
       }
     }
@@ -1300,7 +1287,7 @@ pdf_init_device (double dvi2pts, int precision, int black_and_white)
     dev_unit.precision  = precision;
   }
   dev_unit.dvi2pts      = dvi2pts;
-  dev_unit.min_bp_val   = (long) ROUND(1.0/(ten_pow[dev_unit.precision]*dvi2pts), 1);
+  dev_unit.min_bp_val   = (int) ROUND(1.0/(ten_pow[dev_unit.precision]*dvi2pts), 1);
   if (dev_unit.min_bp_val < 0)
     dev_unit.min_bp_val = -dev_unit.min_bp_val;
 
@@ -1343,7 +1330,7 @@ pdf_close_device (void)
  * as the font stuff.
  */
 void
-pdf_dev_reset_fonts (void)
+pdf_dev_reset_fonts (int newpage)
 {
   int  i;
 
@@ -1357,7 +1344,8 @@ pdf_dev_reset_fonts (void)
   text_state.matrix.extend = 1.0;
   text_state.matrix.rotate = TEXT_WMODE_HH;
 
-  text_state.bold_param    = 0.0;
+  if (newpage)
+    text_state.bold_param  = 0.0;
 
   text_state.is_mb         = 0;
 }
@@ -1399,7 +1387,7 @@ pdf_dev_bop (const pdf_tmatrix *M)
   pdf_dev_gsave();
   pdf_dev_concat(M);
 
-  pdf_dev_reset_fonts();
+  pdf_dev_reset_fonts(1);
   pdf_dev_reset_color(0);
 }
 
@@ -1549,7 +1537,6 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
 
   font->resource   = NULL; /* Don't ref obj until font is actually used. */  
   font->used_chars = NULL;
-  font->used_glyphs = NULL;
 
   font->extend     = 1.0;
   font->slant      = 0.0;
@@ -1899,7 +1886,6 @@ pdf_dev_put_image (int             id,
                             res_name,
                             pdf_ximage_get_reference(id));
 
-#ifdef XETEX
   if (dvi_is_tracking_boxes()) {
     pdf_tmatrix P;
     int i;
@@ -1940,7 +1926,6 @@ pdf_dev_put_image (int             id,
 
     pdf_doc_expand_box(&rect);
   }
-#endif
 
   return 0;
 }
@@ -1963,4 +1948,57 @@ transform_info_clear (transform_info *info)
   pdf_setmatrix(&(info->matrix), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
 
   info->flags    = 0;
+}
+
+void
+pdf_dev_begin_actualtext (uint16_t *unicodes, int count)
+{
+  int len, i, pdf_doc_enc = 1;
+
+  /* check whether we can use PDFDocEncoding for this string
+     (we punt on the 0x80..0xA0 range that does not directly correspond to unicode)  */
+  for (i = 0; i < count; i++) {
+    if (unicodes[i] > 0xff || (unicodes[i] > 0x7f && unicodes[i] < 0xa1)) {
+      pdf_doc_enc = 0;
+      break;
+    }
+  }
+
+  graphics_mode();
+
+  len = sprintf(work_buffer, "\n/Span<</ActualText(");
+  if (!pdf_doc_enc) {
+    len += sprintf(work_buffer + len, "\xFE\xFF");
+  }
+  pdf_doc_add_page_content(work_buffer, len);
+
+  while (count-- > 0) {
+    unsigned char s[2] = { *unicodes >> 8, *unicodes & 0xff };
+    i = pdf_doc_enc; /* if using PDFDocEncoding, we only care about the low 8 bits,
+                        so start with the second byte of our pair */
+    len = 0;
+    for (; i < 2; i++) {
+      unsigned char c = s[i];
+      if (c == '(' || c == ')' || c == '\\') {
+        len += sprintf(work_buffer + len, "\\%c", c);
+      } else if (c < ' ') {
+        len += sprintf(work_buffer + len, "\\%03o", c);
+      } else {
+        len += sprintf(work_buffer + len, "%c", c);
+      }
+    }
+    pdf_doc_add_page_content(work_buffer, len);
+    ++unicodes;
+  }
+
+  len = sprintf(work_buffer, ")>>BDC");
+  pdf_doc_add_page_content(work_buffer, len);
+}
+
+void
+pdf_dev_end_actualtext ()
+{
+  graphics_mode();
+
+  pdf_doc_add_page_content(" EMC", 4);
 }

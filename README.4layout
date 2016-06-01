@@ -28,12 +28,12 @@ many extra hassles, so don't do that, tempting as it may be.
    Currently the versions we use are:
 
      autoconf (GNU Autoconf) 2.69
-     automake (GNU automake) 1.14.1
-     bison (GNU Bison) 3.0.2
-     flex 2.5.39
-     ltmain.sh (GNU libtool) 2.4.3
+     automake (GNU automake) 1.15
+     bison (GNU Bison) 3.0.4
+     flex 2.6.0
+     ltmain.sh (GNU libtool) 2.4.6
      m4 (GNU M4) 1.4.17
-     makeinfo (GNU texinfo) 5.2
+     makeinfo (GNU texinfo) 6.1
 
    These versions should be used to update the generated files (e.g.,
 'configure' or 'Makefile.in') in all or parts of the TL tree after their
@@ -58,10 +58,10 @@ finally all 'Makefile.in' files.  Perhaps 'make -t' will help.
 Here is a brief description of the top-level directories in the TeX Live
 source tree.
 
-   As mentioned at the beginning of the chapter (*note Overview of build
-system::), the main source directories are 'texk/' (TeX-specific
-programs and libraries), 'utils/' (additional programs), and 'libs'
-(generic libraries).
+   As mentioned at the beginning of *note Overview of build system::,
+the main source directories are 'texk/' (TeX-specific programs and
+libraries), 'utils/' (additional programs), and 'libs/' (generic
+libraries).
 
    The top-level directories 'am/' and 'm4/' contain 'Makefile.am'
 fragments and Autoconf macros, respectively, used in many places.
@@ -151,7 +151,7 @@ Macros for compiler-related checks:
 
  -- Macro: KPSE_COMPILER_WARNINGS
      When using the (Objective) C/C++ compiler, set
-     'WARNING_[OBJ]C[XX']FLAGS to suitable warning flags (depending on
+     'WARNING_[OBJ]C[XX]FLAGS' to suitable warning flags (depending on
      the value given to or implied for '--enable-compiler-warnings').
      Call 'AC_SUBST' for them.  At the moment this only works for GNU
      compilers, but could be extended to others if necessary.
@@ -197,13 +197,13 @@ library.  E.g., for 'libs/libpng':
      Provide the configure option '--with-system-libpng'.  Set and
      'AC_SUBST' 'make' variables for modules using this library (either
      an installed version or from the TeX Live tree): 'LIBPNG_INCLUDES'
-     for use in CPPFLAGS, 'LIBPNG_LIBS' for use in LDADD,
+     for use in 'CPPFLAGS', 'LIBPNG_LIBS' for use in 'LDADD',
      'LIBPNG_DEPEND' for use as dependency, and 'LIBPNG_RULE' defining
      'make' rules to rebuild the library.
 
  -- Macro: KPSE_ADD_FLAGS (NAME)
-     Temporarily extend CPPFLAGS and LIBS with the values required for
-     the library module 'NAME'.
+     Temporarily extend 'CPPFLAGS' and 'LIBS' with the values required
+     for the library module 'NAME'.
 
  -- Macro: KPSE_RESTORE_FLAGS
      Restore 'CPPFLAGS' and 'LIBS' to their original values.
@@ -215,8 +215,8 @@ library.  E.g., for 'libs/libpng':
 
 and its 'Makefile.am' would be along these lines:
      bin_PROGRAMS = foo
-     AM_CPPFLAGS = ${ZLIB_INCLUDES} ${LIBPNG_INCLUDES}
-     foo_LDADD = ${ZLIB_LIBS} ${LIBPNG_LIBS}
+     AM_CPPFLAGS = ${LIBPNG_INCLUDES} ${ZLIB_INCLUDES}
+     foo_LDADD = ${LIBPNG_LIBS} ${ZLIB_LIBS}
      foo_DEPENDENCIES = ${ZLIB_DEPEND} ${LIBPNG_DEPEND}
      ## Rebuild libz
      @ZLIB_RULE@
@@ -278,8 +278,8 @@ structure and variation.
 ----------------------------------------
 
 This generic library uses the source tree in, e.g., the subdirectory
-'libpng-1.5.17' with all modifications for TL recorded in
-'libpng-1.5.17-PATCHES/*'.  The 'configure.ac' fragment
+'libpng-1.6.16' with all modifications for TL recorded in
+'libpng-1.6.16-PATCHES/*'.  The 'configure.ac' fragment
 'ac/withenable.ac' contains
 
      KPSE_WITH_LIB([libpng], [zlib])
@@ -354,11 +354,11 @@ installed by 'make install' together with the programs.  They are,
 however, not part of the TL DVD as distributed by TeX user groups, and
 have never been officially released for standalone use.
 
-   It is possible, and possibly even useful for distro builds (*note
-Distro builds::, to specify the configure option
-'--with-system-kpathsea' in order to use a system version of the library
-and it may then be necessary to specify '--with-kpathsea-includes'
-and/or '--with-kpathsea-libdir'.
+   It is possible, and perhaps even useful for distro builds (*note
+Distro builds::), to specify the configure option
+'--with-system-kpathsea' in order to use a system version of the
+library.  Programs outside the TL tree should use 'pkg-config' for the
+required flags.
 
    In addition to 'ac/withenable.ac' and 'ac/kpathsea.ac' there is a
 third fragment 'ac/mktex.ac' included by both 'ac/withenable.ac' and
@@ -377,8 +377,8 @@ for a few of the programs in TL.
 6.5.1 The 't1utils' package in 'utils/t1utils'
 ----------------------------------------------
 
-Once again we use the distributed source tree 't1utils-1.38' with
-modifications documented in 't1utils-1.38-PATCHES/*' and a proxy build
+Once again we use the distributed source tree 't1utils-1.39' with
+modifications documented in 't1utils-1.39-PATCHES/*' and a proxy build
 system consisting of 'configure.ac' and 'Makefile.am'.  The fragment
 'ac/withenable.ac' contains
 
@@ -390,10 +390,10 @@ configure option '--disable-t1utils'.
 6.5.2 The 'xindy' package in 'utils/xindy'
 ------------------------------------------
 
-This module uses the distributed source tree 'xindy-2.4' with
-modifications documented in 'xindy-2.4-PATCHES/*', a proxy
+This module uses the distributed source tree 'xindy-2.5.1' with
+modifications documented in 'xindy-2.5.1-PATCHES/*', a proxy
 'configure.ac', and a wrapper 'Makefile.am' that descends into
-'xindy-2.4'.  The 'xindy' build requires that the distributed
+'xindy-2.5.1'.  The 'xindy' build requires that the distributed
 'Makefile's allow a 'VPATH' build, can handle all targets, and do not
 refer to '${top_srcdir}' or '${top_builddir}'.  The fragment
 'ac/withenable.ac' contains

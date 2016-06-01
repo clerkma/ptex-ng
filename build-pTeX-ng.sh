@@ -3,6 +3,8 @@ cd $NG_SRC_DIR/libs/zlib && ./configure && make
 cp libz.a $NG_SRC_DIR/texk/ptex-ng
 cd $NG_SRC_DIR/libs/libpng && ./configure && make
 cp libpng.a $NG_SRC_DIR/texk/ptex-ng
+cd $NG_SRC_DIR/libs/libpaper && ./configure && make
+cp libpaper.a $NG_SRC_DIR/texk/ptex-ng
 cd $NG_SRC_DIR/texk/kpathsea && ./configure && make
 cp .libs/libkpathsea.a $NG_SRC_DIR/texk/ptex-ng
 cd $NG_SRC_DIR/texk/ptexenc && ./configure && make

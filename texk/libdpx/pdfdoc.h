@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -31,16 +31,17 @@
 extern void     pdf_doc_set_verbose (void);
 
 extern void     pdf_open_document  (const char *filename,
-				    int do_encryption,
-				    double media_width, double media_height,
-				    double annot_grow_amount, int bookmark_open_depth,
-				    int check_gotos);
+                                    int enable_encrypt,
+                                    int enable_objstm,
+                                    double media_width, double media_height,
+                                    double annot_grow_amount,
+                                    int bookmark_open_depth,
+                                    int check_gotos);
 extern void     pdf_close_document (void);
 
 
 /* PDF document metadata */
-extern void     pdf_doc_set_creator   (const char *creator);
-extern void     pdf_doc_set_producer  (const char *producer);
+extern void     pdf_doc_set_creator (const char *creator);
 
 
 /* They just return PDF dictionary object.
@@ -55,13 +56,14 @@ extern pdf_obj *pdf_doc_get_reference  (const char *category);
 #define pdf_doc_names()     pdf_doc_get_dictionary("Names")
 #define pdf_doc_this_page() pdf_doc_get_dictionary("@THISPAGE")
 
-extern pdf_obj *pdf_doc_get_page (pdf_file *pf, long page_no, long *count_p,
+extern int      pdf_doc_get_page_count (pdf_file *pf);
+extern pdf_obj *pdf_doc_get_page (pdf_file *pf, int page_no, int options,
 				  pdf_rect *bbox, pdf_obj **resources_p);
 
-extern long     pdf_doc_current_page_number    (void);
+extern int      pdf_doc_current_page_number    (void);
 extern pdf_obj *pdf_doc_current_page_resources (void);
 
-extern pdf_obj *pdf_doc_ref_page (unsigned long page_no);
+extern pdf_obj *pdf_doc_ref_page (unsigned page_no);
 #define pdf_doc_this_page_ref() pdf_doc_get_reference("@THISPAGE")
 #define pdf_doc_next_page_ref() pdf_doc_get_reference("@NEXTPAGE")
 #define pdf_doc_prev_page_ref() pdf_doc_get_reference("@PREVPAGE")
@@ -80,7 +82,6 @@ extern void     pdf_doc_begin_page   (double scale, double x_origin, double y_or
 extern void     pdf_doc_end_page     (void);
 
 extern void     pdf_doc_set_mediabox (unsigned page_no, const pdf_rect *mediabox);
-extern void     pdf_doc_get_mediabox (unsigned page_no, pdf_rect *mediabox);
 
 extern void     pdf_doc_add_page_content  (const char *buffer, unsigned length);
 extern void     pdf_doc_add_page_resource (const char *category,
@@ -88,14 +89,9 @@ extern void     pdf_doc_add_page_resource (const char *category,
 
 /* Article thread */
 extern void     pdf_doc_begin_article (const char *article_id, pdf_obj *info);
-#if 0
-extern void     pdf_doc_end_article   (const char *article_id);  /* Do nothing... */
-#endif
-extern void     pdf_doc_make_article  (const char *article_id,
-				       const char **bead_order, int num_beads);
 extern void     pdf_doc_add_bead      (const char *article_id,
 				       const char *bead_id,
-				       long page_no, const pdf_rect *rect);
+				       int page_no, const pdf_rect *rect);
 
 /* Bookmarks */
 extern int      pdf_doc_bookmarks_up    (void);
@@ -129,10 +125,10 @@ extern void     pdf_doc_enable_manual_thumbnails (void);
 
 #if 0
 /* PageLabels - */
-extern void     pdf_doc_set_pagelabel (long  page_start,
+extern void     pdf_doc_set_pagelabel (int  page_start,
                                        const char *type,
                                        const void *prefix, int pfrx_len,
-                                       long  counter_start);
+                                       int  counter_start);
 #endif
 
 /* Similar to bop_content */

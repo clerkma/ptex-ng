@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -48,7 +48,7 @@ struct obj_data
   int closed;            /* 1 if object is closed */
 };
 
-char *
+static char *
 printable_key (const char *key, int keylen)
 {
 #define MAX_KEY 32
@@ -73,7 +73,7 @@ printable_key (const char *key, int keylen)
   return (char *) pkey;
 }
 
-static void CDECL
+static inline void
 hval_free (void *hval)
 {
   struct obj_data *value;
@@ -249,7 +249,7 @@ struct named_object
   pdf_obj *value;
 };
 
-static int CDECL
+static inline int
 cmp_key (const void *d1, const void *d2)
 {
   const struct named_object *sd1, *sd2;
@@ -275,7 +275,7 @@ cmp_key (const void *d1, const void *d2)
 
 #define NAME_CLUSTER 4
 static pdf_obj *
-build_name_tree (struct named_object *first, long num_leaves, int is_root)
+build_name_tree (struct named_object *first, int num_leaves, int is_root)
 {
   pdf_obj *result;
   int      i;
@@ -336,7 +336,7 @@ build_name_tree (struct named_object *first, long num_leaves, int is_root)
     kids = pdf_new_array();
     for (i = 0; i < NAME_CLUSTER; i++) {
       pdf_obj *subtree;
-      long     start, end;
+      int      start, end;
 
       start = (i*num_leaves) / NAME_CLUSTER;
       end   = ((i+1)*num_leaves) / NAME_CLUSTER;
@@ -351,12 +351,12 @@ build_name_tree (struct named_object *first, long num_leaves, int is_root)
 }
 
 static struct named_object *
-flat_table (struct ht_table *ht_tab, long *num_entries,
+flat_table (struct ht_table *ht_tab, int *num_entries,
 	    struct ht_table *filter)
 {
   struct named_object *objects;
   struct ht_iter       iter;
-  long   count;
+  int    count;
 
   ASSERT(ht_tab);
 
@@ -405,7 +405,7 @@ flat_table (struct ht_table *ht_tab, long *num_entries,
 }
 
 pdf_obj *
-pdf_names_create_tree (struct ht_table *names, long *count,
+pdf_names_create_tree (struct ht_table *names, int *count,
 		       struct ht_table *filter)
 {
   pdf_obj *name_tree;

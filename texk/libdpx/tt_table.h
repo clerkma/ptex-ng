@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     This program is free software; you can redistribute it and/or modify
@@ -189,9 +189,6 @@ extern struct tt_longMetrics *tt_read_longMetrics (sfnt *sfont,
 extern struct tt_os2__table *tt_read_os2__table (sfnt *sfont);
 
 /* name table */
-extern USHORT tt_get_name (sfnt *sfont, char *dest, USHORT destlen,
-			   USHORT plat_id, USHORT enco_id,
-			   USHORT lang_id, USHORT name_id);
 extern USHORT tt_get_ps_fontname (sfnt *sfont, char *dest, USHORT destlen);
 
 #endif /* _TT_TABLE_H_ */

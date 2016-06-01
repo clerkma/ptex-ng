@@ -16,6 +16,7 @@
    02110-1301 USA.  */
 
 /* output a vf packet */
+#define SIGNED_QUAD int32_t
 static int ng_stack_ptr = 0;
 static SIGNED_QUAD ng_dvi_h[101];
 static SIGNED_QUAD ng_dvi_v[101];
@@ -40,7 +41,7 @@ static int ng_packet_font (SIGNED_QUAD font_id, unsigned long vf_font)
   }
   else
   {
-    fprintf(stderr, "Font_id: %ld not found in VF\n", font_id);
+    fprintf(stderr, "Font_id: %d not found in VF\n", font_id);
     return 0;
   }
 }
@@ -49,16 +50,16 @@ extern int spc_exec_special (const char *buffer, long size, double x_user, doubl
 
 static void ng_special_out (SIGNED_QUAD len, unsigned char **start, unsigned char *end, SIGNED_QUAD h, SIGNED_QUAD v)
 {
-  Ubyte *buffer;
+  uint8_t *buffer;
 
   if (*start <= end - len)
   {
-    buffer = NEW(len+1, Ubyte);
+    buffer = NEW(len+1, uint8_t);
     memcpy(buffer, *start, len);
     buffer[len] = '\0';
 
     {
-      Ubyte *p = buffer;
+      uint8_t *p = buffer;
 
       while (p < buffer + len && *p == ' ')
         p++;
@@ -105,15 +106,15 @@ static SIGNED_QUAD ng_get_oprand_u (int len, unsigned char **start, unsigned cha
       break;
 
     case 2:
-      num = unsigned_pair(start, end);
+      num = get_pkt_signed_num(start, end, 1);
       break;
 
     case 3:
-      num = unsigned_triple(start, end);
+      num = get_pkt_signed_num(start, end, 2);
       break;
 
     case 4:
-      num = unsigned_quad(start, end);
+      num = get_pkt_signed_num(start, end, 3);
       break;
 
     default:
@@ -131,19 +132,19 @@ static SIGNED_QUAD ng_get_oprand_s (int len, unsigned char **start, unsigned cha
   switch (len)
   {
     case 1:
-      num = signed_byte(start, end);
+      num = get_pkt_signed_num(start, end, 0);
       break;
 
     case 2:
-      num = signed_pair(start, end);
+      num = get_pkt_signed_num(start, end, 1);
       break;
 
     case 3:
-      num = signed_triple(start, end);
+      num = get_pkt_signed_num(start, end, 2);
       break;
 
     case 4:
-      num = signed_quad(start, end);
+      num = get_pkt_signed_num(start, end, 3);
       break;
 
     default:
@@ -220,7 +221,7 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
 
     if (ch >= vf_fonts[vf_font].num_chars || !(start = (vf_fonts[vf_font].ch_pkt)[ch]))
     {
-      fprintf(stderr, "\nchar=0x%lx(%ld)\n", ch, ch);
+      fprintf(stderr, "\nchar=0x%x(%d)\n", ch, ch);
       fprintf(stderr, "Tried to set a nonexistent character in a virtual font");
       start = end = NULL;
     }
@@ -258,8 +259,8 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case SET_RULE:
           {
             SIGNED_QUAD width, height, s_width;
-            height = signed_quad(&start, end);
-            width = signed_quad(&start, end);
+            height = get_pkt_signed_num(&start, end, 4);
+            width = get_pkt_signed_num(&start, end, 4);
             s_width = sqxfw(ptsize, width);
             pdf_rule_out(s_width, sqxfw(ptsize, height));
             ng_adjust_hpos(&packet_h, &packet_v, s_width);
@@ -269,8 +270,8 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case PUT_RULE:
           {
             SIGNED_QUAD width, height, s_width;
-            height = signed_quad(&start, end);
-            width = signed_quad(&start, end);
+            height = get_pkt_unsigned_num(&start, end, 4);
+            width = get_pkt_unsigned_num(&start, end, 4);
             pdf_rule_out(sqxfw(ptsize, width), sqxfw(ptsize, height));
           }
           break;

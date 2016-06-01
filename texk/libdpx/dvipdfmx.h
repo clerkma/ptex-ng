@@ -1,6 +1,6 @@
 /*  DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
     the DVIPDFMx project team.
     
     Copyright (c) 2006 SIL. (xdvipdfmx extensions for XeTeX support)
@@ -27,8 +27,10 @@
 
 extern int compat_mode;
 extern int is_xdv;
+extern int translate_origin;
 extern const char *my_name;
 
 extern int extractbb(int argc, char *argv[]);
+extern void read_config_special(const char **start, const char *end);
 
 #endif /* _DVIPDFMX_H_ */

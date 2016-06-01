@@ -6,7 +6,7 @@
 
 CC = gcc
 CFLAGS = -c -O2 -Wno-unused-result -I.. -I../ptexenc/ -I../../libs/zlib/include
-LDFLAGS = libdpx.a libpng.a libz.a libptexenc.a libkpathsea.a -lm
+LDFLAGS = libdpx.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a -lm
 
 objects = \
 	aptex.o\

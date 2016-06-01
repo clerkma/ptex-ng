@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@ parse_uc_coverage (pdf_obj *gclass, const char **pp, const char *endptr)
 {
   pdf_obj *coverage;
   pdf_obj *value;
-  long     ucv = 0;
+  int32_t  ucv = 0;
   char    *glyphname, *glyphclass;
 
   if (*pp + 1 >= endptr)
@@ -131,7 +131,7 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
 {
   pdf_obj *glyph1, *glyph2;
 #define MAX_UNICODES 16
-  long     unicodes[MAX_UNICODES];
+  int32_t  unicodes[MAX_UNICODES];
   int      i, n_unicodes;
 
   if (first[0] == '@') {
@@ -459,7 +459,7 @@ otl_read_conf (const char *conf_name)
   FILE    *fp;
   char    *filename, *wbuf, *p, *endptr;
   const char *pp;
-  long     size, len;
+  int      size, len;
 
   filename = NEW(strlen(conf_name)+strlen(".otl")+1, char);
   strcpy(filename, conf_name);
@@ -472,7 +472,6 @@ otl_read_conf (const char *conf_name)
   }
 
   size = file_size(fp);
-  rewind(fp);
 
   if (verbose > VERBOSE_LEVEL_MIN) {
     MESG("\n");
@@ -544,7 +543,7 @@ otl_find_conf (const char *conf_name)
 
       if (options) {
 	pdf_obj *optkeys, *opt, *key;
-	long     i, num_opts;
+	int      i, num_opts;
 
 	optkeys  = pdf_dict_keys(options);
 	num_opts = pdf_array_length(optkeys);

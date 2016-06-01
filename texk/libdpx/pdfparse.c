@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -26,6 +26,8 @@
 
 #include <ctype.h>
 #include <string.h>
+/* pow() */
+#include <math.h>
 
 #include "system.h"
 #include "mem.h"
@@ -51,7 +53,8 @@
 
 #define is_space(c) ((c) == ' '  || (c) == '\t' || (c) == '\f' || \
 		     (c) == '\r' || (c) == '\n' || (c) == '\0')
-#define is_delim(c) ((c) == '(' || (c) == '/' || \
+#define is_delim(c) ((c) == '(' || (c) == ')' || \
+                     (c) == '/' || \
                      (c) == '<' || (c) == '>' || \
 		     (c) == '[' || (c) == ']' || \
                      (c) == '%')
@@ -92,7 +95,7 @@ dump (const char *start, const char *end)
  } while (0)
 
 void
-dpx_skip_line (const char **start, const char *end)
+pdfparse_skip_line (const char **start, const char *end)
 {
   while (*start < end && **start != '\n' && **start != '\r')
     (*start)++;
@@ -118,7 +121,7 @@ skip_white (const char **start, const char *end)
    */
   while (*start < end && (is_space(**start) || **start == '%')) {
     if (**start == '%')
-      dpx_skip_line(start, end);
+      pdfparse_skip_line(start, end);
     else
       (*start)++;
   }
@@ -227,27 +230,13 @@ parse_opt_ident (const char **start, const char *end)
   return NULL;
 }
 
-#define DDIGITS_MAX 10
 pdf_obj *
 parse_pdf_number (const char **pp, const char *endptr)
 {
   const char *p;
-  unsigned long ipart = 0, dpart = 0;
-  int      nddigits = 0, sign = 1;
-  int      has_dot = 0;
-  static double ipot[DDIGITS_MAX+1] = {
-    1.0,
-    0.1,
-    0.01,
-    0.001,
-    0.0001,
-    0.00001,
-    0.000001,
-    0.0000001,
-    0.00000001,
-    0.000000001,
-    0.0000000001
-  };
+  double v = 0.0;
+  int    nddigits = 0, sign = 1;
+  int    has_dot  = 0;
 
   p = *pp;
   skip_white(&p, endptr);
@@ -277,21 +266,17 @@ parse_pdf_number (const char **pp, const char *endptr)
   while (p < endptr && !istokensep(p[0])) {
     if (p[0] == '.') {
       if (has_dot) { /* Two dots */
-	WARN("Could not find a numeric object.");
-	return NULL;
+        WARN("Could not find a numeric object.");
+        return NULL;
       } else {
-	has_dot = 1;
+        has_dot = 1;
       }
     } else if (isdigit((unsigned char)p[0])) {
       if (has_dot) {
-	if (nddigits == DDIGITS_MAX && pdf_obj_get_verbose() > 1) {
-	  WARN("Number with more than %d fractional digits.", DDIGITS_MAX);
-	} else if (nddigits < DDIGITS_MAX) {
-	  dpart = dpart * 10 + p[0] - '0';
-	  nddigits++;
-	} /* Ignore decimal digits more than DDIGITS_MAX */
+        v += (p[0] - '0') / pow(10, nddigits + 1);
+        nddigits++;
       } else {
-	ipart = ipart * 10 + p[0] - '0';
+        v = v * 10.0 + p[0] - '0';
       }
     } else {
       WARN("Could not find a numeric object.");
@@ -301,7 +286,7 @@ parse_pdf_number (const char **pp, const char *endptr)
   }
 
   *pp = p;
-  return pdf_new_number((double) sign * (((double ) ipart) + dpart * ipot[nddigits]));
+  return pdf_new_number(sign * v);
 }
 
 /*
@@ -598,7 +583,7 @@ static pdf_obj *
 parse_pdf_hex_string (const char **pp, const char *endptr)
 {
   const char  *p;
-  long   len;
+  int   len;
 
   p = *pp;
 
@@ -787,7 +772,7 @@ parse_pdf_stream (const char **pp, const char *endptr, pdf_obj *dict)
   pdf_obj *result = NULL;
   const char *p;
   pdf_obj *stream_dict;
-  long     stream_length;
+  int      stream_length;
 
   p = *pp;
   skip_white(&p, endptr);
@@ -822,7 +807,7 @@ parse_pdf_stream (const char **pp, const char *endptr, pdf_obj *dict)
       if (pdf_obj_typeof(tmp2) != PDF_NUMBER)
         stream_length = -1;
       else {
-        stream_length = (long) pdf_number_value(tmp2);
+        stream_length = (int) pdf_number_value(tmp2);
       }
       pdf_release_obj(tmp2);
     }
@@ -916,7 +901,7 @@ parse_pdf_reference (const char **start, const char *end)
 static pdf_obj *
 try_pdf_reference (const char *start, const char *end, const char **endptr, pdf_file *pf)
 {
-  unsigned long id = 0;
+  unsigned id = 0;
   unsigned short gen = 0;
 
   ASSERT(pf);

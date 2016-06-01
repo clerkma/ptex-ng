@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -28,24 +28,11 @@
 #include "gnu-miktex.h"
 #include <miktex/KPSE/Emulation>
 #else
-#include <kpathsea/c-auto.h>
 #include <kpathsea/kpathsea.h>
 #endif
 
 #ifdef WIN32
-#  undef ERROR
-#  undef NO_ERROR
-#  undef RGB
-#  undef CMYK
-#  undef SETLINECAP
-#  undef SETLINEJOIN
-#  undef SETMITERLIMIT
 #  pragma warning(disable : 4101 4018)
-#else
-#  ifndef __cdecl
-#  define __cdecl
-#  endif
-#  define CDECL
 #endif /* WIN32 */
 
 #endif /* _SYSTEM_H_ */

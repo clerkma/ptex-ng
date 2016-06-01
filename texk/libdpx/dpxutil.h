@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -35,7 +35,8 @@
 		     (c) == '\r' || (c) == '\n' || (c) == '\0')
 #endif
 #ifndef is_delim
-#define is_delim(c) ((c) == '(' || (c) == '/' || \
+#define is_delim(c) ((c) == '(' || (c) == ')' || \
+                     (c) == '/' || \
                      (c) == '<' || (c) == '>' || \
 		     (c) == '[' || (c) == ']' || \
                      (c) == '{' || (c) == '}' || \
@@ -44,14 +45,6 @@
 
 extern void skip_white_spaces (unsigned char **s, unsigned char *endptr);
 extern int  xtoi     (char c);
-extern int  getxpair (unsigned char **str);
-extern int  putxpair (unsigned char c, char **str);
-extern int  sputx    (unsigned char c, char **buf, char *endptr);
-
-extern unsigned char ostrtouc (unsigned char **inbuf,
-			       unsigned char *inbufend, unsigned char *valid);
-extern unsigned char esctouc  (unsigned char **inbuf,
-			       unsigned char *inbufend, unsigned char *valid);
 
 #define HASH_TABLE_SIZE 503
 
@@ -67,7 +60,7 @@ struct ht_entry {
 typedef void (*hval_free_func) (void *);
 
 struct ht_table {
-  long   count;
+  int count;
   hval_free_func hval_free_fn;
   struct ht_entry *table[HASH_TABLE_SIZE];
 };
@@ -75,7 +68,7 @@ struct ht_table {
 extern void  ht_init_table   (struct ht_table *ht,
                               hval_free_func hval_free_fn);
 extern void  ht_clear_table  (struct ht_table *ht);
-extern long  ht_table_size   (struct ht_table *ht);
+extern int   ht_table_size   (struct ht_table *ht);
 extern void *ht_lookup_table (struct ht_table *ht,
                               const void *key, int keylen);
 extern void  ht_append_table (struct ht_table *ht,

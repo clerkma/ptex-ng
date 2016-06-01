@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: Build 35438 2014-10-25 15:33:44Z karl $
+# $Id: Build 40051 2016-03-17 01:20:14Z mojca $
 # Public domain.  Originally written many years ago by Sebastian Rahtz.
 # The basic idea is to run configure && make, but with a multitude of
 # environment variables to allow overriding everything.
@@ -150,6 +150,10 @@ if test -d "$bindir"; then
 fi
 
 status=`cat exitstatus.txt`
+if echo "$status" | egrep '^[0-9]+$' >/dev/null; then :; else
+  echo "$0: exitstatus.txt does not contain a number; disk full?" >&2
+  status=1
+fi
 echo "done (exit status $status)" `date` | tee -a build.log
 
 exit $status

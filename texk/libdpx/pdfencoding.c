@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2008-2014 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+    Copyright (C) 2008-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -201,7 +201,7 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
 }
 
 #if 0
-static int CDECL
+static inline int
 glycmp (const void *pv1, const void *pv2)
 {
   char *v1, *v2;
@@ -318,7 +318,7 @@ load_encoding_file (const char *filename)
    * Skip comment lines.
    */
   while (p < endptr && p[0] == '%') {
-    dpx_skip_line (&p, endptr);
+    pdfparse_skip_line (&p, endptr);
     skip_white(&p, endptr);
   }
   if (p[0] == '/')
@@ -670,7 +670,7 @@ pdf_create_ToUnicode_CMap (const char *enc_name,
       continue;
 
     if (enc_vec[code]) {
-      long   len;
+      int32_t len;
       int    fail_count = 0;
       agl_name *agln = agl_lookup_list(enc_vec[code]);
       /* Adobe glyph naming conventions are not used by viewers,

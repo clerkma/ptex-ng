@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -63,7 +63,6 @@ extern int      pdf_font_findresource  (const char *font_name,
 extern int      pdf_get_font_subtype   (int font_id);
 extern pdf_obj *pdf_get_font_reference (int font_id);
 extern char    *pdf_get_font_usedchars (int font_id);
-extern char    *pdf_get_font_usedglyphs (int font_id);
 
 #if 0
 extern char    *pdf_get_font_fontname  (int font_id); /* without unique tag */

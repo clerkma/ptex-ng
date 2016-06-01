@@ -1,20 +1,20 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -123,39 +123,48 @@ typedef enum {
 typedef enum {
   JS_APPn_JFIF,
   JS_APPn_ADOBE,
-  JS_APPn_ICC
+  JS_APPn_ICC,
+  JS_APPn_XMP
 } JPEG_APPn_sig;
 
 struct JPEG_APPn_JFIF  /* APP0 */
 {
-  unsigned short version;
-  unsigned char  units;      /* 0: only aspect ratio
-			      * 1: dots per inch
-			      * 2: dots per cm
-			      */
-  unsigned short Xdensity;
-  unsigned short Ydensity;
-  unsigned char  Xthumbnail;
-  unsigned char  Ythumbnail;
+  uint16_t       version;
+  uint8_t        units;      /* 0: only aspect ratio
+                              * 1: dots per inch
+                              * 2: dots per cm
+                              */
+  uint16_t       Xdensity;
+  uint16_t       Ydensity;
+  uint8_t        Xthumbnail;
+  uint8_t        Ythumbnail;
   unsigned char *thumbnail;  /* Thumbnail data. */
 };
 
 struct JPEG_APPn_ICC   /* APP2 */
 {
-  unsigned char  seq_id;
-  unsigned char  num_chunks;
+  uint8_t        seq_id;
+  uint8_t        num_chunks;
   unsigned char *chunk;
 
   /* Length of ICC profile data in this chunk. */
-  unsigned short length;
+  size_t         length;
 };
 
 struct JPEG_APPn_Adobe /* APP14 */
 {
-  unsigned short version;
-  unsigned short flag0;
-  unsigned short flag1;
-  unsigned char  transform; /* color transform code */
+  uint16_t version;
+  uint16_t flag0;
+  uint16_t flag1;
+  uint8_t  transform; /* color transform code */
+};
+
+struct JPEG_APPn_XMP   /* APP1 */
+{
+  unsigned char *packet; /* XMP packet */
+
+  /* Length of XMP packet data */
+  size_t         length;
 };
 
 struct JPEG_ext
@@ -168,11 +177,11 @@ struct JPEG_ext
 #define MAX_COUNT 1024
 struct  JPEG_info
 {
-  unsigned short height;
-  unsigned short width;
+  uint16_t height;
+  uint16_t width;
 
-  unsigned char  bits_per_component;
-  unsigned char  num_components;
+  uint8_t  bits_per_component;
+  uint8_t  num_components;
 
   double xdpi;
   double ydpi;
@@ -190,16 +199,16 @@ struct  JPEG_info
 #define HAVE_APPn_ADOBE (1 << 1)
 #define HAVE_APPn_ICC   (1 << 2)
 #define HAVE_APPn_Exif  (1 << 3)
+#define HAVE_APPn_XMP   (1 << 4)
 
 static int      JPEG_scan_file   (struct JPEG_info *j_info, FILE *fp);
-static int      JPEG_copy_stream (struct JPEG_info *j_info,
-				  pdf_obj *stream, FILE *fp);
+static int      JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, FILE *fp);
 
 static void     JPEG_info_init   (struct JPEG_info *j_info);
 static void     JPEG_info_clear  (struct JPEG_info *j_info);
+static pdf_obj *JPEG_get_XMP     (struct JPEG_info *j_info);
 static pdf_obj *JPEG_get_iccp    (struct JPEG_info *j_info);
-static void     jpeg_get_density (struct JPEG_info *j_info,
-				  double *xdensity, double *ydensity);
+static void     jpeg_get_density (struct JPEG_info *j_info, double *xdensity, double *ydensity);
 
 int
 check_for_jpeg (FILE *fp)
@@ -218,11 +227,11 @@ check_for_jpeg (FILE *fp)
 int
 jpeg_include_image (pdf_ximage *ximage, FILE *fp)
 {
-  pdf_obj    *stream;
-  pdf_obj    *stream_dict;
-  pdf_obj    *colorspace;
-  int         colortype;
-  ximage_info info;
+  pdf_obj         *stream;
+  pdf_obj         *stream_dict;
+  pdf_obj         *colorspace;
+  int              colortype;
+  ximage_info      info;
   struct JPEG_info j_info;
 
   if (!check_for_jpeg(fp)) {
@@ -253,8 +262,7 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
     colortype = PDF_COLORSPACE_TYPE_CMYK;
     break;
   default:
-    WARN("%s: Unknown color space (num components: %d)",
-	 JPEG_DEBUG_STR, info.num_components);
+    WARN("%s: Unknown color space (num components: %d)", JPEG_DEBUG_STR, info.num_components);
     JPEG_info_clear(&j_info);
     return -1;
   }
@@ -262,42 +270,50 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
   /* JPEG image use DCTDecode. */
   stream      = pdf_new_stream (0);
   stream_dict = pdf_stream_dict(stream);
-  pdf_add_dict(stream_dict,
-	       pdf_new_name("Filter"), pdf_new_name("DCTDecode"));
+  pdf_add_dict(stream_dict, pdf_new_name("Filter"), pdf_new_name("DCTDecode"));
 
+  /* XMP Metadata */
+  if (pdf_get_version() >= 4) {
+    if (j_info.flags & HAVE_APPn_XMP) {
+      pdf_obj *XMP_stream;
+
+      XMP_stream = JPEG_get_XMP(&j_info);
+      pdf_add_dict(stream_dict,
+                   pdf_new_name("Metadata"), pdf_ref_obj(XMP_stream));
+      pdf_release_obj(XMP_stream);
+    }
+  }
+
+  /* Check embedded ICC Profile */
   colorspace  = NULL;
   if (j_info.flags & HAVE_APPn_ICC) {
     pdf_obj *icc_stream, *intent;
+    int      cspc_id;
 
     icc_stream = JPEG_get_iccp(&j_info);
-
     if (!icc_stream)
       colorspace = NULL;
     else {
-      int   cspc_id;
-
       if (iccp_check_colorspace(colortype,
-				pdf_stream_dataptr(icc_stream),
-				pdf_stream_length (icc_stream)) < 0)
-	colorspace = NULL;
+          pdf_stream_dataptr(icc_stream), pdf_stream_length (icc_stream)) < 0)
+        colorspace = NULL;
       else {
-	cspc_id = iccp_load_profile(NULL, /* noname */
-				    pdf_stream_dataptr(icc_stream),
-				    pdf_stream_length (icc_stream));
-	if (cspc_id < 0)
-	  colorspace = NULL;
-	else {
-	  colorspace = pdf_get_colorspace_reference(cspc_id);
-	  intent     = iccp_get_rendering_intent(pdf_stream_dataptr(icc_stream),
-						 pdf_stream_length (icc_stream));
-	  if (intent)
-	    pdf_add_dict(stream_dict, pdf_new_name("Intent"), intent);
-	}
+        cspc_id = iccp_load_profile(NULL, /* noname */
+                                    pdf_stream_dataptr(icc_stream),
+                                    pdf_stream_length (icc_stream));
+        if (cspc_id < 0)
+          colorspace = NULL;
+        else {
+          colorspace = pdf_get_colorspace_reference(cspc_id);
+          intent     = iccp_get_rendering_intent(pdf_stream_dataptr(icc_stream),
+                                                 pdf_stream_length (icc_stream));
+          if (intent)
+            pdf_add_dict(stream_dict, pdf_new_name("Intent"), intent);
+        }
       }
       pdf_release_obj(icc_stream);
     }
   }
-
   /* No ICC or invalid ICC profile. */
   if (!colorspace) {
     switch (colortype) {
@@ -315,7 +331,6 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
   pdf_add_dict(stream_dict, pdf_new_name("ColorSpace"), colorspace);
 
 #define IS_ADOBE_CMYK(j) (((j).flags & HAVE_APPn_ADOBE) && (j).num_components == 4)
-
   if (IS_ADOBE_CMYK(j_info)) {
     pdf_obj *decode;
     int      i;
@@ -346,52 +361,34 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
 }
 
 static void
-jpeg_get_density (struct JPEG_info *j_info,
-		  double *xdensity, double *ydensity)
+jpeg_get_density (struct JPEG_info *j_info, double *xdensity, double *ydensity)
 {
   if (compat_mode) {
     *xdensity = *ydensity = 72.0 / 100.0;
     return;
   }
 
-  *xdensity = *ydensity = 1.0;
+/*
+ * j_info->xdpi and j_info->ydpi are already determined
+ * because jpeg_get_density() is always called after
+ * JPEG_scan_file().
+ */
+  *xdensity = 72.0 / j_info->xdpi;
+  *ydensity = 72.0 / j_info->ydpi;
 
-  if (j_info->flags & HAVE_APPn_JFIF) {
-    struct JPEG_APPn_JFIF *app_data;
-    int i;
-    for (i = 0; i < j_info->num_appn; i++) {
-      if (j_info->appn[i].marker  == JM_APP0 &&
-	  j_info->appn[i].app_sig == JS_APPn_JFIF)
-        break;
-    }
-    if (i < j_info->num_appn) {
-      app_data = (struct JPEG_APPn_JFIF *)j_info->appn[i].app_data;
-      switch (app_data->units) {
-      case 1: /* pixels per inch */
-        *xdensity = 72.0 / app_data->Xdensity;
-        *ydensity = 72.0 / app_data->Ydensity;
-        break;
-      case 2: /* pixels per centimeter */
-        *xdensity = 72.0 / 2.54 / app_data->Xdensity;
-        *ydensity = 72.0 / 2.54 / app_data->Ydensity;
-        break;
-      default:
-        break;
-      }
-    }
-  }
+  return;
 }
 
 static void
 JPEG_info_init (struct JPEG_info *j_info)
 {
-  j_info->width  = 0;
-  j_info->height = 0;
+  j_info->width              = 0;
+  j_info->height             = 0;
   j_info->bits_per_component = 0;
-  j_info->num_components = 0;
+  j_info->num_components     = 0;
 
-  j_info->xdpi = 0.0;
-  j_info->ydpi = 0.0;
+  j_info->xdpi     = 0.0;
+  j_info->ydpi     = 0.0;
 
   j_info->flags    = 0;
   j_info->num_appn = 0;
@@ -414,8 +411,7 @@ JPEG_release_APPn_data (JPEG_marker marker, JPEG_APPn_sig app_sig, void *app_dat
     data->thumbnail = NULL;
 
     RELEASE(data);
-  } else if (marker  == JM_APP2 &&
-	     app_sig == JS_APPn_ICC) {
+  } else if (marker  == JM_APP2 && app_sig == JS_APPn_ICC) {
     struct JPEG_APPn_ICC *data;
 
     data = (struct JPEG_APPn_ICC *) app_data;
@@ -424,11 +420,18 @@ JPEG_release_APPn_data (JPEG_marker marker, JPEG_APPn_sig app_sig, void *app_dat
     data->chunk = NULL;
 
     RELEASE(data);
-  } else if (marker  == JM_APP14 &&
-	     app_sig == JS_APPn_ADOBE) {
+  } else if (marker  == JM_APP14 && app_sig == JS_APPn_ADOBE) {
     struct JPEG_APPn_Adobe *data;
 
     data = (struct JPEG_APPn_Adobe *) app_data;
+
+    RELEASE(data);
+  } else if (marker == JM_APP1 && app_sig == JS_APPn_XMP) {
+    struct JPEG_APPn_XMP *data;
+
+    data = (struct JPEG_APPn_XMP *) app_data;
+    if (data->packet)
+      RELEASE(data->packet);
 
     RELEASE(data);
   }
@@ -443,7 +446,7 @@ JPEG_info_clear (struct JPEG_info *j_info)
 
     for (i = 0; i < j_info->num_appn; i++)
       JPEG_release_APPn_data(j_info->appn[i].marker,
-			     j_info->appn[i].app_sig, j_info->appn[i].app_data);
+                             j_info->appn[i].app_sig, j_info->appn[i].app_data);
     RELEASE(j_info->appn);
   }
   j_info->appn     = NULL;
@@ -455,34 +458,61 @@ JPEG_info_clear (struct JPEG_info *j_info)
 static pdf_obj *
 JPEG_get_iccp (struct JPEG_info *j_info)
 {
-  pdf_obj *icc_stream;
+  pdf_obj              *icc_stream;
   struct JPEG_APPn_ICC *icc;
-  int i, prev_id = 0, num_icc_seg = -1;
+  int    i, prev_id = 0, num_icc_seg = -1;
 
   icc_stream = pdf_new_stream(STREAM_COMPRESS);
   for (i = 0; i < j_info->num_appn; i++) {
     if (j_info->appn[i].marker  != JM_APP2 ||
-	j_info->appn[i].app_sig != JS_APPn_ICC)
+        j_info->appn[i].app_sig != JS_APPn_ICC)
       continue;
     icc = (struct JPEG_APPn_ICC *) j_info->appn[i].app_data;
     if (num_icc_seg < 0 && prev_id == 0) {
       num_icc_seg = icc->num_chunks;
       /* ICC chunks are sorted? */
     } else if (icc->seq_id != prev_id + 1 ||
-	       num_icc_seg != icc->num_chunks ||
-	       icc->seq_id  > icc->num_chunks) {
-      WARN("Invalid JPEG ICC chunk: %d (p:%d, n:%d)",
-	   icc->seq_id, prev_id, icc->num_chunks);
+               num_icc_seg != icc->num_chunks || icc->seq_id  > icc->num_chunks) {
+      WARN("Invalid JPEG ICC chunk: %d (p:%d, n:%d)", icc->seq_id, prev_id, icc->num_chunks);
       pdf_release_obj(icc_stream);
       icc_stream = NULL;
       break;
     }
     pdf_add_stream(icc_stream, icc->chunk, icc->length);
-    prev_id = icc->seq_id;
+    prev_id     = icc->seq_id;
     num_icc_seg = icc->num_chunks;
   }
 
   return icc_stream;
+}
+
+static pdf_obj *
+JPEG_get_XMP (struct JPEG_info *j_info)
+{
+  pdf_obj              *XMP_stream, *stream_dict;
+  struct JPEG_APPn_XMP *XMP;
+  int    i, count = 0;
+
+  /* I don't know if XMP Metadata should be compressed here.*/
+  XMP_stream  = pdf_new_stream(STREAM_COMPRESS);
+  stream_dict = pdf_stream_dict(XMP_stream);
+  pdf_add_dict(stream_dict,
+               pdf_new_name("Type"), pdf_new_name("Metadata"));
+  pdf_add_dict(stream_dict,
+               pdf_new_name("Subtype"), pdf_new_name("XML"));
+  for (i = 0; i < j_info->num_appn; i++) {
+    /* Not sure for the case of multiple segments */
+    if (j_info->appn[i].marker  != JM_APP1 ||
+        j_info->appn[i].app_sig != JS_APPn_XMP)
+      continue;
+    XMP = (struct JPEG_APPn_XMP *) j_info->appn[i].app_data;
+    pdf_add_stream(XMP_stream, XMP->packet, XMP->length);
+    count++;
+  }
+  if (count > 1)
+    WARN("%s: Multiple XMP segments found in JPEG file. (untested)", JPEG_DEBUG_STR);
+
+  return XMP_stream;
 }
 
 static JPEG_marker
@@ -505,8 +535,7 @@ JPEG_get_marker (FILE *fp)
 }
 
 static int
-add_APPn_marker (struct JPEG_info *j_info,
-		 JPEG_marker marker, int app_sig, void *app_data)
+add_APPn_marker (struct JPEG_info *j_info, JPEG_marker marker, int app_sig, void *app_data)
 {
   int n;
 
@@ -541,144 +570,193 @@ read_APP14_Adobe (struct JPEG_info *j_info, FILE *fp)
   return 7;
 }
 
-static unsigned long
-read_exif_bytes(unsigned char **p, int n, int b)
+#define JPEG_EXIF_BIGENDIAN    0
+#define JPEG_EXIF_LITTLEENDIAN 1
+static int
+read_exif_bytes (unsigned char **pp, int n, int endian)
 {
-  unsigned long rval = 0;
-  unsigned char *pp = *p;
-  if (b) {
-    switch (n) {
-      case 4:
-        rval += *pp++; rval <<= 8;
-        rval += *pp++; rval <<= 8;
-      case 2:
-        rval += *pp++; rval <<= 8;
-        rval += *pp;
-        break;
+  int            rval = 0;
+  unsigned char *p   = *pp;
+  int            i;
+
+  switch (endian) {
+  case JPEG_EXIF_BIGENDIAN:
+    for (i = 0; i < n; i++) {
+      rval = (rval << 8) + p[i];
     }
-  }
-  else {
-    pp += n;
-    switch (n) {
-      case 4:
-        rval += *--pp; rval <<= 8;
-        rval += *--pp; rval <<= 8;
-      case 2:
-        rval += *--pp; rval <<= 8;
-        rval += *--pp;
-        break;
+    break;
+  case JPEG_EXIF_LITTLEENDIAN:
+    for (i = n - 1; i >= 0; i--) {
+      rval = (rval << 8) + p[i];
     }
+    break;
   }
-  *p += n;
+
+  *pp += n;
   return rval;
 }
 
-static unsigned short
-read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, unsigned short length)
+#define JPEG_EXIF_TYPE_BYTE             1
+#define JPEG_EXIF_TYPE_ASCII            2
+#define JPEG_EXIF_TYPE_SHORT            3
+#define JPEG_EXIF_TYPE_LONG             4
+#define JPEG_EXIF_TYPE_RATIONAL         5
+#define JPEG_EXIF_TYPE_UNDEFINED        7
+#define JPEG_EXIF_TYPE_SLONG            9
+#define JPEG_EXIF_TYPE_SRATIONAL       10
+
+#define JPEG_EXIF_TAG_XRESOLUTION     282
+#define JPEG_EXIF_TAG_YRESOLUTION     283
+#define JPEG_EXIF_TAG_RESOLUTIONUNIT  296
+static size_t
+read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
 {
   /* this doesn't save the data, just reads the tags we need */
   /* based on info from http://www.exif.org/Exif2-2.PDF */
   unsigned char *buffer = NEW(length, unsigned char);
-  unsigned char *p, *rp;
+  unsigned char *p, *endptr;
   unsigned char *tiff_header;
-  char bigendian;
-  int i;
-  int num_fields, tag, type;
-  int value = 0, num = 0, den = 0;	/* silence uninitialized warnings */
-  double xres = 72.0;
-  double yres = 72.0;
-  double res_unit = 1.0;
+  int            endian;
+  int            num_fields;
+  int            value = 0, offset;
+  double         xres = 72.0, yres = 72.0;
+  double         res_unit = 1.0;
+
   fread(buffer, length, 1, fp);
-  p = buffer;
-  while ((p < buffer + length) && (*p == 0))
-    ++p;
+  if (length < 10)
+    goto err;
+
+  p = buffer; endptr = buffer + length;
+  while ((p < endptr) && (*p == 0))
+    p++;
+
+  if (p + 8 >= endptr)
+    goto err;
+  /* TIFF header */
   tiff_header = p;
-  if ((*p == 'M') && (*(p+1) == 'M'))
-    bigendian = 1;
-  else if ((*p == 'I') && (*(p+1) == 'I'))
-    bigendian = 0;
-  else
+  if ((p[0] == 'M') && (p[1] == 'M'))
+    endian = JPEG_EXIF_BIGENDIAN;
+  else if ((p[0] == 'I') && (p[1] == 'I'))
+    endian = JPEG_EXIF_LITTLEENDIAN;
+  else {
+    WARN("%s: Invalid value in Exif TIFF header.", JPEG_DEBUG_STR);
     goto err;
-  p += 2;
-  i = read_exif_bytes(&p, 2, bigendian);
-  if (i != 42)
+  }
+  p    += 2;
+  value = read_exif_bytes(&p, 2, endian);
+  if (value != 42) {
+    WARN("%s: Invalid value in Exif TIFF header.", JPEG_DEBUG_STR);
     goto err;
-  i = read_exif_bytes(&p, 4, bigendian);
-  p = tiff_header + i;
-  num_fields = read_exif_bytes(&p, 2, bigendian);
-  while (num_fields-- > 0) {
-    tag = read_exif_bytes(&p, 2, bigendian);
-    type = read_exif_bytes(&p, 2, bigendian);
-    read_exif_bytes(&p, 4, bigendian);
-    switch (type) {
-      case 1: /* byte */
-        value = *p++;
-        p += 3;
-        break;
-      case 3: /* short */
-        value = read_exif_bytes(&p, 2, bigendian);
-        p += 2;
-        break;
-      case 4: /* long */
-      case 9: /* slong */
-        value = read_exif_bytes(&p, 4, bigendian);
-        break;
-      case 5: /* rational */
-      case 10: /* srational */
-        value = read_exif_bytes(&p, 4, bigendian);
-        rp = tiff_header + value;
-        num = read_exif_bytes(&rp, 4, bigendian);
-        den = read_exif_bytes(&rp, 4, bigendian);
-        break;
-      case 7: /* undefined */
-        value = *p++;
-        p += 3;
-        break;
-      case 2: /* ascii */
-      default:
-        p += 4;
-        break;
+  }
+  /* Offset to 0th IFD */
+  offset = read_exif_bytes(&p, 4, endian);
+
+  p = tiff_header + offset;
+  if (p + 2 >= endptr)
+    goto err;
+  num_fields = read_exif_bytes(&p, 2, endian);
+  while (num_fields-- > 0 && p < endptr) {
+    int            tag, type;
+    int            count;
+    unsigned int   den, num;
+
+    if (p + 12 > endptr) {
+      WARN("%s: Truncated Exif data...", JPEG_DEBUG_STR);
+      goto err;     
     }
+    tag   = (int) read_exif_bytes(&p, 2, endian);
+    type  = (int) read_exif_bytes(&p, 2, endian);
+    count = read_exif_bytes(&p, 4, endian);
+    /* Exif data is redundant... */
     switch (tag) {
-      case 282: /* x res */
-        if (den != 0)
-          xres = num / den;
-        break;
-      case 283: /* y res */
-        if (den != 0)
-          yres = num / den;
-        break;
-      case 296: /* res unit */
-        switch (value) {
-          case 2:
-            res_unit = 1.0;
-            break;
-          case 3:
-            res_unit = 2.54;
-            break;
-        }
+    case JPEG_EXIF_TAG_XRESOLUTION:
+      if (type != JPEG_EXIF_TYPE_RATIONAL || count != 1) {
+        WARN("%s: Invalid data for XResolution in Exif chunk.", JPEG_DEBUG_STR);
+        goto err;
+      }
+      offset = read_exif_bytes(&p, 4, endian);
+      if (tiff_header + offset + 8 > buffer + length) {
+        WARN("%s: Invalid offset value in Exif data.", JPEG_DEBUG_STR);
+        goto err;
+      } else {
+        unsigned char *vp = tiff_header + offset;
+        num = (unsigned int) read_exif_bytes(&vp, 4, endian);
+        den = (unsigned int) read_exif_bytes(&vp, 4, endian);
+      }
+      if (den > 0)
+        xres = (double) num / den;
+      break;
+    case JPEG_EXIF_TAG_YRESOLUTION:
+      if (type != JPEG_EXIF_TYPE_RATIONAL || count != 1) {
+        WARN("%s: Invalid data for XResolution in Exif chunk.", JPEG_DEBUG_STR);
+        goto err;
+      }
+      offset = read_exif_bytes(&p, 4, endian);
+      if (tiff_header + offset + 8 > buffer + length) {
+        WARN("%s: Invalid offset value in Exif data.", JPEG_DEBUG_STR);
+        goto err;
+      } else {
+        unsigned char *vp = tiff_header + offset;
+        num = (unsigned int) read_exif_bytes(&vp, 4, endian);
+        den = (unsigned int) read_exif_bytes(&vp, 4, endian);
+      } 
+      if (den > 0)
+        yres = (double) num / den;
+      break;
+    case JPEG_EXIF_TAG_RESOLUTIONUNIT:
+      if (type != JPEG_EXIF_TYPE_SHORT || count != 1) {
+        WARN("%s: Invalid data for ResolutionUnit in Exif chunk.", JPEG_DEBUG_STR);
+        goto err;
+      }
+      value = read_exif_bytes(&p, 2, endian);
+      p    += 2;
+      if (value == 2)
+        res_unit = 1.0 ; /* inch */
+      else if (value == 3)
+        res_unit = 2.54; /* cm */
+      break;
+    default:
+      /* 40901 ColorSpace and 42240 Gamma unsupported... */
+      p += 4;
+      break;
     }
   }
-  
-  j_info->xdpi = xres * res_unit;
-  j_info->ydpi = yres * res_unit;
+  if (num_fields > 0) {
+    WARN("%s: Truncated Exif data...", JPEG_DEBUG_STR);
+    goto err; 
+  }
+
+/* Do not overwrite j_info->xdpi and j_info->ydpi if they are
+ * already determined in JFIF.
+ */
+  if (j_info->xdpi < 0.1 && j_info->ydpi < 0.1) {
+    j_info->xdpi = xres * res_unit;
+    j_info->ydpi = yres * res_unit;
+  } else {
+    if (j_info->xdpi != xres * res_unit ||
+        j_info->ydpi != yres * res_unit) {
+      WARN("%s: Inconsistent resolution may have " \
+           "specified in Exif and JFIF: %gx%g - %gx%g", JPEG_DEBUG_STR,
+           xres * res_unit, yres * res_unit, j_info->xdpi, j_info->ydpi);
+    }
+  }
 
 err:
   RELEASE(buffer);
   return length;
 }
 
-static unsigned short
+static size_t
 read_APP0_JFIF (struct JPEG_info *j_info, FILE *fp)
 {
   struct JPEG_APPn_JFIF *app_data;
-  unsigned short thumb_data_len;
+  size_t thumb_data_len;
 
   app_data = NEW(1, struct JPEG_APPn_JFIF);
-  app_data->version  = get_unsigned_pair(fp);
-  app_data->units    = get_unsigned_byte(fp);
-  app_data->Xdensity = get_unsigned_pair(fp);
-  app_data->Ydensity = get_unsigned_pair(fp);
+  app_data->version    = get_unsigned_pair(fp);
+  app_data->units      = get_unsigned_byte(fp);
+  app_data->Xdensity   = get_unsigned_pair(fp);
+  app_data->Ydensity   = get_unsigned_pair(fp);
   app_data->Xthumbnail = get_unsigned_byte(fp);
   app_data->Ythumbnail = get_unsigned_byte(fp);
   thumb_data_len = 3 * app_data->Xthumbnail * app_data->Ythumbnail;
@@ -702,15 +780,15 @@ read_APP0_JFIF (struct JPEG_info *j_info, FILE *fp)
     break;
   default: /* FIXME: not sure what to do with this.... */
     j_info->xdpi = 72.0;
-    j_info->ydpi = 72.0 * app_data->Ydensity / app_data->Xdensity;
+    j_info->ydpi = 72.0;
     break;
   }
 
   return (9 + thumb_data_len);
 }
 
-static unsigned short
-read_APP0_JFXX (FILE *fp, unsigned short length)
+static size_t
+read_APP0_JFXX (FILE *fp, size_t length)
 {
   get_unsigned_byte(fp);
   /* Extension Code:
@@ -719,23 +797,38 @@ read_APP0_JFXX (FILE *fp, unsigned short length)
    * 0x11: Thumbnail stored using 1 byte/pixel
    * 0x13: Thumbnail stored using 3 bytes/pixel
    */
-  seek_relative(fp, length-1); /* Thunbnail image */
+  seek_relative(fp, length - 1); /* Thunbnail image */
 
   /* Ignore */
 
   return length;
 }
 
-static unsigned short
-read_APP2_ICC (struct JPEG_info *j_info, FILE *fp, unsigned short length)
+static size_t
+read_APP1_XMP (struct JPEG_info *j_info, FILE *fp, size_t length)
+{
+  struct JPEG_APPn_XMP *app_data;
+
+  app_data = NEW(1, struct JPEG_APPn_XMP);
+  app_data->length = length;
+  app_data->packet = NEW(app_data->length, unsigned char);
+  fread(app_data->packet, 1, app_data->length, fp);
+
+  add_APPn_marker(j_info, JM_APP1, JS_APPn_XMP, app_data);
+
+  return length;
+}
+
+static size_t
+read_APP2_ICC (struct JPEG_info *j_info, FILE *fp, size_t length)
 {
   struct JPEG_APPn_ICC *app_data;
 
   app_data = NEW(1, struct JPEG_APPn_ICC);
   app_data->seq_id      = get_unsigned_byte(fp); /* Starting at 1 */
   app_data->num_chunks  = get_unsigned_byte(fp);
-  app_data->length = length - 2;
-  app_data->chunk  = NEW(app_data->length, unsigned char);
+  app_data->length      = length - 2;
+  app_data->chunk       = NEW(app_data->length, unsigned char);
   fread(app_data->chunk, 1, app_data->length, fp);
 
   add_APPn_marker(j_info, JM_APP2, JS_APPn_ICC, app_data);
@@ -747,173 +840,162 @@ static int
 JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, FILE *fp)
 {
   JPEG_marker marker;
-  long length, nb_read;
-  int  found_SOFn, count;
+  int         length;
+  int         found_SOFn, count;
 
+#define SKIP_CHUNK(j,c) ((j)->skipbits[(c) / 8] & (1 << (7 - (c) % 8)))
+#define COPY_CHUNK(f,s,l) while ((l) > 0) { \
+  int nb_read = fread(work_buffer, sizeof(char), MIN((l), WORK_BUFFER_SIZE), (f)); \
+  if (nb_read > 0) \
+    pdf_add_stream((s), work_buffer, nb_read); \
+  (l) -= nb_read; \
+}
   rewind(fp);
   count      = 0;
   found_SOFn = 0;
-  while (!found_SOFn &&
-	 count < MAX_COUNT &&
-	 (marker = JPEG_get_marker(fp)) != (JPEG_marker) -1) {
-    if (marker == JM_SOI  ||
-	(marker >= JM_RST0 && marker <= JM_RST7)) {
+  while (!found_SOFn && count < MAX_COUNT &&
+         (marker = JPEG_get_marker(fp)) != (JPEG_marker) - 1) {
+    if ( marker == JM_SOI  ||
+        (marker >= JM_RST0 && marker <= JM_RST7)) {
       work_buffer[0] = (char) 0xff;
       work_buffer[1] = (char) marker;
       pdf_add_stream(stream, work_buffer, 2);
-      count++;
-      continue;
-    }
-    length = get_unsigned_pair(fp) - 2;
-    switch (marker) {
-    case JM_SOF0:  case JM_SOF1:  case JM_SOF2:  case JM_SOF3:
-    case JM_SOF5:  case JM_SOF6:  case JM_SOF7:  case JM_SOF9:
-    case JM_SOF10: case JM_SOF11: case JM_SOF13: case JM_SOF14:
-    case JM_SOF15:
-      work_buffer[0] = (char) 0xff;
-      work_buffer[1] = (char) marker;
-      work_buffer[2] = ((length + 2) >> 8) & 0xff;
-      work_buffer[3] =  (length + 2) & 0xff;
-      pdf_add_stream(stream, work_buffer, 4);
-      while (length > 0) {
-	nb_read = fread(work_buffer, sizeof(char),
-			MIN(length, WORK_BUFFER_SIZE), fp);
-	if (nb_read > 0)
-	  pdf_add_stream(stream, work_buffer, nb_read);
-	length -= nb_read;
-      }
-      found_SOFn = 1;
-      break;
-    default:
-      if (j_info->skipbits[count / 8] & (1 << (7 - (count % 8)))) {
-	/* skip */
-	while (length > 0) {
-	  nb_read = fread(work_buffer, sizeof(char),
-			  MIN(length, WORK_BUFFER_SIZE), fp);
-	  length -= nb_read;
-	}
-      } else {
-	work_buffer[0] = (char) 0xff;
-	work_buffer[1] = (char) marker;
-	work_buffer[2] = ((length + 2) >> 8) & 0xff;
-	work_buffer[3] =  (length + 2) & 0xff;
-	pdf_add_stream(stream, work_buffer, 4);
-	while (length > 0) {
-	  nb_read = fread(work_buffer, sizeof(char),
-			  MIN(length, WORK_BUFFER_SIZE), fp);
-	  if (nb_read > 0)
-	    pdf_add_stream(stream, work_buffer, nb_read);
-	  length -= nb_read;
-	}
+    } else {
+      length = get_unsigned_pair(fp) - 2;
+      switch (marker) {
+      case JM_SOF0:  case JM_SOF1:  case JM_SOF2:  case JM_SOF3:
+      case JM_SOF5:  case JM_SOF6:  case JM_SOF7:  case JM_SOF9:
+      case JM_SOF10: case JM_SOF11: case JM_SOF13: case JM_SOF14:
+      case JM_SOF15:
+        work_buffer[0] = (char) 0xff;
+        work_buffer[1] = (char) marker;
+        work_buffer[2] = ((length + 2) >> 8) & 0xff;
+        work_buffer[3] =  (length + 2) & 0xff;
+        pdf_add_stream(stream, work_buffer, 4);
+        COPY_CHUNK(fp, stream, length);
+        found_SOFn = 1;
+        break;
+      default:
+        if (SKIP_CHUNK(j_info, count)) {
+          seek_relative(fp, length);
+        } else {
+          work_buffer[0] = (char) 0xff;
+          work_buffer[1] = (char) marker;
+          work_buffer[2] = ((length + 2) >> 8) & 0xff;
+          work_buffer[3] =  (length + 2) & 0xff;
+          pdf_add_stream(stream, work_buffer, 4);
+          COPY_CHUNK(fp, stream, length);
+        }
       }
     }
     count++;
   }
-
   while ((length = fread(work_buffer,
-			 sizeof(char), WORK_BUFFER_SIZE, fp)) > 0) {
+                         sizeof(char), WORK_BUFFER_SIZE, fp)) > 0) {
     pdf_add_stream(stream, work_buffer, length);
   }
 
   return (found_SOFn ? 0 : -1);
 }
 
+#define SET_SKIP(j,c) if ((c) < MAX_COUNT) { \
+  (j)->skipbits[(c) / 8] |= (1 << (7 - ((c) % 8))); \
+}
 static int
 JPEG_scan_file (struct JPEG_info *j_info, FILE *fp)
 {
   JPEG_marker marker;
-  unsigned short length;
-  int  found_SOFn, count;
-  char app_sig[128];
+  int         found_SOFn, count;
+  char        app_sig[128];
 
   rewind(fp);
   count      = 0;
   found_SOFn = 0;
   while (!found_SOFn &&
-	 (marker = JPEG_get_marker(fp)) != (JPEG_marker) -1) {
-    if (marker == JM_SOI  ||
-	(marker >= JM_RST0 && marker <= JM_RST7)) {
-      count++;
-      continue;
-    }
-    length = get_unsigned_pair(fp) - 2;
-    switch (marker) {
-    case JM_SOF0:  case JM_SOF1:  case JM_SOF2:  case JM_SOF3:
-    case JM_SOF5:  case JM_SOF6:  case JM_SOF7:  case JM_SOF9:
-    case JM_SOF10: case JM_SOF11: case JM_SOF13: case JM_SOF14:
-    case JM_SOF15:
-      j_info->bits_per_component = get_unsigned_byte(fp);
-      j_info->height = get_unsigned_pair(fp);
-      j_info->width  = get_unsigned_pair(fp);
-      j_info->num_components = get_unsigned_byte(fp);
-      found_SOFn = 1;
-      break;
-    case JM_APP0:
-      if (length > 5) {
-	if (fread(app_sig, sizeof(char), 5, fp) != 5)
-	  return -1;
-	length -= 5;
-	if (!memcmp(app_sig, "JFIF\000", 5)) {
-	  j_info->flags |= HAVE_APPn_JFIF;
-	  length -= read_APP0_JFIF(j_info, fp);
-	} else if (!memcmp(app_sig, "JFXX", 5)) {
-	  length -= read_APP0_JFXX(fp, length);
-	}
+         (marker = JPEG_get_marker(fp)) != (JPEG_marker) -1) {
+    if ( marker != JM_SOI  &&
+        (marker  < JM_RST0 || marker > JM_RST7)) {
+      int length = get_unsigned_pair(fp) - 2;
+      switch (marker) {
+      case JM_SOF0:  case JM_SOF1:  case JM_SOF2:  case JM_SOF3:
+      case JM_SOF5:  case JM_SOF6:  case JM_SOF7:  case JM_SOF9:
+      case JM_SOF10: case JM_SOF11: case JM_SOF13: case JM_SOF14:
+      case JM_SOF15:
+        j_info->bits_per_component = get_unsigned_byte(fp);
+        j_info->height             = get_unsigned_pair(fp);
+        j_info->width              = get_unsigned_pair(fp);
+        j_info->num_components     = get_unsigned_byte(fp);
+        found_SOFn = 1;
+        break;
+      case JM_APP0:
+        if (length > 5) {
+          if (fread(app_sig, sizeof(char), 5, fp) != 5)
+            return -1;
+          length -= 5;
+          if (!memcmp(app_sig, "JFIF\000", 5)) {
+            j_info->flags |= HAVE_APPn_JFIF;
+            length -= read_APP0_JFIF(j_info, fp);
+          } else if (!memcmp(app_sig, "JFXX", 5)) {
+            length -= read_APP0_JFXX(fp, length);
+          }
+        }
+        seek_relative(fp, length);
+        break;
+      case JM_APP1:
+        if (length > 5) {
+          if (fread(app_sig, sizeof(char), 5, fp) != 5)
+            return -1;
+          length -= 5;
+          if (!memcmp(app_sig, "Exif\000", 5)) {
+            j_info->flags |= HAVE_APPn_Exif;
+            length -= read_APP1_Exif(j_info, fp, length);
+          } else if (!memcmp(app_sig, "http:", 5) && length > 24) {
+            if (fread(app_sig, sizeof(char), 24, fp) != 24)
+              return -1;
+            length -= 24;
+            if (!memcmp(app_sig, "//ns.adobe.com/xap/1.0/\000", 24)) {
+              j_info->flags |= HAVE_APPn_XMP;
+              length -= read_APP1_XMP(j_info, fp, length);
+              SET_SKIP(j_info, count);
+            }
+          }
+        }
+        seek_relative(fp, length);
+        break;
+      case JM_APP2:
+        if (length >= 14) {
+          if (fread(app_sig, sizeof(char), 12, fp) != 12)
+            return -1;
+          length -= 12;
+          if (!memcmp(app_sig, "ICC_PROFILE\000", 12)) {
+            j_info->flags |= HAVE_APPn_ICC;
+            length -= read_APP2_ICC(j_info, fp, length);
+            SET_SKIP(j_info, count);
+          }
+        }
+        seek_relative(fp, length);
+        break;
+      case JM_APP14:
+        if (length > 5) {
+          if (fread(app_sig, sizeof(char), 5, fp) != 5)
+            return -1;
+          length -= 5;
+          if (!memcmp(app_sig, "Adobe", 5)) {
+            j_info->flags |= HAVE_APPn_ADOBE;
+            length -= read_APP14_Adobe(j_info, fp);
+          } else {
+            SET_SKIP(j_info, count);
+          }
+        }
+        seek_relative(fp, length);
+        break;
+      default:
+        seek_relative(fp, length);
+        if (marker >= JM_APP0 && marker <= JM_APP15) {
+          SET_SKIP(j_info, count);
+        }
+        break;
       }
-      seek_relative(fp, length);
-      break;
-    case JM_APP1:
-      if (length > 5) {
-	if (fread(app_sig, sizeof(char), 5, fp) != 5)
-	  return -1;
-	length -= 5;
-	if (!memcmp(app_sig, "Exif\000", 5)) {
-	  j_info->flags |= HAVE_APPn_Exif;
-	  length -= read_APP1_Exif(j_info, fp, length);
-	}
-      }
-      seek_relative(fp, length);
-      break;
-    case JM_APP2:
-      if (length >= 14) {
-	if (fread(app_sig, sizeof(char), 12, fp) != 12)
-	  return -1;
-	length -= 12;
-	if (!memcmp(app_sig, "ICC_PROFILE\000", 12)) {
-	  j_info->flags |= HAVE_APPn_ICC;
-	  length -= read_APP2_ICC(j_info, fp, length);
-	  if (count < MAX_COUNT) {
-	    j_info->skipbits[count / 8] |= (1 << (7 - (count % 8)));
-	  }
-	}
-      }
-      seek_relative(fp, length);
-      break;
-    case JM_APP14:
-      if (length > 5) {
-	if (fread(app_sig, sizeof(char), 5, fp) != 5)
-	  return -1;
-	length -= 5;
-	if (!memcmp(app_sig, "Adobe", 5)) {
-	  j_info->flags |= HAVE_APPn_ADOBE;
-	  length -= read_APP14_Adobe(j_info, fp);
-	} else {
-	  if (count < MAX_COUNT) {
-	    j_info->skipbits[count/8] |= (1 << (7 - (count % 8)));
-	  }
-	}
-      }
-      seek_relative(fp, length);
-      break;
-    default:
-      seek_relative(fp, length);
-      if (marker >= JM_APP0 &&
-	  marker <= JM_APP15) {
-	if (count < MAX_COUNT) {
-	  j_info->skipbits[count / 8] |= (1 << (7 - (count % 8)));
-	}
-      }
-      break;
     }
     count++;
   }
@@ -922,8 +1004,7 @@ JPEG_scan_file (struct JPEG_info *j_info, FILE *fp)
 }
 
 int
-jpeg_get_bbox (FILE *fp, long *width, long *height,
-	       double *xdensity, double *ydensity)
+jpeg_get_bbox (FILE *fp, int *width, int *height, double *xdensity, double *ydensity)
 {
   struct JPEG_info j_info;
 

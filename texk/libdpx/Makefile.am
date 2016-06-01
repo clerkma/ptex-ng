@@ -1,15 +1,13 @@
 ## Makefile.am for the TeX Live subdirectory texk/dvipdfm-x/
 ##
-## Copyright (C) 2009-2014 Peter Breitenlohner <tex-live@tug.org>
+## Copyright (C) 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##
 
-AM_CPPFLAGS = $(KPATHSEA_INCLUDES) $(LIBPNG_INCLUDES) $(ZLIB_INCLUDES)
-AM_CFLAGS = $(WARNING_CFLAGS)
-
 lib_LIBRARIES = libdpx.a
 
-libdpx_a_CPPFLAGS = $(AM_CPPFLAGS)
+AM_CPPFLAGS = $(KPATHSEA_INCLUDES) $(LIBPNG_INCLUDES) $(ZLIB_INCLUDES) $(LIBPAPER_INCLUDES)
+AM_CFLAGS = $(WARNING_CFLAGS)
 
 libdpx_a_SOURCES = \
 	agl.c \
@@ -18,7 +16,7 @@ libdpx_a_SOURCES = \
 	bmpimage.h \
 	cff.c \
 	cff.h \
-cff_dict.c \
+	cff_dict.c \
 	cff_dict.h \
 	cff_limits.h \
 	cff_stdstr.h \
@@ -31,11 +29,11 @@ cff_dict.c \
 	cidtype0.h \
 	cidtype2.c \
 	cidtype2.h \
+	cmap.c \
 	cmap.h \
-cmap.c \
 	cmap_p.h \
-cmap_read.c \
-cmap_read.h \
+	cmap_read.c \
+	cmap_read.h \
 	cmap_write.c \
 	cmap_write.h \
 	cs_type2.c \
@@ -48,21 +46,27 @@ cmap_read.h \
 	dpxfile.h \
 	dpxutil.c \
 	dpxutil.h \
-	dvi.h dvi.c\
+	dvi.c \
+	dvi.h \
 	dvicodes.h \
+	dvipdfmx.c \
 	dvipdfmx.h \
-dvipdfmx.c \
 	epdf.c \
 	epdf.h \
 	error.c \
-	error.h fontmap.c fontmap.h\
+	error.h \
+	fontmap.c \
+	fontmap.h \
+	jp2image.c \
+	jp2image.h \
 	jpegimage.c \
 	jpegimage.h \
 	mem.c \
 	mem.h \
 	mfileio.c \
 	mfileio.h \
-	mpost.h mpost.c\
+	mpost.c \
+	mpost.h \
 	numbers.c \
 	numbers.h \
 	otl_conf.c \
@@ -71,9 +75,9 @@ dvipdfmx.c \
 	otl_opt.h \
 	pdfcolor.c \
 	pdfcolor.h \
-pdfdev.c\
+	pdfdev.c \
 	pdfdev.h \
-pdfdoc.c\
+	pdfdoc.c \
 	pdfdoc.h \
 	pdfdraw.c \
 	pdfdraw.h \
@@ -84,7 +88,8 @@ pdfdoc.c\
 	pdffont.c \
 	pdffont.h \
 	pdflimits.h \
-	pdfnames.h pdfnames.c\
+	pdfnames.c \
+	pdfnames.h \
 	pdfobj.c \
 	pdfobj.h \
 	pdfparse.c \
@@ -93,7 +98,8 @@ pdfdoc.c\
 	pdfresource.h \
 	pdfximage.c \
 	pdfximage.h \
-	pkfont.h pkfont.c\
+	pkfont.c \
+	pkfont.h \
 	pngimage.c \
 	pngimage.h \
 	pst.c \
@@ -104,24 +110,29 @@ pdfdoc.c\
 	sfnt.h \
 	spc_color.c \
 	spc_color.h \
+	spc_dvipdfmx.c \
+	spc_dvipdfmx.h \
 	spc_dvips.c \
 	spc_dvips.h \
 	spc_html.c \
 	spc_html.h \
 	spc_misc.c \
 	spc_misc.h \
-	spc_pdfm.h spc_pdfm.c\
+	spc_pdfm.c \
+	spc_pdfm.h \
 	spc_tpic.c \
 	spc_tpic.h \
 	spc_util.h \
 	spc_util.c \
-	spc_xtx.h spc_xtx.c\
+	spc_xtx.c \
+	spc_xtx.h \
 	specials.c \
 	specials.h \
 	subfont.c \
 	subfont.h \
 	system.h \
-	t1_char.h t1_char.c\
+	t1_char.c \
+	t1_char.h \
 	t1_load.c \
 	t1_load.h \
 	tfm.c \
@@ -142,7 +153,8 @@ pdfdoc.c\
 	tt_table.h \
 	type0.c \
 	type0.h \
-	type1.h type1.c\
+	type1.c \
+	type1.h \
 	type1c.c \
 	type1c.h \
 	unicode.c \
@@ -151,7 +163,20 @@ pdfdoc.c\
 	vf.h \
 	xbb.c
 
-$(libdpx_a_OBJECTS) : config.force
+LDADD = $(KPATHSEA_LIBS) $(LIBPNG_LIBS) $(ZLIB_LIBS) $(LIBPAPER_LIBS)
+
+$(libdpx_OBJECTS): config.force
+
+include $(top_srcdir)/../../am/bin_links.am
+
+## Manpages
+
+dist_man1_MANS = man/dvipdfmx.1 man/dvipdft.1 man/extractbb.1
+man1_links = \
+	dvipdfmx:dvipdfm \
+	dvipdfmx:xdvipdfmx \
+	extractbb:ebb
+include $(top_srcdir)/../../am/man1_links.am
 
 ## Data
 ##
@@ -167,6 +192,24 @@ dist_mapdata_DATA = data/cid-x.map
 cmapdatadir = $(datarootdir)/texmf-dist/fonts/cmap/dvipdfmx
 dist_cmapdata_DATA = data/EUC-UCS2
 
+install-exec-hook: install-bin-links
+if WIN32
+	$(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) $(DESTDIR)$(bindir)/dvipdfm$(EXEEXT)
+	$(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) $(DESTDIR)$(bindir)/dvipdfmx$(EXEEXT)
+	$(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) $(DESTDIR)$(bindir)/ebb$(EXEEXT)
+	$(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) $(DESTDIR)$(bindir)/extractbb$(EXEEXT)
+endif WIN32
+
+install-data-hook: install-man1-links
+
+uninstall-hook: uninstall-bin-links uninstall-man1-links
+if WIN32
+	rm -f $(DESTDIR)$(bindir)/dvipdfm$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/dvipdfmx$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/ebb$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/extractbb$(EXEEXT)
+endif WIN32
+
 all-local: config.force
 
 config.force: $(ZLIB_DEPEND) $(LIBPNG_DEPEND) $(KPATHSEA_DEPEND) $(LIBPAPER_DEPEND)
@@ -181,22 +224,55 @@ DISTCLEANFILES = config.force
 @LIBPNG_RULE@
 ## Rebuild libz
 @ZLIB_RULE@
+## Rebuild libpaper
+@LIBPAPER_RULE@
 
 ## Tests
 ##
-TESTS =
-dvipdfmx_tests = dvipdfmx.test dvipdfm-ann.test dvipdfm-bb.test dvipdfm-bkm.test dvipdfm-psz.test
-dvipdfmx_tests += dvipdfm-res.test
-EXTRA_DIST = $(dvipdfmx_tests)
-## Test Data
+TESTS = xdvipdfmx.test xdvipdfm-ann.test xdvipdfm-bad.test xdvipdfm-bb.test
+TESTS += xdvipdfm-bkm.test xdvipdfm-psz.test xdvipdfm-ptx.test xdvipdfm-res.test
+TESTS += xdvipdfm-rev.test xdvipdfm-ttc.test
+xdvipdfmx.log xdvipdfm-ann.log xdvipdfm-bad.log xdvipdfm-bb.log \
+	xdvipdfm-bkm.log xdvipdfm-psz.log xdvipdfm-ptx.log xdvipdfm-res.log \
+	xdvipdfm-rev.log xdvipdfm-ttc.log: xdvipdfmx$(EXEEXT)
+EXTRA_DIST = $(TESTS)
+## xdvipdfmx.test
 EXTRA_DIST += tests/dvipdfmx.cfg tests/psfonts.map
-EXTRA_DIST += tests/fullmap.dvi tests/fullmap.tex
-EXTRA_DIST += tests/image.jpeg tests/imgjpeg.bb tests/imgjpeg.xbb tests/picjpeg.bb tests/picjpeg.xbb
-EXTRA_DIST += tests/image.pdf tests/imgpdf.bb tests/imgpdf.xbb tests/picpdf.bb tests/picpdf.xbb
-EXTRA_DIST += tests/image.png tests/imgpng.bb tests/imgpng.xbb tests/picpng.bb tests/picpng.xbb
+EXTRA_DIST += tests/cmr10.pfb tests/cmr10.tfm
 EXTRA_DIST += tests/image.dvi tests/image.tex
-EXTRA_DIST += tests/cmr10.pfb tests/cmr10.tfm tests/annot.dvi tests/annot.tex
-EXTRA_DIST += tests/bookm.dvi tests/bookm.tex tests/paper.dvi tests/paper.tex
-EXTRA_DIST += tests/resrc.dvi tests/resrc.tex
 EXTRA_DIST += tests/xbmc.dvi tests/xbmc.tex tests/xbmc10.600pk tests/xbmc10.tfm
-DISTCLEANFILES += img*.* pic*.* image*.pdf annot*.pdf bookm*.pdf paper*.pdf resrc*.pdf xbmc*.pdf
+DISTCLEANFILES += image*.pdf xbmc*.pdf
+## xdvipdfm-ann.test
+EXTRA_DIST += tests/annot.dvi tests/annot.tex
+DISTCLEANFILES += annot*.pdf
+## xdvipdfm-bad.test
+EXTRA_DIST += tests/ids_2_6.dvi tests/ids_3_2.dvi tests/ids_a_b.dvi tests/opc_fe.dvi
+EXTRA_DIST += tests/ptx_2_2.dvi tests/ptx_6_6.dvi tests/rev_2_2.dvi tests/rev_2_3.dvi
+EXTRA_DIST += tests/void.dvi
+## xdvipdfm-bb.test
+EXTRA_DIST += tests/image.bmp tests/picbmp.bb tests/picbmp.xbb
+EXTRA_DIST += tests/image.jp2 tests/picjp2.bb tests/picjp2.xbb
+EXTRA_DIST += tests/image.jpeg tests/picjpeg.bb tests/picjpeg.xbb
+EXTRA_DIST += tests/image.png tests/picpng.bb tests/picpng.xbb
+EXTRA_DIST += tests/image.pdf tests/picpdf.bb tests/picpdf.xbb
+DISTCLEANFILES += pic*.*
+## xdvipdfm-bkm.test
+EXTRA_DIST += tests/bookm.dvi tests/bookm.tex
+DISTCLEANFILES += bookm*.pdf
+## xdvipdfm-psz.test
+EXTRA_DIST += tests/paper.dvi tests/paper.tex
+DISTCLEANFILES += paper*.pdf
+## xdvipdfm-ptx.test
+EXTRA_DIST += tests/ptex.dvi
+DISTCLEANFILES += ptex*.pdf
+## xdvipdfm-res.test
+EXTRA_DIST += tests/resrc.dvi tests/resrc.tex
+DISTCLEANFILES += resrc*.pdf
+## xdvipdfm-rev.test
+EXTRA_DIST += tests/reverse.dvi
+DISTCLEANFILES += reverse.pdf
+## xdvipdfm-ttc.test
+EXTRA_DIST += tests/ttc.dvi tests/ttc.tex tests/test.ttc
+DISTCLEANFILES += ttc*.pdf
+##
+EXTRA_DIST += tests/fullmap.dvi tests/fullmap.tex

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -25,32 +25,49 @@
 
 #include <stdio.h>
 #include <math.h>
-
-typedef unsigned char Ubyte;
-typedef int UNSIGNED_BYTE, SIGNED_BYTE, SIGNED_PAIR;
-typedef unsigned UNSIGNED_PAIR;
-typedef long UNSIGNED_TRIPLE, SIGNED_TRIPLE, SIGNED_QUAD;
-typedef unsigned long UNSIGNED_QUAD;
-
-extern UNSIGNED_BYTE get_unsigned_byte (FILE *);
-#if 0
-extern UNSIGNED_BYTE sget_unsigned_byte (char *);
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
 #endif
-extern SIGNED_BYTE get_signed_byte (FILE *);
-extern UNSIGNED_PAIR get_unsigned_pair (FILE *);
-extern UNSIGNED_PAIR sget_unsigned_pair (unsigned char *);
-extern SIGNED_PAIR get_signed_pair (FILE *);
-extern UNSIGNED_TRIPLE get_unsigned_triple (FILE *);
-extern SIGNED_TRIPLE get_signed_triple (FILE *);
-extern SIGNED_QUAD get_signed_quad (FILE *);
-extern UNSIGNED_QUAD get_unsigned_quad (FILE *);
-
-typedef signed long fixword;
-
-extern SIGNED_QUAD sqxfw (SIGNED_QUAD sq, fixword fw);
-#if 0
-extern SIGNED_QUAD axboverc (SIGNED_QUAD n1, SIGNED_QUAD n2, SIGNED_QUAD divide);
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
 #endif
+
+#ifndef PRId64
+# ifdef _WIN32
+#  define PRId64 "I64d"
+# elif SIZEOF_LONG == 8
+#  define PRId64 "ld"
+# else
+#  define PRId64 "lld"
+# endif
+#endif
+
+/* When reading numbers from binary files 1, 2, or 3 bytes are
+   interpreted as either signed or unsigned.
+
+   Four bytes from DVI, PK, TFM, or VF files always yield a signed
+   32-bit integer (int32_t), but some of them must not be negative.
+
+   Four byte numbers from JPEG2000, OpenType, or TrueType files are
+   mostly unsigned (uint32_t) and occasionally signed (int32_t).
+*/
+
+extern unsigned char get_unsigned_byte (FILE *);
+extern void skip_bytes (unsigned int, FILE *);
+extern signed char get_signed_byte (FILE *);
+extern unsigned short get_unsigned_pair (FILE *);
+extern unsigned short sget_unsigned_pair (unsigned char *);
+extern signed short get_signed_pair (FILE *);
+extern unsigned int get_unsigned_triple (FILE *);
+extern signed int get_signed_triple (FILE *);
+extern int32_t get_signed_quad (FILE *);
+extern uint32_t get_unsigned_quad (FILE *);
+extern int32_t get_unsigned_num (FILE *, unsigned char);
+extern uint32_t get_positive_quad (FILE *, const char *, const char *);
+
+typedef int32_t fixword;
+
+extern int32_t sqxfw (int32_t sq, fixword fw);
 
 #ifndef MAX
 #  define MAX(a,b) ((a)>(b)?(a):(b))

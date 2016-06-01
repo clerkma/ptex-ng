@@ -1,15 +1,30 @@
-/*
-getdestdir.c
-from mktexpk:
-  argv[0] = "Dummy", argv[1] = "pk", argv[2] = path, argv[3] = mode
-from mktextfm:
-  argv[0] = "Dummy", argv[1] = "tfm", argv[2] = path
+/* getdestdir.c
+
+   Copyright 2000, 2016 Akira Kakuto.
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with this library; if not, see <http://www.gnu.org/licenses/>.
+
+   from mktexmf:
+   argv[0] = "Dummy", argv[1] = "source", argv[2] = path
+   from mktexpk:
+   argv[0] = "Dummy", argv[1] = "pk", argv[2] = path, argv[3] = mode
+   from mktextfm:
+   argv[0] = "Dummy", argv[1] = "tfm", argv[2] = path
 */
 
 #include <kpathsea/kpathsea.h>
-
-#include "dirutil.h"
-#include "getdestdir.h"
+#include "mktex.h"
 
 #define NUMBUF   32
 #define LENBUF   128
@@ -51,12 +66,7 @@ getdestdir (int ac, char **av)
 
   strcpy (spec, av[1]);
 
-  for (p = av[2]; *p; p++) {    /* path */
-    if (*p == '\\')
-      *p = '/';
-    else if (IS_KANJI(p))
-      p++;
-  }
+  normalize (av[2]);            /* path */
 
   p = av[2];
   q = buff;
@@ -128,13 +138,8 @@ getdestdir (int ac, char **av)
 
   topdir = kpse_var_value ("MAKETEXPK_TOP_DIR");
   if (topdir && *topdir && ispk) {
-    for (i = 0; topdir[i]; i++) {
-      if (topdir[i] == '\\')
-        topdir[i] = '/';
-      else if (IS_KANJI(topdir+i))
-        i++;
-    }
-    i = strlen (topdir);
+    normalize (topdir);
+    i = (int)strlen (topdir);
     while(topdir[i - 1] == '/')
       i--;
     topdir[i] = '\0';
@@ -163,13 +168,8 @@ getdestdir (int ac, char **av)
     free(topdir);
   } else {
     if((topdir = kpse_var_value("TEXMFVAR")) != NULL) {
-      for (i = 0; topdir[i]; i++) {
-	if (topdir[i] == '\\')
-	  topdir[i] = '/';
-        else if (IS_KANJI(topdir+i))
-          i++;
-      }
-      i = strlen (topdir);
+      normalize (topdir);
+      i = (int)strlen (topdir);
       while(topdir[i - 1] == '/')
         i--;
       topdir[i] = '\0';

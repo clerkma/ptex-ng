@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     This program is free software; you can redistribute it and/or modify
@@ -85,7 +85,6 @@ struct Type0Font {
   char    *fontname;   /* BaseFont */
   char    *encoding;   /* "Identity-H" or "Identity-V" (not ID) */
   char    *used_chars; /* Used chars (CIDs) */
-  char    *used_glyphs; /* Used glyphs (GIDs) */
 
   /*
    * Type0 only
@@ -114,7 +113,6 @@ Type0Font_init_font_struct (Type0Font *font)
   font->descriptor = NULL;
   font->encoding   = NULL;
   font->used_chars = NULL;
-  font->used_glyphs = NULL;
   font->descendant = NULL;
   font->wmode      = -1;
   font->cmap_id    = -1;
@@ -135,8 +133,6 @@ Type0Font_clean (Type0Font *font)
       ERROR("%s: FontDescriptor unexpected for Type0 font.", TYPE0FONT_DEBUG_STR);
     if (!(font->flags & FLAG_USED_CHARS_SHARED) && font->used_chars)
       RELEASE(font->used_chars);
-    if (!(font->flags & FLAG_USED_CHARS_SHARED) && font->used_glyphs)
-      RELEASE(font->used_glyphs);
     if (font->encoding)
       RELEASE(font->encoding);
     if (font->fontname)
@@ -145,7 +141,6 @@ Type0Font_clean (Type0Font *font)
     font->indirect   = NULL;
     font->descriptor = NULL;
     font->used_chars = NULL;
-    font->used_glyphs = NULL;
     font->encoding   = NULL;
     font->fontname   = NULL;
   }
@@ -157,13 +152,9 @@ Type0Font_clean (Type0Font *font)
 static pdf_obj *
 Type0Font_create_ToUnicode_stream(Type0Font *font) {
   CIDFont *cidfont = font->descendant;
-  char *used = Type0Font_get_usedglyphs(font);
-  if (!used)
-    used = Type0Font_get_usedchars(font);
-
   return otf_create_ToUnicode_stream(CIDFont_get_ident(cidfont),
                                      CIDFont_get_opt_index(cidfont),
-                                     used,
+                                     Type0Font_get_usedchars(font),
                                      font->cmap_id);
 }
 
@@ -245,8 +236,8 @@ add_ToUnicode (Type0Font *font)
       if (CIDFont_get_flag(cidfont, CIDFONT_FLAG_TYPE1C)) { /* FIXME */
         tounicode = Type0Font_create_ToUnicode_stream(font);
       } else if (CIDFont_get_flag(cidfont, CIDFONT_FLAG_TYPE1)) { /* FIXME */
-	/* Font loader will create ToUnicode and set. */
-	return;
+        /* Font loader will create ToUnicode and set. */
+        return;
       } else {
         tounicode = Type0Font_try_load_ToUnicode_stream(font, fontname);
       }
@@ -261,7 +252,7 @@ add_ToUnicode (Type0Font *font)
 
   if (tounicode) {
     pdf_add_dict(font->fontdict,
-		 pdf_new_name("ToUnicode"), tounicode);
+                 pdf_new_name("ToUnicode"), tounicode);
   } else {
     WARN("Failed to load ToUnicode CMap for font \"%s\"", fontname);
   }
@@ -275,7 +266,7 @@ Type0Font_set_ToUnicode (Type0Font *font, pdf_obj *cmap_ref)
   ASSERT(font);
 
   pdf_add_dict(font->fontdict,
-	       pdf_new_name("ToUnicode"), cmap_ref);
+               pdf_new_name("ToUnicode"), cmap_ref);
 }
 
 static void
@@ -329,14 +320,6 @@ Type0Font_get_usedchars (Type0Font *font)
   ASSERT(font);
 
   return font->used_chars;
-}
-
-char *
-Type0Font_get_usedglyphs (Type0Font *font)
-{
-  ASSERT(font);
-
-  return font->used_glyphs;
 }
 
 pdf_obj *
@@ -517,7 +500,6 @@ Type0Font_cache_find (const char *map_name, int cmap_id, fontmap_opt *fmap_opt)
    */
 
   font->used_chars = NULL;
-  font->used_glyphs = NULL;
   font->flags      = FLAG_NONE;
 
   switch (CIDFont_get_subtype(cidfont)) {
@@ -531,12 +513,9 @@ Type0Font_cache_find (const char *map_name, int cmap_id, fontmap_opt *fmap_opt)
      */
     if ((parent_id = CIDFont_get_parent_id(cidfont, wmode ? 0 : 1)) < 0) {
       font->used_chars = new_used_chars2();
-      if (fmap_opt->cff_charsets)
-        font->used_glyphs = new_used_chars2();
     } else {
       /* Don't allocate new one. */
       font->used_chars = Type0Font_get_usedchars(Type0Font_cache_get(parent_id));
-      font->used_glyphs = Type0Font_get_usedglyphs(Type0Font_cache_get(parent_id));
       font->flags     |= FLAG_USED_CHARS_SHARED;
     }
     break;
@@ -683,7 +662,7 @@ static pdf_obj *
 pdf_read_ToUnicode_file (const char *cmap_name)
 {
   pdf_obj *stream;
-  long     res_id = -1;
+  int      res_id = -1;
 
   ASSERT(cmap_name);
 

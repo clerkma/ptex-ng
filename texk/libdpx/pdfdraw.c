@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -808,7 +808,7 @@ pdf_dev__flushpath (pdf_path  *pa,
 {
   pa_elem   *pe, *pe1;
   char      *b      = fmt_buf;
-  long       b_len  = FORMAT_BUFF_LEN;
+  int        b_len  = FORMAT_BUFF_LEN;
   pdf_rect   r; /* FIXME */
   pdf_coord *pt;
   int        n_pts, n_seg;
@@ -906,7 +906,7 @@ typedef struct pdf_gstate_
 
   /* internal */
   pdf_path  path;
-  long      flags;
+  int       flags;
   /* bookkeeping the origin of the last transform applied */
   pdf_coord pt_fixee;
 } pdf_gstate;
@@ -1138,7 +1138,7 @@ pdf_dev_grestore (void)
 
   pdf_doc_add_page_content(" Q", 2);  /* op: Q */
 
-  pdf_dev_reset_fonts();
+  pdf_dev_reset_fonts(0);
 
   return  0;
 }
@@ -1203,7 +1203,7 @@ pdf_dev_grestore_to (int depth)
     clear_a_gstate(gs);
     RELEASE(gs);
   }
-  pdf_dev_reset_fonts();
+  pdf_dev_reset_fonts(0);
 
   return;
 }
@@ -1277,7 +1277,7 @@ pdf_dev_set_color (const pdf_color *color, char mask, int force)
     return;
 
   graphics_mode();
-  len = pdf_color_to_string(color, fmt_buf);
+  len = pdf_color_to_string(color, fmt_buf, mask);
   fmt_buf[len++] = ' ';
   switch (pdf_color_type(color)) {
   case  PDF_COLORSPACE_TYPE_RGB:
@@ -1293,7 +1293,7 @@ pdf_dev_set_color (const pdf_color *color, char mask, int force)
   default: /* already verified the given color */
     break;
   }
-  pdf_doc_add_page_content(fmt_buf, len);  /* op: RG K G rg k g */
+  pdf_doc_add_page_content(fmt_buf, len);  /* op: RG K G rg k g etc. */
 
   pdf_color_copycolor(current, color);
 }

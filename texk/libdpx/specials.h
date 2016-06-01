@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -26,7 +26,7 @@
 struct spc_env {
   double x_user, y_user;
   double mag;
-  long   pg;  /* current page in PDF */
+  int    pg;  /* current page in PDF */
 };
 
 struct spc_arg {
@@ -70,7 +70,7 @@ extern int      spc_exec_at_end_page       (void);
 extern int      spc_exec_at_begin_document (void);
 extern int      spc_exec_at_end_document   (void);
 
-extern int      spc_exec_special (const char *p, long size,
+extern int      spc_exec_special (const char *p, int32_t size,
 				  double x_user, double y_user, double mag);
 
 #endif /* _SPECIALS_H_ */

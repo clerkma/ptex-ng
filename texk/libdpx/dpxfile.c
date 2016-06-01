@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -71,6 +71,92 @@ dpx_file_set_verbose (void)
 
 /* Kpathsea library does not check file type. */
 static int qcheck_filetype (const char *fqpn, dpx_res_type type);
+
+/* For testing MIKTEX enabled compilation */
+#if defined(TESTCOMPILE) && !defined(MIKTEX)
+#  define MIKTEX        1
+#  define PATH_SEP_CHR  '/'
+#  define _MAX_PATH     256
+
+static int
+miktex_get_acrobat_font_dir (char *buf)
+{
+  strcpy(buf, "/usr/share/ghostscript/Resource/Font/");
+  return  1;
+}
+
+static int
+miktex_find_file (const char *filename, const char *dirlist, char *buf)
+{
+  int    r = 0;
+  char  *fqpn;
+
+  fqpn = kpse_path_search(dirlist, filename, 0);
+  if (!fqpn)
+    return  0;
+  if (strlen(fqpn) > _MAX_PATH)
+    r = 0;
+  else {
+    strcpy(buf, fqpn);
+    r = 1;
+  }
+  RELEASE(fqpn);
+
+  return  r;
+}
+
+static int
+miktex_find_app_input_file (const char *progname, const char *filename, char *buf)
+{
+  int    r = 0;
+  char  *fqpn;
+
+  kpse_reset_program_name(progname);
+  fqpn = kpse_find_file  (filename, kpse_program_text_format, false);
+  kpse_reset_program_name("dvipdfmx");
+
+  if (!fqpn)
+    return  0;
+  if (strlen(fqpn) > _MAX_PATH)
+    r = 0;
+  else {
+    strcpy(buf, fqpn);
+    r = 1;
+  }
+  RELEASE(fqpn);
+
+  return  r;
+}
+
+static int
+miktex_find_psheader_file (const char *filename, char *buf)
+{
+  int    r;
+  char  *fqpn;
+
+  fqpn = kpse_find_file(filename, kpse_tex_ps_header_format, 0);
+
+  if (!fqpn)
+    return  0;
+  if (strlen(fqpn) > _MAX_PATH)
+    r = 0;
+  else {
+    strcpy(buf, fqpn);
+    r = 1;
+  }
+  RELEASE(fqpn);
+
+  return  r; 
+}
+
+#endif /* TESTCOMPILE */
+
+#ifdef  MIKTEX
+#ifndef PATH_SEP_CHR
+#  define PATH_SEP_CHR '\\'
+#endif
+static char  _tmpbuf[_MAX_PATH+1];
+#endif /* MIKTEX */
 
 static int exec_spawn (char *cmd)
 {
@@ -327,8 +413,10 @@ dpx_open_file (const char *filename, dpx_res_type type)
   switch (type) {
   case DPX_RES_TYPE_FONTMAP:
     fqpn = dpx_find_fontmap_file(filename);
-    if (verbose) 
-      MESG(fqpn);
+    if (verbose) {
+      if (fqpn != NULL)
+        MESG(fqpn);
+    }
     break;
   case DPX_RES_TYPE_T1FONT:
     fqpn = dpx_find_type1_file(filename);
@@ -679,7 +767,7 @@ dpx_find_dfont_file (const char *filename)
   return fqpn;
 }
  
-static const char *
+static char *
 dpx_get_tmpdir (void)
 {
 #ifdef WIN32
@@ -687,6 +775,8 @@ dpx_get_tmpdir (void)
 #else /* WIN32 */
 #  define __TMPDIR     "/tmp"
 #endif /* WIN32 */
+    size_t i;
+    char *ret;
     const char *_tmpd;
 
 #ifdef  HAVE_GETENV
@@ -702,7 +792,13 @@ dpx_get_tmpdir (void)
 #else /* HAVE_GETENV */
     _tmpd = __TMPDIR;
 #endif /* HAVE_GETENV */
-    return _tmpd;
+    ret = xstrdup(_tmpd);
+    i = strlen(ret);
+    while(i > 1 && IS_DIR_SEP(ret[i-1])) {
+      ret[i-1] = '\0';
+      i--;
+    }
+    return ret;
 }
 
 #ifdef  HAVE_MKSTEMP
@@ -722,20 +818,28 @@ dpx_create_temp_file (void)
 #elif defined(HAVE_MKSTEMP)
 #  define TEMPLATE     "/dvipdfmx.XXXXXX"
   {
-    const char *_tmpd;
-    int   _fd = -1;
+    char *_tmpd;
+    int  _fd = -1;
     _tmpd = dpx_get_tmpdir();
     tmp = NEW(strlen(_tmpd) + strlen(TEMPLATE) + 1, char);
     strcpy(tmp, _tmpd);
+    RELEASE(_tmpd);
     strcat(tmp, TEMPLATE);
     _fd  = mkstemp(tmp);
-    if (_fd != -1)
+    if (_fd != -1) {
 #  ifdef WIN32
+      char *p;
+      for (p = tmp; *p; p++) {
+        if (IS_KANJI (p))
+          p++;
+        else if (*p == '\\')
+          *p = '/';
+      }
       _close(_fd);
 #  else
       close(_fd);
 #  endif /* WIN32 */
-    else {
+    } else {
       RELEASE(tmp);
       tmp = NULL;
     }
@@ -743,12 +847,13 @@ dpx_create_temp_file (void)
 #else /* use _tempnam or tmpnam */
   {
 #  ifdef WIN32
-    const char *_tmpd;
+    char *_tmpd;
     char *p;
     _tmpd = dpx_get_tmpdir();
     tmp = _tempnam (_tmpd, "dvipdfmx.");
+    RELEASE(_tmpd);
     for (p = tmp; *p; p++) {
-      if (IS_KANJI (p))
+      if (IS_KANJI(p))
         p++;
       else if (*p == '\\')
         *p = '/';
@@ -769,7 +874,7 @@ char *
 dpx_create_fix_temp_file (const char *filename)
 {
 #define PREFIX "dvipdfm-x."
-  static const char *dir = NULL;
+  static char *dir = NULL;
   static char *cwd = NULL;
   char *ret, *s;
   int i;
@@ -822,7 +927,7 @@ dpx_clear_cache_filter (const struct dirent *ent) {
 void
 dpx_delete_old_cache (int life)
 {
-  const char *dir;
+  char *dir;
   char *pathname;
   DIR *dp;
   struct dirent *de;
@@ -852,6 +957,7 @@ dpx_delete_old_cache (int life)
       }
       closedir(dp);
   }
+  RELEASE(dir);
   RELEASE(pathname);
 }
 
@@ -1050,7 +1156,7 @@ static int
 isdfont (FILE *fp)
 {
   int i, n;
-  unsigned long pos;
+  uint32_t pos;
 
   rewind(fp);
 
@@ -1078,6 +1184,9 @@ qcheck_filetype (const char *fqpn, dpx_res_type type)
     return  0;
 
   if (stat(fqpn, &sb) != 0)
+    return 0;
+
+  if (sb.st_size == 0)
     return 0;
 
   fp = MFOPEN(fqpn, FOPEN_RBIN_MODE);

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     This program is free software; you can redistribute it and/or modify
@@ -26,19 +26,16 @@
 #include "fontmap.h"
 
 extern void CIDFont_type0_set_verbose (void);
-extern void CIDFont_type0_set_flags   (long flags);
+extern void CIDFont_type0_set_flags   (int flags);
 
 extern int  CIDFont_type0_open    (CIDFont *font, const char *name,
-				   CIDSysInfo *cmap_csi, cid_opt *opt);
+                                   CIDSysInfo *cmap_csi, cid_opt *opt,
+                                   int expected_flag);
 extern void CIDFont_type0_dofont  (CIDFont *font);
 
 /* Type1 --> CFF CIDFont */
 extern int  t1_load_UnicodeCMap  (const char *font_name, const char *otl_tags, int wmode);
-extern int  CIDFont_type0_t1open (CIDFont *font, const char *name,
-				  CIDSysInfo *cmap_csi, cid_opt *opt);
 extern void CIDFont_type0_t1dofont (CIDFont *font);
-extern int  CIDFont_type0_t1copen (CIDFont *font, const char *name,
-				   CIDSysInfo *cmap_csi, cid_opt *opt);
 extern void CIDFont_type0_t1cdofont (CIDFont *font);
 
 #endif /* _CIDTYPE0_H_ */

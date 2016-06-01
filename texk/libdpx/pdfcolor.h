@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -27,6 +27,7 @@
 
 #define PDF_COLORSPACE_TYPE_DEVICECMYK -4
 #define PDF_COLORSPACE_TYPE_DEVICERGB  -3
+#define PDF_COLORSPACE_TYPE_SPOT       -2
 #define PDF_COLORSPACE_TYPE_DEVICEGRAY -1
 #define PDF_COLORSPACE_TYPE_INVALID     0
 #define PDF_COLORSPACE_TYPE_CALGRAY     1
@@ -44,6 +45,7 @@
 typedef struct
 {
   int    num_components;
+  char*  spot_color_name;
   double values[PDF_COLOR_COMPONENT_MAX];
 } pdf_color;
 
@@ -54,6 +56,9 @@ extern int        pdf_color_rgbcolor      (pdf_color *color,
 extern int        pdf_color_cmykcolor     (pdf_color *color,
                                            double c, double m, double y, double k);
 extern int        pdf_color_graycolor     (pdf_color *color, double g);
+
+extern int        pdf_color_spotcolor     (pdf_color *color, char* color_name, double c);
+
 extern void       pdf_color_copycolor     (pdf_color *color1, const pdf_color *color2);
 
 #define pdf_color_black(c)   pdf_color_graycolor(c, 0.0);
@@ -63,19 +68,19 @@ extern void       pdf_color_brighten_color (pdf_color *dst, const pdf_color *src
 
 extern int        pdf_color_type          (const pdf_color *color);
 extern int        pdf_color_compare       (const pdf_color *color1, const pdf_color *color2);
-extern int        pdf_color_to_string     (const pdf_color *color, char *buffer);
+extern int        pdf_color_to_string     (const pdf_color *color, char *buffer, char mask);
 
 extern int        pdf_color_is_white      (const pdf_color *color);
 extern int        pdf_color_is_valid      (const pdf_color *color);
 
 /* Not check size */
-extern pdf_obj *iccp_get_rendering_intent (const void *profile, long proflen);
+extern pdf_obj *iccp_get_rendering_intent (const void *profile, int proflen);
 extern int      iccp_check_colorspace     (int colortype,
-					   const void *profile, long proflen);
+					   const void *profile, int proflen);
 
 /* returns colorspace ID */
 extern int      iccp_load_profile (const char *ident,
-				   const void *profile, long proflen);
+				   const void *profile, int proflen);
 
 extern void     pdf_init_colors  (void);
 extern void     pdf_close_colors (void);
@@ -94,7 +99,6 @@ extern int      pdf_colorspace_load_ICCBased      (const char *ident,
  * See remark in spc_color.c.
  */
 extern void     pdf_color_set   (pdf_color *sc, pdf_color *fc);
-extern void     pdf_color_set_default (const pdf_color *color);
 extern void     pdf_color_push  (pdf_color *sc, pdf_color *fc);
 extern void     pdf_color_pop   (void);
 

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     This program is free software; you can redistribute it and/or modify
@@ -92,7 +92,7 @@ pdf_font_open_truetype (pdf_font *font)
   }
 
   if (sfont->type == SFNT_TYPE_TTC) {
-    unsigned long offset;
+    ULONG offset;
     offset = ttc_read_offset(sfont, index);
     if (offset == 0) ERROR("Invalid TTC index in %s.", ident);
     error = sfnt_read_table_directory(sfont, offset);
@@ -170,7 +170,7 @@ pdf_font_open_truetype (pdf_font *font)
        * "builtin" encoding means "MacRoman" here.
        */
       pdf_obj  *tmp;
-      long      flags;
+      int       flags;
 
 #ifndef  ENABLE_NOEMBED
       ERROR("Font file=\"%s\" can't be embedded due to liscence restrictions.", ident);
@@ -178,7 +178,7 @@ pdf_font_open_truetype (pdf_font *font)
       pdf_font_set_flags(font, PDF_FONT_FLAG_NOEMBED);
       tmp = pdf_lookup_dict(descriptor, "Flags");
       if (tmp && pdf_obj_typeof(tmp) == PDF_NUMBER) {
-        flags  = (long) pdf_number_value(tmp);
+        flags  = (int) pdf_number_value(tmp);
         flags &= (1 << 2); /* clear Symbolic */
         flags |= (1 << 5); /* set Nonsymbolic */
         pdf_add_dict(descriptor, pdf_new_name("Flags"), pdf_new_number(flags));
@@ -531,7 +531,7 @@ composeglyph (USHORT *glyphs, int n_glyphs,
 
 /* This may be called by findparanoiac(). */
 static int
-composeuchar (long *unicodes, int n_unicodes,
+composeuchar (int32_t *unicodes, int n_unicodes,
               const char *feat, struct glyph_mapper *gm, USHORT *gid)
 {
   USHORT  *gids;
@@ -663,9 +663,9 @@ findparanoiac (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
             for (_p = _buf, _i = 0; _i < agln->n_components && _n < 245; _i++) {
               _p[_n++] = _i == 0 ? '<' : ' ';
               if (agln->unicodes[_i] >= 0x10000)
-                _n += sprintf(_p+_n, "U+%06lX", agln->unicodes[_i]);
+                _n += sprintf(_p+_n, "U+%06X", agln->unicodes[_i]);
               else
-                _n += sprintf(_p+_n, "U+%04lX", agln->unicodes[_i]);
+                _n += sprintf(_p+_n, "U+%04X", agln->unicodes[_i]);
               _p[_n++] = _i == agln->n_components - 1 ? '>' : ',';
             }
             _p[_n++] = '\0';
@@ -686,7 +686,7 @@ resolve_glyph (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
 {
   int    error = 0;
   char  *name, *suffix = NULL;
-  long   ucv;
+  int32_t ucv;
 
   ASSERT(glyphname);
 
@@ -916,10 +916,10 @@ pdf_font_load_truetype (pdf_font *font)
   }
 
   if (sfont->type == SFNT_TYPE_TTC) {
-    unsigned long offset;
+    ULONG offset;
     offset = ttc_read_offset(sfont, index);
     if (offset == 0) ERROR("Invalid TTC index in %s.", ident);
-    error = sfnt_read_table_directory(sfont, ttc_read_offset(sfont, offset));
+    error = sfnt_read_table_directory(sfont, offset);
   } else {
     error = sfnt_read_table_directory(sfont, sfont->offset);
   }

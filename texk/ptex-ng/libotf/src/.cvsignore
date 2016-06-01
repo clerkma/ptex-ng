@@ -1,0 +1,10 @@
+stamp-h.in
+stamp-h
+*.lo
+*.o
+*.la
+config.h
+Makefile.in
+Makefile
+.libs
+.deps

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -33,10 +33,25 @@
  *
  * This is for reading *single* color specification.
  */
-extern int  spc_util_read_colorspec (struct spc_env *spe, pdf_color *colorspec, struct spc_arg *args, int syntax);
-extern int  spc_util_read_dimtrns   (struct spc_env *spe, transform_info *dimtrns, struct spc_arg *args, long *page, int syntax);
+extern int  spc_util_read_colorspec (struct spc_env *spe,
+                                     pdf_color *colorspec,
+                                     struct spc_arg *args, int syntax);
+extern int  spc_util_read_dimtrns   (struct spc_env *spe,
+                                     transform_info *dimtrns,
+                                     struct spc_arg *args, int syntax);
 
-extern int  spc_util_read_numbers   (double *values, int num_values, struct spc_arg *args);
-extern int  spc_util_read_pdfcolor  (struct spc_env *spe, pdf_color *colorspec, struct spc_arg *args, pdf_color *defaultcolor);
+extern int  spc_util_read_blahblah  (struct spc_env *spe,
+                                     transform_info *dimtrns,
+                                     int            *page_no,
+                                     int            *bbox_type,
+                                     struct spc_arg *args);
+
+
+extern int  spc_util_read_numbers   (double *values, int num_values,
+                                     struct spc_arg *args);
+extern int  spc_util_read_pdfcolor  (struct spc_env *spe,
+                                     pdf_color *colorspec,
+                                     struct spc_arg *args,
+                                     pdf_color *defaultcolor);
 
 #endif /* _SPC_UTIL_H_ */

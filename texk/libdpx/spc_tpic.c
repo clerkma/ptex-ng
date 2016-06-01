@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -381,6 +381,16 @@ tpic__arc (struct spc_tpic_ *tp,
 
     set_styles(tp, c, f_fs, f_vp, pn, da);
 
+    /* The arcx operator here draws an excess straight line from current
+     * point to the starting point of the arc if they are different, as in
+     * PostScript language. It may cuase an unexpected behavior when DVIPS
+     * transformation command is inserted before TPIC ar command: it invokes
+     * moveto and sets currentpoint which may be different from the starting
+     * point of arc to be drawn. We use newpath here to avoid drawing an
+     * excess line. I'm not sure if it is proper TPIC implementation but this
+     * seems to be DVIPS compatible behavior.
+     */
+    pdf_dev_newpath();
     pdf_dev_arcx(v[0], v[1], v[2], v[3], v[4], v[5], +1, 0.0);
 
     showpath(f_vp, f_fs);
@@ -394,7 +404,7 @@ tpic__arc (struct spc_tpic_ *tp,
 
 #if  1
 static int
-spc_currentpoint (struct spc_env *spe, long *pg, pdf_coord *cp)
+spc_currentpoint (struct spc_env *spe, int *pg, pdf_coord *cp)
 {
   *pg = 0;
   cp->x = spe->x_user;
@@ -469,7 +479,7 @@ spc_handler_tpic_fp (struct spc_env *spe,
 {
   struct spc_tpic_ *tp = &_tpic_state;
   pdf_coord  cp;
-  long       pg;
+  int        pg;
 
   ASSERT(spe && ap && tp);
 
@@ -489,7 +499,7 @@ spc_handler_tpic_ip (struct spc_env *spe,
 {
   struct spc_tpic_ *tp = &_tpic_state;
   pdf_coord  cp;
-  long       pg;
+  int        pg;
 
   ASSERT(spe && ap && tp);
 
@@ -511,7 +521,7 @@ spc_handler_tpic_da (struct spc_env *spe,
   char      *q;
   double     da = 0.0;
   pdf_coord  cp;
-  long       pg;
+  int        pg;
 
   ASSERT(spe && ap && tp);
 
@@ -539,7 +549,7 @@ spc_handler_tpic_dt (struct spc_env *spe,
   char      *q;
   double     da = 0.0;
   pdf_coord  cp;
-  long       pg;
+  int        pg;
 
   ASSERT(spe && ap && tp);
 
@@ -567,7 +577,7 @@ spc_handler_tpic_sp (struct spc_env *spe,
   char      *q;
   double     da = 0.0;
   pdf_coord  cp;
-  long       pg;
+  int        pg;
 
   ASSERT(spe && ap && tp);
 
@@ -594,7 +604,7 @@ spc_handler_tpic_ar (struct spc_env *spe,
   struct  spc_tpic_ *tp = &_tpic_state;
   double     v[6];
   pdf_coord  cp;
-  long       pg;
+  int        pg;
   char      *q;
   int        i;
 
@@ -634,7 +644,7 @@ spc_handler_tpic_ia (struct spc_env *spe,
   struct  spc_tpic_ *tp = &_tpic_state;
   double     v[6];
   pdf_coord  cp;
-  long       pg;
+  int        pg;
   char      *q;
   int        i;
 
@@ -975,7 +985,7 @@ static struct spc_handler tpic_handlers[] = {
 };
 
 int
-spc_tpic_check_special (const char *buf, long len)
+spc_tpic_check_special (const char *buf, int len)
 {
   int    istpic = 0;
   char  *q;

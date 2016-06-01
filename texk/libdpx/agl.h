@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -32,7 +32,7 @@ struct agl_name {
   char *name;
   char *suffix;
   int   n_components;
-  long  unicodes[AGL_MAX_UNICODES];
+  int32_t  unicodes[AGL_MAX_UNICODES];
   struct agl_name *alternate;
   int   is_predef;
 };
@@ -40,20 +40,19 @@ typedef struct agl_name agl_name;
 
 extern char *agl_chop_suffix  (const char *glyphname, char **suffix);
 
-extern long  agl_sput_UTF16BE (const char *name,
+extern int32_t agl_sput_UTF16BE (const char *name,
 			       unsigned char **dstpp,
 			       unsigned char *limptr, int *num_fails);
 
 extern int   agl_get_unicodes (const char *glyphstr,
-			       long *unicodes, int max_uncodes);
+			       int32_t *unicodes, int max_uncodes);
 
-extern int   agl_name_is_unicode      (const char *glyphname);
-extern long  agl_name_convert_unicode (const char *glyphname);
+extern int      agl_name_is_unicode      (const char *glyphname);
+extern int32_t  agl_name_convert_unicode (const char *glyphname);
 
 extern const char *agl_suffix_to_otltag (const char *suffix);
 
 extern agl_name   *agl_lookup_list     (const char *glyphname);
-extern int         agl_load_listfile   (const char *filename, int format);
 
 #if 0
 extern int         agl_select_listfile (const char *mapfile);

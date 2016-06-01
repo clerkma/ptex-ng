@@ -1,6 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl   Copyright (C) 2009-2014 Peter Breitenlohner <tex-live@tug.org>
+dnl   Copyright (C) 2016 Karl Berry <tex-live@tug.org>
+dnl   Copyright (C) 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
 dnl   This file is free software; the copyright holder
 dnl   gives unlimited permission to copy and/or distribute it,
@@ -9,7 +10,7 @@ dnl
 m4_include([version.ac])[] dnl define libpng_version
 AC_INIT([libpng (TeX Live)], libpng_version, [tex-k@tug.org])
 AC_PREREQ([2.65])
-AC_CONFIG_SRCDIR([libpng-]libpng_version[/pngget.c])
+AC_CONFIG_SRCDIR([libpng-src/pngget.c])
 AC_CONFIG_AUX_DIR([../../build-aux])
 AC_CONFIG_MACRO_DIR([../../m4])
 
@@ -22,6 +23,20 @@ AC_PROG_LN_S
 KPSE_COMPILER_VISIBILITY
 
 AC_CONFIG_HEADERS([config.h])
+
+# For GCC 5 the default mode for C is -std=gnu11 instead of -std=gnu89
+# In pngpriv.h we request just the POSIX 1003.1 and C89 APIs by defining _POSIX_SOURCE to 1
+# This is incompatible with the new default mode, so we test for that and force the 
+AC_MSG_CHECKING([if we need to force back C standard to C89])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#define _POSIX_SOURCE 1
+#include <stdio.h>
+])],AC_MSG_RESULT(no),[
+if test "x$GCC" != "xyes"; then
+  AC_MSG_ERROR([Forcing back to C89 is required but the flags are unknown for other compilers than GCC])
+fi
+AC_MSG_RESULT(yes)
+CFLAGS="$CFLAGS -std=c89"
+])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -51,7 +66,7 @@ KPSE_RESTORE_FLAGS
 echo timestamp >config.force
 fi
 
-AC_SUBST([LIBPNG_TREE], [libpng-]libpng_version)
+AC_SUBST([LIBPNG_TREE], [libpng-src])
 
 AC_SUBST([LIBPNG_DEFINES], ['-DPNG_CONFIGURE_LIBPNG -DPNG_NO_MMX_CODE'])
 

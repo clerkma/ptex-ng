@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2014 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include "cid_p.h"
 
 extern void CIDFont_type2_set_verbose (void);
-extern void CIDFont_type2_set_flags   (long flags);
+extern void CIDFont_type2_set_flags   (int flags);
 
 extern int  CIDFont_type2_open    (CIDFont *font, const char *name,
 				   CIDSysInfo *cmap_csi, cid_opt *opt);

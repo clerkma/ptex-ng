@@ -1,12 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl   Copyright (C) 2009-2014 Peter Breitenlohner <tex-live@tug.org>
+dnl   Copyright 2016 Karl Berry <tex-live@tug.org>
+dnl   Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
 dnl   This file is free software; the copyright holder
 dnl   gives unlimited permission to copy and/or distribute it,
 dnl   with or without modifications, as long as this notice is preserved.
 dnl
-AC_INIT([dvipdfm-x (TeX Live)], [20140317], [tex-k@tug.org])
+AC_INIT([dvipdfm-x (TeX Live)], [20160307], [tex-k@tug.org])
 AC_PREREQ([2.65])
 AC_CONFIG_SRCDIR([agl.c])
 AC_CONFIG_AUX_DIR([../../build-aux])
@@ -14,8 +15,6 @@ AC_CONFIG_MACRO_DIR([../../m4])
 
 dnl Common code for all programs using libkpathsea.
 KPSE_COMMON([dvipdfm-x])
-
-m4_include([ac/libdpx.ac])
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -30,6 +29,7 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 AC_C_BIGENDIAN
+AC_TYPE_INT32_T
 AC_TYPE_UINT32_T
 
 AC_CHECK_DECL([timezone],
@@ -53,6 +53,8 @@ AC_SEARCH_LIBS([pow], [m])
 KPSE_KPATHSEA_FLAGS
 KPSE_ZLIB_FLAGS
 KPSE_LIBPNG_FLAGS
+KPSE_LIBPAPER_FLAGS
+AC_DEFINE([HAVE_LIBPAPER], [1], [Define if you have libpaper.])
 
 KPSE_SAVE_FLAGS
 
@@ -86,7 +88,7 @@ AC_DEFINE([HAVE_ZLIB], 1, [Define if you have zlib and its headers.])
 AC_DEFINE([HAVE_ZLIB_COMPRESS2], 1, [Define if your zlib has the compress2 function.])
 AC_DEFINE([HAVE_LIBPNG], 1, [Define if you have libpng and its headers.])
 
-AM_CONDITIONAL([DVIPDFMX], [test "x$enable_dvipdfmx" != xno])
+KPSE_WIN32_CALL
 
 AC_CONFIG_FILES([Makefile])
 
