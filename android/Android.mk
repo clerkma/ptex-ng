@@ -20,7 +20,7 @@ LOCAL_PATH := $(call my-dir)
 # for libz
 include $(CLEAR_VARS)
 
-ZLIB_ROOT     := ../libs/zlib/zlib-1.2.8
+ZLIB_ROOT     := ../libs/zlib/zlib-src
 ZLIB_INCLUDES := $(LOCAL_PATH)/../libs/zlib/include
 ZLIB_FILES := \
 $(ZLIB_ROOT)/adler32.c \
@@ -50,7 +50,7 @@ include $(BUILD_STATIC_LIBRARY)
 # for libpng
 include $(CLEAR_VARS)
 
-LIBPNG_ROOT     := ../libs/libpng/libpng-1.6.15
+LIBPNG_ROOT     := ../libs/libpng/libpng-src
 LIBPNG_INCLUDES := $(LOCAL_PATH)/../libs/libpng/include
 LIBPNG_FILES := \
 $(LIBPNG_ROOT)/pngerror.c \
@@ -74,6 +74,25 @@ LOCAL_MODULE     := libpng
 LOCAL_CFLAGS     := -DPNG_ARM_NEON_OPT=0 -O2
 LOCAL_C_INCLUDES := $(LIBPNG_INCLUDES)
 LOCAL_SRC_FILES  := $(LIBPNG_FILES)
+
+include $(BUILD_STATIC_LIBRARY)
+
+# for libpaper
+include $(CLEAR_VARS)
+LIBPAPER_ROOT    := ../libs/libpaper/libpaper-src
+LIBPAPER_INCLUDES:= \
+$(LOCAL_PATH)/../libs/libpaper/include \
+$(LOCAL_PATH)/../libs/libpaper
+
+LIBPAPER_FILES   := \
+$(LIBPAPER_ROOT)/lib/dimen.c \
+$(LIBPAPER_ROOT)/lib/paper.c
+
+LOCAL_ARM_NEON   := false
+LOCAL_MODULE     := libpaper
+LOCAL_CFLAGS     := -DHAVE_CONFIG_H -O2
+LOCAL_C_INCLUDES := $(LIBPAPER_INCLUDES)
+LOCAL_SRC_FILES  := $(LIBPAPER_FILES)
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -175,79 +194,82 @@ $(LOCAL_PATH)/../texk/ \
 $(LOCAL_PATH)/../texk/ptexenc \
 $(LOCAL_PATH)/../texk/libdpx \
 $(LOCAL_PATH)/../libs/zlib/include \
-$(LOCAL_PATH)/../libs/libpng/include
+$(LOCAL_PATH)/../libs/libpng/include \
+$(LOCAL_PATH)/../libs/libpaper/include
 
 LIBDPX_FILES := \
 $(LIBDPX_ROOT)/agl.c \
-$(LIBDPX_ROOT)/numbers.c \
-$(LIBDPX_ROOT)/spc_pdfm.c \
 $(LIBDPX_ROOT)/bmpimage.c \
-$(LIBDPX_ROOT)/otl_conf.c \
-$(LIBDPX_ROOT)/spc_tpic.c \
-$(LIBDPX_ROOT)/cff_dict.c \
-$(LIBDPX_ROOT)/otl_opt.c \
-$(LIBDPX_ROOT)/spc_util.c \
 $(LIBDPX_ROOT)/cff.c \
-$(LIBDPX_ROOT)/pdfcolor.c \
-$(LIBDPX_ROOT)/spc_xtx.c \
+$(LIBDPX_ROOT)/cff_dict.c \
 $(LIBDPX_ROOT)/cid.c \
-$(LIBDPX_ROOT)/pdfdev.c \
-$(LIBDPX_ROOT)/specials.c \
 $(LIBDPX_ROOT)/cidtype0.c \
-$(LIBDPX_ROOT)/pdfdoc.c \
-$(LIBDPX_ROOT)/subfont.c \
 $(LIBDPX_ROOT)/cidtype2.c \
-$(LIBDPX_ROOT)/pdfdraw.c \
-$(LIBDPX_ROOT)/t1_char.c \
 $(LIBDPX_ROOT)/cmap.c \
-$(LIBDPX_ROOT)/pdfencoding.c \
-$(LIBDPX_ROOT)/t1_load.c \
 $(LIBDPX_ROOT)/cmap_read.c \
-$(LIBDPX_ROOT)/pdfencrypt.c \
-$(LIBDPX_ROOT)/tfm.c \
 $(LIBDPX_ROOT)/cmap_write.c \
-$(LIBDPX_ROOT)/pdffont.c \
-$(LIBDPX_ROOT)/truetype.c \
 $(LIBDPX_ROOT)/cs_type2.c \
-$(LIBDPX_ROOT)/pdfnames.c \
-$(LIBDPX_ROOT)/tt_aux.c \
 $(LIBDPX_ROOT)/dpxconf.c \
-$(LIBDPX_ROOT)/pdfobj.c \
-$(LIBDPX_ROOT)/tt_cmap.c \
 $(LIBDPX_ROOT)/dpxcrypt.c \
-$(LIBDPX_ROOT)/pdfparse.c \
-$(LIBDPX_ROOT)/tt_glyf.c \
 $(LIBDPX_ROOT)/dpxfile.c \
-$(LIBDPX_ROOT)/pdfresource.c \
-$(LIBDPX_ROOT)/tt_gsub.c \
 $(LIBDPX_ROOT)/dpxutil.c \
-$(LIBDPX_ROOT)/pdfximage.c \
-$(LIBDPX_ROOT)/tt_post.c \
 $(LIBDPX_ROOT)/dvi.c \
-$(LIBDPX_ROOT)/pkfont.c \
-$(LIBDPX_ROOT)/tt_table.c \
 $(LIBDPX_ROOT)/dvipdfmx.c \
-$(LIBDPX_ROOT)/pngimage.c \
-$(LIBDPX_ROOT)/type0.c \
 $(LIBDPX_ROOT)/epdf.c \
-$(LIBDPX_ROOT)/pst.c \
-$(LIBDPX_ROOT)/type1c.c \
 $(LIBDPX_ROOT)/error.c \
-$(LIBDPX_ROOT)/pst_obj.c \
-$(LIBDPX_ROOT)/type1.c \
 $(LIBDPX_ROOT)/fontmap.c \
-$(LIBDPX_ROOT)/sfnt.c \
-$(LIBDPX_ROOT)/unicode.c \
+$(LIBDPX_ROOT)/jp2image.c \
 $(LIBDPX_ROOT)/jpegimage.c \
-$(LIBDPX_ROOT)/spc_color.c \
-$(LIBDPX_ROOT)/vf.c \
 $(LIBDPX_ROOT)/mem.c \
-$(LIBDPX_ROOT)/spc_dvips.c \
-$(LIBDPX_ROOT)/xbb.c \
 $(LIBDPX_ROOT)/mfileio.c \
-$(LIBDPX_ROOT)/spc_html.c \
 $(LIBDPX_ROOT)/mpost.c \
-$(LIBDPX_ROOT)/spc_misc.c
+$(LIBDPX_ROOT)/numbers.c \
+$(LIBDPX_ROOT)/otl_conf.c \
+$(LIBDPX_ROOT)/otl_opt.c \
+$(LIBDPX_ROOT)/pdfcolor.c \
+$(LIBDPX_ROOT)/pdfdev.c \
+$(LIBDPX_ROOT)/pdfdoc.c \
+$(LIBDPX_ROOT)/pdfdraw.c \
+$(LIBDPX_ROOT)/pdfencrypt.c \
+$(LIBDPX_ROOT)/pdfencoding.c \
+$(LIBDPX_ROOT)/pdffont.c \
+$(LIBDPX_ROOT)/pdfnames.c \
+$(LIBDPX_ROOT)/pdfobj.c \
+$(LIBDPX_ROOT)/pdfparse.c \
+$(LIBDPX_ROOT)/pdfresource.c \
+$(LIBDPX_ROOT)/pdfximage.c \
+$(LIBDPX_ROOT)/pkfont.c \
+$(LIBDPX_ROOT)/pngimage.c \
+$(LIBDPX_ROOT)/pst.c \
+$(LIBDPX_ROOT)/pst_obj.c \
+$(LIBDPX_ROOT)/sfnt.c \
+$(LIBDPX_ROOT)/spc_color.c \
+$(LIBDPX_ROOT)/spc_dvipdfmx.c \
+$(LIBDPX_ROOT)/spc_dvips.c \
+$(LIBDPX_ROOT)/spc_html.c \
+$(LIBDPX_ROOT)/spc_misc.c \
+$(LIBDPX_ROOT)/spc_pdfm.c \
+$(LIBDPX_ROOT)/spc_tpic.c \
+$(LIBDPX_ROOT)/spc_util.c \
+$(LIBDPX_ROOT)/spc_xtx.c \
+$(LIBDPX_ROOT)/specials.c \
+$(LIBDPX_ROOT)/subfont.c \
+$(LIBDPX_ROOT)/t1_char.c \
+$(LIBDPX_ROOT)/t1_load.c \
+$(LIBDPX_ROOT)/tfm.c \
+$(LIBDPX_ROOT)/truetype.c \
+$(LIBDPX_ROOT)/tt_aux.c \
+$(LIBDPX_ROOT)/tt_cmap.c \
+$(LIBDPX_ROOT)/tt_glyf.c \
+$(LIBDPX_ROOT)/tt_gsub.c \
+$(LIBDPX_ROOT)/tt_post.c \
+$(LIBDPX_ROOT)/tt_table.c \
+$(LIBDPX_ROOT)/type0.c \
+$(LIBDPX_ROOT)/type1.c \
+$(LIBDPX_ROOT)/type1c.c \
+$(LIBDPX_ROOT)/unicode.c \
+$(LIBDPX_ROOT)/vf.c \
+$(LIBDPX_ROOT)/xbb.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libdpx
@@ -272,7 +294,7 @@ $(PTEXNG_ROOT)/aptex-src.c \
 $(PTEXNG_ROOT)/aptex-synctex.c
 
 LOCAL_ARM_NEON          := false
-LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libz libkpathsea
+LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libz libkpathsea
 LOCAL_LDLIBS            := -s -lm
 LOCAL_MODULE            := aptex
 LOCAL_CFLAGS            := -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
