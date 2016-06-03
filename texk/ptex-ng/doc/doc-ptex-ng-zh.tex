@@ -14,13 +14,13 @@
 \pdfpageheight\paperheight
 %%%%
 \newcommand{\pTeX}{p\kern-.1667em\TeX}
-\newcommand{\ptexng}{\pTeX-ng}
+\newcommand{\ptexng}{Asian \pTeX}
 \newcommand{\yandy}{Y\kern-.21em{\tiny\&}\kern-.12emY}
 \newcommand{\JTeX}{\leavevmode\hbox{\lower.5ex\hbox{J}\kern-.18em\TeX}}
 \newcommand{\PUTeX}{\leavevmode\hbox{P\kern-.18em\lower.5ex\hbox{U}\kern-.18em\TeX}}
 %%%%
 \begin{document}
-\title{\bf \TeX 与汉字处理：过去，现在，将来}
+\title{\bf Asian \pTeX 与汉字处理}
 \author{马起园}
 \date{2015年—2016年}
 \begin{frame}
@@ -57,7 +57,7 @@
 \ptexng 的的汉字处理相关代码来源于\pTeX；Unicode编码处理代码来源于u\pTeX。
 对于\hologo{eTeX}的支持来源于eu\pTeX。对于OpenType的处理，来源于\texttt{libm17n}。
 
-\ptexng 只支持PDF文件输出，相关代码来自\texttt{dvipdfmx}，没有使用任何来自
+\ptexng 支持PDF/DVI文件输出，相关代码来自\texttt{dvipdfmx}，没有使用任何来自
 {\textsc{pdf}\TeX}的代码，所以大量PDF输出相关的primitive并不能在\ptexng
 中使用。
 \end{frame}
@@ -249,24 +249,6 @@ Unicode全区域的情况，即相当于某些操作系统下的font fallbacks�
 language，features。而另一方面，OpenType的调用是另一个复杂的问题。按照\TeX 最初
 的设计思路，我们可以首先使用文件名来调用，其次，我们可以使用字体内部的名字进行
 调用（见Uniscribe、GDI和fontconfig）。
-\end{frame}
-%
-\begin{frame}[fragile]
-\frametitle{X11下的font描述形式}
-在\texttt{m17n}中，font的使用方式相对固定，比如有预定义的字体操作，例如FLT。
-通常而言，只需要在m17n的代码中使用字体的唯一标识名称即可。在描述上，\texttt{m17n}
-支持XLFD（{\bf X} {\bf L}ogical {\bf F}ont {\bf D}escription）。其形式如下：
-
-\begin{itemize}
-\item \verb!-microsoft-sylfaen-normal-r-normal-*-unicode-bmp!
-\item \verb!-adobe-source code pro-light-r-normal-*-unicode-bmp!
-\item \verb!-monotype-shonar bangla-bold-r-normal-*-unicode-bmp!
-\item \verb!-itc-pristina-normal-r-normal-*-unicode-bmp!
-\end{itemize}
-
-对于\TeX 来说，使用这种格式可能会使\verb!\font!的命令变得冗长。但对\texttt{m17n}
-来说，这种格式便于解析和便于抛出错误。且由于格式是唯一的，对于使用\texttt{dvipdfmx}
-生成PDF之时的字体映射来说，更为方便。
 \end{frame}
 %
 \begin{frame}[fragile]
