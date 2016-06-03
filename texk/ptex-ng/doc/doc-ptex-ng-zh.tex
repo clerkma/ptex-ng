@@ -1,11 +1,14 @@
-%!TeX Program=pTeX-ng(LaTeX)
+%!TeX Program=pLaTeX-ng
 \special{pdf: mapfile fandol-embeded-scheme1.map}
-%\special{pdf: mapfile sim-non-embeded-scheme.map}
-%\special{pdf: mapfile sinotype-embeded-scheme.map}
 \documentclass[dvipdfmx]{beamer}
+%\pdfminorversion=5
+%\pdfcompresslevel=5
 \usepackage{hologo}
+%\usepackage{tgpagella}
 \usetheme{EastLansing}
 \usefonttheme{serif}
+\setbeamerfont{frametitle}{series=\bfseries}
+%%%%
 \ybaselineshift.5pt
 \pdfpagewidth\paperwidth
 \pdfpageheight\paperheight
@@ -13,99 +16,287 @@
 \newcommand{\pTeX}{p\kern-.1667em\TeX}
 \newcommand{\ptexng}{\pTeX-ng}
 \newcommand{\yandy}{Y\kern-.21em{\tiny\&}\kern-.12emY}
+\newcommand{\JTeX}{\leavevmode\hbox{\lower.5ex\hbox{J}\kern-.18em\TeX}}
+\newcommand{\PUTeX}{\leavevmode\hbox{P\kern-.18em\lower.5ex\hbox{U}\kern-.18em\TeX}}
 %%%%
 \begin{document}
-\title{\bf \ptexng}
+\title{\bf \TeX 与汉字处理：过去，现在，将来}
 \author{马起园}
-\date{2014年11月—12月}
+\date{2015年—2016年}
 \begin{frame}
 \maketitle
+\begin{center}
+\includegraphics[bb=0 0 255 197, width=9em]{tuna-logo.png}
+\end{center}
 \end{frame}
 %
 \parskip.5zw
-\begin{frame}[fragile]
-\includegraphics[bb=0 0 864 576, width=\textwidth]{doc-ptex-ng-cat.png}
-\end{frame}
-\begin{frame}[fragile]
-\begin{center}
-\ptexng 作者近照$\rightarrow$\lower1zw\hbox{\includegraphics[bb=0 0 17 17, width=3zw]{doc-ptex-ng-aut.png}}
-\end{center}
-\end{frame}
 %
 \begin{frame}[fragile]
-\begin{center}
-\Huge \ptexng 是一个{\bf 编译器}
+\frametitle{\ptexng 是什么}
+\ptexng 的设计目标是成为是下一代汉字处理的标准\pTeX。在底层引擎上支持：汉字处理、
+禁则处理、间距处理、直排、OpenType处理，多语言处理、UTF-8编码支持。对于排版输出
+的基本规则，\ptexng 遵循日本JIS标准X 4051及中国大陆、中国台湾的行业惯用法。
 
-\TeX 是一种{\bf 动态语言}
-\end{center}
-\end{frame}
-%
-\begin{frame}[fragile]
-\frametitle{\bf \ptexng 是什么}
-\ptexng 是下一代的\pTeX。在底层引擎上支持汉字处理、禁则处理、汉字和西文间距处理、汉字直排。目前只支持UTF-8编码，覆盖有中日韩三种语言支持。
+\pTeX 是日本{\font\t=ascii10 \t ASCII}公司开发的汉字处理引擎。在2008年和2010年
+经历合并及收购之后，\pTeX 的开发已经停止，后续维护由\TeX\ Users Group开发
+团队进行，但最近几年并无新功能加入。
 
-\pTeX 是日本{\font\t=ascii10 \t ASCII}公司开发的汉字处理引擎。在2008年和2010年经历合并以及收购之后，\pTeX 的实际开发已经停止，已经转向由社区维护。
-
-\ptexng 的开发最早可以追溯到2012年春节假期，最早在Lua\TeX 进行试验性质的修改，在2013年一度中断开发，正式版在今年（2014年）10月份开始发布。由于作者的时间有限，目前只做漏洞修补，下一部分大规模开发要拖到2015年春节。\ptexng 是自由软件，分发遵循GPL第二版许可。
+\ptexng 的开发最早可以追溯到2012年春节假期，最早在Lua\TeX 上进行试验性质的修改。
+在2013年一度中断开发，转向读代码和读文档，2014年年初最先使用Common \TeX 进行扩展，
+后转向Y\&Y \TeX 进行二次开发。\ptexng 第一版在2014年10月发布，使用GPL第二版许可。
 \end{frame}
 %
 \begin{frame}[fragile]
-\frametitle{\bf \ptexng 的开发概要}
+\frametitle{\ptexng 的开发概要}
 
-\ptexng 的前身是Y\&Y公司的一个用C语言实现的带内存管理的\TeX。早期的源代码是使用{\texttt{web2c}}转换，不具可读性和可扩展性，这部分代码在2014年上半年进行了重写。\ptexng 的源代码建立在这部分代码的基础之上。
+\ptexng 的前身是Y\&Y公司的一个用C语言实现的带内存管理的\TeX。
+早期源码是使用{\texttt{web2c}}进行转换得到，不具可读性和可扩展性。
+\ptexng 的源码建立于2014年重写代码的基础之上。
 
-\ptexng 的的汉字处理相关代码来源于\pTeX；Unicode编码处理代码来源于u\pTeX。对于\hologo{eTeX}的支持来源于eu\pTeX。
+\ptexng 的的汉字处理相关代码来源于\pTeX；Unicode编码处理代码来源于u\pTeX。
+对于\hologo{eTeX}的支持来源于eu\pTeX。对于OpenType的处理，来源于\texttt{libm17n}。
 
-\ptexng 只支持PDF文件输出，相关的代码来源于dvipdfmx，没有任何来自{\textsc{pdf}\TeX}的代码，所以大量primitive不被支持。
+\ptexng 只支持PDF文件输出，相关代码来自\texttt{dvipdfmx}，没有使用任何来自
+{\textsc{pdf}\TeX}的代码，所以大量PDF输出相关的primitive并不能在\ptexng
+中使用。
 \end{frame}
 %
 \begin{frame}[fragile]
-\frametitle{\bf \ptexng 的将来}
-\ptexng 在将来会支持OpenType字体、绑定动态语言扩展宏编程。
-\begin{enumerate}
-\item Lua, Lua 5.2/LuaJIT
-\item JavaScript, MuJS/V8/SpiderMonkey
-\item Ruby, mruby
-\item Scheme, GNU Guile
-\end{enumerate}
+\frametitle{\TeX 扩展：面向汉字处理}
+%http://www.weblio.jp/wkpja/content/TeX_TeX+%E3%81%AB%E3%82%88%E3%82%8B%E7%B5%84%E7%89%88%E3%81%AE%E4%BD%9C%E6%A5%AD%E5%B7%A5%E7%A8%8B
+%http://tug.org/TUGboat/tb08-2/tb18saito.pdf
+%https://www.tug.org/TUGboat/Articles/tb11-3/tb29hamano.pdf
+%http://ja.wikipedia.org/wiki/Publishing_TeX
+%http://oku.edu.mie-u.ac.jp/~okumura/texwiki/?TeX%E3%81%AE%E6%AD%B4%E5%8F%B2
+%http://www.cs.pu.edu.tw/~tsay/putex/
+\begin{itemize}
+\item Fujita \TeX ，由Hiroshi Fujita开发，基于\TeX78（SAIL语言）。由于现在
+没有更多的材料，所以这个扩展已经无从考证了。
+\item NTT \JTeX ，由斋藤康己（Yasuki Saito）开发，起于1988年，在1994年得到NTT的
+ASTEM Software Culture Award。Unix版本由千叶大学的樱井贵文（Takafumi Sakurai）移植。该扩展在Debian
+以及W32\TeX 中均可安装，但未进入\TeX{} Live。\JTeX 的开发思路，是在字体处理上做了扩展，这样在处理
+起来需要的补丁量不大。\JTeX 支持类似magin kerning的burasage。
+\item ASCII p\TeX ，ASCII公司的大野俊治（Shunji Ohno）和仓泽良一（Ryoichi
+Kurasawa）等开发，起于1987年（昭和62年）。p\TeX 中的p代表的是publishing的意思。p\TeX 的设计相对于
+\JTeX 来说，逻辑更为复杂，比如支持直行排版。
+\item \PUTeX ，台湾静宜大学资管系蔡奇伟开发，起于1997年，止于2004年。最后版本为
+\PUTeX4。\PUTeX 提供了很多primitive来实现了Virtual Font功能，需要使用\texttt{cidpdfmx}生成PDF。
+\end{itemize}
 \end{frame}
 %
-%\begin{frame}[fragile]
-%\frametitle{\bf \ptexng 的equivalent表}
-%\def\showeqtb#1#2{{eqtb}[{#1} .. ({#2} - 1)]}
-%\begin{enumerate}
-%\item \showeqtb{active\_base}{hash\_base}，单字符命令
-%\item \showeqtb{hash\_base}{glue\_base}，非单字符命令（散列表）
-%\item \showeqtb{glue\_base}{local\_base}，glue参数
-%\item \showeqtb{local\_base}{int\_base}，临时变量
-%\item \showeqtb{int\_base}{dimen\_base}，整数变量
-%\item eqtb[dimen\_base .. eqtb\_size]，长度变量
-%\end{enumerate}
-%\end{frame}
+\begin{frame}[fragile]
+\frametitle{扩展的难点}
+\begin{itemize}
+\item 字符集编码形式
+\item 字体操作
+\end{itemize}
+\end{frame}
 %
 \begin{frame}[fragile]
-\frametitle{\bf \ptexng 的catcode}
+\frametitle{扫描器的处理}
+\TeX82的设定中，一般来说，行尾的carriage return做一个空格插入文本中处理。但
+在汉字排版实践中，会造成多余的空隙，所以\JTeX 和\pTeX 都做了相应的额外处理。
+\PUTeX 以及\hologo{XeTeX}都没有对这些行尾进行操作。而在\hologo{LuaTeX}中可以使用
+Lua的callbacks进行干预。
+
+\begin{itemize}
+\item \JTeX 引入了\verb!\jendlinetype!进行处理，该命令为整数赋值型，可选值为：
+\textit{jend\_ascii} (0)，\textit{jend\_comment\_bit} (1)，
+\textit{jend\_ignore\_bit} (2)。
+
+\item \pTeX 则没有如\JTeX 这种处理方式，“汉字+CR”中的CR不会处理为空格，但
+“ASCII+CR”中的CR会被处理为空格。但，\pTeX 将\TeX82的状态处理扩展为：
+\textit{mid\_line}，\textit{mid\_kanji}，\textit{skip\_blanks}，\textit{new\_line}。
+这样使\pTeX 多了数十个状态来控制汉字与非汉字的处理。
+\end{itemize}
+\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{字体的处理}
+\TeX82的设定中，字体，亦即font指的实际上是metrics，也可以说是通常认知上的font的抽象版本。
+这其实和\TeX 的算法相关，即只需要宽度高度深度可以进行断行算法等的处理。
+\begin{itemize}
+\item \JTeX 中使用subfont技术，也就是将一个外部的大字体分割为多个小字体。这样做的好处是
+每个码位都会有非常详细的信息。
+\item \pTeX 中使用的是char class技术，是用了扩展的TFM格式，即JFM格式。JFM技术的优点是可以
+将外部字体的所有信息归类分为几个大的class。但，JFM格式实际上可以覆盖整个Unicode区域，在
+后期将JFM映射到外部字体的时候，需要比较复杂的VF配置。
+\item \PUTeX 中使用的是fake font技术，实现上最为简单，但其通过一些额外的primitive进行了
+对于一部分外部Virtual Font的处理。\PUTeX 会将字体信息最终存储到扩展了的DVI文件CDI文件中。
+实际上这部分处理和\hologo{XeTeX}的比较相似。
+
+\end{itemize}
+\end{frame}
+%
+% http://troydhanson.github.io/tpl/
+\begin{frame}[fragile]
+\frametitle{\TeX 中的format或者数据序列化}
+在\TeX 中，为了快速加载宏以及字体信息，通常需要读取format文件，扩展名为
+\texttt{.fmt}。比如我们常见的\texttt{latex.fmt}文件就就是含有整套的\LaTeX 宏和
+相关字体的。\TeX 中将内部数据结构存到文件的过程叫做dump，用现在的话来说，叫做
+serialization。
+
+在现代操作系统以及现代的\TeX 扩展当中，format文件已经有了不少的变化。比如：
+\begin{itemize}
+\item 压缩，主要通过zlib进行压缩，其主要的目的是减少C底层的IO操作
+\item sparse化，涉及到内部的一些sparse array处理，主要是为了减少文件大小
+\item endian控制，现在的计算机中的endian基本上有Big-Endian和Little-Endian两种，
+这涉及到生成的format文件的跨平台行为
+\end{itemize}
+\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{\ptexng 的catcode}
+catcode是\TeX 及其扩展的一个核心概念，即应用于一套编码中所有码点（code point）
+的一个属性值。亦即，可构造出一个带有附加属性的编码表。\TeX82、\hologo{XeTeX}和
+\hologo{LuaTeX}的catcode有16种，而\ptexng 则有20种，多出的4种主要用来处理汉字。
+在具体使用中，catcode通常用来动态改变码点的语义，最终会影响到\TeX 内部的状态机
+处理。
+
 \begin{center}
 \newcommand{\pcc}[1]{\textcolor{red}{#1}}
 \begin{tabular}{clcl}
-0&escape character&10&space\\
-1&beginning of group&11&letter\\
-2&end of group&12&other character\\
-3&math shift&13&active charactive\\
-4&alignment tab&14&comment character\\
-5&end of line&15&invalid character\\
-6&parameter&\pcc{16}&\pcc{kanji}\\
-7&superscript&\pcc{17}&\pcc{hiragana, katakana, alphabet}\\
-8&subscript&\pcc{18}&\pcc{cjk symbol codes}\\
-9&ignored charcacter&\pcc{19}&\pcc{hangul codes}\\
+0 &escape character    &10       &space\\
+1 &beginning of group  &11       &letter\\
+2 &end of group        &12       &other character\\
+3 &math shift          &13       &active charactive\\
+4 &alignment tab       &14       &comment character\\
+5 &end of line         &15       &invalid character\\
+6 &parameter           &\pcc{16} &\pcc{kanji}\\
+7 &superscript         &\pcc{17} &\pcc{hiragana, katakana, alphabet}\\
+8 &subscript           &\pcc{18} &\pcc{cjk symbol codes}\\
+9 &ignored charcacter  &\pcc{19} &\pcc{hangul codes}\\
 \end{tabular}
 \end{center}
 \end{frame}
 %
 \begin{frame}[fragile]
-\frametitle{\bf \ptexng 的primitive}
+\frametitle{\ptexng 的node/noad}
+node/noad是\TeX 在读取文本后，根据文本内容生成的链表元素。\TeX 核心的功能就是生成链表，
+并根据链表最后输出DVI或者PDF。\ptexng 中新添加了两种新node，一个是dir，用来控制输出
+内容链表的方向；另一个是disp，用来控制汉字字串基线的偏移。
+
+\begin{center}
+\newcommand{\pcc}[1]{\textcolor{red}{#1}}
+\begin{tabular}{clclclcl}
+0      &hlist      &10 &whatsit &20 &bin     &30 &left\\
+1      &vlist      &11 &math    &21 &rel     &31 &right\\
+\pcc{2}&\pcc{dir}  &12 &glue    &22 &open    &32 &---\\
+3      &rule       &13 &kern    &23 &close   &33 &---\\
+4      &ins        &14 &penalty &24 &punct   &34 &---\\
+\pcc{5}&\pcc{disp} &15 &unset   &25 &inner   &35 &---\\
+6      &mark       &16 &style   &26 &radical &36 &---\\
+7      &adjust     &17 &choice  &27 &under   &37 &---\\
+8      &ligature   &18 &ord     &28 &over    &38 &---\\
+9      &disc       &19 &op      &29 &accent  &39 &---\\
+\end{tabular}
+\end{center}
+\end{frame}
+%
+% Font Layout Table: Knowlege base for Complex Text Layout
+%   http://www.unifont.org/TextLayout2007/presentations/KenichiHandaFLT.pdf
+%
+% FLT: Font Layout Table
+%   http://repository.kulib.kyoto-u.ac.jp/dspace/bitstream/2433/65873/31/052-handa.pdf
+%   http://coe21.zinbun.kyoto-u.ac.jp/papers/ws-type-2003/052-handa.pdf
+%
+%\begin{frame}[fragile]
+%\frametitle{\ptexng 之multilingualization}
+%\begin{center}
+%\includegraphics[bb=0 0 106 118, width=6zw]{parrot.png}
+%\end{center}
+%\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{\ptexng 的Font Layout Engine}
+%\ptexng 使用的Font Layout Engine是由Kenichi Handa（半田剣一）、
+%Mikiko Nishikimi（錦見美貴子）、Naoto Takahashi（高橋直人）和
+%Satoru Tomura（戸村哲）合作开发的m17n及libotf。
+\ptexng 使用的Font Layout Engine是日本产业技术综合研究所的半田剑一、
+锦见美贵子、高桥直人和户村哲等合作开发的\texttt{m17n}库提供。
+\texttt{m17n}即multilingualization，其开发思想最早可以追溯到Emacs上
+的mule多语言处理模块。
+
+\texttt{m17n}的字体呈现主要是通过\texttt{libotf}及\texttt{m17n-flt}
+实现的。和其它的字体处理引擎（ICU、HarfBuzz、Graphite2）相比，
+\texttt{m17n-flt}最便利的一点是可以通过类lisp的FLT脚本（即
+{\bf F}ont {\bf L}ayout {\bf T}able）进行配置。此外还有数个
+预先定义好的fontset可供使用，用来处理单个字体无法覆盖整个
+Unicode全区域的情况，即相当于某些操作系统下的font fallbacks。
+
+\texttt{libm17n}所提供的字体相关功能包括：
+
 \begin{itemize}
-\item \verb!\jfont!和\verb!\tfont!，这两个和\verb!\font!语义一致。\pTeX 中的TFM有两种，一种是\TeX82定义了的TFM格式；另一种是\pTeX 定义的专门用于重载字符宽度的JFM（后文会专门介绍JFM）。在JFM中，已经定义了对应的文字方向，所以无论使用上述三种那个都不会产生问题。另外，还支持级数和齿数，即Q和H，在大小上为0.25cm，在传统意义上只有前者可用于定义字体大小，后者用来指配其他非字体元素的尺寸。
+\item 管　理（font cache中查找，通过fontconfig）
+\item 呈　现（rendering，即渲染成二维字串，字即glyph）
+\item 字体集（fontset，源于Emacs及X11）
+\end{itemize}
+\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{\TeX 中的font描述形式}
+无论是在\hologo{XeTeX}还是在\hologo{LuaTeX}中都可以使用OpenType字体。
+但在语法使用上需要使用下列形式（X为\hologo{XeTeX}，L为\hologo{LuaTeX}）：
+\begin{itemize}
+\item \texttt{X} \verb!\font\Hoefler = "Hoefler Text/BI"!
+\item \texttt{L} \verb!\font\pagella = {name:TeX Gyre Pagella} at 9pt!
+\item \texttt{L} \verb!\font\LMR     = LatinModernRoman:clig=true;kern=false!
+\end{itemize}
+
+实际上，无论是\hologo{XeTeX}还是\hologo{LuaTeX}的\verb!\font!语法都比较
+复杂，其本质是OpenType的使用较为复杂。OpenType的使用涉及到三大方面：script，
+language，features。而另一方面，OpenType的调用是另一个复杂的问题。按照\TeX 最初
+的设计思路，我们可以首先使用文件名来调用，其次，我们可以使用字体内部的名字进行
+调用（见Uniscribe、GDI和fontconfig）。
+\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{X11下的font描述形式}
+在\texttt{m17n}中，font的使用方式相对固定，比如有预定义的字体操作，例如FLT。
+通常而言，只需要在m17n的代码中使用字体的唯一标识名称即可。在描述上，\texttt{m17n}
+支持XLFD（{\bf X} {\bf L}ogical {\bf F}ont {\bf D}escription）。其形式如下：
+
+\begin{itemize}
+\item \verb!-microsoft-sylfaen-normal-r-normal-*-unicode-bmp!
+\item \verb!-adobe-source code pro-light-r-normal-*-unicode-bmp!
+\item \verb!-monotype-shonar bangla-bold-r-normal-*-unicode-bmp!
+\item \verb!-itc-pristina-normal-r-normal-*-unicode-bmp!
+\end{itemize}
+
+对于\TeX 来说，使用这种格式可能会使\verb!\font!的命令变得冗长。但对\texttt{m17n}
+来说，这种格式便于解析和便于抛出错误。且由于格式是唯一的，对于使用\texttt{dvipdfmx}
+生成PDF之时的字体映射来说，更为方便。
+\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{\texttt{m17n}中对于OpenType的配置}
+\texttt{m17n}支持的OpenType配置有下面的语法（另有兼容语法，此处不讲）：
+\begin{itemize}
+\item \verb!:otf=guru=blwf!, \verb!:otf=deva=half+!
+\item \verb!:otf=deva=abvs,blws,psts,haln+abvm,blwm,dist!
+\end{itemize}
+即为（类BNF语法）：
+\begin{itemize}
+\item OTF-spec ::= \verb!':otf='! \textit{script} \textit{langsys} \verb!?!
+\textit{GSUB-features} \verb!?! \textit{GPOS-features} \verb!?!
+\item script ::= \textit{symbol}
+\item langsys ::= \verb!'/'! \textit{symbol}
+\item GSUB-features ::= \verb!'='! \textit{feature-list} \verb!?!
+\item GPOS-features ::= \verb!'+'! \textit{feature-list} \verb!?!
+\item feature-list ::= \verb!(! \textit{symbol} \verb!',' ) * [! \textit{symbol} \verb!| '*' ]!
+\end{itemize}
+\end{frame}
+%
+\begin{frame}[fragile]
+\frametitle{\ptexng 的primitive}
+\begin{itemize}
+\item \verb!\jfont!和\verb!\tfont!，这两个和\verb!\font!语义一致。
+\pTeX 中的TFM有两种，一种是\TeX82定义了的TFM格式；另一种是\pTeX 定义的
+专门用于重载字符宽度的JFM（后文会专门介绍JFM）。在JFM中，已经定义了对应的
+文字方向，所以无论使用上述三种那个都不会产生问题。另外，还支持级数和齿数，
+即Q和H，在大小上为0.25cm，在传统意义上只有前者可用于定义字体大小，
+后者用来指配其他非字体元素的尺寸。
 \item \begin{verbatim}
 \font\tenmin=upjisr-h % mincho(KANJI)
 \font\sevenmin=upjisr-h at 7pt
@@ -115,9 +306,12 @@
 \end{frame}
 %
 \begin{frame}[fragile]
-\frametitle{\bf \ptexng 的primitive}
+\frametitle{\ptexng 的primitive}
 \begin{itemize}
-\item \verb!\kanjiskip!和\verb!\xkanjiskip!，前者会被自动插入到汉字之间，后者会自动插入到非汉字与汉字之间。在\TeX82上，可以使用\texttt{ex}和\texttt{em}。而在\pTeX 中，可以使用\texttt{zw}和\texttt{zh}，z表示\textit{zenkaku}（全角，ぜんかく），前者为全角宽度，后者为全角高度。
+\item \verb!\kanjiskip!和\verb!\xkanjiskip!，前者会被自动插入到
+汉字之间，后者会自动插入到非汉字与汉字之间。在\TeX82上，可以使用
+\texttt{ex}和\texttt{em}。而在\pTeX 中，可以使用\texttt{zw}和\texttt{zh}，
+z表示\textit{zenkaku}（全角，ぜんかく），前者为全角宽度，后者为全角高度。
 \item \begin{verbatim}
 \kanjiskip=0pt plus .4pt minus .4pt
 %\xkanjiskip=2.5pt plus 1pt minus 1pt
@@ -127,9 +321,11 @@
 \end{frame}
 %
 \begin{frame}[fragile]
-\frametitle{\bf \ptexng 的primitive}
+\frametitle{\ptexng 的primitive}
 \begin{itemize}
-\item \verb!\tbaselineshift!和\verb!\ybaselineshift!，控制基线的偏移值。前者为直行文本的偏移量，请注意直行的汉字的基线位垂直方向的中心；后者为横行文本的基线偏移量。
+\item \verb!\tbaselineshift!和\verb!\ybaselineshift!，控制基线的偏移值。
+前者为直行文本的偏移量，请注意直行的汉字的基线位垂直方向的中心；后者为
+横行文本的基线偏移量。
 \item \begin{verbatim}
 \tbaselineshift=3pt
 \ybaselineshift=3pt
@@ -141,39 +337,36 @@
 %
 % \quitvmode
 \begin{frame}[fragile]
-\frametitle{\bf \ptexng 的primitive}
+\frametitle{\ptexng 的primitive}
 \begin{itemize}
-\item \verb!\ngbanner!，输出默认banner。
-\item \ngbanner
-\item \verb!\ngostype!，输出当前系统名称。
-\item \ngostype
+\item \verb!\pdfstrcmp!，比较字符串，\LaTeX3必须
+\item \verb!\quitvmode!，来自\textsc{pdf}\TeX
+\item \verb!\ngbanner!，输出banner: \ngbanner
+\item \verb!\ngostype!，输出当前系统名称，当前为：\ngostype
+\item \verb!\tracingfontloaders!，显示字体载入信息
+\item \verb!\pdfcompresslevel!，设定PDF文件压缩比率（0—9，当前为{\the\pdfcompresslevel}）
+\item \verb!\pdfminorversion!，设定PDF文件版本号（0—7，当前为{\the\pdfminorversion}）
+\item \verb!\synctex!，Sync\TeX 支持（当前为{\the\synctex}）
 \end{itemize}
 \end{frame}
 %
-\begin{frame}[fragile]
-\frametitle{\bf 特别感谢}
-\begin{center}
-\begin{tabular}{ccccccc}
-罗心澄&苏　杰&齐　亮&刘海洋&高　虎&孙　亮&徐腾飞\\
-夏晓昊&黄晨成&黄金泽&梁　海&孙　伟&都龙山&王侠兵\\
-李国宝&胡玉进&杨海宇&周　浩&曹梦迪&李任之&卢　燚\\
-吕文博&翟　羽&钟　毓&肖智博&罗希睿&李　清&张　康\\
-王　政&戴唯思&李天池&乔崇智&林　坤&朱文俊&张　麒\\
-王昭礼&常金龙&冷俊园&高学远&张伟文&杨笑生&张　潇\\
-王　昊&林　科&朱焕杰&李润泽&王　璐&杨林恒&陈甫鸼\\
-孙文全&荣健欣&汤进伟&唐俊荣&郝　运&罗晨星&朱　翀\\
-何春奇&林懿伦&刘思江&金晨羽&陈　浩&刘中阳&王　冠\\
-杨文清&贾泊崴&王　昊&朱　宁&朱佳宁&陈　欣&冷　轩\\
-鲁尚文&韩勇杰&&&&&\\
-\end{tabular}
-\end{center}
-\end{frame}
-%
-\begin{frame}[fragile]
-\begin{center}
-\ifnum\pdfstrcmp{你}{你}=0
-\Huge 休　憩
-\fi
-\end{center}
-\end{frame}
+%\begin{frame}[fragile]
+%\frametitle{特别感谢}
+%\begin{center}
+%\begin{tabular}{ccccccl}
+%罗心澄&苏　杰&齐　亮&刘海洋&高　虎&孙　亮&徐腾飞\\
+%夏晓昊&黄晨成&黄金泽&梁　海&孙　伟&都龙山&王侠兵\\
+%李国宝&胡玉进&杨海宇&周　浩&曹梦迪&李任之&卢　燚\\
+%吕文博&翟　羽&钟　毓&肖智博&罗希睿&李　清&张　康\\
+%王　政&戴唯思&李天池&乔崇智&林　坤&朱文俊&张　麒\\
+%王昭礼&常金龙&冷俊园&高学远&张伟文&杨笑生&张　潇\\
+%王　昊&林　科&朱焕杰&李润泽&王　璐&杨林恒&陈甫鸼\\
+%孙文全&荣健欣&汤进伟&唐俊荣&郝　运&罗晨星&朱　翀\\
+%何春奇&林懿伦&刘思江&金晨羽&陈　浩&刘中阳&王　冠\\
+%杨文清&贾泊崴&王　昊&朱　宁&朱佳宁&陈　欣&冷　轩\\
+%鲁尚文&韩勇杰&张逸轩&王俊淇&张天晓&董　帅&王孟昌\\
+%柳青林&李文涛&凌嘉鸿&李晓东&&&\\
+%\end{tabular}
+%\end{center}
+%\end{frame}
 \end{document}
