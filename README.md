@@ -14,9 +14,11 @@ Run the shell script:
 * zlib
 * libpng
 * libpaper
+* freetype2
 * kpathsea
 * ptexenc
 * libdpx
+* libotf
 * ptex-ng
 
 ## How to Build (Android)

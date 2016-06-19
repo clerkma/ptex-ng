@@ -13,6 +13,6 @@ cd $NG_SRC_DIR/texk/ptexenc && ./configure && make
 cp .libs/libptexenc.a $NG_SRC_DIR/texk/ptex-ng
 cd $NG_SRC_DIR/texk/libdpx && ./configure && make
 cp libdpx.a $NG_SRC_DIR/texk/ptex-ng
-cd $NG_SRC_DIR/texk/ptex-ng/libotf && ./configure && make
-cp src/.libs/libotf.a $NG_SRC_DIR/texk/ptex-ng
+cd $NG_SRC_DIR/texk/ptex-ng/libotf && make
+cp libotf.a $NG_SRC_DIR/texk/ptex-ng
 cd $NG_SRC_DIR/texk/ptex-ng && make
