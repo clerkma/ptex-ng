@@ -120,10 +120,11 @@ static void print_aptex_version (void)
     "%s\n"
     "Compiled with %s\n"
     "Compiled with %s\n"
+    "Compiled with libotf version %s\n"
     "Compiled with zlib version %s\n"
     "Compiled with synctex (build-in edition)\n",
     banner, kpathsea_version_string,
-    ptexenc_version_string, zlib_version);
+    ptexenc_version_string, LIBOTF_VERSION, zlib_version);
   aptex_utils_exit(EXIT_FAILURE);
 }
 
@@ -2225,14 +2226,14 @@ static boolean a_open_input (alpha_file * f)
   return openable;
 }
 
-static boolean b_open_input (byte_file * f)
+static boolean b_open_input(byte_file * f)
 {
   boolean openable = false;
   char * file_name_kpse = NULL;
   char * file_name_mbcs = NULL;
 
-  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
-  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
+  char * file_name_utf8 = (char *)calloc(1, name_length + 1);
+  strncpy(file_name_utf8, (const char *)name_of_file + 1, name_length);
 
   /*
     Reference:
@@ -2252,7 +2253,12 @@ static boolean b_open_input (byte_file * f)
       OTFEALIST := TAG *
   */
 
-  file_name_mbcs = utf8_mbcs(file_name_utf8);
+  //printf("RAW FONT FILE NAME: %s\n", file_name_utf8);
+  if (name_length > 3 && (strncasecmp(file_name_utf8, "ot:", 3) == 0))
+    file_name_mbcs = utf8_mbcs(strrchr(file_name_utf8, ':') + 1);
+  else
+    file_name_mbcs = utf8_mbcs(file_name_utf8);
+
   file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tfm_format, true);
 
   if (file_name_kpse != NULL)
@@ -18761,9 +18767,12 @@ typedef struct pdf_rect {
 
 extern int spc_exec_special(const char *buffer, long size, double x_user, double y_user, double dpx_mag);
 
-extern int dvi_locate_font(const char *tfm_name, spt_t ptsize);
-
+extern int dvi_locate_font (const char *tfm_name, spt_t ptsize);
+extern int dvi_locate_native_font (const char *filename, uint32_t fidx,
+  spt_t ptsize, int layout_dir, int extend, int slant, int embolden);
 extern void ng_set(SIGNED_QUAD ch, int ng_font_id, SIGNED_QUAD h, SIGNED_QUAD v);
+extern void ng_gid(uint16_t gid, int ng_font_id, int32_t h, int32_t v);
+extern void ng_layer(uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, uint8_t g, uint8_t b);
 extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
 
 extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
@@ -18772,13 +18781,297 @@ extern void pdf_dev_set_dirmode(int dir_mode);
 extern int pdf_load_fontmap_file(const char *filename, int map_mode);
 
 static const double sp2bp = 0.000015202;
-static int    font_id[65536];
+static int     font_id[65536];
+static OTF *   font_ot[65536];
+static char *  font_gsub[65536];
+static FT_Face font_face[65536];
+static ot_tbl_colr * font_colr[65536];
+static ot_tbl_cpal * font_cpal[65536];
+static FT_Library font_ftlib;
+
+static char * area_split_name (char * s)
+{
+  char * ret, * delim, * fname;
+
+  if ((delim = strpbrk(s + 3, "[;:")) != NULL)
+  {
+    ret = calloc(sizeof(char), delim - s - 3 + 1);
+    strncpy(ret, s + 3, delim - s - 3);
+    fname = kpse_find_file(ret, kpse_truetype_format, false);
+    free(ret);
+    return fname;
+  }
+  else
+    return NULL;
+}
+
+static char * area_split_gsub (char * s)
+{
+  char *ret, * delim1, *delim2;
+
+  if ((delim1 = strpbrk(s, ";")) != NULL)
+  {
+    if ((delim2 = strpbrk(delim1 + 1, ";:")) != NULL)
+    {
+      ret = calloc(sizeof(char), delim2 - delim1 + 1);
+      strncpy(ret, delim1 + 1, delim2 - delim1 - 1);
+      return ret;
+    }
+  }
+
+  return NULL;
+}
+
+static uint32_t area_split_index (char * s)
+{
+  char * delim1, * delim2;
+
+  if ((delim1 = strpbrk(s + 3, "[")) != NULL)
+  {
+    if ((delim2 = strpbrk(delim1, "]")) != NULL)
+      return strtoul(delim1 + 1, &delim2, 10);
+  }
+
+  return 0;
+}
+
+static uint16_t parse_u16(uint8_t * s)
+{
+  return (*s << 8) | (*(s + 1));
+}
+
+static uint16_t parse_u32(uint8_t * s)
+{
+  return (*s << 24) | (*(s + 1) << 16) | (*(s + 2) << 8) | (*(s + 3));
+}
+
+static ot_tbl_colr * ot_parse_colr (FT_Face face)
+{
+  FT_ULong tbl_len = 0;
+  uint8_t * tbl_buf;
+  uint32_t offset_base_glyph;
+  uint32_t offset_layer;
+  ot_tbl_colr * colr;
+  uint32_t i;
+  FT_ULong tag = FT_MAKE_TAG('C', 'O', 'L', 'R');
+
+  if (FT_Load_Sfnt_Table(face, tag, 0, NULL, &tbl_len))
+    return NULL;
+
+  tbl_buf = malloc(tbl_len);
+
+  if (FT_Load_Sfnt_Table(face, tag, 0, tbl_buf, &tbl_len))
+  {
+    free(tbl_buf);
+    return NULL;
+  }
+
+  colr = malloc(sizeof(ot_tbl_colr));
+  colr->version             = parse_u16(tbl_buf);
+  colr->numBaseGlyphRecords = parse_u16(tbl_buf + 2);
+  offset_base_glyph         = parse_u32(tbl_buf + 4);
+  offset_layer              = parse_u32(tbl_buf + 8);
+  colr->numLayerRecords     = parse_u16(tbl_buf + 12);
+  colr->base_glyphs         = malloc(sizeof(ot_base_glyph) * colr->numBaseGlyphRecords);
+  colr->layers              = malloc(sizeof(ot_layer) * colr->numLayerRecords);
+
+  for (i = 0; i < colr->numBaseGlyphRecords; i++)
+  {
+    colr->base_glyphs[i].GID
+      = parse_u16(tbl_buf + offset_base_glyph + i * 6);
+    colr->base_glyphs[i].firstLayerIndex
+      = parse_u16(tbl_buf + offset_base_glyph + i * 6 + 2);
+    colr->base_glyphs[i].numLayers
+      = parse_u16(tbl_buf + offset_base_glyph + i * 6 + 4);
+  }
+
+  for (i = 0; i < colr->numLayerRecords; i++)
+  {
+    colr->layers[i].GID
+      = parse_u16(tbl_buf + offset_layer + i * 4);
+    colr->layers[i].paletteIndex
+      = parse_u16(tbl_buf + offset_layer + i * 4 + 2);
+  }
+
+  free(tbl_buf);
+
+  return colr;
+}
+
+static void ot_delete_colr(ot_tbl_colr * colr)
+{
+  if (colr != NULL)
+  {
+    if (colr->base_glyphs != NULL)
+      free(colr->base_glyphs);
+
+    if (colr->layers != NULL)
+      free(colr->layers);
+
+    free(colr);
+  }
+}
+
+static ot_tbl_cpal * ot_parse_cpal(FT_Face face)
+{
+  FT_ULong tbl_len = 0;
+  uint8_t * tbl_buf;
+  uint32_t offset_first_color;
+  uint32_t offset_palette_type;
+  uint32_t offset_palette_label;
+  uint32_t offset_palette_entry_label;
+  ot_tbl_cpal * cpal;
+  uint32_t i;
+  FT_ULong tag = FT_MAKE_TAG('C', 'P', 'A', 'L');
+
+  if (FT_Load_Sfnt_Table(face, tag, 0, NULL, &tbl_len))
+    return NULL;
+  tbl_buf = malloc(tbl_len);
+  if (FT_Load_Sfnt_Table(face, tag, 0, tbl_buf, &tbl_len))
+  {
+    free(tbl_buf);
+    return NULL;
+  }
+  cpal = malloc(sizeof(ot_tbl_cpal));
+  cpal->version             = parse_u16(tbl_buf);
+  cpal->numPalettesEntries  = parse_u16(tbl_buf + 2);
+  cpal->numPalette          = parse_u16(tbl_buf + 4);
+  cpal->numColorRecords     = parse_u16(tbl_buf + 6);
+  offset_first_color        = parse_u32(tbl_buf + 8);
+  cpal->colorRecordIndices  = malloc(sizeof(uint16_t) * cpal->numPalette);
+  cpal->colorRecords        = malloc(sizeof(ot_color) * cpal->numColorRecords);
+
+  for (i = 0; i < cpal->numPalette; i++)
+    cpal->colorRecordIndices[i] = parse_u16(tbl_buf + 12 + i * 2);
+
+  for (i = 0; i < cpal->numColorRecords; i++)
+  {
+    cpal->colorRecords[i].blue
+      = *(tbl_buf + offset_first_color + i * 4);
+    cpal->colorRecords[i].green
+      = *(tbl_buf + offset_first_color + i * 4 + 1);
+    cpal->colorRecords[i].red
+      = *(tbl_buf + offset_first_color + i * 4 + 2);
+    cpal->colorRecords[i].alpha
+      = *(tbl_buf + offset_first_color + i * 4 + 3);
+  }
+
+  if (cpal->version == 1)
+  {
+    offset_palette_type
+      = parse_u32(tbl_buf + 12 + 2 * cpal->numPalette);
+    offset_palette_label
+      = parse_u32(tbl_buf + 12 + 2 * cpal->numPalette + 2);
+    offset_palette_entry_label
+      = parse_u32(tbl_buf + 12 + 2 * cpal->numPalette + 4);
+
+    cpal->paletteType
+      = malloc(sizeof(uint32_t) * cpal->numPalette);
+    cpal->paletteLabel
+      = malloc(sizeof(uint16_t) * cpal->numPalette);
+    cpal->paletteEntryLabel
+      = malloc(sizeof(uint16_t) * cpal->numPalettesEntries);
+    
+    for (i = 0; i < cpal->numPalette; i++)
+      cpal->paletteType[i] = parse_u32(tbl_buf + offset_palette_type + i * 4);
+
+    for (i = 0; i < cpal->numPalette; i++)
+      cpal->paletteLabel[i] = parse_u16(tbl_buf + offset_palette_label + i * 2);
+
+    for (i = 0; i < cpal->numPalettesEntries; i++)
+      cpal->paletteEntryLabel[i] = parse_u16(tbl_buf + offset_palette_entry_label + i * 2);
+  }
+  else
+  {
+    cpal->paletteType       = NULL;
+    cpal->paletteLabel      = NULL;
+    cpal->paletteEntryLabel = NULL;
+  }
+
+  free(tbl_buf);
+
+  return cpal;
+}
+
+static void ot_delete_cpal(ot_tbl_cpal * cpal)
+{
+  if (cpal != NULL)
+  {
+    if (cpal->colorRecordIndices != NULL)
+      free(cpal->colorRecordIndices);
+
+    if (cpal->colorRecords != NULL)
+      free(cpal->colorRecords);
+
+    if (cpal->paletteType != NULL)
+      free(cpal->paletteType);
+
+    if (cpal->paletteLabel != NULL)
+      free(cpal->paletteLabel);
+
+    if (cpal->paletteEntryLabel != NULL)
+      free(cpal->paletteEntryLabel);
+
+    free(cpal);
+  }
+}
+
+static void analysis_color_glyph (uint16_t idx, int ng_font_id, scaled h, scaled v, ot_tbl_colr * colr, ot_tbl_cpal * cpal)
+{
+  uint32_t i, j;
+
+  if (colr != NULL && cpal != NULL)
+  {
+    for (i = 0; i < colr->numBaseGlyphRecords; i++)
+    {
+      if (colr->base_glyphs[i].GID == idx)
+      {
+        for (j = 0; j < colr->base_glyphs[i].numLayers; j++)
+          ng_layer(
+            colr->layers[colr->base_glyphs[i].firstLayerIndex + j].GID,
+            ng_font_id,
+            h, v,
+            cpal->colorRecords[cpal->colorRecordIndices[0] + colr->layers[colr->base_glyphs[i].firstLayerIndex + j].paletteIndex].red,
+            cpal->colorRecords[cpal->colorRecordIndices[0] + colr->layers[colr->base_glyphs[i].firstLayerIndex + j].paletteIndex].green,
+            cpal->colorRecords[cpal->colorRecordIndices[0] + colr->layers[colr->base_glyphs[i].firstLayerIndex + j].paletteIndex].blue
+          );
+        return;
+      }
+    }
+  }
+  ng_gid(idx, ng_font_id, h, v);
+}
 
 static void pdf_locate_font (internal_font_number f)
 {
-  char * sbuf = take_str_string(font_name[f]);
-  font_id[f] = dvi_locate_font(sbuf, font_size[f]);
-  free(sbuf);
+  char * lfont_name = take_str_string(font_name[f]);
+  char * lfont_area = take_str_string(font_area[f]);
+
+  if (length(font_area[f]) > 3
+    && strncasecmp(lfont_area, "ot:", 3) == 0 
+    && font_dir[f] != dir_default)
+  {
+    char * ot_fname   = area_split_name(lfont_area);
+    uint32_t ot_index = area_split_index(lfont_area);
+
+    if (ot_fname != NULL)
+    {
+      font_id[f] = dvi_locate_native_font(ot_fname, ot_index, font_size[f],
+        0 - font_dir[f] + 4, 0x00010000, 0, 0);
+      FT_New_Face(font_ftlib, ot_fname, ot_index, &font_face[f]);
+      font_ot[f]   = OTF_open_ft_face(font_face[f]);
+      font_gsub[f] = area_split_gsub(lfont_area);
+      font_colr[f] = ot_parse_colr(font_face[f]);
+      font_cpal[f] = ot_parse_cpal(font_face[f]);
+    }
+    else
+      font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
+  }
+  else
+    font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
+
+  free(lfont_name);
+  free(lfont_area);
 }
 
 static void pdf_char_out (internal_font_number f, ASCII_code c)
@@ -18802,8 +19095,79 @@ static void pdf_char_out (internal_font_number f, ASCII_code c)
   }
 }
 
+static scaled adjust_glyph_pos (scaled gw0, scaled gw1, scaled gw2, scaled gw3)
+{
+  if (gw0 == gw3)
+    return -gw2;
+  if (gw0 < gw3)
+    return -gw2;
+  if (gw0 > gw3)
+  {
+    if (gw1 - gw2 == gw0)
+      return -gw2;
+    if (gw1 - gw2 > gw0)
+      return -(gw2 - (gw0 - gw3) / 2);
+    if (gw1 - gw2 < gw0)
+      return -(gw1 - gw0);
+  }
+  return 0;
+}
+
 static void pdf_kanji_out (internal_font_number f, KANJI_code c)
 {
+  if (length(font_area[f]) > 3 && font_ot[f] != NULL)
+  {
+    OTF_GlyphString * gstr = calloc(sizeof(OTF_GlyphString), 1);
+    gstr->glyphs = calloc(sizeof(OTF_Glyph), 1);
+    gstr->used = 1;
+    gstr->size = 1;
+    gstr->glyphs[0].c = c;
+
+    OTF_drive_tables(font_ot[f], gstr, "", "", font_gsub[f], "");
+
+    {
+      scaled gw0, gw1, gw2, gw3, gw4, gw5, gw6;
+      scaled glyph_pos_delta = 0;
+
+      FT_Load_Glyph(font_face[f], gstr->glyphs[0].glyph_id, FT_LOAD_NO_SCALE);
+      gw0 = char_width(f, char_info(f, get_jfm_pos(c, f)));
+      gw1 = (double)font_face[f]->glyph->metrics.horiAdvance  / (double)font_face[f]->units_per_EM * (double)font_size[f];
+      gw2 = (double)font_face[f]->glyph->metrics.horiBearingX / (double)font_face[f]->units_per_EM * (double)font_size[f];
+      gw3 = (double)font_face[f]->glyph->metrics.width        / (double)font_face[f]->units_per_EM * (double)font_size[f];
+      gw4 = (double)font_face[f]->glyph->metrics.vertAdvance  / (double)font_face[f]->units_per_EM * (double)font_size[f];
+      gw5 = (double)font_face[f]->glyph->metrics.vertBearingY / (double)font_face[f]->units_per_EM * (double)font_size[f];
+      gw6 = (double)font_face[f]->glyph->metrics.height       / (double)font_face[f]->units_per_EM * (double)font_size[f];
+
+      if (font_dir[f] == dir_yoko)
+        glyph_pos_delta = adjust_glyph_pos(gw0, gw1, gw2, gw3);
+
+      if (font_dir[f] == dir_tate)
+        glyph_pos_delta = adjust_glyph_pos(gw0, gw4, gw5, gw6);
+
+      switch (cur_dir_hv)
+      {
+        case dir_yoko:
+          pdf_dev_set_dirmode(dvi_yoko);
+          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], cur_h + glyph_pos_delta, -cur_v, font_colr[f], font_cpal[f]);
+          break;
+
+        case dir_tate:
+          pdf_dev_set_dirmode(dvi_tate);
+          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], -cur_v, -cur_h - glyph_pos_delta, font_colr[f], font_cpal[f]);
+          break;
+
+        case dir_dtou:
+          pdf_dev_set_dirmode(dvi_dtou);
+          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], cur_v, cur_h + glyph_pos_delta, font_colr[f], font_cpal[f]);
+          break;
+      }
+    }
+
+    free(gstr->glyphs);
+    free(gstr);
+    return;
+  }
+
   switch (cur_dir_hv)
   {
     case dir_yoko:
@@ -19047,12 +19411,14 @@ static void ship_out (pointer p)
           pdf_load_fontmap_file(aptex_env.aptex_map + 1, 0);
       }
 
-      pdf_doc_set_creator("Asian pTeX");
+      pdf_doc_set_creator("Asiatic pTeX 2016");
       pdf_files_init();
       pdf_init_device(sp2bp, 2, 0);
       pdf_open_document(utf8_mbcs(pdf_file_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
       spc_exec_at_begin_document();
       free(pdf_file_name);
+
+      FT_Init_FreeType(&font_ftlib);
     }
 #endif
   }
@@ -33791,6 +34157,17 @@ void close_files_and_terminate (void)
 
 #ifndef APTEX_DVI_ONLY
       {
+        for (int i = 0; i < 65536; i++)
+        {
+          if (font_ot[i] != NULL)
+            OTF_close(font_ot[i]);
+
+          FT_Done_Face(font_face[i]);
+          ot_delete_colr(font_colr[i]);
+          ot_delete_cpal(font_cpal[i]);
+        }
+
+        FT_Done_FreeType(font_ftlib);
         spc_exec_at_end_document();
         pdf_close_document();
         pdf_close_device();
