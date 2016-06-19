@@ -2242,15 +2242,19 @@ static boolean b_open_input(byte_file * f)
     Note on OpenType and TrueType (AAT)
       * support of OpenType is done with libotf.
       * support of TrueType/AAT will to be implemented in future.
-    Name Syntax (TODO):
-      example: \jfont\t=ot:simsun.ttf[1]:upjisr-h at 20pt
-               \jfont\t=ot:yumin.ttf;'kana',jp90:upjisr-h at 20pt
-      OTF       := 'ot:' OTFSPEC ':' JFM
-      OTFSPEC   := OTFNAME | OTFNAME ';' OTSCRIPT OTLANG OTFEALIST
-      OTFNAME   := NAME | NAME '[' + index + ']'
-      OTSCRIPT  := 'name'
-      OTLANG    := 'name'
-      OTFEALIST := TAG *
+    Name Syntax:
+      \jfont\t=name
+      name          = "ot:" file_name file_index? gsub_spec? ":" jfm_name
+      file_index    = "[" number "]"
+      gsub_spec     = ";" gsub_fea_list
+      gsub_fea_list = (fea_tag ",")* [fea_tag | "*"]
+
+      '*' for all gsub featurs
+    Examples:
+      \jfont\t=ot:yumin.ttf;jp90,hojo:upjisr-h
+      \tfont\t=ot:yumin.ttf;vert:upjisr-v
+      \jfont\t=ot:simsun.ttc[1]:upjisr-h
+      \jfont\t=ot:SourceHanSansTC-Normal.otf:uprmh-h
   */
 
   //printf("RAW FONT FILE NAME: %s\n", file_name_utf8);
