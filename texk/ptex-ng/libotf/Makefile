@@ -6,7 +6,7 @@
 
 CC = gcc
 AR = ar
-CFLAGS = -c -O2 -Wno-unused-result -I../../../libs/freetype2/freetype2 -Isrc
+CFLAGS = -c -O2 -Wno-unused-result -I. -I../../../libs/freetype2/freetype2 -Isrc
 
 objects = \
 	otfdrive.o\
