@@ -34161,17 +34161,22 @@ void close_files_and_terminate (void)
 
 #ifndef APTEX_DVI_ONLY
       {
-        for (int i = 0; i < 65536; i++)
         {
-          if (font_ot[i] != NULL)
-            OTF_close(font_ot[i]);
+          int i;
 
-          FT_Done_Face(font_face[i]);
-          ot_delete_colr(font_colr[i]);
-          ot_delete_cpal(font_cpal[i]);
+          for (i = 0; i < 65536; i++)
+          {
+            if (font_ot[i] != NULL)
+              OTF_close(font_ot[i]);
+  
+            FT_Done_Face(font_face[i]);
+            ot_delete_colr(font_colr[i]);
+            ot_delete_cpal(font_cpal[i]);
+          }
+
+          FT_Done_FreeType(font_ftlib);
         }
 
-        FT_Done_FreeType(font_ftlib);
         spc_exec_at_end_document();
         pdf_close_document();
         pdf_close_device();
