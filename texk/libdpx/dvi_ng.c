@@ -29,6 +29,115 @@ spt_t ng_packet_width (int32_t ch, int ng_font_id)
 
 extern void ng_set_packet (int32_t ch, int vf_font, int32_t h, int32_t v);
 
+void ng_gid (uint16_t gid, int ng_font_id, int32_t h, int32_t v)
+{
+  struct loaded_font *font;
+  unsigned char wbuf[2];
+  spt_t width, height, depth;
+  unsigned advance;
+  double ascent, descent;
+
+  font = &loaded_fonts[ng_font_id];
+  ascent = (double) font->ascent;
+  descent = (double) font->descent;
+
+  if (font->cffont)
+  {
+    cff_index * cstrings = font->cffont->cstrings;
+    t1_ginfo gm;
+
+    if (font->cffont->is_notdef_notzero)
+      gid += 1;
+
+    t1char_get_metrics(cstrings->data + cstrings->offset[gid] - 1,
+        cstrings->offset[gid + 1] - cstrings->offset[gid], 
+        font->cffont->subrs[0], &gm);
+    advance = font->layout_dir == 0 ? gm.wx : gm.wy;
+    ascent = gm.bbox.ury;
+    descent = gm.bbox.lly;
+  }
+  else
+  {
+    advance = font->hvmt[gid].advance;
+  }
+
+  width = (double) font->size * (double) advance / (double) font->unitsPerEm;
+  width = width * font->extend;
+
+  if (dvi_is_tracking_boxes())
+  {
+    pdf_rect rect;
+    height = (double) font->size * ascent / (double) font->unitsPerEm;
+    depth  = (double) font->size * -descent / (double) font->unitsPerEm;
+    pdf_dev_set_rect(&rect, h, v, width, height, depth);
+    pdf_doc_expand_box(&rect);
+  }
+
+  wbuf[0] = gid >> 8;
+  wbuf[1] = gid & 0xff;
+  pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id, -1);
+}
+
+void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, uint8_t g, uint8_t b)
+{
+  struct loaded_font *font;
+  unsigned char wbuf[2];
+  spt_t width, height, depth;
+  unsigned advance;
+  double ascent, descent;
+
+  font = &loaded_fonts[ng_font_id];
+  ascent = (double) font->ascent;
+  descent = (double) font->descent;
+  {
+    pdf_color color;
+    pdf_color_rgbcolor(&color,
+      (double)(r) / 255,
+      (double)(g) / 255,
+      (double)(b) / 255);
+    pdf_color_push(&color, &color);
+  }
+
+  if (font->cffont)
+  {
+    cff_index * cstrings = font->cffont->cstrings;
+    t1_ginfo gm;
+
+    if (font->cffont->is_notdef_notzero)
+      gid += 1;
+
+    t1char_get_metrics(cstrings->data + cstrings->offset[gid] - 1,
+        cstrings->offset[gid + 1] - cstrings->offset[gid], 
+        font->cffont->subrs[0], &gm);
+    advance = font->layout_dir == 0 ? gm.wx : gm.wy;
+    ascent = gm.bbox.ury;
+    descent = gm.bbox.lly;
+  }
+  else
+  {
+    advance = font->hvmt[gid].advance;
+  }
+
+  width = (double) font->size * (double) advance / (double) font->unitsPerEm;
+  width = width * font->extend;
+
+  if (dvi_is_tracking_boxes())
+  {
+    pdf_rect rect;
+    height = (double) font->size * ascent / (double) font->unitsPerEm;
+    depth  = (double) font->size * -descent / (double) font->unitsPerEm;
+    pdf_dev_set_rect(&rect, h, v, width, height, depth);
+    pdf_doc_expand_box(&rect);
+  }
+
+  wbuf[0] = gid >> 8;
+  wbuf[1] = gid & 0xff;
+  pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id, -1);
+  {
+    pdf_color_pop();
+  }
+}
+
 void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v)
 {
   struct loaded_font * font;

@@ -942,7 +942,7 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
   return  cur_id;
 }
 
-static int
+int
 dvi_locate_native_font (const char *filename, uint32_t index,
                         spt_t ptsize, int layout_dir, int extend, int slant, int embolden)
 {
