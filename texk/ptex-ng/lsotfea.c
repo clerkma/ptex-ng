@@ -856,7 +856,7 @@ const char * tag_map_language[583][2] =
   {"PTG", "Portuguese"},
   {"PWO", "Western Pwo Karen"},
   {"QIN", "Chin"},
-  {"QUC", "K’iche’"},
+//  {"QUC", "K’iche’"},
   {"QUH", "Quechua (Bolivia)"},
   {"QUZ", "Quechua"},
   {"QVI", "Quechua (Ecuador)"},
