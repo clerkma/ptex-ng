@@ -1010,15 +1010,17 @@ void list_GSUB_features(OTF * ot)
   for (si = 0; si < ot->gsub->ScriptList.ScriptCount; si++)
   {
     OTF_tag_name(ot->gsub->ScriptList.Script[si].ScriptTag, facture);
-    printf("script '%s':\n", &facture);
+    printf("script '%s':\n", facture);
 
     printf("  default features:\n");
     for (di = 0; di < ot->gsub->ScriptList.Script[si].DefaultLangSys.FeatureCount; di++)
     {
-      OTF_tag_name(ot->gsub->FeatureList.Feature[ot->gsub->ScriptList.Script[si].DefaultLangSys.FeatureIndex[di]].FeatureTag, facture);
-      di == 0 ? printf("    ") : printf("");
-      printf("'%s', ", &facture);
-      di % 4 == 3 ? printf("\n    ") : printf("");
+      unsigned idx = ot->gsub->ScriptList.Script[si].DefaultLangSys.FeatureIndex[di];
+      OTF_Tag tag  = ot->gsub->FeatureList.Feature[idx].FeatureTag;
+      OTF_tag_name(tag, facture);
+      if (di == 0) printf("    ");
+      printf("'%s', ", facture);
+      if (di % 4 == 3) printf("\n    ");
     }
 
     printf("\n");
@@ -1026,14 +1028,16 @@ void list_GSUB_features(OTF * ot)
     for (li = 0; li < ot->gsub->ScriptList.Script[si].LangSysCount; li++)
     {
       OTF_tag_name(ot->gsub->ScriptList.Script[si].LangSysRecord[li].LangSysTag, facture);
-      printf("  language '%s':\n", &facture);
+      printf("  language '%s':\n", facture);
 
       for (fi = 0; fi < ot->gsub->ScriptList.Script[si].LangSys[li].FeatureCount; fi++)
       {
-        OTF_tag_name(ot->gsub->FeatureList.Feature[ot->gsub->ScriptList.Script[si].LangSys[li].FeatureIndex[fi]].FeatureTag, facture);
-        fi == 0 ? printf("    ") : printf("");
-        printf("'%s', ", &facture);
-        fi % 4 == 3 ? printf("\n    ") : printf("");
+        unsigned idx = ot->gsub->ScriptList.Script[si].LangSys[li].FeatureIndex[fi];
+        OTF_Tag tag  = ot->gsub->FeatureList.Feature[idx].FeatureTag;
+        OTF_tag_name(tag, facture);
+        if (fi == 0) printf("    ");
+        printf("'%s', ", facture);
+        if (fi % 4 == 3) printf("\n    ");
       }
 
       printf("\n");
@@ -1049,15 +1053,17 @@ void list_GPOS_features(OTF * ot)
   for (si = 0; si < ot->gpos->ScriptList.ScriptCount; si++)
   {
     OTF_tag_name(ot->gpos->ScriptList.Script[si].ScriptTag, facture);
-    printf("script '%s':\n", &facture);
+    printf("script '%s':\n", facture);
 
     printf("  default features:\n");
     for (di = 0; di < ot->gpos->ScriptList.Script[si].DefaultLangSys.FeatureCount; di++)
     {
-      OTF_tag_name(ot->gpos->FeatureList.Feature[ot->gpos->ScriptList.Script[si].DefaultLangSys.FeatureIndex[di]].FeatureTag, facture);
-      di == 0 ? printf("    ") : printf("");
-      printf("'%s', ", &facture);
-      di % 4 == 3 ? printf("\n    ") : printf("");
+      unsigned idx = ot->gpos->ScriptList.Script[si].DefaultLangSys.FeatureIndex[di];
+      OTF_Tag tag  = ot->gpos->FeatureList.Feature[idx].FeatureTag;
+      OTF_tag_name(tag, facture);
+      if (di == 0) printf("    ");
+      printf("'%s', ", facture);
+      if (di % 4 == 3) printf("\n    ");
     }
 
     printf("\n");
@@ -1065,14 +1071,16 @@ void list_GPOS_features(OTF * ot)
     for (li = 0; li < ot->gpos->ScriptList.Script[si].LangSysCount; li++)
     {
       OTF_tag_name(ot->gpos->ScriptList.Script[si].LangSysRecord[li].LangSysTag, facture);
-      printf("  language '%s':\n", &facture);
+      printf("  language '%s':\n", facture);
 
       for (fi = 0; fi < ot->gpos->ScriptList.Script[si].LangSys[li].FeatureCount; fi++)
       {
-        OTF_tag_name(ot->gpos->FeatureList.Feature[ot->gpos->ScriptList.Script[si].LangSys[li].FeatureIndex[fi]].FeatureTag, facture);
-        fi == 0 ? printf("    ") : printf("");
-        printf("'%s', ", &facture);
-        fi % 4 == 3 ? printf("\n    ") : printf("");
+        unsigned idx = ot->gpos->ScriptList.Script[si].LangSys[li].FeatureIndex[fi];
+        OTF_Tag tag  = ot->gpos->FeatureList.Feature[idx].FeatureTag;
+        OTF_tag_name(tag, facture);
+        if (fi == 0) printf("    ");
+        printf("'%s', ", facture);
+        if (fi % 4 == 3) printf("\n    ");
       }
 
       printf("\n");
