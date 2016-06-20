@@ -2244,17 +2244,24 @@ static boolean b_open_input(byte_file * f)
       * support of TrueType/AAT will to be implemented in future.
     Name Syntax:
       \jfont\t=name
-      name          = "ot:" file_name file_index? gsub_spec? ":" jfm_name
-      file_index    = "[" number "]"
-      gsub_spec     = ";" gsub_fea_list
-      gsub_fea_list = (fea_tag ",")* [fea_tag | "*"]
+      name        = "ot:" file_name file_index? script_lang? gsub_spec? ":" jfm_name
+      file_index  = "[" number "]"
+      script_lang = "(" script? lang? ")"
+      script      = script_tag
+      lang        = "/" lang_tag
+      gsub_spec   = ";" fea_list
+      fea_list    = (fea_tag ",")* [fea_tag | "*"]
+
+      script_tag: https://www.microsoft.com/typography/otspec/scripttags.htm
+      lang_tag:   https://www.microsoft.com/typography/otspec/languagetags.htm
+      fea_tag:    https://www.microsoft.com/typography/otspec/featuretags.htm
 
       '*' for all gsub featurs
     Examples:
       \jfont\t=ot:yumin.ttf;jp90,hojo:upjisr-h
       \tfont\t=ot:yumin.ttf;vert:upjisr-v
       \jfont\t=ot:simsun.ttc[1]:upjisr-h
-      \jfont\t=ot:SourceHanSansTC-Normal.otf:uprmh-h
+      \jfont\t=ot:SourceHanSansTC-Normal.otf:uprml-h
   */
 
   //printf("RAW FONT FILE NAME: %s\n", file_name_utf8);
@@ -18787,6 +18794,8 @@ extern int pdf_load_fontmap_file(const char *filename, int map_mode);
 static const double sp2bp = 0.000015202;
 static int     font_id[65536];
 static OTF *   font_ot[65536];
+static char *  font_script[65536];
+static char *  font_lang[65536];
 static char *  font_gsub[65536];
 static FT_Face font_face[65536];
 static ot_tbl_colr * font_colr[65536];
@@ -18797,7 +18806,7 @@ static char * area_split_name (char * s)
 {
   char * ret, * delim, * fname;
 
-  if ((delim = strpbrk(s + 3, "[;:")) != NULL)
+  if ((delim = strpbrk(s + 3, "[(;:")) != NULL)
   {
     ret = calloc(sizeof(char), delim - s - 3 + 1);
     strncpy(ret, s + 3, delim - s - 3);
@@ -18811,7 +18820,7 @@ static char * area_split_name (char * s)
 
 static char * area_split_gsub (char * s)
 {
-  char *ret, * delim1, *delim2;
+  char * ret, * delim1, *delim2;
 
   if ((delim1 = strpbrk(s, ";")) != NULL)
   {
@@ -18837,6 +18846,43 @@ static uint32_t area_split_index (char * s)
   }
 
   return 0;
+}
+
+static char * area_split_script (char * s)
+{
+  char * ret, * delim1, *delim2;
+
+  if ((delim1 = strpbrk(s + 3, "(")) != NULL)
+  {
+    if ((delim2 = strpbrk(delim1, "/)")) != NULL)
+    {
+      ret = calloc(sizeof(char), delim2 - delim1 + 1);
+      strncpy(ret, delim1 + 1, delim2 - delim1 - 1);
+      return ret;
+    }
+  }
+
+  return strdup("DFLT");
+}
+
+static char * area_split_lang (char * s)
+{
+  char * ret, *delim1, * delim2, * delim3;
+
+  if ((delim1 = strpbrk(s + 3, "(")) != NULL)
+  {
+    if ((delim2 = strpbrk(delim1, "/")) != NULL)
+    {
+      if ((delim3 = strpbrk(delim2, ")")) != NULL)
+      {
+        ret = calloc(sizeof(char), delim3 - delim2 + 1);
+        strncpy(ret, delim2 + 1, delim3 - delim2 - 1);
+        return ret;
+      }
+    }
+  }
+
+  return strdup("");
 }
 
 static uint16_t parse_u16(uint8_t * s)
@@ -19064,6 +19110,8 @@ static void pdf_locate_font (internal_font_number f)
         0 - font_dir[f] + 4, 0x00010000, 0, 0);
       FT_New_Face(font_ftlib, ot_fname, ot_index, &font_face[f]);
       font_ot[f]   = OTF_open_ft_face(font_face[f]);
+      font_script[f] = area_split_script(lfont_area);
+      font_lang[f] = area_split_lang(lfont_area);
       font_gsub[f] = area_split_gsub(lfont_area);
       font_colr[f] = ot_parse_colr(font_face[f]);
       font_cpal[f] = ot_parse_cpal(font_face[f]);
@@ -19127,7 +19175,7 @@ static void pdf_kanji_out (internal_font_number f, KANJI_code c)
     gstr->size = 1;
     gstr->glyphs[0].c = c;
 
-    OTF_drive_tables(font_ot[f], gstr, "", "", font_gsub[f], "");
+    OTF_drive_tables(font_ot[f], gstr, font_script[f], font_lang[f], font_gsub[f], "");
 
     {
       scaled gw0, gw1, gw2, gw3, gw4, gw5, gw6;
@@ -34168,6 +34216,15 @@ void close_files_and_terminate (void)
           {
             if (font_ot[i] != NULL)
               OTF_close(font_ot[i]);
+
+            if (font_script[i] != NULL)
+              free(font_script[i]);
+
+            if (font_lang[i] != NULL)
+              free(font_lang[i]);
+
+            if (font_gsub[i] != NULL)
+              free(font_gsub[i]);
   
             FT_Done_Face(font_face[i]);
             ot_delete_colr(font_colr[i]);
