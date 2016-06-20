@@ -68,9 +68,9 @@ static const char * dist = "Unknown";
 #endif
 
 #if defined (W32TeX)
-static const char * banner = "This is Asian pTeX, Version 3.14159265 (W32TeX)";
+static const char * banner = "This is Asiatic pTeX, Version 3.14159265 (W32TeX)";
 #else
-static const char * banner = "This is Asian pTeX, Version 3.14159265";
+static const char * banner = "This is Asiatic pTeX, Version 3.14159265";
 #endif
 
 static void aptex_utils_exit (int unix_code)
@@ -156,7 +156,7 @@ static void print_aptex_info (void)
 
   strcpy(date, __DATE__);
   scivilize(date);
-  printf("Asian pTeX (compiled time: %s %s with %s/%s)\n",
+  printf("Asiatic pTeX (compiled time: %s %s with %s/%s)\n",
     date, __TIME__, dist, compiler);
 
   executable_path = (char *) calloc(65536, 1);
@@ -33930,7 +33930,7 @@ boolean open_fmt_file (void)
       name_of_file[name_length + 1] = '\0';
       printf("Sorry, I can't find that format (%s); will try the default.\n", name_of_file + 1);
       name_of_file[name_length + 1] = ' ';
-      printf("(Perhaps your Asian pTeX's environment variable is not set correctly)\n");
+      printf("(Perhaps your Asiatic pTeX's environment variable is not set correctly)\n");
     }
 
     update_terminal();
@@ -33951,7 +33951,7 @@ boolean open_fmt_file (void)
       name_of_file[name_length + 1] = '\0';
       printf("I can't find the default format file (%s)!\n", name_of_file + 1);
       name_of_file[name_length + 1] = ' ';
-      printf("(Perhaps your Asian pTeX's environment variable is not set correctly)\n");
+      printf("(Perhaps your Asiatic pTeX's environment variable is not set correctly)\n");
     }
 
     return false;

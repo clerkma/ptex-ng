@@ -568,7 +568,7 @@ static inline void print_plus (int i, const char * s)
 static inline void aptex_error (const char * t, const char * p)
 {
   normalize_selector();
-  print_err("Asian pTeX error");
+  print_err("Asiatic pTeX error");
 
   if (t != NULL)
   {
