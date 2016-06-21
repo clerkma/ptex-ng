@@ -41,7 +41,7 @@ $(ZLIB_ROOT)/zutil.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libz
-LOCAL_CFLAGS     := -O2
+LOCAL_CFLAGS     := -pie -fPIE -O2
 LOCAL_C_INCLUDES := $(ZLIB_INCLUDES)
 LOCAL_SRC_FILES  := $(ZLIB_FILES)
 
@@ -71,7 +71,7 @@ $(LIBPNG_ROOT)/pngwutil.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libpng
-LOCAL_CFLAGS     := -DPNG_ARM_NEON_OPT=0 -O2
+LOCAL_CFLAGS     := -pie -fPIE -DPNG_ARM_NEON_OPT=0 -O2
 LOCAL_C_INCLUDES := $(LIBPNG_INCLUDES)
 LOCAL_SRC_FILES  := $(LIBPNG_FILES)
 
@@ -90,9 +90,54 @@ $(LIBPAPER_ROOT)/lib/paper.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libpaper
-LOCAL_CFLAGS     := -DHAVE_CONFIG_H -O2
+LOCAL_CFLAGS     := -pie -fPIE -DHAVE_CONFIG_H -O2
 LOCAL_C_INCLUDES := $(LIBPAPER_INCLUDES)
 LOCAL_SRC_FILES  := $(LIBPAPER_FILES)
+
+include $(BUILD_STATIC_LIBRARY)
+
+#for freetype2
+include $(CLEAR_VARS)
+
+LIBFREETYPE_ROOT    := ../libs/freetype2/freetype-src
+LIBFREETYPE_INCLUDES:= \
+$(LOCAL_PATH)/../libs/freetype2/freetype-src/include
+LIBFREETYPE_FILES   := \
+$(LIBFREETYPE_ROOT)/src/base/ftbase.c \
+$(LIBFREETYPE_ROOT)/src/base/ftbbox.c \
+$(LIBFREETYPE_ROOT)/src/base/ftbitmap.c \
+$(LIBFREETYPE_ROOT)/src/base/ftfntfmt.c \
+$(LIBFREETYPE_ROOT)/src/base/ftgasp.c \
+$(LIBFREETYPE_ROOT)/src/base/ftglyph.c \
+$(LIBFREETYPE_ROOT)/src/base/ftinit.c \
+$(LIBFREETYPE_ROOT)/src/base/ftstroke.c \
+$(LIBFREETYPE_ROOT)/src/base/ftsynth.c \
+$(LIBFREETYPE_ROOT)/src/base/ftsystem.c \
+$(LIBFREETYPE_ROOT)/src/base/fttype1.c \
+$(LIBFREETYPE_ROOT)/src/cff/cff.c \
+$(LIBFREETYPE_ROOT)/src/cid/type1cid.c \
+$(LIBFREETYPE_ROOT)/src/psaux/psaux.c \
+$(LIBFREETYPE_ROOT)/src/pshinter/pshinter.c \
+$(LIBFREETYPE_ROOT)/src/psnames/psnames.c \
+$(LIBFREETYPE_ROOT)/src/raster/raster.c \
+$(LIBFREETYPE_ROOT)/src/smooth/smooth.c \
+$(LIBFREETYPE_ROOT)/src/autofit/autofit.c \
+$(LIBFREETYPE_ROOT)/src/sfnt/sfnt.c \
+$(LIBFREETYPE_ROOT)/src/gzip/ftgzip.c \
+$(LIBFREETYPE_ROOT)/src/bdf/bdf.c \
+$(LIBFREETYPE_ROOT)/src/pfr/pfr.c \
+$(LIBFREETYPE_ROOT)/src/pcf/pcf.c \
+$(LIBFREETYPE_ROOT)/src/lzw/ftlzw.c \
+$(LIBFREETYPE_ROOT)/src/winfonts/winfnt.c \
+$(LIBFREETYPE_ROOT)/src/type42/type42.c \
+$(LIBFREETYPE_ROOT)/src/truetype/truetype.c \
+$(LIBFREETYPE_ROOT)/src/type1/type1.c
+
+LOCAL_ARM_NEON   := false
+LOCAL_MODULE     := libfreetype
+LOCAL_CFLAGS     := -pie -fPIE -DHAVE_CONFIG_H -DFT2_BUILD_LIBRARY -O2
+LOCAL_C_INCLUDES := $(LIBFREETYPE_INCLUDES)
+LOCAL_SRC_FILES  := $(LIBFREETYPE_FILES)
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -160,7 +205,7 @@ $(KPATHSEA_ROOT)/proginit.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libkpathsea
-LOCAL_CFLAGS     := -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DMAKE_KPSE_DLL -O2
+LOCAL_CFLAGS     := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DMAKE_KPSE_DLL -O2
 LOCAL_C_INCLUDES := $(KPATHSEA_INCLUDES)
 LOCAL_SRC_FILES  := $(KPATHSEA_FILES)
 
@@ -179,7 +224,7 @@ $(PTEXENC_ROOT)/unicode-jp.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libptexenc
-LOCAL_CFLAGS     := -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DMAKE_KPSE_DLL -O2
+LOCAL_CFLAGS     := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DMAKE_KPSE_DLL -O2
 LOCAL_C_INCLUDES := $(PTEXENC_INCLUDES)
 LOCAL_SRC_FILES  := $(PTEXENC_FILES)
 
@@ -273,9 +318,30 @@ $(LIBDPX_ROOT)/xbb.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libdpx
-LOCAL_CFLAGS     := -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
+LOCAL_CFLAGS     := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
 LOCAL_C_INCLUDES := $(LIBDPX_INCLUDES)
 LOCAL_SRC_FILES  := $(LIBDPX_FILES)
+
+include $(BUILD_STATIC_LIBRARY)
+
+#for libotf
+include $(CLEAR_VARS)
+
+LIBOTF_ROOT     := ../texk/ptex-ng/libotf
+LIBOTF_INCLUDES := \
+$(LOCAL_PATH)/../texk/ptex-ng/libotf \
+$(LOCAL_PATH)/../texk/ptex-ng/libotf/src \
+$(LOCAL_PATH)/../libs/freetype2/freetype2
+LIBOTF_FILES    := \
+$(LIBOTF_ROOT)/src/otfdrive.c \
+$(LIBOTF_ROOT)/src/otferror.c \
+$(LIBOTF_ROOT)/src/otfopen.c
+
+LOCAL_ARM_NEON   := false
+LOCAL_MODULE     := libotf
+LOCAL_CFLAGS     := -pie -fPIE -DHAVE_CONFIG_H -O2
+LOCAL_C_INCLUDES := $(LIBOTF_INCLUDES)
+LOCAL_SRC_FILES  := $(LIBOTF_FILES)
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -287,6 +353,8 @@ PTEXNG_INCLUDES := \
 $(LOCAL_PATH)/../texk/ \
 $(LOCAL_PATH)/../texk/ptexenc \
 $(LOCAL_PATH)/../texk/ptex-ng \
+$(LOCAL_PATH)/../libs/freetype2/freetype2 \
+$(LOCAL_PATH)/../texk/ptex-ng/libotf/src \
 $(LOCAL_PATH)/../libs/zlib/include
 PTEXNG_FILES := \
 $(PTEXNG_ROOT)/aptex.c \
@@ -294,10 +362,11 @@ $(PTEXNG_ROOT)/aptex-src.c \
 $(PTEXNG_ROOT)/aptex-synctex.c
 
 LOCAL_ARM_NEON          := false
-LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libz libkpathsea
+LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libz libkpathsea libotf libfreetype
 LOCAL_LDLIBS            := -s -lm
 LOCAL_MODULE            := aptex
-LOCAL_CFLAGS            := -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
+LOCAL_CFLAGS            := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
+LOCAL_LDFLAGS           += -pie -fPIE
 LOCAL_C_INCLUDES        := $(PTEXNG_INCLUDES)
 LOCAL_SRC_FILES         := $(PTEXNG_FILES)
 
