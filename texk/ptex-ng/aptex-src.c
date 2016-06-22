@@ -19451,16 +19451,27 @@ static void ship_out (pointer p)
         pdf_set_compression(pdf_compress_level);
 
       pdf_init_fontmaps();
-      pdf_load_fontmap_file("pdftex.map", '+');
-      pdf_load_fontmap_file("kanjix.map", '+');
-      pdf_load_fontmap_file("ckx.map", '+');
+
+      if (kpse_find_file("pdftex.map", kpse_fontmap_format, false) != NULL)
+        pdf_load_fontmap_file("pdftex.map", '+');
+      if (kpse_find_file("kanjix.map", kpse_fontmap_format, false) != NULL)
+        pdf_load_fontmap_file("kanjix.map", '+');
+      if (kpse_find_file("ckx.map", kpse_fontmap_format, false) != NULL)
+        pdf_load_fontmap_file("ckx.map", '+');
 
       if (aptex_env.aptex_map != NULL)
       {
-        if (aptex_env.aptex_map[0] == '+')
-          pdf_load_fontmap_file(aptex_env.aptex_map + 1, '+');
-        else if (aptex_env.aptex_map[0] == '!')
-          pdf_load_fontmap_file(aptex_env.aptex_map + 1, 0);
+        switch (aptex_env.aptex_map[0])
+        {
+          case '+':
+            if (kpse_find_file(aptex_env.aptex_map + 1, kpse_fontmap_format, false) != NULL)
+              pdf_load_fontmap_file(aptex_env.aptex_map + 1, '+');
+            break;
+          case '!':
+            if(kpse_find_file(aptex_env.aptex_map + 1, kpse_fontmap_format, false) != NULL)
+              pdf_load_fontmap_file(aptex_env.aptex_map + 1, 0);
+            break;
+        }
       }
 
       pdf_doc_set_creator("Asiatic pTeX 2016");
