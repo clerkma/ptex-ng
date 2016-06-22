@@ -18790,6 +18790,7 @@ extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
 extern void pdf_enc_compute_id_string(char *dviname, char *pdfname);
 extern void pdf_dev_set_dirmode(int dir_mode);
 extern int pdf_load_fontmap_file(const char *filename, int map_mode);
+extern void spc_moveto(int32_t, int32_t);
 
 static const double sp2bp = 0.000015202;
 static int     font_id[65536];
@@ -19257,7 +19258,7 @@ void pdf_rule_out (scaled rule_wd, scaled rule_ht)
   }
 }
 
-static void pdf_set_cur_page (scaled cur_wd, scaled cur_ht)
+static void pdf_set_cur_page (integer page_no, scaled cur_wd, scaled cur_ht)
 {
   pdf_rect mediabox;
 
@@ -19265,7 +19266,7 @@ static void pdf_set_cur_page (scaled cur_wd, scaled cur_ht)
   mediabox.lly = 0.0;
   mediabox.urx = cur_wd * sp2bp;
   mediabox.ury = cur_ht * sp2bp;
-  pdf_doc_set_mediabox(total_pages + 1, &mediabox);
+  pdf_doc_set_mediabox(page_no, &mediabox);
 }
 
 #endif
@@ -19479,6 +19480,7 @@ static void ship_out (pointer p)
       pdf_init_device(sp2bp, 2, 0);
       pdf_open_document(utf8_mbcs(pdf_file_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
       spc_exec_at_begin_document();
+      pdf_set_cur_page(0, pdf_page_width, pdf_page_height);
       free(pdf_file_name);
 
       FT_Init_FreeType(&font_ftlib);
@@ -19488,7 +19490,7 @@ static void ship_out (pointer p)
 
 #ifndef APTEX_DVI_ONLY
   {
-    pdf_set_cur_page(pdf_page_width, pdf_page_height);
+    pdf_set_cur_page(total_pages + 1, pdf_page_width, pdf_page_height);
     pdf_doc_begin_page(mag / 1000.0, pdf_h_origin * sp2bp, (pdf_page_height - pdf_v_origin) * sp2bp);
     spc_exec_at_begin_page();
   }
@@ -20639,7 +20641,7 @@ static void special_out (pointer p)
   pool_pointer k;
 
   synch_h();
-  synch_h();
+  synch_v();
   old_setting = selector;
   selector = new_string;
 
@@ -20668,33 +20670,13 @@ static void special_out (pointer p)
 
   for (k = str_start[str_ptr]; k <= pool_ptr - 1; k++)
     dvi_out(str_pool[k]);
-
 #ifndef APTEX_DVI_ONLY
   {
-    double spc_h;
-    double spc_v;
-
-    switch (cur_dir_hv)
-    {
-      case dir_yoko:
-        spc_h = cur_h;
-        spc_v = -cur_v;
-        break;
-
-      case dir_tate:
-        spc_h = -cur_v;
-        spc_v = -cur_h;
-        break;
-
-      case dir_dtou:
-        spc_h = cur_v;
-        spc_v = cur_h;
-        break;
-    }
-
+    const char * spc_str = (const char *) str_pool + str_start[str_ptr];
     graphics_mode();
-    spc_exec_special((const char *) str_pool + str_start[str_ptr], cur_length,
-      spc_h * sp2bp, spc_v * sp2bp, mag / 1000.0);
+    spc_moveto(dvi_h * sp2bp / 1.5202, dvi_v * sp2bp / 1.5202);
+    spc_exec_special(spc_str, cur_length,
+      dvi_h * sp2bp / 1.5202, -dvi_v * sp2bp / 1.5202, mag / 1000.0);
   }
 #endif
   pool_ptr = str_start[str_ptr];

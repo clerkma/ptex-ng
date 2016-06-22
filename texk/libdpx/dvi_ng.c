@@ -196,3 +196,9 @@ void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v)
       break;
   }
 }
+
+void spc_moveto (int32_t x, int32_t y)
+{
+  dvi_state.h = x;
+  dvi_state.v = y;
+}
