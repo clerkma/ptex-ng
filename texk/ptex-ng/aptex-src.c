@@ -18791,6 +18791,7 @@ extern void pdf_enc_compute_id_string(char *dviname, char *pdfname);
 extern void pdf_dev_set_dirmode(int dir_mode);
 extern int pdf_load_fontmap_file(const char *filename, int map_mode);
 extern void spc_moveto(int32_t, int32_t);
+extern long pdf_output_stats(void);
 
 static const double sp2bp = 0.000015202;
 static int     font_id[65536];
@@ -19435,11 +19436,9 @@ static void ship_out (pointer p)
 
 #ifndef APTEX_DVI_ONLY
     {
-      char * pdf_file_name = (char *) calloc(1, name_length + 1);
-      strncpy(pdf_file_name, (const char *) name_of_file + 1, name_length - 4);
-      strcat(pdf_file_name, ".pdf");
-
-      pdf_enc_compute_id_string(pdf_file_name, pdf_file_name);
+      output_pdf_name = take_str_string(output_file_name);
+      memcpy(output_pdf_name + length(output_file_name) - 4, ".pdf", 4);
+      pdf_enc_compute_id_string(output_pdf_name, output_pdf_name);
 
       if ((pdf_minor_version < 0) || (pdf_minor_version > 7))
         pdf_set_version(5);
@@ -19478,11 +19477,9 @@ static void ship_out (pointer p)
       pdf_doc_set_creator("Asiatic pTeX 2016");
       pdf_files_init();
       pdf_init_device(sp2bp, 2, 0);
-      pdf_open_document(utf8_mbcs(pdf_file_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
+      pdf_open_document(utf8_mbcs(output_pdf_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
       spc_exec_at_begin_document();
       pdf_set_cur_page(0, pdf_page_width, pdf_page_height);
-      free(pdf_file_name);
-
       FT_Init_FreeType(&font_ftlib);
     }
 #endif
@@ -34233,20 +34230,16 @@ void close_files_and_terminate (void)
         pdf_files_close();
         pdf_close_fontmaps();
 
-        char * pdf_file_name = (char *) calloc(1, name_length + 1);
-        strncpy(pdf_file_name, (const char *) name_of_file + 1, name_length - 4);
-        strcat(pdf_file_name, ".pdf");
         print_nl("Output written on ");
-        prints(pdf_file_name);
+        prints(output_pdf_name);
         prints(" (");
         print_int(total_pages);
         prints(" page");
-        free(pdf_file_name);
+        free(output_pdf_name);
 
         if (total_pages != 1)
           print_char('s');
 
-        extern long pdf_output_stats(void);
         prints(", ");
         print_int(pdf_output_stats());
         prints(" bytes).");

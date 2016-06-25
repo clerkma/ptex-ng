@@ -511,6 +511,7 @@ EXTERN boolean quoted_file_name;
 
 EXTERN byte_file dvi_file;                    // {the device-independent output goes here}
 EXTERN str_number output_file_name;           // {full name of the output file}
+EXTERN char * output_pdf_name;                // {full name of the PDF file}
 EXTERN str_number log_name;                   // {full name of the log file}
 
 EXTERN byte_file tfm_file;
