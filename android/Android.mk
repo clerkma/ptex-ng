@@ -371,3 +371,24 @@ LOCAL_C_INCLUDES        := $(PTEXNG_INCLUDES)
 LOCAL_SRC_FILES         := $(PTEXNG_FILES)
 
 include $(BUILD_EXECUTABLE)
+
+#for lsotfea
+include $(CLEAR_VARS)
+
+LSOTFEA_ROOT     := ../texk/ptex-ng
+LSOTFEA_INCLUDES := \
+$(LOCAL_PATH)/../libs/freetype2/freetype2 \
+$(LOCAL_PATH)/../texk/ptex-ng/libotf/src
+LSOTFEA_FILES := \
+$(LSOTFEA_ROOT)/lsotfea.c
+
+LOCAL_ARM_NEON          := false
+LOCAL_STATIC_LIBRARIES  := libotf libfreetype
+LOCAL_LDLIBS            := -s
+LOCAL_MODULE            := lsotfea
+LOCAL_CFLAGS            := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -O2
+LOCAL_LDFLAGS           += -pie -fPIE
+LOCAL_C_INCLUDES        := $(LSOTFEA_INCLUDES)
+LOCAL_SRC_FILES         := $(LSOTFEA_FILES)
+
+include $(BUILD_EXECUTABLE)
