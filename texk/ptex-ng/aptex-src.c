@@ -20669,11 +20669,31 @@ static void special_out (pointer p)
     dvi_out(str_pool[k]);
 #ifndef APTEX_DVI_ONLY
   {
-    const char * spc_str = (const char *) str_pool + str_start[str_ptr];
+    const char * spc_str = (const char *)str_pool + str_start[str_ptr];
+    scaled spc_h, spc_v;
+
+    switch (cur_dir_hv)
+    {
+      case dir_yoko:
+        spc_h = cur_h;
+        spc_v = -cur_v;
+        break;
+
+      case dir_tate:
+        spc_h = -cur_v;
+        spc_v = -cur_h;
+        break;
+
+      case dir_dtou:
+        spc_h = cur_v;
+        spc_v = cur_h;
+        break;
+    }
+
     graphics_mode();
-    spc_moveto(dvi_h * sp2bp / 1.5202, dvi_v * sp2bp / 1.5202);
+    spc_moveto(cur_h * sp2bp / 1.5202, cur_v * sp2bp / 1.5202);
     spc_exec_special(spc_str, cur_length,
-      dvi_h * sp2bp / 1.5202, -dvi_v * sp2bp / 1.5202, mag / 1000.0);
+      spc_h * sp2bp, spc_v * sp2bp, mag / 1000.0);
   }
 #endif
   pool_ptr = str_start[str_ptr];
