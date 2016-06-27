@@ -20669,7 +20669,7 @@ static void special_out (pointer p)
     dvi_out(str_pool[k]);
 #ifndef APTEX_DVI_ONLY
   {
-    const char * spc_str = (const char *)str_pool + str_start[str_ptr];
+    const char * spc_str = (const char *) str_pool + str_start[str_ptr];
     scaled spc_h, spc_v;
 
     switch (cur_dir_hv)
