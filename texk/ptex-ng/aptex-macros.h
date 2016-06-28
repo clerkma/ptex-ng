@@ -1943,6 +1943,7 @@ do {                                        \
 #define close_node      2 // {|subtype| in whatsits that represent streams to \.{\\closeout}}
 #define special_node    3 // {|subtype| in whatsits that represent \.{\\special} things}
 #define language_node   4 // {|subtype| in whatsits that change the current language}
+#define graphic_node    6 // {|subtype| in whatsits that represent graphics}
 #define what_lang(s)    link(s + 1)     // {language number, in the range |0..255|}
 #define what_lhm(s)     type(s + 1)     // {minimum left fragment, in the range |1..63|}
 #define what_rhm(s)     subtype(s + 1)  // {minimum right fragment, in the range |1..63|}

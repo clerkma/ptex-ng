@@ -167,10 +167,7 @@ typedef void * word_file;  // stdio/zlib
   #undef link
 #endif
 
-#ifdef abs
-  #undef abs
-  #define abs llabs
-#endif
+#define abs llabs
 
 #ifdef APTEX_EXTENSION
   #define def_const(sym, val0, val1) \

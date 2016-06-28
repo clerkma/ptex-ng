@@ -6504,6 +6504,7 @@ static void init_prim (void)
   primitive("special", extension, special_node);
   primitive("immediate", extension, immediate_code);
   primitive("setlanguage", extension, set_language_code);
+  primitive("aptexgraphic", extension, graphic_node);
   primitive("kansujichar", set_kansuji_char, 0);
   primitive("autospacing", set_auto_spacing, set_auto_spacing_code);
   primitive("noautospacing", set_auto_spacing, reset_auto_spacing_code);
@@ -9178,6 +9179,12 @@ void show_node_list (integer p)
             }
             break;
 
+          case graphic_node:
+            {
+              print_esc("aptexgraphic");
+            }
+            break;
+
           default:
             prints("whatsit?");
             break;
@@ -9642,8 +9649,12 @@ void flush_node_list (pointer p)
                 break;
 
               case close_node:
-              case set_language_code:
+              case language_node:
                 free_node(p, small_node_size);
+                break;
+
+              case graphic_node:
+                free_node(p, graphic_node_size);
                 break;
 
               default:
@@ -9878,6 +9889,13 @@ static pointer copy_node_list (pointer p)
             {
               r = get_node(small_node_size);
               words = small_node_size;
+            }
+            break;
+
+          case graphic_node:
+            {
+              r = get_node(graphic_node_size);
+              words = graphic_node_size;
             }
             break;
 
@@ -19965,7 +19983,18 @@ reswitch:
 
       case whatsit_node:
         // @<Output the whatsit node |p| in an hlist@>
-        out_what(p);
+        if (subtype(p) == graphic_node)
+        {
+          save_h = dvi_h;
+          save_v = dvi_v;
+          edge = cur_h + width(p);
+          dvi_h = save_h;
+          dvi_v = save_v;
+          cur_h = edge;
+          cur_v = base_line;
+        }
+        else
+          out_what(p);
         break;
 
       case disp_node:
@@ -20360,7 +20389,18 @@ void vlist_out (void)
 
         case whatsit_node:
           // @<Output the whatsit node |p| in a vlist@>
-          out_what(p);
+          if (subtype(p) == graphic_node)
+          {
+            save_h = dvi_h;
+            save_v = dvi_v;
+            cur_v = cur_v + height(p);
+            dvi_h = save_h;
+            dvi_v = save_v;
+            cur_v = save_v + depth(p);
+            cur_h = left_edge;
+          }
+          else
+            out_what(p);
           break;
 
         case glue_node:
@@ -20807,6 +20847,10 @@ void out_what (pointer p)
       do_nothing();
       break;
 
+    case graphic_node:
+      do_nothing();
+      break;
+
     default:
       confusion("ext4");
       break;
@@ -20989,7 +21033,16 @@ reswitch:
           break;
 
         case whatsit_node:
-          do_nothing();
+          if (subtype(p) == graphic_node)
+          {
+            if (height(p) > h)
+              h = height(p);
+
+            if (depth(p) > d)
+              d = depth(p);
+
+            x = x + width(p);
+          }
           break;
 
         case disp_node:
@@ -21316,7 +21369,14 @@ static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
         break;
 
       case whatsit_node:
-        do_nothing();
+        if (subtype(p) == graphic_node)
+        {
+          x = x + d + height(p);
+          d = depth(p);
+
+          if (width(p) > w)
+            w = width(p);
+        }
         break;
 
       case glue_node:
@@ -24761,6 +24821,8 @@ static void line_break (boolean d)
             r_hyf = what_rhm(cur_p);
             set_hyph_index();
           }
+          else if (subtype(cur_p) == graphic_node)
+            act_width = act_width + width(cur_p);
           break;
 
         case glue_node:
@@ -24780,7 +24842,7 @@ static void line_break (boolean d)
 
             check_shrinkage(glue_ptr(cur_p));
             q = glue_ptr(cur_p);
-            act_width = act_width+ width(q);
+            act_width = act_width + width(q);
             active_width[2 + stretch_order(q)] = active_width[2 + stretch_order(q)] + stretch(q);
             active_width[6] = active_width[6] + shrink(q);
 
@@ -24839,6 +24901,8 @@ static void line_break (boolean d)
                       r_hyf = what_rhm(s);
                       set_hyph_index();
                     }
+                    else if (subtype(s) == graphic_node)
+                      act_width = act_width + width(s);
                     goto continu;
                   }
                   else
@@ -25047,8 +25111,13 @@ done1:;
                     disc_width = disc_width + width(s);
                     break;
 
-                  case disc_node:
+                  case disp_node:
                     do_nothing();
+                    break;
+
+                  case whatsit_node:
+                    if (subtype(s) == graphic_node)
+                      disc_width = disc_width + width(s);
                     break;
 
                   default:
@@ -25096,6 +25165,11 @@ done1:;
 
                 case disp_node:
                   do_nothing();
+                  break;
+
+                case whatsit_node:
+                  if (subtype(s) == graphic_node)
+                    act_width = act_width + width(s);
                   break;
 
                 default:
@@ -25443,6 +25517,11 @@ continu:
                       do_nothing();
                       break;
 
+                    case whatsit_node:
+                      if (subtype(v) == graphic_node)
+                        break_width[1] = break_width[1] - width(v);
+                      break;
+
                     default:
                       confusion("disc1");
                       break;
@@ -25478,6 +25557,11 @@ continu:
 
                     case disp_node:
                       do_nothing();
+                      break;
+
+                    case whatsit_node:
+                      if (subtype(s) == graphic_node)
+                        break_width[1] = break_width[1] + width(s);
                       break;
 
                     default:
@@ -27156,6 +27240,11 @@ static pointer vert_break (pointer p, scaled h, scaled d)
         break;
 
       case whatsit_node:
+        if (subtype(p) == graphic_node)
+        {
+          cur_height = cur_height + prev_dp + height(p);
+          prev_dp = depth(p);
+        }
         goto not_found;
         break;
 
@@ -27904,6 +27993,11 @@ continu:
           @<Prepare to move whatsit |p| to the current page,
           then |goto contribute|@>
         */
+        if (subtype(p) == graphic_node)
+        {
+          page_total = page_total + page_depth + height(p);
+          page_depth = depth(p);
+        }
         goto contribute;
         break;
 
@@ -29855,7 +29949,13 @@ reswitch:
             break;
 
           case whatsit_node:
-            d = 0;
+            if (subtype(p) == graphic_node)
+            {
+              d = width(p);
+              goto found;
+            }
+            else
+              d = 0;
             break;
 
           default:
@@ -32542,6 +32642,53 @@ static void new_write_whatsit (small_number w)
   write_stream(tail) = cur_val;
 }
 
+static void do_ext_graphic (void)
+{
+  integer g_page, g_type;
+  str_number g_name;
+
+  scan_file_name();
+  pack_cur_name();
+
+  g_name = make_name_string();
+  g_page = 0;
+  g_type = 0;
+
+  {
+    char * g_strs = take_str_string(g_name);
+    char * g_file = kpse_find_pict(g_strs);
+    free(g_strs);
+
+    if (g_file == NULL)
+      return;
+  }
+
+  if (scan_keyword("page"))
+  {
+    scan_int();
+    g_page = cur_val;
+  }
+
+  if (scan_keyword("crop"))
+    g_type = 1;
+  else if (scan_keyword("media"))
+    g_type = 2;
+  else if (scan_keyword("bleed"))
+    g_type = 3;
+  else if (scan_keyword("trim"))
+    g_type = 4;
+  else if (scan_keyword("art"))
+    g_type = 5;
+
+  new_whatsit(graphic_node, graphic_node_size);
+  subtype(tail) = graphic_node;
+  width(tail) = 655360;
+  height(tail) = 655360;
+  depth(tail) = 0;
+  graphic_name(tail) = g_name;
+  graphic_page(tail) = g_page;
+}
+
 static void do_extension (void)
 {
   integer k;  // {all-purpose integers}
@@ -32629,6 +32776,13 @@ static void do_extension (void)
         what_lhm(tail) = norm_min(left_hyphen_min);
         what_rhm(tail) = norm_min(right_hyphen_min);
       }
+      break;
+
+    case graphic_node:
+      if (abs(mode) == mmode)
+        report_illegal_case();
+      else
+        do_ext_graphic();
       break;
 
     default:
@@ -35702,6 +35856,13 @@ void just_copy (pointer p, pointer h, pointer t)
             {
               r = get_node(small_node_size);
               words = small_node_size;
+            }
+            break;
+
+          case graphic_node:
+            {
+              r = get_node(graphic_node_size);
+              words = graphic_node_size;
             }
             break;
 
