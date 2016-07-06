@@ -9195,7 +9195,7 @@ void show_node_list (integer p)
 
           case graphic_node:
             {
-              print_esc("aptexgraphic");
+              print_esc("inputgraphic");
             }
             break;
 
