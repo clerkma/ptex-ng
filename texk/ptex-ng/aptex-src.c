@@ -129,7 +129,7 @@ static void print_aptex_version (void)
 {
   printf("Copyright 2014, 2015 Clerk Ma.\n"
     "banner: \"%s\"\n"
-    "based Y&Y TeX (2.3.0) and pTeX (3.7.1)\n"
+    "base: Y&Y TeX (2.3.0) and pTeX (3.7.1)\n"
     "Compiled with %s\n"
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
