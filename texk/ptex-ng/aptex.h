@@ -49,6 +49,7 @@
   // Secure Template Overloads
   #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
   #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES_COUNT 1
+  #define _USE_MATH_DEFINES 1
 
   // https://msdn.microsoft.com/en-us/library/8x5x43k7.aspx
   // C/C++ Build Errors
@@ -220,7 +221,7 @@ def_const(dvi_buf_size,       16384,  16384);
 def_const(hash_prime,         55711,  445631);
 def_const(hash_size,          65536,  524288);
 
-def_alloc(buf_size,       200000, 2000000,                1000,   2000);
+def_alloc(buf_size,       200000, 2000000,                10000,   2000);
 def_alloc(font_mem_size,  100000, (max_halfword / 8 - 1), 20000,  40000);
 def_alloc(pool_size,      124000, (max_halfword - 1),     40000,  80000);
 def_alloc(max_strings,    16384,  (max_halfword / 8 - 1), 5000,   10000);
@@ -808,6 +809,7 @@ EXTERN int fbyte;
 //eTeX
 EXTERN boolean is_print_utf8;
 EXTERN str_number last_tokens_string;
+
 // for synctex
 EXTERN integer synctex_option;
 
@@ -840,24 +842,6 @@ EXTERN struct {
   void * (*open_tfm_file) (const char * f, const char * m);
   void * (*open_fmt_file) (const char * f, const char * m);
 } aptex_env;
-
-EXTERN char * format_name;
-
-EXTERN int new_hyphen_prime;
-
-// line break stats
-EXTERN int lbs_pass_fst;
-EXTERN int lbs_pass_snd;
-EXTERN int lbs_pass_fin;
-EXTERN int lbs_sing_line;
-
-// hpack stats
-EXTERN int hps_underfull;
-EXTERN int hps_overfull;
-
-// vpack stats
-EXTERN int vps_underfull;
-EXTERN int vps_overfull;
 
 #include "aptex-functions.h"
 

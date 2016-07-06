@@ -40,8 +40,19 @@
 #include "aptex.h"
 
 static int mem_initex;
-
-#define REALLOC realloc
+static int new_hyphen_prime;
+static char * format_name;
+// line break stats
+static int lbs_pass_fst;
+static int lbs_pass_snd;
+static int lbs_pass_fin;
+static int lbs_sing_line;
+// hpack stats
+static int hps_underfull;
+static int hps_overfull;
+// vpack stats
+static int vps_underfull;
+static int vps_overfull;
 
 #if   defined (__clang__)
 static const char * compiler = "Clang";
@@ -160,6 +171,7 @@ static void print_aptex_info (void)
     date, __TIME__, dist, compiler);
 
   executable_path = (char *) calloc(65536, 1);
+
 #if   defined (_WIN32) || defined (_WIN64)
   GetModuleFileNameA(NULL, executable_path, 65536);
 #elif defined (__gnu_linux__) || defined (__ANDROID__)
@@ -178,6 +190,7 @@ static void print_aptex_info (void)
 #else
   printf("Executable PATH: '%s'.\n", executable_path);
 #endif
+
   free(executable_path);
 }
 
@@ -361,8 +374,8 @@ int realloc_hyphen (int hyphen_prime)
 
   aptex_memory_trace("hyphen exception", n);
 
-  hyph_word = (str_number *) REALLOC(hyph_word, nw);
-  hyph_list = (halfword *) REALLOC(hyph_list, nl);
+  hyph_word = (str_number *) realloc(hyph_word, nw);
+  hyph_list = (halfword *) realloc(hyph_list, nl);
 
   if (hyph_word == NULL || hyph_list == NULL)
   {
@@ -410,7 +423,7 @@ static memory_word * allocate_mem (int size)
 
   aptex_memory_trace("main memory", n);
 
-  main_memory = (memory_word *) REALLOC(main_memory, n);
+  main_memory = (memory_word *) realloc(main_memory, n);
 
   if (main_memory == NULL)
   {
@@ -509,7 +522,7 @@ static memory_word * realloc_mem (int lo_size, int hi_size)
 
     aptex_memory_trace("main memory", n);
 
-    new_memory = (memory_word *) REALLOC (main_memory, n);
+    new_memory = (memory_word *) realloc(main_memory, n);
 
     if (new_memory != NULL)
       break; /* did we get it ? */
@@ -597,7 +610,7 @@ memory_word * realloc_font_info (int size)
 
     aptex_memory_trace("font_info", n);
 
-    new_font_info = (memory_word *) REALLOC (font_info, n);
+    new_font_info = (memory_word *) realloc(font_info, n);
 
     if (new_font_info != NULL)
       break;   /* did we get it ? */
@@ -659,7 +672,7 @@ packed_ASCII_code * realloc_str_pool (int size)
 
     aptex_memory_trace("str_pool", n);
 
-    new_str_pool = (packed_ASCII_code *) REALLOC (str_pool, n);
+    new_str_pool = (packed_ASCII_code *) realloc(str_pool, n);
 
     if (new_str_pool != NULL)
       break;    /* did we get it ? */
@@ -720,7 +733,7 @@ pool_pointer * realloc_str_start (int size)
 
     aptex_memory_trace("str_start", n);
 
-    new_str_start = (pool_pointer *) REALLOC (str_start, n);
+    new_str_start = (pool_pointer *) realloc(str_start, n);
 
     if (new_str_start != NULL)
       break;   /* did we get it ? */
@@ -822,7 +835,7 @@ memory_word * realloc_save_stack (int size)
 
     aptex_memory_trace("save_stack", n);
 
-    new_save_stack = (memory_word *) REALLOC (save_stack, n);
+    new_save_stack = (memory_word *) realloc(save_stack, n);
 
     if (new_save_stack != NULL)
       break;    /* did we get it ? */
@@ -844,7 +857,7 @@ memory_word * realloc_save_stack (int size)
 
   aptex_trace("Current %s %d\n", "save_size", current_save_size);
   aptex_trace("New Address %s == %p\n", "save stack", save_stack);
-  aptex_memory_update_statistics((intptr_t)save_stack, n, current_save_size);
+  aptex_memory_update_statistics((intptr_t) save_stack, n, current_save_size);
   aptex_memory_probe();
 
   return save_stack;
@@ -882,7 +895,7 @@ in_state_record * realloc_input_stack (int size)
 
     aptex_memory_trace("input_stack", n);
 
-    new_input_stack = (in_state_record *) REALLOC (input_stack, n);
+    new_input_stack = (in_state_record *) realloc(input_stack, n);
 
     if (new_input_stack != NULL)
       break;   /* did we get it ? */
@@ -904,7 +917,7 @@ in_state_record * realloc_input_stack (int size)
 
   aptex_trace("Current %s %d\n", "stack_size", current_stack_size);
   aptex_trace("New Address %s == %p\n", "input stack", input_stack);
-  aptex_memory_update_statistics((intptr_t)input_stack, n, current_stack_size);
+  aptex_memory_update_statistics((intptr_t) input_stack, n, current_stack_size);
   aptex_memory_probe();
 
   return input_stack;
@@ -940,7 +953,7 @@ list_state_record * realloc_nest_stack (int size)
 
     n = (new_size + 1) * sizeof (list_state_record);
     aptex_memory_trace("nest stack", n);
-    new_nest = (list_state_record *) REALLOC (nest, n);
+    new_nest = (list_state_record *) realloc(nest, n);
 
     if (new_nest != NULL)
       break;   /* did we get it ? */
@@ -962,7 +975,7 @@ list_state_record * realloc_nest_stack (int size)
 
   aptex_trace("Current %s %d\n", "nest_size", current_nest_size);
   aptex_trace("New Address %s == %p\n", "nest stack", nest);
-  aptex_memory_update_statistics((intptr_t)nest, n, current_nest_size);
+  aptex_memory_update_statistics((intptr_t) nest, n, current_nest_size);
   aptex_memory_probe();
 
   return nest;
@@ -998,7 +1011,7 @@ halfword * realloc_param_stack (int size)
 
     n = (new_size + 1) * sizeof(pointer);
     aptex_memory_trace("param stack", n);
-    new_param = (pointer *) REALLOC (param_stack, n);
+    new_param = (pointer *) realloc(param_stack, n);
 
     if (new_param != NULL)
       break;    /* did we get it ? */
@@ -1020,7 +1033,7 @@ halfword * realloc_param_stack (int size)
 
   aptex_trace("Current %s %d\n", "param_size", current_param_size);
   aptex_trace("New Address %s == %p\n", "param stack", param_stack);
-  aptex_memory_update_statistics((intptr_t)param_stack, n, current_param_size);
+  aptex_memory_update_statistics((intptr_t) param_stack, n, current_param_size);
   aptex_memory_probe();
 
   return param_stack;
@@ -1058,7 +1071,7 @@ ASCII_code * realloc_buffer (int size)
 
     aptex_memory_trace("buffer", n);
 
-    new_buffer = (ASCII_code *) REALLOC (buffer, n);
+    new_buffer = (ASCII_code *) realloc(buffer, n);
 
     if (new_buffer != NULL)
       break;   /* did we get it ? */
@@ -1072,7 +1085,7 @@ ASCII_code * realloc_buffer (int size)
   if (new_buffer == NULL)
   {
     aptex_memory_error("buffer", n);
-    return buffer;            /* try and continue !!! */
+    return buffer;  /* try and continue !!! */
   }
 
   buffer = new_buffer;
@@ -1081,7 +1094,7 @@ ASCII_code * realloc_buffer (int size)
 
   aptex_trace("Current buffer %d\n", current_buf_size);
   aptex_trace("New Address buffer == %p\n", buffer);
-  aptex_memory_update_statistics((intptr_t)buffer, n, current_buf_size);
+  aptex_memory_update_statistics((intptr_t) buffer, n, current_buf_size);
   aptex_memory_probe();
 
   return buffer;
@@ -1184,13 +1197,6 @@ static void aptex_memory_init (void)
   save_stack = NULL;
   current_save_size = 0;
   save_stack = realloc_save_stack (initial_save_size);
-#endif
-
-  /* need to do earlier */
-#ifdef IGNORED
-  buffer = NULL;
-  current_buf_size = 0;
-  buffer = realloc_buffer (initial_buf_size);
 #endif
 
 #ifdef APTEX_EXTENSION
@@ -1377,7 +1383,7 @@ static void aptex_commands_init (int ac, char **av)
       else if (ARGUMENT_IS("fontmap"))
         aptex_env.aptex_map = xstrdup(optarg);
       else if (ARGUMENT_IS("synctex"))
-        synctex_option = (int) strtol(optarg, NULL, 0);
+        synctex_option = strtoll(optarg, NULL, 0);
       else if (ARGUMENT_IS("format"))
         aptex_env.aptex_fmt = xstrdup(optarg);
       else if (ARGUMENT_IS("ini"))
@@ -6504,7 +6510,7 @@ static void init_prim (void)
   primitive("special", extension, special_node);
   primitive("immediate", extension, immediate_code);
   primitive("setlanguage", extension, set_language_code);
-  primitive("aptexgraphic", extension, graphic_node);
+  primitive("inputgraphic", extension, graphic_node);
   primitive("kansujichar", set_kansuji_char, 0);
   primitive("autospacing", set_auto_spacing, set_auto_spacing_code);
   primitive("noautospacing", set_auto_spacing, reset_auto_spacing_code);
@@ -19708,6 +19714,71 @@ static void synch_dir (void)
   }
 }
 
+void graphic_out (pointer p)
+{
+  integer old_setting;
+  pool_pointer k;
+
+  synch_h();
+  synch_v();
+  old_setting = selector;
+  selector = new_string;
+  prints("pdf:image matrix ");
+  print_scaled(graphic_tm_a(p)); prints(" ");
+  print_scaled(graphic_tm_b(p)); prints(" ");
+  print_scaled(graphic_tm_c(p)); prints(" ");
+  print_scaled(graphic_tm_d(p)); prints(" ");
+  print_scaled(graphic_tm_e(p)); prints(" ");
+  print_scaled(graphic_tm_f(p)); prints(" page ");
+  print_int(graphic_page(p)); prints(" (");
+  print(graphic_name(p)); prints(")");
+  selector = old_setting;
+
+  if (cur_length < 256)
+  {
+    dvi_out(xxx1);
+    dvi_out(cur_length);
+  }
+  else
+  {
+    dvi_out(xxx4);
+    dvi_four(cur_length);
+  }
+
+  for (k = str_start[str_ptr]; k <= pool_ptr - 1; k++)
+    dvi_out(str_pool[k]);
+#ifndef APTEX_DVI_ONLY
+  {
+    const char * spc_str = (const char *) str_pool + str_start[str_ptr];
+    scaled spc_h, spc_v;
+
+    switch (cur_dir_hv)
+    {
+    case dir_yoko:
+      spc_h = cur_h;
+      spc_v = -cur_v;
+      break;
+
+    case dir_tate:
+      spc_h = -cur_v;
+      spc_v = -cur_h;
+      break;
+
+    case dir_dtou:
+      spc_h = cur_v;
+      spc_v = cur_h;
+      break;
+    }
+
+    graphics_mode();
+    spc_moveto(cur_h * sp2bp / 1.5202, cur_v * sp2bp / 1.5202);
+    spc_exec_special(spc_str, cur_length,
+      spc_h * sp2bp, spc_v * sp2bp, mag / 1000.0);
+  }
+#endif
+  pool_ptr = str_start[str_ptr];
+}
+
 // output an |hlist_node| box
 void hlist_out (void)
 {
@@ -19989,6 +20060,7 @@ reswitch:
           save_v = dvi_v;
           edge = cur_h + width(p);
           dvi_h = save_h;
+          graphic_out(p);
           dvi_v = save_v;
           cur_h = edge;
           cur_v = base_line;
@@ -20395,6 +20467,7 @@ void vlist_out (void)
             save_v = dvi_v;
             cur_v = cur_v + height(p);
             dvi_h = save_h;
+            graphic_out(p);
             dvi_v = save_v;
             cur_v = save_v + depth(p);
             cur_h = left_edge;
@@ -32642,10 +32715,14 @@ static void new_write_whatsit (small_number w)
   write_stream(tail) = cur_val;
 }
 
+extern void aptex_extractbb (char * pict, uint32_t page, uint32_t rect, pdf_rect * bbox);
+
 static void do_ext_graphic (void)
 {
   integer g_page, g_type;
   str_number g_name;
+  pdf_rect g_rect;
+  double xs = 1.0, ys = 1.0;
 
   scan_file_name();
   pack_cur_name();
@@ -32654,17 +32731,9 @@ static void do_ext_graphic (void)
   g_page = 0;
   g_type = 0;
 
-  {
-    char * g_strs = take_str_string(g_name);
-    char * g_file = kpse_find_pict(g_strs);
-    free(g_strs);
-
-    if (g_file == NULL)
-      return;
-  }
-
   if (scan_keyword("page"))
   {
+    scan_optional_equals();
     scan_int();
     g_page = cur_val;
   }
@@ -32673,20 +32742,75 @@ static void do_ext_graphic (void)
     g_type = 1;
   else if (scan_keyword("media"))
     g_type = 2;
-  else if (scan_keyword("bleed"))
+  else if (scan_keyword("art"))
     g_type = 3;
   else if (scan_keyword("trim"))
     g_type = 4;
-  else if (scan_keyword("art"))
+  else if (scan_keyword("bleed"))
     g_type = 5;
+
+  {
+    char * g_strs = take_str_string(g_name);
+    aptex_extractbb(g_strs, g_page, g_type, &g_rect);
+    free(g_strs);
+  }
+
+  while (true)
+  {
+    if (scan_keyword("scaled"))
+    {
+      scan_optional_equals();
+      scan_int();
+      xs *= (double) cur_val / 1000.0;
+      ys *= (double) cur_val / 1000.0;
+    }
+    else if (scan_keyword("xscaled"))
+    {
+      scan_optional_equals();
+      scan_int();
+      xs *= (double) cur_val / 1000.0;
+    }
+    else if (scan_keyword("yscaled"))
+    {
+      scan_optional_equals();
+      scan_int();
+      ys *= (double) cur_val / 1000.0;
+    }
+    else if (scan_keyword("width"))
+    {
+      scan_optional_equals();
+      scan_normal_dimen();
+
+      if (g_rect.llx - g_rect.urx != 0.0)
+        xs = (double) cur_val / ((g_rect.urx - g_rect.llx) * 65536.0);
+    }
+    else if (scan_keyword("height"))
+    {
+      scan_optional_equals();
+      scan_normal_dimen();
+      if (g_rect.lly - g_rect.ury != 0.0)
+        ys = (double) cur_val / ((g_rect.ury - g_rect.lly) * 65536.0);
+    }
+    else
+      break;
+  }
+
+  if (g_rect.llx - g_rect.urx == 0.0 && g_rect.lly - g_rect.ury == 0.0)
+    return;
 
   new_whatsit(graphic_node, graphic_node_size);
   subtype(tail) = graphic_node;
-  width(tail) = 655360;
-  height(tail) = 655360;
+  width(tail)  = (scaled)((g_rect.urx - g_rect.llx) * 65536.0 * xs);
+  height(tail) = (scaled)((g_rect.ury - g_rect.lly) * 65536.0 * ys);
   depth(tail) = 0;
   graphic_name(tail) = g_name;
   graphic_page(tail) = g_page;
+  graphic_tm_a(tail) = xs * unity;
+  graphic_tm_b(tail) = 0;
+  graphic_tm_c(tail) = 0;
+  graphic_tm_d(tail) = ys * unity;
+  graphic_tm_e(tail) = 0;
+  graphic_tm_f(tail) = 0;
 }
 
 static void do_extension (void)
@@ -36077,12 +36201,12 @@ void app_display (pointer j, pointer b, scaled d)
 
 void pseudo_start (void)
 {
-  int old_setting;
-  str_number s;
-  pool_pointer l, m;
-  pointer p, q, r;
-  four_quarters w;
-  integer nl, sz;
+  int old_setting; // {holds |selector| setting}
+  str_number s; // {string to be converted into a pseudo file}
+  pool_pointer l, m;  // {indices into |str_pool|}
+  pointer p, q, r;  // {for list construction}
+  four_quarters w;  // 
+  integer nl, sz; // {four ASCII codes}
 
   scan_general_text();
   old_setting = selector;
@@ -36092,6 +36216,7 @@ void pseudo_start (void)
   flush_list(link(temp_head));
   str_room(1);
   s = make_string();
+  //@<Convert string |s| into a new pseudo file@>;
   str_pool[pool_ptr] = ' ';
   l = str_start[s];
   nl = new_line_char;
@@ -36160,6 +36285,7 @@ void pseudo_start (void)
   link(p) = pseudo_files;
   pseudo_files = p;
   flush_string();
+  // @<Initiate input from new pseudo file@>;
   begin_file_reading();
   line = 0;
   limit = start;
@@ -36181,14 +36307,15 @@ void pseudo_start (void)
     name = 18;
 }
 
+// {inputs the next line or returns |false|}
 boolean pseudo_input (void)
 {
-  pointer p;
-  integer sz;
-  four_quarters w;
-  pointer r;
+  pointer p;  // {current line from pseudo file}
+  integer sz; // {size of node |p|}
+  four_quarters w;  // {four ASCII codes}
+  pointer r;  // {loop index}
 
-  last = first;
+  last = first; // {cf.\ Matthew 19\thinspace:\thinspace30}
   p = info(pseudo_files);
 
   if (p == null)
@@ -36207,7 +36334,7 @@ boolean pseudo_input (void)
 
     last = first;
 
-    for (r = p + 1; r <= p + sz - 1; ++r)
+    for (r = p + 1; r <= p + sz - 1; r++)
     {
       w = mem[r].qqqq;
       buffer[last] = w.b0;
@@ -36228,6 +36355,7 @@ boolean pseudo_input (void)
   }
 }
 
+// {close the top level pseudo file}
 void pseudo_close (void)
 {
   pointer p, q;

@@ -30,7 +30,6 @@
 #define eTeX_ex             (eTeX_mode == true)
 
 // predefined macro
-//#define fabs(x)  ((x) >= 0.0 ? (x) : -(x))
 //#define abs(x)   ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
 #define chr(x)      (x)
 #define odd(x)      ((x) % 2)
@@ -1957,6 +1956,7 @@ do {                                        \
   Reference:
     PDF Reference, version 1.7
     ISBN4-906665-25-X「技術編ＣＧ標準テキストブック」（ＣＧ−ＡＲＴＳ協会）
+    transform: https://developer.mozilla.org/en-US/docs/Web/CSS/transform
   Transformation matrix [a b c d e f]
     translation [1 0 0 1 tx ty]
     scaling     [sx 0 0 sy 0 0]

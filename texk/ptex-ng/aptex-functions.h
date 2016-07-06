@@ -52,7 +52,6 @@ extern int                  realloc_hyphen (int hyphen_prime);
 str_number make_str_string (const char * s);
 char *     take_str_string (str_number s);
 
-
 boolean b_open_output (byte_file * f);
 
 #define a_open_in(f)    a_open_input(&(f))
@@ -110,7 +109,7 @@ void pause_for_instructions (void);
 void print_scaled (scaled s);
 
 void show_token_list (integer p, integer q, integer l);
-pointer get_avail (void);
+
 void flush_list (pointer p);
 pointer get_node (integer s);
 void free_node (pointer p, halfword s);
@@ -121,14 +120,10 @@ void search_mem (pointer p);
 #endif
 
 void show_node_list (integer p);
-void show_box (pointer p);
 void delete_token_ref (pointer p);
 void delete_glue_ref (pointer p);
 #define fast_delete_glue_ref(p) delete_glue_ref((pointer) (p))
 void flush_node_list (pointer p);
-void pop_nest (void);
-void begin_diagnostic (void);
-void end_diagnostic (boolean blank_line);
 void print_cmd_chr (quarterword cmd, halfword chr_code);
 pointer id_lookup (integer j, integer l);
 #define primitive(s, c, o) primitive_(make_str_string((const char *) s), (quarterword) (c), (halfword) (o))
@@ -136,32 +131,22 @@ pointer id_lookup (integer j, integer l);
 void assign_trace (pointer p, const char * s);
 
 void show_context (void);
-void begin_token_list (pointer p, quarterword t);
 void end_token_list (void);
 void back_input (void);
-void back_error (void);
 void begin_file_reading (void);
 void end_file_reading (void);
 void clear_for_error_prompt (void);
 void get_next (void);
 void get_token (void);
 void get_x_token (void);
-void x_token (void);
 void scan_left_brace (void);
 
-
-void scan_char_num (void);
-void scan_four_bit_int (void);
-void scan_fifteen_bit_int (void);
-void scan_font_ident (void);
-void find_font_dimen (boolean writing);
 void scan_int (void);
 void scan_dimen (boolean mu, boolean inf, boolean shortcut);
 void scan_glue (small_number level);
 void ins_the_toks (void);
 void conv_toks (void);
 pointer scan_toks (boolean macro_def, boolean xpand);
-void read_toks (integer n, pointer r, halfword j);
 void pass_text (void);
 void conditional (void);
 void pack_file_name (str_number n, str_number a, str_number e);
@@ -174,8 +159,6 @@ void prompt_file_name_(const char * s, str_number e);
 void open_log_file (void);
 void start_input (void);
 void dvi_swap (void);
-
-
 
 void movement (scaled w, eight_bits o);
 void hlist_out (void);
@@ -191,13 +174,9 @@ pointer finite_shrink (pointer p);
 void try_break (integer pi, small_number breaktype);
 void post_line_break (boolean d);
 void hyphenate (void);
-void new_patterns(void);
-void init_trie (void);
-void new_hyph_exceptions (void);
 void print_totals (void);
 void build_page (void);
 void normal_paragraph (void);
-void scan_box (integer box_content);
 void resume_after_display (void);
 void get_r_token (void);
 void trap_zero_glue (void);
@@ -234,9 +213,9 @@ void set_math_kchar(integer c);
 void print_kanji(KANJI_code s);
 boolean check_kcat_code(integer ct);
 boolean check_echar_range(integer c);
+
 // etex
 boolean eTeX_enabled (boolean b, quarterword j, halfword k);
-//void print_group(boolean e);
 void group_trace (boolean e);
 void show_save_groups (void);
 void scan_general_text (void);
@@ -284,9 +263,9 @@ void gsa_def(pointer p, halfword e);
 void gsa_w_def(pointer p, integer w);
 void sa_restore(void);
 
-extern void init_default_kanji (const_string file_str, const_string internal_str);
-extern char * mbcs_utf8 (const char * mbcs_str);
-extern char * utf8_mbcs (const char * utf8_str);
+void init_default_kanji (const_string file_str, const_string internal_str);
+char * mbcs_utf8 (const char * mbcs_str);
+char * utf8_mbcs (const char * utf8_str);
 
 // inline functions
 /* sec 0016 */
