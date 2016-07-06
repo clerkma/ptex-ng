@@ -337,7 +337,8 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
 
         default:
           if (opcode <= SET_CHAR_127)
-            ng_set(opcode, packet_font, packet_h, packet_v);
+            ng_set(opcode, packet_font, packet_h, packet_v),
+            ng_adjust_hpos(&packet_h, &packet_v, ng_packet_width(opcode, packet_font));
           else if (opcode >= FNT_NUM_0 && opcode <= FNT_NUM_63)
             packet_font = ng_packet_font(opcode - FNT_NUM_0, vf_font);
           else
