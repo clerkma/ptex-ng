@@ -512,9 +512,6 @@ void aptex_extractbb (char * pict, uint32_t page, uint32_t rect, pdf_rect * bbox
 
   PageBox = rect;
 
-  pdf_files_init();
-  pdf_set_version(PDF_VERSION_MAX);
-
   if (kpse_in_name_ok(pict))
   {
     infile = MFOPEN(pict, FOPEN_RBIN_MODE);
@@ -551,7 +548,10 @@ void aptex_extractbb (char * pict, uint32_t page, uint32_t rect, pdf_rect * bbox
   }
   if (check_for_pdf(infile))
   {
+    pdf_files_init();
+    pdf_set_version(PDF_VERSION_MAX);
     do_aptex_pdf(infile, kpse_file_name, bbox);
+    pdf_files_close();
     goto cont;
   }
 #ifdef HAVE_LIBPNG
@@ -571,6 +571,4 @@ cont:
     RELEASE(kpse_file_name);
   if (infile)
     MFCLOSE(infile);
-
-  pdf_files_close();
 }
