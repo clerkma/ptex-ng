@@ -128,7 +128,8 @@ static void print_aptex_usage (void)
 static void print_aptex_version (void)
 {
   printf("Copyright 2014, 2015 Clerk Ma.\n"
-    "%s\n"
+    "banner: \"%s\"\n"
+    "based Y&Y TeX (2.3.0) and pTeX (3.7.1)\n"
     "Compiled with %s\n"
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
@@ -4117,6 +4118,9 @@ static void initialize (void)
   split_disc = null;
   inhibit_glue_flag = false;
   page_dir = dir_yoko;
+  text_baseline_shift_factor = 1000;
+  script_baseline_shift_factor = 700;
+  scriptscript_baseline_shift_factor = 500;
 
   if (aptex_env.flag_initex)
     do_initex();
@@ -6208,6 +6212,9 @@ static void init_prim (void)
   primitive("holdinginserts", assign_int, int_base + holding_inserts_code);
   primitive("errorcontextlines", assign_int, int_base + error_context_lines_code);
   primitive("jcharwidowpenalty", assign_int, int_base + jchr_widow_penalty_code);
+  primitive("textbaselineshiftfactor", assign_int, int_base + text_baseline_shift_factor_code);
+  primitive("scriptbaselineshiftfactor", assign_int, int_base + script_baseline_shift_factor_code);
+  primitive("scriptscriptbaselineshiftfactor", assign_int, int_base + scriptscript_baseline_shift_factor_code);
   primitive("pdfcompresslevel", assign_int, int_base + pdf_compress_level_code);
   primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
   primitive("synctex", assign_int, int_base + synctex_code);
@@ -8829,6 +8836,7 @@ static void print_subsidiary_data (pointer p, ASCII_code c)
         break;
 
       case sub_box:
+      case sub_exp_box:
         show_info();
         break;
 
@@ -9187,7 +9195,7 @@ void show_node_list (integer p)
 
           case graphic_node:
             {
-              print_esc("inputgraphic");
+              print_esc("aptexgraphic");
             }
             break;
 
@@ -10466,6 +10474,18 @@ static void print_param (integer n)
 
     case jchr_widow_penalty_code:
       print_esc("jcharwidowpenalty");
+      break;
+    
+    case text_baseline_shift_factor_code:
+      print_esc("textbaselineshiftfactor");
+      break;
+
+    case script_baseline_shift_factor_code:
+      print_esc("scriptbaselineshiftfactor");
+      break;
+
+    case scriptscript_baseline_shift_factor_code:
+      print_esc("scriptscriptbaselineshiftfactor");
       break;
 
     case tracing_assigns_code:
@@ -22087,6 +22107,29 @@ static void flush_math (void)
   incompleat_noad = 0;
 }
 
+// { We assume that |math_type(q)=sub_exp_box| }
+static pointer shift_sub_exp_box (pointer q)
+{
+  halfword d; // {displacement}
+
+  if (direction == dir_tate)
+    d = t_baseline_shift;
+  else
+    d = y_baseline_shift;
+
+  if (cur_style < script_style)
+    d = xn_over_d(d, text_baseline_shift_factor, 1000);
+  else if (cur_style < script_script_style)
+    d = xn_over_d(d, script_baseline_shift_factor, 1000);
+  else
+    d = xn_over_d(d, scriptscript_baseline_shift_factor, 1000);
+
+  shift_amount(info(q)) = shift_amount(info(q)) - d;
+  math_type(q) = sub_box;
+  
+  return info(q);
+}
+
 static pointer clean_box (pointer p, small_number s, halfword jc)
 {
   pointer q;              // {beginning of a list to be boxed}
@@ -22114,6 +22157,13 @@ static pointer clean_box (pointer p, small_number s, halfword jc)
     case sub_box:
       {
         q = info(p);
+        goto found;
+      }
+      break;
+
+    case sub_exp_box:
+      {
+        q = shift_sub_exp_box(p);
         goto found;
       }
       break;
@@ -23316,6 +23366,10 @@ reswitch:
 
       case sub_box:
         p = info(nucleus(q));
+        break;
+
+      case sub_exp_box:
+        p = shift_sub_exp_box(nucleus(q));
         break;
 
       case sub_mlist:
@@ -28774,7 +28828,7 @@ static void box_end (integer box_context)
         else
         {
           p = new_noad();
-          math_type(nucleus(p)) = sub_box;
+          math_type(nucleus(p)) = sub_exp_box;
           info(nucleus(p)) = cur_box;
           cur_box = p;
         }
@@ -35006,6 +35060,34 @@ boolean check_box (pointer box_p)
         }
         else
           do_nothing();
+        break;
+
+      case kern_node:
+        if (subtype(p) == acc_kern)
+        {
+          p = link(p);
+          if (is_char_node(p))
+            if (font_dir[font(p)] != dir_default)
+              p = link(p);
+          p = link(link(p));
+          if (find_first_char)
+          {
+            find_first_char = false;
+            first_char = p;
+          }
+          last_char = p;
+          flag = true;
+          if (font_dir[font(p)] != dir_default)
+            p = link(p);
+        }
+        else
+        {
+          flag = true;
+          if (find_first_char)
+            find_first_char = false;
+          else
+            last_char = null;
+        }
         break;
 
       default:

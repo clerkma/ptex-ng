@@ -728,21 +728,24 @@ enum
 #define holding_inserts_code          54  // {do not remove insertion nodes from \.{\\box255}}
 #define error_context_lines_code      55  // {maximum intermediate line pairs shown}
 #define jchr_widow_penalty_code       56  // {penalty for creating a widow KANJI character line}
-#define tracing_assigns_code          57  // {show assignments}
-#define tracing_groups_code           58  // {show save/restore groups}
-#define tracing_ifs_code              59  // {show conditionals}
-#define tracing_scan_tokens_code      60  // {show pseudo file open and close}
-#define tracing_nesting_code          61  // {show incomplete groups and ifs within files}
-#define pre_display_direction_code    62  // {text direction preceding a display}
-#define last_line_fit_code            63  // {adjustment for last line of paragraph}
-#define saving_vdiscards_code         64  // {save items discarded from vlists}
-#define saving_hyph_codes_code        65  // {save hyphenation codes for languages}
-#define eTeX_state_code               66  // {\eTeX\ state variables}
-#define tracing_fontloaders_code      67
-#define pdf_compress_level_code       68
-#define pdf_minor_version_code        69
-#define synctex_code                  70
-#define int_pars                      71
+#define text_baseline_shift_factor_code 57
+#define script_baseline_shift_factor_code 58
+#define scriptscript_baseline_shift_factor_code 59
+#define tracing_assigns_code          60  // {show assignments}
+#define tracing_groups_code           61  // {show save/restore groups}
+#define tracing_ifs_code              62  // {show conditionals}
+#define tracing_scan_tokens_code      63  // {show pseudo file open and close}
+#define tracing_nesting_code          64  // {show incomplete groups and ifs within files}
+#define pre_display_direction_code    65  // {text direction preceding a display}
+#define last_line_fit_code            66  // {adjustment for last line of paragraph}
+#define saving_vdiscards_code         67  // {save items discarded from vlists}
+#define saving_hyph_codes_code        68  // {save hyphenation codes for languages}
+#define eTeX_state_code               69  // {\eTeX\ state variables}
+#define tracing_fontloaders_code      70
+#define pdf_compress_level_code       71
+#define pdf_minor_version_code        72
+#define synctex_code                  73
+#define int_pars                      74
 #define count_base                    (int_base + int_pars) // {256 user \.{\\count} registers}
 #define del_code_base                 (count_base + 256)    // {256 delimiter code mappings}
 #define dimen_base                    (del_code_base + 256) // {beginning of region 6}
@@ -810,6 +813,9 @@ enum
 #define holding_inserts               int_par(holding_inserts_code)
 #define error_context_lines           int_par(error_context_lines_code)
 #define jchr_widow_penalty            int_par(jchr_widow_penalty_code)
+#define text_baseline_shift_factor    int_par(text_baseline_shift_factor_code)
+#define script_baseline_shift_factor  int_par(script_baseline_shift_factor_code)
+#define scriptscript_baseline_shift_factor  int_par(scriptscript_baseline_shift_factor_code)
 #define tracing_assigns               int_par(tracing_assigns_code)
 #define tracing_groups                int_par(tracing_groups_code)
 #define tracing_ifs                   int_par(tracing_ifs_code)
@@ -1476,14 +1482,15 @@ do {                            \
 #define kcode_noad_nucleus(a) ((a) + 3)
 #define math_kcode_nucleus(a) info((a) + 3) // {the |kanji character| field offset from nucleus}
 //#
-#define math_jchar            5
-#define math_text_jchar       6
+#define math_jchar            6
+#define math_text_jchar       7
 #define math_type             link  // {a |halfword| in |mem|}
 #define fam                   font  // {a |quarterword| in |mem|}
 #define math_char             1     // {|math_type| when the attribute is simple}
 #define sub_box               2     // {|math_type| when the attribute is a box}
-#define sub_mlist             3     // {|math_type| when the attribute is a formula}
-#define math_text_char        4     // {|math_type| when italic correction is dubious}
+#define sub_exp_box           3     // {|math_type| when the attribute is an explicit created box}
+#define sub_mlist             4     // {|math_type| when the attribute is a formula}
+#define math_text_char        5     // {|math_type| when italic correction is dubious}
 /* sec 0682 */
 #define ord_noad   (unset_node + 3) // 18 {|type| of a noad classified Ord}
 #define op_noad    (ord_noad + 1  ) // 19 {|type| of a noad classified Op}
