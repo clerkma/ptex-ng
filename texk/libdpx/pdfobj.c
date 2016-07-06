@@ -265,12 +265,6 @@ pdf_set_compression (int level)
   return;
 }
 
-long
-pdf_output_stats (void)
-{
-  return pdf_output_file_position;
-}
-
 void
 pdf_set_use_predictor (int bval)
 {
@@ -459,6 +453,12 @@ dump_xref_stream (void)
   }
 
   pdf_release_obj(xref_stream);
+}
+
+long
+pdf_output_stats (void)
+{
+  return pdf_output_file_position;
 }
 
 void
@@ -1943,10 +1943,14 @@ write_stream (pdf_stream *stream, FILE *file)
   memcpy(filtered, stream->stream, stream->stream_length);
   filtered_length = stream->stream_length;
 
-#if 0
-  if (stream->stream_length < 10)
-    stream->_flags &= ^STREAM_COMPRESS;
-#endif
+  /* PDF/A requires Metadata to be not filtered. */
+  {
+    pdf_obj *type;
+    type = pdf_lookup_dict(stream->dict, "Type");
+    if (type && !strcmp("Metadata", pdf_name_value(type))) {
+      stream->_flags &= ~STREAM_COMPRESS;
+    }
+  }
 
 #ifdef HAVE_ZLIB
   /* Apply compression filter if requested */

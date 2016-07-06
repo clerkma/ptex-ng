@@ -221,7 +221,7 @@ def_const(dvi_buf_size,       16384,  16384);
 def_const(hash_prime,         55711,  445631);
 def_const(hash_size,          65536,  524288);
 
-def_alloc(buf_size,       200000, 2000000,                10000,   2000);
+def_alloc(buf_size,       200000, 2000000,                10000,  2000);
 def_alloc(font_mem_size,  100000, (max_halfword / 8 - 1), 20000,  40000);
 def_alloc(pool_size,      124000, (max_halfword - 1),     40000,  80000);
 def_alloc(max_strings,    16384,  (max_halfword / 8 - 1), 5000,   10000);
