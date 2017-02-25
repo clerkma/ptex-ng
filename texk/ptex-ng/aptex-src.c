@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014, 2015, 2016 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,25 +16,6 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA.
-*/
-
-/*
-
-      |             ||                               |''||''|         '||' '|' 
-     |||     ....  ...   ....   .. ...      ... ...     ||      ....    || |   
-    |  ||   ||. '   ||  '' .||   ||  ||      ||'  ||    ||    .|...||    ||    
-   .''''|.  . '|..  ||  .|' ||   ||  ||      ||    |    ||    ||        | ||   
-  .|.  .||. |'..|' .||. '|..'|' .||. ||.     ||...'    .||.    '|...' .|   ||. 
-                                             ||                                
-                                            ''''                      
-                          ___       __      _    ____    
-                        /'___`\   /'__`\  /' \  /'___\   
-                       /\_\ /\ \ /\ \/\ \/\_, \/\ \__/   
-                       \/_/// /__\ \ \ \ \/_/\ \ \  _``\ 
-                          // /_\ \\ \ \_\ \ \ \ \ \ \L\ \
-                         /\______/ \ \____/  \ \_\ \____/
-                         \/_____/   \/___/    \/_/\/___/ 
-                                                         
 */
 
 #include "aptex.h"
@@ -127,7 +108,7 @@ static void print_aptex_usage (void)
 
 static void print_aptex_version (void)
 {
-  printf("Copyright 2014, 2015 Clerk Ma.\n"
+  printf("Copyright 2014, 2015, 2016, 2017 Clerk Ma.\n"
     "banner: \"%s\"\n"
     "base: Y&Y TeX (2.3.0) and pTeX (3.7.1)\n"
     "Compiled with %s\n"
@@ -6850,7 +6831,7 @@ static void print_the_digs (eight_bits k)
     if (dig[k] < 10)
       print_char('0' + dig[k]);
     else
-      print_char('A' + dig[k]);
+      print_char('A' - 10 + dig[k]);
   }
 }
 
@@ -18936,7 +18917,7 @@ static uint16_t parse_u16(uint8_t * s)
   return (*s << 8) | (*(s + 1));
 }
 
-static uint16_t parse_u32(uint8_t * s)
+static uint32_t parse_u32(uint8_t * s)
 {
   return (*s << 24) | (*(s + 1) << 16) | (*(s + 2) << 8) | (*(s + 3));
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

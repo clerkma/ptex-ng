@@ -1,6 +1,6 @@
 /*
   Copyright (c) 2008, 2009, 2010, 2011 jerome DOT laurens AT u-bourgogne DOT fr
-  Copyright (c) 2014, 2015, 2016 Clerk Ma
+  Copyright (c) 2014, 2015, 2016, 2017 Clerk Ma
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
