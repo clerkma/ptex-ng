@@ -278,7 +278,7 @@ enum
 #define ita_kern  3                             // {|subtype| of kern nodes from \.{\\/}}
 /* sec 0157 */
 #define penalty_node  14                        // {|type| of a penalty node}
-#define widow_pena    1                         // {|subtype| of penalty nodes from \.{\\jchrwidowpenalty}}
+#define widow_pena    1                         // {|subtype| of penalty nodes from \.{\\jcharwidowpenalty}}
 #define kinsoku_pena  2                         // {|subtype| of penalty nodes from kinsoku}
 #define inf_penalty   inf_bad                   // {``infinite'' penalty value}
 #define eject_penalty -inf_bad                  // {``negatively infinite'' penalty value}

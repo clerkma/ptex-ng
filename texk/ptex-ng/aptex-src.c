@@ -9314,7 +9314,7 @@ void show_node_list (integer p)
           print_int(penalty(p));
 
           if (subtype(p) == widow_pena)
-            prints("(for \\jchrwidowpenalty)");
+            prints("(for \\jcharwidowpenalty)");
           else if (subtype(p) == kinsoku_pena)
             prints("(for kinsoku)");
         }
