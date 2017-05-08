@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014, 2015, 2016 Clerk Ma
+# Copyright (c) 2014, 2015, 2016, 2017 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #
@@ -16,14 +16,20 @@ objects = \
 
 headers = aptex.h aptex-functions.h aptex-macros.h
 
+lsotfea_objects = \
+	lsotfea.o \
+	lsotfea-stag.o \
+	lsotfea-ltag.o \
+	lsotfea-ftag.o
+
 all: aptex lsotfea
 
 aptex: $(objects)
 	$(CC) -s -o aptex $(objects) $(LDFLAGS)
 	cp aptex ptex-ng
 
-lsotfea: lsotfea.c
-	$(CC) -s -O2 -o lsotfea $(INCLUDES) lsotfea.c libotf.a libfreetype.a
+lsotfea: lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-ltag.c lsotfea-src/lsotfea-ftag.c
+	$(CC) -s -O2 -o lsotfea $(INCLUDES) lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-ltag.c lsotfea-src/lsotfea-ftag.c libotf.a libfreetype.a
 
 aptex.o: aptex.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex.c
