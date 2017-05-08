@@ -14479,8 +14479,6 @@ static void scan_something_internal (small_number level, boolean negative)
 
     case def_code:
       {
-        scan_char_num();
-
         if (m == math_code_base)
         {
           scan_ascii_num();
