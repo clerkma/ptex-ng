@@ -15173,15 +15173,15 @@ restart:
 lab_switch:
     if (loc <= limit)
     {
-      cur_chr = fromBUFF(buffer, limit, loc);
+      cur_chr = fromBUFF(buffer, limit + 1, loc);
       cur_cmd = kcat_code(kcatcodekey(cur_chr));
 
-      if ((multistrlen(buffer, limit, loc) > 1) && check_kcat_code(cur_cmd))
+      if ((multistrlen(buffer, limit + 1, loc) > 1) && check_kcat_code(cur_cmd))
       {
         if (cur_cmd == not_cjk)
           cur_cmd = other_kchar;
 
-        loc = loc + multistrlen(buffer, limit, loc);
+        loc = loc + multistrlen(buffer, limit + 1, loc);
       }
       else
       {
@@ -15207,15 +15207,15 @@ reswitch:
             else
             {
               k = loc;
-              cur_chr = fromBUFF(buffer, limit, k);
+              cur_chr = fromBUFF(buffer, limit + 1, k);
               cat = kcat_code(kcatcodekey(cur_chr));
 
-              if ((multistrlen(buffer, limit, k) > 1) && check_kcat_code(cat))
+              if ((multistrlen(buffer, limit + 1, k) > 1) && check_kcat_code(cat))
               {
                 if (cat == not_cjk)
                   cat = other_kchar;
 
-                k = k + multistrlen(buffer, limit, k);
+                k = k + multistrlen(buffer, limit + 1, k);
               }
               else
               {
@@ -15241,15 +15241,15 @@ start_cs:
               else if (((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)) && (k <= limit))
               {
                 do {
-                  cur_chr = fromBUFF(buffer, limit, k);
+                  cur_chr = fromBUFF(buffer, limit + 1, k);
                   cat = kcat_code(kcatcodekey(cur_chr));
 
-                  if ((multistrlen(buffer, limit, k) > 1) && check_kcat_code(cat))
+                  if ((multistrlen(buffer, limit + 1, k) > 1) && check_kcat_code(cat))
                   {
                     if (cat == not_cjk)
                       cat = other_kchar;
 
-                    k = k + multistrlen(buffer, limit, k);
+                    k = k + multistrlen(buffer, limit + 1, k);
                   }
                   else
                   {
@@ -15372,7 +15372,7 @@ start_cs:
                 }
               }
 
-              if ((cat == kanji) || (cat == kana))
+              if ((cat == kanji) || (cat == kana) || (cat == hangul))
               {
                 cur_cs = id_lookup(loc, k - loc);
                 loc = k;
