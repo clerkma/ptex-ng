@@ -164,8 +164,9 @@ enum
 #define hlist_node        0                         // {|type| of hlist nodes}
 #define box_node_size     (8 + synctex_field_size)  // {number of words to allocate for a box node}
 //#
-#define box_dir(a)        (subtype(a) % 8)          // {direction of a box}
-#define set_box_dir(a,b)  subtype(a) = box_lr(a) * 8 + b
+#define dir_max           5
+#define box_dir(a)        (subtype(a) % 16 - dir_max)          // {direction of a box}
+#define set_box_dir(a,b)  subtype(a) = box_lr(a) * 16 + b + dir_max
 //#
 #define dir_default       0 // {direction of the box, default Left to Right}
 #define dir_dtou          1 // {direction of the box, Bottom to Top}
@@ -206,7 +207,8 @@ enum
 #define float_cost(a)    mem[a + 1].cint        // {the |floating_penalty| to be used}
 #define ins_ptr(a)       info(a + 4)            // {the vertical list to be inserted}
 #define split_top_ptr(a) link(a + 4)            // {the |split_top_skip| to be used}
-#define ins_dir(a)       subtype(a + 5)         // {direction of |ins_node|}
+#define ins_dir(a)       (subtype(a + 5) - dir_max)         // {direction of |ins_node|}
+#define set_ins_dir(a, b)   subtype(a + 5) = b + dir_max
 //#
 #define disp_node        5                      // {|type| of a displace node}
 #define disp_dimen(a)    mem[a + 1].cint
@@ -1204,6 +1206,7 @@ do {                          \
 #define if_tbox_code      (if_mdir_code + 1)
 #define if_ybox_code      (if_tbox_code + 1)
 #define if_dbox_code      (if_ybox_code + 1)
+#define if_mbox_code      (if_dbox_code + 1)
 /* sec 0489 */
 #define if_node_size     2
 #define if_line_field(a) mem[(a) + 1].cint
@@ -2660,12 +2663,15 @@ do {                                                          \
   a non-character has been fetched@>
 */
 
-#define append_kanji_to_hlist()                         \
-do {                                                    \
-  if (is_char_node(tail))                               \
-  {                                                     \
-    cx = character(tail);                               \
-    insert_post_break_penalty();                        \
+#define append_kanji_to_hlist()                               \
+do {                                                          \
+  if (is_char_node(tail))                                     \
+  {                                                           \
+    if (!((last_jchr != null) && (link(last_jchr) == tail)))  \
+    {                                                         \
+      cx = character(tail);                                   \
+      insert_post_break_penalty();                            \
+    }                                                         \
   }                                                     \
   else if (type(tail) == ligature_node)                 \
   {                                                     \
@@ -2963,8 +2969,8 @@ skip_loop: inhibit_glue_flag = false;                           \
 // eTeX
 #define reversed          1 // {subtype for an |hlist_node| whose hlist has been reversed}
 #define dlist             2 // {subtype for an |hlist_node| from display math mode}
-#define box_lr(a)         (subtype(a) / 8)  // {direction mode of a box}
-#define set_box_lr(a, b)  subtype(a) = box_dir(a) + 8 * b
+#define box_lr(a)         (subtype(a) / 16)  // {direction mode of a box}
+#define set_box_lr(a, b)  subtype(a) = box_dir(a) + dir_max + 16 * b
 //#
 #define left_to_right 0
 #define right_to_left 1

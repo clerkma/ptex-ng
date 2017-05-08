@@ -2252,7 +2252,6 @@ static boolean b_open_input(byte_file * f)
       \jfont\t=ot:SourceHanSansTC-Normal.otf:uprml-h
   */
 
-  //printf("RAW FONT FILE NAME: %s\n", file_name_utf8);
   if (name_length > 3 && (strncasecmp(file_name_utf8, "ot:", 3) == 0))
     file_name_mbcs = utf8_mbcs(strrchr(file_name_utf8, ':') + 1);
   else
@@ -6342,6 +6341,7 @@ static void init_prim (void)
   primitive("iftbox", if_test, if_tbox_code);
   primitive("ifybox", if_test, if_ybox_code);
   primitive("ifdbox", if_test, if_dbox_code);
+  primitive("ifmbox", if_test, if_mbox_code);
   primitive("fi", fi_or_else, fi_code);
   text(frozen_fi) = make_str_string("fi");
   eqtb[frozen_fi] = eqtb[cur_val];
@@ -8230,6 +8230,7 @@ static pointer new_null_box (void)
   set_glue_ratio_zero(glue_set(p));
   space_ptr(p) = zero_glue;
   xspace_ptr(p) = zero_glue;
+  set_box_dir(p, dir_default);
   add_glue_ref(zero_glue);
   add_glue_ref(zero_glue);
 
@@ -9120,7 +9121,7 @@ void show_node_list (integer p)
         {
           print_esc("insert");
           print_int(subtype(p));
-          print_dir(ins_dir(p));
+          print_dir(abs(ins_dir(p)));
           prints(", natural size ");
           print_scaled(height(p));
           prints("; split(");
@@ -11435,7 +11436,11 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           case if_dbox_code:
             print_esc("ifdbox");
             break;
-          
+
+          case if_mbox_code:
+            print_esc("ifmbox");
+            break;
+
           case if_def_code:
             print_esc("ifdefined");
             break;
@@ -14266,6 +14271,20 @@ static void scan_eight_bit_int (void)
   }
 }
 
+void scan_ascii_num (void)
+{
+  scan_int();
+
+  if ((cur_val < 0) || (cur_val > 255))
+  {
+    print_err("Bad character code");
+    help2("A character number must be between 0 and 255.",
+        "I changed this one to zero.");
+    int_error(cur_val);
+    cur_val = 0;
+  }
+}
+
 void scan_char_num (void)
 {
   scan_int();
@@ -14463,22 +14482,24 @@ static void scan_something_internal (small_number level, boolean negative)
         scan_char_num();
 
         if (m == math_code_base)
+        {
+          scan_ascii_num();
           scanned_result(math_code(cur_val), int_val);
+        }
         else if (m == kcat_code_base)
+        {
+          scan_char_num();
           scanned_result(equiv(m + kcatcodekey(cur_val)), int_val);
+        }
         else if (m < math_code_base)
         {
-          if (!is_char_ascii(cur_val))
-            scanned_result(equiv(m + Hi(cur_val)), int_val);
-          else
-            scanned_result(equiv(m + cur_val), int_val);
+          scan_ascii_num();
+          scanned_result(equiv(m + cur_val), int_val);
         }
         else
         {
-          if (!is_char_ascii(cur_val))
-            scanned_result(eqtb[m + Hi(cur_val)].cint, int_val);
-          else
-            scanned_result(eqtb[m + cur_val].cint, int_val);
+          scan_ascii_num();
+          scanned_result(eqtb[m + cur_val].cint, int_val);
         }
       }
       break;
@@ -14651,7 +14672,7 @@ static void scan_something_internal (small_number level, boolean negative)
         {
           qx = q;
 
-          while ((q != null) && (box_dir(q) != abs(direction)))
+          while ((q != null) && (abs(box_dir(q)) != abs(direction)))
             q = link(q);
 
           if (q == 0)
@@ -15353,8 +15374,17 @@ start_cs:
                 }
               }
 
-              cur_cs = single_base + buffer[loc];
-              incr(loc);
+              if ((cat == kanji) || (cat == kana))
+              {
+                cur_cs = id_lookup(loc, k - loc);
+                loc = k;
+                goto found;
+              }
+              else
+              {
+                cur_cs = single_base + buffer[loc];
+                incr(loc);
+              }
             }
 
 found:
@@ -17193,6 +17223,7 @@ void conditional (void)
     case if_tbox_code:
     case if_ybox_code:
     case if_dbox_code:
+    case if_mbox_code:
       {
         scan_register_num();
         fetch_box(p);
@@ -17211,11 +17242,13 @@ void conditional (void)
           else if (this_if == if_vbox_code)
             b = (type(p) == vlist_node);
           else if (this_if == if_tbox_code)
-            b = (box_dir(p) == dir_tate);
+            b = (abs(box_dir(p)) == dir_tate);
           else if (this_if == if_ybox_code)
-            b = (box_dir(p) == dir_yoko);
+            b = (abs(box_dir(p)) == dir_yoko);
+          else if (this_if == if_dbox_code)
+            b = (abs(box_dir(p)) == dir_dtou);
           else
-            b = (box_dir(p) == dir_dtou);
+            b = (box_dir(p) < 0);
         }
       }
       break;
@@ -19395,7 +19428,7 @@ static void ship_out (pointer p)
   flush_node_list(link(p));
   link(p) = null;
 
-  if (box_dir(p) != dir_yoko)
+  if (abs(box_dir(p)) != dir_yoko)
     p = new_dir_node(p, dir_yoko);
 
   if ((height(p) > max_dimen) || (depth(p) > max_dimen) ||
@@ -20675,7 +20708,7 @@ void dir_out (void)
   switch (box_dir(this_box))
   {
     case dir_yoko:
-      switch (box_dir(temp_ptr))
+      switch (abs(box_dir(temp_ptr)))
       {
         case dir_tate:
           // {Tate in Yoko}
@@ -20696,7 +20729,7 @@ void dir_out (void)
       break;
 
     case dir_tate:
-      switch (box_dir(temp_ptr))
+      switch (abs(box_dir(temp_ptr)))
       {
         case dir_yoko:
           // {Yoko in Tate}
@@ -20717,7 +20750,7 @@ void dir_out (void)
       break;
 
     case dir_dtou:
-      switch (box_dir(temp_ptr))
+      switch (abs(box_dir(temp_ptr)))
       {
         case dir_yoko:
           // {Yoko in DtoU}
@@ -20738,7 +20771,7 @@ void dir_out (void)
       break;
   }
 
-  cur_dir_hv = box_dir(temp_ptr);
+  cur_dir_hv = abs(box_dir(temp_ptr));
 
   if (type(temp_ptr) == vlist_node)
     vlist_out();
@@ -20986,6 +21019,7 @@ static pointer hpack (pointer p, scaled w, small_number m)
   type(r) = hlist_node;
   subtype(r) = min_quarterword;
   shift_amount(r) = 0;
+  set_box_dir(r, dir_default);
   space_ptr(r) = cur_kanji_skip;
   xspace_ptr(r) = cur_xkanji_skip;
   add_glue_ref(cur_kanji_skip);
@@ -21400,6 +21434,7 @@ static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
   type(r) = vlist_node;
   subtype(r) = min_quarterword;
   shift_amount(r) = 0;
+  set_box_dir(r, dir_default);
   space_ptr(r) = zero_glue;
   xspace_ptr(r) = zero_glue;
   add_glue_ref(zero_glue);
@@ -22093,19 +22128,27 @@ static pointer shift_sub_exp_box (pointer q)
 {
   halfword d; // {displacement}
 
-  if (direction == dir_tate)
-    d = t_baseline_shift;
-  else
-    d = y_baseline_shift;
+  if (abs(direction) == abs(box_dir(info(q))))
+  {
+    if (abs(direction) == dir_tate)
+    {
+      if (box_dir(info(q)) == dir_tate)
+        d = t_baseline_shift;
+      else
+        d = y_baseline_shift;
+    }
+    else
+      d = y_baseline_shift;
 
-  if (cur_style < script_style)
-    d = xn_over_d(d, text_baseline_shift_factor, 1000);
-  else if (cur_style < script_script_style)
-    d = xn_over_d(d, script_baseline_shift_factor, 1000);
-  else
-    d = xn_over_d(d, scriptscript_baseline_shift_factor, 1000);
+    if (cur_style < script_style)
+      d = xn_over_d(d, text_baseline_shift_factor, 1000);
+    else if (cur_style < script_script_style)
+      d = xn_over_d(d, script_baseline_shift_factor, 1000);
+    else
+      d = xn_over_d(d, scriptscript_baseline_shift_factor, 1000);
 
-  shift_amount(info(q)) = shift_amount(info(q)) - d;
+    shift_amount(info(q)) = shift_amount(info(q)) - d;
+  }
   math_type(q) = sub_box;
   
   return info(q);
@@ -24134,7 +24177,7 @@ static void fin_align (void)
           height(q) = height(p);
         }
 
-        set_box_dir(q, abs(direction));
+        set_box_dir(q, direction);
         glue_order(q) = glue_order(p);
         glue_sign(q) = glue_sign(p);
         glue_set(q) = glue_set(p);
@@ -24183,7 +24226,7 @@ static void fin_align (void)
               height(u) = width(s);
             }
 
-            set_box_dir(u, abs(direction));
+            set_box_dir(u, direction);
           }
             
 
@@ -24222,7 +24265,7 @@ static void fin_align (void)
 
             width(r) = w;
             type(r) = hlist_node;
-            set_box_dir(r, abs(direction));
+            set_box_dir(r, direction);
           }
           else
           {
@@ -27762,10 +27805,10 @@ static void fire_up (pointer c)
           wait = false;
           n = subtype(p);
 
-          switch (box_dir(box(n)))
+          switch (abs(box_dir(box(n))))
           {
             case any_dir:
-              if (ins_dir(p) != box_dir(box(n)))
+              if (abs(ins_dir(p)) != abs(box_dir(box(n))))
               {
                 print_err("Insertions can only be added to a same direction vbox");
                 help3("Tut tut: You're trying to \\insert into a",
@@ -27778,7 +27821,7 @@ static void fire_up (pointer c)
               break;
 
             default:
-              set_box_dir(box(n), ins_dir(p));
+              set_box_dir(box(n), abs(ins_dir(p)));
               break;
           }
 
@@ -27816,7 +27859,7 @@ static void fire_up (pointer c)
             flush_node_list(link(box(n)));
             free_node(box(n), box_node_size);
             box(n) = vpackage(temp_ptr, 0, 1, max_dimen);
-            set_box_dir(box(n), ins_dir(p));
+            set_box_dir(box(n), abs(ins_dir(p)));
           }
           else
           {
@@ -28173,7 +28216,7 @@ continu:
               height(r) = 0;
             else
             {
-              if (ins_dir(p) != box_dir(box(n)))
+              if (abs(ins_dir(p)) != abs(box_dir(box(n))))
               {
                 print_err("Insertions can only be added to a same direction vbox");
                 help3("Tut tut: You're trying to \\insert into a",
@@ -28765,7 +28808,7 @@ static void box_end (integer box_context)
         q = p;
         p = link(p);
 
-        if (box_dir(q) == abs(direction))
+        if (abs(box_dir(q)) == abs(direction))
         {
           list_ptr(q) = cur_box;
           cur_box = q;
@@ -28779,7 +28822,7 @@ static void box_end (integer box_context)
         }
       }
 
-      if (box_dir(cur_box) != abs(direction))
+      if (abs(box_dir(cur_box)) != abs(direction))
         cur_box = new_dir_node(cur_box, abs(direction));
 
       shift_amount(cur_box) = box_context;
@@ -28860,7 +28903,7 @@ static void box_end (integer box_context)
             q = p;
             p = link(p);
 
-            if (box_dir(q) == abs(direction))
+            if (abs(box_dir(q)) == abs(direction))
             {
               list_ptr(q) = cur_box;
               cur_box = q;
@@ -28874,7 +28917,7 @@ static void box_end (integer box_context)
             }
           }
 
-          if (box_dir(cur_box) != abs(direction))
+          if (abs(box_dir(cur_box)) != abs(direction))
             cur_box = new_dir_node(cur_box, abs(direction));
         }
 
@@ -28964,7 +29007,7 @@ static void begin_box (integer box_context)
                 list_ptr(link(cur_box)) = null;
               }
               else if (box_dir(cur_box) == dir_default)
-                set_box_dir(cur_box, abs(direction));
+                set_box_dir(cur_box, direction);
 done:;
             }
         }
@@ -29086,7 +29129,7 @@ static void new_graf (boolean indented)
 
   inhibit_glue_flag = false;
   push_nest();
-  adjust_dir = abs(direction);
+  adjust_dir = direction;
   mode = hmode;
   space_factor = 1000;
   set_cur_lang();
@@ -29323,10 +29366,10 @@ static void unpackage (void)
     return;
   }
 
-  switch (box_dir(p))
+  switch (abs(box_dir(p)))
   {
     case any_dir:
-      if (abs(direction) != box_dir(p))
+      if (abs(direction) != abs(box_dir(p)))
       {
         print_err("Incompatible direction list can't be unboxed");
         help2("Sorry, Pandora. (You sneaky devil.)",
@@ -30611,13 +30654,13 @@ static void package (small_number c)
   if (mode == -hmode)
   {
     cur_box = hpack(link(head), saved(2), saved(1));
-    set_box_dir(cur_box, abs(direction));
+    set_box_dir(cur_box, direction);
     pop_nest();
   }
   else
   {
     cur_box = vpackage(link(head), saved(2), saved(1), d);
-    set_box_dir(cur_box, abs(direction));
+    set_box_dir(cur_box, direction);
     pop_nest();
 
     if (c == vtop_code)
@@ -31517,14 +31560,17 @@ static void prefixed_command (void)
           n = 255;
 
         p = cur_chr;
-        scan_char_num();
 
         if (p == kcat_code_base)
+        {
+          scan_char_num();
           p = p + kcatcodekey(cur_val);
-        else if (!is_char_ascii(cur_val))
-          p = p + Hi(cur_val);
+        }
         else
+        {
+          scan_ascii_num();
           p = p + cur_val;
+        }
 
         scan_optional_equals();
         scan_int();
@@ -31889,7 +31935,7 @@ void resume_after_display (void)
   unsave();
   prev_graf = prev_graf + 3;
   push_nest();
-  adjust_dir = abs(direction);
+  adjust_dir = direction;
   mode = hmode;
   space_factor = 1000;
   set_cur_lang();
@@ -32251,13 +32297,13 @@ void alter_box_dimen (void)
 
     while (p != null)
     {
-      if (abs(direction) == box_dir(p))
+      if (abs(direction) == abs(box_dir(p)))
         q = p;
 
       p = link(p);
     }
 
-    if (box_dir(q) != abs(direction))
+    if (abs(box_dir(q)) != abs(direction))
     {
       p = link(b);
       link(b) = null;
@@ -33039,7 +33085,7 @@ static void handle_right_brace (void)
         unsave();
         decr(save_ptr);
         p = vpackage(link(head), 0, 1, max_dimen);
-        set_box_dir(p, abs(direction));
+        set_box_dir(p, direction);
         pop_nest();
 
         if (saved(0) < 255)
@@ -33052,7 +33098,7 @@ static void handle_right_brace (void)
           split_top_ptr(r) = q;
           depth(r) = d;
           float_cost(r) = f;
-          ins_dir(r) = box_dir(p);
+          set_ins_dir(r, box_dir(p));
 
           if (!is_char_node(tail) && (type(tail) == disp_node))
             prev_append(r);
@@ -33061,7 +33107,7 @@ static void handle_right_brace (void)
         }
         else
         {
-          if (box_dir(p) != adjust_dir)
+          if (abs(box_dir(p)) != abs(adjust_dir))
           {
             print_err("Direction Incompatible.");
             help1("\\vadjust's argument and outer vlist must have same direction.");
@@ -33176,10 +33222,10 @@ static void handle_right_brace (void)
         unsave();
         save_ptr = save_ptr - 2;
         p = vpackage(link(head), saved(1), saved(0), max_dimen);
-        set_box_dir(p, abs(direction));
+        set_box_dir(p, direction);
         pop_nest();
 
-        if (box_dir(p) != abs(direction))
+        if (abs(box_dir(p)) != abs(direction))
           p = new_dir_node(p, abs(direction));
 
         tail_append(new_noad());
@@ -34736,7 +34782,7 @@ pointer new_dir_node (pointer b, eight_bits dir)
   type(p) = dir_node;
   set_box_dir(p, dir);
 
-  switch (box_dir(b))
+  switch (abs(box_dir(b)))
   {
     case dir_yoko:
       // @<Yoko to other direction@>
