@@ -57,15 +57,18 @@ void list_GSUB_features(OTF * ot)
       printf("script '%s':\n", facture);
 
     printf("  default features:\n");
-    for (di = 0; di < ot->gsub->ScriptList.Script[si].DefaultLangSys.FeatureCount; di++)
-    {
-      unsigned idx = ot->gsub->ScriptList.Script[si].DefaultLangSys.FeatureIndex[di];
-      OTF_Tag tag  = ot->gsub->FeatureList.Feature[idx].FeatureTag;
-      OTF_tag_name(tag, facture);
-      if (di == 0) printf("    ");
-      printf("'%s', ", facture);
-      if (di % 4 == 3) printf("\n    ");
-    }
+    if (ot->gsub->ScriptList.Script[si].DefaultLangSys.FeatureCount == 0)
+      printf("    (none)");
+    else
+      for (di = 0; di < ot->gsub->ScriptList.Script[si].DefaultLangSys.FeatureCount; di++)
+      {
+        unsigned idx = ot->gsub->ScriptList.Script[si].DefaultLangSys.FeatureIndex[di];
+        OTF_Tag tag  = ot->gsub->FeatureList.Feature[idx].FeatureTag;
+        OTF_tag_name(tag, facture);
+        if (di == 0) printf("    ");
+        printf("'%s', ", facture);
+        if (di % 4 == 3) printf("\n    ");
+      }
 
     printf("\n");
     
@@ -79,15 +82,18 @@ void list_GSUB_features(OTF * ot)
       else
         printf("  language '%s':\n", facture);
 
-      for (fi = 0; fi < ot->gsub->ScriptList.Script[si].LangSys[li].FeatureCount; fi++)
-      {
-        unsigned idx = ot->gsub->ScriptList.Script[si].LangSys[li].FeatureIndex[fi];
-        OTF_Tag tag  = ot->gsub->FeatureList.Feature[idx].FeatureTag;
-        OTF_tag_name(tag, facture);
-        if (fi == 0) printf("    ");
-        printf("'%s', ", facture);
-        if (fi % 4 == 3) printf("\n    ");
-      }
+      if (ot->gsub->ScriptList.Script[si].LangSys[li].FeatureCount == 0)
+        printf("    (none)");
+      else
+        for (fi = 0; fi < ot->gsub->ScriptList.Script[si].LangSys[li].FeatureCount; fi++)
+        {
+          unsigned idx = ot->gsub->ScriptList.Script[si].LangSys[li].FeatureIndex[fi];
+          OTF_Tag tag  = ot->gsub->FeatureList.Feature[idx].FeatureTag;
+          OTF_tag_name(tag, facture);
+          if (fi == 0) printf("    ");
+          printf("'%s', ", facture);
+          if (fi % 4 == 3) printf("\n    ");
+        }
 
       printf("\n");
     }
@@ -111,15 +117,19 @@ void list_GPOS_features(OTF * ot)
       printf("script '%s':\n", facture);
 
     printf("  default features:\n");
-    for (di = 0; di < ot->gpos->ScriptList.Script[si].DefaultLangSys.FeatureCount; di++)
-    {
-      unsigned idx = ot->gpos->ScriptList.Script[si].DefaultLangSys.FeatureIndex[di];
-      OTF_Tag tag  = ot->gpos->FeatureList.Feature[idx].FeatureTag;
-      OTF_tag_name(tag, facture);
-      if (di == 0) printf("    ");
-      printf("'%s', ", facture);
-      if (di % 4 == 3) printf("\n    ");
-    }
+
+    if (ot->gpos->ScriptList.Script[si].DefaultLangSys.FeatureCount == 0)
+      printf("    (none)");
+    else
+      for (di = 0; di < ot->gpos->ScriptList.Script[si].DefaultLangSys.FeatureCount; di++)
+      {
+        unsigned idx = ot->gpos->ScriptList.Script[si].DefaultLangSys.FeatureIndex[di];
+        OTF_Tag tag  = ot->gpos->FeatureList.Feature[idx].FeatureTag;
+        OTF_tag_name(tag, facture);
+        if (di == 0) printf("    ");
+        printf("'%s', ", facture);
+        if (di % 4 == 3) printf("\n    ");
+      }
 
     printf("\n");
 
@@ -133,15 +143,18 @@ void list_GPOS_features(OTF * ot)
       else
         printf("  language '%s':\n", facture);
 
-      for (fi = 0; fi < ot->gpos->ScriptList.Script[si].LangSys[li].FeatureCount; fi++)
-      {
-        unsigned idx = ot->gpos->ScriptList.Script[si].LangSys[li].FeatureIndex[fi];
-        OTF_Tag tag  = ot->gpos->FeatureList.Feature[idx].FeatureTag;
-        OTF_tag_name(tag, facture);
-        if (fi == 0) printf("    ");
-        printf("'%s', ", facture);
-        if (fi % 4 == 3) printf("\n    ");
-      }
+      if (ot->gpos->ScriptList.Script[si].LangSys[li].FeatureCount == 0)
+        printf("    (none)");
+      else
+        for (fi = 0; fi < ot->gpos->ScriptList.Script[si].LangSys[li].FeatureCount; fi++)
+        {
+          unsigned idx = ot->gpos->ScriptList.Script[si].LangSys[li].FeatureIndex[fi];
+          OTF_Tag tag  = ot->gpos->FeatureList.Feature[idx].FeatureTag;
+          OTF_tag_name(tag, facture);
+          if (fi == 0) printf("    ");
+          printf("'%s', ", facture);
+          if (fi % 4 == 3) printf("\n    ");
+        }
 
       printf("\n");
     }
