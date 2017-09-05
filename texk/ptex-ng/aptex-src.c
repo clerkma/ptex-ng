@@ -88,6 +88,7 @@ static void print_aptex_usage (void)
       " --help          show this usage summary\n"
       " --version       output version information and exit\n"
       " --ini           start up as INITEX (create format file)\n"
+      " --shell-escape  enable \\write18\n"
       "\n"
       " --jobname=str   set the job name to str\n"
       "                 e.g.: '--jobname=book2016'\n"
@@ -1301,7 +1302,7 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.flag_reset_trie       = false;
   aptex_env.flag_reset_hyphen     = false;
   aptex_env.flag_allow_quoted     = true;
-
+  aptex_env.flag_shell_escape     = false;
   aptex_env.flag_tex82            = false;
   aptex_env.flag_compact_fmt      = true;
 
@@ -1314,6 +1315,12 @@ static void aptex_commands_init (int ac, char **av)
   trie_size                       = 0;
 #endif
   mem_initex                      = 0;
+
+  term_in.file_data = stdin;
+  term_in.file_type = 0;
+
+  term_out.file_data = stdout;
+  term_out.file_type = 0;
 
   lbs_pass_fst  = 0;
   lbs_pass_snd  = 0;
@@ -1345,6 +1352,7 @@ static void aptex_commands_init (int ac, char **av)
       { "synctex",        required_argument, NULL, 0 },
       { "fontmap",        required_argument, NULL, 0 },
       { "format",         required_argument, NULL, 0 },
+      { "shell-escape",   no_argument, NULL, 0 },
       { "patterns",       no_argument, NULL, 0 },
       { "ini",            no_argument, NULL, 0 },
       { "showlbstats",    no_argument, NULL, 0 },
@@ -1372,6 +1380,8 @@ static void aptex_commands_init (int ac, char **av)
         aptex_env.flag_initex = true;
       else if (ARGUMENT_IS("suppressfligs"))
         aptex_env.flag_suppress_f_ligs = true;
+      else if (ARGUMENT_IS("shell-escape"))
+        aptex_env.flag_shell_escape = true;
       else if (ARGUMENT_IS("patterns"))
         aptex_env.flag_reset_trie = true;
       else if (ARGUMENT_IS("trace"))
@@ -1411,17 +1421,6 @@ static void aptex_commands_init (int ac, char **av)
 
       optind++;
     }
-  }
-
-  {
-    typedef void * (*aptex_open_t) (const char *, const char *);
-    aptex_env.open_tex_file = (aptex_open_t) fopen;
-    aptex_env.open_tfm_file = (aptex_open_t) fopen;
-
-    if (aptex_env.flag_compact_fmt == true)
-      aptex_env.open_fmt_file = (aptex_open_t) gzopen;
-    else
-      aptex_env.open_fmt_file = (aptex_open_t) fopen;
   }
 
   if (aptex_env.aptex_src == NULL)
@@ -2115,7 +2114,7 @@ static void t_open_in (void)
 
 /* sec 0031 */
 // inputs the next line or returns |false|
-static boolean input_ln (FILE * f, boolean bypass_eoln)
+static boolean input_ln (alpha_file f, boolean bypass_eoln)
 {
   int i = '\0';
 
@@ -2128,7 +2127,7 @@ static boolean input_ln (FILE * f, boolean bypass_eoln)
   while (last < buf_size)
 #endif
   {
-    i = fgetc(f);
+    i = fgetc(f.file_data);
 
     if ((i == EOF) || (i == '\n') || (i == '\r'))
       break;
@@ -2150,11 +2149,11 @@ static boolean input_ln (FILE * f, boolean bypass_eoln)
 
   if (i == '\r')
   {
-    i = fgetc(f);
+    i = fgetc(f.file_data);
 
     if (i != '\n')
     {
-      ungetc(i, f);
+      ungetc(i, f.file_data);
       i = '\r';
     }
   }
@@ -2190,15 +2189,22 @@ static boolean a_open_input (alpha_file * f)
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
 
   file_name_mbcs = utf8_mbcs(file_name_utf8);
-  file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tex_format, false);
 
-  if (file_name_kpse != NULL)
+  if (file_name_mbcs[0] == '|' && aptex_env.flag_shell_escape == true)
   {
-    *f = aptex_env.open_tex_file(file_name_kpse, "rb");
+    f->file_data = popen(file_name_mbcs + 1, "rb");
+    f->file_type = 1;
+    if (f->file_data) openable = true;
+  }
+  else
+  {
+    file_name_kpse = kpse_find_file((const_string)file_name_mbcs, kpse_tex_format, false);
 
-    if (*f)
+    if (file_name_kpse != NULL)
     {
-      openable = true;
+      f->file_data = fopen(file_name_kpse, "rb");
+      f->file_type = 0;
+      if (f->file_data) openable = true;
     }
   }
 
@@ -2214,14 +2220,14 @@ static boolean a_open_input (alpha_file * f)
   return openable;
 }
 
-static boolean b_open_input(byte_file * f)
+static boolean b_open_input (byte_file * f)
 {
   boolean openable = false;
   char * file_name_kpse = NULL;
   char * file_name_mbcs = NULL;
 
-  char * file_name_utf8 = (char *)calloc(1, name_length + 1);
-  strncpy(file_name_utf8, (const char *)name_of_file + 1, name_length);
+  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
 
   /*
     Reference:
@@ -2261,7 +2267,7 @@ static boolean b_open_input(byte_file * f)
 
   if (file_name_kpse != NULL)
   {
-    *f = aptex_env.open_tfm_file(file_name_kpse, "rb");
+    *f = fopen(file_name_kpse, "rb");
 
     if (*f)
     {
@@ -2285,7 +2291,6 @@ static boolean b_open_input(byte_file * f)
 static boolean w_open_input (word_file * f)
 {
   boolean openable = false;
-
   char * file_name_kpse = NULL;
   char * file_name_mbcs = NULL;
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
@@ -2296,12 +2301,8 @@ static boolean w_open_input (word_file * f)
 
   if (file_name_kpse != NULL)
   {
-    *f = aptex_env.open_fmt_file(file_name_kpse, "rb");
-
-    if (*f)
-    {
-      openable = true;
-    }
+    *f = gzopen(file_name_kpse, "rb");
+    if (*f) openable = true;
   }
 
   if (file_name_mbcs != NULL)
@@ -2318,12 +2319,14 @@ static boolean w_open_input (word_file * f)
 
 void a_close (alpha_file f)
 {
-  if (f == NULL)
-    return;
-  else if (ferror(f) || fclose(f))
+  switch (f.file_type)
   {
-    perror("\n! I/O Error");
-    aptex_utils_exit(EXIT_FAILURE);
+    case 0:
+      fclose(f.file_data);
+      break;
+    case 1:
+      pclose(f.file_data);
+      break;
   }
 }
 
@@ -2338,7 +2341,7 @@ void b_close (byte_file f)
   }
 }
 
-void w_close(word_file f)
+void w_close (word_file f)
 {
   gzclose(f);
 }
@@ -2349,9 +2352,10 @@ boolean a_open_output (alpha_file * f)
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
 
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-
   file_name_mbcs = utf8_mbcs(file_name_utf8);
-  *f = aptex_env.open_tex_file(file_name_mbcs, "wb");
+
+  f->file_data = fopen(file_name_mbcs, "wb");
+  f->file_type = 0;
 
   if (file_name_mbcs != NULL)
     free(file_name_mbcs);
@@ -2359,7 +2363,7 @@ boolean a_open_output (alpha_file * f)
   if (file_name_utf8 != NULL)
     free(file_name_utf8);
 
-  return (*f != NULL);
+  return (f->file_data != NULL);
 }
 
 boolean b_open_output (byte_file * f)
@@ -2368,9 +2372,9 @@ boolean b_open_output (byte_file * f)
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
 
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-
   file_name_mbcs = utf8_mbcs(file_name_utf8);
-  *f = aptex_env.open_tex_file(file_name_mbcs, "wb");
+
+  *f = fopen(file_name_mbcs, "wb");
 
   if (file_name_mbcs != NULL)
     free(file_name_mbcs);
@@ -2387,9 +2391,9 @@ boolean w_open_output (word_file * f)
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
 
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-
   file_name_mbcs = utf8_mbcs(file_name_utf8);
-  *f = aptex_env.open_fmt_file(file_name_mbcs, "wb");
+
+  *f = gzopen(file_name_mbcs, "wb");
 
   if (file_name_mbcs != NULL)
     free(file_name_mbcs);
@@ -6498,7 +6502,6 @@ static void init_prim (void)
   primitive("special", extension, special_node);
   primitive("immediate", extension, immediate_code);
   primitive("setlanguage", extension, set_language_code);
-  primitive("inputgraphic", extension, graphic_node);
   primitive("kansujichar", set_kansuji_char, 0);
   primitive("autospacing", set_auto_spacing, set_auto_spacing_code);
   primitive("noautospacing", set_auto_spacing, reset_auto_spacing_code);
@@ -6567,7 +6570,7 @@ void print_ln (void)
       break;
 
     default:
-      putc('\n', write_file[selector]);
+      write_ln(write_file[selector]);
       break;
   }
 
@@ -6691,7 +6694,7 @@ void print_char (ASCII_code s)
       break;
 
     default:
-      putc(xchr[s], write_file[selector]);
+      fputc(xchr[s], write_file[selector].file_data);
       break;
   }
 
@@ -7420,7 +7423,7 @@ boolean init_terminal (void)
     fputs("**", stdout);
     update_terminal();
 
-    if (!input_ln(stdin, true)) // {this shouldn't happen}
+    if (!input_ln(term_in, true)) // {this shouldn't happen}
     {
       wterm_cr();
       puts("! End of file on the terminal... why?");
@@ -7601,7 +7604,7 @@ void term_input (void)
 
   update_terminal();
 
-  if (!input_ln(stdin, true))
+  if (!input_ln(term_in, true))
     fatal_error("End of file on the terminal!");
 
   term_offset = 0;  // {the user's line ended with \<\rm return>}
@@ -9175,12 +9178,6 @@ void show_node_list (integer p)
             }
             break;
 
-          case graphic_node:
-            {
-              print_esc("inputgraphic");
-            }
-            break;
-
           default:
             prints("whatsit?");
             break;
@@ -9649,10 +9646,6 @@ void flush_node_list (pointer p)
                 free_node(p, small_node_size);
                 break;
 
-              case graphic_node:
-                free_node(p, graphic_node_size);
-                break;
-
               default:
                 confusion("ext3");
                 break;
@@ -9885,13 +9878,6 @@ static pointer copy_node_list (pointer p)
             {
               r = get_node(small_node_size);
               words = small_node_size;
-            }
-            break;
-
-          case graphic_node:
-            {
-              r = get_node(graphic_node_size);
-              words = graphic_node_size;
             }
             break;
 
@@ -14313,6 +14299,20 @@ void scan_four_bit_int (void)
   }
 }
 
+void scan_four_bit_int_or_18 (void)
+{
+  scan_int();
+
+  if ((cur_val < 0) || ((cur_val > 15) && (cur_val != 18)))
+  {
+    print_err("Bad number");
+    help2("Since I expected to read a number between 0 and 15,",
+      "I changed this one to zero.");
+    int_error(cur_val);
+    cur_val = 0;
+  }
+}
+
 void scan_fifteen_bit_int (void)
 {
   scan_int();
@@ -17295,8 +17295,11 @@ void conditional (void)
 
     case if_eof_code:
       {
-        scan_four_bit_int();
-        b = (read_open[cur_val] == closed);
+        scan_four_bit_int_or_18();
+        if (cur_val == 18)
+          b = false;
+        else
+          b = (read_open[cur_val] == closed);
       }
       break;
 
@@ -17542,7 +17545,7 @@ static boolean more_name (ASCII_code c)
     return false;
   else if (quoted_file_name && c == '"')
   {
-    quoted_file_name = false; // catch next space character 
+    quoted_file_name = !quoted_file_name; // catch next space character 
     return true;     // accept ending quote, but throw away
   }
   else
@@ -17882,7 +17885,7 @@ void open_log_file (void)
     if (eTeX_ex)
     {
       wlog_cr();
-      fputs("entering extended mode", log_file);
+      fputs("entering extended mode", log_file.file_data);
     }
   }
 
@@ -19746,71 +19749,6 @@ static void synch_dir (void)
   }
 }
 
-void graphic_out (pointer p)
-{
-  integer old_setting;
-  pool_pointer k;
-
-  synch_h();
-  synch_v();
-  old_setting = selector;
-  selector = new_string;
-  prints("pdf:image matrix ");
-  print_scaled(graphic_tm_a(p)); prints(" ");
-  print_scaled(graphic_tm_b(p)); prints(" ");
-  print_scaled(graphic_tm_c(p)); prints(" ");
-  print_scaled(graphic_tm_d(p)); prints(" ");
-  print_scaled(graphic_tm_e(p)); prints(" ");
-  print_scaled(graphic_tm_f(p)); prints(" page ");
-  print_int(graphic_page(p)); prints(" (");
-  print(graphic_name(p)); prints(")");
-  selector = old_setting;
-
-  if (cur_length < 256)
-  {
-    dvi_out(xxx1);
-    dvi_out(cur_length);
-  }
-  else
-  {
-    dvi_out(xxx4);
-    dvi_four(cur_length);
-  }
-
-  for (k = str_start[str_ptr]; k <= pool_ptr - 1; k++)
-    dvi_out(str_pool[k]);
-#ifndef APTEX_DVI_ONLY
-  {
-    const char * spc_str = (const char *) str_pool + str_start[str_ptr];
-    scaled spc_h, spc_v;
-
-    switch (cur_dir_hv)
-    {
-    case dir_yoko:
-      spc_h = cur_h;
-      spc_v = -cur_v;
-      break;
-
-    case dir_tate:
-      spc_h = -cur_v;
-      spc_v = -cur_h;
-      break;
-
-    case dir_dtou:
-      spc_h = cur_v;
-      spc_v = cur_h;
-      break;
-    }
-
-    graphics_mode();
-    spc_moveto(cur_h * sp2bp / 1.5202, cur_v * sp2bp / 1.5202);
-    spc_exec_special(spc_str, cur_length,
-      spc_h * sp2bp, spc_v * sp2bp, mag / 1000.0);
-  }
-#endif
-  pool_ptr = str_start[str_ptr];
-}
-
 // output an |hlist_node| box
 void hlist_out (void)
 {
@@ -20086,19 +20024,7 @@ reswitch:
 
       case whatsit_node:
         // @<Output the whatsit node |p| in an hlist@>
-        if (subtype(p) == graphic_node)
-        {
-          save_h = dvi_h;
-          save_v = dvi_v;
-          edge = cur_h + width(p);
-          dvi_h = save_h;
-          graphic_out(p);
-          dvi_v = save_v;
-          cur_h = edge;
-          cur_v = base_line;
-        }
-        else
-          out_what(p);
+        out_what(p);
         break;
 
       case disp_node:
@@ -20493,19 +20419,7 @@ void vlist_out (void)
 
         case whatsit_node:
           // @<Output the whatsit node |p| in a vlist@>
-          if (subtype(p) == graphic_node)
-          {
-            save_h = dvi_h;
-            save_v = dvi_v;
-            cur_v = cur_v + height(p);
-            dvi_h = save_h;
-            graphic_out(p);
-            dvi_v = save_v;
-            cur_v = save_v + depth(p);
-            cur_h = left_edge;
-          }
-          else
-            out_what(p);
+          out_what(p);
           break;
 
         case glue_node:
@@ -20851,6 +20765,9 @@ static void write_out (pointer p)
   /* small_number j; */
   int j;
   pointer q, r;
+  integer d;
+  boolean clobbered;
+  integer runsystem_ret;
 
   q = get_avail();
   info(q) = right_brace_token + '}';
@@ -20885,7 +20802,9 @@ static void write_out (pointer p)
   old_setting = selector;
   j = write_stream(p);
 
-  if (write_open[j])
+  if (j == 18)
+    selector = new_string;
+  else if (write_open[j])
     selector = j;
   else
   {
@@ -20898,6 +20817,71 @@ static void write_out (pointer p)
   token_show(def_ref);
   print_ln();
   flush_list(def_ref);
+  if (j == 18)
+  {
+    if (tracing_online <= 0)
+      selector = log_only;  //{Show what we're doing in the log file.}
+    else
+      selector = term_and_log; //{Show what we're doing.}
+    //{If the log file isn't open yet, we can only send output to the terminal.
+    // Calling |open_log_file| from here seems to result in bad data in the log.}
+    if (!log_opened)
+      selector = term_only;
+    print_nl("runsystem(");
+    for (d = 0; d <= cur_length - 1; d++)
+    {
+      //{|print| gives up if passed |str_ptr|, so do it by hand.}
+      print(str_pool[str_start[str_ptr] + d]); //{N.B.: not |print_char|}
+    }
+    prints(")...");
+    if (aptex_env.flag_shell_escape)
+    {
+      str_room(1);
+      append_char(0); //{Append a null byte to the expansion.}
+      clobbered = false;
+      for (d = 0; d <= cur_length - 1; d++) //{Convert to external character set.}
+      {
+        str_pool[str_start[str_ptr] + d] = xchr[str_pool[str_start[str_ptr] + d]];
+        if ((str_pool[str_start[str_ptr] + d] == null_code) && (d < cur_length - 1))
+          clobbered = true;
+        //{minimal checking : NUL not allowed in argument string of |system|()}
+      }
+      if (clobbered)
+        prints("clobbered");
+      else  /*{We have the command.See if we're allowed to execute it,
+             and report in the log.We don't check the actual exit status of
+             the command, or do anything with the output.}*/
+      {
+        char * shell_cmd = calloc(cur_length, 1);
+        strncpy(shell_cmd, (char *) str_pool + str_start[str_ptr], cur_length);
+        runsystem_ret = system(shell_cmd);
+        switch (runsystem_ret)
+        {
+          case -1:
+            prints("quotation error in system command");
+            break;
+          case 0:
+            prints("disabled (restricted)");
+            break;
+          case 1:
+            prints("executed");
+            break;
+          case 2:
+            prints("executed safely (allowed)");
+            break;
+        }
+        free(shell_cmd);
+      }
+    }
+    else
+    {
+      prints("disabled"); //{|shellenabledp| false}
+    }
+    print_char('.');
+    print_nl("");
+    print_ln();
+    pool_ptr = str_start[str_ptr]; //{erase the string}
+  }
   selector = old_setting;
 }
 
@@ -20949,10 +20933,6 @@ void out_what (pointer p)
       break;
 
     case language_node:
-      do_nothing();
-      break;
-
-    case graphic_node:
       do_nothing();
       break;
 
@@ -21139,16 +21119,7 @@ reswitch:
           break;
 
         case whatsit_node:
-          if (subtype(p) == graphic_node)
-          {
-            if (height(p) > h)
-              h = height(p);
-
-            if (depth(p) > d)
-              d = depth(p);
-
-            x = x + width(p);
-          }
+          do_nothing();
           break;
 
         case disp_node:
@@ -21476,14 +21447,7 @@ static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
         break;
 
       case whatsit_node:
-        if (subtype(p) == graphic_node)
-        {
-          x = x + d + height(p);
-          d = depth(p);
-
-          if (width(p) > w)
-            w = width(p);
-        }
+        do_nothing();
         break;
 
       case glue_node:
@@ -24970,8 +24934,6 @@ static void line_break (boolean d)
             r_hyf = what_rhm(cur_p);
             set_hyph_index();
           }
-          else if (subtype(cur_p) == graphic_node)
-            act_width = act_width + width(cur_p);
           break;
 
         case glue_node:
@@ -25050,8 +25012,6 @@ static void line_break (boolean d)
                       r_hyf = what_rhm(s);
                       set_hyph_index();
                     }
-                    else if (subtype(s) == graphic_node)
-                      act_width = act_width + width(s);
                     goto continu;
                   }
                   else
@@ -25264,11 +25224,6 @@ done1:;
                     do_nothing();
                     break;
 
-                  case whatsit_node:
-                    if (subtype(s) == graphic_node)
-                      disc_width = disc_width + width(s);
-                    break;
-
                   default:
                     confusion("disc3");
                     break;
@@ -25314,11 +25269,6 @@ done1:;
 
                 case disp_node:
                   do_nothing();
-                  break;
-
-                case whatsit_node:
-                  if (subtype(s) == graphic_node)
-                    act_width = act_width + width(s);
                   break;
 
                 default:
@@ -25666,11 +25616,6 @@ continu:
                       do_nothing();
                       break;
 
-                    case whatsit_node:
-                      if (subtype(v) == graphic_node)
-                        break_width[1] = break_width[1] - width(v);
-                      break;
-
                     default:
                       confusion("disc1");
                       break;
@@ -25706,11 +25651,6 @@ continu:
 
                     case disp_node:
                       do_nothing();
-                      break;
-
-                    case whatsit_node:
-                      if (subtype(s) == graphic_node)
-                        break_width[1] = break_width[1] + width(s);
                       break;
 
                     default:
@@ -27389,11 +27329,6 @@ static pointer vert_break (pointer p, scaled h, scaled d)
         break;
 
       case whatsit_node:
-        if (subtype(p) == graphic_node)
-        {
-          cur_height = cur_height + prev_dp + height(p);
-          prev_dp = depth(p);
-        }
         goto not_found;
         break;
 
@@ -28142,11 +28077,6 @@ continu:
           @<Prepare to move whatsit |p| to the current page,
           then |goto contribute|@>
         */
-        if (subtype(p) == graphic_node)
-        {
-          page_total = page_total + page_depth + height(p);
-          page_depth = depth(p);
-        }
         goto contribute;
         break;
 
@@ -30098,13 +30028,7 @@ reswitch:
             break;
 
           case whatsit_node:
-            if (subtype(p) == graphic_node)
-            {
-              d = width(p);
-              goto found;
-            }
-            else
-              d = 0;
+            d = 0;
             break;
 
           default:
@@ -32787,109 +32711,11 @@ static void new_write_whatsit (small_number w)
 
     if (cur_val < 0)
       cur_val = 17;
-    else if (cur_val > 15)
+    else if ((cur_val > 15) && (cur_val != 18))
       cur_val = 16;
   }
 
   write_stream(tail) = cur_val;
-}
-
-extern void aptex_extractbb (char * pict, uint32_t page, uint32_t rect, pdf_rect * bbox);
-
-static void do_ext_graphic (void)
-{
-  integer g_page, g_type;
-  str_number g_name;
-  pdf_rect g_rect;
-  double xs = 1.0, ys = 1.0;
-
-  scan_file_name();
-  pack_cur_name();
-
-  g_name = make_name_string();
-  g_page = 0;
-  g_type = 0;
-
-  if (scan_keyword("page"))
-  {
-    scan_optional_equals();
-    scan_int();
-    g_page = cur_val;
-  }
-
-  if (scan_keyword("crop"))
-    g_type = 1;
-  else if (scan_keyword("media"))
-    g_type = 2;
-  else if (scan_keyword("art"))
-    g_type = 3;
-  else if (scan_keyword("trim"))
-    g_type = 4;
-  else if (scan_keyword("bleed"))
-    g_type = 5;
-
-  {
-    char * g_strs = take_str_string(g_name);
-    aptex_extractbb(g_strs, g_page, g_type, &g_rect);
-    free(g_strs);
-  }
-
-  while (true)
-  {
-    if (scan_keyword("scaled"))
-    {
-      scan_optional_equals();
-      scan_int();
-      xs *= (double) cur_val / 1000.0;
-      ys *= (double) cur_val / 1000.0;
-    }
-    else if (scan_keyword("xscaled"))
-    {
-      scan_optional_equals();
-      scan_int();
-      xs *= (double) cur_val / 1000.0;
-    }
-    else if (scan_keyword("yscaled"))
-    {
-      scan_optional_equals();
-      scan_int();
-      ys *= (double) cur_val / 1000.0;
-    }
-    else if (scan_keyword("width"))
-    {
-      scan_optional_equals();
-      scan_normal_dimen();
-
-      if (g_rect.llx - g_rect.urx != 0.0)
-        xs = (double) cur_val / ((g_rect.urx - g_rect.llx) * 65536.0);
-    }
-    else if (scan_keyword("height"))
-    {
-      scan_optional_equals();
-      scan_normal_dimen();
-      if (g_rect.lly - g_rect.ury != 0.0)
-        ys = (double) cur_val / ((g_rect.ury - g_rect.lly) * 65536.0);
-    }
-    else
-      break;
-  }
-
-  if (g_rect.llx - g_rect.urx == 0.0 && g_rect.lly - g_rect.ury == 0.0)
-    return;
-
-  new_whatsit(graphic_node, graphic_node_size);
-  subtype(tail) = graphic_node;
-  width(tail)  = (scaled)((g_rect.urx - g_rect.llx) * 65536.0 * xs);
-  height(tail) = (scaled)((g_rect.ury - g_rect.lly) * 65536.0 * ys);
-  depth(tail) = 0;
-  graphic_name(tail) = g_name;
-  graphic_page(tail) = g_page;
-  graphic_tm_a(tail) = xs * unity;
-  graphic_tm_b(tail) = 0;
-  graphic_tm_c(tail) = 0;
-  graphic_tm_d(tail) = ys * unity;
-  graphic_tm_e(tail) = 0;
-  graphic_tm_f(tail) = 0;
 }
 
 static void do_extension (void)
@@ -32979,13 +32805,6 @@ static void do_extension (void)
         what_lhm(tail) = norm_min(left_hyphen_min);
         what_rhm(tail) = norm_min(right_hyphen_min);
       }
-      break;
-
-    case graphic_node:
-      if (abs(mode) == mmode)
-        report_illegal_case();
-      else
-        do_ext_graphic();
       break;
 
     default:
@@ -36087,13 +35906,6 @@ void just_copy (pointer p, pointer h, pointer t)
             {
               r = get_node(small_node_size);
               words = small_node_size;
-            }
-            break;
-
-          case graphic_node:
-            {
-              r = get_node(graphic_node_size);
-              words = graphic_node_size;
             }
             break;
 

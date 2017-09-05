@@ -1952,7 +1952,6 @@ do {                                        \
 #define close_node      2 // {|subtype| in whatsits that represent streams to \.{\\closeout}}
 #define special_node    3 // {|subtype| in whatsits that represent \.{\\special} things}
 #define language_node   4 // {|subtype| in whatsits that change the current language}
-#define graphic_node    6 // {|subtype| in whatsits that represent graphics}
 #define what_lang(s)    link(s + 1)     // {language number, in the range |0..255|}
 #define what_lhm(s)     type(s + 1)     // {minimum left fragment, in the range |1..63|}
 #define what_rhm(s)     subtype(s + 1)  // {minimum right fragment, in the range |1..63|}
@@ -1961,26 +1960,6 @@ do {                                        \
 #define open_name(s)    link(s + 1)     // {string number of file name to open}
 #define open_area(s)    info(s + 2)     // {string number of file area for |open_name|}
 #define open_ext(s)     link(s + 2)     // {string number of file extension for |open_name|}
-
-/*
-  Reference:
-    PDF Reference, version 1.7
-    ISBN4-906665-25-X「技術編ＣＧ標準テキストブック」（ＣＧ−ＡＲＴＳ協会）
-    transform: https://developer.mozilla.org/en-US/docs/Web/CSS/transform
-  Transformation matrix [a b c d e f]
-    translation [1 0 0 1 tx ty]
-    scaling     [sx 0 0 sy 0 0]
-    rotation    [cos(r) sin(r) -sin(r) cos(r) 0 0]
-*/
-#define graphic_node_size   9
-#define graphic_name(s) mem[s + 4].sc
-#define graphic_page(s) mem[s + 5].sc
-#define graphic_tm_a(s) mem[s + 6].hh.lh 
-#define graphic_tm_b(s) mem[s + 6].hh.rh
-#define graphic_tm_c(s) mem[s + 7].hh.lh
-#define graphic_tm_d(s) mem[s + 7].hh.rh
-#define graphic_tm_e(s) mem[s + 8].hh.lh
-#define graphic_tm_f(s) mem[s + 8].hh.rh
 
 /* sec 1344 */
 #define immediate_code    4 // {command modifier for \.{\\immediate}}

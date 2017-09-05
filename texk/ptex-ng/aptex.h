@@ -160,7 +160,10 @@ typedef uint8_t packed_ASCII_code;
 typedef uint8_t small_number;
 
 // files
-typedef FILE * alpha_file; // stdio
+typedef struct {
+  void * file_data;
+  uint32_t file_type;
+} alpha_file; // fopen or popen
 typedef FILE * byte_file;  // stdio
 typedef void * word_file;  // stdio/zlib
 
@@ -333,6 +336,9 @@ def_array(buffer, ASCII_code, buf_size + 4);  // {lines of characters being read
 EXTERN integer first;                         // {the first unused position in |buffer|}
 EXTERN integer last;                          // {end of the line just input to |buffer|}
 EXTERN integer max_buf_stack;                 // {largest index used in |buffer|}
+
+EXTERN alpha_file term_in;                    // {the terminal as an input file}
+EXTERN alpha_file term_out;                   // {the terminal as an output file}
 
 def_array(str_pool, packed_ASCII_code, pool_size + 1);  // {the characters}
 def_array(str_start, pool_pointer, max_strings + 1);    // {the starting pointers}
@@ -832,15 +838,12 @@ EXTERN struct {
   // flags
   boolean flag_initex;
   boolean flag_tex82;
+  boolean flag_shell_escape;
   boolean flag_compact_fmt;
   boolean flag_reset_trie;
   boolean flag_reset_hyphen;
   boolean flag_allow_quoted;
   boolean flag_suppress_f_ligs;
-  // I/O functions
-  void * (*open_tex_file) (const char * f, const char * m);
-  void * (*open_tfm_file) (const char * f, const char * m);
-  void * (*open_fmt_file) (const char * f, const char * m);
 } aptex_env;
 
 #include "aptex-functions.h"

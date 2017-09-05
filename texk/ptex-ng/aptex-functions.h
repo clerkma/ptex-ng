@@ -510,9 +510,8 @@ static inline void fget (void)
 /* sec 0597 */
 static inline void write_dvi (size_t a, size_t b)
 {
-  if (fwrite((char *) &dvi_buf[a], sizeof(dvi_buf[a]),
-    (b - a + 1), dvi_file) != (b - a + 1))
-    FATAL_PERROR("\n! dvi file");
+  if (fwrite((char *) &dvi_buf[a], sizeof(dvi_buf[a]), (b - a + 1), dvi_file) != (b - a + 1))
+    fprintf(stderr, "!Fatal Error, write_dvi()\n");
 }
 /* sec 0598 */
 static inline void dvi_out (ASCII_code op)
@@ -636,7 +635,7 @@ static inline void write_log (const char * fmt, ...)
 {
   va_list m_ptr;
   va_start(m_ptr, fmt);
-  vfprintf(log_file, fmt, m_ptr);
+  vfprintf(log_file.file_data, fmt, m_ptr);
   va_end(m_ptr);
 }
 
@@ -644,8 +643,8 @@ static inline void wlog_ln (const char * fmt, ...)
 {
   va_list m_ptr;
   va_start(m_ptr, fmt);
-  vfprintf(log_file, fmt, m_ptr);
-  fprintf(log_file, "\n");
+  vfprintf(log_file.file_data, fmt, m_ptr);
+  fprintf(log_file.file_data, "\n");
   va_end(m_ptr);
 }
 
@@ -656,7 +655,7 @@ static inline void wterm (ASCII_code s)
 
 static inline void wlog (ASCII_code s)
 {
-  (void) fputc(s, log_file);
+  (void) fputc(s, log_file.file_data);
 }
 
 static inline void wterm_cr (void)
@@ -666,7 +665,12 @@ static inline void wterm_cr (void)
 
 static inline void wlog_cr (void)
 {
-  (void) fputc('\n', log_file);
+  (void) fputc('\n', log_file.file_data);
+}
+
+static inline void write_ln (alpha_file f)
+{
+  (void) fputc('\n', f.file_data);
 }
 
 #endif
