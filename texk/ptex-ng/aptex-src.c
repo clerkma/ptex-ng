@@ -6306,6 +6306,7 @@ static void init_prim (void)
   primitive("lastskip", last_item, glue_val);
   primitive("inputlineno", last_item, input_line_no_code);
   primitive("badness", last_item, badness_code);
+  primitive("shellescape", last_item, shell_escape_code);
   primitive("number", convert, number_code);
   primitive("romannumeral", convert, roman_numeral_code);
   primitive("kansuji", convert, kansuji_code);
@@ -11153,6 +11154,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("inputlineno");
           break;
 
+        case shell_escape_code:
+          print_esc("shellescape");
+          break;
+
         case last_node_type_code:
           print_esc("lastnodetype");
           break;
@@ -14962,6 +14967,10 @@ static void scan_something_internal (small_number level, boolean negative)
 
             case badness_code:
               cur_val = last_badness;
+              break;
+
+            case shell_escape_code:
+              cur_val = aptex_env.flag_shell_escape;
               break;
 
             case eTeX_version_code:
