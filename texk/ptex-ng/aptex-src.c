@@ -4806,6 +4806,7 @@ start_of_TEX:
       {
         no_new_control_sequence = false;
         primitive("lastnodetype", last_item, last_node_type_code);
+        primitive("lastnodechar", last_item, last_node_char_code);
         primitive("eTeXversion", last_item, eTeX_version_code);
         primitive("eTeXrevision", convert, eTeX_revision_code);
         primitive("everyeof", assign_toks, every_eof_loc);
@@ -11162,6 +11163,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("lastnodetype");
           break;
 
+        case last_node_char_code:
+          print_esc("lastnodechar");
+          break;
+
         case eTeX_version_code:
           print_esc("eTeXversion");
           break;
@@ -15051,8 +15056,29 @@ static void scan_something_internal (small_number level, boolean negative)
           if ((tx == head) || (mode == 0))
             cur_val = -1;
         }
+        else if (cur_chr == last_node_char_code)
+        {
+          cur_val_level = int_val;
+          cur_val = -1;
+        }
         else
           cur_val_level = cur_chr;
+
+        if ((cur_chr == last_node_char_code) && (is_char_node(tx)) && (tx != head))
+        //{ |tx| might be ``second node'' of a KANJI character; so we need to look the node before |tx| }
+        {
+          r = head;
+          q = head;
+          while (q != tx)
+          {
+            r = q;
+            q = link(q);
+          } // { |r| is the node just before |tx| }
+          if ((r != head) && is_char_node(r))
+            if (font_dir[font(r)] != dir_default)
+              tx = r;
+          find_last_char();
+        }
 
         if (!is_char_node(tx) && (tx != head) && (mode != 0))
           switch (cur_chr)
@@ -15092,6 +15118,10 @@ static void scan_something_internal (small_number level, boolean negative)
               }
               else
                 cur_val = unset_node;
+              break;
+
+            case last_node_char_code:
+              ignore_font_kerning();
               break;
           }
         else if ((mode == vmode) && (tx == head))

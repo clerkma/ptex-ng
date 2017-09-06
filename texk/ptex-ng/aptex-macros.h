@@ -1107,10 +1107,11 @@ do {                            \
   cur_val_level = vb;           \
 } while (0)
 /* sec 0416 */
-#define last_node_type_code       (glue_val + 1)            // 3 {code for \.{\\lastnodetype}}
-#define input_line_no_code        (glue_val + 2)            // 4 {code for \.{\\inputlineno}}
-#define badness_code              (input_line_no_code + 1)  // 5 {code for \.{\\badness}}
-#define shell_escape_code         (badness_code + 1)        // 6 {code for \.{\\shellescape}}
+#define last_node_type_code       (glue_val + 1)            // {code for \.{\\lastnodetype}}
+#define last_node_char_code       (glue_val + 2)            // {code for \.{\\lastnodechar}}
+#define input_line_no_code        (glue_val + 3)            // {code for \.{\\inputlineno}}
+#define badness_code              (input_line_no_code + 1)  // {code for \.{\\badness}}
+#define shell_escape_code         (badness_code + 1)        // {code for \.{\\shellescape}}
 //
 #define eTeX_int                  (badness_code + 2)        // {first of \eTeX\ codes for integers}
 #define eTeX_version_code         eTeX_int                  // 
@@ -2003,6 +2004,47 @@ do {                                                              \
 } while (0)
 //#
 #define find_effective_tail() find_effective_tail_epTeX()
+#define find_last_char()                            \
+do {                                                \
+  if (font_dir[font(tx)] != dir_default)            \
+    cur_val = KANJI(info(link(tx))) % max_cjk_val;  \
+  else                                              \
+    cur_val = character(tx);                        \
+} while (0)
+#define ignore_font_kerning()                                       \
+do {                                                                \
+  if (((type(tx) == glue_node) && (subtype(tx) == jfm_skip + 1)) || \
+    ((type(tx) == penalty_node) && (subtype(tx) == kinsoku_pena)))  \
+    tx = last_jchr;                                                 \
+  else if ((type(tx) == kern_node) && (subtype(tx) == normal))      \
+  {                                                                 \
+    r = head; q = link(head);                                       \
+    while (q != tx)                                                 \
+    {                                                               \
+      r = q;                                                        \
+      if (is_char_node(q))                                          \
+        if (font_dir[font(q)] != dir_default)                       \
+          q = link(q);                                              \
+      q = link(q);                                                  \
+    }                                                               \
+    if ((type(r) == penalty_node) && (subtype(r) == kinsoku_pena))  \
+      tx = last_jchr;                                               \
+    else                                                            \
+      tx = r;                                                       \
+  }                                                                 \
+  if (!is_char_node(tx))                                            \
+  {                                                                 \
+    if (type(tx) == ligature_node)                                  \
+    {                                                               \
+      r = lig_ptr(tx);                                              \
+      while (link(r) != null)                                       \
+        r = link(r);                                                \
+      cur_val = character(r);                                       \
+    }                                                               \
+  }                                                                 \
+  else                                                              \
+    find_last_char();                                               \
+} while (0)
 #define current_character_being_worked_on (k - char_base[f])
 #define print_lc_hex(a)       \
 do {                          \
