@@ -111,7 +111,7 @@ static void print_aptex_version (void)
 {
   printf("Copyright 2014, 2015, 2016, 2017 Clerk Ma.\n"
     "banner: \"%s\"\n"
-    "base: Y&Y TeX (2.3.0) and pTeX (3.7.1)\n"
+    "base: Y&Y TeX (2.3.0) and pTeX (3.7.2)\n"
     "Compiled with %s\n"
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
@@ -29340,7 +29340,7 @@ static void unpackage (void)
       {
         print_err("Incompatible direction list can't be unboxed");
         help2("Sorry, Pandora. (You sneaky devil.)",
-          "I refuse to unbox a box in differrent direction.");
+          "I refuse to unbox a box in different direction.");
         error();
         return;
       }
@@ -31755,7 +31755,7 @@ static void prefixed_command (void)
           print_err("Invalid KANSUJI char (");
           print_hex(cur_val);
           print_char(')');
-          help1("I'm skip this control sequences.");
+          help1("I'm skipping this control sequences.");
           error();
           return;
         }
@@ -31764,7 +31764,7 @@ static void prefixed_command (void)
           print_err("Invalid KANSUJI number (");
           print_int(n);
           print_char(')');
-          help1("I'm skip this control sequences.");
+          help1("I'm skipping this control sequences.");
           error();
           return;
         }
@@ -31806,7 +31806,7 @@ static void prefixed_command (void)
           if (j == no_entry)
           {
             print_err("Inhibit table is full!!");
-            help1("I'm skip this control sequences.");
+            help1("I'm skipping this control sequences.");
             error();
             return;
           }
@@ -31818,7 +31818,7 @@ static void prefixed_command (void)
           print_err("Invalid KANJI code (");
           print_hex(n);
           print_char(')');
-          help1("I'm skip this control sequences.");
+          help1("I'm skipping this control sequences.");
           error();
           return;
         }
@@ -31840,7 +31840,7 @@ static void prefixed_command (void)
           if (j == no_entry)
           {
             print_err("KINSOKU table is full!!");
-            help1("I'm skip this control sequences.");
+            help1("I'm skipping this control sequences.");
             error();
             return;
           }
@@ -31867,7 +31867,7 @@ static void prefixed_command (void)
           prints("breakpenalty (");
           print_hex(n);
           print_char(')');
-          help1("I'm skip this control sequences.");
+          help1("I'm skipping this control sequences.");
           error();
           return;
         }
@@ -33377,13 +33377,27 @@ reswitch:
       {
         if (cur_group != align_group)
         {
-          if (head == tail)
+          if (mode == hmode)
           {
-            direction = cur_chr;
-
-            if (mode == vmode)
-              page_dir = cur_chr;
+            print_err("Improper `");
+            print_cmd_chr(cur_cmd, cur_chr);
+            prints("'");
+            help2("You cannot change the direction in unrestricted",
+              "horizontal mode.");
+            error();
           }
+          else if (abs(mode) == mmode)
+          {
+            print_err("Improper `");
+            print_cmd_chr(cur_cmd, cur_chr);
+            prints("'");
+            help1("You cannot change the direction in math mode.");
+            error();
+          }
+          else if (nest_ptr == 0)
+            change_page_direction(cur_chr);
+          else if (head == tail)
+            direction = cur_chr;
           else
           {
             print_err("Use `");
@@ -35189,6 +35203,54 @@ void set_math_kchar (integer c)
   type(p) = ord_noad;
   link(tail) = p;
   tail = p;
+}
+
+void change_page_direction (halfword d)
+{
+  pointer p;
+  boolean flag;
+
+  flag = (page_contents == empty);
+  if (flag && (head != tail))
+  {
+    p = link(head);
+    while (p != null)
+    {
+      switch (type(p))
+      {
+        case hlist_node:
+        case vlist_node:
+        case dir_node:
+        case rule_node:
+        case ins_node:
+          {
+            flag = false;
+            goto done;
+          }
+          break;
+        default:
+          p = link(p);
+          break;
+      }
+    }
+done:
+    do_nothing();
+  }
+  if (flag)
+  {
+    direction = d;
+    page_dir = d;
+  }
+  else
+  {
+    print_err("Use `");
+    print_cmd_chr(cur_cmd, d);
+    prints("' at top of the page");
+    help3("You can change the direction of the page only when",
+      "the current page and recent contributions consist of only",
+      "marks and whatsits.");
+    error();
+  }
 }
 
 boolean check_kcat_code (integer ct)

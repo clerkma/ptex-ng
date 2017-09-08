@@ -211,6 +211,7 @@ void adjust_hlist(pointer p, boolean pf);
 void dir_out(void);
 void set_math_kchar(integer c);
 void print_kanji(KANJI_code s);
+void change_page_direction(halfword d);
 boolean check_kcat_code(integer ct);
 boolean check_echar_range(integer c);
 
