@@ -3861,6 +3861,10 @@ static void do_initex (void)
   for (k = 0; k <= 6; k++)
     font_info[k].cint = 0;
 
+  text_baseline_shift_factor = 1000;
+  script_baseline_shift_factor = 700;
+  scriptscript_baseline_shift_factor = 500;
+
   reset_trie();
   text(frozen_protection) = 1184; /* "inaccessible" */
   format_ident = 1251;            /* " (INITEX)" */
@@ -4102,9 +4106,6 @@ static void initialize (void)
   split_disc = null;
   inhibit_glue_flag = false;
   page_dir = dir_yoko;
-  text_baseline_shift_factor = 1000;
-  script_baseline_shift_factor = 700;
-  scriptscript_baseline_shift_factor = 500;
 
   if (aptex_env.flag_initex)
     do_initex();
