@@ -89,6 +89,9 @@ static void print_aptex_usage (void)
       " --version       output version information and exit\n"
       " --ini           start up as INITEX (create format file)\n"
       " --shell-escape  enable \\write18\n"
+      " --merge-kanji-baseline\n"
+      "                 shift baseline of OpenType's ascender/descender to JFM's height/depth\n"
+      " --visual-debug  when ship out DVI, show ApTeX's internal node to PNG/PDF via Cairo\n"
       "\n"
       " --jobname=str   set the job name to str\n"
       "                 e.g.: '--jobname=book2016'\n"
@@ -1296,15 +1299,16 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.aptex_src             = NULL;
   aptex_env.aptex_map             = NULL;
 
-  aptex_env.flag_initex           = false;
-  aptex_env.flag_suppress_f_ligs  = false;
-
-  aptex_env.flag_reset_trie       = false;
-  aptex_env.flag_reset_hyphen     = false;
-  aptex_env.flag_allow_quoted     = true;
-  aptex_env.flag_shell_escape     = false;
-  aptex_env.flag_tex82            = false;
-  aptex_env.flag_compact_fmt      = true;
+  aptex_env.flag_initex               = false;
+  aptex_env.flag_suppress_f_ligs      = false;
+  aptex_env.flag_reset_trie           = false;
+  aptex_env.flag_reset_hyphen         = false;
+  aptex_env.flag_allow_quoted         = true;
+  aptex_env.flag_shell_escape         = false;
+  aptex_env.flag_tex82                = false;
+  aptex_env.flag_compact_fmt          = true;
+  aptex_env.flag_merge_kanji_baseline = false;
+  aptex_env.flag_visual_debug         = false;
 
   aptex_env.trace_realloc         = true;
   aptex_env.trace_mem             = false;
@@ -1353,6 +1357,8 @@ static void aptex_commands_init (int ac, char **av)
       { "fontmap",        required_argument, NULL, 0 },
       { "format",         required_argument, NULL, 0 },
       { "shell-escape",   no_argument, NULL, 0 },
+      { "merge-kanji-baseline", no_argument, NULL, 0 },
+      { "visual-debug",   no_argument, NULL, 0 },
       { "patterns",       no_argument, NULL, 0 },
       { "ini",            no_argument, NULL, 0 },
       { "showlbstats",    no_argument, NULL, 0 },
@@ -1382,6 +1388,10 @@ static void aptex_commands_init (int ac, char **av)
         aptex_env.flag_suppress_f_ligs = true;
       else if (ARGUMENT_IS("shell-escape"))
         aptex_env.flag_shell_escape = true;
+      else if (ARGUMENT_IS("merge-kanji-baseline"))
+        aptex_env.flag_merge_kanji_baseline = true;
+      else if (ARGUMENT_IS("visual-debug"))
+        aptex_env.flag_visual_debug = true;
       else if (ARGUMENT_IS("patterns"))
         aptex_env.flag_reset_trie = true;
       else if (ARGUMENT_IS("trace"))
@@ -19280,7 +19290,8 @@ static void pdf_kanji_out (internal_font_number f, KANJI_code c)
 
     {
       scaled gw0, gw1, gw2, gw3, gw4, gw5, gw6;
-      scaled glyph_pos_delta = 0;
+      scaled glyph_hpos_delta = 0;
+      scaled glyph_vpos_delta = 0;
 
       FT_Load_Glyph(font_face[f], gstr->glyphs[0].glyph_id, FT_LOAD_NO_SCALE);
       gw0 = char_width(f, char_info(f, get_jfm_pos(c, f)));
@@ -19292,26 +19303,30 @@ static void pdf_kanji_out (internal_font_number f, KANJI_code c)
       gw6 = (double)font_face[f]->glyph->metrics.height       / (double)font_face[f]->units_per_EM * (double)font_size[f];
 
       if (font_dir[f] == dir_yoko)
-        glyph_pos_delta = adjust_glyph_pos(gw0, gw1, gw2, gw3);
+      {
+        glyph_hpos_delta = adjust_glyph_pos(gw0, gw1, gw2, gw3);
+      }
 
       if (font_dir[f] == dir_tate)
-        glyph_pos_delta = adjust_glyph_pos(gw0, gw4, gw5, gw6);
+      {
+        glyph_hpos_delta = adjust_glyph_pos(gw0, gw4, gw5, gw6);
+      }
 
       switch (cur_dir_hv)
       {
         case dir_yoko:
           pdf_dev_set_dirmode(dvi_yoko);
-          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], cur_h + glyph_pos_delta, -cur_v, font_colr[f], font_cpal[f]);
+          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], cur_h + glyph_hpos_delta, -cur_v - glyph_vpos_delta, font_colr[f], font_cpal[f]);
           break;
 
         case dir_tate:
           pdf_dev_set_dirmode(dvi_tate);
-          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], -cur_v, -cur_h - glyph_pos_delta, font_colr[f], font_cpal[f]);
+          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], -cur_v - glyph_vpos_delta, -cur_h - glyph_hpos_delta, font_colr[f], font_cpal[f]);
           break;
 
         case dir_dtou:
           pdf_dev_set_dirmode(dvi_dtou);
-          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], cur_v, cur_h + glyph_pos_delta, font_colr[f], font_cpal[f]);
+          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], cur_v + glyph_vpos_delta, cur_h + glyph_hpos_delta, font_colr[f], font_cpal[f]);
           break;
       }
     }
