@@ -17,4 +17,53 @@
    02110-1301 USA.
 */
 
-// TODO
+#include <stdio.h>
+#include <stdint.h>
+
+#include "cairo.h"
+
+static cairo_surface_t * aptex_cairo_surface;
+static cairo_t * aptex_cairo_visual_debug;
+
+void aptex_vdbg_ship_open (const char * out_name)
+{
+  //aptex_cairo_surface = cairo_pdf_surface_create(out_name, 595.0, 842.0);
+  //aptex_cairo_visual_debug = cairo_create(aptex_cairo_surface);
+}
+
+void aptex_vdbg_ship_close (void)
+{
+  //cairo_destroy(aptex_cairo_visual_debug);
+  //cairo_surface_destroy(aptex_cairo_surface);
+}
+
+void aptex_vdbg_bop (int32_t page_no)
+{
+  //empty
+}
+
+void aptex_vdbg_eop (void)
+{
+  //cairo_show_page(aptex_cairo_visual_debug);
+}
+
+void aptex_vdbg_node_char (int32_t dir, int32_t x, int32_t y, int32_t w, int32_t h, int32_t d)
+{
+  //cairo_save(aptex_cairo_visual_debug);
+  //cairo_rectangle(aptex_cairo_visual_debug, x / 65536.0, (y - h) / 65536.0, w / 65536.0, (h + d) / 65536.0);
+  //cairo_set_source_rgb(aptex_cairo_visual_debug, 1.0, 0.0, 0.0);
+  //cairo_set_line_width(aptex_cairo_visual_debug, 0.1);
+  //cairo_stroke(aptex_cairo_visual_debug);
+  //cairo_restore(aptex_cairo_visual_debug);
+}
+
+void aptex_vdbg_node_rule (int32_t dir, int32_t x, int32_t y, int32_t w, int32_t h)
+{
+  //cairo_save(aptex_cairo_visual_debug);
+  //cairo_rectangle(aptex_cairo_visual_debug, x / 65536.0, (y - h) / 65536.0, w / 65536.0, h / 65536.0);
+  //cairo_set_source_rgb(aptex_cairo_visual_debug, 1.0, 1.0, 1.0);
+  //cairo_fill(aptex_cairo_visual_debug);
+  //cairo_restore(aptex_cairo_visual_debug);
+}
+
+

@@ -8,6 +8,10 @@ cd $NG_SRC_DIR/texlive/libs/libpaper && ./configure && make
 cp libpaper.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/texlive/libs/freetype2 && ./configure && make
 cp libfreetype.a $NG_SRC_DIR/src
+cd $NG_SRC_DIR/texlive/libs/pixman && ./configure && make
+cp libpixman.a $NG_SRC_DIR/src
+cd $NG_SRC_DIR/texlive/libs/cairo && ./configure && make
+cp libcairo.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/texlive/texk/kpathsea && ./configure && make
 cp .libs/libkpathsea.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/texlive/texk/ptexenc && ./configure && make

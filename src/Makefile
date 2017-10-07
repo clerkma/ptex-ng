@@ -11,8 +11,9 @@ INCLUDES = \
 	-I../texlive/texk/ \
 	-I../texlive/libs/zlib/include \
 	-I../texlive/libs/freetype2/freetype2 \
+	-I../texlive/libs/cairo/cairo \
 	-Ilibotf/src
-LDFLAGS = libdpx.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a -lm
+LDFLAGS = libdpx.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a -lm
 
 objects = \
 	aptex.o \
