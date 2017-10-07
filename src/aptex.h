@@ -95,62 +95,12 @@
 // zlib for format file and synctex
 #include "zlib.h"
 
-// libotf and freetype for opentype support
-#include "otf.h"
-#include FT_GLYPH_H
-#include FT_TRUETYPE_TABLES_H
+#include "aptex-cairo-visual-debug.h"
+#include "aptex-opentype.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct {
-  uint16_t GID;
-  uint16_t firstLayerIndex;
-  uint16_t numLayers;
-} ot_base_glyph;
-
-typedef struct {
-  uint16_t GID;
-  uint16_t paletteIndex;
-} ot_layer;
-
-typedef struct {
-  uint16_t version;
-  uint16_t numBaseGlyphRecords;
-  uint16_t numLayerRecords;
-  ot_base_glyph * base_glyphs;
-  ot_layer * layers;
-} ot_tbl_colr;
-
-typedef struct {
-  uint8_t blue;
-  uint8_t green;
-  uint8_t red;
-  uint8_t alpha;
-} ot_color;
-
-typedef struct {
-  uint16_t version;
-  uint16_t numPalettesEntries;
-  uint16_t numPalette;
-  uint16_t numColorRecords;
-  uint16_t * colorRecordIndices;
-  ot_color * colorRecords;
-  uint32_t * paletteType;
-  uint16_t * paletteLabel;
-  uint16_t * paletteEntryLabel;
-} ot_tbl_cpal;
-
-typedef struct {
-   char *  lang;
-   char *  script;
-   char *  gsub;
-   char *  gpos;
-// color-glyph specification
-   ot_tbl_colr * colr;
-   ot_tbl_cpal * cpal;
-} ot_font;
 
 // integers
 typedef uint8_t ASCII_code;

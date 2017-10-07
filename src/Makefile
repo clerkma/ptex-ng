@@ -15,11 +15,12 @@ INCLUDES = \
 LDFLAGS = libdpx.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a -lm
 
 objects = \
-	aptex.o\
-	aptex-src.o\
+	aptex.o \
+	aptex-cairo-visual-debug.o \
+	aptex-src.o \
 	aptex-synctex.o
 
-headers = aptex.h aptex-functions.h aptex-macros.h
+headers = aptex.h aptex-functions.h aptex-macros.h aptex-cairo-visual-debug.h aptex-opentype.h
 
 lsotfea_objects = \
 	lsotfea.o \
@@ -38,6 +39,9 @@ lsotfea: lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-lt
 
 aptex.o: aptex.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex.c
+
+aptex-cairo-visual-debug.o: aptex-cairo-visual-debug.c $(headers)
+	$(CC) $(CFLAGS) $(INCLUDES) aptex-cairo-visual-debug.c
 
 aptex-synctex.o: aptex-synctex.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-synctex.c
