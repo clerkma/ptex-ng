@@ -29478,6 +29478,7 @@ static void build_discretionary (void)
 {
   pointer p, q;
   integer n;
+  integer d;
 
   unsave();
   q = head;
@@ -29516,16 +29517,37 @@ static void build_discretionary (void)
 
 done:
   p = link(head);
+  d = abs(direction);
   pop_nest();
 
   switch (saved(-1))
   {
     case 0:
-      pre_break(tail) = p;
+      if (abs(direction) == d)
+        pre_break(tail) = p;
+      else
+      {
+        print_err("Direction Incompatible");
+        help2("\\discretionary's argument and outer hlist must have same direction.",
+          "I delete your first part.");
+        error();
+        pre_break(tail) = null;
+        flush_node_list(p);
+      }
       break;
 
     case 1:
-      post_break(tail) = p;
+      if (abs(direction) == d)
+        post_break(tail) = p;
+      else
+      {
+        print_err("Direction Incompatible");
+        help2("\\discretionary's argument and outer hlist must have same direction.",
+          "I delete your second part.");
+        error();
+        post_break(tail) = null;
+        flush_node_list(p);
+      }
       break;
 
     case 2:
@@ -29536,6 +29558,15 @@ done:
           print_esc("discretionary");
           help2("Sorry: The third part of a discretionary break must be",
               "empty, in math formulas. I had to delete your third part.");
+          flush_node_list(p);
+          n = 0;
+          error();
+        }
+        else if ((n > 0) && (abs(direction) != d))
+        {
+          print_err("Direction Incompatible");
+          help2("\\discretionary's argument and outer hlist must have same direction.",
+            "I delete your third part.");
           flush_node_list(p);
           n = 0;
           error();
@@ -31804,7 +31835,12 @@ static void prefixed_command (void)
         {
           j = get_inhibit_pos(tokanji(n), new_pos);
 
-          if (j == no_entry)
+          if ((j != no_entry) && (cur_val > inhibit_after) && (global || cur_level == level_one))
+          {
+            n = 0;
+            cur_val = 0;
+          }
+          else if (j == no_entry)
           {
             print_err("Inhibit table is full!!");
             help1("I'm skipping this control sequences.");
@@ -31838,21 +31874,28 @@ static void prefixed_command (void)
         {
           j = get_kinsoku_pos(tokanji(n), new_pos);
 
-          if (j == no_entry)
+          if ((j != no_entry) && (cur_val == 0) && (global || cur_level == level_one))
           {
-            print_err("KINSOKU table is full!!");
-            help1("I'm skipping this control sequences.");
-            error();
-            return;
-          }
-
-          if ((p == pre_break_penalty_code) || (p == post_break_penalty_code))
-          {
-            define(kinsoku_base + j, p, tokanji(n));
-            word_define(kinsoku_penalty_base + j, cur_val);
+            define(kinsoku_base + j, 0, 0);
           }
           else
-            confusion("kinsoku");
+          {
+            if (j == no_entry)
+            {
+              print_err("KINSOKU table is full!!");
+              help1("I'm skipping this control sequences.");
+              error();
+              return;
+            }
+
+            if ((p == pre_break_penalty_code) || (p == post_break_penalty_code))
+            {
+              define(kinsoku_base + j, p, tokanji(n));
+              word_define(kinsoku_penalty_base + j, cur_val);
+            }
+            else
+              confusion("kinsoku");
+          }
         }
         else
         {
@@ -32966,7 +33009,7 @@ static void handle_right_brace (void)
         {
           if (abs(box_dir(p)) != abs(adjust_dir))
           {
-            print_err("Direction Incompatible.");
+            print_err("Direction Incompatible");
             help1("\\vadjust's argument and outer vlist must have same direction.");
             error();
             flush_node_list(list_ptr(p));
@@ -35039,14 +35082,24 @@ void adjust_hlist (pointer p, boolean pf)
   s = xspace_ptr(p);
   add_glue_ref(s);
 
-  if (!is_char_node(link(p)) && (type(link(p)) == glue_node) &&
-    (subtype(link(p)) == jfm_skip + 1))
-  {
-    v = link(p);
-    link(p) = link(v);
-    fast_delete_glue_ref(glue_ptr(v));
-    free_node(v, small_node_size);
-  }
+  if (!is_char_node(link(p)))
+    if ((type(link(p)) == glue_node) && (subtype(link(p)) == jfm_skip + 1))
+    {
+      v = link(p);
+      link(p) = link(v);
+      fast_delete_glue_ref(glue_ptr(v));
+      free_node(v, small_node_size);
+    }
+    else if ((type(link(p)) == penalty_node) && (subtype(link(p)) == kinsoku_pena))
+    {
+      v = link(link(p));
+      if ((!is_char_node(v)) && (type(v) == glue_node) && (subtype(v) == jfm_skip + 1))
+      {
+        link(link(p)) = link(v);
+        fast_delete_glue_ref(glue_ptr(v));
+        free_node(v,small_node_size);
+      }
+    }
 
   i = 0;
   insert_skip = no_skip;

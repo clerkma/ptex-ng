@@ -2626,7 +2626,7 @@ do {                                                      \
 do {                                                            \
   kp = get_kinsoku_pos(cx, cur_pos);                            \
                                                                 \
-  if (kp != no_entry)                                           \
+  if (kp != no_entry) if (kinsoku_penalty(kp) != 0)             \
   {                                                             \
     if (kinsoku_type(kp) == pre_break_penalty_code)             \
     {                                                           \
@@ -2652,7 +2652,7 @@ do {                                                            \
 do {                                                            \
   kp = get_kinsoku_pos(cur_chr, cur_pos);                       \
                                                                 \
-  if (kp != no_entry)                                           \
+  if (kp != no_entry) if (kinsoku_penalty(kp) != 0)             \
   {                                                             \
     if (kinsoku_type(kp) == pre_break_penalty_code)             \
       if (!is_char_node(tail) && (type(tail) == penalty_node))  \
@@ -2669,7 +2669,7 @@ do {                                                            \
 do {                                                          \
   kp = get_kinsoku_pos(cx, cur_pos);                          \
                                                               \
-  if (kp != no_entry)                                         \
+  if (kp != no_entry) if (kinsoku_penalty(kp) != 0)           \
   {                                                           \
     if (kinsoku_type(kp) == post_break_penalty_code)          \
     {                                                         \
