@@ -1,0 +1,146 @@
+>>> Running TRIP test for TeX.
+>>> See SRCDIR/triptrap/trip.diffs for example of acceptable diffs.
++ ./pltotf SRCDIR/triptrap/trip.pl trip.tfm
++ ./tftopl ./trip.tfm trip.pl
++ diff SRCDIR/triptrap/trip.pl trip.pl
++ ln -s SRCDIR/triptrap/trip.tex .
++ ./tex --progname=initex --ini
++ test '!' -s trip.fmt
++ mv trip.log tripin.log
++ diff SRCDIR/triptrap/tripin.log tripin.log
+1c1
+< This is TeX, Version 3.14159265 (INITEX)  7 JAN 2014 09:09
+---
+> This is TeX, Version 3.14159265 (TeX Live 2015) (INITEX)  12 APR 2015 16:22
+3c3
+< (trip.tex
+---
+> (./trip.tex
+450,451c450,451
+<  (preloaded format=trip 2014.1.7)
+< 1326 strings of total length 23646
+---
+>  (preloaded format=trip 2015.4.12)
+> 1371 strings of total length 24606
+461c461
+< Hyphenation trie of length 273 has 9 ops out of 500
+---
+> Hyphenation trie of length 273 has 9 ops out of 35111
++ ./tex --progname=tex
++ diff SRCDIR/triptrap/trip.fot trip.fot
+1,3c1,2
+< This is TeX, Version 3.14159265 (INITEX)
+< ** &trip  trip 
+< (trip.tex ##
+---
+> This is TeX, Version 3.14159265 (TeX Live 2015) (preloaded format=tex)
+> **(./trip.tex ##
++ diff SRCDIR/triptrap/trip.log trip.log
+1c1
+< This is TeX, Version 3.14159265 (preloaded format=trip 2014.1.7)  7 JAN 2014 09:59
+---
+> This is TeX, Version 3.14159265 (TeX Live 2015) (preloaded format=trip 2015.4.12)  12 APR 2015 16:22
+3c3
+< (trip.tex ##
+---
+> (./trip.tex ##
+58a59,62
+> \openout0 = `8terminal.tex'.
+> 
+> \openout10 = `tripos.tex'.
+> 
+1405c1409
+< \vbox(16383.99998+0.0)x1000.0, glue set 16342.0fil
+---
+> \vbox(16383.99998+0.0)x1000.0, glue set 16341.99998fil
+1954c1958
+< (tripos.tex
+---
+> (./tripos.tex
+2018c2022
+< \vbox(16383.99998+1.0)x100.0, glue set 16239.0fil
+---
+> \vbox(16383.99998+1.0)x100.0, glue set 16238.99998fil
+2533c2537
+< \vbox(16383.99998+0.0)x20.0, glue set 16331.0fil
+---
+> \vbox(16383.99998+0.0)x20.0, glue set 16330.99998fil
+3326c3330
+< \vbox(10000.0+2.0)x28.0, glue set 9737.58789fil
+---
+> \vbox(10000.0+2.0)x28.0, glue set 9737.58742fil
+3864c3868
+< \vbox(16383.99998+2.0)x100.0, glue set 16318.0fil
+---
+> \vbox(16383.99998+2.0)x100.0, glue set 16317.99997fil
+4034c4038
+< \vbox(16383.99998+0.0)x8236.0, glue set 16344.0fil
+---
+> \vbox(16383.99998+0.0)x8236.0, glue set 16343.99998fil
+4420c4424
+< \vbox(16383.99998+0.0)x100.0, glue set 16332.0fil
+---
+> \vbox(16383.99998+0.0)x100.0, glue set 16331.99998fil
+4742c4746
+< \vbox(16383.99998+0.0)x205.12613, glue set 16344.0fil
+---
+> \vbox(16383.99998+0.0)x205.12613, glue set 16343.99998fil
+6380c6384
+< (tripos.tex
+---
+> (./tripos.tex
+7296,7297c7300,7301
+<  47 strings out of 1674
+<  253 string characters out of 8354
+---
+>  44 strings out of 1629
+>  261 string characters out of 15394
+7299c7303
+<  372 multiletter control sequences out of 2100
+---
+>  372 multiletter control sequences out of 15000+0
+7301c7305
+<  2 hyphenation exceptions out of 307
+---
+>  1 hyphenation exception out of 659
++ eval ./dvitype -output-level=2 -dpi=72.27 '-page-start='\''*.*.*.*.*.*.*.*.*.*'\''' trip.dvi
+++ ./dvitype -output-level=2 -dpi=72.27 '-page-start=*.*.*.*.*.*.*.*.*.*' trip.dvi
++ diff SRCDIR/triptrap/trip.typ trip.typ
+1c1
+< This is DVItype, Version 3.6
+---
+> This is DVItype, Version 3.6 (TeX Live 2015)
+9c9
+< ' TeX output 2014.01.07:0959'
+---
+> ' TeX output 2015.04.12:1622'
+419c419
+< 1121: down4 639342208 
+---
+> 1121: down4 639342177 
+1087,1088c1087,1088
+< 2535: y4 203921760 
+< 2540: y0 203921760 
+---
+> 2535: y4 203921756 
+> 2540: y0 203921756 
++ for f in tripin.log trip.fot trip.log trip.typ
++ sed SRCDIR/triptrap/tripin.log -f filter
++ sed tripin.log -f filter
++ diff a/tripin.log b/tripin.log
++ for f in tripin.log trip.fot trip.log trip.typ
++ sed SRCDIR/triptrap/trip.fot -f filter
++ sed trip.fot -f filter
++ diff a/trip.fot b/trip.fot
++ for f in tripin.log trip.fot trip.log trip.typ
++ sed SRCDIR/triptrap/trip.log -f filter
++ sed trip.log -f filter
++ diff a/trip.log b/trip.log
++ for f in tripin.log trip.fot trip.log trip.typ
++ sed SRCDIR/triptrap/trip.typ -f filter
++ sed trip.typ -f filter
++ diff a/trip.typ b/trip.typ
++ :
++ echo '>>> All differences are acceptable.'
+>>> All differences are acceptable.
+PASS: triptest

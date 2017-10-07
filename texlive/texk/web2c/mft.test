@@ -1,0 +1,11 @@
+#! /bin/sh
+
+# Copyright (C) 2009 Peter Breitenlohner <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+test -d tests || mkdir -p tests
+
+TEXMFCNF=$srcdir/../kpathsea \
+  MFTINPUTS=$srcdir/tests \
+  ./mft $srcdir/tests/io && mv -f io.tex tests/io.tex || exit 1
+

@@ -1,0 +1,5 @@
+LIST(APPEND TESTS_FILES
+	gdCopyBlurred
+)
+
+ADD_GD_TESTS()

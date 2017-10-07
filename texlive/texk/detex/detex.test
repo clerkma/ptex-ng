@@ -1,0 +1,19 @@
+#! /bin/sh
+
+# Copyright (C) 2009 Peter Breitenlohner <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+echo '#' >texmf.cnf
+
+./detex $srcdir/test.tex >test.out \
+	&& diff test.out $srcdir/test.lout \
+	|| exit 1
+
+./detex -l $srcdir/test.tex >test.out \
+	&& diff test.out $srcdir/test.lout \
+	|| exit 1
+
+./detex -t $srcdir/test.tex >test.out \
+	&& diff test.out $srcdir/test.tout \
+	|| exit 1
+

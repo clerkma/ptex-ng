@@ -1,0 +1,10 @@
+#! /bin/sh
+
+# Copyright (C) 2009 Peter Breitenlohner <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+test -d tests || mkdir -p tests
+
+TEXMFCNF=$srcdir/../kpathsea \
+  ./pktype $srcdir/tests/cmr10.pk >tests/xcmr10.pktyp || exit 1
+

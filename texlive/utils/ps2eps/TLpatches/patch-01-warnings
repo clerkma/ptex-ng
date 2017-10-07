@@ -1,0 +1,40 @@
+diff -ur ps2eps-1.68.orig/src/C/bbox.c ps2eps-1.68/src/C/bbox.c
+--- ps2eps-1.68.orig/src/C/bbox.c	2010-08-31 10:58:37.000000000 +0200
++++ ps2eps-1.68/src/C/bbox.c	2010-12-15 13:39:27.000000000 +0100
+@@ -69,12 +69,14 @@
+   1
+ };
+ 
+-unsigned int minus_one(const unsigned x) 
++static
++unsigned int minus_one(const unsigned x)
+ {
+   return (x == 0) ? x : x-1;
+ }
+ 
+-unsigned int plus_one(const unsigned x) 
++static
++unsigned int plus_one(const unsigned x)
+ {
+   return (x == (unsigned int) ~0U) ? x : x+1;
+ }
+@@ -95,8 +97,9 @@
+ *       and printed to stdout                                           *
+ ************************************************************************/
+ /* calculate the bounding box in postscript points, given a resolution in dpi */
+-void readppm_and_calcbb(const char *name, 
+-                        const unsigned int resolution, 
++static
++void readppm_and_calcbb(const char *name,
++                        const unsigned int resolution,
+                         const unsigned char tight)
+ {
+ 	FILE 	*inputfile;
+@@ -181,6 +184,7 @@
+ #ifdef DEBUG
+ 	fprintf(stderr,"\nreading picture: %s size X: %u Y: %u\n",name,width,height);
+ #endif
++        x = 0; /* avoid uninitialized warning */
+         x_min= width>0 ? width-1 : 0;
+         x_max= 0; 
+         y_min= height>0 ? height-1 : 0; 

@@ -1,0 +1,58 @@
+2017-07-30  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* ppsout.ch, pmpost.ch: Force a space between " and ".
+
+2017-04-24  Hironori Kitagawa  <h_kitagawa2001@yahoo.co.jp>
+
+	* pmpxout.ch: p\TeX -> \pTeX.
+
+2017-03-31  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* pmp.ch: Adapt to MetaPost 2.000.
+
+2017-02-28  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* ppsout.ch: Do not change the first 19 characters %%Creator: MetaPost.
+
+2016-12-02  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* pmpost.ch: Adapt to the restricted mode in the latest mpost.w.
+
+2016-03-06  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* pmp.ch: Adapt to MetaPost 1.9991.
+
+2015-07-10  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* am/pmpost.am: Dependencies for 'make check'.
+
+2014-10-30  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* pmpost.ch, pmpxout.ch: Cleanup for pdvitomp and updvitomp.
+
+2014-10-30  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* pmpost.ch [W32TEX]: Handle building of (u)pmpost.dll.
+
+2014-10-26  Karl Berry  <karl@tug.org>
+
+	* pmpsamp.test, upmpsamp.test: check that e[u]ptex can read
+	their .fmt files, since that is what [u]pmpost is going to do.
+
+2014-09-22  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* pmpsamp.test, upmpsamp.test, tests/psample.mp: Shell scripts
+	and data for new tests.
+
+2014-09-17  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* ptfmin.ch: Allow character codes up to 0xffff.
+	* pmp.ch, pmpost.ch, ppsout.ch: Use P_UP prefix to handle
+	strings pMetaPost vs upMetaPost and similar.
+
+2014-09-05  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* Import pMetaPost and upMetaPost from ???.
+	* Rename change files and adapt to TeX Live build system.
+	* Handle pMetaPost/upMetaPost differences via '#ifdef UPMP'.
+	* pmpost.test, upmpost.test: Shell scripts for simple tests.

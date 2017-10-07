@@ -7,7 +7,7 @@
 
 Run the shell script:
 
-    ./build-pTeX-ng.sh
+    ./build-aptex.sh
 
 ### Building Chain
 
@@ -23,6 +23,15 @@ Run the shell script:
 
 ## How to Build (Android)
 
-    ./build-pTeX-ng.sh
+    ./build-aptex.sh
     cd android
     ./build-android-port.sh
+
+## Source
+
+* TeX Live 2017 (`http://tug.org/svn/texlive/trunk/Build/source/`)
+* libotf 0.9.15 (`http://cvs.savannah.gnu.org/viewvc/libotf/?root=m17n`)
+
+## How to Install
+
+[TeX Wiki/pTeX-ng](https://texwiki.texjp.org/?pTeX-ng)

@@ -1,0 +1,13 @@
+% $Id: idxhello.tex 43602 2017-03-25 21:11:20Z karl $
+% public domain. minimal index test:
+% latex idxhello && texindy idxhello.idx && cat idxhello.ind # inspect output
+% (or makeindex for that matter.)
+%
+% xindy must be able to find its modules, which in TL means being run
+% out of Master/bin/*.
+%
+\documentclass{article}
+\begin{document}
+\index{xyz}xyz
+\index{abc}abc
+\end{document}

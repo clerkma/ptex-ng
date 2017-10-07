@@ -1,0 +1,53 @@
+2017-06-20  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* Import zziplib-0.13.66.
+	* patch-01-binary, patch-02-bugfix, patch-03-w64-ptr: Adapted.
+
+2015-03-29  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-02-bugfix: More fix mmap for WIN32/WIN64, from Akira.
+
+2014-07-15  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-03-w64-ptr: Avoid WIN64 warning due to different size.
+
+2014-07-14  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-02-bugfix (new): Fix mmap for WIN32/WIN64, from Akira.
+
+2014-07-11  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-01-binary (new): Do not convert NL => CRLF (required
+	under Windows for our test case), from Akira.
+
+2012-03-12  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Import zziplib-0.13.62.
+
+2011-01-07  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Adapted to zziplib-0.13.60.
+	* patch-02-aix-strcasecmp, patch-03-inline (removed):
+	Now in source tree.
+
+2010-10-04  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Adapted to zziplib-0.13.59.
+	* patch-01-old-style-parameter (removed): now in source tree.
+	* patch-03-inline: Add static instead of dropping inline.
+
+2010-07-05  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-03-inline (new): Can't use non-static inline for Sun
+	Studio C, mail from Vladimir Volovich, Wed, 16 Jun 2010 20:18:17.
+
+2010-06-04  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-02-aix-strcasecmp (new): Need to #include <strings.h>
+	under _AIX for declaration of strcasecmp().
+	From Taco.
+
+2010-01-30  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-01-old-style-parameter (new): Avoid compiler warning.
+

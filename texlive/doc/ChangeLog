@@ -1,0 +1,83 @@
+2017-03-22  Karl Berry  <karl@tug.org>
+
+	* tlbuild.texi: we now default to gcc for ICU too.
+
+2017-03-19  Karl Berry  <karl@tug.org>
+
+	* tlbuild.texi: TLPATCHES -> TLpatches.
+	(direntry): add install-tl and tlmgr entries.
+
+2016-01-21  Karl Berry  <karl@freefriends.org>
+
+	* tlbuild.texi (Cross problems): Lua[JIT]TeX no longer uses
+	pdflua.c and thus no txt2zlib, so remove paragraph.
+	From Luigi, 18 Jan 2016 09:11:53.
+
+	* build-tools.txt (flex): now at 2.6.0.
+	(makeinfo): texinfo-6.1.
+
+2015-05-28  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* README.solaris (new): Moved from ../ to here.
+	* Makefile.am: Adapted.
+
+2015-03-24  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* tlbuild.texi: Add '--disable-synctex'.
+
+2015-03-18  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* build-tools.txt: Using bison 3.0.4 and libtool 2.4.6.
+	* tlbuild.texi: Minor updates.
+
+2015-01-20  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* build-tools.txt: Using bison 3.0.3 and libtool 2.4.5.
+
+2014-12-09  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* tlbuild.texi: Fixed a few typos.
+
+2014-12-08  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* build-tools.txt: Using libtool 2.4.4.
+
+2014-06-16  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* tlbuild.texi: Drop '--with-xindy-recode'.
+
+2014-05-20  Karl Berry  <karl@tug.org>
+
+	* tlbuild-incl/install-tl.texi,
+	* tlbuild-incl/tlmgr.texi: new files, generated from the pod doc.
+	* tlbuild.texi: @include them.
+	* Makefile.am (tlbuild_TEXINFOS): add them.
+	($(mydoc)-incl.texi): new phony target to run pod2texi;
+	currently requires development texinfo,
+	and thus is not intended to be invoked except by hand.
+	(readme-install): new phony target.
+	* splitinfo.gawk: quit at appendix too.
+
+2014-05-20  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* Makefile.am (EXTRA_DIST): no ${PDFS} any more.
+
+2014-05-01  Karl Berry  <karl@tug.org>
+
+	* tlbuild.texi (Building): split into sections.
+	Give full example of working on a single program.
+
+2014-04-09  Karl Berry  <karl@tug.org>
+	    Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* texlive.texi: Update for Texinfo, etc.
+	* build.texi, build-tools (removed): Moved ...
+	* tlbuild.texi, build-tools.txt (new): ... to here.
+	* splitinfo.gawk (new): Awk script to generate README.* files.
+	* Makefile.am: Adapted.
+
+2013-12-14  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* doc/build.texi: Fixed some typos.
+
+(This ChangeLog file is in the public domain.)

@@ -1,0 +1,71 @@
+$Id: README 44143 2017-05-01 21:58:19Z karl $
+Public domain.  Originally written 2005 by Karl Berry.
+
+For a high-level overview of building TeX Live, see
+http://tug.org/texlive/build.html.  In brief:
+
+- To configure and make the source tree, run ./Build.
+  This builds in subdirectory Work/, and installs into subdirectory inst/.
+
+- To build (mostly) without optimization, run ./Build --debug.
+
+- If the make fails and you want to rebuild without starting from scratch:
+  cd Work/whatever/subdir && make
+
+Email tlbuild@tug.org if problems.
+
+(Nearly everything the Build script does can be overridden via
+environment variables; just take a look to see the names.)
+
+Many more details about the TL build system, such as configuring to work
+on a single program, adding new programs or libraries, documentation
+about the many pieces of the system, etc., are in the doc/tlbuild*
+document and the sibling README* files here (which are generated from
+that document).
+
+
+Build information for some of the platforms.
+
+x86_64-linux: Debian 6.0 (Squeeze), Feb 2009.
+  
+amd64-netbsd:
+  gcc version 4.5.3 (NetBSD nb2 20110806)
+  NetBSD/amd64 6.1.3
+  TL_MAKE=gmake LDFLAGS='-L/usr/X11R7/lib -Wl,-rpath,/usr/X11R7/lib' ./Build
+  
+i386-freebsd, amd64-freebsd:
+  --disable-dvisvgm; upmendex for i386 built with -DU_IS_BIG_ENDIAN=0.
+
+i386-linux: Debian 7.
+
+i386-openbsd, amd64-openbsd:
+  e.g., see CONFIGURE_ARGS in the Makefile in
+  http://cvsweb.openbsd.org/cgi-bin/cvsweb/ports/print/texlive/base/
+
+i386-solaris, x86_64-solaris: Solaris 10.  See doc/README.solaris.
+
+i386-cygwin, x86_64-cygwin: gcc-4.8.2, cygwin-1.7.29.
+  ./Build (with --enable-xindy for i386).
+
+powerpc-linux (Debian Squeeze):
+  Linux homer 2.6.32-5-powerpc64 #1 SMP Tue Mar 8 02:01:42 UTC 2011
+  ppc64 Debian GNU/Linux 6.0
+  (only the kernel is 64bit, the entire userland is 32bit)
+
+sparc-solaris: Solaris 10, gcc.  See doc/README.solaris.
+
+x86_64-darwin:
+  See Master/source/mactexdoc.tar.xz.
+
+x86_64-darwinlegacy, i386-darwin, powerpc-darwin:
+  https://github.com/TeXLive-M/texlive-buildbot
+  http://build.contextgarden.net/waterfall?tag=c/texlive
+  (These links have info on all platforms built by Mojca.)
+  
+  32-bit binaries built on 10.6/x86_64 with backward compatibility to 10.5.
+  ppc binaries only work on <= 10.5, so 10.5/ppc will be the only OS for them.
+  i386 binaries only work on <= 10.6. While they theoretically work
+    "everywhere", they would only be used on 10.5 and 10.6/i386.
+  x86_64 binaries only work on >= 10.6 (and should work on any >= 10.6 machine)
+    but will only be used for < 10.10 since x86_64-darwin covers newer.
+  PPC binaries made with gcc-4.2 and Intel binaries with clang-3.7.

@@ -1,0 +1,138 @@
+$Id: README 43927 2017-04-19 22:27:13Z karl $
+Copyright 2006-2017 TeX Users Group.
+You may freely use, modify and/or distribute this file.
+
+This TeX Live directory contains the programs that use the kpathsea
+library for configuration and path searching, and the library itself.
+
+Some programs can be built on their own, but others, including kpathsea
+itself, cannot.  Instead, try using the script ../../Build or the
+equivalent configure && make. In general, for TeX Live we only test
+configuring the whole tree.
+
+Upstream sources and last-checked versions follow.  If a url is given,
+that is the upstream, although this does not mean the program is
+actively maintained.  Programs marked with a "?" are not (knowingly)
+maintained here, but the upstream is unknown.  If a program is knowingly
+maintained here in the TL repo, that is explicitly stated.
+
+Anyone -- please research and update any of this information.
+
+
+afm2pl - maintained here
+  http://tex.aanhet.net/afm2pl/
+
+bibtex-x - maintained here, contains
+  bibtex8
+  bibtexu
+    http://omega.enstb.org/yannis/bibtexu/
+
+chktex 1.7.6 - checked 15sep16
+  http://mirror.ctan.org/support/chktex/
+  http://download.savannah.gnu.org/releases/chktex/
+
+cjkutils 4.8.4 - checked 18apr15
+  http://cjk.ffii.org/cjk-4.8.4.tar.gz
+
+detex 2.8 - checked 10may12
+  http://www.cs.purdue.edu/homes/trinkle/detex/
+
+dtl - ?
+
+dvi2tty 6.0.0 - checked 05mar16
+  https://github.com/t-tk/dvi2tty
+
+dvidvi - maintained here.
+
+dviljk - maintained here, by Joachim Schrod
+
+dvipdfm-x - maintained here, by us, contains
+  dvipdfmx
+  xdvipdfmx
+
+dvipng 1.15 - checked 3mar15
+  http://mirror.ctan.org/dviware/dvipng/ (but maybe stale)
+  http://savannah.nongnu.org/files/?group=dvipng
+
+dvipos - ?
+
+dvipsk - maintained here, by us
+
+dvisvgm 2.1.3 - checked 21feb17
+  http://dvisvgm.bplaced.net/Downloads
+
+gregorio 5.0.1 - checked 16apr17
+  https://github.com/gregorio-project/gregorio/releases/
+
+gsftopk - from Paul Vojta's xdvi?
+
+kpathsea - maintained here, by us
+
+lcdf-typetools 2.106 - checked 22jun16
+  http://www.lcdf.org/type/
+
+makeindexk - maintained here, by us
+
+makejvf - maintained here, mainly by Takuji Tanaka
+
+mendexk - maintained here, by us (Takuji, Akira et al.)
+
+musixtnt 2016-01-30 - checked 10feb16
+  http://mirror.ctan.org/macros/musixtnt/
+
+ps2pk - maintained here, by us
+
+psutils 1.23 - checked 16jan14
+  https://github.com/rrthomas/psutils/archive/v1.23.tar.gz
+
+ptexenc - maintained here, by us (akira et al.)
+
+seetexk - ?
+
+tex4htk - checked 25apr11
+  http://tug.org/tex4ht/
+
+texlive - scripts maintained here, by us
+
+ttf2pk2 - maintained here, by us
+
+ttfdump - maintained here, by us, since Taiwan upstream apparently gone.
+
+upmendex 0.51 - by Takuji Tanaka
+  http://www.ctan.org/pkg/upmendex
+  http://www.t-lab.opal.ne.jp/tex/uptex_en.html
+
+web2c - maintained here, by us - core web2c, plain tex, etc.
+  The TeX variant dirs (pdftexdir, xetexdir, etc.)
+  updated here by their respective maintainers.  More info:
+       aleph - maintained here
+        ctie - CTAN
+        cweb - knuth, ftp://ftp.cs.stanford.edu/pub/cweb/
+       eptex - https://osdn.jp/projects/eptex,https://texwiki.texjp.org/?e-pTeX
+        etex - maintained here
+      euptex - https://texwiki.texjp.org/?upTeX%2CupLaTeX
+  mflua[jit] - https://foundry.supelec.fr/projects/mflua/
+    mplibdir - http://tug.org/metapost
+      luatex - http://luatex.org
+      pdftex - http://pdftex.org
+      pmpost - none
+        ptex - nothing current, old info: http://ascii.asciimw.jp/pb/ptex/
+     synctex - maintained here, but also https://github.com/jlaurens/synctex
+     upmpost - ? (Kitagawa-san)
+       uptex - https://texwiki.texjp.org/?upTeX%2CupLaTeX
+       xetex - http://tug.org/xetex/
+   
+xdvik 22.87.03 - checked 6apr16
+  http://sourceforge.net/projects/xdvi/files/xdvik/
+  Procedure for updating xdvik from sourceforge release:
+tar xf ...
+diff -crN2 \
+  -x .cvsignore -x configure -x autom4te.cache -x Makefile.in -x ChangeLog \
+  xdvik xdvik-22.87.03/texk/xdvik >/tmp/c
+cd xdvik
+patch -p1 </tmp/c
+reautoconf
+add import entry to ChangeLog, update texk/README
+remove unpacked ../xdvik-*
+make sure it builds
+commit.

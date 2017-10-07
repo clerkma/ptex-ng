@@ -1,0 +1,9 @@
+#! /bin/sh
+# $Id: dvisvgm.test 43103 2017-01-31 18:39:23Z karl $
+# Copyright 2017 Karl Berry <tex-live@tug.org>
+# Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+# Not really a test, just making sure the program executes.
+
+./dvisvgm-src/src/dvisvgm -Vyes || exit 1

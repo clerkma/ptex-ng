@@ -1,0 +1,77 @@
+2014-06-18  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* ctie-k.ch: Avoid useless char subscript warnings.
+
+2014-02-12  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* ctie-k.ch: Handle input lines with CRLF.
+
+2013-06-28  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* ctie-k.ch: Include <stdio.h> after <kpathsea/kpathsea.h>.
+	Drop unused string variable 'file_open_mode'.
+
+2012-05-18  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* ctie-k.ch: Use binary mode for output files.
+	From Akira Kakuto <kakuto@fuk.kindai.ac.jp> (W32TeX).
+
+2010-04-10  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* ctie-k.ch: Replace "-[m|c]" in usage message by "-m|-c".
+
+2009-08-29  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Avoid maximal compiler warnings.
+	* ctie-k.ch (err_print, pfatal_error, CTIEHELP, usage_help,
+	print_version_and_exit): Constify strings.
+
+2009-08-28  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* ../am/cweb.am (ctie_CFLAGS): Enable compiler warnings.
+	* ctie-k.ch: Declare all functions (except main) as static.
+
+2009-08-22  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* ctie-k.ch (kpathsea_version_string): Drop nested extern decls.
+
+2009-06-23  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* ctie-k.ch: Drop P?C, P?H, use ANSI C function declarations.
+
+	* ctie-k.c (removed): obsolete, there still is ctie.c.
+
+2005-02-05  Olaf Weber  <olaf@infovore.xs4all.nl>
+
+	* ctie.1: Correct header from TIE to CTIE.
+
+2005-01-21  Olaf Weber  <olaf@infovore.xs4all.nl>
+
+	* ctie.1 (ctie.1): Man page correction from Eric S. Raymond
+	<esr@thyrsus.com>.
+
+2003-04-20  Julian Gilbey  <jdg@debian.org>
+
+	* Remove documented need for any change files - they're not
+	  actually necessary (thanks to Hartmut Henkel
+	  <hartmut_henkel@gmx.de> for this observation)
+
+	* Use kpathsea 3.4.5 modified functions, losing some backward
+	  compatibility if the kpathsea library is used
+
+	* Match current Web2C/Kpathsea modifications to cweb, and modify
+	  to more closely match cweb 3.64 behaviour
+
+	* Release as version 1.1
+
+2002-02-03  Julian Gilbey  <jdg@debian.org>
+
+	* Make success message appear on a new line at end of run
+
+	* Improve formatted output for ctie-k.ch
+
+	* Release as version 1.0
+
+2002-01-13  Julian Gilbey  <jdg@debian.org>
+
+	* Initial release (version 0.9)

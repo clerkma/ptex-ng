@@ -1,0 +1,376 @@
+>>> Running e-TRIP test for e-TeX.
+>>> See SRCDIR/etexdir/etrip/etrip.diffs for example of acceptable diffs.
++ echo '*** TRIP test for e-TeX in compatibility mode ***.'
+*** TRIP test for e-TeX in compatibility mode ***.
++ ./pltotf SRCDIR/triptrap/trip.pl trip.tfm
++ ./tftopl ./trip.tfm trip.pl
++ diff SRCDIR/triptrap/trip.pl trip.pl
++ ln -s SRCDIR/triptrap/trip.tex .
++ ./etex --progname=einitex --ini
++ test '!' -s trip.fmt
++ mv trip.log ctripin.log
++ diff SRCDIR/triptrap/tripin.log ctripin.log
+1c1
+< This is TeX, Version 3.14159265 (INITEX)  7 JAN 2014 09:09
+---
+> This is e-TeX, Version 3.14159265-2.6 (TeX Live 2015) (INITEX)  12 APR 2015 16:23
+3c3
+< (trip.tex
+---
+> (./trip.tex
+450,453c450,453
+<  (preloaded format=trip 2014.1.7)
+< 1326 strings of total length 23646
+< 471 memory locations dumped; current usage is 96&278
+< 341 multiletter control sequences
+---
+>  (preloaded format=trip 2015.4.12)
+> 1490 strings of total length 26227
+> 479 memory locations dumped; current usage is 104&278
+> 342 multiletter control sequences
+461c461
+< Hyphenation trie of length 273 has 9 ops out of 500
+---
+> Hyphenation trie of length 273 has 9 ops out of 35111
++ ./etex --progname=etex
++ mv trip.log ctrip.log
++ diff SRCDIR/triptrap/trip.fot ctrip.fot
+1,3c1,2
+< This is TeX, Version 3.14159265 (INITEX)
+< ** &trip  trip 
+< (trip.tex ##
+---
+> This is e-TeX, Version 3.14159265-2.6 (TeX Live 2015) (preloaded format=etex)
+> **(./trip.tex ##
+17c16
+< Memory usage before: 159&313; after: 102&278; still untouched: 1613
+---
+> Memory usage before: 185&313; after: 112&278; still untouched: 2612
+75c74
+< Memory usage before: 334&431; after: 292&418; still untouched: 175
+---
+> Memory usage before: 434&431; after: 376&418; still untouched: 178
++ diff SRCDIR/triptrap/trip.log ctrip.log
+1c1
+< This is TeX, Version 3.14159265 (preloaded format=trip 2014.1.7)  7 JAN 2014 09:59
+---
+> This is e-TeX, Version 3.14159265-2.6 (TeX Live 2015) (preloaded format=trip 2015.4.12)  12 APR 2015 16:23
+3c3
+< (trip.tex ##
+---
+> (./trip.tex ##
+58a59,62
+> \openout0 = `8terminal.tex'.
+> 
+> \openout10 = `tripos.tex'.
+> 
+73c77
+< Memory usage before: 159&313; after: 102&278; still untouched: 1613
+---
+> Memory usage before: 185&313; after: 112&278; still untouched: 2612
+642c646
+< Memory usage before: 747&484; after: 581&481; still untouched: 1492
+---
+> Memory usage before: 1027&484; after: 795&481; still untouched: 1491
+815c819
+< Memory usage before: 475&470; after: 290&466; still untouched: 1473
+---
+> Memory usage before: 653&470; after: 384&466; still untouched: 1472
+915c919
+< Memory usage before: 218&459; after: 149&458; still untouched: 1473
+---
+> Memory usage before: 286&459; after: 181&458; still untouched: 1472
+1070c1074
+< Memory usage before: 118&328; after: 102&328; still untouched: 1473
+---
+> Memory usage before: 132&328; after: 110&328; still untouched: 1472
+1405c1409
+< \vbox(16383.99998+0.0)x1000.0, glue set 16342.0fil
+---
+> \vbox(16383.99998+0.0)x1000.0, glue set 16341.99998fil
+1511c1515
+< Memory usage before: 990&376; after: 584&370; still untouched: 735
+---
+> Memory usage before: 1396&376; after: 788&370; still untouched: 1472
+1954c1958
+< (tripos.tex
+---
+> (./tripos.tex
+2018c2022
+< \vbox(16383.99998+1.0)x100.0, glue set 16239.0fil
+---
+> \vbox(16383.99998+1.0)x100.0, glue set 16238.99998fil
+2189c2193
+< Memory usage before: 950&531; after: 546&448; still untouched: 706
+---
+> Memory usage before: 1400&531; after: 772&448; still untouched: 1443
+2533c2537
+< \vbox(16383.99998+0.0)x20.0, glue set 16331.0fil
+---
+> \vbox(16383.99998+0.0)x20.0, glue set 16330.99998fil
+2575c2579
+< Memory usage before: 339&413; after: 236&405; still untouched: 706
+---
+> Memory usage before: 455&413; after: 296&405; still untouched: 1443
+3326c3330
+< \vbox(10000.0+2.0)x28.0, glue set 9737.58789fil
+---
+> \vbox(10000.0+2.0)x28.0, glue set 9737.58742fil
+3616c3620
+< Memory usage before: 2170&521; after: 1181&459; still untouched: 175
+---
+> Memory usage before: 3016&521; after: 1607&459; still untouched: 178
+3864c3868
+< \vbox(16383.99998+2.0)x100.0, glue set 16318.0fil
+---
+> \vbox(16383.99998+2.0)x100.0, glue set 16317.99997fil
+3951c3955
+< Memory usage before: 640&415; after: 397&410; still untouched: 175
+---
+> Memory usage before: 888&415; after: 525&410; still untouched: 178
+4034c4038
+< \vbox(16383.99998+0.0)x8236.0, glue set 16344.0fil
+---
+> \vbox(16383.99998+0.0)x8236.0, glue set 16343.99998fil
+4053c4057
+< Memory usage before: 235&401; after: 178&399; still untouched: 175
+---
+> Memory usage before: 307&401; after: 218&399; still untouched: 178
+4420c4424
+< \vbox(16383.99998+0.0)x100.0, glue set 16332.0fil
+---
+> \vbox(16383.99998+0.0)x100.0, glue set 16331.99998fil
+4506c4510
+< Memory usage before: 651&432; after: 417&418; still untouched: 175
+---
+> Memory usage before: 941&432; after: 565&418; still untouched: 178
+4742c4746
+< \vbox(16383.99998+0.0)x205.12613, glue set 16344.0fil
+---
+> \vbox(16383.99998+0.0)x205.12613, glue set 16343.99998fil
+4828c4832
+< Memory usage before: 776&458; after: 464&452; still untouched: 175
+---
+> Memory usage before: 1098&458; after: 630&452; still untouched: 178
+6380c6384
+< (tripos.tex
+---
+> (./tripos.tex
+6595c6599
+< Memory usage before: 819&428; after: 720&426; still untouched: 175
+---
+> Memory usage before: 1155&428; after: 1016&426; still untouched: 178
+7155c7159
+< Memory usage before: 895&439; after: 290&420; still untouched: 175
+---
+> Memory usage before: 1269&439; after: 374&420; still untouched: 178
+7288c7292
+< Memory usage before: 334&431; after: 292&418; still untouched: 175
+---
+> Memory usage before: 434&431; after: 376&418; still untouched: 178
+7296,7299c7300,7303
+<  47 strings out of 1674
+<  253 string characters out of 8354
+<  2825 words of memory out of 3000
+<  372 multiletter control sequences out of 2100
+---
+>  44 strings out of 1810
+>  261 string characters out of 7773
+>  3821 words of memory out of 3999
+>  373 multiletter control sequences out of 15000+0
+7301c7305
+<  2 hyphenation exceptions out of 307
+---
+>  1 hyphenation exception out of 659
++ eval ./dvitype -output-level=2 -dpi=72.27 '-page-start='\''*.*.*.*.*.*.*.*.*.*'\''' trip.dvi
+++ ./dvitype -output-level=2 -dpi=72.27 '-page-start=*.*.*.*.*.*.*.*.*.*' trip.dvi
++ diff SRCDIR/triptrap/trip.typ ctrip.typ
+1c1
+< This is DVItype, Version 3.6
+---
+> This is DVItype, Version 3.6 (TeX Live 2015)
+9c9
+< ' TeX output 2014.01.07:0959'
+---
+> ' TeX output 2015.04.12:1623'
+419c419
+< 1121: down4 639342208 
+---
+> 1121: down4 639342177 
+1087,1088c1087,1088
+< 2535: y4 203921760 
+< 2540: y0 203921760 
+---
+> 2535: y4 203921756 
+> 2540: y0 203921756 
++ mv trip.fmt ctrip.fmt
++ echo '*** TRIP test for e-TeX in extended mode ***.'
+*** TRIP test for e-TeX in extended mode ***.
++ ./etex --progname=einitex --ini
++ test '!' -s trip.fmt
++ mv trip.log xtripin.log
++ diff ctripin.log xtripin.log
+2c2,3
+< **\input trip
+---
+> entering extended mode
+> ***\input trip
+36,41d36
+< ! Bad register code (256).
+< l.29 ...{1} \toksdef\tokens=256 
+<                                 \show\errorstopmode
+< A register number must be between 0 and 255.
+< I changed this one to zero.
+< 
+452,453c447,448
+< 479 memory locations dumped; current usage is 104&278
+< 342 multiletter control sequences
+---
+> 517 memory locations dumped; current usage is 142&278
+> 408 multiletter control sequences
++ ./etex --progname=etex
++ mv trip.log xtrip.log
++ diff ctrip.fot xtrip.fot
+2c2,3
+< **(./trip.tex ##
+---
+> **entering extended mode
+> ## (./trip.tex
+16c17
+< Memory usage before: 185&313; after: 112&278; still untouched: 2612
+---
+> Memory usage before: 185&313; after: 112&278; still untouched: 1612
+76a78,80
+> 
+> ### semi simple group (level 1) entered at line 429 (begingroup)
+> ### bottom level
++ diff ctrip.log xtrip.log
+2,3c2,4
+< ** &trip  trip
+< (./trip.tex ##
+---
+> entering extended mode
+> **&trip \toksdef\tokens=0 \input trip
+>  (./trip.tex
+77c78
+< Memory usage before: 185&313; after: 112&278; still untouched: 2612
+---
+> Memory usage before: 185&313; after: 112&278; still untouched: 1612
+1773d1773
+< {restoring \fam=-1}
+1783d1782
+< {restoring \displayindent=0.0pt}
+1837d1835
+< {restoring \fam=-1}
+2139c2137
+< .\hbox(0.0+0.0)x0.0, shifted 50.0
+---
+> .\hbox(0.0+0.0)x0.0, shifted 50.0, display
+2142c2140
+< .\hbox(0.0+0.0)x0.0, shifted 100.0
+---
+> .\hbox(0.0+0.0)x0.0, shifted 100.0, display
+2574c2572
+< .\hbox(0.0+0.0)x15.0, glue set 0.1875, shifted 5.0
+---
+> .\hbox(0.0+0.0)x15.0, glue set 0.1875, shifted 5.0, display
+2839d2836
+< {restoring current font=\ip}
+3227d3223
+< {restoring \fam=-1}
+3376c3372
+< .\hbox(68.26251+98.15005)x19.0, glue set - 1.0, shifted 9.0
+---
+> .\hbox(68.26251+98.15005)x19.0, glue set - 1.0, shifted 9.0, display
+3561c3557
+< .\hbox(20.5+50.80002)x8.27895, shifted 19.72105
+---
+> .\hbox(20.5+50.80002)x8.27895, shifted 19.72105, display
+3770d3765
+< {restoring \fam=-1}
+3843d3837
+< {restoring \fam=-1}
+3899c3893
+< ..\hbox(12.0+4.0)x8.1778
+---
+> ..\hbox(12.0+4.0)x8.1778, display
+3921c3915
+< ..\hbox(0.0+13.00002)x-0.1778, glue set - 57.67767fil
+---
+> ..\hbox(0.0+13.00002)x-0.1778, glue set - 57.67767fil, display
+3929c3923
+< ....\hbox(7.0+1.0)x5.0, shifted 47.5
+---
+> ....\hbox(7.0+1.0)x5.0, shifted 47.5, display
+4015d4008
+< {restoring \fam=-1}
+4051c4044
+< .\hbox(0.0+0.0)x1009.0, shifted 7227.0
+---
+> .\hbox(0.0+0.0)x1009.0, shifted 7227.0, display
+4055c4048
+< .\hbox(0.0+0.0)x-7127.0, shifted 7227.0
+---
+> .\hbox(0.0+0.0)x-7127.0, shifted 7227.0, display
+4849c4842
+< I'll pretend you didn't say \long or \outer or \global.
+---
+> I'll pretend you didn't say \long or \outer or \global or \protected.
+7295a7289,7291
+> 
+> ### semi simple group (level 1) entered at line 429 (begingroup)
+> ### bottom level
+7303c7299
+<  373 multiletter control sequences out of 15000+0
+---
+>  439 multiletter control sequences out of 15000+0
+7306c7302
+<  7i,7n,9p,113b,38s stack positions out of 200i,40n,60p,500b,600s
+---
+>  7i,7n,9p,136b,40s stack positions out of 200i,40n,60p,500b,600s
++ eval ./dvitype -output-level=2 -dpi=72.27 '-page-start='\''*.*.*.*.*.*.*.*.*.*'\''' trip.dvi
+++ ./dvitype -output-level=2 -dpi=72.27 '-page-start=*.*.*.*.*.*.*.*.*.*' trip.dvi
++ diff ctrip.typ xtrip.typ
++ mv trip.fmt xtrip.fmt
++ echo '*** e-TeX specific part of e-TRIP test ***.'
+*** e-TeX specific part of e-TRIP test ***.
++ ./pltotf SRCDIR/etexdir/etrip/etrip.pl etrip.tfm
++ ./tftopl ./etrip.tfm etrip.pl
++ diff SRCDIR/etexdir/etrip/etrip.pl etrip.pl
++ ln -s SRCDIR/etexdir/etrip/etrip.tex .
++ ./etex --progname=einitex --ini
++ test '!' -s etrip.fmt
++ mv etrip.log etripin.log
++ diff SRCDIR/etexdir/etrip/etripin.log etripin.log
+1c1
+< This is e-TeX, Version 3.14159265-2.6 (TeX Live 2014) (INITEX)  22 JAN 2014 11:25
+---
+> This is e-TeX, Version 3.14159265-2.6 (TeX Live 2015) (INITEX)  12 APR 2015 16:23
+26c26
+<  (preloaded format=etrip 2014.1.22)
+---
+>  (preloaded format=etrip 2015.4.12)
++ ./etex --progname=etex
++ diff SRCDIR/etexdir/etrip/etrip.fot etrip.fot
+1c1
+< This is e-TeX, Version 3.14159265-2.6 (TeX Live 2014) (preloaded format=etex)
+---
+> This is e-TeX, Version 3.14159265-2.6 (TeX Live 2015) (preloaded format=etex)
++ diff SRCDIR/etexdir/etrip/etrip.log etrip.log
+1c1
+< This is e-TeX, Version 3.14159265-2.6 (TeX Live 2014) (preloaded format=etrip 2014.1.22)  22 JAN 2014 11:25
+---
+> This is e-TeX, Version 3.14159265-2.6 (TeX Live 2015) (preloaded format=etrip 2015.4.12)  12 APR 2015 16:23
++ eval ./dvitype -output-level=2 -dpi=72.27 '-page-start='\''*.*.*.*.*.*.*.*.*.*'\''' etrip.dvi
+++ ./dvitype -output-level=2 -dpi=72.27 '-page-start=*.*.*.*.*.*.*.*.*.*' etrip.dvi
++ diff SRCDIR/etexdir/etrip/etrip.typ etrip.typ
+1c1
+< This is DVItype, Version 3.6 (TeX Live 2014)
+---
+> This is DVItype, Version 3.6 (TeX Live 2015)
+9c9
+< ' TeX output 2014.01.22:1125'
+---
+> ' TeX output 2015.04.12:1623'
++ :
+PASS: etexdir/etriptest

@@ -1,0 +1,6 @@
+Changes applied to the xpdf-4.00/ tree as obtained from:
+	http://www.xpdfreader.com/download.html
+
+Removed:
+	aconf.h.in
+	xpdf-qt/

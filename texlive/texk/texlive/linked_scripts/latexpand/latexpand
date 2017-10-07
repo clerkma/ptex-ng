@@ -1,0 +1,422 @@
+#!/usr/bin/perl
+# Inspired by latexpand by D. Musliner, University of Michigan
+# 2012, 2013, 2014, 2015, 2016: Matthieu Moy <Matthieu.Moy@imag.fr>
+# BSD License
+
+use strict;
+use Cwd;
+use Getopt::Long;
+use Pod::Usage;
+use IO::Handle;
+
+my $TEXINPUTS = $ENV{'TEXINPUTS'};
+if (!$TEXINPUTS) { $TEXINPUTS = getcwd(); }
+
+my $verbose;
+my $keep_comments;
+my $keep_includes;
+my $empty_comments;
+my $help;
+my $long_help;
+my $output;
+my $explain;
+my $show_graphics;
+my $graphics_extensions = ":.pdf:.png:.jpg:.eps";
+my $expand_usepackage;
+my $expand_bbl;
+my $fatal;
+my $version;
+my $makeatletter;
+
+GetOptions (
+	'h' => \$help,
+	'help' => \$long_help,
+	'verbose|v' => \$verbose,
+	'keep-comments' => \$keep_comments,
+	'keep-includes' => \$keep_includes,
+	'empty-comments' => \$empty_comments,
+	'output|o=s' => \$output,
+	'explain' => \$explain,
+	'show-graphics' => \$show_graphics,
+	'graphics-extensions' => \$graphics_extensions,
+	'expand-usepackage' => \$expand_usepackage,
+	'expand-bbl=s' => \$expand_bbl,
+	'fatal' => \$fatal,
+	'version' => \$version,
+        'makeatletter' => \$makeatletter,
+) or pod2usage(2);
+version() if $version;
+pod2usage(1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $long_help;
+
+sub get_version
+{
+	# $VERSION's value will be substituted by 'make dist', but the
+	# next line won't (the string has to be broken to avoid it).
+	my $VERSION = 'v1.3';
+	if ($VERSION eq '@LATEXPAND' . '_VERSION@') {
+		my($vol,$dir,$file) = File::Spec->splitpath($0);
+		chdir($dir);
+		$VERSION = `git describe --tags HEAD 2>/dev/null`;
+	}
+	if ($VERSION eq '') {
+		$VERSION = '<unknown version>';
+	}
+	$VERSION =~ s/^\s+|\s+$//g;
+	return $VERSION;
+}
+
+sub version
+{
+	print "latexpand version ". get_version() .".\n";
+	exit(0);
+}
+
+my $nl = "";
+if ($empty_comments) {
+	$nl = "%\n";
+}
+
+if ($output && $output ne "-") {
+	open (my $OUTPUT, '>', "$output") or die $!;
+	STDOUT->fdopen(\*$OUTPUT, 'w') or die $!;
+}
+
+sub say
+{
+	if ($verbose) {
+		print STDERR "$_[0]";
+	}
+}
+
+my $makeatletter_found;
+my $in_preamble;
+
+foreach my $file (@ARGV)
+{
+	say "processing $file\n";
+	$makeatletter_found = 0;
+	$in_preamble = 1;
+	process_file($file, "  ");
+}
+
+sub process_file
+{
+	my $file = shift;
+	my $prefix = (shift || "");
+	my $in_comment = 0;
+	open(my $FILE, "<", $file) or die "could not open input file '$file'\n";
+	while (my $line = <$FILE>) {
+		if ($line =~ /^[ \t]*\\endinput/) {
+			$line =~ s/(\\endinput.*)\n/% $1/;
+			$in_comment = 1;
+			process_line($line, $prefix);
+			last;
+		}
+		process_line($line, $prefix, $file);
+		if ($line =~ /^%.*[^\n]\z/ || $line =~ /[^\\]%.*[^\n]\z/) {
+			# file ends with a comment not ending with a newline
+			print "\n";
+		}
+		# Garbage at end of line after \end{document} is
+		# ignored by LaTeX, but we don't allow anything before
+		# to avoid e.g. \verb|\end{document}| from terminating
+		# the file.
+		if (!$keep_comments && $line =~ /^[ \t]*\\end\{document\}/) {
+			last;
+		}
+	}
+	close($FILE);
+	return $in_comment;
+}
+
+sub process_line
+{
+	my ($line, $prefix, $file) = @_;
+	$_ = $line;
+	# Consider \makeatletter only in preamble, because we do want
+	# to warn on \someCommand{\makeatletter\command@with@arobase}.
+	if ($in_preamble && /^[^%]*\\makeatletter/) {
+		$makeatletter_found = 1;
+	}
+	if ($in_preamble && /^[^%]*\\makeatother/) {
+		$makeatletter_found = 0;
+	}
+	if (!$makeatletter && !$makeatletter_found
+	    && (my ($command) = /^[^%]*(\\[[:alpha:]]*@[[:alpha:]]*)/)) {
+		print STDERR "Warning: command $command containing @ found in\n";
+		print STDERR "Warning: $file.\n";
+		print STDERR "Warning: consider using --makeatletter if the result is not compilable.\n";
+	}
+	unless ($keep_comments) {
+		if (!$empty_comments) {
+			# Include \n in pattern to avoid matching
+			# comments at end of files
+
+			# remove comments + whitespace-only lines completely
+			s/^\s*%.*\n//;
+
+			# remove only the comment if the line has actual content
+			s/([^\\])%.*\n/$1\n/;
+		}
+		# Apply the "empty comments" treatment unconditionally
+		# for end-of-files comments not matched above (it
+		# doesn't harm to keep an empty comment sometimes, but
+		# it may harm to leave a real comment if the goal was
+		# to strip them).
+		s/^%.*$/%/;
+		s/([^\\])%.*$/$1%/;
+	}
+
+	unless ($keep_includes) {
+		if (my ($before, $ignored, $full_filename, $after)
+		    = /^(([^%]|[^\\]%)*)\\include[{\s]+(.*?)[\s}](.*)$/) {
+			$full_filename = find_tex_file($full_filename . ".tex");
+			if ($full_filename) {
+				say $prefix . "Found include for file: $full_filename\n";
+				print $before . $nl;
+				print '\clearpage{}' . $nl;
+				print "% start include $full_filename\n" if ($explain);
+				my $in_comment = process_file($full_filename, $prefix . "  ");
+				if ($explain) {
+				    print " % end include $full_filename\n";
+				} elsif ($in_comment) {
+				    print "\n";
+				}
+				print '\clearpage{}' . $nl;
+				print $nl . $after . "\n";
+				$_ = "";
+			}
+		} elsif (my ($before, $ignored, $full_filename, $after)
+			 = /^(([^%]|[^\\]%)*)\\input[{\s]+(.*?)[\s}](.*)$/) {
+			$full_filename = find_tex_file($full_filename, ":.tex");
+			if ($full_filename) {
+				say $prefix . "Found input for file: $full_filename\n";
+				print $before . $nl;
+				print "% start input $full_filename\n" if ($explain);
+				my $in_comment = process_file($full_filename, $prefix . "  ");
+				if ($explain) {
+				    print " % end input $full_filename\n";
+				} elsif ($in_comment) {
+				    print "\n";
+				}
+				if ($after =~ /[^\s]/) {
+				    # LaTeX produces this space, so let's do it also
+				    print " " . $nl . $after . "\n";
+				} else {
+				    print " ";
+				}
+				$_ = "";
+			}
+		}
+	}
+	if ($expand_usepackage) {
+		# Don't bother with before and after text, we just require the
+		# usepackage to be alone on its line.
+		if (my ($package_name) = /^\s*\\usepackage\{([^\}]*)\}\s*(%.*)?$/) {
+			my $full = find_file($package_name . ".sty", $TEXINPUTS);
+			if ($full) {
+				say $prefix . "Found package file: $full\n";
+				process_file($full, $prefix . "  ");
+				$_ = "";
+			} else {
+				say $prefix . "Not including external package $package_name\n";
+			}
+		}
+	}
+	if ($expand_bbl) {
+		if (my ($before, $bib_name, $after)
+			 = /^(.*)\\bibliography\{([^\}]*)\}(.*)$/) {
+			# The BBL file is not necessarily $bib_name.
+			# Take it from the command-line.
+			print $before . $nl;
+			say $prefix . "Expanding BBL file: $expand_bbl\n";
+			process_file($expand_bbl, $prefix . "  ");
+			print " " . $nl . $after . "\n";
+			$_ = "";
+		}
+	}
+	if ($show_graphics) {
+		if (/\\includegraphics(\[[^\]]*\])?{([^}]*)}/) {
+			my $full = find_tex_file($2, $graphics_extensions);
+			say $prefix . "needs graphics file: ";
+			print STDERR "$full\n";
+		}
+	}
+	if (/^[ \t]*\\begin\{document\}/) {
+		$in_preamble = 0;
+		if ($makeatletter) {
+			print '\makeatletter' . $nl;
+		}
+	}
+	print;
+}
+
+# search $1 in $TEXINPUTS, with possible extensions in $2
+sub find_tex_file
+{
+	my $file = shift;
+	my $extensions = (shift || ":");
+	foreach my $ext (split(':', $extensions, -1)) {
+		my $full = find_file($file . $ext, $TEXINPUTS);
+		if ($full) {
+			return $full;
+		}
+	}
+	if ($fatal) {
+		die "ERROR: Could not find file [$file]\n";
+	} else {
+		print STDERR "Warning: Could not find file [$file]\n";
+		return;
+	}
+}
+
+sub find_file
+{
+	my ($file, $path) = @_;
+	if (File::Spec->file_name_is_absolute($file)) {
+		if (-e "$file" && ! -d "$file") {
+			return $file;
+		} else {
+			return;
+		}
+	}
+	foreach my $dir (split(':', $path)) {
+		if (-e "$dir/$file" && ! -d "$dir/$file") {
+			return("$dir/$file");
+		}
+	}
+	return;
+}
+
+
+__END__
+
+=head1 NAME
+
+latexpand - Flatten LaTeX file by expanding \include and \input, ... and  remove comments
+
+=head1 SYNOPSIS
+
+latexpand [options] FILE...
+
+=head2 Options:
+
+	--verbose        show what's going on
+	--keep-comments  don't strip comments (comments are lines
+                         starting with %, and anything below
+                         \end{document})
+	--empty-comments keep empty comments (i.e. % at end of lines) for clarity
+	--keep-includes  don't expand \input and \include directives
+	--expand-usepackage
+	                 Expand \usepackage{...} directives if the
+	                 corresponding .sty file is found in
+	                 $TEXINPUTS (or the current directory if
+	                 $TEXINPUTS is not set)
+	--expand-bbl FILE
+	                 Expand the bibliography by inlining FILE
+	                 (should be a *.bbl file)
+	--help           this help message
+	--output <file>, -o <file>
+	                 generate output in <file>
+	--explain        generate explanatory comments in output
+	--show-graphics  show included graphics
+	--graphics_extensions
+	                 colon-separated list of possible graphics extensions
+	                 (used by --show-graphics to find the actual graphics files)
+	--fatal          Die in case a file can't be found.
+	--makeatletter   Insert a \makeatletter in the preamble. In some
+	                 rare cases it may break your document, but it
+	                 may help fixing bad interactions between
+	                 @-commands and inclusion (see BUGS section).
+
+=head1 USES
+
+The most common use of latexpand is to simplify distribution of source
+LaTeX files, typically to satisfy the requirement of editors and
+archival sites (springer, arXiv.org, ...) who force the authors to
+submit sources. One does not necessarily want to submit sources with
+comments, and uploading a document made of several files including
+each other is a bit painful. By default, latexpand answers both
+problems by outputing a single LaTeX file that contain no comment.
+
+=head1 GETTING LATEXPAND
+
+The latest version of latexpand is available here:
+
+  https://gitlab.com/latexpand/latexpand
+
+Versions are uploaded to ctan.org from time to time:
+
+  http://www.ctan.org/pkg/latexpand
+
+=head1 BUGS
+
+Please, report bugs on the issue tracker on the project site:
+
+  https://gitlab.com/latexpand/latexpand/issues
+
+Alternatively, you may email directly the author: Matthieu Moy
+<Matthieu.Moy@imag.fr>.
+
+=head2 Known bugs
+
+=head3 Verbatim
+
+latexpand currently ignores \begin{verbatim} ... \end{verbatim}, and
+will therefore process any \include, \input, ... directives that
+appear within verbatim environments (while it shouldn't).
+
+LaTeX comments inside verbatim environments are also incorrectly
+stripped. You can use --keep-comments as a workaround to avoid this.
+
+=head3 Comment environment
+
+It would be nice to remove code between \begin{comment} and
+\end{comment} too if \usepackage{comment} is used.
+
+Code like
+
+	foo%
+	\begin{comment}
+
+will produce the incorrect
+
+	foo\begin{comment}
+
+A workaround is to use --empty-comments when such tricky usage of the
+comments package is done.
+
+=head3 \makeatletter and use with transfig/xfig with \scalebox{}
+
+If \input{} or \include{} appears as argument to a command, and the
+file included contains \makeatletter, then after expansion, the
+\makeatletter and the @-command appear as argument to the command,
+which is forbidden because the argument is parsed (and the @-command
+badly tokenized) before being executed.
+
+This happens with
+
+	\scalebox{ \input{file-generated-by-xfig.pdf_t} }
+
+Workaround: add \makeatletter before the scalebox manually in your
+code, like
+
+        \makeatletter{}
+	\scalebox{ \input{file-generated-by-xfig.pdf_t} }
+        \makeatother{}
+
+In the case of xfig generated files, it is necessary only for the
+first occurence.
+
+A more brute-force workaround is to use latexpand --makeatletter.
+
+=head1 SEE ALSO
+
+Instructions to include only the relevant .bib items (french):
+
+https://lacl.fr/~caubert/notes/portabilite-du-tex.html#dependances
+
+=head1 VERSION
+
+This is latexpand version v1.3.

@@ -1,0 +1,54 @@
+	The supplied g++-4.2 compiler on 32-bit MacOSX apparently
+	mishandled private enum in the implementation (since newer
+	compilers are ok with it).  This can be removed when we drop
+	support for 32-bit MacOSX.
+	http://tug.org/pipermail/tlbuild/2016q1/003438.html
+	(and starting at http://tug.org/pipermail/tlbuild/2016q1/003433.html)
+
+Index: source/i18n/dayperiodrules.h
+===================================================================
+--- source/i18n/dayperiodrules.h	(revision 43491)
++++ source/i18n/dayperiodrules.h	(working copy)
+@@ -55,7 +55,7 @@
+     // Returns the center of dayPeriod. Half hours are indicated with a .5 .
+     double getMidPointForDayPeriod(DayPeriod dayPeriod, UErrorCode &errorCode) const;
+ 
+-private:
++/* nothing private to placate old compilers --karl/koch private: */
+     DayPeriodRules();
+ 
+     // Translates "morning1" to DAYPERIOD_MORNING1, for example.
+Index: source/i18n/unicode/dtitvinf.h
+===================================================================
+--- source/i18n/unicode/dtitvinf.h	(revision 43491)
++++ source/i18n/unicode/dtitvinf.h	(working copy)
+@@ -330,7 +330,7 @@
+     static UClassID U_EXPORT2 getStaticClassID();
+ 
+ 
+-private:
++/* nothing private to placate old compilers --karl/koch private: */
+     /**
+      * DateIntervalFormat will need access to
+      * getBestSkeleton(), parseSkeleton(), enum IntervalPatternIndex,
+@@ -364,7 +364,8 @@
+         kIPI_MAX_INDEX
+     };
+ public:
+-#ifndef U_HIDE_INTERNAL_API
++/* nothing private to placate old compilers --karl/koch */
++/* ifndef U_HIDE_INTERNAL_API */
+     /**
+      * Max index for stored interval patterns
+      * @internal ICU 4.4
+@@ -372,8 +373,8 @@
+      enum {
+          kMaxIntervalPatternIndex = kIPI_MAX_INDEX
+      };
+-#endif  /* U_HIDE_INTERNAL_API */
+-private:
++/* endif */  /* U_HIDE_INTERNAL_API */
++/* nothing private to placate old compilers --karl/koch private: */
+ 
+ 
+     /**

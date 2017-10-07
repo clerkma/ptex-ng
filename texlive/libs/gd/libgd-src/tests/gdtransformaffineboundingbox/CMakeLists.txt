@@ -1,0 +1,5 @@
+LIST(APPEND TESTS_FILES
+	github_bug_00221
+)
+
+ADD_GD_TESTS()

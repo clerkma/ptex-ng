@@ -1,0 +1,54 @@
+			  ASYMPTOTE
+      Copyright 2004-17 Andy Hammerlindl, John Bowman, and Tom Prince
+
+Asymptote is a powerful descriptive vector graphics language for technical
+drawing, inspired by MetaPost but with an improved C++-like
+syntax. Asymptote provides for figures the same high-quality level of
+typesetting that LaTeX does for scientific text.
+
+Installation instructions, documentation, binaries, and source code are
+available at:
+
+http://asymptote.sourceforge.net
+
+Bugs/Patches/Feature Requests can be submitted to
+
+https://github.com/vectorgraphics/asymptote/issues
+
+Questions and comments should be sent to the Asymptote Forum:
+
+http://sourceforge.net/p/asymptote/discussion/409349
+
+All source files in the Asymptote project, unless explicitly noted otherwise,
+are released under version 3 (or later) of the GNU Lesser General Public
+License (see the files LICENSE.LESSER and LICENSE in the top-level source
+directory).
+
+========================================================================
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+========================================================================
+
+Note that the MSWindows executable version of Asymptote can only be
+released under the GNU General Public License (GPL) as it is linked against
+the GNU Scientific Library, GNU Readline library, and other GPL
+libraries. This version of Asymptote also ships with the dll libraries
+noted below.
+
+The source code for the 2.7.0 cygwin1.dll is available under the GPL license:
+https://cygwin.com/snapshots/x86/cygwin-20170203-src.tar.xz
+
+The source code for freeglut.dll is available under the X-Consortium license:
+http://prdownloads.sourceforge.net/freeglut/freeglut-2.8.1.tar.gz

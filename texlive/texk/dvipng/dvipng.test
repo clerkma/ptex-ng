@@ -1,0 +1,31 @@
+#! /bin/sh
+# $Id: dvipng.test 31117 2013-07-06 09:40:06Z peter $
+# Public domain.  Originally written by Peter Breitenlohner, 2009.
+
+get_val () {
+  res=`kpsewhich "$@"` || { echo "\"kpsewhich $@\" failed"; exit 77; }
+}
+
+get_val mktex.cnf
+TEXMFCNF=`dirname "$res"`
+get_val psfonts.map
+par=`dirname "$res"`
+TEXFONTMAPS=`dirname "$par"`//
+get_val 8r.enc
+par=`dirname "$res"`
+ENCFONTS=`dirname "$par"`//
+get_val --expand-var='$TEXMFMAIN'
+TEXMFMAIN=$res
+get_val --expand-var='$TEXMFDIST'
+TEXMFDIST=$res
+TEXMFLOCAL=`kpsewhich --expand-var='$TEXMFLOCAL'`
+
+export TEXMFCNF TEXFONTMAPS ENCFONTS TEXMFMAIN TEXMFDIST TEXMFLOCAL
+
+./dvipng -T tight -strict $srcdir/dvipng-test.dvi || exit 1
+
+echo View the result e.g. with display dvipng-test\*.png
+
+./dvipng --gif -T tight -strict $srcdir/dvipng-test.dvi || exit 1
+
+echo View the result e.g. with display dvipng-test\*.gif
