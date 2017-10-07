@@ -17,8 +17,10 @@
    02110-1301 USA.
 */
 
-// libotf and freetype for opentype support
+/* libotf and freetype for opentype support */
+
 #include "otf.h"
+
 #include FT_GLYPH_H
 #include FT_TRUETYPE_TABLES_H
 
@@ -60,12 +62,8 @@ typedef struct {
   uint16_t * paletteEntryLabel;
 } ot_tbl_cpal;
 
-typedef struct {
-   char *  lang;
-   char *  script;
-   char *  gsub;
-   char *  gpos;
-// color-glyph specification
-   ot_tbl_colr * colr;
-   ot_tbl_cpal * cpal;
-} ot_font;
+ot_tbl_colr * ot_parse_colr (FT_Face face);
+void ot_delete_colr (ot_tbl_colr * colr);
+ot_tbl_cpal * ot_parse_cpal (FT_Face face);
+void ot_delete_cpal (ot_tbl_cpal * cpal);
+

@@ -18,6 +18,7 @@ LDFLAGS = libdpx.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.
 objects = \
 	aptex.o \
 	aptex-cairo-visual-debug.o \
+	aptex-opentype.o \
 	aptex-src.o \
 	aptex-synctex.o
 
@@ -43,6 +44,9 @@ aptex.o: aptex.c $(headers)
 
 aptex-cairo-visual-debug.o: aptex-cairo-visual-debug.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-cairo-visual-debug.c
+
+aptex-opentype.o: aptex-opentype.c $(headers)
+	$(CC) $(CFLAGS) $(INCLUDES) aptex-opentype.c
 
 aptex-synctex.o: aptex-synctex.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-synctex.c
