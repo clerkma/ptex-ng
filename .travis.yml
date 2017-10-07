@@ -3,4 +3,4 @@ language: c
 compiler:
     - gcc
 
-script: ./build-pTeX-ng.sh
+script: ./build-aptex.sh
