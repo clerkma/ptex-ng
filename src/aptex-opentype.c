@@ -44,16 +44,13 @@ ot_tbl_colr * ot_parse_colr (FT_Face face)
 
   if (FT_Load_Sfnt_Table(face, tag, 0, NULL, &tbl_len))
     return NULL;
-
-  tbl_buf = malloc(tbl_len);
-
+  tbl_buf = calloc(tbl_len, sizeof(uint8_t));
   if (FT_Load_Sfnt_Table(face, tag, 0, tbl_buf, &tbl_len))
   {
     free(tbl_buf);
     return NULL;
   }
-
-  colr = malloc(sizeof(ot_tbl_colr));
+  colr = calloc(1, sizeof(ot_tbl_colr));
   colr->version             = parse_u16(tbl_buf);
   colr->numBaseGlyphRecords = parse_u16(tbl_buf + 2);
   offset_base_glyph         = parse_u32(tbl_buf + 4);
@@ -113,13 +110,13 @@ ot_tbl_cpal * ot_parse_cpal (FT_Face face)
 
   if (FT_Load_Sfnt_Table(face, tag, 0, NULL, &tbl_len))
     return NULL;
-  tbl_buf = malloc(tbl_len);
+  tbl_buf = calloc(tbl_len, sizeof(uint8_t));
   if (FT_Load_Sfnt_Table(face, tag, 0, tbl_buf, &tbl_len))
   {
     free(tbl_buf);
     return NULL;
   }
-  cpal = malloc(sizeof(ot_tbl_cpal));
+  cpal = calloc(1, sizeof(ot_tbl_cpal));
   cpal->version             = parse_u16(tbl_buf);
   cpal->numPalettesEntries  = parse_u16(tbl_buf + 2);
   cpal->numPalette          = parse_u16(tbl_buf + 4);
@@ -201,4 +198,80 @@ void ot_delete_cpal (ot_tbl_cpal * cpal)
 
     free(cpal);
   }
+}
+
+static ot_axis * parse_ot_axis (uint8_t * s, uint16_t o)
+{
+  uint16_t offset = parse_u16(s + o);
+  uint32_t i;
+
+  if (offset == 0)
+  {
+    return NULL;
+  }
+  else
+  {
+    ot_axis * axis = calloc(1, sizeof(ot_axis));
+    uint16_t offset_t_list = parse_u16(s + offset);
+    uint16_t offset_s_list = parse_u16(s + offset + 2);
+    
+    if (offset_t_list != 0)
+    {
+      axis->baseTagList = calloc(1, sizeof(ot_base_tag_list));
+      axis->baseTagList->baseTagCount = parse_u16(s + offset + offset_t_list);
+      axis->baseTagList->baselineTags = calloc(axis->baseTagList->baseTagCount, sizeof(uint32_t));
+
+      for (i = 0; i < axis->baseTagList->baseTagCount; i++)
+      {
+        axis->baseTagList->baselineTags[i] = parse_u16(s + offset + offset_t_list + 2 + i * 4);
+      }
+    }
+    else
+    {
+      axis->baseTagList = NULL;
+    }
+    
+    axis->baseScriptList = calloc(1, sizeof(ot_base_script_list));
+    axis->baseScriptList->baseScriptCount = parse_u16(s + offset + offset_s_list);
+    axis->baseScriptList->baseScriptRecords = calloc(axis->baseScriptList->baseScriptCount, sizeof(ot_base_script_record));
+    
+    for (i = 0; i < axis->baseScriptList->baseScriptCount; i++)
+    {
+      //axis->baseScriptList->baseScriptRecords[i] = parse_ot_base_script_record(s, offset )
+    }
+    
+    return axis;
+  }
+}
+
+ot_tbl_base * ot_parse_base (FT_Face face)
+{
+  FT_ULong tbl_len = 0;
+  uint8_t * tbl_buf;
+  ot_tbl_base * base;
+  uint32_t i;
+  FT_ULong tag = FT_MAKE_TAG('B', 'A', 'S', 'E');
+
+  if (FT_Load_Sfnt_Table(face, tag, 0, NULL, &tbl_len))
+    return NULL;
+  tbl_buf = calloc(tbl_len, sizeof(uint8_t));
+  if (FT_Load_Sfnt_Table(face, tag, 0, tbl_buf, &tbl_len))
+  {
+    free(tbl_buf);
+    return NULL;
+  }
+  base = calloc(1, sizeof(ot_tbl_base));
+  base->majorVersion = parse_u16(tbl_buf);
+  base->minorVersion = parse_u16(tbl_buf + 2);
+  base->horizAxis = parse_ot_axis(tbl_buf, 4);
+  base->vertAxis = parse_ot_axis(tbl_buf, 6);
+
+  free(tbl_buf);
+
+  return base;
+}
+
+void ot_delete_base (ot_tbl_base * cpal)
+{
+  /* TODO*/
 }
