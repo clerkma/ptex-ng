@@ -19,7 +19,7 @@
 
 void aptex_vdbg_ship_open (const char * out_name);
 void aptex_vdbg_ship_close (void);
-void aptex_vdbg_bop (void);
+void aptex_vdbg_bop (double w, double h, double x, double y);
 void aptex_vdbg_eop (void);
 void aptex_vdbg_node_char (int32_t dir, int32_t x, int32_t y, int32_t w, int32_t h, int32_t d);
 void aptex_vdbg_node_rule (int32_t dir, int32_t x, int32_t y, int32_t w, int32_t h);

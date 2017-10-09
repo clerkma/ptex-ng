@@ -19428,7 +19428,7 @@ static void ship_out (pointer p)
   }
 #endif
   if (aptex_env.flag_visual_debug)
-    aptex_vdbg_bop();
+    aptex_vdbg_bop(pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
 
   page_loc = dvi_offset + dvi_ptr;
   dvi_out(bop);
@@ -20141,6 +20141,8 @@ reswitch:
 #ifndef APTEX_DVI_ONLY
       pdf_rule_out(rule_wd, rule_ht);
 #endif
+      if (aptex_env.flag_visual_debug)
+        aptex_vdbg_node_rule(0, cur_h, cur_v, rule_wd, rule_ht);
       cur_v = base_line;
       dvi_h = dvi_h + rule_wd;
     }
@@ -20474,6 +20476,8 @@ fin_rule:
 #ifndef APTEX_DVI_ONLY
         pdf_rule_out(rule_wd, rule_ht);
 #endif
+        if (aptex_env.flag_visual_debug)
+          aptex_vdbg_node_rule(0, cur_h, cur_v, rule_wd, rule_ht);
         cur_h = left_edge;
       }
 
