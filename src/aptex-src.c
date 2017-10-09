@@ -19416,6 +19416,8 @@ static void ship_out (pointer p)
       FT_Init_FreeType(&font_ftlib);
     }
 #endif
+    if (aptex_env.flag_visual_debug)
+      aptex_vdbg_ship_open("aptex-visual-debug.pdf");
   }
 
 #ifndef APTEX_DVI_ONLY
@@ -19425,6 +19427,8 @@ static void ship_out (pointer p)
     spc_exec_at_begin_page();
   }
 #endif
+  if (aptex_env.flag_visual_debug)
+    aptex_vdbg_bop();
 
   page_loc = dvi_offset + dvi_ptr;
   dvi_out(bop);
@@ -19458,6 +19462,8 @@ static void ship_out (pointer p)
     pdf_doc_end_page();
   }
 #endif
+  if (aptex_env.flag_visual_debug)
+    aptex_vdbg_eop();
   dvi_out(eop);
 
   incr(total_pages);
@@ -19771,6 +19777,11 @@ reswitch:
 #ifndef APTEX_DVI_ONLY
         pdf_char_out(dvi_f, c);
 #endif
+        if (aptex_env.flag_visual_debug)
+          aptex_vdbg_node_char(0, cur_h, cur_v,
+            char_width(f, char_info(f, c)),
+            char_height(f, height_depth(char_info(f, c))),
+            char_depth(f, height_depth(char_info(f, c))));
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
       else
@@ -19818,6 +19829,11 @@ reswitch:
 #ifndef APTEX_DVI_ONLY
         pdf_kanji_out(dvi_f, jc);
 #endif
+        if (aptex_env.flag_visual_debug)
+          aptex_vdbg_node_char(0, cur_h, cur_v,
+            char_width(f, char_info(f, c)),
+            char_height(f, height_depth(char_info(f, c))),
+            char_depth(f, height_depth(char_info(f, c))));
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
 
@@ -34372,6 +34388,8 @@ void close_files_and_terminate (void)
         prints(" bytes).");
       }
 #endif
+      if (aptex_env.flag_visual_debug)
+        aptex_vdbg_ship_close();
     }
   }
 

@@ -15,8 +15,10 @@ Run the shell script:
 * libpng
 * libpaper
 * freetype2
+* libpixman
 * kpathsea
 * ptexenc
+* libcairo
 * libdpx
 * libotf
 * ptex-ng

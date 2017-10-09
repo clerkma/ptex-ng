@@ -11,7 +11,8 @@ INCLUDES = \
 	-I../texlive/texk/ \
 	-I../texlive/libs/zlib/include \
 	-I../texlive/libs/freetype2/freetype2 \
-	-I../texlive/libs/cairo/cairo \
+	-Ilibcairo \
+	-I../texlive/libs/cairo/cairo-src/src \
 	-Ilibotf/src
 LDFLAGS = libdpx.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a -lm
 
