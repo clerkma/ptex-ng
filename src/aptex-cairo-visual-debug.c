@@ -45,16 +45,19 @@ void aptex_vdbg_ship_close (void)
 #endif
 }
 
-void aptex_vdbg_bop (int32_t page_no)
+void aptex_vdbg_bop (double w, double h, double x, double y)
 {
 #if CAIRO_HAS_PDF_SURFACE
-  //empty
+  cairo_save(aptex_cairo_visual_debug);
+  cairo_translate(aptex_cairo_visual_debug, x / 65536.0, y / 65536.0);
+  cairo_pdf_surface_set_size(aptex_cairo_surface, w / 65536.0, h / 65536.0);
 #endif
 }
 
 void aptex_vdbg_eop (void)
 {
 #if CAIRO_HAS_PDF_SURFACE
+  cairo_restore(aptex_cairo_visual_debug);
   cairo_show_page(aptex_cairo_visual_debug);
 #endif
 }
@@ -67,6 +70,11 @@ void aptex_vdbg_node_char (int32_t dir, int32_t x, int32_t y, int32_t w, int32_t
   cairo_set_source_rgb(aptex_cairo_visual_debug, 1.0, 0.0, 0.0);
   cairo_set_line_width(aptex_cairo_visual_debug, 0.1);
   cairo_stroke(aptex_cairo_visual_debug);
+  cairo_set_line_width(aptex_cairo_visual_debug, 0.1);
+  cairo_set_source_rgb(aptex_cairo_visual_debug, 0.0, 0.0, 1.0);
+  cairo_move_to(aptex_cairo_visual_debug, x / 65536.0, y / 65536.0);
+  cairo_line_to(aptex_cairo_visual_debug, (x + w) / 65536.0, y / 65536.0);
+  cairo_stroke(aptex_cairo_visual_debug);
   cairo_restore(aptex_cairo_visual_debug);
 #endif
 }
@@ -76,10 +84,9 @@ void aptex_vdbg_node_rule (int32_t dir, int32_t x, int32_t y, int32_t w, int32_t
 #if CAIRO_HAS_PDF_SURFACE
   cairo_save(aptex_cairo_visual_debug);
   cairo_rectangle(aptex_cairo_visual_debug, x / 65536.0, (y - h) / 65536.0, w / 65536.0, h / 65536.0);
-  cairo_set_source_rgb(aptex_cairo_visual_debug, 1.0, 1.0, 1.0);
+  cairo_set_source_rgb(aptex_cairo_visual_debug, 0.0, 0.0, 0.0);
   cairo_fill(aptex_cairo_visual_debug);
   cairo_restore(aptex_cairo_visual_debug);
 #endif
 }
-
 
