@@ -214,9 +214,8 @@ static void print_aptex_time (clock_t inter_val)
 /* ad hoc default minimum growth in memory realloc is 62% */
 /* golden ratio (1 + \sqrt{5}) / 2 = 1.618033989... */
 static int percent_grow    = 62; /* default minimum growth in memory realloc is 62% */
-static int total_allocated = 0;  /* total memory allocated so far */
-static int ini_max_address = 0;  /* maximum address when starting */
-static int max_address     = 0;  /* maximum address seen in allocated memory */
+static intptr_t total_allocated = 0;  /* total memory allocated so far */
+static intptr_t max_address     = 0;  /* maximum address seen in allocated memory */
 
 static void aptex_trace (const char * fmt_str, ...)
 {
@@ -237,13 +236,13 @@ static void aptex_trace (const char * fmt_str, ...)
 
 static void aptex_memory_error (const char * s, int n)
 {
-  aptex_trace("Unable to allocate %d  bytes for %s\n", n, s);
-  aptex_trace("Max allocated %d -- max address %d\n", total_allocated, max_address);
+  aptex_trace("Unable to allocate %d bytes for '%s'\n", n, s);
+  aptex_trace("Max allocated %d, max address %p\n", total_allocated, max_address);
 }
 
 static void aptex_memory_trace (const char * s, int n)
 {
-  aptex_trace("Allocating %d bytes for %s\n", n, s);
+  aptex_trace("Allocating %d bytes for '%s'\n", n, s);
 }
 
 static void aptex_memory_update_statistics (intptr_t address, int size, int old_size)
@@ -258,7 +257,7 @@ static void aptex_memory_probe (void)
 {
   if (aptex_env.trace_mem)
   {
-    aptex_trace("Max allocated %d -- max address %d\n", total_allocated, max_address);
+    aptex_trace("Max allocated %d, max address %p\n", total_allocated, max_address);
   }
 }
 
@@ -374,7 +373,7 @@ int realloc_hyphen (int hyphen_prime)
 
   hyph_count = 0;
 
-  aptex_trace("Addresses hyph_word %p hyph_list %p\n", hyph_word, hyph_list);
+  aptex_trace("Addresses hyph_word @ %p hyph_list @ %p\n", hyph_word, hyph_list);
 
   if (current_prime != 0)
   {
@@ -451,7 +450,7 @@ static memory_word * realloc_mem (int lo_size, int hi_size)
     return NULL;
   }
 
-  aptex_trace("Old Address %s == %p\n", "main memory", main_memory);
+  aptex_trace("Old Address '%s' @ %p\n", "main_memory", main_memory);
 
   /* if we REALLY run up to limit ! */
   if (current_mem_size + 1 == max_mem_size)
@@ -525,7 +524,7 @@ static memory_word * realloc_mem (int lo_size, int hi_size)
     return mem;
   }
 
-  aptex_trace("New Address %s == %p\n", "main memory", new_memory);
+  aptex_trace("New Address '%s' @ %p\n", "main_memory", new_memory);
 
   if (lo_size > 0)
   {
@@ -569,7 +568,7 @@ memory_word * realloc_font_info (int size)
   int new_size = 0;
   int n = 0;
 
-  aptex_trace("Old Address %s == %p\n", "font_info", font_info);
+  aptex_trace("Old Address '%s' @ %p\n", "font_info", font_info);
 
   if (current_font_mem_size == font_mem_size)
   {
@@ -615,7 +614,7 @@ memory_word * realloc_font_info (int size)
 
   font_info = new_font_info;
 
-  aptex_trace("New Address %s == %p\n", "font_info", font_info);
+  aptex_trace("New Address '%s' @ %p\n", "font_info", font_info);
   aptex_memory_update_statistics ((intptr_t) font_info, n, current_font_mem_size * sizeof(memory_word));
   aptex_memory_probe();
 
@@ -631,7 +630,7 @@ packed_ASCII_code * realloc_str_pool (int size)
   int n = 0;
   packed_ASCII_code * new_str_pool = NULL;
 
-  aptex_trace("Old Address %s == %p\n", "string pool", str_pool);
+  aptex_trace("Old Address '%s' @ %p\n", "str_pool", str_pool);
 
   if (current_pool_size == pool_size)
   {
@@ -678,8 +677,8 @@ packed_ASCII_code * realloc_str_pool (int size)
   str_pool = new_str_pool;
   current_pool_size = new_size;
 
-  aptex_trace("New Address %s == %p\n", "string pool", str_pool);
-  aptex_memory_update_statistics((intptr_t)str_pool, n, current_pool_size);
+  aptex_trace("New Address '%s' @ %p\n", "str_pool", str_pool);
+  aptex_memory_update_statistics((intptr_t) str_pool, n, current_pool_size);
   aptex_memory_probe();
 
   return str_pool;
@@ -692,7 +691,7 @@ pool_pointer * realloc_str_start (int size)
   int new_size = 0;
   pool_pointer * new_str_start = NULL;
 
-  aptex_trace("Old Address %s == %p\n", "str_start", str_start);
+  aptex_trace("Old Address '%s' @ %p\n", "str_start", str_start);
 
   if (current_max_strings == max_strings)
   {
@@ -739,7 +738,7 @@ pool_pointer * realloc_str_start (int size)
   str_start = new_str_start;
   current_max_strings = new_size;
 
-  aptex_trace("New Address %s == %p\n", "string start", str_start);
+  aptex_trace("New Address '%s' @ %p\n", "str_start", str_start);
   aptex_memory_update_statistics((intptr_t)str_start, n, current_max_strings * sizeof(pool_pointer));
   aptex_memory_probe();
 
@@ -795,7 +794,7 @@ memory_word * realloc_save_stack (int size)
   int n = 0, new_size = 0;
   memory_word * new_save_stack = NULL;
 
-  aptex_trace("Old Address %s == %p\n", "save stack", save_stack);
+  aptex_trace("Old Address '%s' @ %p\n", "save_stack", save_stack);
 
   if (current_save_size == save_size)
   {
@@ -842,7 +841,7 @@ memory_word * realloc_save_stack (int size)
   current_save_size = new_size;
 
   aptex_trace("Current %s %d\n", "save_size", current_save_size);
-  aptex_trace("New Address %s == %p\n", "save stack", save_stack);
+  aptex_trace("New Address '%s' @ %p\n", "save_stack", save_stack);
   aptex_memory_update_statistics((intptr_t) save_stack, n, current_save_size);
   aptex_memory_probe();
 
@@ -855,7 +854,7 @@ in_state_record * realloc_input_stack (int size)
   int n = 0, new_size = 0;
   in_state_record * new_input_stack = NULL;
 
-  aptex_trace("Old Address %s == %p\n", "input stack", input_stack);
+  aptex_trace("Old Address '%s' @ %p\n", "input_stack", input_stack);
 
   if (current_stack_size == stack_size)
   {
@@ -902,7 +901,7 @@ in_state_record * realloc_input_stack (int size)
   current_stack_size = new_size;
 
   aptex_trace("Current %s %d\n", "stack_size", current_stack_size);
-  aptex_trace("New Address %s == %p\n", "input stack", input_stack);
+  aptex_trace("New Address '%s' @ %p\n", "input_stack", input_stack);
   aptex_memory_update_statistics((intptr_t) input_stack, n, current_stack_size);
   aptex_memory_probe();
 
@@ -915,7 +914,7 @@ list_state_record * realloc_nest_stack (int size)
   int n = 0, new_size = 0;
   list_state_record * new_nest = NULL;
 
-  aptex_trace("Old Address %s == %p\n", "nest stack", nest);
+  aptex_trace("Old Address '%s' @ %p\n", "nest", nest);
 
   if (current_nest_size == nest_size)
   {
@@ -960,7 +959,7 @@ list_state_record * realloc_nest_stack (int size)
   current_nest_size = new_size;
 
   aptex_trace("Current %s %d\n", "nest_size", current_nest_size);
-  aptex_trace("New Address %s == %p\n", "nest stack", nest);
+  aptex_trace("New Address '%s' @ %p\n", "nest", nest);
   aptex_memory_update_statistics((intptr_t) nest, n, current_nest_size);
   aptex_memory_probe();
 
@@ -973,7 +972,7 @@ halfword * realloc_param_stack (int size)
   int n = 0, new_size = 0;
   halfword * new_param = NULL;
 
-  aptex_trace("Old Address %s == %p\n", "param stack", param_stack);
+  aptex_trace("Old Address '%s' @ %p\n", "param_stack", param_stack);
 
   if (current_param_size == param_size)
   {
@@ -1018,7 +1017,7 @@ halfword * realloc_param_stack (int size)
   current_param_size = new_size;
 
   aptex_trace("Current %s %d\n", "param_size", current_param_size);
-  aptex_trace("New Address %s == %p\n", "param stack", param_stack);
+  aptex_trace("New Address '%s' @ %p\n", "param_stack", param_stack);
   aptex_memory_update_statistics((intptr_t) param_stack, n, current_param_size);
   aptex_memory_probe();
 
@@ -1031,7 +1030,7 @@ ASCII_code * realloc_buffer (int size)
   int n = 0, new_size = 0;
   ASCII_code * new_buffer = NULL;
 
-  aptex_trace("Old Address %s == %p\n", "buffer", buffer);
+  aptex_trace("Old Address '%s' @ %p\n", "buffer", buffer);
 
   if (current_buf_size == buf_size)
   {
@@ -1079,7 +1078,7 @@ ASCII_code * realloc_buffer (int size)
   current_buf_size = new_size;
 
   aptex_trace("Current buffer %d\n", current_buf_size);
-  aptex_trace("New Address buffer == %p\n", buffer);
+  aptex_trace("New Address 'buffer' @ %p\n", buffer);
   aptex_memory_update_statistics((intptr_t) buffer, n, current_buf_size);
   aptex_memory_probe();
 
@@ -1162,9 +1161,6 @@ static void aptex_memory_init (void)
 #endif
 
   interaction = -1;
-  ini_max_address = max_address;
-  aptex_trace("Max allocated %d -- max address %d\n", total_allocated, max_address);
-
   current_mem_size = 0;
 
 #ifdef APTEX_EXTENSION
@@ -1258,8 +1254,8 @@ do {                  \
   a = NULL;           \
 } while (0)
 
-  aptex_trace("Max allocated %d -- max address %d\n", total_allocated, max_address);
-  aptex_trace("Heap total : %u bytes -- max address %u\n", 0, max_address);
+  aptex_trace("Max allocated %d, max address %p\n", total_allocated, max_address);
+  aptex_trace("Heap total : %u bytes, max address %p\n", 0, max_address);
   aptex_trace("Main Memory: variable node %d (%d - %d)\n", (int)(lo_mem_max - mem_min), (int)mem_min, (int)lo_mem_max);
   aptex_trace("Main Memory: one word node %d (%d - %d)\n", (int)(mem_end - hi_mem_min), (int)hi_mem_min, (int)mem_end);
 
@@ -4959,7 +4955,7 @@ static void add_variable_space (int size)
   else
     t = mem_min + 1;
 
-  mem_min = t - (size + 1);     /* first word in new block - 1 */
+  mem_min = t - (size + 1); /* first word in new block - 1 */
 
   if (mem_min < mem_start)
   {

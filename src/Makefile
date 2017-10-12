@@ -20,6 +20,7 @@ objects = \
 	aptex.o \
 	aptex-cairo-visual-debug.o \
 	aptex-opentype.o \
+	aptex-unicode.o \
 	aptex-src.o \
 	aptex-synctex.o
 
@@ -48,6 +49,9 @@ aptex-cairo-visual-debug.o: aptex-cairo-visual-debug.c $(headers)
 
 aptex-opentype.o: aptex-opentype.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-opentype.c
+
+aptex-unicode.o: aptex-unicode.c $(headers)
+	$(CC) $(CFLAGS) $(INCLUDES) aptex-unicode.c
 
 aptex-synctex.o: aptex-synctex.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-synctex.c

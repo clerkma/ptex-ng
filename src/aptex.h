@@ -97,6 +97,7 @@
 
 #include "aptex-cairo-visual-debug.h"
 #include "aptex-opentype.h"
+#include "aptex-unicode.h"
 
 #ifdef __cplusplus
 extern "C" {

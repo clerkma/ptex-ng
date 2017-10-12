@@ -17,6 +17,9 @@
    02110-1301 USA.
 */
 
+#ifndef APTEX_OPENTYPE_H
+#define APTEX_OPENTYPE_H
+
 /* libotf and freetype for opentype support */
 
 #include "otf.h"
@@ -145,3 +148,4 @@ void ot_delete_cpal (ot_tbl_cpal * cpal);
 ot_tbl_base * ot_parse_base (FT_Face face);
 void ot_delete_base (ot_tbl_base * cpal);
 
+#endif /* APTEX_OPENTYPE_H */
