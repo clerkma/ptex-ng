@@ -25557,54 +25557,54 @@ continu:
                   s = link(v);
               }
 
-              while (s != 0)
+            while (s != 0)
+            {
+              if (is_char_node(s))
               {
-                if (is_char_node(s))
+                if (chain)
                 {
-                  if (chain)
-                  {
-                    break_width[1] = break_width[1] - width(cur_kanji_skip);
-                    break_width[2 + stretch_order(cur_kanji_skip)] =
-                      break_width[2 + stretch_order(cur_kanji_skip)] - stretch(cur_kanji_skip);
-                    break_width[6] = break_width[6] - shrink(cur_kanji_skip);
-                  }
-
-                  goto done;
+                  break_width[1] = break_width[1] - width(cur_kanji_skip);
+                  break_width[2 + stretch_order(cur_kanji_skip)] =
+                    break_width[2 + stretch_order(cur_kanji_skip)] - stretch(cur_kanji_skip);
+                  break_width[6] = break_width[6] - shrink(cur_kanji_skip);
                 }
 
-                switch (type(s))
-                {
-                  case glue_node:
-                    {
-                      v = glue_ptr(s);
-                      break_width[1] = break_width[1] - width(v);
-                      break_width[2 + stretch_order(v)] = break_width[2 + stretch_order(v)] - stretch(v);
-                      break_width[6] = break_width[6] - shrink(v);
-                    }
-                    break;
-
-                  case penalty_node:
-                    do_nothing();
-                    break;
-
-                  case math_node:
-                    break_width[1] = break_width[1] - width(s);
-                    break;
-
-                  case kern_node:
-                    if ((subtype(s) != explicit) && (subtype(s) != ita_kern))
-                      goto done;
-                    else
-                      break_width[1] = break_width[1] - width(s);
-                    break;
-
-                  default:
-                    goto done;
-                    break;
-                }
-
-                s = link(s);
+                goto done;
               }
+
+              switch (type(s))
+              {
+                case glue_node:
+                  {
+                    v = glue_ptr(s);
+                    break_width[1] = break_width[1] - width(v);
+                    break_width[2 + stretch_order(v)] = break_width[2 + stretch_order(v)] - stretch(v);
+                    break_width[6] = break_width[6] - shrink(v);
+                  }
+                  break;
+
+                case penalty_node:
+                  do_nothing();
+                  break;
+
+                case math_node:
+                  break_width[1] = break_width[1] - width(s);
+                  break;
+
+                case kern_node:
+                  if ((subtype(s) != explicit) && (subtype(s) != ita_kern))
+                    goto done;
+                  else
+                    break_width[1] = break_width[1] - width(s);
+                  break;
+
+                default:
+                  goto done;
+                  break;
+              }
+
+              s = link(s);
+            }
 done:;
           }
 
@@ -34000,17 +34000,17 @@ main_lig_loop_2:
       goto main_lig_loop_1;
     }
 
-    if (skip_byte(main_j) == 0)
-      incr(main_k);
-    else
-    {
-      if (skip_byte(main_j) >= stop_flag)
-        goto main_loop_wrapup;
+  if (skip_byte(main_j) == 0)
+    incr(main_k);
+  else
+  {
+    if (skip_byte(main_j) >= stop_flag)
+      goto main_loop_wrapup;
 
-      main_k = main_k + skip_byte(main_j) + 1;
-    }
+    main_k = main_k + skip_byte(main_j) + 1;
+  }
 
-    goto main_lig_loop_1;
+  goto main_lig_loop_1;
 
 main_loop_move_lig:
   main_p = lig_ptr(lig_stack);
