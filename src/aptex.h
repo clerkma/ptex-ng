@@ -63,11 +63,6 @@
   // Clang
   //  http://clang.llvm.org/docs/UsersManual.html
   #pragma clang diagnostic ignored "-Wdangling-else"
-#elif defined (__GNUC__) || defined (__GNUG__)
-  // GCC
-  //  https://gcc.gnu.org/onlinedocs/gcc/Pragmas.html
-  //  https://gcc.gnu.org/onlinedocs/cpp/Pragmas.html
-  #pragma GCC diagnostic ignored "-Wunused-result"
 #endif
 
 // standard C headers
@@ -242,7 +237,7 @@ typedef union
 #include "aptex-macros.h"
 
 /* sec 0150 */
-typedef char glue_ord;
+typedef uint32_t glue_ord;
 /* sec 0212 */
 typedef struct
 {

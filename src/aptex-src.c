@@ -150,6 +150,7 @@ static void print_aptex_info (void)
 {
   char date[11 + 1];
   char * executable_path;
+  ssize_t executable_size;
 
   strcpy(date, __DATE__);
   scivilize(date);
@@ -161,11 +162,11 @@ static void print_aptex_info (void)
 #if   defined (_WIN32) || defined (_WIN64)
   GetModuleFileNameA(NULL, executable_path, 65536);
 #elif defined (__gnu_linux__) || defined (__ANDROID__)
-  readlink("/proc/self/exe", executable_path, 65536);
+  executable_size = readlink("/proc/self/exe", executable_path, 65536);
 #elif defined (__NetBSD__)
-  readlink("/proc/curproc/exe", executable_path, 65536);
+  executable_size = readlink("/proc/curproc/exe", executable_path, 65536);
 #elif defined (__DragonFly__)
-  readlink("/proc/curproc/file", executable_path, 65536);
+  executable_size = readlink("/proc/curproc/file", executable_path, 65536);
 #elif defined (__APPLE__)
   uint32_t executable_path_length;
   _NSGetExecutablePath(executable_path, &executable_path_length);
@@ -5381,7 +5382,7 @@ static void trie_fix (trie_pointer p)
 /* sec 0960 */
 void new_patterns (void)
 {
-  char k, l;
+  uint32_t k, l;
   boolean digit_sensed;
   trie_op_code v;
   trie_pointer p, q;
@@ -6850,7 +6851,7 @@ static void print_the_digs (eight_bits k)
 // prints an integer in decimal form
 void print_int (integer n)
 {
-  char k;     // var k:0..23; {index to current digit; we assume that $|n|<10^{23}$}
+  uint32_t k;     // var k:0..23; {index to current digit; we assume that $|n|<10^{23}$}
   integer m;  // {used to negate |n| in possibly dangerous cases}
 
   k = 0;
@@ -7070,7 +7071,7 @@ static void print_direction (integer d)
 //
 static void print_kansuji (integer n)
 {
-  char k;         // {index to current digit; we assume that $|n|<10^{23}$}
+  uint32_t k;         // {index to current digit; we assume that $|n|<10^{23}$}
   KANJI_code cx;  // {temporary register for KANJI}
 
   k = 0;
@@ -7537,7 +7538,7 @@ static void print_two (integer n)
 // prints a positive integer in hexadecimal form
 static void print_hex (integer n)
 {
-  char k; // {index to current digit; we assume that $0\L n<16^{22}$}
+  uint32_t k; // {index to current digit; we assume that $0\L n<16^{22}$}
 
   k = 0;
   print_char('"');
@@ -19403,7 +19404,7 @@ static void ship_out (pointer p)
         }
       }
 
-      pdf_doc_set_creator("Asiatic pTeX 2016");
+      pdf_doc_set_creator("Asiatic pTeX 2017");
       pdf_files_init();
       pdf_init_device(sp2bp, 2, 0);
       pdf_open_document(utf8_mbcs(output_pdf_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
@@ -25409,7 +25410,7 @@ void try_break (integer pi, small_number break_type)
   halfword l;                   // {line number of current active node}
   boolean node_r_stays_active;  // {should node |r| remain in the active list?}
   scaled line_width;            // {the current line will be justified to this width}
-  char fit_class;               // {possible fitness class of test line}
+  uint32_t fit_class;               // {possible fitness class of test line}
   halfword b;                   // {badness of test line}
   integer d;                    // {demerits of test line}
   boolean artificial_demerits;  // {has |d| been forced to zero?}
@@ -26621,9 +26622,7 @@ done:
 
 void hyphenate (void)
 {
-  /* char i, j, l; */
-  char i, j;
-  int l;
+  uint32_t i, j, l;
   pointer q, r, s;
   halfword bchar;
   pointer major_tail, minor_tail;
@@ -32096,7 +32095,7 @@ void alter_prev_graf (void)
 
 void alter_page_so_far (void)
 {
-  char c; // {index into |page_so_far|}
+  uint32_t c; // {index into |page_so_far|}
 
   c = cur_chr;
   scan_optional_equals();
@@ -32314,8 +32313,8 @@ void do_assignments (void)
 
 static void open_or_close_in (void)
 {
-  char c; // {1 for \.{\\openin}, 0 for \.{\\closein}}
-  char n; // 1..15 {stream number}
+  uint32_t c; // {1 for \.{\\openin}, 0 for \.{\\closein}}
+  uint32_t n; // 1..15 {stream number}
 
   c = cur_chr;
   scan_four_bit_int();

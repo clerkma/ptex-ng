@@ -5,7 +5,7 @@
 #
 
 CC = gcc
-CFLAGS = -c -O2 -Wno-unused-result
+CFLAGS = -c -O2
 INCLUDES = \
 	-I../texlive/texk/ptexenc/ \
 	-I../texlive/texk/ \
