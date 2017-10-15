@@ -7610,7 +7610,7 @@ static void print_current_string (void)
 // gets a line from the terminal
 void term_input (void)
 { 
-  integer k; // {index into |buffer|}
+  uint32_t k; // {index into |buffer|}
 
   update_terminal();
 
@@ -12891,11 +12891,11 @@ void show_context (void)
   pointer s;  // {temporary pointer}
   integer nn; // {number of contexts shown so far, less one}
   boolean bottom_line;  // {have we reached the final context to be shown?}
-  integer i;  // {index into |buffer|}
-  integer j;  // {end of current line in |buffer|}
-  integer l;  // {length of descriptive information on line 1}
+  uint32_t i;  // {index into |buffer|}
+  uint32_t j;  // {end of current line in |buffer|}
+  uint32_t l;  // {length of descriptive information on line 1}
   integer m;  // {context information gathered for line 2}
-  integer n;  // {length of line 1}
+  uint32_t n;  // {length of line 1}
   integer p;  // {starting or ending place in |trick_buf|}
   integer q;  // {temporary index}
 
@@ -13458,7 +13458,7 @@ static void check_outer_validity (void)
 
 static void firm_up_the_line (void)
 {
-  integer k;  // {an index into |buffer|}
+  uint32_t k;  // {an index into |buffer|}
 
   limit = last;
 
@@ -15204,13 +15204,12 @@ static void scan_something_internal (small_number level, boolean negative)
 // sets |cur_cmd|, |cur_chr|, |cur_cs| to next token
 void get_next (void)
 {
-  integer k;
+  uint32_t k;
   halfword t;
-  /* char cat; */
-  int cat;
+  uint32_t cat;
   integer l;
   ASCII_code c, cc;
-  char d;
+  uint32_t d;
 
 restart:
   cur_cs = 0;
@@ -17820,7 +17819,7 @@ void pack_job_name_(str_number s)
 
 void prompt_file_name_(const char * s, str_number e)
 {
-  integer k;
+  uint32_t k;
 
   if (interaction == scroll_mode)
     wake_up_terminal();
@@ -17887,8 +17886,8 @@ done:
 void open_log_file (void)
 {
   char old_setting;
-  integer k;
-  integer l;
+  uint32_t k;
+  uint32_t l;
   const char * months;
 
   old_setting = selector;
@@ -34081,7 +34080,7 @@ void give_err_help (void)
 
 boolean open_fmt_file (void)
 {
-  integer j;
+  uint32_t j;
 
   j = loc;
 

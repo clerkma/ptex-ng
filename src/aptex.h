@@ -123,7 +123,7 @@ typedef void * word_file;  // stdio/zlib
   #define def_const(sym, val0, val1) \
     enum {sym = val1}
   #define def_alloc(sym, val0, val1, init, incr) \
-    EXTERN int current_##sym; enum {sym = val1, initial_##sym = init, increment_##sym = incr}
+    EXTERN uint32_t current_##sym; enum {sym = val1, initial_##sym = init, increment_##sym = incr}
   #define def_type(sym, t0, t1) \
     typedef t1 sym
   #define def_array(sym, type, size) \
@@ -279,9 +279,9 @@ EXTERN integer name_length;                   // {this many characters are actua
 
 def_array(buffer, ASCII_code, buf_size + 4);  // {lines of characters being read}
 
-EXTERN integer first;                         // {the first unused position in |buffer|}
-EXTERN integer last;                          // {end of the line just input to |buffer|}
-EXTERN integer max_buf_stack;                 // {largest index used in |buffer|}
+EXTERN uint32_t first;                         // {the first unused position in |buffer|}
+EXTERN uint32_t last;                          // {end of the line just input to |buffer|}
+EXTERN uint32_t max_buf_stack;                 // {largest index used in |buffer|}
 
 EXTERN alpha_file term_in;                    // {the terminal as an input file}
 EXTERN alpha_file term_out;                   // {the terminal as an output file}
