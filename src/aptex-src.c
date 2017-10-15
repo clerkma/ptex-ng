@@ -26628,7 +26628,7 @@ void hyphenate (void)
   pointer major_tail, minor_tail;
   /* ASCII_code c; */
   int c;
-  char c_loc;
+  uint32_t c_loc;
   /* integer r_count; */
   int r_count;
   pointer hyf_node;
@@ -26950,8 +26950,8 @@ common_ending:
 // enters new exceptions
 void new_hyph_exceptions (void)
 {
-  char n;
-  char j;
+  uint32_t n;
+  uint32_t j;
   hyph_pointer h;
   str_number k;
   pointer p;
