@@ -2199,13 +2199,13 @@ static boolean a_open_input (alpha_file * f)
 
   if (file_name_mbcs[0] == '|' && aptex_env.flag_shell_escape == true)
   {
-    f->file_data = popen(file_name_mbcs + 1, "rb");
+    f->file_data = popen(file_name_mbcs + 1, "r");
     f->file_type = 1;
     if (f->file_data) openable = true;
   }
   else
   {
-    file_name_kpse = kpse_find_file((const_string)file_name_mbcs, kpse_tex_format, false);
+    file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tex_format, false);
 
     if (file_name_kpse != NULL)
     {
