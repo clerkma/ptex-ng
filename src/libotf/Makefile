@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2016 Clerk Ma
+# Copyright (c) 2016, 2017 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #
 
 CC = gcc
 AR = ar
-CFLAGS = -c -O2 -Wno-unused-result -I. -I../../texlive/libs/freetype2/freetype2 -Isrc
+CFLAGS = -c -O2 -I. -I../../texlive/libs/freetype2/freetype2 -Isrc
 
 objects = \
 	otfdrive.o\
@@ -28,4 +28,4 @@ otfopen.o: src/otfopen.c
 .PHONY: clean
 
 clean:
-	rm aptex ptex-ng *.o
+	rm *.a *.o
