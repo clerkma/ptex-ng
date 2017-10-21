@@ -12,7 +12,7 @@ Run the shell script:
 ## How to Build (Android)
 
     ./build-aptex.sh
-    cd android
+    cd build-android
     ./build-android-port.sh
 
 ## Source

@@ -1,4 +1,4 @@
-# Copyright 2014, 2015, 2016 Clerk Ma
+# Copyright 2014, 2015, 2016, 2017 Clerk Ma
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ LOCAL_PATH := $(call my-dir)
 # for libz
 include $(CLEAR_VARS)
 
-ZLIB_ROOT     := ../libs/zlib/zlib-src
-ZLIB_INCLUDES := $(LOCAL_PATH)/../libs/zlib/include
+ZLIB_ROOT     := ../texlive/libs/zlib/zlib-src
+ZLIB_INCLUDES := $(LOCAL_PATH)/zlib
 ZLIB_FILES := \
 $(ZLIB_ROOT)/adler32.c \
 $(ZLIB_ROOT)/compress.c \
@@ -50,8 +50,12 @@ include $(BUILD_STATIC_LIBRARY)
 # for libpng
 include $(CLEAR_VARS)
 
-LIBPNG_ROOT     := ../libs/libpng/libpng-src
-LIBPNG_INCLUDES := $(LOCAL_PATH)/../libs/libpng/include
+LIBPNG_ROOT     := ../texlive/libs/libpng/libpng-src
+LIBPNG_INCLUDES := \
+$(LOCAL_PATH)/zlib \
+$(LOCAL_PATH)/../texlive/libs/zlib/zlib-src \
+$(LOCAL_PATH)/../texlive/libs/libpng/libpng-src
+
 LIBPNG_FILES := \
 $(LIBPNG_ROOT)/pngerror.c \
 $(LIBPNG_ROOT)/png.c \
@@ -79,10 +83,10 @@ include $(BUILD_STATIC_LIBRARY)
 
 # for libpaper
 include $(CLEAR_VARS)
-LIBPAPER_ROOT    := ../libs/libpaper/libpaper-src
+LIBPAPER_ROOT    := ../texlive/libs/libpaper/libpaper-src
 LIBPAPER_INCLUDES:= \
-$(LOCAL_PATH)/../libs/libpaper/include \
-$(LOCAL_PATH)/../libs/libpaper
+$(LOCAL_PATH)/libpaper \
+$(LOCAL_PATH)/../texlive/libs/libpaper/libpaper-src
 
 LIBPAPER_FILES   := \
 $(LIBPAPER_ROOT)/lib/dimen.c \
@@ -99,9 +103,9 @@ include $(BUILD_STATIC_LIBRARY)
 #for freetype2
 include $(CLEAR_VARS)
 
-LIBFREETYPE_ROOT    := ../libs/freetype2/freetype-src
+LIBFREETYPE_ROOT    := ../texlive/libs/freetype2/freetype-src
 LIBFREETYPE_INCLUDES:= \
-$(LOCAL_PATH)/../libs/freetype2/freetype-src/include
+$(LOCAL_PATH)/../texlive/libs/freetype2/freetype-src/include
 LIBFREETYPE_FILES   := \
 $(LIBFREETYPE_ROOT)/src/base/ftbase.c \
 $(LIBFREETYPE_ROOT)/src/base/ftbbox.c \
@@ -135,7 +139,7 @@ $(LIBFREETYPE_ROOT)/src/type1/type1.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libfreetype
-LOCAL_CFLAGS     := -pie -fPIE -DHAVE_CONFIG_H -DFT2_BUILD_LIBRARY -O2
+LOCAL_CFLAGS     := -pie -fPIE -DFT2_BUILD_LIBRARY -O2
 LOCAL_C_INCLUDES := $(LIBFREETYPE_INCLUDES)
 LOCAL_SRC_FILES  := $(LIBFREETYPE_FILES)
 
@@ -144,8 +148,10 @@ include $(BUILD_STATIC_LIBRARY)
 # for kpathsea
 include $(CLEAR_VARS)
 
-KPATHSEA_ROOT     := ../texk/kpathsea
-KPATHSEA_INCLUDES := $(LOCAL_PATH)/../texk/
+KPATHSEA_ROOT     := ../texlive/texk/kpathsea
+KPATHSEA_INCLUDES := \
+$(LOCAL_PATH)/kpathsea \
+$(LOCAL_PATH)/../texlive/texk/
 KPATHSEA_FILES    := \
 $(KPATHSEA_ROOT)/progname.c \
 $(KPATHSEA_ROOT)/readable.c \
@@ -205,7 +211,7 @@ $(KPATHSEA_ROOT)/proginit.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libkpathsea
-LOCAL_CFLAGS     := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DMAKE_KPSE_DLL -O2
+LOCAL_CFLAGS     := -pie -fPIE -Wimplicit -DMAKE_KPSE_DLL -O2
 LOCAL_C_INCLUDES := $(KPATHSEA_INCLUDES)
 LOCAL_SRC_FILES  := $(KPATHSEA_FILES)
 
@@ -214,8 +220,10 @@ include $(BUILD_STATIC_LIBRARY)
 # for ptexenc
 include $(CLEAR_VARS)
 
-PTEXENC_ROOT     := ../texk/ptexenc
-PTEXENC_INCLUDES := $(LOCAL_PATH)/../texk/ $(LOCAL_PATH)/../texk/ptexenc
+PTEXENC_ROOT     := ../texlive/texk/ptexenc
+PTEXENC_INCLUDES := \
+$(LOCAL_PATH)/../texlive/texk/ \
+$(LOCAL_PATH)/../texlive/texk/ptexenc
 PTEXENC_FILES    := \
 $(PTEXENC_ROOT)/kanjicnv.c \
 $(PTEXENC_ROOT)/ptexenc.c \
@@ -224,23 +232,205 @@ $(PTEXENC_ROOT)/unicode-jp.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libptexenc
-LOCAL_CFLAGS     := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DMAKE_KPSE_DLL -O2
+LOCAL_CFLAGS     := -pie -fPIE -DMAKE_KPSE_DLL -O2
 LOCAL_C_INCLUDES := $(PTEXENC_INCLUDES)
 LOCAL_SRC_FILES  := $(PTEXENC_FILES)
+
+include $(BUILD_STATIC_LIBRARY)
+
+# for libpixman
+include $(CLEAR_VARS)
+
+PIXMAN_ROOT     := ../texlive/libs/pixman/pixman-src/pixman
+PIXMAN_INCLUDES := \
+$(LOCAL_PATH)/pixman \
+$(LOCAL_PATH)/../texlive/libs/pixman/pixman-src/pixman
+PIXMAN_FILES    := \
+$(PIXMAN_ROOT)/pixman.c \
+$(PIXMAN_ROOT)/pixman-access.c	\
+$(PIXMAN_ROOT)/pixman-access-accessors.c	\
+$(PIXMAN_ROOT)/pixman-bits-image.c \
+$(PIXMAN_ROOT)/pixman-combine32.c \
+$(PIXMAN_ROOT)/pixman-combine-float.c \
+$(PIXMAN_ROOT)/pixman-conical-gradient.c \
+$(PIXMAN_ROOT)/pixman-filter.c \
+$(PIXMAN_ROOT)/pixman-x86.c \
+$(PIXMAN_ROOT)/pixman-mips.c \
+$(PIXMAN_ROOT)/pixman-arm.c \
+$(PIXMAN_ROOT)/pixman-ppc.c \
+$(PIXMAN_ROOT)/pixman-edge.c \
+$(PIXMAN_ROOT)/pixman-edge-accessors.c \
+$(PIXMAN_ROOT)/pixman-fast-path.c \
+$(PIXMAN_ROOT)/pixman-glyph.c \
+$(PIXMAN_ROOT)/pixman-general.c \
+$(PIXMAN_ROOT)/pixman-gradient-walker.c \
+$(PIXMAN_ROOT)/pixman-image.c \
+$(PIXMAN_ROOT)/pixman-implementation.c \
+$(PIXMAN_ROOT)/pixman-linear-gradient.c \
+$(PIXMAN_ROOT)/pixman-matrix.c \
+$(PIXMAN_ROOT)/pixman-noop.c \
+$(PIXMAN_ROOT)/pixman-radial-gradient.c \
+$(PIXMAN_ROOT)/pixman-region16.c \
+$(PIXMAN_ROOT)/pixman-region32.c \
+$(PIXMAN_ROOT)/pixman-solid-fill.c \
+$(PIXMAN_ROOT)/pixman-timer.c \
+$(PIXMAN_ROOT)/pixman-trap.c \
+$(PIXMAN_ROOT)/pixman-utils.c
+
+LOCAL_ARM_NEON   := false
+LOCAL_MODULE     := libpixman
+LOCAL_CFLAGS     := -pie -fPIE -DPIXMAN_NO_TLS -DHAVE_CONFIG_H -O2
+LOCAL_C_INCLUDES := $(PIXMAN_INCLUDES)
+LOCAL_SRC_FILES  := $(PIXMAN_FILES)
+
+include $(BUILD_STATIC_LIBRARY)
+
+# for libcairo
+include $(CLEAR_VARS)
+
+CAIRO_ROOT     := ../texlive/libs/cairo/cairo-src/src
+CAIRO_INCLUDES := \
+$(LOCAL_PATH)/cairo \
+$(LOCAL_PATH)/pixman \
+$(LOCAL_PATH)/../texlive/libs/pixman/pixman-src/pixman
+CAIRO_FILES    := \
+$(CAIRO_ROOT)/cairo-analysis-surface.c \
+$(CAIRO_ROOT)/cairo-arc.c \
+$(CAIRO_ROOT)/cairo-array.c \
+$(CAIRO_ROOT)/cairo-atomic.c \
+$(CAIRO_ROOT)/cairo-base64-stream.c \
+$(CAIRO_ROOT)/cairo-base85-stream.c \
+$(CAIRO_ROOT)/cairo-bentley-ottmann.c \
+$(CAIRO_ROOT)/cairo-bentley-ottmann-rectangular.c \
+$(CAIRO_ROOT)/cairo-bentley-ottmann-rectilinear.c \
+$(CAIRO_ROOT)/cairo-botor-scan-converter.c \
+$(CAIRO_ROOT)/cairo-boxes.c \
+$(CAIRO_ROOT)/cairo-boxes-intersect.c \
+$(CAIRO_ROOT)/cairo.c \
+$(CAIRO_ROOT)/cairo-cache.c \
+$(CAIRO_ROOT)/cairo-clip.c \
+$(CAIRO_ROOT)/cairo-clip-boxes.c \
+$(CAIRO_ROOT)/cairo-clip-polygon.c \
+$(CAIRO_ROOT)/cairo-clip-region.c \
+$(CAIRO_ROOT)/cairo-clip-surface.c \
+$(CAIRO_ROOT)/cairo-color.c \
+$(CAIRO_ROOT)/cairo-composite-rectangles.c \
+$(CAIRO_ROOT)/cairo-compositor.c \
+$(CAIRO_ROOT)/cairo-contour.c \
+$(CAIRO_ROOT)/cairo-damage.c \
+$(CAIRO_ROOT)/cairo-debug.c \
+$(CAIRO_ROOT)/cairo-default-context.c \
+$(CAIRO_ROOT)/cairo-device.c \
+$(CAIRO_ROOT)/cairo-error.c \
+$(CAIRO_ROOT)/cairo-fallback-compositor.c \
+$(CAIRO_ROOT)/cairo-fixed.c \
+$(CAIRO_ROOT)/cairo-font-face.c \
+$(CAIRO_ROOT)/cairo-font-face-twin.c \
+$(CAIRO_ROOT)/cairo-font-face-twin-data.c \
+$(CAIRO_ROOT)/cairo-font-options.c \
+$(CAIRO_ROOT)/cairo-freelist.c \
+$(CAIRO_ROOT)/cairo-freed-pool.c \
+$(CAIRO_ROOT)/cairo-gstate.c \
+$(CAIRO_ROOT)/cairo-hash.c \
+$(CAIRO_ROOT)/cairo-hull.c \
+$(CAIRO_ROOT)/cairo-image-compositor.c \
+$(CAIRO_ROOT)/cairo-image-info.c \
+$(CAIRO_ROOT)/cairo-image-source.c \
+$(CAIRO_ROOT)/cairo-image-surface.c \
+$(CAIRO_ROOT)/cairo-line.c \
+$(CAIRO_ROOT)/cairo-lzw.c \
+$(CAIRO_ROOT)/cairo-matrix.c \
+$(CAIRO_ROOT)/cairo-mask-compositor.c \
+$(CAIRO_ROOT)/cairo-mesh-pattern-rasterizer.c \
+$(CAIRO_ROOT)/cairo-mempool.c \
+$(CAIRO_ROOT)/cairo-misc.c \
+$(CAIRO_ROOT)/cairo-mono-scan-converter.c \
+$(CAIRO_ROOT)/cairo-mutex.c \
+$(CAIRO_ROOT)/cairo-no-compositor.c \
+$(CAIRO_ROOT)/cairo-observer.c \
+$(CAIRO_ROOT)/cairo-output-stream.c \
+$(CAIRO_ROOT)/cairo-paginated-surface.c \
+$(CAIRO_ROOT)/cairo-path-bounds.c \
+$(CAIRO_ROOT)/cairo-path.c \
+$(CAIRO_ROOT)/cairo-path-fill.c \
+$(CAIRO_ROOT)/cairo-path-fixed.c \
+$(CAIRO_ROOT)/cairo-path-in-fill.c \
+$(CAIRO_ROOT)/cairo-path-stroke.c \
+$(CAIRO_ROOT)/cairo-path-stroke-boxes.c \
+$(CAIRO_ROOT)/cairo-path-stroke-polygon.c \
+$(CAIRO_ROOT)/cairo-path-stroke-traps.c \
+$(CAIRO_ROOT)/cairo-path-stroke-tristrip.c \
+$(CAIRO_ROOT)/cairo-pattern.c \
+$(CAIRO_ROOT)/cairo-pen.c \
+$(CAIRO_ROOT)/cairo-polygon.c \
+$(CAIRO_ROOT)/cairo-polygon-intersect.c \
+$(CAIRO_ROOT)/cairo-polygon-reduce.c \
+$(CAIRO_ROOT)/cairo-raster-source-pattern.c \
+$(CAIRO_ROOT)/cairo-recording-surface.c \
+$(CAIRO_ROOT)/cairo-rectangle.c \
+$(CAIRO_ROOT)/cairo-rectangular-scan-converter.c \
+$(CAIRO_ROOT)/cairo-region.c \
+$(CAIRO_ROOT)/cairo-rtree.c \
+$(CAIRO_ROOT)/cairo-scaled-font.c \
+$(CAIRO_ROOT)/cairo-shape-mask-compositor.c \
+$(CAIRO_ROOT)/cairo-slope.c \
+$(CAIRO_ROOT)/cairo-spans.c \
+$(CAIRO_ROOT)/cairo-spans-compositor.c \
+$(CAIRO_ROOT)/cairo-spline.c \
+$(CAIRO_ROOT)/cairo-stroke-dash.c \
+$(CAIRO_ROOT)/cairo-stroke-style.c \
+$(CAIRO_ROOT)/cairo-surface.c \
+$(CAIRO_ROOT)/cairo-surface-clipper.c \
+$(CAIRO_ROOT)/cairo-surface-fallback.c \
+$(CAIRO_ROOT)/cairo-surface-observer.c \
+$(CAIRO_ROOT)/cairo-surface-offset.c \
+$(CAIRO_ROOT)/cairo-surface-snapshot.c \
+$(CAIRO_ROOT)/cairo-surface-subsurface.c \
+$(CAIRO_ROOT)/cairo-surface-wrapper.c \
+$(CAIRO_ROOT)/cairo-time.c \
+$(CAIRO_ROOT)/cairo-tor-scan-converter.c \
+$(CAIRO_ROOT)/cairo-tor22-scan-converter.c \
+$(CAIRO_ROOT)/cairo-clip-tor-scan-converter.c \
+$(CAIRO_ROOT)/cairo-toy-font-face.c \
+$(CAIRO_ROOT)/cairo-traps.c \
+$(CAIRO_ROOT)/cairo-tristrip.c \
+$(CAIRO_ROOT)/cairo-traps-compositor.c \
+$(CAIRO_ROOT)/cairo-unicode.c \
+$(CAIRO_ROOT)/cairo-user-font.c \
+$(CAIRO_ROOT)/cairo-version.c \
+$(CAIRO_ROOT)/cairo-wideint.c \
+$(CAIRO_ROOT)/cairo-pdf-surface.c \
+$(CAIRO_ROOT)/cairo-pdf-operators.c \
+$(CAIRO_ROOT)/cairo-pdf-shading.c \
+$(CAIRO_ROOT)/cairo-cff-subset.c \
+$(CAIRO_ROOT)/cairo-scaled-font-subsets.c \
+$(CAIRO_ROOT)/cairo-truetype-subset.c \
+$(CAIRO_ROOT)/cairo-type1-fallback.c \
+$(CAIRO_ROOT)/cairo-type1-glyph-names.c \
+$(CAIRO_ROOT)/cairo-type1-subset.c \
+$(CAIRO_ROOT)/cairo-type3-glyph-surface.c \
+$(CAIRO_ROOT)/cairo-deflate-stream.c
+
+LOCAL_ARM_NEON   := false
+LOCAL_MODULE     := libcairo
+LOCAL_CFLAGS     := -pie -fPIE -Wno-enum-conversion -DHAVE_CONFIG_H -DCAIRO_NO_MUTEX -O2
+LOCAL_C_INCLUDES := $(CAIRO_INCLUDES)
+LOCAL_SRC_FILES  := $(CAIRO_FILES)
 
 include $(BUILD_STATIC_LIBRARY)
 
 # for libdpx
 include $(CLEAR_VARS)
 
-LIBDPX_ROOT     := ../texk/libdpx
+LIBDPX_ROOT     := ../src/libdpx
 LIBDPX_INCLUDES := \
-$(LOCAL_PATH)/../texk/ \
-$(LOCAL_PATH)/../texk/ptexenc \
-$(LOCAL_PATH)/../texk/libdpx \
-$(LOCAL_PATH)/../libs/zlib/include \
-$(LOCAL_PATH)/../libs/libpng/include \
-$(LOCAL_PATH)/../libs/libpaper/include
+$(LOCAL_PATH)/../texlive/texk/ \
+$(LOCAL_PATH)/../texlive/texk/ptexenc \
+$(LOCAL_PATH)/../src/libdpx/ \
+$(LOCAL_PATH)/../src/libdpx/ng \
+$(LOCAL_PATH)/../texlive/libs/zlib/include \
+$(LOCAL_PATH)/../texlive/libs/libpng/include \
+$(LOCAL_PATH)/../texlive/libs/libpaper/include
 
 LIBDPX_FILES := \
 $(LIBDPX_ROOT)/agl.c \
@@ -318,7 +508,7 @@ $(LIBDPX_ROOT)/xbb.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libdpx
-LOCAL_CFLAGS     := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
+LOCAL_CFLAGS     := -pie -fPIE -DHAVE_CONFIG_H -DLIBDPX -DMAKE_KPSE_DLL -O2
 LOCAL_C_INCLUDES := $(LIBDPX_INCLUDES)
 LOCAL_SRC_FILES  := $(LIBDPX_FILES)
 
@@ -327,11 +517,11 @@ include $(BUILD_STATIC_LIBRARY)
 #for libotf
 include $(CLEAR_VARS)
 
-LIBOTF_ROOT     := ../texk/ptex-ng/libotf
+LIBOTF_ROOT     := ../src/libotf
 LIBOTF_INCLUDES := \
-$(LOCAL_PATH)/../texk/ptex-ng/libotf \
-$(LOCAL_PATH)/../texk/ptex-ng/libotf/src \
-$(LOCAL_PATH)/../libs/freetype2/freetype2
+$(LOCAL_PATH)/../src/libotf \
+$(LOCAL_PATH)/../src/libotf/src \
+$(LOCAL_PATH)/../texlive/libs/freetype2/freetype2
 LIBOTF_FILES    := \
 $(LIBOTF_ROOT)/src/otfdrive.c \
 $(LIBOTF_ROOT)/src/otferror.c \
@@ -348,47 +538,33 @@ include $(BUILD_STATIC_LIBRARY)
 #for ptex-ng
 include $(CLEAR_VARS)
 
-PTEXNG_ROOT     := ../texk/ptex-ng
+PTEXNG_ROOT     := ../src
 PTEXNG_INCLUDES := \
-$(LOCAL_PATH)/../texk/ \
-$(LOCAL_PATH)/../texk/ptexenc \
-$(LOCAL_PATH)/../texk/ptex-ng \
-$(LOCAL_PATH)/../libs/freetype2/freetype2 \
-$(LOCAL_PATH)/../texk/ptex-ng/libotf/src \
-$(LOCAL_PATH)/../libs/zlib/include
+$(LOCAL_PATH)/../texlive/texk/ \
+$(LOCAL_PATH)/../texlive/texk/ptexenc \
+$(LOCAL_PATH)/../src \
+$(LOCAL_PATH)/../texlive/libs/freetype2/freetype2 \
+$(LOCAL_PATH)/../src/libotf/src \
+$(LOCAL_PATH)/../texlive/libs/zlib/include \
+$(LOCAL_PATH)/cairo \
+$(LOCAL_PATH)/../texlive/libs/cairo/cairo-src/src
+
 PTEXNG_FILES := \
 $(PTEXNG_ROOT)/aptex.c \
+$(PTEXNG_ROOT)/aptex-cairo-visual-debug.c \
+$(PTEXNG_ROOT)/aptex-opentype.c \
+$(PTEXNG_ROOT)/aptex-unicode.c \
 $(PTEXNG_ROOT)/aptex-src.c \
 $(PTEXNG_ROOT)/aptex-synctex.c
 
 LOCAL_ARM_NEON          := false
-LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libz libkpathsea libotf libfreetype
+LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libcairo libpixman libz libkpathsea libotf libfreetype
 LOCAL_LDLIBS            := -s -lm
 LOCAL_MODULE            := aptex
-LOCAL_CFLAGS            := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
+LOCAL_CFLAGS            := -pie -fPIE -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
 LOCAL_LDFLAGS           += -pie -fPIE
 LOCAL_C_INCLUDES        := $(PTEXNG_INCLUDES)
 LOCAL_SRC_FILES         := $(PTEXNG_FILES)
 
 include $(BUILD_EXECUTABLE)
 
-#for lsotfea
-include $(CLEAR_VARS)
-
-LSOTFEA_ROOT     := ../texk/ptex-ng
-LSOTFEA_INCLUDES := \
-$(LOCAL_PATH)/../libs/freetype2/freetype2 \
-$(LOCAL_PATH)/../texk/ptex-ng/libotf/src
-LSOTFEA_FILES := \
-$(LSOTFEA_ROOT)/lsotfea.c
-
-LOCAL_ARM_NEON          := false
-LOCAL_STATIC_LIBRARIES  := libotf libfreetype
-LOCAL_LDLIBS            := -s
-LOCAL_MODULE            := lsotfea
-LOCAL_CFLAGS            := -pie -fPIE -Wimplicit -Wreturn-type -Wdeclaration-after-statement -Wno-unknown-pragmas -O2
-LOCAL_LDFLAGS           += -pie -fPIE
-LOCAL_C_INCLUDES        := $(LSOTFEA_INCLUDES)
-LOCAL_SRC_FILES         := $(LSOTFEA_FILES)
-
-include $(BUILD_EXECUTABLE)
