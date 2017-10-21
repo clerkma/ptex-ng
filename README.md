@@ -9,20 +9,6 @@ Run the shell script:
 
     ./build-aptex.sh
 
-### Building Chain
-
-* zlib
-* libpng
-* libpaper
-* freetype2
-* libpixman
-* kpathsea
-* ptexenc
-* libcairo
-* libdpx
-* libotf
-* ptex-ng
-
 ## How to Build (Android)
 
     ./build-aptex.sh
