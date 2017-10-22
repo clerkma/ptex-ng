@@ -100,7 +100,7 @@ LOCAL_SRC_FILES  := $(LIBPAPER_FILES)
 
 include $(BUILD_STATIC_LIBRARY)
 
-#for freetype2
+# for freetype2
 include $(CLEAR_VARS)
 
 LIBFREETYPE_ROOT    := ../texlive/libs/freetype2/freetype-src
@@ -222,6 +222,7 @@ include $(CLEAR_VARS)
 
 PTEXENC_ROOT     := ../texlive/texk/ptexenc
 PTEXENC_INCLUDES := \
+$(LOCAL_PATH)/ \
 $(LOCAL_PATH)/../texlive/texk/ \
 $(LOCAL_PATH)/../texlive/texk/ptexenc
 PTEXENC_FILES    := \
@@ -424,13 +425,15 @@ include $(CLEAR_VARS)
 
 LIBDPX_ROOT     := ../src/libdpx
 LIBDPX_INCLUDES := \
+$(LOCAL_PATH)/ \
+$(LOCAL_PATH)/zlib \
 $(LOCAL_PATH)/../texlive/texk/ \
 $(LOCAL_PATH)/../texlive/texk/ptexenc \
 $(LOCAL_PATH)/../src/libdpx/ \
 $(LOCAL_PATH)/../src/libdpx/ng \
-$(LOCAL_PATH)/../texlive/libs/zlib/include \
-$(LOCAL_PATH)/../texlive/libs/libpng/include \
-$(LOCAL_PATH)/../texlive/libs/libpaper/include
+$(LOCAL_PATH)/../texlive/libs/zlib/zlib-src \
+$(LOCAL_PATH)/../texlive/libs/libpng/libpng-src \
+$(LOCAL_PATH)/../texlive/libs/libpaper/libpaper-src/lib
 
 LIBDPX_FILES := \
 $(LIBDPX_ROOT)/agl.c \
@@ -514,14 +517,14 @@ LOCAL_SRC_FILES  := $(LIBDPX_FILES)
 
 include $(BUILD_STATIC_LIBRARY)
 
-#for libotf
+# for libotf
 include $(CLEAR_VARS)
 
 LIBOTF_ROOT     := ../src/libotf
 LIBOTF_INCLUDES := \
 $(LOCAL_PATH)/../src/libotf \
 $(LOCAL_PATH)/../src/libotf/src \
-$(LOCAL_PATH)/../texlive/libs/freetype2/freetype2
+$(LOCAL_PATH)/../texlive/libs/freetype2/freetype-src/include
 LIBOTF_FILES    := \
 $(LIBOTF_ROOT)/src/otfdrive.c \
 $(LIBOTF_ROOT)/src/otferror.c \
@@ -535,14 +538,16 @@ LOCAL_SRC_FILES  := $(LIBOTF_FILES)
 
 include $(BUILD_STATIC_LIBRARY)
 
-#for ptex-ng
+# for ptex-ng
 include $(CLEAR_VARS)
 
 PTEXNG_ROOT     := ../src
 PTEXNG_INCLUDES := \
+$(LOCAL_PATH)/ \
 $(LOCAL_PATH)/../texlive/texk/ \
 $(LOCAL_PATH)/../texlive/texk/ptexenc \
 $(LOCAL_PATH)/../src \
+$(LOCAL_PATH)/../texlive/libs/freetype2/freetype-src/include \
 $(LOCAL_PATH)/../texlive/libs/freetype2/freetype2 \
 $(LOCAL_PATH)/../src/libotf/src \
 $(LOCAL_PATH)/../texlive/libs/zlib/include \

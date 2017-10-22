@@ -1,4 +1,4 @@
-# Copyright 2014, 2015, 2016 Clerk Ma
+# Copyright 2014, 2015, 2016, 2017 Clerk Ma
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-## for non-PIE
-#APP_PLATFORM=android-8
-
-## for PIE
-APP_PLATFORM=android-19
+APP_TOOLCHAIN_VERSION := gcc
+APP_PLATFORM := android-19
 APP_ABI := all

@@ -11,7 +11,6 @@ Run the shell script:
 
 ## How to Build (Android)
 
-    ./build-aptex.sh
     cd build-android
     ./build-android-port.sh
 
