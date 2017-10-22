@@ -173,6 +173,15 @@ open_input (FILE **f_ptr, int filefmt, const_string fopen_mode)
     if (output_directory && !kpse_absolute_p (nameoffile+1, false)) {
         fname = concat3 (output_directory, DIR_SEP_STRING, nameoffile + 1);
         *f_ptr = fopen (fname, fopen_mode);
+#if !defined(_WIN32)
+/*
+    if fname is a directory, discard it.
+*/
+        if (*f_ptr && dir_p (fname)) {
+            fclose (*f_ptr);
+            *f_ptr = NULL;
+        }
+#endif
         if (*f_ptr) {
             free (nameoffile);
             namelength = strlen (fname);
