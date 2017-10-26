@@ -1,5 +1,8 @@
-image: Visual Studio 2015
 platform: Any CPU
+enviroment:
+  matrix:
+    - BUILD_TYPE: nmake
+      VS_VERSION: Visual Studio 15
 build_script:
 - cmd: cd build-msvc
 - cmd: build.bat
