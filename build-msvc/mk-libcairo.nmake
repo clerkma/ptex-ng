@@ -1,0 +1,241 @@
+CC = cl
+AR = lib
+CFLAGS = -nologo -utf-8 -c -O2 -Oy -DCAIRO_WIN32_STATIC_BUILD -DCAIRO_NO_MUTEX -Icairo -Ipixman -Izlib -I../texlive/libs/cairo/cairo-src/src -I../texlive/libs/pixman/pixman-src/pixman -I../texlive/libs/zlib/zlib-src/
+ROOT = ../texlive/libs/cairo/cairo-src/src
+OBJS = cairo-analysis-surface.obj cairo-arc.obj cairo-array.obj cairo-atomic.obj cairo-base64-stream.obj cairo-base85-stream.obj cairo-bentley-ottmann.obj cairo-bentley-ottmann-rectangular.obj cairo-bentley-ottmann-rectilinear.obj cairo-botor-scan-converter.obj cairo-boxes.obj cairo-boxes-intersect.obj cairo.obj cairo-cache.obj cairo-clip.obj cairo-clip-boxes.obj cairo-clip-polygon.obj cairo-clip-region.obj cairo-clip-surface.obj cairo-color.obj cairo-composite-rectangles.obj cairo-compositor.obj cairo-contour.obj cairo-damage.obj cairo-debug.obj cairo-default-context.obj cairo-device.obj cairo-error.obj cairo-fallback-compositor.obj cairo-fixed.obj cairo-font-face.obj cairo-font-face-twin.obj cairo-font-face-twin-data.obj cairo-font-options.obj cairo-freelist.obj cairo-freed-pool.obj cairo-gstate.obj cairo-hash.obj cairo-hull.obj cairo-image-compositor.obj cairo-image-info.obj cairo-image-source.obj cairo-image-surface.obj cairo-line.obj cairo-lzw.obj cairo-matrix.obj cairo-mask-compositor.obj cairo-mesh-pattern-rasterizer.obj cairo-mempool.obj cairo-misc.obj cairo-mono-scan-converter.obj cairo-mutex.obj cairo-no-compositor.obj cairo-observer.obj cairo-output-stream.obj cairo-paginated-surface.obj cairo-path-bounds.obj cairo-path.obj cairo-path-fill.obj cairo-path-fixed.obj cairo-path-in-fill.obj cairo-path-stroke.obj cairo-path-stroke-boxes.obj cairo-path-stroke-polygon.obj cairo-path-stroke-traps.obj cairo-path-stroke-tristrip.obj cairo-pattern.obj cairo-pen.obj cairo-polygon.obj cairo-polygon-intersect.obj cairo-polygon-reduce.obj cairo-raster-source-pattern.obj cairo-recording-surface.obj cairo-rectangle.obj cairo-rectangular-scan-converter.obj cairo-region.obj cairo-rtree.obj cairo-scaled-font.obj cairo-shape-mask-compositor.obj cairo-slope.obj cairo-spans.obj cairo-spans-compositor.obj cairo-spline.obj cairo-stroke-dash.obj cairo-stroke-style.obj cairo-surface.obj cairo-surface-clipper.obj cairo-surface-fallback.obj cairo-surface-observer.obj cairo-surface-offset.obj cairo-surface-snapshot.obj cairo-surface-subsurface.obj cairo-surface-wrapper.obj cairo-time.obj cairo-tor-scan-converter.obj cairo-tor22-scan-converter.obj cairo-clip-tor-scan-converter.obj cairo-toy-font-face.obj cairo-traps.obj cairo-tristrip.obj cairo-traps-compositor.obj cairo-unicode.obj cairo-user-font.obj cairo-version.obj cairo-wideint.obj cairo-pdf-surface.obj cairo-pdf-operators.obj cairo-pdf-shading.obj cairo-cff-subset.obj cairo-scaled-font-subsets.obj cairo-truetype-subset.obj cairo-type1-fallback.obj cairo-type1-glyph-names.obj cairo-type1-subset.obj cairo-type3-glyph-surface.obj cairo-deflate-stream.obj
+
+all: $(OBJS)
+	$(AR) -nologo -out:libcairo.lib $(OBJS)
+
+cairo-analysis-surface.obj: $(ROOT)/cairo-analysis-surface.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-analysis-surface.c
+cairo-arc.obj: $(ROOT)/cairo-arc.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-arc.c
+cairo-array.obj: $(ROOT)/cairo-array.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-array.c
+cairo-atomic.obj: $(ROOT)/cairo-atomic.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-atomic.c
+cairo-base64-stream.obj: $(ROOT)/cairo-base64-stream.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-base64-stream.c
+cairo-base85-stream.obj: $(ROOT)/cairo-base85-stream.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-base85-stream.c
+cairo-bentley-ottmann.obj: $(ROOT)/cairo-bentley-ottmann.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-bentley-ottmann.c
+cairo-bentley-ottmann-rectangular.obj: $(ROOT)/cairo-bentley-ottmann-rectangular.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-bentley-ottmann-rectangular.c
+cairo-bentley-ottmann-rectilinear.obj: $(ROOT)/cairo-bentley-ottmann-rectilinear.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-bentley-ottmann-rectilinear.c
+cairo-botor-scan-converter.obj: $(ROOT)/cairo-botor-scan-converter.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-botor-scan-converter.c
+cairo-boxes.obj: $(ROOT)/cairo-boxes.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-boxes.c
+cairo-boxes-intersect.obj: $(ROOT)/cairo-boxes-intersect.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-boxes-intersect.c
+cairo.obj: $(ROOT)/cairo.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo.c
+cairo-cache.obj: $(ROOT)/cairo-cache.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-cache.c
+cairo-clip.obj: $(ROOT)/cairo-clip.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-clip.c
+cairo-clip-boxes.obj: $(ROOT)/cairo-clip-boxes.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-clip-boxes.c
+cairo-clip-polygon.obj: $(ROOT)/cairo-clip-polygon.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-clip-polygon.c
+cairo-clip-region.obj: $(ROOT)/cairo-clip-region.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-clip-region.c
+cairo-clip-surface.obj: $(ROOT)/cairo-clip-surface.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-clip-surface.c
+cairo-color.obj: $(ROOT)/cairo-color.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-color.c
+cairo-composite-rectangles.obj: $(ROOT)/cairo-composite-rectangles.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-composite-rectangles.c
+cairo-compositor.obj: $(ROOT)/cairo-compositor.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-compositor.c
+cairo-contour.obj: $(ROOT)/cairo-contour.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-contour.c
+cairo-damage.obj: $(ROOT)/cairo-damage.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-damage.c
+cairo-debug.obj: $(ROOT)/cairo-debug.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-debug.c
+cairo-default-context.obj: $(ROOT)/cairo-default-context.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-default-context.c
+cairo-device.obj: $(ROOT)/cairo-device.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-device.c
+cairo-error.obj: $(ROOT)/cairo-error.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-error.c
+cairo-fallback-compositor.obj: $(ROOT)/cairo-fallback-compositor.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-fallback-compositor.c
+cairo-fixed.obj: $(ROOT)/cairo-fixed.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-fixed.c
+cairo-font-face.obj: $(ROOT)/cairo-font-face.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-font-face.c
+cairo-font-face-twin.obj: $(ROOT)/cairo-font-face-twin.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-font-face-twin.c
+cairo-font-face-twin-data.obj: $(ROOT)/cairo-font-face-twin-data.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-font-face-twin-data.c
+cairo-font-options.obj: $(ROOT)/cairo-font-options.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-font-options.c
+cairo-freelist.obj: $(ROOT)/cairo-freelist.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-freelist.c
+cairo-freed-pool.obj: $(ROOT)/cairo-freed-pool.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-freed-pool.c
+cairo-gstate.obj: $(ROOT)/cairo-gstate.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-gstate.c
+cairo-hash.obj: $(ROOT)/cairo-hash.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-hash.c
+cairo-hull.obj: $(ROOT)/cairo-hull.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-hull.c
+cairo-image-compositor.obj: $(ROOT)/cairo-image-compositor.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-image-compositor.c
+cairo-image-info.obj: $(ROOT)/cairo-image-info.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-image-info.c
+cairo-image-source.obj: $(ROOT)/cairo-image-source.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-image-source.c
+cairo-image-surface.obj: $(ROOT)/cairo-image-surface.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-image-surface.c
+cairo-line.obj: $(ROOT)/cairo-line.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-line.c
+cairo-lzw.obj: $(ROOT)/cairo-lzw.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-lzw.c
+cairo-matrix.obj: $(ROOT)/cairo-matrix.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-matrix.c
+cairo-mask-compositor.obj: $(ROOT)/cairo-mask-compositor.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-mask-compositor.c
+cairo-mesh-pattern-rasterizer.obj: $(ROOT)/cairo-mesh-pattern-rasterizer.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-mesh-pattern-rasterizer.c
+cairo-mempool.obj: $(ROOT)/cairo-mempool.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-mempool.c
+cairo-misc.obj: $(ROOT)/cairo-misc.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-misc.c
+cairo-mono-scan-converter.obj: $(ROOT)/cairo-mono-scan-converter.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-mono-scan-converter.c
+cairo-mutex.obj: $(ROOT)/cairo-mutex.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-mutex.c
+cairo-no-compositor.obj: $(ROOT)/cairo-no-compositor.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-no-compositor.c
+cairo-observer.obj: $(ROOT)/cairo-observer.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-observer.c
+cairo-output-stream.obj: $(ROOT)/cairo-output-stream.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-output-stream.c
+cairo-paginated-surface.obj: $(ROOT)/cairo-paginated-surface.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-paginated-surface.c
+cairo-path-bounds.obj: $(ROOT)/cairo-path-bounds.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path-bounds.c
+cairo-path.obj: $(ROOT)/cairo-path.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path.c
+cairo-path-fill.obj: $(ROOT)/cairo-path-fill.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path-fill.c
+cairo-path-fixed.obj: $(ROOT)/cairo-path-fixed.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path-fixed.c
+cairo-path-in-fill.obj: $(ROOT)/cairo-path-in-fill.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path-in-fill.c
+cairo-path-stroke.obj: $(ROOT)/cairo-path-stroke.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path-stroke.c
+cairo-path-stroke-boxes.obj: $(ROOT)/cairo-path-stroke-boxes.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path-stroke-boxes.c
+cairo-path-stroke-polygon.obj: $(ROOT)/cairo-path-stroke-polygon.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path-stroke-polygon.c
+cairo-path-stroke-traps.obj: $(ROOT)/cairo-path-stroke-traps.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path-stroke-traps.c
+cairo-path-stroke-tristrip.obj: $(ROOT)/cairo-path-stroke-tristrip.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-path-stroke-tristrip.c
+cairo-pattern.obj: $(ROOT)/cairo-pattern.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-pattern.c
+cairo-pen.obj: $(ROOT)/cairo-pen.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-pen.c
+cairo-polygon.obj: $(ROOT)/cairo-polygon.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-polygon.c
+cairo-polygon-intersect.obj: $(ROOT)/cairo-polygon-intersect.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-polygon-intersect.c
+cairo-polygon-reduce.obj: $(ROOT)/cairo-polygon-reduce.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-polygon-reduce.c
+cairo-raster-source-pattern.obj: $(ROOT)/cairo-raster-source-pattern.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-raster-source-pattern.c
+cairo-recording-surface.obj: $(ROOT)/cairo-recording-surface.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-recording-surface.c
+cairo-rectangle.obj: $(ROOT)/cairo-rectangle.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-rectangle.c
+cairo-rectangular-scan-converter.obj: $(ROOT)/cairo-rectangular-scan-converter.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-rectangular-scan-converter.c
+cairo-region.obj: $(ROOT)/cairo-region.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-region.c
+cairo-rtree.obj: $(ROOT)/cairo-rtree.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-rtree.c
+cairo-scaled-font.obj: $(ROOT)/cairo-scaled-font.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-scaled-font.c
+cairo-shape-mask-compositor.obj: $(ROOT)/cairo-shape-mask-compositor.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-shape-mask-compositor.c
+cairo-slope.obj: $(ROOT)/cairo-slope.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-slope.c
+cairo-spans.obj: $(ROOT)/cairo-spans.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-spans.c
+cairo-spans-compositor.obj: $(ROOT)/cairo-spans-compositor.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-spans-compositor.c
+cairo-spline.obj: $(ROOT)/cairo-spline.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-spline.c
+cairo-stroke-dash.obj: $(ROOT)/cairo-stroke-dash.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-stroke-dash.c
+cairo-stroke-style.obj: $(ROOT)/cairo-stroke-style.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-stroke-style.c
+cairo-surface.obj: $(ROOT)/cairo-surface.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-surface.c
+cairo-surface-clipper.obj: $(ROOT)/cairo-surface-clipper.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-surface-clipper.c
+cairo-surface-fallback.obj: $(ROOT)/cairo-surface-fallback.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-surface-fallback.c
+cairo-surface-observer.obj: $(ROOT)/cairo-surface-observer.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-surface-observer.c
+cairo-surface-offset.obj: $(ROOT)/cairo-surface-offset.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-surface-offset.c
+cairo-surface-snapshot.obj: $(ROOT)/cairo-surface-snapshot.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-surface-snapshot.c
+cairo-surface-subsurface.obj: $(ROOT)/cairo-surface-subsurface.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-surface-subsurface.c
+cairo-surface-wrapper.obj: $(ROOT)/cairo-surface-wrapper.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-surface-wrapper.c
+cairo-time.obj: $(ROOT)/cairo-time.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-time.c
+cairo-tor-scan-converter.obj: $(ROOT)/cairo-tor-scan-converter.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-tor-scan-converter.c
+cairo-tor22-scan-converter.obj: $(ROOT)/cairo-tor22-scan-converter.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-tor22-scan-converter.c
+cairo-clip-tor-scan-converter.obj: $(ROOT)/cairo-clip-tor-scan-converter.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-clip-tor-scan-converter.c
+cairo-toy-font-face.obj: $(ROOT)/cairo-toy-font-face.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-toy-font-face.c
+cairo-traps.obj: $(ROOT)/cairo-traps.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-traps.c
+cairo-tristrip.obj: $(ROOT)/cairo-tristrip.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-tristrip.c
+cairo-traps-compositor.obj: $(ROOT)/cairo-traps-compositor.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-traps-compositor.c
+cairo-unicode.obj: $(ROOT)/cairo-unicode.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-unicode.c
+cairo-user-font.obj: $(ROOT)/cairo-user-font.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-user-font.c
+cairo-version.obj: $(ROOT)/cairo-version.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-version.c
+cairo-wideint.obj: $(ROOT)/cairo-wideint.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-wideint.c
+cairo-pdf-surface.obj: $(ROOT)/cairo-pdf-surface.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-pdf-surface.c
+cairo-pdf-operators.obj: $(ROOT)/cairo-pdf-operators.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-pdf-operators.c
+cairo-pdf-shading.obj: $(ROOT)/cairo-pdf-shading.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-pdf-shading.c
+cairo-cff-subset.obj: $(ROOT)/cairo-cff-subset.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-cff-subset.c
+cairo-scaled-font-subsets.obj: $(ROOT)/cairo-scaled-font-subsets.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-scaled-font-subsets.c
+cairo-truetype-subset.obj: $(ROOT)/cairo-truetype-subset.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-truetype-subset.c
+cairo-type1-fallback.obj: $(ROOT)/cairo-type1-fallback.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-type1-fallback.c
+cairo-type1-glyph-names.obj: $(ROOT)/cairo-type1-glyph-names.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-type1-glyph-names.c
+cairo-type1-subset.obj: $(ROOT)/cairo-type1-subset.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-type1-subset.c
+cairo-type3-glyph-surface.obj: $(ROOT)/cairo-type3-glyph-surface.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-type3-glyph-surface.c
+cairo-deflate-stream.obj: $(ROOT)/cairo-deflate-stream.c
+	$(CC) $(CFLAGS) $(ROOT)/cairo-deflate-stream.c
