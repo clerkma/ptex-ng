@@ -1,0 +1,39 @@
+CC = cl
+AR = lib
+CFLAGS = -nologo -c -O2 -Oy -Izlib -Ilibpng -I../texlive/libs/libpng/libpng-src -I../texlive/libs/zlib/zlib-src
+ROOT = ../texlive/libs/libpng/libpng-src
+OBJS = png.obj pngerror.obj pngget.obj pngmem.obj pngpread.obj pngread.obj pngrio.obj pngrtran.obj pngrutil.obj pngset.obj pngtrans.obj pngwio.obj pngwrite.obj pngwtran.obj pngwutil.obj
+
+all: $(OBJS)
+	$(AR) -nologo -out:libpng.lib $(OBJS)
+
+png.obj: $(ROOT)/png.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/png.c
+pngerror.obj: $(ROOT)/pngerror.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngerror.c
+pngget.obj: $(ROOT)/pngget.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngget.c
+pngmem.obj: $(ROOT)/pngmem.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngmem.c
+pngpread.obj: $(ROOT)/pngpread.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngpread.c
+pngread.obj: $(ROOT)/pngread.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngread.c
+pngrio.obj: $(ROOT)/pngrio.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngrio.c
+pngrtran.obj: $(ROOT)/pngrtran.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngrtran.c
+pngrutil.obj: $(ROOT)/pngrutil.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngrutil.c
+pngset.obj: $(ROOT)/pngset.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngset.c
+pngtrans.obj: $(ROOT)/pngtrans.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngtrans.c
+pngwio.obj: $(ROOT)/pngwio.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngwio.c
+pngwrite.obj: $(ROOT)/pngwrite.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngwrite.c
+pngwtran.obj: $(ROOT)/pngwtran.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngwtran.c
+pngwutil.obj: $(ROOT)/pngwutil.c $(ROOT)/png.h $(ROOT)/pngconf.h ./libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h $(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
+	$(CC) $(CFLAGS) $(ROOT)/pngwutil.c
