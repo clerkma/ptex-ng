@@ -1,1 +1,3 @@
 rem Build ApTeX on Visual Studio.
+echo Building Zlib ...
+nmake -nologo -f mk-zlib.nmake

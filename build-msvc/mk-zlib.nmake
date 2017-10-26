@@ -1,0 +1,39 @@
+CC = cl
+AR = lib
+CFLAGS = -nologo -c -O2 -Oy -Izlib
+ROOT = ../texlive/libs/zlib/zlib-src
+OBJS = adler32.obj compress.obj crc32.obj deflate.obj gzclose.obj gzlib.obj gzread.obj gzwrite.obj infback.obj inflate.obj inftrees.obj inffast.obj trees.obj uncompr.obj zutil.obj
+
+all: $(OBJS)
+	$(AR) -nologo -out:zlib.lib $(OBJS)
+
+adler32.obj: $(ROOT)/adler32.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/adler32.c
+compress.obj: $(ROOT)/compress.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/compress.c
+crc32.obj: $(ROOT)/crc32.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/crc32.c
+deflate.obj: $(ROOT)/deflate.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/deflate.c
+gzclose.obj: $(ROOT)/gzclose.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/gzclose.c
+gzlib.obj: $(ROOT)/gzlib.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/gzlib.c
+gzread.obj: $(ROOT)/gzread.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/gzread.c
+gzwrite.obj: $(ROOT)/gzwrite.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/gzwrite.c
+infback.obj: $(ROOT)/infback.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/infback.c
+inflate.obj: $(ROOT)/inflate.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/inflate.c
+inftrees.obj: $(ROOT)/inftrees.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/inftrees.c
+inffast.obj: $(ROOT)/inffast.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/inffast.c
+trees.obj: $(ROOT)/trees.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/trees.c
+uncompr.obj: $(ROOT)/uncompr.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/uncompr.c
+zutil.obj: $(ROOT)/zutil.c $(ROOT)/zlib.h ./zlib/zconf.h
+	$(CC) $(CFLAGS) $(ROOT)/zutil.c
