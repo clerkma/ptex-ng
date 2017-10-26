@@ -1,3 +1,4 @@
 image: Visual Studio 2015
-build-script:
+platform: Any CPU
+build_script:
 - cmd: build-msvc\build.bat
