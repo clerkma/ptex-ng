@@ -2,8 +2,7 @@ platform:
   - Any CPU
 environment:
   matrix:
-    - BUILD_TYPE: nmake
-      VS_VERSION: Visual Studio 15
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 build_script:
 - cmd: cd build-msvc
 - cmd: build.bat
