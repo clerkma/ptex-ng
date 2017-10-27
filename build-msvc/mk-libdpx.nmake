@@ -1,0 +1,153 @@
+CC = cl
+AR = lib
+CFLAGS = -nologo -c -O2 -Oy -DHAVE_CONFIG_H -DWIN32 -DNO_KPSE_DLL -DLIBDPX -Ilibdpx -I. -Izlib -I../texlive/libs/zlib/zlib-src -I../texlive/libs/libpng/libpng-src -I../texlive/texk/ -I../src/libdpx/ng
+ROOT = ../src/libdpx
+OBJS = agl.obj bmpimage.obj cff.obj cff_dict.obj cid.obj cidtype0.obj cidtype2.obj cmap.obj cmap_read.obj cmap_write.obj cs_type2.obj dpxconf.obj dpxcrypt.obj dpxfile.obj dpxutil.obj dvi.obj dvipdfmx.obj epdf.obj error.obj fontmap.obj jp2image.obj jpegimage.obj mem.obj mfileio.obj mpost.obj numbers.obj otl_conf.obj otl_opt.obj pdfcolor.obj pdfdev.obj pdfdoc.obj pdfdraw.obj pdfencoding.obj pdfencrypt.obj pdffont.obj pdfnames.obj pdfobj.obj pdfparse.obj pdfresource.obj pdfximage.obj pkfont.obj pngimage.obj pst.obj pst_obj.obj sfnt.obj spc_color.obj spc_dvipdfmx.obj spc_dvips.obj spc_html.obj spc_misc.obj spc_pdfm.obj spc_tpic.obj spc_util.obj spc_xtx.obj specials.obj subfont.obj t1_char.obj t1_load.obj tfm.obj truetype.obj tt_aux.obj tt_cmap.obj tt_glyf.obj tt_gsub.obj tt_post.obj tt_table.obj type0.obj type1.obj type1c.obj unicode.obj vf.obj xbb.obj
+
+all: $(OBJS)
+	$(AR) -nologo -out:libdpx.lib $(OBJS)
+
+agl.obj: $(ROOT)/agl.c
+	$(CC) $(CFLAGS) $(ROOT)/agl.c
+bmpimage.obj: $(ROOT)/bmpimage.c
+	$(CC) $(CFLAGS) $(ROOT)/bmpimage.c
+cff.obj: $(ROOT)/cff.c
+	$(CC) $(CFLAGS) $(ROOT)/cff.c
+cff_dict.obj: $(ROOT)/cff_dict.c
+	$(CC) $(CFLAGS) $(ROOT)/cff_dict.c
+cid.obj: $(ROOT)/cid.c
+	$(CC) $(CFLAGS) $(ROOT)/cid.c
+cidtype0.obj: $(ROOT)/cidtype0.c
+	$(CC) $(CFLAGS) $(ROOT)/cidtype0.c
+cidtype2.obj: $(ROOT)/cidtype2.c
+	$(CC) $(CFLAGS) $(ROOT)/cidtype2.c
+cmap.obj: $(ROOT)/cmap.c
+	$(CC) $(CFLAGS) $(ROOT)/cmap.c
+cmap_read.obj: $(ROOT)/cmap_read.c
+	$(CC) $(CFLAGS) $(ROOT)/cmap_read.c
+cmap_write.obj: $(ROOT)/cmap_write.c
+	$(CC) $(CFLAGS) $(ROOT)/cmap_write.c
+cs_type2.obj: $(ROOT)/cs_type2.c
+	$(CC) $(CFLAGS) $(ROOT)/cs_type2.c
+dpxconf.obj: $(ROOT)/dpxconf.c
+	$(CC) $(CFLAGS) $(ROOT)/dpxconf.c
+dpxcrypt.obj: $(ROOT)/dpxcrypt.c
+	$(CC) $(CFLAGS) $(ROOT)/dpxcrypt.c
+dpxfile.obj: $(ROOT)/dpxfile.c
+	$(CC) $(CFLAGS) $(ROOT)/dpxfile.c
+dpxutil.obj: $(ROOT)/dpxutil.c
+	$(CC) $(CFLAGS) $(ROOT)/dpxutil.c
+dvi.obj: $(ROOT)/dvi.c
+	$(CC) $(CFLAGS) $(ROOT)/dvi.c
+dvipdfmx.obj: $(ROOT)/dvipdfmx.c
+	$(CC) $(CFLAGS) $(ROOT)/dvipdfmx.c
+epdf.obj: $(ROOT)/epdf.c
+	$(CC) $(CFLAGS) $(ROOT)/epdf.c
+error.obj: $(ROOT)/error.c
+	$(CC) $(CFLAGS) $(ROOT)/error.c
+fontmap.obj: $(ROOT)/fontmap.c
+	$(CC) $(CFLAGS) $(ROOT)/fontmap.c
+jp2image.obj: $(ROOT)/jp2image.c
+	$(CC) $(CFLAGS) $(ROOT)/jp2image.c
+jpegimage.obj: $(ROOT)/jpegimage.c
+	$(CC) $(CFLAGS) $(ROOT)/jpegimage.c
+mem.obj: $(ROOT)/mem.c
+	$(CC) $(CFLAGS) $(ROOT)/mem.c
+mfileio.obj: $(ROOT)/mfileio.c
+	$(CC) $(CFLAGS) $(ROOT)/mfileio.c
+mpost.obj: $(ROOT)/mpost.c
+	$(CC) $(CFLAGS) $(ROOT)/mpost.c
+numbers.obj: $(ROOT)/numbers.c
+	$(CC) $(CFLAGS) $(ROOT)/numbers.c
+otl_conf.obj: $(ROOT)/otl_conf.c
+	$(CC) $(CFLAGS) $(ROOT)/otl_conf.c
+otl_opt.obj: $(ROOT)/otl_opt.c
+	$(CC) $(CFLAGS) $(ROOT)/otl_opt.c
+pdfcolor.obj: $(ROOT)/pdfcolor.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfcolor.c
+pdfdev.obj: $(ROOT)/pdfdev.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfdev.c
+pdfdoc.obj: $(ROOT)/pdfdoc.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfdoc.c
+pdfdraw.obj: $(ROOT)/pdfdraw.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfdraw.c
+pdfencoding.obj: $(ROOT)/pdfencoding.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfencoding.c
+pdfencrypt.obj: $(ROOT)/pdfencrypt.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfencrypt.c
+pdffont.obj: $(ROOT)/pdffont.c
+	$(CC) $(CFLAGS) $(ROOT)/pdffont.c
+pdfnames.obj: $(ROOT)/pdfnames.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfnames.c
+pdfobj.obj: $(ROOT)/pdfobj.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfobj.c
+pdfparse.obj: $(ROOT)/pdfparse.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfparse.c
+pdfresource.obj: $(ROOT)/pdfresource.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfresource.c
+pdfximage.obj: $(ROOT)/pdfximage.c
+	$(CC) $(CFLAGS) $(ROOT)/pdfximage.c
+pkfont.obj: $(ROOT)/pkfont.c
+	$(CC) $(CFLAGS) $(ROOT)/pkfont.c
+pngimage.obj: $(ROOT)/pngimage.c
+	$(CC) $(CFLAGS) $(ROOT)/pngimage.c
+pst.obj: $(ROOT)/pst.c
+	$(CC) $(CFLAGS) $(ROOT)/pst.c
+pst_obj.obj: $(ROOT)/pst_obj.c
+	$(CC) $(CFLAGS) $(ROOT)/pst_obj.c
+sfnt.obj: $(ROOT)/sfnt.c
+	$(CC) $(CFLAGS) $(ROOT)/sfnt.c
+spc_color.obj: $(ROOT)/spc_color.c
+	$(CC) $(CFLAGS) $(ROOT)/spc_color.c
+spc_dvipdfmx.obj: $(ROOT)/spc_dvipdfmx.c
+	$(CC) $(CFLAGS) $(ROOT)/spc_dvipdfmx.c
+spc_dvips.obj: $(ROOT)/spc_dvips.c
+	$(CC) $(CFLAGS) $(ROOT)/spc_dvips.c
+spc_html.obj: $(ROOT)/spc_html.c
+	$(CC) $(CFLAGS) $(ROOT)/spc_html.c
+spc_misc.obj: $(ROOT)/spc_misc.c
+	$(CC) $(CFLAGS) $(ROOT)/spc_misc.c
+spc_pdfm.obj: $(ROOT)/spc_pdfm.c
+	$(CC) $(CFLAGS) $(ROOT)/spc_pdfm.c
+spc_tpic.obj: $(ROOT)/spc_tpic.c
+	$(CC) $(CFLAGS) $(ROOT)/spc_tpic.c
+spc_util.obj: $(ROOT)/spc_util.c
+	$(CC) $(CFLAGS) $(ROOT)/spc_util.c
+spc_xtx.obj: $(ROOT)/spc_xtx.c
+	$(CC) $(CFLAGS) $(ROOT)/spc_xtx.c
+specials.obj: $(ROOT)/specials.c
+	$(CC) $(CFLAGS) $(ROOT)/specials.c
+subfont.obj: $(ROOT)/subfont.c
+	$(CC) $(CFLAGS) $(ROOT)/subfont.c
+t1_char.obj: $(ROOT)/t1_char.c
+	$(CC) $(CFLAGS) $(ROOT)/t1_char.c
+t1_load.obj: $(ROOT)/t1_load.c
+	$(CC) $(CFLAGS) $(ROOT)/t1_load.c
+tfm.obj: $(ROOT)/tfm.c
+	$(CC) $(CFLAGS) $(ROOT)/tfm.c
+truetype.obj: $(ROOT)/truetype.c
+	$(CC) $(CFLAGS) $(ROOT)/truetype.c
+tt_aux.obj: $(ROOT)/tt_aux.c
+	$(CC) $(CFLAGS) $(ROOT)/tt_aux.c
+tt_cmap.obj: $(ROOT)/tt_cmap.c
+	$(CC) $(CFLAGS) $(ROOT)/tt_cmap.c
+tt_glyf.obj: $(ROOT)/tt_glyf.c
+	$(CC) $(CFLAGS) $(ROOT)/tt_glyf.c
+tt_gsub.obj: $(ROOT)/tt_gsub.c
+	$(CC) $(CFLAGS) $(ROOT)/tt_gsub.c
+tt_post.obj: $(ROOT)/tt_post.c
+	$(CC) $(CFLAGS) $(ROOT)/tt_post.c
+tt_table.obj: $(ROOT)/tt_table.c
+	$(CC) $(CFLAGS) $(ROOT)/tt_table.c
+type0.obj: $(ROOT)/type0.c
+	$(CC) $(CFLAGS) $(ROOT)/type0.c
+type1.obj: $(ROOT)/type1.c
+	$(CC) $(CFLAGS) $(ROOT)/type1.c
+type1c.obj: $(ROOT)/type1c.c
+	$(CC) $(CFLAGS) $(ROOT)/type1c.c
+unicode.obj: $(ROOT)/unicode.c
+	$(CC) $(CFLAGS) $(ROOT)/unicode.c
+vf.obj: $(ROOT)/vf.c
+	$(CC) $(CFLAGS) $(ROOT)/vf.c
+xbb.obj: $(ROOT)/xbb.c
+	$(CC) $(CFLAGS) $(ROOT)/xbb.c

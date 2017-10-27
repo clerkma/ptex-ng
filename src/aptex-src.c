@@ -150,7 +150,6 @@ static void print_aptex_info (void)
 {
   char date[11 + 1];
   char * executable_path;
-  ssize_t executable_size;
 
   strcpy(date, __DATE__);
   scivilize(date);
@@ -162,10 +161,13 @@ static void print_aptex_info (void)
 #if   defined (_WIN32) || defined (_WIN64)
   GetModuleFileNameA(NULL, executable_path, 65536);
 #elif defined (__gnu_linux__) || defined (__ANDROID__)
+    ssize_t executable_size;
   executable_size = readlink("/proc/self/exe", executable_path, 65536);
 #elif defined (__NetBSD__)
+    ssize_t executable_size;
   executable_size = readlink("/proc/curproc/exe", executable_path, 65536);
 #elif defined (__DragonFly__)
+    ssize_t executable_size;
   executable_size = readlink("/proc/curproc/file", executable_path, 65536);
 #elif defined (__APPLE__)
   uint32_t executable_path_length;

@@ -4,16 +4,22 @@
 [![Travis-CI Build Status](https://travis-ci.org/clerkma/ptex-ng.svg?branch=master)](https://travis-ci.org/clerkma/ptex-ng)
 [![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/clerkma/ptex-ng?branch=master&svg=true)](https://ci.appveyor.com/project/clerkma/ptex-ng)
 
-## How to Build (Linux/Mac)
+## How to Build
+### Linux/Mac
 
 Run the shell script:
 
     ./build-aptex.sh
 
-## How to Build (Android)
+### Android
 
     cd build-android
     ./build-android-port.sh
+
+### Windows/MSVC (experimental)
+
+    cd build-msvc
+    build.bat
 
 ## Source
 
