@@ -8,4 +8,4 @@ build_script:
   - cmd: cd build-msvc
   - cmd: build.bat
 test_script:
-  - cmd: 'build-msvc\lsotfea.exe C:\Windows\Fonts\segoeui.ttf'
+  - cmd: lsotfea.exe C:\Windows\Fonts\segoeui.ttf
