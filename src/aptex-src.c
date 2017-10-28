@@ -19190,15 +19190,35 @@ void pdf_rule_out (scaled rule_wd, scaled rule_ht)
   }
 }
 
-static void pdf_set_cur_page (integer page_no, scaled cur_wd, scaled cur_ht)
+static void aptex_dpx_init_page (scaled page_wd, scaled page_ht)
 {
   pdf_rect mediabox;
 
   mediabox.llx = 0.0;
   mediabox.lly = 0.0;
-  mediabox.urx = cur_wd * sp2bp;
-  mediabox.ury = cur_ht * sp2bp;
+  mediabox.urx = page_wd * sp2bp;
+  mediabox.ury = page_ht * sp2bp;
+
+  pdf_doc_set_mediabox(0, &mediabox);
+}
+
+static void aptex_dpx_bop (integer page_no, scaled page_wd, scaled page_ht, scaled page_ho, scaled page_vo)
+{
+  pdf_rect mediabox;
+
+  mediabox.llx = 0.0;
+  mediabox.lly = 0.0;
+  mediabox.urx = page_wd * sp2bp * (mag / 1000.0);
+  mediabox.ury = page_ht * sp2bp * (mag / 1000.0);
   pdf_doc_set_mediabox(page_no, &mediabox);
+  pdf_doc_begin_page(mag / 1000.0, page_ho * sp2bp * (mag / 1000.0), (page_ht - page_vo) * sp2bp * (mag / 1000.0));
+  spc_exec_at_begin_page();
+}
+
+static void aptex_dpx_eop (void)
+{
+  spc_exec_at_end_page();
+  pdf_doc_end_page();
 }
 
 #endif
@@ -19407,10 +19427,10 @@ static void ship_out (pointer p)
 
       pdf_doc_set_creator("Asiatic pTeX 2017");
       pdf_files_init();
-      pdf_init_device(sp2bp, 2, 0);
+      pdf_init_device(sp2bp, 3, 0);
       pdf_open_document(utf8_mbcs(output_pdf_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
+      aptex_dpx_init_page(pdf_page_width, pdf_page_height);
       spc_exec_at_begin_document();
-      pdf_set_cur_page(0, pdf_page_width, pdf_page_height);
       FT_Init_FreeType(&font_ftlib);
     }
 #endif
@@ -19419,11 +19439,7 @@ static void ship_out (pointer p)
   }
 
 #ifndef APTEX_DVI_ONLY
-  {
-    pdf_set_cur_page(total_pages + 1, pdf_page_width, pdf_page_height);
-    pdf_doc_begin_page(mag / 1000.0, pdf_h_origin * sp2bp, (pdf_page_height - pdf_v_origin) * sp2bp);
-    spc_exec_at_begin_page();
-  }
+  aptex_dpx_bop(total_pages + 1, pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
 #endif
   if (aptex_env.flag_visual_debug)
     aptex_vdbg_bop(pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
@@ -19455,10 +19471,7 @@ static void ship_out (pointer p)
   }
 
 #ifndef APTEX_DVI_ONLY
-  {
-    spc_exec_at_end_page();
-    pdf_doc_end_page();
-  }
+  aptex_dpx_eop();
 #endif
   if (aptex_env.flag_visual_debug)
     aptex_vdbg_eop();
