@@ -22,6 +22,7 @@ del *.obj
 md cairo\src
 copy ..\texlive\libs\cairo\cairo-src\src\*.c cairo\src\
 copy ..\texlive\libs\cairo\cairo-src\src\*.h cairo\src\
+copy ..\texlive\libs\cairo\cairo-src\cairo-version.h cairo\cairo-version.h
 del cairo\src\cairoint.h
 nmake -nologo -f mk-libcairo.nmake
 echo Building lsotfea ...
