@@ -19,6 +19,10 @@ del *.obj
 nmake -nologo -f mk-libpixman.nmake
 echo Building libcairo ...
 del *.obj
+md cairo\src
+copy ..\texlive\libs\cairo\cairo-src\src\*.c cairo\src\
+copy ..\texlive\libs\cairo\cairo-src\src\*.h cairo\src\
+del cairo\src\cairoint.h
 nmake -nologo -f mk-libcairo.nmake
 echo Building lsotfea ...
 del *.obj
