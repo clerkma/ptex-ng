@@ -1,0 +1,23 @@
+*** texlive/libs/cairo/cairo-src/src/cairoint.h	2017-10-07 12:55:59.928331652 +0800
+--- build-msvc/cairo/cairoint.h	2017-10-28 16:46:46.650637182 +0800
+***************
+*** 50,57 ****
+  #include "config.h"
+  #endif
+  
+! #ifdef _MSC_VER
+! #define cairo_public __declspec(dllexport)
+  #endif
+  
+  #include <assert.h>
+--- 50,59 ----
+  #include "config.h"
+  #endif
+  
+! #if defined (_MSC_VER) && ! defined (CAIRO_WIN32_STATIC_BUILD)
+! #define cairo_public __declspec(dllimport)
+! #else
+! #define cairo_public
+  #endif
+  
+  #include <assert.h>
