@@ -117,8 +117,6 @@ typedef void * word_file;  // stdio/zlib
   #undef link
 #endif
 
-#define abs llabs
-
 #ifdef APTEX_EXTENSION
   #define def_const(sym, val0, val1) \
     enum {sym = val1}

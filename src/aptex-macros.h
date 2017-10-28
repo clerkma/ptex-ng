@@ -30,7 +30,7 @@
 #define eTeX_ex             (eTeX_mode == true)
 
 // predefined macro
-//#define abs(x)   ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
+#define abs(x)   ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
 #define chr(x)      (x)
 #define odd(x)      ((x) % 2)
 #define round(x)    aptex_utils_round((real) (x))
