@@ -1,5 +1,5 @@
-#! /bin/sh
-# $Id: xdvipdfm-bb.test 43542 2017-03-18 22:47:27Z karl $
+#! /bin/sh -vx
+# $Id: xdvipdfm-bb.test 45809 2017-11-15 00:36:56Z karl $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2013, 2014 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.

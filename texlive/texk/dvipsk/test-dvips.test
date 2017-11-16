@@ -1,4 +1,6 @@
-#! /bin/sh
+#! /bin/sh -vx
+# $Id: test-dvips.test 45809 2017-11-15 00:36:56Z karl $
+# Public domain.
 
 rm -f mtest.ps
 

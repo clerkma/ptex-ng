@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
-# $Id: tlmgr.pl 45719 2017-11-08 12:19:02Z preining $
+# $Id: tlmgr.pl 45806 2017-11-14 21:16:47Z karl $
 #
 # Copyright 2008-2017 Norbert Preining
 # This file is licensed under the GNU General Public License version 2
 # or any later version.
 #
 
-my $svnrev = '$Revision: 45719 $';
-my $datrev = '$Date: 2017-11-08 13:19:02 +0100 (Wed, 08 Nov 2017) $';
+my $svnrev = '$Revision: 45806 $';
+my $datrev = '$Date: 2017-11-14 22:16:47 +0100 (Tue, 14 Nov 2017) $';
 my $tlmgrrevision;
 my $prg;
 if ($svnrev =~ m/: ([0-9]+) /) {
@@ -110,6 +110,8 @@ use TeXLive::TLPaper;
 #
 # set up $prg for warning messages
 $prg = TeXLive::TLUtils::basename($0);
+# for usage in various Perl modules
+$::prg = $prg;
 
 binmode(STDOUT, ":utf8");
 binmode(STDERR, ":utf8");
@@ -169,7 +171,7 @@ my %action_specification = (
     "function" => \&action_conf
   },
   "dump-tlpdb" => { 
-    "options"  => { local => 1, remote => 1, json => 1 },
+    "options"  => { local => 1, remote => 1 },
     "run-post" => 0,
     "function" => \&action_dumptlpdb
   },
@@ -212,7 +214,7 @@ my %action_specification = (
       "data" => "=s",
       "all" => 1,
       "list" => 1, 
-      "only-installed" => 1,
+      "only-installed" => 1
     },
     "run-post" => 0,
     "function" => \&action_info
@@ -345,6 +347,29 @@ my %action_specification = (
   "version" => { }, # handled separately
 );
 
+my %globaloptions = (
+  "gui" => 1,
+  "gui-lang" => "=s",
+  "debug-json-timing" => 1,
+  "debug-translation" => 1,
+  "h|?" => 1,
+  "help" => 1,
+  "json" => 1,
+  "location|repository|repo" => "=s",
+  "machine-readable" => 1,
+  "no-execute-actions" => 1,
+  "package-logfile" => "=s",
+  "persistent-downloads" => "!",
+  "pause" => 1,
+  "pin-file" => "=s",
+  "print-platform|print-arch" => 1,
+  "usermode|user-mode" => 1,
+  "usertree|user-tree" => "=s",
+  "verify-downloads" => "!",
+  "require-verification" => "!",
+  "version" => 1,
+);
+
 main() if $ismain;
 
 
@@ -352,27 +377,6 @@ main() if $ismain;
 
 sub main {
   my %options;       # TL options from local tlpdb
-
-  my %globaloptions = (
-    "gui" => 1,
-    "gui-lang" => "=s",
-    "debug-translation" => 1,
-    "h|?" => 1,
-    "help" => 1,
-    "location|repository|repo" => "=s",
-    "machine-readable" => 1,
-    "no-execute-actions" => 1,
-    "package-logfile" => "=s",
-    "persistent-downloads" => "!",
-    "pause" => 1,
-    "pin-file" => "=s",
-    "print-platform|print-arch" => 1,
-    "usermode|user-mode" => 1,
-    "usertree|user-tree" => "=s",
-    "verify-downloads" => "!",
-    "require-verification" => "!",
-    "version" => 1,
-  );
 
   my %optarg;
   for my $k (keys %globaloptions) {
@@ -1194,6 +1198,12 @@ sub action_paper {
   $ENV{"TEXMFCONFIG"} = $texmfconfig;
 
   my $action = shift @ARGV;
+  if (!$action) {
+    # can only happen in shell mode, because otherwise we push paper onto the stack before
+    # going into the action_paper
+    $action = "paper";
+  }
+
   if ($action =~ m/^paper$/i) {  # generic paper
     my $newpaper = shift @ARGV;
     if ($opts{"list"}) {  # tlmgr paper --list => complain.
@@ -1205,6 +1215,19 @@ sub action_paper {
 
     } elsif (!defined($newpaper)) {  # tlmgr paper => show all current sizes.
       my $ret = $F_OK;
+      if ($opts{'json'}) {
+        my @foo;
+        for my $prog (keys %TeXLive::TLPaper::paper) {
+          my $pkg = $TeXLive::TLPaper::paper{$prog}{'pkg'};
+          if ($localtlpdb->get_package($pkg)) {
+            my $val = TeXLive::TLPaper::do_paper($prog,$texmfconfig,"--json");
+            push @foo, $val;
+          }
+        }
+        my $json = TeXLive::TLUtils::encode_json(\@foo);
+        print "$json\n";
+        return $ret;
+      }
       for my $prog (sort keys %TeXLive::TLPaper::paper) {
         my $pkg = $TeXLive::TLPaper::paper{$prog}{'pkg'};
         if ($localtlpdb->get_package($pkg)) {
@@ -1221,6 +1244,10 @@ sub action_paper {
 
     } else { # tlmgr paper {a4|letter} => do it.
       return ($F_ERROR) if !check_on_writable();
+      if ($opts{'json'}) {
+        tlwarn("$prg: option --json not supported with other arguments\n");
+        return ($F_ERROR);
+      }
       my $ret = $F_OK;
       for my $prog (sort keys %TeXLive::TLPaper::paper) {
         my $pkg = $TeXLive::TLPaper::paper{$prog}{'pkg'};
@@ -1233,10 +1260,18 @@ sub action_paper {
     }
 
   } else {  # program-specific paper
+    if ($opts{'json'}) {
+      tlwarn("$prg: option --json not supported with other arguments\n");
+      return ($F_ERROR);
+    }
     my $prog = $action;     # first argument is the program to change
     my $pkg = $TeXLive::TLPaper::paper{$prog}{'pkg'};
+    if (!$pkg) {
+      tlwarn("Unknown paper configuration program $prog!\n");
+      return ($F_ERROR);
+    }
     if (!$localtlpdb->get_package($pkg)) {
-      tlwarn("$prg: package $pkg is not installed - cannot adjust paper size!\n");
+      tlwarn("$prg: package $prog is not installed - cannot adjust paper size!\n");
       return ($F_ERROR);
     }
     my $arg = shift @ARGV;  # get "paper" argument
@@ -1412,24 +1447,11 @@ sub action_info {
   my $ret = $F_OK | $F_NOPOSTACTION;
   my @datafields;
   my $fmt = "list";
-  if ($opts{'data'} && ($opts{'data'} eq "json")) {
-    eval { require JSON; };
-    if ($@) {
-      # that didn't work out, give some usefull error message and stop
-      if ($^O =~ /^MSWin/i) {
-        # that should not happen, we are shipping Tk!!
-        require Win32;
-        my $msg = "Cannot load JSON, that should not happen as we ship it!\n(Error message: $@)\n";
-        Win32::MsgBox($msg, 1|Win32::MB_ICONSTOP(), "Warning");
-      } else {
-        printf STDERR "
-$prg: Cannot load JSON. 
-This module is shipped with core Perl unless you have a very old Perl,
-in which case you cannot use the json option.
-Goodbye.
-";
-      }
-    }
+  if ($opts{'data'} && $opts{'json'}) {
+    tlwarn("Preferring json output over data output!\n");
+    delete($opts{'data'});
+  }
+  if ($opts{'json'}) {
     $fmt = 'json';
     # the 1 is the silent mode!
     init_tlmedia_or_die(1);
@@ -1447,6 +1469,8 @@ Goodbye.
     $fmt = "csv";
     # the 1 is the silent mode!
     init_tlmedia_or_die(1);
+  } else {
+    $fmt = "detail";
   }
   my $tlm;
   if ($opts{"only-installed"}) {
@@ -1480,16 +1504,15 @@ Goodbye.
   } else {
     @whattolist = ($what, @todo);
   }
-  if ($opts{'data'}) {
-    if ($opts{'data'} ne "json") {
-      $fmt = "csv";
-    }
-  } else {
-    $fmt = "detail";
-  }
   my @adds;
   if ($opts{'data'}) {
     @adds = @datafields;
+  }
+  # TIMING OF JSON IMPLEMENTATIONS
+  my ($startsec, $startmsec);
+  if ($opts{'debug-json-timing'}) {
+    require Time::HiRes;
+    ($startsec, $startmsec) = Time::HiRes::gettimeofday();
   }
   print "[" if ($fmt eq "json");
   my $first = 1;
@@ -1500,6 +1523,14 @@ Goodbye.
     $ret |= show_one_package($ppp, $fmt, @adds);
   }
   print "]\n" if ($fmt eq "json");
+  if ($opts{'debug-json-timing'}) {
+    my ($endsec, $endmsec) = Time::HiRes::gettimeofday();
+    if ($endmsec < $startmsec) {
+      $endsec -= 1;
+      $endmsec += 1000000;
+    }
+    print STDERR "JSON (", $TeXLive::TLUtils::jsonmode, ") generation took ", $endsec - $startsec, ".", substr($endmsec - $startmsec,0,2), " sec\n";
+  }
   return ($ret);
 }
 
@@ -1807,9 +1838,13 @@ sub action_restore {
   # intermediate sub
   sub report_backup_revdate {
     my $p = shift;
+    my $mode = shift;
     my %revs = @_;
     my @rs = sort {$b <=> $a} (keys %revs);
+    my @outarr;
     for my $rs (@rs) {
+      my %jsonkeys;
+      $jsonkeys{'name'} = $p;
       my $dstr;
       if ($revs{$rs} == -1) {
         $dstr = "unknown";
@@ -1820,17 +1855,34 @@ sub action_restore {
         $dstr = sprintf "%04d-%02d-%02d %02d:%02d", 
           $year+1900, $mon+1, $mday, $hour, $min;
       }
-      print "$rs ($dstr) ";
+      if ($mode eq "json") {
+        $jsonkeys{'rev'} = "$rs";
+        $jsonkeys{'date'} = $dstr;
+        push @outarr, \%jsonkeys;
+      } else {
+        push @outarr, "$rs ($dstr)";
+      }
+    }
+    if ($mode eq "json") {
+      return @outarr;
+    } else {
+      return ( join(" ", @outarr));
     }
   }
   # end sub
   if (!defined($pkg)) {
     if (keys %backups) {
-      print "Available backups:\n";
-      foreach my $p (sort keys %backups) {
-        print "$p: ";
-        report_backup_revdate($p, %{$backups{$p}});
-        print "\n";
+      if ($opts{'json'}) {
+        my @bla = map { report_backup_revdate($_, "json", %{$backups{$_}}) } keys %backups;
+        my $str = TeXLive::TLUtils::encode_json(\@bla);
+        print "$str\n";
+      } else {
+        print "Available backups:\n";
+        foreach my $p (sort keys %backups) {
+          print "$p: ";
+          print(report_backup_revdate($p, "text", %{$backups{$p}}));
+          print "\n";
+        }
       }
     } else {
       print "No backups available in $opts{'backupdir'}\n";
@@ -1838,9 +1890,15 @@ sub action_restore {
     return ($F_OK | $F_NOPOSTACTION);
   }
   if (!defined($rev)) {
-    print "Available backups for $pkg: ";
-    report_backup_revdate($pkg, %{$backups{$pkg}});
-    print "\n";
+    if ($opts{'json'}) {
+      my @bla = report_backup_revdate($pkg, "json", %{$backups{$pkg}});
+      my $str = TeXLive::TLUtils::encode_json(\@bla);
+      print "$str\n";
+    } else {
+      print "Available backups for $pkg: ";
+      print(report_backup_revdate($pkg, "text", %{$backups{$pkg}}));
+      print "\n";
+    }
     return ($F_OK | $F_NOPOSTACTION);
   }
   # we did arrive here, so we try to restore ...
@@ -3647,8 +3705,8 @@ sub show_one_package_json {
   my $tlp = ($is_installed ? $loctlp : $remtlp);
   #my $tlp = ($is_available ? $remtlp : $loctlp);
   # add available, installed, lrev, rrev fields and remove revision field
-  my $str = $tlp->as_json(available => ($is_available ? $JSON::true : $JSON::false), 
-                          installed => ($is_installed ? $JSON::true : $JSON::false),
+  my $str = $tlp->as_json(available => ($is_available ? TeXLive::TLUtils::True() : TeXLive::TLUtils::False()), 
+                          installed => ($is_installed ? TeXLive::TLUtils::True() : TeXLive::TLUtils::False()),
                           lrev      => ($is_installed ? $loctlp->revision : 0),
                           rrev      => ($is_available ? $remtlp->revision : 0),
                           revision  => undef);
@@ -4344,7 +4402,13 @@ sub action_option {
   $what = "show" unless defined($what);
   init_local_db();
   my $ret = $F_OK;
+  my %json;
   if ($what =~ m/^show$/i) {
+    if ($opts{'json'}) {
+      my $json = $localtlpdb->options_as_json();
+      print("$json\n");
+      return($ret);
+    }
     for my $o (sort keys %{$localtlpdb->options}) {
       # ignore some things which are w32 specific
       next if ($o eq "desktop_integration" && !win32());
@@ -4366,6 +4430,11 @@ sub action_option {
       }
     }
   } elsif ($what =~ m/^showall$/i) {
+    if ($opts{'json'}) {
+      my $json = $localtlpdb->options_as_json();
+      print("$json\n");
+      return($ret);
+    }
     my %loc = %{$localtlpdb->options};
     for my $o (sort keys %TLPDBOptions) {
       if ($::machinereadable) {
@@ -4383,7 +4452,7 @@ sub action_option {
     }
     my $found = 0;
     for my $opt (keys %TLPDBOptions) {
-      if ($what eq $TLPDBOptions{$opt}->[2]) {
+      if (($what eq $TLPDBOptions{$opt}->[2]) || ($what eq $opt)) {
         $found = 1;
         # the option argument matches the name
         my $val = shift @ARGV;
@@ -6030,6 +6099,12 @@ sub action_key {
 sub action_shell {
   my $protocol = 1;
   my $default_prompt = "tlmgr>";
+  # keys which can be set/get and are also settable via global cmdline opts
+  my @valid_bool_keys
+    = qw/debug-translation machine-readable no-execute-actions
+         require-verification verify-downloads json/;  
+  my @valid_string_keys = qw/repository prompt/;
+  my @valid_keys = (@valid_bool_keys, @valid_string_keys);
   # set auto flush unconditionally in action shell
   $| = 1;
   # we need to do an anonymous sub here otherwise the $default_prompt will get
@@ -6129,11 +6204,6 @@ sub action_shell {
       exec("tlmgr", @::SAVEDARGV);
 
     } elsif ($cmd =~ m/^(set|get)$/) {
-      my @valid_bool_keys
-         = qw/debug-translation machine-readable no-execute-actions
-              require-verification verify-downloads/;  
-      my @valid_string_keys = qw/repository prompt/;
-      my @valid_keys = (@valid_bool_keys, @valid_string_keys);
       #
       my $key = shift @args;
       my $val = shift @args;
@@ -6227,6 +6297,13 @@ sub action_shell {
       }
       # redo the option parsing
       my %optarg;
+      for my $k (@valid_bool_keys) {
+        if ($globaloptions{$k} eq "1") {
+          $optarg{$k} = 1;
+        } else {
+          $optarg{"$k" . $globaloptions{$k}} = 1;
+        }
+      }
       if (defined($action_specification{$cmd}{'options'})) {
         my %actopts = %{$action_specification{$cmd}{'options'}};
         for my $k (keys %actopts) {
@@ -6241,6 +6318,10 @@ sub action_shell {
       @ARGV = @args;
       my %savedopts = %opts;
       %opts = ();
+      # stuff global options back into the %opts array
+      for my $k (@valid_keys) {
+        $opts{$k} = $savedopts{$k} if (exists($savedopts{$k}));
+      }
       if (!GetOptions(\%opts, keys(%optarg))) {
         print "ERROR unsupported arguments\n";
         next;
@@ -7665,15 +7746,18 @@ locally installed packages, collections, or schemes are listed.
 If the option C<--data> is given, its argument must be a comma separated
 list of field names from: C<name>, C<category>, C<localrev>, C<remoterev>,
 C<shortdesc>, C<longdesc>, C<installed>, C<size>, C<relocatable>, C<depends>,
-C<cat-version>, C<cat-date>, or C<cat-licence>. In this case the requested
+C<cat-version>, C<cat-date>, or C<cat-license>. In this case the requested
 packages' information is listed in CSV format one package per line, and the
 column information is given by the C<itemN>. The C<depends> column contains
 the name of all dependencies separated by C<:>.
 
-In case the only value passed to C<--data> is C<json>, the output is a
+=item B<--json>
+
+In case C<--json> is specified, the output is a
 JSON encoded array where each array element is the JSON representation of
 a single C<TLPOBJ> but with additional information. For details see
 C<tlpkg/doc/JSON-formats.txt>, format definition: C<TLPOBJINFO>.
+If both C<--json> and C<--data> are given, C<--json> takes precedence.
 
 
 =back
@@ -7770,23 +7854,29 @@ from the local keyring.
 
 =over 4
 
-=item B<option [show]>
+=item B<option [--json] [show]>
 
-=item B<option showall>
+=item B<option [--json] showall>
 
 =item B<option I<key> [I<value>]>
 
 =back
 
-The first form shows the global TeX Live settings currently saved in the
-TLPDB with a short description and the C<key> used for changing it in
-parentheses.
+The first form, C<show>, shows the global TeX Live settings currently
+saved in the TLPDB with a short description and the C<key> used for
+changing it in parentheses.
 
-The second form is similar, but also shows options which can be defined
-but are not currently set to any value.
+The second form, C<showall>, is similar, but also shows options which
+can be defined but are not currently set to any value.
 
-In the third form, if I<value> is not given, the setting for I<key> is
-displayed.  If I<value> is present, I<key> is set to I<value>.
+Both C<show...> forms take an option C<--json>, which dumps the option
+information in JSON format.  In this case, both forms dump the same
+data. For the format of the JSON output see
+C<tlpkg/doc/JSON-formats.txt>, format definition C<TLOPTION>.
+
+In the third form, with I<key>, if I<value> is not given, the setting
+for I<key> is displayed.  If I<value> is present, I<key> is set to
+I<value>.
 
 Possible values for I<key> are (run C<tlmgr option showall> for
 the definitive list):
@@ -7813,21 +7903,22 @@ DVD.  To do this, you can run
 
 The C<install-tl> documentation has more information about the possible
 values for C<repository>.  (For backward compatibility, C<location> can
-be used as alternative name for C<repository>.)
+be used as a synonym for C<repository>.)
 
 If C<formats> is set (this is the default), then formats are regenerated
 when either the engine or the format files have changed.  Disable this
-only when you know what you are doing.
+only when you know how and want to regenerate formats yourself.
 
 The C<postcode> option controls execution of per-package
 postinstallation action code.  It is set by default, and again disabling
-is not likely to be of interest except perhaps to developers.
+is not likely to be of interest except to developers doing debugging.
 
 The C<docfiles> and C<srcfiles> options control the installation of
-their respective files of a package. By default both are enabled (1).
-Either or both can be disabled (set to 0) if disk space is limited or
-for minimal testing installations, etc.  When disabled, the respective
-files are not downloaded at all.
+their respective file groups (documentation, sources; grouping is
+approximate) per package. By default both are enabled (1).  Either or
+both can be disabled (set to 0) if disk space is limited or for minimal
+testing installations, etc.  When disabled, the respective files are not
+downloaded at all.
 
 The options C<autobackup> and C<backupdir> determine the defaults for
 the actions C<update>, C<backup> and C<restore>.  These three actions
@@ -7847,22 +7938,21 @@ To setup C<autobackup> to C<-1> on the command line, use:
 
   tlmgr option -- autobackup -1
 
-The C<--> avoids having the C<-1> treated as an option.  (C<--> stops
-parsing for options at the point where it appears; this is a general
-feature across most Unix programs.)
+The C<--> avoids having the C<-1> treated as an option.  (The C<-->
+stops parsing for options at the point where it appears; this is a
+general feature across most Unix programs.)
 
-The C<sys_bin>, C<sys_man>, and C<sys_info> options are used on
-Unix-like systems to control the generation of links for executables,
-info files and man pages. See the C<path> action for details.
+The C<sys_bin>, C<sys_man>, and C<sys_info> options are used on Unix
+systems to control the generation of links for executables, Info files
+and man pages. See the C<path> action for details.
 
-The last three options also affect behavior on Windows installations.
-If C<desktop_integration> is set, then some packages will install items
-in a sub-folder of the Start menu for C<tlmgr gui>, documentation, etc.
-If C<fileassocs> is set, Windows file associations are made (see also
-the C<postaction> action).  Finally, if C<multiuser> is set, then
-adaptions to the registry and the menus are done for all users on the
-system instead of only the current user.  All three options are on by
-default.
+The last three options affect behavior on Windows installations.  If
+C<desktop_integration> is set, then some packages will install items in
+a sub-folder of the Start menu for C<tlmgr gui>, documentation, etc.  If
+C<fileassocs> is set, Windows file associations are made (see also the
+C<postaction> action).  Finally, if C<multiuser> is set, then adaptions
+to the registry and the menus are done for all users on the system
+instead of only the current user.  All three options are on by default.
 
 =head2 paper
 
@@ -7871,6 +7961,8 @@ default.
 =item B<paper [a4|letter]>
 
 =item B<S<[xdvi|pdftex|dvips|dvipdfmx|context|psutils] paper [I<papersize>|--list]>>
+
+=item B<paper --json>
 
 =back
 
@@ -7891,6 +7983,10 @@ program to that paper size.
 With a program given as the first argument and C<--list> given as the
 last argument (e.g., C<tlmgr dvips paper --list>), shows all valid paper
 sizes for that program.  The first size shown is the default.
+
+If C<--json> is specified without other options, the paper setup is
+dumped in JSON format. For the format of JSON output see
+C<tlpkg/doc/JSON-formats.txt>, format definition C<TLPAPER>.
 
 Incidentally, this syntax of having a specific program name before the
 C<paper> keyword is unusual.  It is inherited from the longstanding
@@ -8115,7 +8211,7 @@ otherwise, all operations will fail!
 
 =back
 
-=head2 restore [--backupdir I<dir>] [--all | I<pkg> [I<rev>]]
+=head2 restore [--json] [--backupdir I<dir>] [--all | I<pkg> [I<rev>]]
 
 Restore a package from a previously-made backup.
 
@@ -8155,6 +8251,13 @@ written to the terminal.
 =item B<--force>
 
 Don't ask questions.
+
+=item B<--json>
+
+When listing backups, the option C<--json> turn on JSON output.
+The format is an array of JSON objects (C<name>, C<rev>, C<date>).
+For details see C<tlpkg/doc/JSON-formats.txt>, format definition: C<TLBACKUPS>.
+If both C<--json> and C<--data> are given, C<--json> takes precedence.
 
 =back
 
@@ -8554,19 +8657,19 @@ report C<(verified)> after loading the TLPDB; otherwise, they report
 C<(not verified)>.  Either way, by default the installation and/or
 updates proceed normally.
 
-If a program C<gpg> is available (that is, it is found in the C<PATH>),
-cryptographic signatures will be checked. In this case we require that
-the main repository is signed. This is not required for additional r
-repositories. If C<gpg> is not available, signatures are not checked
-and no verification is carried out, but C<tlmgr> proceeds normally.
-This is the behavior of C<tlmgr> up to TeX Live 2016.
+If a program named C<gpg> is available (that is, it is found in the
+C<PATH>), cryptographic signatures will be checked. In this case we
+require that the main repository is signed, but signing is not required
+for additional repositories. If C<gpg> is not available, signatures are
+not checked and no verification is carried out, but C<tlmgr> proceeds
+normally.
 
 The attempted verification can be suppressed by specifying
 C<--no-verify-downloads> on the command line, or the entry
-C<verify-downloads = 0> in a C<tlmgr> config file (described in
-L<CONFIGURATION FILE FOR TLMGR>).  On the other hand, it is possible to
+C<verify-downloads=0> in a C<tlmgr> config file (described in
+L<CONFIGURATION FILE FOR TLMGR>).  On the other hand, you can
 I<require> verification by specifying C<--require-verification> on the
-command line, or C<require-verification = 1> in a C<tlmgr> config file;
+command line, or C<require-verification=1> in a C<tlmgr> config file;
 in this case, if verification is not possible, the program quits.
 Note that as mentioned above, if C<gpg> is available, the main repository
 is always required to have a signature. Using the C<--require-verification>
@@ -9156,7 +9259,7 @@ This script and its documentation were written for the TeX Live
 distribution (L<http://tug.org/texlive>) and both are licensed under the
 GNU General Public License Version 2 or later.
 
-$Id: tlmgr.pl 45719 2017-11-08 12:19:02Z preining $
+$Id: tlmgr.pl 45806 2017-11-14 21:16:47Z karl $
 =cut
 
 # to remake HTML version: pod2html --cachedir=/tmp tlmgr.pl >/tmp/tlmgr.html

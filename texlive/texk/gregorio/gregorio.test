@@ -1,6 +1,6 @@
-#! /bin/sh
-# $Id: gregorio.test 43809 2017-04-15 21:00:07Z kakuto $
-# Copyright 2016 Karl Berry <tex-live@tug.org>
+#! /bin/sh -vx
+# $Id: gregorio.test 45809 2017-11-15 00:36:56Z karl $
+# Copyright 2016-2017 Karl Berry <tex-live@tug.org>
 # Copyright 2015 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 

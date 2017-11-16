@@ -1,4 +1,6 @@
-#! /bin/sh
+#! /bin/sh -vx
+# $Id: beginfontk1.test 45809 2017-11-15 00:36:56Z karl $
+# Public domain.
 # ensure -K1 does not remove newline after %%BeginFont line.
 # Report from T S, 1 Jan 2010 16:32:16.
 

@@ -1,5 +1,5 @@
-#! /bin/sh
-# $Id: dvipng.test 31117 2013-07-06 09:40:06Z peter $
+#! /bin/sh -vx
+# $Id: dvipng.test 45809 2017-11-15 00:36:56Z karl $
 # Public domain.  Originally written by Peter Breitenlohner, 2009.
 
 get_val () {

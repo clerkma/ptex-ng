@@ -1,4 +1,6 @@
-#! /bin/sh
+#! /bin/sh -vx
+# $Id: outocp.test 45809 2017-11-15 00:36:56Z karl $
+# Public domain. Originally written by Peter Breitenlohner.
 
 TEXMFCNF=$srcdir/../../kpathsea \
   ./outocp $srcdir/uni2lat.ocp >xuni2lat.out || exit 1

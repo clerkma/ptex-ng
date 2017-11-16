@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/sh -vx
+# $Id: cnfnewline.test 45809 2017-11-15 00:36:56Z karl $
+# Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 

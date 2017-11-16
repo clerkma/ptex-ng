@@ -1,4 +1,4 @@
-MRuby::Gem::Specification.new('mruby-ptexec') do |spec|
+MRuby::Gem::Specification.new('mruby-ptexenc') do |spec|
   spec.authors = 'Clerk Ma'
   spec.summary = 'PTEXENC Binding'
   spec.linker do |linker|
