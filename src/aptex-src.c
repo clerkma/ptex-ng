@@ -9846,8 +9846,6 @@ static pointer copy_node_list (pointer p)
         {
           r = get_node(rule_node_size);
           words = rule_node_size - synctex_field_size;
-          sync_tag(r + rule_node_size) = sync_tag(p + rule_node_size);
-          sync_line(r + rule_node_size) = sync_line(p + rule_node_size);
         }
         break;
 
