@@ -559,8 +559,7 @@ $(PTEXNG_ROOT)/aptex.c \
 $(PTEXNG_ROOT)/aptex-cairo-visual-debug.c \
 $(PTEXNG_ROOT)/aptex-opentype.c \
 $(PTEXNG_ROOT)/aptex-unicode.c \
-$(PTEXNG_ROOT)/aptex-src.c \
-$(PTEXNG_ROOT)/aptex-synctex.c
+$(PTEXNG_ROOT)/aptex-src.c
 
 LOCAL_ARM_NEON          := false
 LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libcairo libpixman libz libkpathsea libotf libfreetype

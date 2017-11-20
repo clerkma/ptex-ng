@@ -21,7 +21,7 @@
 #define APTEX_H
 
 #ifndef EXTERN
-  #define EXTERN
+  #define EXTERN static
 #endif
 
 // macro for dynamic allocation
