@@ -6893,6 +6893,9 @@ void print_int (integer n)
 // prints a purported control sequence
 static void print_cs (integer p)
 {
+  pool_pointer j, l;
+  uint32_t cat;
+
   if (p < hash_base)
   {
     // {single character}
@@ -6923,8 +6926,23 @@ static void print_cs (integer p)
     print_esc("NONEXISTENT.");
   else
   {
-    sprint_esc(text(p));
-    print_char(' ');
+    l = text(p);
+    sprint_esc(l);
+    j = str_start[l];
+    l = str_start[l + 1];
+    if (l > j + 1)
+    {
+      if (l - j == multistrlen(str_pool, l, j))
+      {
+        cat = kcat_code(kcatcodekey(fromBUFF(str_pool, l, j)));
+	if (cat != other_kchar)
+	  print_char(' ');
+      }
+      else
+	print_char(' ');
+    }
+    else
+      print_char(' ');
   }
 }
 
