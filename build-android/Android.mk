@@ -538,6 +538,31 @@ LOCAL_SRC_FILES  := $(LIBOTF_FILES)
 
 include $(BUILD_STATIC_LIBRARY)
 
+# for libyaml
+include $(CLEAR_VARS)
+
+LIBYAML_ROOT     := ../src/libyaml
+LIBYAML_INCLUDES := \
+$(LOCAL_PATH)/../src/libyaml/win32 \
+$(LOCAL_PATH)/../src/libyaml/include
+LIBYAML_FILES    := \
+$(LIBYAML_ROOT)/src/api.c \
+$(LIBYAML_ROOT)/src/dumper.c \
+$(LIBYAML_ROOT)/src/emitter.c \
+$(LIBYAML_ROOT)/src/loader.c \
+$(LIBYAML_ROOT)/src/parser.c \
+$(LIBYAML_ROOT)/src/reader.c \
+$(LIBYAML_ROOT)/src/scanner.c \
+$(LIBYAML_ROOT)/src/writer.c
+
+LOCAL_ARM_NEON   := false
+LOCAL_MODULE     := libyaml
+LOCAL_CFLAGS     := -pie -fPIE -DHAVE_CONFIG_H -DYAML_DECLARE_STATIC -O2
+LOCAL_C_INCLUDES := $(LIBYAML_INCLUDES)
+LOCAL_SRC_FILES  := $(LIBYAML_FILES)
+
+include $(BUILD_STATIC_LIBRARY)
+
 # for ptex-ng
 include $(CLEAR_VARS)
 
@@ -562,7 +587,7 @@ $(PTEXNG_ROOT)/aptex-unicode.c \
 $(PTEXNG_ROOT)/aptex-src.c
 
 LOCAL_ARM_NEON          := false
-LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libcairo libpixman libz libkpathsea libotf libfreetype
+LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libcairo libpixman libz libkpathsea libotf libfreetype libyaml
 LOCAL_LDLIBS            := -s -lm
 LOCAL_MODULE            := aptex
 LOCAL_CFLAGS            := -pie -fPIE -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
