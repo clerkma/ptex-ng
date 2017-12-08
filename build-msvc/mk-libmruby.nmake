@@ -1,0 +1,163 @@
+CC = cl
+AR = lib
+CFLAGS = -nologo -c -O2 -Oy -I mruby/include -I mruby/mrbgems/mruby-compiler/core
+ROOT = mruby
+OBJS = mruby-src-array.obj mruby-src-backtrace.obj mruby-src-class.obj mruby-src-codedump.obj mruby-src-compar.obj mruby-src-crc.obj mruby-src-debug.obj mruby-src-dump.obj mruby-src-enum.obj mruby-src-error.obj mruby-src-etc.obj mruby-src-fmt_fp.obj mruby-src-gc.obj mruby-src-hash.obj mruby-src-init.obj mruby-src-kernel.obj mruby-src-load.obj mruby-src-numeric.obj mruby-src-object.obj mruby-src-pool.obj mruby-src-print.obj mruby-src-proc.obj mruby-src-range.obj mruby-src-state.obj mruby-src-string.obj mruby-src-symbol.obj mruby-src-variable.obj mruby-src-version.obj mruby-src-vm.obj mruby-compiler-codegen.obj mruby-compiler-y.tab.obj mrblib.obj mruby-sprintf-kernel.obj mruby-sprintf-sprintf.obj mruby-sprintf-gem_init.obj mruby-print-print.obj mruby-print-gem_init.obj mruby-math-math.obj mruby-math-gem_init.obj mruby-time-time.obj mruby-time-gem_init.obj mruby-struct-struct.obj mruby-struct-gem_init.obj mruby-enum-ext-gem_init.obj mruby-string-ext-string.obj mruby-string-ext-gem_init.obj mruby-numeric-ext-numeric_ext.obj mruby-numeric-ext-gem_init.obj mruby-array-ext-array.obj mruby-array-ext-gem_init.obj mruby-hash-ext-hash-ext.obj mruby-hash-ext-gem_init.obj mruby-range-ext-range.obj mruby-range-ext-gem_init.obj mruby-proc-ext-proc.obj mruby-proc-ext-gem_init.obj mruby-symbol-ext-symbol.obj mruby-symbol-ext-gem_init.obj mruby-random-mt19937ar.obj mruby-random-random.obj mruby-random-gem_init.obj mruby-object-ext-object.obj mruby-object-ext-gem_init.obj mruby-objectspace-mruby_objectspace.obj mruby-objectspace-gem_init.obj mruby-fiber-fiber.obj mruby-fiber-gem_init.obj mruby-enumerator-gem_init.obj mruby-enum-lazy-gem_init.obj mruby-toplevel-ext-gem_init.obj mruby-kernel-ext-kernel.obj mruby-kernel-ext-gem_init.obj mruby-class-ext-class.obj mruby-class-ext-gem_init.obj mruby-error-exception.obj mruby-error-gem_init.obj mrbgems-gem_init.obj
+
+all: $(OBJS)
+	$(AR) -nologo -out:libmruby.lib $(OBJS)
+
+mruby-src-array.obj: $(ROOT)/src/array.c
+	$(CC) $(CFLAGS) -Fomruby-src-array.obj $(ROOT)/src/array.c
+mruby-src-backtrace.obj: $(ROOT)/src/backtrace.c
+	$(CC) $(CFLAGS) -Fomruby-src-backtrace.obj $(ROOT)/src/backtrace.c
+mruby-src-class.obj: $(ROOT)/src/class.c
+	$(CC) $(CFLAGS) -Fomruby-src-class.obj $(ROOT)/src/class.c
+mruby-src-codedump.obj: $(ROOT)/src/codedump.c
+	$(CC) $(CFLAGS) -Fomruby-src-codedump.obj $(ROOT)/src/codedump.c
+mruby-src-compar.obj: $(ROOT)/src/compar.c
+	$(CC) $(CFLAGS) -Fomruby-src-compar.obj $(ROOT)/src/compar.c
+mruby-src-crc.obj: $(ROOT)/src/crc.c
+	$(CC) $(CFLAGS) -Fomruby-src-crc.obj $(ROOT)/src/crc.c
+mruby-src-debug.obj: $(ROOT)/src/debug.c
+	$(CC) $(CFLAGS) -Fomruby-src-debug.obj $(ROOT)/src/debug.c
+mruby-src-dump.obj: $(ROOT)/src/dump.c
+	$(CC) $(CFLAGS) -Fomruby-src-dump.obj $(ROOT)/src/dump.c
+mruby-src-enum.obj: $(ROOT)/src/enum.c
+	$(CC) $(CFLAGS) -Fomruby-src-enum.obj $(ROOT)/src/enum.c
+mruby-src-error.obj: $(ROOT)/src/error.c
+	$(CC) $(CFLAGS) -Fomruby-src-error.obj $(ROOT)/src/error.c
+mruby-src-etc.obj: $(ROOT)/src/etc.c
+	$(CC) $(CFLAGS) -Fomruby-src-etc.obj $(ROOT)/src/etc.c
+mruby-src-fmt_fp.obj: $(ROOT)/src/fmt_fp.c
+	$(CC) $(CFLAGS) -Fomruby-src-fmt_fp.obj $(ROOT)/src/fmt_fp.c
+mruby-src-gc.obj: $(ROOT)/src/gc.c
+	$(CC) $(CFLAGS) -Fomruby-src-gc.obj $(ROOT)/src/gc.c
+mruby-src-hash.obj: $(ROOT)/src/hash.c
+	$(CC) $(CFLAGS) -Fomruby-src-hash.obj $(ROOT)/src/hash.c
+mruby-src-init.obj: $(ROOT)/src/init.c
+	$(CC) $(CFLAGS) -Fomruby-src-init.obj $(ROOT)/src/init.c
+mruby-src-kernel.obj: $(ROOT)/src/kernel.c
+	$(CC) $(CFLAGS) -Fomruby-src-kernel.obj $(ROOT)/src/kernel.c
+mruby-src-load.obj: $(ROOT)/src/load.c
+	$(CC) $(CFLAGS) -Fomruby-src-load.obj $(ROOT)/src/load.c
+mruby-src-numeric.obj: $(ROOT)/src/numeric.c
+	$(CC) $(CFLAGS) -Fomruby-src-numeric.obj $(ROOT)/src/numeric.c
+mruby-src-object.obj: $(ROOT)/src/object.c
+	$(CC) $(CFLAGS) -Fomruby-src-object.obj $(ROOT)/src/object.c
+mruby-src-pool.obj: $(ROOT)/src/pool.c
+	$(CC) $(CFLAGS) -Fomruby-src-pool.obj $(ROOT)/src/pool.c
+mruby-src-print.obj: $(ROOT)/src/print.c
+	$(CC) $(CFLAGS) -Fomruby-src-print.obj $(ROOT)/src/print.c
+mruby-src-proc.obj: $(ROOT)/src/proc.c
+	$(CC) $(CFLAGS) -Fomruby-src-proc.obj $(ROOT)/src/proc.c
+mruby-src-range.obj: $(ROOT)/src/range.c
+	$(CC) $(CFLAGS) -Fomruby-src-range.obj $(ROOT)/src/range.c
+mruby-src-state.obj: $(ROOT)/src/state.c
+	$(CC) $(CFLAGS) -Fomruby-src-state.obj $(ROOT)/src/state.c
+mruby-src-string.obj: $(ROOT)/src/string.c
+	$(CC) $(CFLAGS) -Fomruby-src-string.obj $(ROOT)/src/string.c
+mruby-src-symbol.obj: $(ROOT)/src/symbol.c
+	$(CC) $(CFLAGS) -Fomruby-src-symbol.obj $(ROOT)/src/symbol.c
+mruby-src-variable.obj: $(ROOT)/src/variable.c
+	$(CC) $(CFLAGS) -Fomruby-src-variable.obj $(ROOT)/src/variable.c
+mruby-src-version.obj: $(ROOT)/src/version.c
+	$(CC) $(CFLAGS) -Fomruby-src-version.obj $(ROOT)/src/version.c
+mruby-src-vm.obj: $(ROOT)/src/vm.c
+	$(CC) $(CFLAGS) -Fomruby-src-vm.obj $(ROOT)/src/vm.c
+mruby-compiler-codegen.obj: $(ROOT)/mrbgems/mruby-compiler/core/codegen.c
+	$(CC) $(CFLAGS) -Fomruby-compiler-codegen.obj $(ROOT)/mrbgems/mruby-compiler/core/codegen.c
+mruby-compiler-y.tab.obj: $(ROOT)/build/host/mrbgems/mruby-compiler/core/y.tab.c
+	$(CC) $(CFLAGS) -Fomruby-compiler-y.tab.obj $(ROOT)/build/host/mrbgems/mruby-compiler/core/y.tab.c
+mrblib.obj: $(ROOT)/build/host/mrblib/mrblib.c
+	$(CC) $(CFLAGS) -Fomrblib.obj $(ROOT)/build/host/mrblib/mrblib.c
+mruby-sprintf-kernel.obj: $(ROOT)/mrbgems/mruby-sprintf/src/kernel.c
+	$(CC) $(CFLAGS) -Fomruby-sprintf-kernel.obj $(ROOT)/mrbgems/mruby-sprintf/src/kernel.c
+mruby-sprintf-sprintf.obj: $(ROOT)/mrbgems/mruby-sprintf/src/sprintf.c
+	$(CC) $(CFLAGS) -Fomruby-sprintf-sprintf.obj $(ROOT)/mrbgems/mruby-sprintf/src/sprintf.c
+mruby-sprintf-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-sprintf/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-sprintf-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-sprintf/gem_init.c
+mruby-print-print.obj: $(ROOT)/mrbgems/mruby-print/src/print.c
+	$(CC) $(CFLAGS) -Fomruby-print-print.obj $(ROOT)/mrbgems/mruby-print/src/print.c
+mruby-print-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-print/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-print-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-print/gem_init.c
+mruby-math-math.obj: $(ROOT)/mrbgems/mruby-math/src/math.c
+	$(CC) $(CFLAGS) -Fomruby-math-math.obj $(ROOT)/mrbgems/mruby-math/src/math.c
+mruby-math-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-math/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-math-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-math/gem_init.c
+mruby-time-time.obj: $(ROOT)/mrbgems/mruby-time/src/time.c
+	$(CC) $(CFLAGS) -Fomruby-time-time.obj $(ROOT)/mrbgems/mruby-time/src/time.c
+mruby-time-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-time/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-time-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-time/gem_init.c
+mruby-struct-struct.obj: $(ROOT)/mrbgems/mruby-struct/src/struct.c
+	$(CC) $(CFLAGS) -Fomruby-struct-struct.obj $(ROOT)/mrbgems/mruby-struct/src/struct.c
+mruby-struct-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-struct/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-struct-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-struct/gem_init.c
+mruby-enum-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-enum-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-enum-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-enum-ext/gem_init.c
+mruby-string-ext-string.obj: $(ROOT)/mrbgems/mruby-string-ext/src/string.c
+	$(CC) $(CFLAGS) -Fomruby-string-ext-string.obj $(ROOT)/mrbgems/mruby-string-ext/src/string.c
+mruby-string-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-string-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-string-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-string-ext/gem_init.c
+mruby-numeric-ext-numeric_ext.obj: $(ROOT)/mrbgems/mruby-numeric-ext/src/numeric_ext.c
+	$(CC) $(CFLAGS) -Fomruby-numeric-ext-numeric_ext.obj $(ROOT)/mrbgems/mruby-numeric-ext/src/numeric_ext.c
+mruby-numeric-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-numeric-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-numeric-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-numeric-ext/gem_init.c
+mruby-array-ext-array.obj: $(ROOT)/mrbgems/mruby-array-ext/src/array.c
+	$(CC) $(CFLAGS) -Fomruby-array-ext-array.obj $(ROOT)/mrbgems/mruby-array-ext/src/array.c
+mruby-array-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-array-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-array-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-array-ext/gem_init.c
+mruby-hash-ext-hash-ext.obj: $(ROOT)/mrbgems/mruby-hash-ext/src/hash-ext.c
+	$(CC) $(CFLAGS) -Fomruby-hash-ext-hash-ext.obj $(ROOT)/mrbgems/mruby-hash-ext/src/hash-ext.c
+mruby-hash-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-hash-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-hash-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-hash-ext/gem_init.c
+mruby-range-ext-range.obj: $(ROOT)/mrbgems/mruby-range-ext/src/range.c
+	$(CC) $(CFLAGS) -Fomruby-range-ext-range.obj $(ROOT)/mrbgems/mruby-range-ext/src/range.c
+mruby-range-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-range-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-range-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-range-ext/gem_init.c
+mruby-proc-ext-proc.obj: $(ROOT)/mrbgems/mruby-proc-ext/src/proc.c
+	$(CC) $(CFLAGS) -Fomruby-proc-ext-proc.obj $(ROOT)/mrbgems/mruby-proc-ext/src/proc.c
+mruby-proc-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-proc-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-proc-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-proc-ext/gem_init.c
+mruby-symbol-ext-symbol.obj: $(ROOT)/mrbgems/mruby-symbol-ext/src/symbol.c
+	$(CC) $(CFLAGS) -Fomruby-symbol-ext-symbol.obj $(ROOT)/mrbgems/mruby-symbol-ext/src/symbol.c
+mruby-symbol-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-symbol-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-symbol-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-symbol-ext/gem_init.c
+mruby-random-mt19937ar.obj: $(ROOT)/mrbgems/mruby-random/src/mt19937ar.c
+	$(CC) $(CFLAGS) -Fomruby-random-mt19937ar.obj $(ROOT)/mrbgems/mruby-random/src/mt19937ar.c
+mruby-random-random.obj: $(ROOT)/mrbgems/mruby-random/src/random.c
+	$(CC) $(CFLAGS) -Fomruby-random-random.obj $(ROOT)/mrbgems/mruby-random/src/random.c
+mruby-random-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-random/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-random-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-random/gem_init.c
+mruby-object-ext-object.obj: $(ROOT)/mrbgems/mruby-object-ext/src/object.c
+	$(CC) $(CFLAGS) -Fomruby-object-ext-object.obj $(ROOT)/mrbgems/mruby-object-ext/src/object.c
+mruby-object-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-object-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-object-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-object-ext/gem_init.c
+mruby-objectspace-mruby_objectspace.obj: $(ROOT)/mrbgems/mruby-objectspace/src/mruby_objectspace.c
+	$(CC) $(CFLAGS) -Fomruby-objectspace-mruby_objectspace.obj $(ROOT)/mrbgems/mruby-objectspace/src/mruby_objectspace.c
+mruby-objectspace-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-objectspace/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-objectspace-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-objectspace/gem_init.c
+mruby-fiber-fiber.obj: $(ROOT)/mrbgems/mruby-fiber/src/fiber.c
+	$(CC) $(CFLAGS) -Fomruby-fiber-fiber.obj $(ROOT)/mrbgems/mruby-fiber/src/fiber.c
+mruby-fiber-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-fiber/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-fiber-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-fiber/gem_init.c
+mruby-enumerator-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-enumerator/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-enumerator-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-enumerator/gem_init.c
+mruby-enum-lazy-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-enum-lazy/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-enum-lazy-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-enum-lazy/gem_init.c
+mruby-toplevel-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-toplevel-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-toplevel-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-toplevel-ext/gem_init.c
+mruby-kernel-ext-kernel.obj: $(ROOT)/mrbgems/mruby-kernel-ext/src/kernel.c
+	$(CC) $(CFLAGS) -Fomruby-kernel-ext-kernel.obj $(ROOT)/mrbgems/mruby-kernel-ext/src/kernel.c
+mruby-kernel-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-kernel-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-kernel-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-kernel-ext/gem_init.c
+mruby-class-ext-class.obj: $(ROOT)/mrbgems/mruby-class-ext/src/class.c
+	$(CC) $(CFLAGS) -Fomruby-class-ext-class.obj $(ROOT)/mrbgems/mruby-class-ext/src/class.c
+mruby-class-ext-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-class-ext/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-class-ext-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-class-ext/gem_init.c
+mruby-error-exception.obj: $(ROOT)/mrbgems/mruby-error/src/exception.c
+	$(CC) $(CFLAGS) -Fomruby-error-exception.obj $(ROOT)/mrbgems/mruby-error/src/exception.c
+mruby-error-gem_init.obj: $(ROOT)/build/host/mrbgems/mruby-error/gem_init.c
+	$(CC) $(CFLAGS) -Fomruby-error-gem_init.obj $(ROOT)/build/host/mrbgems/mruby-error/gem_init.c
+mrbgems-gem_init.obj: $(ROOT)/build/host/mrbgems/gem_init.c
+	$(CC) $(CFLAGS) -Fomrbgems-gem_init.obj $(ROOT)/build/host/mrbgems/gem_init.c

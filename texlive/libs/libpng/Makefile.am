@@ -1,4 +1,4 @@
-## $Id: Makefile.am 43617 2017-03-27 18:00:45Z karl $
+## $Id: Makefile.am 45971 2017-12-02 23:51:48Z karl $
 ## Proxy Makefile.am to build libpng for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -28,20 +28,25 @@ noinst_LIBRARIES=libpng.a
 
 nodist_libpng_a_SOURCES = \
 	@LIBPNG_TREE@/png.c \
-	@LIBPNG_TREE@/pngset.c \
+	@LIBPNG_TREE@/pngerror.c \
 	@LIBPNG_TREE@/pngget.c \
-	@LIBPNG_TREE@/pngrutil.c \
-	@LIBPNG_TREE@/pngtrans.c \
-	@LIBPNG_TREE@/pngwutil.c \
+	@LIBPNG_TREE@/pngmem.c \
+	@LIBPNG_TREE@/pngpread.c \
 	@LIBPNG_TREE@/pngread.c \
 	@LIBPNG_TREE@/pngrio.c \
+	@LIBPNG_TREE@/pngrtran.c \
+	@LIBPNG_TREE@/pngrutil.c \
+	@LIBPNG_TREE@/pngset.c \
+	@LIBPNG_TREE@/pngtrans.c \
 	@LIBPNG_TREE@/pngwio.c \
 	@LIBPNG_TREE@/pngwrite.c \
-	@LIBPNG_TREE@/pngrtran.c \
 	@LIBPNG_TREE@/pngwtran.c \
-	@LIBPNG_TREE@/pngmem.c \
-	@LIBPNG_TREE@/pngerror.c \
-	@LIBPNG_TREE@/pngpread.c
+	@LIBPNG_TREE@/pngwutil.c
+
+if PNG_ARM_NEON
+nodist_libpng_a_SOURCES += @LIBPNG_TREE@/arm/arm_init.c\
+	@LIBPNG_TREE@/arm/filter_neon.S @LIBPNG_TREE@/arm/filter_neon_intrinsics.c
+endif
 
 $(libpng_a_OBJECTS): config.force
 

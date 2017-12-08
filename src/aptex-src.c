@@ -119,9 +119,13 @@ static void print_aptex_version (void)
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
     "Compiled with zlib version %s\n"
-    "Compiled with synctex (build-in edition)\n",
+    "Compiled with libyaml version %s\n"
+    "Compiled with mruby version %s\n"
+    "Compiled with synctex (build-in edition)\n"
+    "Compiled with libdpx (build-in dvipdfmx)\n",
     banner, kpathsea_version_string,
-    ptexenc_version_string, LIBOTF_VERSION, zlib_version);
+    ptexenc_version_string, LIBOTF_VERSION, zlib_version,
+    yaml_get_version_string(), MRUBY_VERSION);
   aptex_utils_exit(EXIT_FAILURE);
 }
 
@@ -170,6 +174,7 @@ static void print_aptex_info (void)
     ssize_t executable_size;
   executable_size = readlink("/proc/curproc/file", executable_path, 65536);
 #elif defined (__APPLE__)
+  extern int _NSGetExecutablePath(char* buf, uint32_t* bufsize);
   uint32_t executable_path_length;
   _NSGetExecutablePath(executable_path, &executable_path_length);
 #endif
@@ -6935,8 +6940,8 @@ static void print_cs (integer p)
       if (l - j == multistrlen(str_pool, l, j))
       {
         cat = kcat_code(kcatcodekey(fromBUFF(str_pool, l, j)));
-	if (cat != other_kchar)
-	  print_char(' ');
+        if (cat != other_kchar)
+          print_char(' ');
       }
       else
 	print_char(' ');

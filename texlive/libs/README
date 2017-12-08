@@ -1,4 +1,4 @@
-$Id: README 45817 2017-11-15 04:57:26Z kakuto $
+$Id: README 46010 2017-12-07 06:44:07Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -9,7 +9,7 @@ bypassing or using the original one.
 
 See also comments in ../texk/README.
 
-cairo 1.14.10 - checked 20jun17
+cairo 1.14.12 - checked 07dec17
   http://cairographics.org/releases/
 
 freetype2 2.8.1 - checked 16sep17
@@ -24,7 +24,7 @@ gmp 6.1.2 - checked 16dec16
 graphite2 1.3.10 - checked 20jun17
   http://sourceforge.net/projects/silgraphite/files/graphite2/
 
-harfbuzz 1.7.1 - checked 15nov17
+harfbuzz 1.7.2 - checked 05dec17
   http://www.freedesktop.org/software/harfbuzz/release/
 
 icu 58.2 - checked 13mar17

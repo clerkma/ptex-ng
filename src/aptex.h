@@ -89,6 +89,9 @@
 
 // zlib for format file and synctex
 #include "zlib.h"
+// libyaml and libmruby
+#include "yaml.h"
+#include "mruby.h"
 
 #include "aptex-cairo-visual-debug.h"
 #include "aptex-opentype.h"

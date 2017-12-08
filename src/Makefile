@@ -7,14 +7,16 @@
 CC = gcc
 CFLAGS = -c -O2
 INCLUDES = \
-	-I../texlive/texk/ptexenc/ \
-	-I../texlive/texk/ \
-	-I../texlive/libs/zlib/include \
-	-I../texlive/libs/freetype2/freetype2 \
-	-Ilibcairo \
-	-I../texlive/libs/cairo/cairo-src/src \
-	-Ilibotf/src
-LDFLAGS = libdpx.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a -lm
+	-I ../texlive/texk/ptexenc/ \
+	-I ../texlive/texk/ \
+	-I ../texlive/libs/zlib/include \
+	-I ../texlive/libs/freetype2/freetype2 \
+	-I libcairo \
+	-I ../texlive/libs/cairo/cairo-src/src \
+	-I libotf/src \
+	-I libyaml/include \
+	-I mruby/include
+LDFLAGS = libdpx.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a libyaml.a libmruby.a -lm
 
 objects = \
 	aptex.o \

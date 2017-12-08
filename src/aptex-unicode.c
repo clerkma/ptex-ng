@@ -169,3 +169,78 @@ const char * aptex_unicode_version (void)
 {
   return "10.0";
 }
+
+uint32_t aptex_get_jis4051_class (uint32_t codepoint)
+{
+  uint32_t jis4051_class;
+
+  switch (codepoint)
+  {
+    case 0xff08:
+    case 0xff3b:
+    case 0xff5b:
+    case 0x3014:
+    case 0x3008:
+    case 0x300a:
+    case 0x300c:
+    case 0x300e:
+    case 0x3010:
+    case 0x301d:
+    case 0x2018:
+    case 0x201c:
+    case 0xff5f:
+    case 0x00ab:
+      jis4051_class = 1;
+      break;
+    case 0xff0c:
+    case 0xff09:
+    case 0xff3d:
+    case 0xff5d:
+    case 0x3001:
+    case 0x3015:
+    case 0x3009:
+    case 0x300b:
+    case 0x300d:
+    case 0x300f:
+    case 0x3011:
+    case 0x3019:
+    case 0x3017:
+    case 0x301f:
+    case 0x2019:
+    case 0x201d:
+    case 0xff60:
+    case 0x00bb:
+      jis4051_class = 2;
+      break;
+    case 0xff1f:
+    case 0xff01:
+    case 0x203c:
+    case 0x2047:
+    case 0x2048:
+    case 0x2049:
+      jis4051_class = 5;
+      break;
+    case 0x30fb:
+    case 0xff1a:
+    case 0xff1b:
+      jis4051_class = 6;
+      break;
+    case 0x3002:
+    case 0xff0e:
+      jis4051_class = 7;
+      break;
+    case 0x2014:
+    case 0x2026:
+    case 0x2025:
+    case 0x3033:
+    case 0x3034:
+    case 0x3035:
+      jis4051_class = 8;
+      break;
+    case 0x3000:
+      jis4051_class = 11;
+      break;
+  }
+
+  return jis4051_class;
+}

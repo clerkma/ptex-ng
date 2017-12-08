@@ -14881,6 +14881,12 @@ $(srcdir)/pdftexdir/etex_version.h: @MAINTAINER_MODE_TRUE@ pdftexdir/pdftex.web
 # Generate pdftex.ch
 pdftex.ch: tie$(EXEEXT) $(pdftex_ch_srcs)
 	$(tie_c) $(pdftex_ch_srcs)
+
+# Convenience target for making the typeset output; not invoked automatically
+pdftex.pdf: pdftex.tex
+	env MKTEXFMT=0 pdftex '\nonstopmode\input pdftex.tex'
+pdftex.tex: $(srcdir)/pdftexdir/pdftex.web
+	weave $(srcdir)/pdftexdir/pdftex.web
 pdftexdir/wprob.log pdftexdir/pdftex.log pdftexdir/pdfimage.log: pdftex$(EXEEXT)
 pdftexdir/ttf2afm.log: ttf2afm$(EXEEXT)
 
@@ -15247,7 +15253,7 @@ $(libsynctex_a_OBJECTS): $(ZLIB_DEPEND)
 synctexdir/synctex.log: synctex$(EXEEXT)
 libmd5/md5.log: md5main$(EXEEXT)
 
-# $Id: Makefile.in 44682 2017-06-24 21:21:08Z karl $
+# $Id: Makefile.in 45966 2017-12-02 01:52:48Z karl $
 # am/bin_links.am: Makefile fragment for bindir links.
 .PHONY: install-bin-links uninstall-bin-links
 
