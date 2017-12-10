@@ -563,6 +563,100 @@ LOCAL_SRC_FILES  := $(LIBYAML_FILES)
 
 include $(BUILD_STATIC_LIBRARY)
 
+# for mruby
+include $(CLEAR_VARS)
+
+MRUBY_ROOT := ./mruby
+MRUBY_INCLUDES := \
+$(MRUBY_ROOT)/include \
+$(MRUBY_ROOT)/mrbgems/mruby-compiler/core
+MRUBY_FILES := \
+$(MRUBY_ROOT)/src/array.c \
+$(MRUBY_ROOT)/src/backtrace.c \
+$(MRUBY_ROOT)/src/class.c \
+$(MRUBY_ROOT)/src/codedump.c \
+$(MRUBY_ROOT)/src/compar.c \
+$(MRUBY_ROOT)/src/crc.c \
+$(MRUBY_ROOT)/src/debug.c \
+$(MRUBY_ROOT)/src/dump.c \
+$(MRUBY_ROOT)/src/enum.c \
+$(MRUBY_ROOT)/src/error.c \
+$(MRUBY_ROOT)/src/etc.c \
+$(MRUBY_ROOT)/src/fmt_fp.c \
+$(MRUBY_ROOT)/src/gc.c \
+$(MRUBY_ROOT)/src/hash.c \
+$(MRUBY_ROOT)/src/init.c \
+$(MRUBY_ROOT)/src/kernel.c \
+$(MRUBY_ROOT)/src/load.c \
+$(MRUBY_ROOT)/src/numeric.c \
+$(MRUBY_ROOT)/src/object.c \
+$(MRUBY_ROOT)/src/pool.c \
+$(MRUBY_ROOT)/src/print.c \
+$(MRUBY_ROOT)/src/proc.c \
+$(MRUBY_ROOT)/src/range.c \
+$(MRUBY_ROOT)/src/state.c \
+$(MRUBY_ROOT)/src/string.c \
+$(MRUBY_ROOT)/src/symbol.c \
+$(MRUBY_ROOT)/src/variable.c \
+$(MRUBY_ROOT)/src/version.c \
+$(MRUBY_ROOT)/src/vm.c \
+$(MRUBY_ROOT)/mrbgems/mruby-compiler/core/codegen.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-compiler/core/y.tab.c \
+$(MRUBY_ROOT)/build/host/mrblib/mrblib.c \
+$(MRUBY_ROOT)/mrbgems/mruby-sprintf/src/kernel.c \
+$(MRUBY_ROOT)/mrbgems/mruby-sprintf/src/sprintf.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-sprintf/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-print/src/print.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-print/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-math/src/math.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-math/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-time/src/time.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-time/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-struct/src/struct.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-struct/gem_init.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-enum-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-string-ext/src/string.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-string-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-numeric-ext/src/numeric_ext.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-numeric-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-array-ext/src/array.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-array-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-hash-ext/src/hash-ext.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-hash-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-range-ext/src/range.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-range-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-proc-ext/src/proc.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-proc-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-symbol-ext/src/symbol.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-symbol-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-random/src/mt19937ar.c \
+$(MRUBY_ROOT)/mrbgems/mruby-random/src/random.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-random/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-object-ext/src/object.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-object-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-objectspace/src/mruby_objectspace.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-objectspace/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-fiber/src/fiber.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-fiber/gem_init.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-enumerator/gem_init.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-enum-lazy/gem_init.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-toplevel-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-kernel-ext/src/kernel.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-kernel-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-class-ext/src/class.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-class-ext/gem_init.c \
+$(MRUBY_ROOT)/mrbgems/mruby-error/src/exception.c \
+$(MRUBY_ROOT)/build/host/mrbgems/mruby-error/gem_init.c \
+$(MRUBY_ROOT)/build/host/mrbgems/gem_init.c
+
+LOCAL_ARM_NEON   := false
+LOCAL_MODULE     := libmruby
+LOCAL_CFLAGS     := -pie -fPIE -O2
+LOCAL_C_INCLUDES := $(MRUBY_INCLUDES)
+LOCAL_SRC_FILES  := $(MRUBY_FILES)
+
+include $(BUILD_STATIC_LIBRARY)
+
 # for ptex-ng
 include $(CLEAR_VARS)
 
@@ -577,7 +671,9 @@ $(LOCAL_PATH)/../texlive/libs/freetype2/freetype2 \
 $(LOCAL_PATH)/../src/libotf/src \
 $(LOCAL_PATH)/../texlive/libs/zlib/include \
 $(LOCAL_PATH)/cairo \
-$(LOCAL_PATH)/../texlive/libs/cairo/cairo-src/src
+$(LOCAL_PATH)/../texlive/libs/cairo/cairo-src/src \
+$(LOCAL_PATH)/../src/libyaml/include \
+$(LOCAL_PATH)/../src/mruby/include
 
 PTEXNG_FILES := \
 $(PTEXNG_ROOT)/aptex.c \
@@ -587,7 +683,7 @@ $(PTEXNG_ROOT)/aptex-unicode.c \
 $(PTEXNG_ROOT)/aptex-src.c
 
 LOCAL_ARM_NEON          := false
-LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libcairo libpixman libz libkpathsea libotf libfreetype libyaml
+LOCAL_STATIC_LIBRARIES  := libptexenc libdpx libpng libpaper libcairo libpixman libz libkpathsea libotf libfreetype libyaml libmruby
 LOCAL_LDLIBS            := -s -lm
 LOCAL_MODULE            := aptex
 LOCAL_CFLAGS            := -pie -fPIE -DHAVE_CONFIG_H -DMAKE_KPSE_DLL -O2
