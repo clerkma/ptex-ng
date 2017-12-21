@@ -303,7 +303,7 @@ static boolean prime (int x)
 // -1 - fails
 //  0 - success
 
-int allocate_tries (int trie_max)
+static int allocate_tries (int trie_max)
 {
   int n, nl, no, nc;
 
@@ -348,7 +348,7 @@ static int current_prime = 0;
 /* plus, we don't really reallocate, we FLUSH the old information totally */
 /* returns -1 if it fails */
 
-int realloc_hyphen (int hyphen_prime)
+static int realloc_hyphen (int hyphen_prime)
 {
   int n, nw, nl;
 
@@ -569,7 +569,7 @@ static memory_word * realloc_mem (int lo_size, int hi_size)
   return mem;
 }
 
-memory_word * realloc_font_info (int size)
+static memory_word * realloc_font_info (int size)
 {
   memory_word * new_font_info = NULL;
   int k, min_size;
@@ -631,7 +631,7 @@ memory_word * realloc_font_info (int size)
   return font_info;
 }
 
-packed_ASCII_code * realloc_str_pool (int size)
+static packed_ASCII_code * realloc_str_pool (int size)
 {
   int k, min_size;
   int new_size = 0;
@@ -692,7 +692,7 @@ packed_ASCII_code * realloc_str_pool (int size)
   return str_pool;
 }
 
-pool_pointer * realloc_str_start (int size)
+static pool_pointer * realloc_str_start (int size)
 {
   int k, min_size;
   int n = 0;
@@ -796,7 +796,7 @@ static int allocate_ini (int size)
   return 0; // success
 }
 
-memory_word * realloc_save_stack (int size)
+static memory_word * realloc_save_stack (int size)
 {
   int k, min_size;
   int n = 0, new_size = 0;
@@ -856,7 +856,7 @@ memory_word * realloc_save_stack (int size)
   return save_stack;
 }
 
-in_state_record * realloc_input_stack (int size)
+static in_state_record * realloc_input_stack (int size)
 {
   int k, min_size;
   int n = 0, new_size = 0;
@@ -916,7 +916,7 @@ in_state_record * realloc_input_stack (int size)
   return input_stack;
 }
 
-list_state_record * realloc_nest_stack (int size)
+static list_state_record * realloc_nest_stack (int size)
 {
   int k, min_size;
   int n = 0, new_size = 0;
@@ -974,7 +974,7 @@ list_state_record * realloc_nest_stack (int size)
   return nest;
 }
 
-halfword * realloc_param_stack (int size)
+static halfword * realloc_param_stack (int size)
 {
   int k, min_size;
   int n = 0, new_size = 0;
@@ -1032,7 +1032,7 @@ halfword * realloc_param_stack (int size)
   return param_stack;
 }
 
-ASCII_code * realloc_buffer (int size)
+static ASCII_code * realloc_buffer (int size)
 {
   int k, min_size;
   int n = 0, new_size = 0;
@@ -2010,7 +2010,7 @@ static integer multilenbuffchar (integer c)
   return 0;
 }
 
-void init_default_kanji (const_string file_str, const_string internal_str)
+static void init_default_kanji (const_string file_str, const_string internal_str)
 {
   enable_UPTEX(true);
 
@@ -2023,7 +2023,7 @@ void init_default_kanji (const_string file_str, const_string internal_str)
   }
 }
 
-char * mbcs_utf8 (const char * mbcs_str)
+static char * mbcs_utf8 (const char * mbcs_str)
 {
 #ifdef WIN32
   if (mbcs_str == NULL)
@@ -2067,7 +2067,7 @@ char * mbcs_utf8 (const char * mbcs_str)
 #endif
 }
 
-char * utf8_mbcs (const char * utf8_str)
+static char * utf8_mbcs (const char * utf8_str)
 {
 #ifdef WIN32
   if (utf8_str == NULL)
@@ -2331,7 +2331,7 @@ static boolean w_open_input (word_file * f)
   return openable;
 }
 
-void a_close (alpha_file f)
+static void a_close (alpha_file f)
 {
   switch (f.file_type)
   {
@@ -2344,7 +2344,7 @@ void a_close (alpha_file f)
   }
 }
 
-void b_close (byte_file f)
+static void b_close (byte_file f)
 {
   if (f == NULL)
     return;
@@ -2355,12 +2355,12 @@ void b_close (byte_file f)
   }
 }
 
-void w_close (word_file f)
+static void w_close (word_file f)
 {
   gzclose(f);
 }
 
-boolean a_open_output (alpha_file * f)
+static boolean a_open_output (alpha_file * f)
 {
   char * file_name_mbcs = NULL;
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
@@ -2380,7 +2380,7 @@ boolean a_open_output (alpha_file * f)
   return (f->file_data != NULL);
 }
 
-boolean b_open_output (byte_file * f)
+static boolean b_open_output (byte_file * f)
 {
   char * file_name_mbcs = NULL;
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
@@ -2399,7 +2399,7 @@ boolean b_open_output (byte_file * f)
   return (*f != NULL);
 }
 
-boolean w_open_output (word_file * f)
+static boolean w_open_output (word_file * f)
 {
   char * file_name_mbcs = NULL;
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
@@ -3482,7 +3482,7 @@ static str_number load_pool_strings (integer spare_size)
   return g;
 }
 
-str_number make_str_string (const char * s)
+static str_number make_str_string (const char * s)
 {
   size_t slen = strlen(s);
 
@@ -3506,7 +3506,7 @@ static str_number get_job_name (str_number job)
     return job;
 }
 
-char * take_str_string (str_number s)
+static char * take_str_string (str_number s)
 {
   char * a = (char *) malloc(length(s) + 1);
   strncpy(a, (const char *)(str_pool + str_start[s]), length(s));

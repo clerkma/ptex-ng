@@ -20,39 +20,23 @@
 #ifndef APTEX_FUNCTIONS_H
 #define APTEX_FUNCTIONS_H
 
-// functions of TeX's mainbody
-
-extern packed_ASCII_code *  realloc_str_pool (int size);
-// str_pool   => the characters
-
-extern pool_pointer *       realloc_str_start (int size);
-// str_start  => the starting pointers
-
-extern memory_word *        realloc_save_stack (int size);
-// save_stack =>
-
-extern list_state_record *  realloc_nest_stack (int size);
-// nest_stack =>
-
-extern in_state_record *    realloc_input_stack (int size);
-// input_stack=>
-
-extern halfword *           realloc_param_stack (int size);
-// param_stack=> token list pointers for parameters
-
-extern ASCII_code *         realloc_buffer (int size);
-// buffer     =>
-
-extern memory_word *        realloc_font_info (int size);
-// font_info  =>
-
-extern int                  realloc_hyphen (int hyphen_prime);
+// functions of reallocation
+static packed_ASCII_code *  realloc_str_pool (int size);
+static pool_pointer *       realloc_str_start (int size);
+static memory_word *        realloc_save_stack (int size);
+static list_state_record *  realloc_nest_stack (int size);
+static in_state_record *    realloc_input_stack (int size);
+static halfword *           realloc_param_stack (int size);
+static ASCII_code *         realloc_buffer (int size);
+static memory_word *        realloc_font_info (int size);
+static int                  realloc_hyphen (int hyphen_prime);
 
 // functions of string pool
-str_number make_str_string (const char * s);
-char *     take_str_string (str_number s);
+static str_number make_str_string (const char * s);
+static char *     take_str_string (str_number s);
 
-boolean b_open_output (byte_file * f);
+// functions of I/O
+static boolean b_open_output (byte_file * f);
 
 #define a_open_in(f)    a_open_input(&(f))
 #define b_open_in(f)    b_open_input(&(f))
@@ -63,8 +47,8 @@ boolean b_open_output (byte_file * f);
 #define w_open_out(f)   w_open_output(&(f))
 //
 #define w_eof(f)        (aptex_env.flag_compact_fmt == true ? gzeof((gzFile) f) : feof((FILE *) f))
-//
-// functions of synctex
+
+// functions of SyncTeX
 void synctex_init (void);
 void synctex_terminate (void);
 void synctex_start_input (void);
@@ -198,7 +182,7 @@ void close_files_and_terminate (void);
 void debug_help (void);
 #endif
 
-// ptex
+// functions of pTeX and upTeX
 pointer new_dir_node (pointer b, eight_bits dir);
 eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f);
 
@@ -215,7 +199,7 @@ void change_page_direction(halfword d);
 boolean check_kcat_code(integer ct);
 boolean check_echar_range(integer c);
 
-// etex
+// functions of eTeX
 boolean eTeX_enabled (boolean b, quarterword j, halfword k);
 void group_trace (boolean e);
 void show_save_groups (void);
@@ -264,9 +248,10 @@ void gsa_def(pointer p, halfword e);
 void gsa_w_def(pointer p, integer w);
 void sa_restore(void);
 
-void init_default_kanji (const_string file_str, const_string internal_str);
-char * mbcs_utf8 (const char * mbcs_str);
-char * utf8_mbcs (const char * utf8_str);
+// functions of encodings
+static void init_default_kanji (const_string file_str, const_string internal_str);
+static char * mbcs_utf8 (const char * mbcs_str);
+static char * utf8_mbcs (const char * utf8_str);
 
 // inline functions
 /* sec 0016 */
@@ -291,7 +276,7 @@ static inline void wake_up_terminal(void)
   /* todo */
 }
 
-// web2c's specific
+// functions of WEB2C
 static inline int do_final_end (void)
 {
   update_terminal();
