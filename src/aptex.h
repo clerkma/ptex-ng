@@ -87,12 +87,14 @@
 #include <ptexenc/ptexenc.h>
 #include <ptexenc/unicode.h>
 
-// zlib for format file and synctex
+// zlib for format file and SyncTeX
 #include "zlib.h"
+
 // libyaml and libmruby
 #include "yaml.h"
 #include "mruby.h"
 
+// internal headers
 #include "aptex-cairo-visual-debug.h"
 #include "aptex-opentype.h"
 #include "aptex-unicode.h"
@@ -101,14 +103,14 @@
 extern "C" {
 #endif
 
-// integers
+// types: integers
 typedef uint8_t ASCII_code;
 typedef int32_t KANJI_code;
 typedef uint8_t eight_bits;
 typedef uint8_t packed_ASCII_code;
 typedef uint8_t small_number;
 
-// files
+// types: files
 typedef struct {
   void * file_data;
   uint32_t file_type;
@@ -759,11 +761,11 @@ EXTERN pointer last_char;                     // {last printable character}
 EXTERN boolean find_first_char;               // {find for a first printable character?}
 EXTERN int fbyte;
 
-//eTeX
+// eTeX
 EXTERN boolean is_print_utf8;
 EXTERN str_number last_tokens_string;
 
-// for synctex
+// for SyncTeX
 EXTERN integer synctex_option;
 
 EXTERN struct {
