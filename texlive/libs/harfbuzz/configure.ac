@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 45807 2017-11-14 22:38:24Z karl $
+dnl $Id: configure.ac 46144 2017-12-26 22:25:31Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -44,7 +44,7 @@ if test "x$GCC" = "xyes"; then
 	LDFLAGS="$LDFLAGS -Bsymbolic-functions"
 
 	# Choose C++ version
-	CXXFLAGS="$CXXFLAGS -std=c++11"
+	CXXFLAGS="$CXXFLAGS -std=c++11 -D_GNU_SOURCE"
 
 	# Make sure we don't link to libstdc++
 	CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions"
