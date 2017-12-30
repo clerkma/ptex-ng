@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014, 2015, 2016, 2017 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -112,7 +112,7 @@ static void print_aptex_usage (void)
 
 static void print_aptex_version (void)
 {
-  printf("Copyright 2014, 2015, 2016, 2017 Clerk Ma.\n"
+  printf("Copyright 2014, 2015, 2016, 2017, 2018 Clerk Ma.\n"
     "banner: \"%s\"\n"
     "base: Y&Y TeX (2.3.0) and pTeX (3.7.2)\n"
     "Compiled with %s\n"
@@ -19446,7 +19446,7 @@ static void ship_out (pointer p)
         }
       }
 
-      pdf_doc_set_creator("Asiatic pTeX 2017");
+      pdf_doc_set_creator("Asiatic pTeX 2018");
       pdf_files_init();
       pdf_init_device(sp2bp, 3, 0);
       pdf_open_document(utf8_mbcs(output_pdf_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
