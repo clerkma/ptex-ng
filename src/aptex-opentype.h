@@ -65,87 +65,9 @@ typedef struct {
   uint16_t * paletteEntryLabel;
 } ot_tbl_cpal;
 
-typedef struct {
-  uint16_t baseTagCount;
-  uint32_t * baselineTags;
-} ot_base_tag_list;
-
-typedef struct {
-  uint16_t baseCoordFormat;
-  union {
-    struct {
-      int16_t coordinate;
-    } f1;
-    struct {
-      int16_t coordinate;
-      uint16_t referenceGlyph;
-      uint16_t baseCoordPoint;
-    } f2;
-    struct {
-      int16_t coordinate;
-      uint16_t deviceTable;
-    } f3;
-  };
-} ot_base_coord;
-
-typedef struct {
-  uint32_t featureTableTag;
-  ot_base_coord * minCoord;
-  ot_base_coord * maxCoord;
-} ot_feat_min_max_record;
-
-typedef struct {
-  ot_base_coord * minCoord;
-  ot_base_coord * maxCoord;
-  uint16_t featMinMaxCount;
-  ot_feat_min_max_record * featMinMaxRecords;
-} ot_min_max;
-
-typedef struct {
-  uint16_t defaultBaselineIndex;
-  uint16_t baseCoordCount;
-  ot_base_coord * baseCoords;
-} ot_base_values;
-
-typedef struct {
-  uint32_t baseLangSysTag;
-  ot_min_max * minMax;
-} ot_base_lang_sys_record;
-
-typedef struct {
-  ot_base_values * baseValues;
-  ot_min_max * defaultMinMax;
-  uint16_t baseLangSysCount;
-  ot_base_lang_sys_record * baseLangSysRecords;
-} ot_base_script;
-
-typedef struct {
-  uint32_t baseScriptTag;
-  ot_base_script * baseValues;
-} ot_base_script_record;
-
-typedef struct {
-  uint16_t baseScriptCount;
-  ot_base_script_record * baseScriptRecords;
-} ot_base_script_list;
-
-typedef struct {
-  ot_base_tag_list * baseTagList;
-  ot_base_script_list * baseScriptList;
-} ot_axis;
-
-typedef struct {
-  uint16_t majorVersion;
-  uint16_t minorVersion;
-  ot_axis * horizAxis;
-  ot_axis * vertAxis;
-} ot_tbl_base;
-
 ot_tbl_colr * ot_parse_colr (FT_Face face);
 void ot_delete_colr (ot_tbl_colr * colr);
 ot_tbl_cpal * ot_parse_cpal (FT_Face face);
 void ot_delete_cpal (ot_tbl_cpal * cpal);
-ot_tbl_base * ot_parse_base (FT_Face face);
-void ot_delete_base (ot_tbl_base * cpal);
 
 #endif /* APTEX_OPENTYPE_H */
