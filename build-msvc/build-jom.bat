@@ -1,25 +1,25 @@
-rem Build ApTeX on Visual Studio 2015/2017.
+rem Build ApTeX on Visual Studio 2015/2017 with jom.
 echo Building zlib ...
 del *.obj
-nmake -nologo -f mk-zlib.nmake
+jom -nologo -f mk-zlib.nmake
 echo Building libpng ...
 del *.obj
-nmake -nologo -f mk-libpng.nmake
+jom -nologo -f mk-libpng.nmake
 echo Building freetype ...
 del *.obj
-nmake -nologo -f mk-freetype.nmake
+jom -nologo -f mk-freetype.nmake
 echo Building libotf ...
 del *.obj
-nmake -nologo -f mk-libotf.nmake
+jom -nologo -f mk-libotf.nmake
 echo Building libyaml ...
 del *.obj
-nmake -nologo -f mk-libyaml.nmake
+jom -nologo -f mk-libyaml.nmake
 echo Building libmruby ...
 del *.obj
-nmake -nologo -f mk-libmruby.nmake
+jom -nologo -f mk-libmruby.nmake
 echo Building libpixman ...
 del *.obj
-nmake -nologo -f mk-libpixman.nmake
+jom -nologo -f mk-libpixman.nmake
 echo Building libcairo ...
 del *.obj
 md cairo\src
@@ -27,22 +27,22 @@ copy ..\texlive\libs\cairo\cairo-src\src\*.c cairo\src\
 copy ..\texlive\libs\cairo\cairo-src\src\*.h cairo\src\
 copy ..\texlive\libs\cairo\cairo-src\cairo-version.h cairo\cairo-version.h
 del cairo\src\cairoint.h
-nmake -nologo -f mk-libcairo.nmake
+jom -nologo -f mk-libcairo.nmake
 rd /s /q cairo\src
 del cairo\cairo-version.h
 echo Building lsotfea ...
 del *.obj
-nmake -nologo -f mk-lsotfea.nmake
+jom -nologo -f mk-lsotfea.nmake
 echo Building kpathsea ...
 del *.obj
-nmake -nologo -f mk-kpathsea.nmake
+jom -nologo -f mk-kpathsea.nmake
 echo Building ptexenc ...
 del *.obj
-nmake -nologo -f mk-ptexenc.nmake
+jom -nologo -f mk-ptexenc.nmake
 echo Building libdpx ...
 del *.obj
-nmake -nologo -f mk-libdpx.nmake
+jom -nologo -f mk-libdpx.nmake
 echo Building aptex/ptex-ng
 del *.obj
-nmake -nologo -f mk-aptex.nmake
+jom -nologo -f mk-aptex.nmake
 del *.obj *.lib

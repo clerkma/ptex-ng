@@ -17,9 +17,17 @@ Run the shell script:
     ./build-android-port.sh
 
 ### Windows/MSVC (experimental)
+#### nmake
 
     cd build-msvc
     build.bat
+
+#### jom
+
+[Jom](https://wiki.qt.io/Jom)
+
+    cd build-msvc
+    build-jom.bat
 
 ## Source
 
