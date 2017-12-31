@@ -9,3 +9,4 @@ build_script:
   - cmd: build.bat
 test_script:
   - cmd: lsotfea.exe C:\Windows\Fonts\segoeui.ttf
+  - cmd: aptex.exe -mrb-load-string "(1..20).each do |i| p i end"

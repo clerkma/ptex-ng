@@ -85,28 +85,45 @@ static void print_aptex_usage (void)
 {
   printf("\n"
       "Useage: aptex [OPTION]... [+fmt_file_name] [file]\n\n"
-      " --help          show this usage summary\n"
-      " --version       output version information and exit\n"
-      " --ini           start up as INITEX (create format file)\n"
-      " --shell-escape  enable \\write18\n"
+      " --help\n"
+      "   show this usage summary\n"
+      " --version\n"
+      "   output version information and exit\n"
+      " --ini\n"
+      "   start up as INITEX (create format file)\n"
+      " --shell-escape\n"
+      "   enable \\write18\n"
       " --merge-kanji-baseline\n"
-      "                 shift baseline of OpenType's ascender/descender to JFM's height/depth\n"
-      " --visual-debug  when ship out DVI, show ApTeX's internal node to PNG/PDF via Cairo\n"
+      "   shift baseline of OpenType's ascender/descender to JFM's height/depth\n"
+      " --visual-debug\n"
+      "   when ship out DVI, show ApTeX's internal node to PNG/PDF via Cairo\n"
       "\n"
-      " --jobname=str   set the job name to str\n"
-      "                 e.g.: '--jobname=book2016'\n"
-      " --progname=str  set program (and fmt) name to str\n"
-      " --synctex=num   generate SyncTeX data for previewers if nonzero\n"
-      " --fontmap=map   +mapfile (append mode), !mapfile (replace mode)\n"
-      "                 e.g.: '--fontmap=!replace.map'\n"
-      " --format=fmt    set preloaded format\n"
-      "                 e.g.: 'aptex --format=plain name.tex'\n"
+      " --mrb-load-file\n"
+      "   execute file of mruby\n"
+      " --mrb-load-string\n"
+      "   execute string of mruby\n"
       "\n"
-      " --patterns      (INITEX only) allow use of \\patterns after loading format\n"
-      " --main-mem      (INITEX only) initial main memory size in kilo words\n"
-      " --hyph-size     (INITEX only) hyphenation exception dictionary size\n"
-      " --trie-size     (INITEX only) hyphenation pattern trie size\n\n"
-      "Email bug reports to clerkma@gmail.com.\n");
+      " --jobname=str\n"
+      "   set the job name to str, e.g.: '--jobname=book2016'\n"
+      " --progname=str\n"
+      "   set program (and fmt) name to str\n"
+      " --synctex=num\n"
+      "   generate SyncTeX data for previewers if nonzero\n"
+      " --fontmap=map\n"
+      "   +mapfile (append mode), !mapfile (replace mode), e.g.: '--fontmap=!replace.map'\n"
+      " --format=fmt\n"
+      "   set preloaded format, e.g.: 'aptex --format=plain name.tex'\n"
+      "\n"
+      " --patterns\n"
+      "   (INITEX only) allow use of \\patterns after loading format\n"
+      " --main-mem\n"
+      "   (INITEX only) initial main memory size in kilo words\n"
+      " --hyph-size\n"
+      "   (INITEX only) hyphenation exception dictionary size\n"
+      " --trie-size\n"
+      "   (INITEX only) hyphenation pattern trie size\n\n"
+      "Email bug reports to clerkma@gmail.com.\n"
+  );
   aptex_utils_exit(EXIT_FAILURE);
 }
 
@@ -1360,6 +1377,8 @@ static void aptex_commands_init (int ac, char **av)
       { "synctex",        required_argument, NULL, 0 },
       { "fontmap",        required_argument, NULL, 0 },
       { "format",         required_argument, NULL, 0 },
+      { "mrb-load-file",  required_argument, NULL, 0 },
+      { "mrb-load-string",required_argument, NULL, 0 },
       { "shell-escape",   no_argument, NULL, 0 },
       { "merge-kanji-baseline", no_argument, NULL, 0 },
       { "visual-debug",   no_argument, NULL, 0 },
@@ -1412,6 +1431,38 @@ static void aptex_commands_init (int ac, char **av)
         print_aptex_info(), print_aptex_usage();
       else if (ARGUMENT_IS("version"))
         print_aptex_info(), print_aptex_version();
+      else if (ARGUMENT_IS("mrb-load-file"))
+      {
+        mrb_state * mrb_cmd = mrb_open();
+        print_aptex_info();
+
+        if (mrb_cmd != NULL)
+        {
+          FILE * mrb_cmd_file = fopen(optarg, "rb");
+
+          if (mrb_cmd_file != NULL)
+          {
+            mrb_load_file(mrb_cmd, mrb_cmd_file);
+            mrb_close(mrb_cmd);
+            fclose(mrb_cmd_file);
+          }
+        }
+
+        aptex_utils_exit(EXIT_SUCCESS);
+      }
+      else if (ARGUMENT_IS("mrb-load-string"))
+      {
+        mrb_state * mrb_cmd = mrb_open();
+        print_aptex_info();
+
+        if (mrb_cmd != NULL)
+        {
+          mrb_load_string(mrb_cmd, optarg);
+          mrb_close(mrb_cmd);
+        }
+
+        aptex_utils_exit(EXIT_SUCCESS);
+      }
     }
 #pragma pop_macro("name")
 

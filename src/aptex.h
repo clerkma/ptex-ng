@@ -93,6 +93,7 @@
 // libyaml and libmruby
 #include "yaml.h"
 #include "mruby.h"
+#include "mruby/compile.h"
 
 // internal headers
 #include "aptex-cairo-visual-debug.h"
