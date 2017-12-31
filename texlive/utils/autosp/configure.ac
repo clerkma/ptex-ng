@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 44892 2017-07-26 06:59:27Z kakuto $
+dnl $Id: configure.ac 46169 2017-12-30 22:19:20Z kakuto $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016 Karl Berry <tex-live@tug.org>
@@ -7,7 +7,7 @@ dnl   This file is free software; the copyright holder
 dnl   gives unlimited permission to copy and/or distribute it,
 dnl   with or without modifications, as long as this notice is preserved.
 dnl
-m4_define([autosp_version], [2017-07-14])[]dnl using unmodified autosp source
+m4_define([autosp_version], [2017-12-26])[]dnl using unmodified autosp source
 AC_INIT([autosp (TeX Live)], autosp_version, [tex-k@tug.org])
 AC_PREREQ([2.65])
 AC_CONFIG_SRCDIR([autosp-src/autosp.c])
