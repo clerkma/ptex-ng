@@ -159,7 +159,7 @@ static mrb_value mrb_kpse_tex_hush (mrb_state * mrb, mrb_value self)
 {
   char * what;
   mrb_get_args(mrb, "z!", &what);
-  return mrb_bool_value(mrb, kpse_tex_hush(what));
+  return mrb_bool_value(kpse_tex_hush(what));
 }
 
 static mrb_value mrb_kpse_make_tex (mrb_state * mrb, mrb_value self)
