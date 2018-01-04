@@ -1433,8 +1433,9 @@ static void aptex_commands_init (int ac, char **av)
         print_aptex_info(), print_aptex_version();
       else if (ARGUMENT_IS("mrb-load-file"))
       {
-        mrb_state * mrb_cmd = mrb_open();
+	mrb_state * mrb_cmd = mrb_open();
         print_aptex_info();
+        mrb_mruby_aptex_gem_init(mrb_cmd);
 
         if (mrb_cmd != NULL)
         {
@@ -1443,7 +1444,8 @@ static void aptex_commands_init (int ac, char **av)
           if (mrb_cmd_file != NULL)
           {
             mrb_load_file(mrb_cmd, mrb_cmd_file);
-            mrb_close(mrb_cmd);
+            mrb_mruby_aptex_gem_final(mrb_cmd);
+	    mrb_close(mrb_cmd);
             fclose(mrb_cmd_file);
           }
         }
@@ -1454,10 +1456,12 @@ static void aptex_commands_init (int ac, char **av)
       {
         mrb_state * mrb_cmd = mrb_open();
         print_aptex_info();
+        mrb_mruby_aptex_gem_init(mrb_cmd);
 
         if (mrb_cmd != NULL)
         {
           mrb_load_string(mrb_cmd, optarg);
+          mrb_mruby_aptex_gem_final(mrb_cmd);
           mrb_close(mrb_cmd);
         }
 

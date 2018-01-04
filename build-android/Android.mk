@@ -680,6 +680,7 @@ $(PTEXNG_ROOT)/aptex.c \
 $(PTEXNG_ROOT)/aptex-cairo-visual-debug.c \
 $(PTEXNG_ROOT)/aptex-opentype.c \
 $(PTEXNG_ROOT)/aptex-unicode.c \
+$(PTEXNG_ROOT)/aptex-mruby.c \
 $(PTEXNG_ROOT)/aptex-src.c
 
 LOCAL_ARM_NEON          := false

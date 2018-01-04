@@ -23,6 +23,7 @@ objects = \
 	aptex-cairo-visual-debug.o \
 	aptex-opentype.o \
 	aptex-unicode.o \
+	aptex-mruby.o \
 	aptex-src.o
 
 headers = aptex.h aptex-functions.h aptex-macros.h aptex-cairo-visual-debug.h aptex-opentype.h
@@ -53,6 +54,9 @@ aptex-opentype.o: aptex-opentype.c $(headers)
 
 aptex-unicode.o: aptex-unicode.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-unicode.c
+
+aptex-mruby.o: aptex-mruby.c $(headers)
+	$(CC) $(CFLAGS) $(INCLUDES) aptex-mruby.c
 
 aptex-src.o: aptex-src.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-src.c

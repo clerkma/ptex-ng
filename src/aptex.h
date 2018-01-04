@@ -94,6 +94,7 @@
 #include "yaml.h"
 #include "mruby.h"
 #include "mruby/compile.h"
+#include "aptex-mruby.h"
 
 // internal headers
 #include "aptex-cairo-visual-debug.h"

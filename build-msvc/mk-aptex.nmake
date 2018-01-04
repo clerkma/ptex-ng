@@ -3,7 +3,7 @@ AR = lib
 LINK = link
 CFLAGS = -nologo -c -O2 -Oy -DCAIRO_WIN32_STATIC_BUILD -DWIN32 -DNO_KPSE_DLL -DNO_PTENC_DLL -DYAML_DECLARE_STATIC -I. -I./cairo -Izlib -I../texlive/texk -I../texlive/libs/freetype2/freetype-src/include -I../texlive/texk/ptexenc -I../texlive/libs/cairo/cairo-src/src -I../texlive/libs/zlib/zlib-src -I../src/libotf/src -I../src/libyaml/include -Imruby/include
 ROOT = ../src
-OBJS = aptex.obj aptex-cairo-visual-debug.obj aptex-opentype.obj aptex-unicode.obj aptex-src.obj
+OBJS = aptex.obj aptex-cairo-visual-debug.obj aptex-opentype.obj aptex-unicode.obj aptex-mruby.obj aptex-src.obj
 LIBS = libdpx.lib libcairo.lib libpixman.lib libpng.lib zlib.lib ptexenc.lib kpathsea.lib libotf.lib freetype.lib libyaml.lib libmruby.lib advapi32.lib user32.lib shell32.lib
 
 all: $(OBJS)
@@ -18,5 +18,7 @@ aptex-opentype.obj: $(ROOT)/aptex-opentype.c
 	$(CC) $(CFLAGS) $(ROOT)/aptex-opentype.c
 aptex-unicode.obj: $(ROOT)/aptex-unicode.c
 	$(CC) $(CFLAGS) $(ROOT)/aptex-unicode.c
+aptex-mruby.obj: $(ROOT)/aptex-mruby.c
+	$(CC) $(CFLAGS) $(ROOT)/aptex-mruby.c
 aptex-src.obj: $(ROOT)/aptex-src.c
 	$(CC) $(CFLAGS) $(ROOT)/aptex-src.c
