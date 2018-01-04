@@ -27,6 +27,9 @@
 #include <kpathsea/tex-make.h>
 #include <kpathsea/variable.h>
 
+#include <ptexenc/ptexenc.h>
+#include <ptexenc/unicode.h>
+
 static mrb_value mrb_kpse_brace_expand (mrb_state * mrb, mrb_value self)
 {
   char * path;
@@ -170,7 +173,7 @@ static mrb_value mrb_kpse_make_tex (mrb_state * mrb, mrb_value self)
   return mrb_str_new_cstr(mrb, kpse_make_tex(format, base_file));
 }
 
-void mrb_mruby_aptex_gem_init (mrb_state * mrb)
+static void mrb_mruby_kpathsea_gem_init (mrb_state * mrb)
 {
   struct RClass * klass = mrb_define_module(mrb, "Kpathsea");
   /* types.h, kpse_file_format_type */
@@ -269,6 +272,129 @@ void mrb_mruby_aptex_gem_init (mrb_state * mrb)
   mrb_define_class_method(mrb, klass, "var_expand", mrb_kpse_var_expand, MRB_ARGS_REQ(1));
 }
 
+static void mrb_mruby_kpathsea_gem_final (mrb_state * mrb)
+{
+}
+
+static mrb_value mrb_ptexenc_enable_UPTEX (mrb_state * mrb, mrb_value self)
+{
+  mrb_bool enable;
+  mrb_get_args(mrb, "b", &enable);
+  return mrb_nil_value();
+}
+
+static mrb_value mrb_ptexenc_get_enc_string (mrb_state * mrb, mrb_value self)
+{
+  return mrb_str_new_cstr(mrb, get_enc_string());
+}
+
+static mrb_value mrb_ptexenc_set_enc_string (mrb_state * mrb, mrb_value self)
+{
+  char * file;
+  char * inter;
+  mrb_get_args(mrb, "z!z!", &file, &inter);
+  return mrb_bool_value(set_enc_string(file, inter));
+}
+
+static mrb_value mrb_ptexenc_toDVI (mrb_state * mrb, mrb_value self)
+{
+  mrb_int kcode;
+  mrb_get_args(mrb, "i", &kcode);
+  return mrb_fixnum_value(toDVI(kcode));
+}
+
+static mrb_value mrb_ptexenc_fromDVI (mrb_state * mrb, mrb_value self)
+{
+  mrb_int kcode;
+  mrb_get_args(mrb, "i", &kcode);
+  return mrb_fixnum_value(fromDVI(kcode));
+}
+
+static mrb_value mrb_ptexenc_toJIS (mrb_state * mrb, mrb_value self)
+{
+  mrb_int kcode;
+  mrb_get_args(mrb, "i", &kcode);
+  return mrb_fixnum_value(toJIS(kcode));
+}
+
+static mrb_value mrb_ptexenc_fromJIS (mrb_state * mrb, mrb_value self)
+{
+  mrb_int jis;
+  mrb_get_args(mrb, "i", &jis);
+  return mrb_fixnum_value(fromJIS(jis));
+}
+
+static mrb_value mrb_ptexenc_fromEUC (mrb_state * mrb, mrb_value self)
+{
+  mrb_int euc;
+  mrb_get_args(mrb, "i", &euc);
+  return mrb_fixnum_value(fromEUC(euc));
+}
+
+static mrb_value mrb_ptexenc_fromSJIS (mrb_state * mrb, mrb_value self)
+{
+  mrb_int sjis;
+  mrb_get_args(mrb, "i", &sjis);
+  return mrb_fixnum_value(fromSJIS(sjis));
+}
+
+static mrb_value mrb_ptexenc_fromKUTEN (mrb_state * mrb, mrb_value self)
+{
+  mrb_int kuten;
+  mrb_get_args(mrb, "i", &kuten);
+  return mrb_fixnum_value(fromKUTEN(kuten));
+}
+
+static mrb_value mrb_ptexenc_fromUCS (mrb_state * mrb, mrb_value self)
+{
+  mrb_int ucs;
+  mrb_get_args(mrb, "i", &ucs);
+  return mrb_fixnum_value(fromUCS(ucs));
+}
+
+static mrb_value mrb_ptexenc_toUCS (mrb_state * mrb, mrb_value self)
+{
+  mrb_int kcode;
+  mrb_get_args(mrb, "i", &kcode);
+  return mrb_fixnum_value(toUCS(kcode));
+}
+
+static mrb_value mrb_ptexenc_UCStoUTF8 (mrb_state * mrb, mrb_value self)
+{
+  mrb_int ucs;
+  mrb_get_args(mrb, "i", &ucs);
+  return mrb_fixnum_value(UCStoUTF8(ucs));
+}
+
+static void mrb_mruby_ptexenc_gem_init (mrb_state * mrb)
+{
+  struct RClass * klass = mrb_define_module(mrb, "PTEXENC");
+  mrb_define_class_method(mrb, klass, "enable_UPTEX", mrb_ptexenc_enable_UPTEX, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "get_enc_string", mrb_ptexenc_get_enc_string, MRB_ARGS_NONE());
+  mrb_define_class_method(mrb, klass, "set_enc_string", mrb_ptexenc_set_enc_string, MRB_ARGS_REQ(2));
+  mrb_define_class_method(mrb, klass, "toDVI", mrb_ptexenc_toDVI, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "fromDVI", mrb_ptexenc_fromDVI, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "toJIS", mrb_ptexenc_toJIS, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "fromJIS", mrb_ptexenc_fromJIS, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "fromEUC", mrb_ptexenc_fromEUC, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "fromSJIS", mrb_ptexenc_fromSJIS, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "fromKUTEN", mrb_ptexenc_fromKUTEN, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "fromUCS", mrb_ptexenc_fromUCS, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "toUCS", mrb_ptexenc_toUCS, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, klass, "UCStoUTF8", mrb_ptexenc_UCStoUTF8, MRB_ARGS_REQ(1));
+}
+
+static void mrb_mruby_ptexenc_gem_final (mrb_state * mrb)
+{
+}
+
+void mrb_mruby_aptex_gem_init (mrb_state * mrb)
+{
+  mrb_mruby_kpathsea_gem_init(mrb);
+  mrb_mruby_ptexenc_gem_init(mrb);
+}
 void mrb_mruby_aptex_gem_final (mrb_state * mrb)
 {
+  mrb_mruby_kpathsea_gem_final(mrb);
+  mrb_mruby_ptexenc_gem_final(mrb);
 }
