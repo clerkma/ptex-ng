@@ -694,3 +694,24 @@ LOCAL_SRC_FILES         := $(PTEXNG_FILES)
 
 include $(BUILD_EXECUTABLE)
 
+# for lsotfea
+include $(CLEAR_VAR)
+
+LSOTFEA_ROOT     := ../src/lsotfea-src
+LSOTFEA_INCLUDES := \
+$(LOCAL_PATH)/../texlive/libs/freetype2/freetype-src/include \
+$(LOCAL_PATH)/../src/libotf/src
+LSOTFEA_FILES    := \
+$(LSOTFEA_ROOT)/lsotfea-ftag.c \
+$(LSOTFEA_ROOT)/lsotfea-ltag.c \
+$(LSOTFEA_ROOT)/lsotfea-stag.c \
+$(LSOTFEA_ROOT)/lsotfea.c
+
+LOCAL_ARM_NEON         := false
+LOCAL_STATIC_LIBRARIES := libotf libfreetype
+LOCAL_MODULE           := lsotfea
+LOCAL_CFLAGS           := -pie -fPIE -O2
+LOCAL_C_INCLUDES       := $(LSOTFEA_INCLUDES)
+LOCAL_SRC_FILES        := $(LSOTFEA_FILES)
+
+include $(BUILD_EXECUTABLE)
