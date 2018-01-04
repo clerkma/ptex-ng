@@ -49,9 +49,16 @@ static mrb_value mrb_kpse_find_file (mrb_state * mrb, mrb_value self)
   char * name;
   mrb_int format;
   mrb_bool must_exist;
-  printf(">>>");
   mrb_get_args(mrb, "z!ib", &name, &format, &must_exist);
   return mrb_str_new_cstr(mrb, kpse_find_file(name, format, must_exist));
+}
+
+static mrb_value mrb_kpse_reset_program_name (mrb_state * mrb, mrb_value self)
+{
+  char * progname;
+  mrb_get_args(mrb, "z!", &progname);
+  kpse_reset_program_name(progname);
+  return mrb_nil_value();
 }
 
 void mrb_mruby_aptex_gem_init (mrb_state * mrb)
@@ -122,6 +129,7 @@ void mrb_mruby_aptex_gem_init (mrb_state * mrb)
   mrb_define_class_method(mrb, klass, "set_program_name", mrb_kpse_set_program_name, MRB_ARGS_REQ(2));
   /* tex-file.h */
   mrb_define_class_method(mrb, klass, "find_file", mrb_kpse_find_file, MRB_ARGS_REQ(3));
+  mrb_define_class_method(mrb, klass, "reset_program_name", mrb_kpse_reset_program_name, MRB_ARGS_REQ(1));
   /* variable.h */
   mrb_define_class_method(mrb, klass, "var_value", mrb_kpse_var_value, MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb, klass, "var_expand", mrb_kpse_var_expand, MRB_ARGS_REQ(1));
