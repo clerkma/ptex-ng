@@ -108,34 +108,49 @@ LIBFREETYPE_INCLUDES:= \
 $(LOCAL_PATH)/../texlive/libs/freetype2/freetype-src/include
 LIBFREETYPE_FILES   := \
 $(LIBFREETYPE_ROOT)/src/base/ftbase.c \
+$(LIBFREETYPE_ROOT)/src/base/ftapi.c \
 $(LIBFREETYPE_ROOT)/src/base/ftbbox.c \
+$(LIBFREETYPE_ROOT)/src/base/ftbdf.c \
 $(LIBFREETYPE_ROOT)/src/base/ftbitmap.c \
+$(LIBFREETYPE_ROOT)/src/base/ftcid.c \
+$(LIBFREETYPE_ROOT)/src/base/ftdebug.c \
 $(LIBFREETYPE_ROOT)/src/base/ftfntfmt.c \
+$(LIBFREETYPE_ROOT)/src/base/ftfstype.c \
 $(LIBFREETYPE_ROOT)/src/base/ftgasp.c \
 $(LIBFREETYPE_ROOT)/src/base/ftglyph.c \
+$(LIBFREETYPE_ROOT)/src/base/ftgxval.c \
 $(LIBFREETYPE_ROOT)/src/base/ftinit.c \
+$(LIBFREETYPE_ROOT)/src/base/ftlcdfil.c \
+$(LIBFREETYPE_ROOT)/src/base/ftmm.c \
+$(LIBFREETYPE_ROOT)/src/base/ftotval.c \
+$(LIBFREETYPE_ROOT)/src/base/ftpatent.c \
+$(LIBFREETYPE_ROOT)/src/base/ftpfr.c \
 $(LIBFREETYPE_ROOT)/src/base/ftstroke.c \
 $(LIBFREETYPE_ROOT)/src/base/ftsynth.c \
 $(LIBFREETYPE_ROOT)/src/base/ftsystem.c \
 $(LIBFREETYPE_ROOT)/src/base/fttype1.c \
+$(LIBFREETYPE_ROOT)/src/base/ftwinfnt.c \
+$(LIBFREETYPE_ROOT)/src/autofit/autofit.c \
+$(LIBFREETYPE_ROOT)/src/bdf/bdf.c \
+$(LIBFREETYPE_ROOT)/src/cache/ftcache.c \
 $(LIBFREETYPE_ROOT)/src/cff/cff.c \
 $(LIBFREETYPE_ROOT)/src/cid/type1cid.c \
+$(LIBFREETYPE_ROOT)/src/gxvalid/gxvalid.c \
+$(LIBFREETYPE_ROOT)/src/gzip/ftgzip.c \
+$(LIBFREETYPE_ROOT)/src/lzw/ftlzw.c \
+$(LIBFREETYPE_ROOT)/src/otvalid/otvalid.c \
+$(LIBFREETYPE_ROOT)/src/pcf/pcf.c \
+$(LIBFREETYPE_ROOT)/src/pfr/pfr.c \
 $(LIBFREETYPE_ROOT)/src/psaux/psaux.c \
 $(LIBFREETYPE_ROOT)/src/pshinter/pshinter.c \
 $(LIBFREETYPE_ROOT)/src/psnames/psnames.c \
 $(LIBFREETYPE_ROOT)/src/raster/raster.c \
 $(LIBFREETYPE_ROOT)/src/smooth/smooth.c \
-$(LIBFREETYPE_ROOT)/src/autofit/autofit.c \
 $(LIBFREETYPE_ROOT)/src/sfnt/sfnt.c \
-$(LIBFREETYPE_ROOT)/src/gzip/ftgzip.c \
-$(LIBFREETYPE_ROOT)/src/bdf/bdf.c \
-$(LIBFREETYPE_ROOT)/src/pfr/pfr.c \
-$(LIBFREETYPE_ROOT)/src/pcf/pcf.c \
-$(LIBFREETYPE_ROOT)/src/lzw/ftlzw.c \
-$(LIBFREETYPE_ROOT)/src/winfonts/winfnt.c \
-$(LIBFREETYPE_ROOT)/src/type42/type42.c \
 $(LIBFREETYPE_ROOT)/src/truetype/truetype.c \
-$(LIBFREETYPE_ROOT)/src/type1/type1.c
+$(LIBFREETYPE_ROOT)/src/type1/type1.c \
+$(LIBFREETYPE_ROOT)/src/type42/type42.c \
+$(LIBFREETYPE_ROOT)/src/winfonts/winfnt.c
 
 LOCAL_ARM_NEON   := false
 LOCAL_MODULE     := libfreetype
