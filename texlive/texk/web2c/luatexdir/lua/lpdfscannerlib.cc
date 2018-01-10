@@ -634,7 +634,7 @@ static int scanner_scan(lua_State * L)
       int i;
       for (i=0;i<count;i++) {
 	Object *val = new Object();
-	arrayref->get(i, val);
+	*val = arrayref->get(i);
 	if (val->isStream()) {
 	  ObjectList *rover = self->_streams;
 	  ObjectList *item = (ObjectList *)priv_xmalloc (sizeof(ObjectList));

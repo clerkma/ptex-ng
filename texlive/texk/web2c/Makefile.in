@@ -336,6 +336,7 @@ TESTS = tangle.test $(am__EXEEXT_41) ctiedir/ctie.test \
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/web2c-disable.m4 \
+	$(top_srcdir)/../../m4/ax_cxx_compile_stdcxx.m4 \
 	$(top_srcdir)/../../m4/kpse-asm.m4 \
 	$(top_srcdir)/../../m4/kpse-cairo-flags.m4 \
 	$(top_srcdir)/../../m4/kpse-common.m4 \
@@ -1929,6 +1930,7 @@ GREP = @GREP@
 HARFBUZZ_DEPEND = @HARFBUZZ_DEPEND@
 HARFBUZZ_INCLUDES = @HARFBUZZ_INCLUDES@
 HARFBUZZ_LIBS = @HARFBUZZ_LIBS@
+HAVE_CXX11 = @HAVE_CXX11@
 ICU_CONFIG = @ICU_CONFIG@
 ICU_DEPEND = @ICU_DEPEND@
 ICU_INCLUDES = @ICU_INCLUDES@
@@ -2321,13 +2323,13 @@ EXTRA_DIST = PROJECTS cftests cpascal.h help.h w2c/config.h \
 	luatexdir/luafontloader/fontforge/VERSION \
 	$(dist_libluatex_sources) $(libluatex_web) luatexdir/ChangeLog \
 	luatexdir/NEWS luatexdir/font/subfont.txt $(luatex_sources) \
-	luatexdir/getluatexsvnversion.sh $(luatex_tests) \
-	$(luajittex_tests) luatexdir/tests/luaimage.tex tests/1-4.jpg \
-	tests/B.pdf tests/basic.tex tests/lily-ledger-broken.png \
-	$(xetex_web_srcs) $(xetex_ch_srcs) xetexdir/xetex.defines \
-	xetexdir/ChangeLog xetexdir/COPYING xetexdir/NEWS \
-	xetexdir/image/README xetexdir/unicode-char-prep.pl \
-	xetexdir/xewebmac.tex $(xetex_tests) xetexdir/tests/bug73.log \
+	$(luatex_tests) $(luajittex_tests) \
+	luatexdir/tests/luaimage.tex tests/1-4.jpg tests/B.pdf \
+	tests/basic.tex tests/lily-ledger-broken.png $(xetex_web_srcs) \
+	$(xetex_ch_srcs) xetexdir/xetex.defines xetexdir/ChangeLog \
+	xetexdir/COPYING xetexdir/NEWS xetexdir/image/README \
+	xetexdir/unicode-char-prep.pl xetexdir/xewebmac.tex \
+	$(xetex_tests) xetexdir/tests/bug73.log \
 	xetexdir/tests/bug73.tex omegaware/README omegaware/ChangeLog \
 	$(odvicopy_sources) $(odvitype_sources) omegaware/ofm2opl.web \
 	omegaware/ofm2opl.up omegaware/ofm2opl.ch \
@@ -15253,7 +15255,7 @@ $(libsynctex_a_OBJECTS): $(ZLIB_DEPEND)
 synctexdir/synctex.log: synctex$(EXEEXT)
 libmd5/md5.log: md5main$(EXEEXT)
 
-# $Id: Makefile.in 45966 2017-12-02 01:52:48Z karl $
+# $Id: Makefile.in 46272 2018-01-10 00:37:05Z karl $
 # am/bin_links.am: Makefile fragment for bindir links.
 .PHONY: install-bin-links uninstall-bin-links
 

@@ -1,26 +1,48 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -utf-8 -c -O2 -Oy -DFT2_BUILD_LIBRARY -I../texlive/libs/freetype2/freetype-src/include
-ROOT = ../texlive/libs/freetype2/freetype-src
-OBJS = ftbase.obj ftbbox.obj ftbitmap.obj ftfntfmt.obj ftgasp.obj ftglyph.obj ftinit.obj ftstroke.obj ftsynth.obj ftsystem.obj fttype1.obj cff.obj type1cid.obj psaux.obj pshinter.obj psnames.obj raster.obj smooth.obj autofit.obj sfnt.obj ftgzip.obj bdf.obj pfr.obj pcf.obj ftlzw.obj winfnt.obj type42.obj truetype.obj type1.obj
+CFLAGS = -nologo -utf-8 -c -O2 -Oy -DFT2_BUILD_LIBRARY -Ifreetype-2.9/include
+ROOT = freetype-2.9
+OBJS = ftbase.obj ftapi.obj ftbbox.obj ftbdf.obj ftbitmap.obj ftcid.obj ftdebug.obj ftfntfmt.obj ftfstype.obj ftgasp.obj ftglyph.obj ftgxval.obj ftinit.obj ftlcdfil.obj ftmm.obj ftotval.obj ftpatent.obj ftpfr.obj ftstroke.obj ftsynth.obj ftsystem.obj fttype1.obj ftwinfnt.obj autofit.obj bdf.obj ftcache.obj cff.obj type1cid.obj gxvalid.obj ftgzip.obj ftlzw.obj otvalid.obj pcf.obj pfr.obj psaux.obj pshinter.obj psnames.obj raster.obj smooth.obj sfnt.obj truetype.obj type1.obj type42.obj winfnt.obj
 
 all: $(OBJS)
 	$(AR) -nologo -out:freetype.lib $(OBJS)
 
 ftbase.obj: $(ROOT)/src/base/ftbase.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftbase.c
+ftapi.obj: $(ROOT)/src/base/ftapi.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftapi.c
 ftbbox.obj: $(ROOT)/src/base/ftbbox.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftbbox.c
+ftbdf.obj: $(ROOT)/src/base/ftbdf.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftbdf.c
 ftbitmap.obj: $(ROOT)/src/base/ftbitmap.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftbitmap.c
+ftcid.obj: $(ROOT)/src/base/ftcid.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftcid.c
+ftdebug.obj: $(ROOT)/src/base/ftdebug.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftdebug.c
 ftfntfmt.obj: $(ROOT)/src/base/ftfntfmt.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftfntfmt.c
+ftfstype.obj: $(ROOT)/src/base/ftfstype.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftfstype.c
 ftgasp.obj: $(ROOT)/src/base/ftgasp.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftgasp.c
 ftglyph.obj: $(ROOT)/src/base/ftglyph.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftglyph.c
+ftgxval.obj: $(ROOT)/src/base/ftgxval.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftgxval.c
 ftinit.obj: $(ROOT)/src/base/ftinit.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftinit.c
+ftlcdfil.obj: $(ROOT)/src/base/ftlcdfil.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftlcdfil.c
+ftmm.obj: $(ROOT)/src/base/ftmm.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftmm.c
+ftotval.obj: $(ROOT)/src/base/ftotval.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftotval.c
+ftpatent.obj: $(ROOT)/src/base/ftpatent.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftpatent.c
+ftpfr.obj: $(ROOT)/src/base/ftpfr.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftpfr.c
 ftstroke.obj: $(ROOT)/src/base/ftstroke.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftstroke.c
 ftsynth.obj: $(ROOT)/src/base/ftsynth.c
@@ -29,10 +51,30 @@ ftsystem.obj: $(ROOT)/src/base/ftsystem.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftsystem.c
 fttype1.obj: $(ROOT)/src/base/fttype1.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/fttype1.c
+ftwinfnt.obj: $(ROOT)/src/base/ftwinfnt.c
+	$(CC) $(CFLAGS) $(ROOT)/src/base/ftwinfnt.c
+autofit.obj: $(ROOT)/src/autofit/autofit.c
+	$(CC) $(CFLAGS) $(ROOT)/src/autofit/autofit.c
+bdf.obj: $(ROOT)/src/bdf/bdf.c
+	$(CC) $(CFLAGS) $(ROOT)/src/bdf/bdf.c
+ftcache.obj: $(ROOT)/src/cache/ftcache.c
+	$(CC) $(CFLAGS) $(ROOT)/src/cache/ftcache.c
 cff.obj: $(ROOT)/src/cff/cff.c
 	$(CC) $(CFLAGS) $(ROOT)/src/cff/cff.c
 type1cid.obj: $(ROOT)/src/cid/type1cid.c
 	$(CC) $(CFLAGS) $(ROOT)/src/cid/type1cid.c
+gxvalid.obj: $(ROOT)/src/gxvalid/gxvalid.c
+	$(CC) $(CFLAGS) $(ROOT)/src/gxvalid/gxvalid.c
+ftgzip.obj: $(ROOT)/src/gzip/ftgzip.c
+	$(CC) $(CFLAGS) $(ROOT)/src/gzip/ftgzip.c
+ftlzw.obj: $(ROOT)/src/lzw/ftlzw.c
+	$(CC) $(CFLAGS) $(ROOT)/src/lzw/ftlzw.c
+otvalid.obj: $(ROOT)/src/otvalid/otvalid.c
+	$(CC) $(CFLAGS) $(ROOT)/src/otvalid/otvalid.c
+pcf.obj: $(ROOT)/src/pcf/pcf.c
+	$(CC) $(CFLAGS) $(ROOT)/src/pcf/pcf.c
+pfr.obj: $(ROOT)/src/pfr/pfr.c
+	$(CC) $(CFLAGS) $(ROOT)/src/pfr/pfr.c
 psaux.obj: $(ROOT)/src/psaux/psaux.c
 	$(CC) $(CFLAGS) $(ROOT)/src/psaux/psaux.c
 pshinter.obj: $(ROOT)/src/pshinter/pshinter.c
@@ -43,25 +85,13 @@ raster.obj: $(ROOT)/src/raster/raster.c
 	$(CC) $(CFLAGS) $(ROOT)/src/raster/raster.c
 smooth.obj: $(ROOT)/src/smooth/smooth.c
 	$(CC) $(CFLAGS) $(ROOT)/src/smooth/smooth.c
-autofit.obj: $(ROOT)/src/autofit/autofit.c
-	$(CC) $(CFLAGS) $(ROOT)/src/autofit/autofit.c
 sfnt.obj: $(ROOT)/src/sfnt/sfnt.c
 	$(CC) $(CFLAGS) $(ROOT)/src/sfnt/sfnt.c
-ftgzip.obj: $(ROOT)/src/gzip/ftgzip.c
-	$(CC) $(CFLAGS) $(ROOT)/src/gzip/ftgzip.c
-bdf.obj: $(ROOT)/src/bdf/bdf.c
-	$(CC) $(CFLAGS) $(ROOT)/src/bdf/bdf.c
-pfr.obj: $(ROOT)/src/pfr/pfr.c
-	$(CC) $(CFLAGS) $(ROOT)/src/pfr/pfr.c
-pcf.obj: $(ROOT)/src/pcf/pcf.c
-	$(CC) $(CFLAGS) $(ROOT)/src/pcf/pcf.c
-ftlzw.obj: $(ROOT)/src/lzw/ftlzw.c
-	$(CC) $(CFLAGS) $(ROOT)/src/lzw/ftlzw.c
-winfnt.obj: $(ROOT)/src/winfonts/winfnt.c
-	$(CC) $(CFLAGS) $(ROOT)/src/winfonts/winfnt.c
-type42.obj: $(ROOT)/src/type42/type42.c
-	$(CC) $(CFLAGS) $(ROOT)/src/type42/type42.c
 truetype.obj: $(ROOT)/src/truetype/truetype.c
 	$(CC) $(CFLAGS) $(ROOT)/src/truetype/truetype.c
 type1.obj: $(ROOT)/src/type1/type1.c
 	$(CC) $(CFLAGS) $(ROOT)/src/type1/type1.c
+type42.obj: $(ROOT)/src/type42/type42.c
+	$(CC) $(CFLAGS) $(ROOT)/src/type42/type42.c
+winfnt.obj: $(ROOT)/src/winfonts/winfnt.c
+	$(CC) $(CFLAGS) $(ROOT)/src/winfonts/winfnt.c

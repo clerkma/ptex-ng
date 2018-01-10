@@ -1,0 +1,3 @@
+FreeType 2.9
+  * https://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.gz
+  * Removed MSVC DLL related macro (FT_EXPORT) in file "freetype-2.9/include/freetype/config/ftconfig.h".

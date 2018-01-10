@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 46144 2017-12-26 22:25:31Z karl $
+dnl $Id: configure.ac 46258 2018-01-09 19:23:39Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -28,6 +28,11 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PROG_LN_S
 
+# Theoretically harfbuzz does not require C++11?
+AX_CXX_COMPILE_STDCXX([11],,[optional])
+
+KPSE_COMPILER_VISIBILITY
+
 KPSE_GRAPHITE2_FLAGS
 KPSE_ICU_FLAGS
 
@@ -43,23 +48,11 @@ if test "x$GCC" = "xyes"; then
 	# Make symbols link locally
 	LDFLAGS="$LDFLAGS -Bsymbolic-functions"
 
-	# Choose C++ version
-	CXXFLAGS="$CXXFLAGS -std=c++11 -D_GNU_SOURCE"
-
 	# Make sure we don't link to libstdc++
 	CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions"
 
 	# Assorted warnings
 	CXXFLAGS="$CXXFLAGS -Wcast-align"
-
-	case "$host" in
-		*-*-mingw*)
-		;;
-		*)
-			# Hide inline methods
-			CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"
-		;;
-	esac
 
 	case "$host" in
 		arm-*-*)

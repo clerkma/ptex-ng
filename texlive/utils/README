@@ -1,4 +1,4 @@
-$Id: README 46169 2017-12-30 22:19:20Z kakuto $
+$Id: README 46254 2018-01-09 03:41:12Z kakuto $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
@@ -17,7 +17,7 @@ devnag - from devanagari package installed in texmf-dist.
 
 lacheck - maintained here, by us
 
-m-tx 0.62 - checked 10feb16
+m-tx 0.63 - checked 09jan18
   http://ctan.org/pkg/m-tx/
 
 pmx 2.7.6 - checked 09dec16

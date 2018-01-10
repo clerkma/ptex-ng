@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: Build 40051 2016-03-17 01:20:14Z mojca $
+# $Id: Build 46257 2018-01-09 18:53:05Z karl $
 # Public domain.  Originally written many years ago by Sebastian Rahtz.
 # The basic idea is to run configure && make, but with a multitude of
 # environment variables to allow overriding everything.
@@ -61,10 +61,12 @@ if test "x$1" = x--debug || test "x$1" = x-g; then
   # The idea is that with Build -g, you can set TL_COMPILER_GFLAGS in
   # the environment with options common to all compilers --
   # not necessarily anything to do with debugging, e.g., -mcpu=sparvc9.
+  # Or you can set TL_{C,CXX,OBJCXX}FLAGS for per-language flags,
+  # notably TL_CFLAGS=-Wdeclaration-after-statement.
   : ${TL_COMPILER_GFLAGS=-g}
-  c="CFLAGS='$TL_COMPILER_GFLAGS'"
-  cxx="CXXFLAGS='$TL_COMPILER_GFLAGS'"
-  objcxx="OBJCXXFLAGS='$TL_COMPILER_GFLAGS'"  # needed only on macs
+  c="CFLAGS='$TL_COMPILER_GFLAGS $TL_CFLAGS'"
+  cxx="CXXFLAGS='$TL_COMPILER_GFLAGS $TL_CXXFLAGS'"
+  objcxx="OBJCXXFLAGS='$TL_COMPILER_GFLAGS $TL_OBJCXXFLAGS'" # only for macs
   TL_BUILD_ENV="$c $cxx $objcxx $TL_BUILD_ENV"
 fi
 
