@@ -1,4 +1,4 @@
-$Id: README 46257 2018-01-09 18:53:05Z karl $
+$Id: README 46290 2018-01-12 18:35:28Z karl $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -27,7 +27,7 @@ graphite2 1.3.10 - checked 20jun17
 harfbuzz 1.7.4 - checked 20dec17
   http://www.freedesktop.org/software/harfbuzz/release/
 
-icu 58.2 - checked 13mar17
+icu 60.2 - checked 11jan18
   http://download.icu-project.org/files/icu4c/
 
 libpaper 1.1.24+nmu2 - checked 24oct13
