@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 45971 2017-12-02 23:51:48Z karl $
+dnl $Id: configure.ac 46308 2018-01-14 17:25:27Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -17,6 +17,8 @@ AC_CONFIG_MACRO_DIR([../../m4])
 
 KPSE_BASIC([libpng])
 
+AC_CONFIG_HEADERS([config.h])
+
 AC_PROG_CC
 AM_PROG_AS
 AC_PROG_RANLIB
@@ -24,23 +26,24 @@ AC_PROG_LN_S
 
 KPSE_COMPILER_VISIBILITY
 
-AC_CONFIG_HEADERS([config.h])
-
-if false; then
 # For GCC 5 the default mode for C is -std=gnu11 instead of -std=gnu89
 # In pngpriv.h we request just the POSIX 1003.1 and C89 APIs by defining _POSIX_SOURCE to 1
 # This is incompatible with the new default mode, so we test for that and force the 
+# "-std=c89" compiler option:
 AC_MSG_CHECKING([if we need to force back C standard to C89])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#define _POSIX_SOURCE 1
-#include <stdio.h>
-])],AC_MSG_RESULT(no),[
-if test "x$GCC" != "xyes"; then
-  AC_MSG_ERROR([Forcing back to C89 is required but the flags are unknown for other compilers than GCC])
-fi
-AC_MSG_RESULT(yes)
-CFLAGS="$CFLAGS -std=c89"
+AC_COMPILE_IFELSE(
+   [AC_LANG_PROGRAM([
+      [#define _POSIX_SOURCE 1]
+      [#include <stdio.h>]
+   ])],
+   AC_MSG_RESULT(no),[
+      if test "x$GCC" != "xyes"; then
+         AC_MSG_ERROR(
+            [Forcing back to C89 is required but the flags are only known for GCC])
+      fi
+   AC_MSG_RESULT(yes)
+   CFLAGS="$CFLAGS -std=c89"
 ])
-fi
 
 # Checks for header files.
 AC_HEADER_STDC

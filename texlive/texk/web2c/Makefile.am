@@ -1,4 +1,4 @@
-## $Id: Makefile.am 43617 2017-03-27 18:00:45Z karl $
+## $Id: Makefile.am 46348 2018-01-17 18:00:12Z lscarso $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/.
 ##
 ## Copyright 2017      Karl Berry <tex-live@tug.org>
@@ -89,6 +89,8 @@ $(proglib): ${srcdir}/lib/*.c
 @ZLIB_RULE@
 ## Rebuild liblua52
 @LUA52_RULE@
+## Rebuild liblua53
+@LUA53_RULE@
 ## Rebuild libluajit
 @LUAJIT_RULE@
 ## Rebuild libpng

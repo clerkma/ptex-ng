@@ -1,4 +1,4 @@
-## $Id: xetex.am 44086 2017-04-27 21:38:29Z karl $
+## $Id: xetex.am 46353 2018-01-17 22:54:13Z karl $
 ## texk/web2c/xetexdir/am/xetex.am: Makefile fragment for XeTeX.
 ##
 ## Copyright 2017 Karl Berry <tex-live@tug.org>
@@ -58,6 +58,7 @@ if XETEX_MACOSX
 
 xetex_cppflags += -DXETEX_MAC
 xetex_LDFLAGS = -framework ApplicationServices -framework Cocoa
+OBJCXXFLAGS += -std=c++11
 
 else !XETEX_MACOSX
 

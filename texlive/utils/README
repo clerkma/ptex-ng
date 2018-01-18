@@ -1,4 +1,4 @@
-$Id: README 46254 2018-01-09 03:41:12Z kakuto $
+$Id: README 46354 2018-01-17 22:59:48Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
@@ -65,7 +65,7 @@ mkdir $clisp_toolsdir
 
 wget=wget  # or "curl -O" or whatever
 
-libsigsegv_ver=libsigsegv-2.11
+libsigsegv_ver=libsigsegv-2.12
 cd $clisp_basedir
 $wget http://ftp.gnu.org/gnu/libsigsegv/$libsigsegv_ver.tar.gz
 gzip -dc $libsigsegv_ver.tar.gz | tar xf -
