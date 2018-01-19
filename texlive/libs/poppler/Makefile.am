@@ -1,4 +1,4 @@
-## $Id: Makefile.am 46257 2018-01-09 18:53:05Z karl $
+## $Id: Makefile.am 46370 2018-01-18 23:05:30Z lscarso $
 ## Proxy Makefile.am to build poppler for TeX Live.
 ##
 ##   Copyright 2016-2018 Karl Berry <tex-live@tug.org>
@@ -29,7 +29,7 @@ POPPLER_SRC = $(top_srcdir)/$(POPPLER_TREE)/poppler
 AM_CPPFLAGS = -I$(top_srcdir)/$(POPPLER_TREE) -I$(GOO_SRC) $(ZLIB_INCLUDES)
 AM_CPPFLAGS += -DPOPPLER_DATADIR='"."'
 AM_CFLAGS = $(VISIBILITY_CFLAGS) $(WARNING_CFLAGS)
-AM_CXXFLAGS = $(VISIBILITY_CXXFLAGS) $(NO_WARN_CXXFLAGS)
+AM_CXXFLAGS = $(VISIBILITY_CXXFLAGS) $(NO_WARN_CXXFLAGS) $(CXX_FLAGS_RELEASE)
 
 noinst_LIBRARIES = libpoppler.a
 
