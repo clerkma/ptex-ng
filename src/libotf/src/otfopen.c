@@ -1040,8 +1040,6 @@ read_class_def (OTF *otf, OTF_Stream *stream, long offset, OTF_ClassDef *class)
 	= read_glyph_ids (otf, stream,
 			  (OTF_GlyphID **) &class->f.f1.ClassValueArray,
 			  0, -1);
-      if (! class->f.f1.GlyphCount)
-	return -1;
     }
   else if (class->ClassFormat == 2)
     {
@@ -1049,8 +1047,6 @@ read_class_def (OTF *otf, OTF_Stream *stream, long offset, OTF_ClassDef *class)
 	= read_range_records (otf, stream,
 			      (OTF_RangeRecord **)
 			      &class->f.f2.ClassRangeRecord);
-      if (! class->f.f2.ClassRangeCount)
-	return -1;
     }
   else
     OTF_ERROR (OTF_ERROR_TABLE, " (Invalid format)");

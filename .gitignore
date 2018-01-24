@@ -1,4 +1,7 @@
 *.swp
 *.o
+src/libotf/CVS
+src/libotf/src/CVS
+src/libotf/example/CVS
 texlive/.svn
 .DS_Store

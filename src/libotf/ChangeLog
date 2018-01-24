@@ -1,3 +1,12 @@
+2018-01-24  handa  <handa@gnu.org>
+
+	* configure.ac: Change versions to 0.9.16.
+
+2018-01-23  K. Handa  <handa@gnu.org>
+
+	* src/otfopen.c (read_class_def): Handle the case of
+	f.f1.GlyphCount and f.f2.ClassRangeCount being 0 gracefully.
+
 2015-09-02  K. Handa  <handa@gnu.org>
 
 	* example/otfview.c (update_seq_area): Use the macro

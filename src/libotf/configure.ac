@@ -23,8 +23,8 @@ dnl License along with this library, in a file named COPYING; if not,
 dnl write to the Free Software Foundation, Inc., 59 Temple Place, Suite
 dnl 330, Boston, MA 02111-1307, USA.
 
-AC_INIT(libotf, 0.9.15, handa@m17n.org)
-AM_INIT_AUTOMAKE(libotf, 0.9.15)
+AC_INIT(libotf, 0.9.16, handa@m17n.org)
+AM_INIT_AUTOMAKE(libotf, 0.9.16)
 AM_CONFIG_HEADER(src/config.h)
 
 # Checks for programs.

@@ -2400,8 +2400,8 @@ EXTRA_DIST = PROJECTS cftests cpascal.h help.h w2c/config.h \
 	ptexdir/ppltotf.ch uptexdir/uppltotf.ch ptexdir/ptftopl.ch \
 	uptexdir/uptftopl.ch uptexdir/COPYRIGHT uptexdir/COPYRIGHT.jis \
 	uptexdir/ChangeLog $(uptex_tests) $(upweb_tests) \
-	uptexdir/tests/min10.pl uptexdir/tests/min10.tfm \
-	uptexdir/tests/tmin10.pl uptexdir/tests/tmin10.tfm \
+	uptexdir/tests/umin10.pl uptexdir/tests/umin10.tfm \
+	uptexdir/tests/utmin10.pl uptexdir/tests/utmin10.tfm \
 	uptexdir/uptrip/uptrip.diffs uptexdir/uptrip/texmf.cnf \
 	$(euptex_web_srcs) $(euptex_ch_srcs) euptexdir/euptex.defines \
 	euptexdir/COPYRIGHT euptexdir/COPYRIGHT.jis \
@@ -3281,8 +3281,8 @@ euptex_ch_srcs = \
 	uptexdir/uptex-m.ch \
 	euptexdir/euptex.ch0 \
 	eptexdir/eptex.ech \
-	euptexdir/euptex.ch1 \
 	eptexdir/etex.ch1 \
+	euptexdir/euptex.ch1 \
 	$(euptex_ch_synctex) \
 	eptexdir/fam256.ch \
 	euptexdir/pdfstrcmp-eup-pre.ch \
@@ -17989,7 +17989,7 @@ $(libsynctex_a_OBJECTS): $(ZLIB_DEPEND)
 synctexdir/synctex.log: synctex$(EXEEXT)
 libmd5/md5.log: md5main$(EXEEXT)
 
-# $Id: Makefile.in 46354 2018-01-17 22:59:48Z karl $
+# $Id: Makefile.in 46400 2018-01-21 05:26:27Z hironobu $
 # am/bin_links.am: Makefile fragment for bindir links.
 .PHONY: install-bin-links uninstall-bin-links
 

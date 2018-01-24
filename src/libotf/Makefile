@@ -1,7 +1,9 @@
 #
-# Copyright (c) 2016, 2017 Clerk Ma
+# Copyright (c) 2016, 2017, 2018 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
+#
+# cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/m17n co libotf
 #
 
 CC = gcc

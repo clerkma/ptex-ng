@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 46348 2018-01-17 18:00:12Z lscarso $
+dnl $Id: configure.ac 46407 2018-01-21 23:42:12Z karl $
 dnl Process this file with Autoconf to produce a configure script for Web2c.
 dnl
 dnl   Copyright 2018 Karl Berry <tex-live@tug.org>
@@ -51,7 +51,7 @@ if test "x$enable_xetex" = xyes \
    || test "x$enable_luatex" = xyes \
    || test "x$enable_luajittex" = xyes \
    || test "x$enable_luatex53" = xyes; then
-  AC_MSG_NOTICE(LuaTeX enabled, requiring C++11 support)
+  AC_MSG_NOTICE([LuaTeX enabled, requiring C++11 support])
   AX_CXX_COMPILE_STDCXX([11])
 fi
 

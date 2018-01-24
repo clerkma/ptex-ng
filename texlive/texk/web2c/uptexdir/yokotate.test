@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: yokotate.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: yokotate.test 46400 2018-01-21 05:26:27Z hironobu $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -9,8 +9,8 @@ test -d uptests || mkdir -p uptests
 # Test inputs
 testdir=$srcdir/uptexdir/tests
 
-# Testing pPLtoTF/pTFtoPL for min10 (yoko=horiz) and tmin10 (tate=vert).
-for font in min10 tmin10; do
+# Testing upPLtoTF/upTFtoPL for umin10 (yoko=horiz) and utmin10 (tate=vert).
+for font in umin10 utmin10; do
 
   ./uppltotf -verbose $testdir/$font.pl uptests/x$font.tfm && \
     cmp $testdir/$font.tfm uptests/x$font.tfm && echo || exit 1
