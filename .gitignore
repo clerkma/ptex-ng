@@ -3,5 +3,6 @@
 src/libotf/CVS
 src/libotf/src/CVS
 src/libotf/example/CVS
+src/oniguruma/autom4te.cache
 texlive/.svn
 .DS_Store

@@ -35,6 +35,7 @@ Run the shell script:
 * libotf 0.9.16 (`http://cvs.savannah.gnu.org/viewvc/libotf/?root=m17n`)
 * libyaml 0.1.7 (`https://github.com/yaml/libyaml`)
 * mruby 1.3.0 (`http://mruby.org/downloads/`)
+* oniguruma 6.7.1 (`https://github.com/kkos/oniguruma`)
 
 ## How to Install
 
