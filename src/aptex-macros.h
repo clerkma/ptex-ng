@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016, 2017 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,6 +19,15 @@
 
 #ifndef APTEX_MACROS_H
 #define APTEX_MACROS_H
+
+#define pTeX_version 3
+#define pTeX_minor_version 8
+#define pTeX_revision ".0"
+#define pTeX_version_string "-p3.8.0"
+
+#define upTeX_version 1
+#define upTeX_revision ".22"
+#define upTeX_version_string "-u1.22"
 
 #define eTeX_version        2         // { \.{\\eTeXversion} }
 #define eTeX_revision       ".6"      // { \.{\\eTeXrevision} }
@@ -1112,8 +1121,11 @@ do {                            \
 #define input_line_no_code        (glue_val + 3)            // {code for \.{\\inputlineno}}
 #define badness_code              (input_line_no_code + 1)  // {code for \.{\\badness}}
 #define shell_escape_code         (badness_code + 1)        // {code for \.{\\shellescape}}
+#define ptex_version_code         (shell_escape_code + 1)   // {code for \.{\\ptexversion}}
+#define ptex_minor_version_code   (ptex_version_code + 1)   // {code for \.{\\ptexminorversion}}
+#define uptex_version_code        (ptex_minor_version_code + 1) // {code for \.{\\uptexversion}}
 //
-#define eTeX_int                  (badness_code + 2)        // {first of \eTeX\ codes for integers}
+#define eTeX_int                  (badness_code + 5)        // {first of \eTeX\ codes for integers}
 #define eTeX_version_code         eTeX_int                  // 
 #define current_group_level_code  (eTeX_int + 1)
 #define current_group_type_code   (eTeX_int + 2)
@@ -1159,22 +1171,24 @@ do {                          \
   denom = b;                  \
 } while (0)
 /* sec 0468 */
-#define number_code        0  // {command code for \.{\\number}}
-#define roman_numeral_code 1  // {command code for \.{\\romannumeral}}
-#define kansuji_code       2  // {command code for \.{\\kansuji}}
-#define string_code        3  // {command code for \.{\\string}}
-#define meaning_code       4  // {command code for \.{\\meaning}}
-#define font_name_code     5  // {command code for \.{\\fontname}}
-#define euc_code           6  // {command code for \.{\\euc}}
-#define sjis_code          7  // {command code for \.{\\sjis}}
-#define jis_code           8  // {command code for \.{\\jis}}
-#define kuten_code         9  // {command code for \.{\\kuten}}
-#define ucs_code           10 // {command code for \.{\\ucs}}
-#define eTeX_revision_code 11 // {base for \eTeX's command codes}
-#define ng_strcmp_code     12 //
-#define ng_banner_code     13 //
-#define ng_os_type_code    14 //
-#define job_name_code      15 //
+#define number_code         0  // {command code for \.{\\number}}
+#define roman_numeral_code  1  // {command code for \.{\\romannumeral}}
+#define kansuji_code        2  // {command code for \.{\\kansuji}}
+#define string_code         3  // {command code for \.{\\string}}
+#define meaning_code        4  // {command code for \.{\\meaning}}
+#define font_name_code      5  // {command code for \.{\\fontname}}
+#define euc_code            6  // {command code for \.{\\euc}}
+#define sjis_code           7  // {command code for \.{\\sjis}}
+#define jis_code            8  // {command code for \.{\\jis}}
+#define kuten_code          9  // {command code for \.{\\kuten}}
+#define ucs_code            10 // {command code for \.{\\ucs}}
+#define eTeX_revision_code  11 // {base for \eTeX's command codes}
+#define ng_strcmp_code      12 //
+#define ng_banner_code      13 //
+#define ng_os_type_code     14 //
+#define ptex_revision_code  15 // {command code for \.{\\ptexrevision}}
+#define uptex_revision_code 16 // {command code for \.{\\uptexrevision}}
+#define job_name_code       17 //
 /* sec 0480 */
 #define closed    2
 #define just_open 1
@@ -1330,15 +1344,13 @@ do {                    \
   a = a * 256 + fbyte;  \
 } while (0)
 // #
-#define read_sixteenx(a)  \
-do {                      \
-  a = fbyte;              \
-                          \
-  if (a > 255)            \
-    goto bad_tfm;         \
-                          \
-  fget();                 \
-  a = a * 256 + fbyte;    \
+#define read_twentyfourx(a) \
+do {                        \
+  a = fbyte;                \
+  fget();                   \
+  a = a * 0x100 + fbyte;    \
+  fget();                   \
+  a = a + fbyte * 0x10000;  \
 } while (0)
 // #
 #define store_four_quarters(val)  \

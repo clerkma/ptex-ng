@@ -131,7 +131,7 @@ static void print_aptex_version (void)
 {
   printf("Copyright 2014, 2015, 2016, 2017, 2018 Clerk Ma.\n"
     "banner: \"%s\"\n"
-    "base: Y&Y TeX (2.3.0) and pTeX (3.7.2)\n"
+    "base: Y&Y TeX 2.3.0, pTeX 3.8.0, upTeX 1.22\n"
     "Compiled with %s\n"
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
@@ -6378,6 +6378,9 @@ static void init_prim (void)
   primitive("inputlineno", last_item, input_line_no_code);
   primitive("badness", last_item, badness_code);
   primitive("shellescape", last_item, shell_escape_code);
+  primitive("ptexversion", last_item, ptex_version_code);
+  primitive("uptexversion", last_item, uptex_version_code);
+  primitive("ptexminorversion", last_item, ptex_minor_version_code);
   primitive("number", convert, number_code);
   primitive("romannumeral", convert, roman_numeral_code);
   primitive("kansuji", convert, kansuji_code);
@@ -6388,6 +6391,8 @@ static void init_prim (void)
   primitive("sjis", convert, sjis_code);
   primitive("jis", convert, jis_code);
   primitive("kuten", convert, kuten_code);
+  primitive("ptexrevision", convert, ptex_revision_code);
+  primitive("uptexrevision", convert, uptex_revision_code);
   primitive("ucs", convert, ucs_code);
   primitive("pdfstrcmp", convert, ng_strcmp_code);
   primitive("ngbanner", convert, ng_banner_code);
@@ -11245,6 +11250,18 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("shellescape");
           break;
 
+        case ptex_version_code:
+          print_esc("ptexversion");
+          break;
+
+        case uptex_version_code:
+          print_esc("uptexversion");
+          break;
+
+        case ptex_minor_version_code:
+          print_esc("ptexminorversion");
+          break;
+
         case last_node_type_code:
           print_esc("lastnodetype");
           break;
@@ -11392,6 +11409,14 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
         case kuten_code:
           print_esc("kuten");
+          break;
+
+        case ptex_revision_code:
+          print_esc("ptexrevision");
+          break;
+
+        case uptex_revision_code:
+          print_esc("uptexrevision");
           break;
 
         case ucs_code:
@@ -15064,6 +15089,18 @@ static void scan_something_internal (small_number level, boolean negative)
               cur_val = aptex_env.flag_shell_escape;
               break;
 
+            case ptex_version_code:
+              cur_val = pTeX_version;
+              break;
+
+            case uptex_version_code:
+              cur_val = upTeX_version;
+              break;
+
+            case ptex_minor_version_code:
+              cur_val = pTeX_minor_version;
+              break;
+
             case eTeX_version_code:
               cur_val = eTeX_version;
               break;
@@ -16646,6 +16683,11 @@ void conv_toks (void)
       scan_int();
       break;
 
+    case ptex_revision_code:
+    case uptex_revision_code:
+      do_nothing();
+      break;
+
     case string_code:
     case meaning_code:
       {
@@ -16729,6 +16771,14 @@ void conv_toks (void)
 
     case kuten_code:
       print_int(fromKUTEN(cur_val));
+      break;
+
+    case ptex_revision_code:
+      prints(pTeX_revision);
+      break;
+
+    case uptex_revision_code:
+      prints(upTeX_revision);
       break;
 
     case ucs_code:
@@ -18294,11 +18344,11 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
     for (k = ctype_base[f]; k <= ctype_base[f] + nt - 1; k++)
     {
       fget();
-      read_sixteenx(cx);
-      font_info[k].hh.rh = tokanji(cx);
+      read_twentyfourx(cx);
+      font_info[k].hh.rh = tokanji(cx); // {|kchar_code|}
       fget();
-      read_sixteen(cx);
-      font_info[k].hh.lh = tonum(cx);
+      cx = fbyte;
+      font_info[k].hh.lh = tonum(cx); // {|kchar_type|}
     }
   }
 
