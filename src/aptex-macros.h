@@ -498,25 +498,26 @@ enum
 /* sec 0212 */
 #define ignore_depth -65536000          // {|prev_depth| value that is ignored}
 /* sec 0213 */
-#define mode            cur_list.mode_field       // {current mode}
-#define direction       cur_list.dir_field        // {current direction}
-#define adjust_dir      cur_list.adj_dir_field    // {current adjust direction}
-#define head            cur_list.head_field       // {header node of current list}
-#define tail            cur_list.tail_field       // {final node on current list}
-#define prev_node       cur_list.pnode_field      // {previous to last |disp_node|}
-#define prev_disp       cur_list.pdisp_field      // {displacemant at |prev_node|}
-#define last_jchr       cur_list.last_jchr_field  // {final jchar node on current list}
-#define eTeX_aux        cur_list.eTeX_aux_field   // {auxiliary data for \eTeX}
-#define LR_save         eTeX_aux                  // {LR stack when a paragraph is interrupted}
-#define LR_box          eTeX_aux                  // {prototype box for display}
-#define delim_ptr       eTeX_aux                  // {most recent left or right noad of a math left group}
-#define prev_graf       cur_list.pg_field         // {number of paragraph lines accumulated}
-#define aux             cur_list.aux_field        // {auxiliary data about the current list}
-#define prev_depth      aux.sc                    // {the name of |aux| in vertical mode}
-#define space_factor    aux.hh.lh                 // {part of |aux| in horizontal mode}
-#define clang           aux.hh.rh                 // {the other part of |aux| in horizontal mode}
-#define incompleat_noad aux.cint                  // {the name of |aux| in math mode}
-#define mode_line       cur_list.ml_field         // {source file line number at beginning of list}
+#define mode            cur_list.mode_field         // {current mode}
+#define direction       cur_list.dir_field          // {current direction}
+#define adjust_dir      cur_list.adj_dir_field      // {current adjust direction}
+#define head            cur_list.head_field         // {header node of current list}
+#define tail            cur_list.tail_field         // {final node on current list}
+#define prev_node       cur_list.pnode_field        // {previous to last |disp_node|}
+#define prev_disp       cur_list.pdisp_field        // {displacemant at |prev_node|}
+#define last_jchr       cur_list.last_jchr_field    // {final jchar node on current list}
+#define disp_called     cur_list.disp_called_field  // {is a |disp_node| present in the current list?}
+#define eTeX_aux        cur_list.eTeX_aux_field     // {auxiliary data for \eTeX}
+#define LR_save         eTeX_aux                    // {LR stack when a paragraph is interrupted}
+#define LR_box          eTeX_aux                    // {prototype box for display}
+#define delim_ptr       eTeX_aux                    // {most recent left or right noad of a math left group}
+#define prev_graf       cur_list.pg_field           // {number of paragraph lines accumulated}
+#define aux             cur_list.aux_field          // {auxiliary data about the current list}
+#define prev_depth      aux.sc                      // {the name of |aux| in vertical mode}
+#define space_factor    aux.hh.lh                   // {part of |aux| in horizontal mode}
+#define clang           aux.hh.rh                   // {the other part of |aux| in horizontal mode}
+#define incompleat_noad aux.cint                    // {the name of |aux| in math mode}
+#define mode_line       cur_list.ml_field           // {source file line number at beginning of list}
 /* sec 0221 */
 #define eq_level_field(a) a.hh.b1
 #define eq_type_field(a)  a.hh.b0
@@ -2748,6 +2749,14 @@ main_loop_j_1:                                          \
                                                         \
   if (main_f != null_font)                              \
   {                                                     \
+    if (!disp_called)                                   \
+    {                                                   \
+      prev_node = tail;                                 \
+      tail_append(get_node(small_node_size));           \
+      type(tail) = disp_node;                           \
+      disp_dimen(tail) = 0;                             \
+      disp_called = true;                               \
+    }                                                   \
     fast_get_avail(main_p);                             \
     font(main_p) = main_f;                              \
     character(main_p) = cur_l;                          \
@@ -2901,13 +2910,14 @@ do {                                                    \
     else                                                \
       disp_dimen(tail) = disp;                          \
   }                                                     \
-  else if (disp != 0)                                   \
+  else if (disp != 0 || !disp_called)                   \
   {                                                     \
     prev_node = tail;                                   \
     tail_append(get_node(small_node_size));             \
     type(tail) = disp_node;                             \
     disp_dimen(tail) = disp;                            \
     prev_disp = disp;                                   \
+    disp_called = true;                                 \
   }                                                     \
 } while (0)
 // @<Append |disp_node| at end of displace area@>
@@ -2926,78 +2936,85 @@ do {                                                      \
       type(tail) = disp_node;                             \
       disp_dimen(tail) = 0;                               \
       prev_disp = disp;                                   \
+      disp_called = true;                                 \
     }                                                     \
   }                                                       \
 } while (0)
 // @<Look ahead for glue or kerning@>
-#define look_ahead_for_glue_or_kerning()                        \
-do {                                                            \
-  cur_q = tail;                                                 \
-                                                                \
-  if (inhibit_glue_flag != true)                                \
-  {                                                             \
-    if (char_tag(main_i) == gk_tag)                             \
-    {                                                           \
-      main_k = glue_kern_start(main_f, main_i);                 \
-                                                                \
-      do {                                                      \
-        main_j = font_info[main_k].qqqq;                        \
-                                                                \
-        if (next_char(main_j) == cur_l)                         \
-        {                                                       \
-          if (op_byte(main_j) < kern_flag)                      \
-          {                                                     \
-            gp = font_glue[main_f];                             \
-            cur_r = rem_byte(main_j);                           \
-                                                                \
-            if (gp != null)                                     \
-            {                                                   \
-              while ((type(gp) != cur_r) && (link(gp) != null)) \
-              {                                                 \
-                gp = link(gp);                                  \
-              }                                                 \
-                                                                \
-              gq = glue_ptr(gp);                                \
-            }                                                   \
-            else                                                \
-            {                                                   \
-              gp = get_node(small_node_size);                   \
-              font_glue[main_f] = gp;                           \
-              gq = null;                                        \
-            }                                                   \
-                                                                \
-            if (gq == null)                                     \
-            {                                                   \
-              type(gp) = cur_r;                                 \
-              gq = new_spec(zero_glue);                         \
-              glue_ptr(gp) = gq;                                \
-              main_k = exten_base[main_f] + (cur_r * 3);        \
-              width(gq) = font_info[main_k].cint;               \
-              stretch(gq) = font_info[main_k + 1].cint;         \
-              shrink(gq) = font_info[main_k + 2].cint;          \
-              add_glue_ref(gq);                                 \
-              link(gp) = get_node(small_node_size);             \
-              gp = link(gp);                                    \
-              glue_ptr(gp) = null;                              \
-              link(gp) = null;                                  \
-            }                                                   \
-                                                                \
-            tail_append(new_glue(gq));                          \
-            subtype(tail) = jfm_skip + 1;                       \
-            goto skip_loop;                                     \
-          }                                                     \
-          else                                                  \
-          {                                                     \
-            tail_append(new_kern(char_kern(main_f, main_j)));   \
-            goto skip_loop;                                     \
-          }                                                     \
-        }                                                       \
-                                                                \
-        incr(main_k);                                           \
-      } while (!(skip_byte(main_j) >= stop_flag));              \
-    }                                                           \
-  }                                                             \
-skip_loop: inhibit_glue_flag = false;                           \
+#define look_ahead_for_glue_or_kerning()                          \
+do {                                                              \
+  cur_q = tail;                                                   \
+                                                                  \
+  if (inhibit_glue_flag != true)                                  \
+  {                                                               \
+    if ((tail == link(head)) && (!is_char_node(tail))             \
+      && (type(tail) == disp_node))                               \
+      goto skip_loop;                                             \
+    else                                                          \
+    {                                                             \
+      if (char_tag(main_i) == gk_tag)                             \
+      {                                                           \
+        main_k = glue_kern_start(main_f, main_i);                 \
+                                                                  \
+        do {                                                      \
+          main_j = font_info[main_k].qqqq;                        \
+                                                                  \
+          if (next_char(main_j) == cur_l)                         \
+          {                                                       \
+            if (op_byte(main_j) < kern_flag)                      \
+            {                                                     \
+              gp = font_glue[main_f];                             \
+              cur_r = rem_byte(main_j);                           \
+                                                                  \
+              if (gp != null)                                     \
+              {                                                   \
+                while ((type(gp) != cur_r) && (link(gp) != null)) \
+                {                                                 \
+                  gp = link(gp);                                  \
+                }                                                 \
+                                                                  \
+                gq = glue_ptr(gp);                                \
+              }                                                   \
+              else                                                \
+              {                                                   \
+                gp = get_node(small_node_size);                   \
+                font_glue[main_f] = gp;                           \
+                gq = null;                                        \
+              }                                                   \
+                                                                  \
+              if (gq == null)                                     \
+              {                                                   \
+                type(gp) = cur_r;                                 \
+                gq = new_spec(zero_glue);                         \
+                glue_ptr(gp) = gq;                                \
+                main_k = exten_base[main_f] + (cur_r * 3);        \
+                width(gq) = font_info[main_k].cint;               \
+                stretch(gq) = font_info[main_k + 1].cint;         \
+                shrink(gq) = font_info[main_k + 2].cint;          \
+                add_glue_ref(gq);                                 \
+                link(gp) = get_node(small_node_size);             \
+                gp = link(gp);                                    \
+                glue_ptr(gp) = null;                              \
+                link(gp) = null;                                  \
+              }                                                   \
+                                                                  \
+              tail_append(new_glue(gq));                          \
+              subtype(tail) = jfm_skip + 1;                       \
+              goto skip_loop;                                     \
+            }                                                     \
+            else                                                  \
+            {                                                     \
+              tail_append(new_kern(char_kern(main_f, main_j)));   \
+              goto skip_loop;                                     \
+            }                                                     \
+          }                                                       \
+                                                                  \
+          incr(main_k);                                           \
+        } while (!(skip_byte(main_j) >= stop_flag));              \
+      }                                                           \
+    }                                                             \
+  }                                                               \
+skip_loop: inhibit_glue_flag = false;                             \
 } while (0)
 
 // eTeX

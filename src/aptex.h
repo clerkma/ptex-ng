@@ -250,6 +250,7 @@ typedef struct
   int dir_field, adj_dir_field;
   scaled pdisp_field;
   pointer head_field, tail_field, pnode_field, last_jchr_field;
+  boolean disp_called_field;
   pointer eTeX_aux_field;
   integer pg_field, ml_field;
   memory_word aux_field;

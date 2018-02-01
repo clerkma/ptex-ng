@@ -4043,6 +4043,7 @@ static void initialize (void)
   adjust_dir = direction;
   prev_disp = 0;
   last_jchr = null;
+  disp_called = false;
   prev_depth = ignore_depth;
   mode_line = 0;
   prev_graf = 0;
@@ -4239,6 +4240,7 @@ static boolean load_fmt_file (void)
     adjust_dir = direction;
     prev_disp = 0;
     last_jchr = null;
+    disp_called = false;
     prev_depth = ignore_depth;
     mode_line = 0;
     prev_graf = 0;
@@ -10134,6 +10136,7 @@ static void push_nest (void)
   prev_node = tail;
   prev_graf = 0;
   prev_disp = 0;
+  disp_called = false;
   last_jchr = null;
   mode_line = line;
   eTeX_aux = 0;
@@ -26393,6 +26396,7 @@ done:
       disp_dimen(r) = last_disp;
       link(r) = q;
       q = r;
+      disp_called = true;
     }
 
     if (left_skip != zero_glue)
