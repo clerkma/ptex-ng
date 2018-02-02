@@ -1,5 +1,8 @@
 *.swp
 *.o
+*.un~
+*~
+*.exe
 src/libotf/CVS
 src/libotf/src/CVS
 src/libotf/example/CVS
