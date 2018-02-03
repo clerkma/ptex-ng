@@ -22848,65 +22848,76 @@ restart:
             {
               cur_c = a;
               a = glue_kern_start(cur_f, cur_i);
+              cur_i = font_info[a].qqqq;
 
-              do {
+              if (skip_byte(cur_i) > stop_flag)
+              {
+                a = glue_kern_restart(cur_f, cur_i);
                 cur_i = font_info[a].qqqq;
-
+              }
+              
+              while (true)
+              {
                 if (next_char(cur_i) == cur_c)
-                  if (op_byte(cur_i) < kern_flag)
-                  {
-                    gp = font_glue[cur_f];
-                    rr = rem_byte(cur_i);
-
-                    if (gp != null)
+                  if (skip_byte(cur_i) <= stop_flag)
+                    if (op_byte(cur_i) < kern_flag)
                     {
-                      while ((type(gp) != rr) && (link(gp) != null))
+                      gp = font_glue[cur_f];
+                      rr = rem_byte(cur_i);
+                        
+                      if (gp != null)
                       {
-                        gp = link(gp);
+                        while ((type(gp) != rr) && (link(gp) != null))
+                        {
+                          gp = link(gp);
+                        }
+
+                        gq = glue_ptr(gp);
+                      }
+                      else
+                      {
+                        gp = get_node(small_node_size);
+                        font_glue[cur_f] = gp;
+                        gq = null;
                       }
 
-                      gq = glue_ptr(gp);
+                      if (gq == null)
+                      {
+                        type(gp) = rr;
+                        gq = new_spec(zero_glue);
+                        glue_ptr(gp) = gq;
+                        a = exten_base[cur_f] + (((rr)) * 3);
+                        width(gq) = font_info[a].sc;
+                        stretch(gq) = font_info[a + 1].sc;
+                        shrink(gq) = font_info[a + 2].sc;
+                        add_glue_ref(gq);
+                        link(gp) = get_node(small_node_size);
+                        gp = link(gp);
+                        glue_ptr(gp) = null;
+                        link(gp) = null;
+                      }
+
+                      p = new_glue(gq);
+                      link(p) = link(q);
+                      link(q) = p;
+
+                      return;
                     }
                     else
                     {
-                      gp = get_node(small_node_size);
-                      font_glue[cur_f] = gp;
-                      gq = null;
+                      p = new_kern(char_kern(cur_f, cur_i));
+                      link(p) = link(q);
+                      link(q) = p;
+
+                      return;
                     }
 
-                    if (gq == null)
-                    {
-                      type(gp) = rr;
-                      gq = new_spec(zero_glue);
-                      glue_ptr(gp) = gq;
-                      a = exten_base[cur_f] + (((rr)) * 3);
-                      width(gq) = font_info[a].sc;
-                      stretch(gq) = font_info[a + 1].sc;
-                      shrink(gq) = font_info[a + 2].sc;
-                      add_glue_ref(gq);
-                      link(gp) = get_node(small_node_size);
-                      gp = link(gp);
-                      glue_ptr(gp) = null;
-                      link(gp) = null;
-                    }
+                if (skip_byte(cur_i) >= stop_flag)
+                  return;
 
-                    p = new_glue(gq);
-                    link(p) = link(q);
-                    link(q) = p;
-
-                    return;
-                  }
-                  else
-                  {
-                    p = new_kern(char_kern(cur_f, cur_i));
-                    link(p) = link(q);
-                    link(q) = p;
-
-                    return;
-                  }
-
-                incr(a);
-              } while (!(skip_byte(cur_i) >= stop_flag));
+                a = a + skip_byte(cur_i) + 1; //{SKIP property}
+                cur_i = font_info[a].qqqq;
+              }
             }
           }
       }

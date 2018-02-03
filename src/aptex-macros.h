@@ -1299,11 +1299,12 @@ do {                            \
 #define char_depth(a, b)  font_info[depth_base[a] + (b) % 16].cint
 #define char_tag(a)       (a.b2 % 4)
 /* sec 0557 */
-#define char_kern(a, b)        font_info[kern_base[a] + 256 * op_byte(b) + rem_byte(b)].cint
-#define kern_base_offset       (256 * (128 + min_quarterword))
-#define lig_kern_start(a, b)   lig_kern_base[a] + rem_byte(b)
-#define glue_kern_start(a, b)  lig_kern_base[a] + rem_byte(b)
-#define lig_kern_restart(a, b) lig_kern_base[a] + 256 * op_byte(b) + rem_byte(b) + 32768 - kern_base_offset
+#define char_kern(a, b)         font_info[kern_base[a] + 256 * op_byte(b) + rem_byte(b)].cint
+#define kern_base_offset        (256 * (128 + min_quarterword))
+#define lig_kern_start(a, b)    lig_kern_base[a] + rem_byte(b)
+#define glue_kern_start(a, b)   lig_kern_base[a] + rem_byte(b)
+#define glue_kern_restart(a, b) lig_kern_base[a] + 256 * op_byte(b) + rem_byte(b) + 32768 - kern_base_offset
+#define lig_kern_restart(a, b)  lig_kern_base[a] + 256 * op_byte(b) + rem_byte(b) + 32768 - kern_base_offset
 /* sec 0558 */
 #define param(a, b)      font_info[a + param_base[b]].cint
 #define slant(f)         param(slant_code, f)
@@ -2955,11 +2956,17 @@ do {                                                              \
       if (char_tag(main_i) == gk_tag)                             \
       {                                                           \
         main_k = glue_kern_start(main_f, main_i);                 \
+        main_j = font_info[main_k].qqqq;                          \
                                                                   \
-        do {                                                      \
+        if (skip_byte(main_j)>stop_flag)                          \
+        {                                                         \
+          main_k = glue_kern_restart(main_f, main_j);             \
           main_j = font_info[main_k].qqqq;                        \
+        }                                                         \
                                                                   \
+        while (true) {                                            \
           if (next_char(main_j) == cur_l)                         \
+            if (skip_byte(main_j) <= stop_flag)                   \
           {                                                       \
             if (op_byte(main_j) < kern_flag)                      \
             {                                                     \
@@ -3009,8 +3016,10 @@ do {                                                              \
             }                                                     \
           }                                                       \
                                                                   \
-          incr(main_k);                                           \
-        } while (!(skip_byte(main_j) >= stop_flag));              \
+          if (skip_byte(main_j) >= stop_flag) goto skip_loop;     \
+          main_k = main_k + (skip_byte(main_j)) + 1;              \
+          main_j = font_info[main_k].qqqq;                        \
+        }                                                         \
       }                                                           \
     }                                                             \
   }                                                               \
