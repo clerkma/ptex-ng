@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: makejvf.test 46453 2018-01-27 02:24:19Z hironobu $
+# $Id: makejvf.test 46519 2018-02-02 13:17:22Z hironobu $
 # Copyright 2017-2018 Karl Berry <tex-live@tug.org>
 # Copyright 2010-2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -12,9 +12,18 @@
   cmp $srcdir/tests/tmin10.vf tmin10.vf && \
   cmp $srcdir/tests/rmlv.tfm rmlv.tfm || exit 1
 
-./makejvf -e -i -u custom -t $srcdir/tests/uni10.cnf -m $srcdir/tests/testnewu urml && \
+# followings are supported in texjporg version
+./makejvf -e -i -u custom -t $srcdir/tests/uni10.cnf $srcdir/tests/testnewu urml && \
   cmp $srcdir/tests/testnewu.vf testnewu.vf && \
   cmp $srcdir/tests/rml.tfm urml.tfm || exit 1
+
+./makejvf -e -i -u custom -t $srcdir/tests/uni10.cnf $srcdir/tests/gkhugeok urml && \
+  cmp $srcdir/tests/gkhugeok.vf gkhugeok.vf && \
+  cmp $srcdir/tests/rml.tfm urml.tfm || exit 1
+
+./makejvf -e $srcdir/tests/skipjfmp rml && \
+  cmp $srcdir/tests/skipjfmp.vf skipjfmp.vf && \
+  cmp $srcdir/tests/rml.tfm rml.tfm || exit 1
 
 TEXMFCNF=$srcdir/../kpathsea \
 	./makejvf -k0 -a abc && exit 1
