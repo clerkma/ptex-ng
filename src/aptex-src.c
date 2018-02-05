@@ -22898,6 +22898,7 @@ restart:
                       }
 
                       p = new_glue(gq);
+                      subtype(p) = jfm_skip + 1;
                       link(p) = link(q);
                       link(q) = p;
 
