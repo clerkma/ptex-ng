@@ -1433,7 +1433,7 @@ static void aptex_commands_init (int ac, char **av)
         print_aptex_info(), print_aptex_version();
       else if (ARGUMENT_IS("mrb-load-file"))
       {
-	mrb_state * mrb_cmd = mrb_open();
+        mrb_state * mrb_cmd = mrb_open();
         print_aptex_info();
         mrb_mruby_aptex_gem_init(mrb_cmd);
 
@@ -1445,7 +1445,7 @@ static void aptex_commands_init (int ac, char **av)
           {
             mrb_load_file(mrb_cmd, mrb_cmd_file);
             mrb_mruby_aptex_gem_final(mrb_cmd);
-	    mrb_close(mrb_cmd);
+            mrb_close(mrb_cmd);
             fclose(mrb_cmd_file);
           }
         }
@@ -1510,9 +1510,6 @@ static void aptex_commands_init (int ac, char **av)
 
   sprintf(TEX_format_default, " %s.fmt", format_name);
   format_default_length = strlen(TEX_format_default + 1);
-
-  aptex_env.time_start  = clock();
-  aptex_env.time_main   = aptex_env.time_start;
 }
 
 static void catch_interrupt (int err)
@@ -1544,7 +1541,9 @@ static void aptex_set_signal (void)
 #endif
 }
 
-void aptex_set_env (int argc, char ** argv)
+static int aptex_program (void);
+
+void aptex_run (int argc, char ** argv)
 {
 #ifdef _WIN32
   int i;
@@ -1561,10 +1560,7 @@ void aptex_set_env (int argc, char ** argv)
   aptex_env.argc = argc;
   aptex_env.argv = argv;
 #endif
-}
 
-void aptex_init (void)
-{
   // check of memory_word's size
   assert(sizeof(memory_word)  == sizeof(halfword) * 2);
   assert(sizeof(halfword)     == sizeof(quarterword) * 2);
@@ -1583,11 +1579,13 @@ void aptex_init (void)
   aptex_set_signal();
   aptex_commands_init(aptex_env.argc, aptex_env.argv);
   aptex_memory_init();
-}
 
-void aptex_fini (void)
-{
+  aptex_env.time_start  = clock();
+  aptex_env.time_main   = aptex_env.time_start;
+  aptex_program();
   aptex_env.time_finish = clock();
+
+  aptex_memory_free();
 
   if (!aptex_env.flag_initex)
   {
@@ -1608,12 +1606,8 @@ void aptex_fini (void)
 
     printf(".\n");
   }
-  
-  aptex_memory_free();
 
 #ifdef WIN32
-  int i;
-
   for (i = 0; i < aptex_env.argc; i++)
   {
     if (aptex_env.argv[i] != NULL)
@@ -4702,7 +4696,7 @@ static void final_cleanup (void)
   }
 }
 
-int aptex_program (void)
+static int aptex_program (void)
 {
   history = fatal_error_stop;
 

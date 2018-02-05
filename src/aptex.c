@@ -19,17 +19,11 @@
 
 #include <stdio.h>
 
-extern int  aptex_program(void);
-extern void aptex_set_env(int argc, char ** argv);
-extern void aptex_init(void);
-extern void aptex_fini(void);
+extern void aptex_run (int argc, char ** argv);
 
 int main (int argc, char ** argv)
 {
-  aptex_set_env(argc, argv);
-  aptex_init();
-  aptex_program();
-  aptex_fini();
+  aptex_run(argc, argv);
 
   return 0;
 }
