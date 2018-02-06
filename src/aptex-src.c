@@ -67,18 +67,8 @@ static const char * banner = "This is Asiatic pTeX, Version 3.14159265";
 
 static void aptex_utils_exit (int unix_code)
 {
-  int final_code;
-
   update_terminal();
-
-  if (unix_code == 0)
-    final_code = EXIT_SUCCESS;
-  else if (unix_code == 1)
-    final_code = EXIT_FAILURE;
-  else
-    final_code = unix_code;
-
-  exit(final_code);
+  exit(unix_code);
 }
 
 static void print_aptex_usage (void)
@@ -124,7 +114,7 @@ static void print_aptex_usage (void)
       "   (INITEX only) hyphenation pattern trie size\n\n"
       "Email bug reports to clerkma@gmail.com.\n"
   );
-  aptex_utils_exit(EXIT_FAILURE);
+  aptex_utils_exit(EXIT_SUCCESS);
 }
 
 static void print_aptex_version (void)
@@ -143,7 +133,7 @@ static void print_aptex_version (void)
     banner, kpathsea_version_string,
     ptexenc_version_string, LIBOTF_VERSION, zlib_version,
     yaml_get_version_string(), MRUBY_VERSION);
-  aptex_utils_exit(EXIT_FAILURE);
+  aptex_utils_exit(EXIT_SUCCESS);
 }
 
 // Sep 27 1990 => 1990 Sep 27
@@ -182,13 +172,13 @@ static void print_aptex_info (void)
 #if   defined (_WIN32) || defined (_WIN64)
   GetModuleFileNameA(NULL, executable_path, 65536);
 #elif defined (__gnu_linux__) || defined (__ANDROID__)
-    ssize_t executable_size;
+  ssize_t executable_size;
   executable_size = readlink("/proc/self/exe", executable_path, 65536);
 #elif defined (__NetBSD__)
-    ssize_t executable_size;
+  ssize_t executable_size;
   executable_size = readlink("/proc/curproc/exe", executable_path, 65536);
 #elif defined (__DragonFly__)
-    ssize_t executable_size;
+  ssize_t executable_size;
   executable_size = readlink("/proc/curproc/file", executable_path, 65536);
 #elif defined (__APPLE__)
   extern int _NSGetExecutablePath(char* buf, uint32_t* bufsize);
@@ -2163,7 +2153,6 @@ static char * utf8_mbcs (const char * utf8_str)
 static void t_open_in (void)
 {
   buffer[first] = 0;
-
   sprintf((char *) &buffer[first], "%s", aptex_env.aptex_src);
 
   for (last = first; buffer[last]; ++last)
@@ -2291,35 +2280,6 @@ static boolean b_open_input (byte_file * f)
 
   char * file_name_utf8 = (char *) calloc(1, name_length + 1);
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-
-  /*
-    Reference:
-      * https://www.microsoft.com/en-us/Typography/OpenTypeSpecification.aspx
-      * https://developer.apple.com/fonts/TrueType-Reference-Manual/
-    Note on OpenType and TrueType (AAT)
-      * support of OpenType is done with libotf.
-      * support of TrueType/AAT will to be implemented in future.
-    Name Syntax:
-      \jfont\t=name
-      name        = "ot:" file_name file_index? script_lang? gsub_spec? ":" jfm_name
-      file_index  = "[" number "]"
-      script_lang = "(" script? lang? ")"
-      script      = script_tag
-      lang        = "/" lang_tag
-      gsub_spec   = ";" fea_list
-      fea_list    = (fea_tag ",")* [fea_tag | "*"]
-
-      script_tag: https://www.microsoft.com/typography/otspec/scripttags.htm
-      lang_tag:   https://www.microsoft.com/typography/otspec/languagetags.htm
-      fea_tag:    https://www.microsoft.com/typography/otspec/featuretags.htm
-
-      '*' for all gsub featurs
-    Examples:
-      \jfont\t=ot:yumin.ttf;jp90,hojo:upjisr-h
-      \tfont\t=ot:yumin.ttf;vert:upjisr-v
-      \jfont\t=ot:simsun.ttc[1]:upjisr-h
-      \jfont\t=ot:SourceHanSansTC-Normal.otf:uprml-h
-  */
 
   if (name_length > 3 && (strncasecmp(file_name_utf8, "ot:", 3) == 0))
     file_name_mbcs = utf8_mbcs(strrchr(file_name_utf8, ':') + 1);
@@ -5168,7 +5128,7 @@ static void fix_date_and_time (void)
   struct tm * tm_ptr;
 
   if ((clock = time(NULL)) < 0)
-    puts("Time not available!");
+    puts("Time is not available!");
 
   tm_ptr = localtime(&clock);
 
@@ -5530,7 +5490,7 @@ void new_patterns (void)
 
               while (true)
               {
-                if (hyf[l]!= 0)
+                if (hyf[l] != 0)
                   v = new_trie_op(k - l, hyf[l], v);
 
                 if (l > 0)
