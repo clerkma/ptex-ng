@@ -10,22 +10,3 @@ matrix:
           osx_image: xcode9.1
 
 script: ./build-aptex.sh
-
-before_deploy:
-    - export PTEX_NG_VER=`git log -1 --format="%H"`
-    - export DEPLOY_FILE=ptex-ng-$PTEX_NG_VER-$TRAVIS_OS_NAME.tar.gz
-    - mkdir ptex-ng-$PTEX_NG_VER
-    - cp src/aptex ptex-ng-$PTEX_NG_VER/ptex-ng
-    - cp src/lsotfea ptex-ng-$PTEX_NG_VER/lsotfea
-    - tar czvf ptex-ng-$PTEX_NG_VER ptex-ng-$PTEX_NG_VER-$TRAVIS_OS_NAME.tar.gz
-
-deploy:
-    provider: releases
-    file: "${DEPLOY_FILE}"
-    skip_cleanup: true
-    draft: true
-    overwrite: true
-    tag_name: "${PTEX_NG_VER}"
-    on:
-        tags: true
-        branch: master
