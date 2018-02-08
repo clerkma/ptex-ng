@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 46257 2018-01-09 18:53:05Z karl $
+dnl $Id: configure.ac 46373 2018-01-18 23:12:02Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2018 Karl Berry <tex-live@tug.org>

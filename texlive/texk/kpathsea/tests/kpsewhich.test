@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: kpsewhich.test 46545 2018-02-04 23:23:31Z karl $
+# $Id: kpsewhich.test 46567 2018-02-07 22:59:19Z karl $
 # Copyright 2018 Karl Berry <tex-live@tug.org>
 # Copyright 2010-2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -18,10 +18,12 @@ TEXINPUTS=$srcdir/../tests/texmf \
 TEXINPUTS=$srcdir/../tests/texmf \
   ./kpsewhich --casefold-search Plain.TeX || exit 1
 #
-TEXINPUTS=$srcdir/../tests/texmf \
-  ./kpsewhich --no-casefold-search --all Plain.TeX && exit 1
-TEXINPUTS=$srcdir/../tests/texmf \
-  ./kpsewhich --no-casefold-search Plain.TeX && exit 1
+# These runs will succeed on case-insensitive (file)systems, so don't
+# run them.
+#TEXINPUTS=$srcdir/../tests/texmf \
+#  ./kpsewhich --no-casefold-search --all Plain.TeX && exit 1
+#TEXINPUTS=$srcdir/../tests/texmf \
+#  ./kpsewhich --no-casefold-search Plain.TeX && exit 1
 
 TEXINPUTS=$srcdir/../tests/texmf \
   ./kpsewhich --all plain || exit 1

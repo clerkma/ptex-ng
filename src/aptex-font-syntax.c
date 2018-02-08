@@ -95,7 +95,7 @@ void aptex_validate_regx_fontspec (char * spec)
     goto fail;
   }
 
-  reg_res = regexec(&regex, av[1], 0, NULL, 0);
+  reg_res = regexec(&regex, spec, 0, NULL, 0);
 
   if (!reg_res)
   {
