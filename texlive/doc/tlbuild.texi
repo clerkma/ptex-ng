@@ -1,21 +1,21 @@
 \input texinfo
 @setfilename tlbuild.info
 
-@set version 2017
-@set month-year April 2017
+@set version 2018
+@set month-year February 2018
 
 @set mytitle Building @TeX{} Live (@value{version})
 @settitle @value{mytitle}
 
 @macro TL
-@TeX{} Live
+@TeX{}@tie{}Live
 @end macro
 
 @copying
 This file documents the @TL{} build system and more.
 
 @noindent
-Copyright @copyright{} 2016--2017 Karl Berry.@*
+Copyright @copyright{} 2016--2018 Karl Berry.@*
 Copyright @copyright{} 2013--2015 Karl Berry & Peter Breitenlohner.
 
 Permission is granted to make and distribute verbatim copies of this
@@ -1372,8 +1372,8 @@ installed independently, but are included on the TL DVD together with
 their support files.
 
 
-@node Extending @TeX{} Live
-@section Extending @TeX{} Live
+@node Extending @TL{}
+@section Extending @TL{}
 
 @cindex extending @TL{}
 @cindex adding to @TL{}
@@ -1416,10 +1416,9 @@ its name @file{@var{prog}} to the M4 list @code{kpse_utils_pkgs} in
 
 @pindex withenable.ac@r{, for new modules}
 @findex KPSE_ENABLE_PROG
-In either case, apart from the program sources and build system
-(@file{configure.ac} and @file{Makefile.am}), the subdirectory
-@file{texk/@var{prog}} or @file{utils/@var{prog}} must provide a
-fragment @file{ac/withenable.ac} that contains the M4 macro
+In either case, the subdirectory @file{texk/@var{prog}} or
+@file{utils/@var{prog}} must provide a fragment
+@file{ac/withenable.ac} that contains the M4 macro
 @code{KPSE_ENABLE_PROG} defined in @file{m4/kpse-setup.m4} with
 @code{@var{prog}} as the mandatory first argument and three optional
 arguments:
@@ -1432,14 +1431,65 @@ built without the configure option @code{--enable-@var{prog}},
 @code{native} if cross compilation is not possible, @code{x} if the
 program requires X11 libraries);
 
-@item and a comment added to the help text for the @code{configure}
+@item a comment added to the help text for the @code{configure}
 option @code{--enable-@var{prog}} or @code{--disable-@var{prog}}.
 @end enumerate
 
 If the module requires specific configure options to be seen at the
-top-level, they should be defined in an additional fragment
+top level, they should be defined in an additional fragment
 @file{ac/@var{prog}.ac} included from @file{ac/withenable.ac} and
 @file{configure.ac}.
+
+Usually, the new program is maintained somewhere outside of @TL{}.  In
+that case, we put the upstream sources into a subdirectory
+@file{@var{prog}-src} (e.g., @file{utils/newprog/newprog-src}).  We do
+not run @code{configure} in this original @code{...-src} directory,
+only in our own directory, but we do compile using the source files in
+@code{...-src}.
+
+So, these are the files that we must generally create:
+
+@table @file
+@item ac/withenable.ac
+The @code{KPSE_ENABLE_PROG} call just explained.
+
+@item configure.ac
+@itemx Makefile.am
+By merging the contents of the original @file{configure.ac} (if
+provided) and a comparable program already in TL.  There is no magic
+recipe, it's necessary to think about needs to be done in the original
+vs.@: in @TL{}.
+
+@item TLpatches/TL-Changes
+Actions taken after getting the original source tree; typically
+removal of derived or unused common files.
+
+@item TLpatches/patch-...
+If any changes are needed to the original sources, record the patches
+here so they can be applied next time. And send them upstream so that
+perhaps they won't have to be.
+
+@item ChangeLog
+Record all TL-specific changes, now and in the future.
+
+@end table
+
+Then, run GNU @code{autoreconf} in the new directory (@pxref{Build
+system tools}).  After that works, @code{svn add} the necessary files,
+notably @file{Makefile.in aclocal.m4 configure}, and @code{svn:ignore}
+the Automake cache @file{autom4te.cache}.  (This is so people checking
+out the TL source tree do not have to run any autotools, but can
+simply run @code{configure}.)
+
+Then, run the TL tool @code{reautoconf} in the top-level TL
+@code{source/} directory, to incorporate the new program into the
+build tree.
+
+Then, run (and rerun) a build until the program compiles and tests
+successfully, probably involving rerunning autoreconf in the source
+directory, @code{make} in the build directory, etc.
+
+After final success, don't forget to commit.
 
 
 @node Adding a new generic library module
@@ -2430,6 +2480,146 @@ solve any problems; depending on warning options, it may only hide
 them.  Therefore such casts should be avoided whenever possible and
 otherwise must be carefully analyzed to make sure that they cannot
 cause the modification of quantities supposed to be constant.
+
+
+@node Continuous Integration
+@chapter Continuous Integration
+
+@cindex ci
+@cindex continuous integration
+
+The sources of @TL{} are subjected to continuous integration testing on
+Travis-CI (@url{https://travis-ci.org/TeX-Live/texlive-source}) via a
+git-svn mirror of the sources that is pushed to Github
+(@url{https://github.com/TeX-Live/texlive-source}). The git-svn mirror
+is updated (currently) at a 30min interval and only the last commit
+pushed is tested on Travis-CI.
+
+@subheading Transfer from Subversion to Github
+
+Git-svn (@url{https://git-scm.com/docs/git-svn}) is used to check out
+the subtree @code{Build/source} of the Subversion repository. The author
+index file used is not maintained in Git or Subversion but provided on
+demand. 
+
+TODO what should we do here with the author index file? It contains a
+mapping from subversion names to name/email as shown in git.
+
+The initial checkout was done by invocing
+@code{git svn --authors-file usermap clone svn://USER@tug.org/texlive/trunk/Build/source}
+where the @code{usermap} file maps subversion user names to name and
+emails of the authors. 
+
+TODO should we use anonymous checkout here? Should be possible!
+
+In the following we will refer with @emph{admin} to a user who has
+read/write access to the \TL{} subversion repository, and an
+administrator of the \@code{TeX-Live} Team on Github. The above initial
+checkout has been carried out by @emph{admin} on the server
+@code{texlive.info}. 
+
+On Github (@url{https://github.com/}) a new git repository named
+@code{texlive-source} was created by @emph{admin} within the
+@code{TeX-Live} organization (@url{https://github.com/TeX-Live/}), the
+remote added to the checkout with
+@code{git remote add origin git@github.com:TeX-Live/texlive-source.git}.
+
+To automate the update on Github, a new ssh key was generated and added
+to the @code{texlive-source} repository on Github as deployment
+key. This way pushes using this key can only go to the
+@code{texlive-source} repository and not anywhere else.
+
+The usage of @code{git-svn} requires a strict discipline to keep a
+linear history in the master branch. Since we are aiming at a pure
+mirror facility, we have decided to further restrict the @code{master}
+branch of the @code{texlive-source} repository on Github to changes by
+@emph{admin}.
+
+This setup allows other developers to branch of @code{master} and
+push their branches to the Github repository, but all updates need to
+from the local @code{master} (not the one on Github) to Subversion and
+back to @code{master} on @code{texlive.info} and from there to Github.
+See below for setup for developers.
+
+@subheading Automatic update of the Git mirror
+
+@emph{admin} has installed a cron job on @code{texlive.info} running
+every 30min which basically runs @code{git svn rebase} and @code{git
+push} in the @code{master} branch of the checkout. The first command
+fetches the changes from the Subversion repository and updates the
+@code{master} branch with them, the second one pushes changes (if
+available) to Github. 
+
+@subheading CI testing on Travis-CI
+
+The @code{source} tree of \TL{} already contains a file
+@code{.travis.yml} which controls the automatic testing on
+Travis-CI. @emph{admin} has registered to Travis-CI and allowed access
+to the Github's @code{TeX-Live} organization's @code{texlive-source}
+repository. The default settings are to build the last commit of each
+push. No further action is necessary on Travis-CI.
+
+In case changes have been pushed during the cron job mentioned above,
+Travis-CI will automatically checkout the last pushed commit and try
+building it.
+
+@comment
+@comment The following needs improvement
+@comment
+@comment @subheading Developer setup for Git/Subversion
+@comment 
+@comment In case a developer of code in the @TL{} source code wants to use the CI
+@comment testing facility, the following steps are necessary for initialization:
+@comment 
+@comment @itemize @bullet
+@comment @item
+@comment Initial @code{git-svn} checkout as laid out above, replacing
+@comment @code{USER} with the Subversion user name. This initial checkout might
+@comment take quite some time as the whole history has to be parsed. In case the
+@comment checkout is interrupted, change into the already created folder and call
+@comment @code{git svn fetch} to continue pulling from the remote until all
+@comment changes have been fetched.
+@comment 
+@comment @item
+@comment Adding the Git remote as laid out above. After that it is also necessary
+@comment to set the upstream for the @code{master} branch with
+@comment @code{git branch --set-upstream-to=origin/master master} followed by a
+@comment @code{git pull}. The last command will probably not fetch anything since
+@comment but update the local information about availability.
+@comment 
+@comment @end itemize
+@comment 
+@comment After this development can be done as follows:
+@comment 
+@comment @itemize @bullet
+@comment @item
+@comment Create a new branch based on @code{master}: @code{git checkout -b feature}
+@comment and develop the new features in this branch.
+@comment 
+@comment @item
+@comment Pushing the branch to Github will kick of automatic CI testing on this
+@comment branch, too.
+@comment 
+@comment @item
+@comment When the feature is ready, first the branch @code{feature} needs to be
+@comment rebased onto current @code{master} with @code{git rebase master}, then
+@comment merged into @code{master}, followed by a submission to the Subversion
+@comment repository via @code{git svn dcommit}. Don't push to master on Github
+@comment (it is anyway protected), your changes will come in in due time via a
+@comment pull on master.
+@comment 
+@comment @item
+@comment After the branch is included in master, optionally delete the local and
+@comment rmeote branch @code{feature}.
+@comment 
+@comment @end itemize
+@comment 
+@comment The above method is the standards and safest method, but there is an
+@comment alternative way by first pulling from Github, and then tricking git-svn
+@comment into believing that everything has been fetched from Subversion
+@comment already. This alternative method is explained XXXXXXXXX (my BLOG?)
+@comment 
+@comment 
 
 @c made from pod doc.
 @include tlbuild-incl/install-tl.texi
