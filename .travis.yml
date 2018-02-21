@@ -6,6 +6,11 @@ compiler:
 matrix:
     include:
         - os: linux
+            addons:
+		apt:
+		    packages:
+			- info
+			- bison
         - os: osx
           osx_image: xcode9.1
 
