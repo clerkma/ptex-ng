@@ -1,4 +1,4 @@
-$Id: README 46577 2018-02-09 05:18:14Z kakuto $
+$Id: README 46714 2018-02-22 22:32:26Z kakuto $
 Copyright 2006-2018 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -59,7 +59,7 @@ dvipos - maintained here, by us
 
 dvipsk - maintained here, by us
 
-dvisvgm 2.3.2 - checked 09feb18
+dvisvgm 2.3.3 - checked 21feb18
   http://dvisvgm.bplaced.net/Downloads
 
 gregorio 5.0.1 - checked 16apr17
@@ -69,7 +69,7 @@ gsftopk - from Paul Vojta's xdvi?
 
 kpathsea - maintained here, by us
 
-lcdf-typetools 2.106 - checked 22jun16
+lcdf-typetools 2.107 - checked 22feb18
   http://www.lcdf.org/type/
 
 makeindexk - maintained here, by us
