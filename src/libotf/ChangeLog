@@ -1,3 +1,11 @@
+2018-02-08  handa  <handa@gnu.org>
+
+	Version 0.9.16 released.
+
+	* src/otf.h (LIBOTF_VERSION): Changed to "0.9.16".
+
+	* src/Makefile.am (libotf_la_LDFLAGS): New variable.
+
 2018-01-24  handa  <handa@gnu.org>
 
 	* configure.ac: Change versions to 0.9.16.

@@ -30,14 +30,14 @@ extern "C" {
 #endif
 
 /* Version name of this library.  */
-#define LIBOTF_VERSION "0.9.15"
+#define LIBOTF_VERSION "0.9.16"
 
 /* Major version number.  */
 #define LIBOTF_MAJOR_VERSION 0
 /* Minor version number.  */
 #define LIBOTF_MINOR_VERSION 9
 /* Release (i.e. patch level) number.  */
-#define LIBOTF_RELEASE_NUMBER 15
+#define LIBOTF_RELEASE_NUMBER 16
 
 /***
     Table of contents:

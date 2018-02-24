@@ -31,4 +31,6 @@ libotf_la_SOURCES = \
 	otfdrive.c \
 	internal.h
 
+libotf_la_LDFLAGS = -version-info 1:0:0
+
 include_HEADERS = otf.h
