@@ -24,7 +24,7 @@
 #define KPATHSEA_C_AUTO_H
 
 /* kpathsea: the version string. */
-#define KPSEVERSION "kpathsea version 6.2.4/dev"
+#define KPSEVERSION "kpathsea version 6.3.0/dev"
 
 /* Define to 1 if the `closedir' function returns void instead of `int'. */
 /* #undef CLOSEDIR_VOID */
@@ -79,7 +79,7 @@
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `mkstemp' function. */
-/* #undef HAVE_MKSTEMP */
+#define HAVE_MKSTEMP 1
 
 /* Define to 1 if you have the `mktemp' function. */
 #define HAVE_MKTEMP 1
@@ -89,6 +89,9 @@
 
 /* Define to 1 if you have the `putenv' function. */
 #define HAVE_PUTENV 1
+
+/* Define to 1 if you have the <pwd.h> header file. */
+#define HAVE_PWD_H 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -127,6 +130,9 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#define HAVE_UNISTD_H 1
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
@@ -169,7 +175,7 @@
 #define KPSE_PACKAGE_NAME "Kpathsea"
 
 /* Define to the full name and version of this package. */
-#define KPSE_PACKAGE_STRING "Kpathsea 6.2.4/dev"
+#define KPSE_PACKAGE_STRING "Kpathsea 6.3.0/dev"
 
 /* Define to the one symbol short name of this package. */
 #define KPSE_PACKAGE_TARNAME "kpathsea"
@@ -178,7 +184,7 @@
 #define KPSE_PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define KPSE_PACKAGE_VERSION "6.2.4/dev"
+#define KPSE_PACKAGE_VERSION "6.3.0/dev"
 
 /* The size of `long', as computed by sizeof. */
 #define SIZEOF_LONG 8
@@ -187,7 +193,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define KPSE_VERSION "6.2.4/dev"
+#define KPSE_VERSION "6.3.0/dev"
 
 /* Define to 1 if we need (v)snprintf wrapper functions. */
 /* #undef WRAP_SNPRINTF */

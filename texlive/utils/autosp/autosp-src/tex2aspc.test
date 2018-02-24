@@ -26,3 +26,4 @@ rm -f quod4.aspc
 
 echo && echo "*** diff quod4.aspc tests/quod4.aspc"
 diff quod4.aspc "$test_srcdir"/tests/quod4.aspc || exit 1
+

@@ -1,4 +1,4 @@
-# $Id: cnf-to-paths.awk 23442 2011-08-07 22:50:24Z karl $
+# $Id: cnf-to-paths.awk 46719 2018-02-23 19:30:01Z karl $
 # cnf-to-paths.awk - convert texmf.cnf assignments to paths.h #define's.
 # Public domain.  Originally written 2011, Karl Berry.
 
@@ -14,7 +14,10 @@
   # 
   # 1) definitions referring to SELFAUTO*, which we want to keep.  In
   # particular, this is how the compile-time TEXMFCNF gets defined and
-  # thus how texmf.cnf gets found.
+  # thus how texmf.cnf gets found.  In fact, TEXMFCNF is the only
+  # relevant compile-time value at all, and since its value is not used
+  # from texmf.cnf, we could simplify this whole process in both
+  # directions. Maybe someday.
   # 
   # 2) definitions starting with a /, which we also want to keep.  Here
   # we assume a distro maintainer has changed a variable, e.g.,
@@ -25,7 +28,7 @@
   # That way, the binaries don't get changed just because we change
   # definitions in texmf.cnf.
   # 
-  # The definition of DEFAULT_TEXMF (and other variables)
+  # The definition of DEFAULT_TEXMFROOT (and other variables)
   # that winds up in the final paths.h will not be used.
   
   # Extract the identifier and the value from the line.  Since
