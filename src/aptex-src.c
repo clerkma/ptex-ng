@@ -2065,11 +2065,13 @@ static integer kcatcodekey (integer c)
 
     if (block == 0xa0)
     {
+      /* Fullwidth ASCII variants  except for U+FF01..FF0F, U+FF1A..FF20, U+FF3B..FF40, U+FF5B..FF5E */
       if ((FULLWIDTH_DIGIT_0 <= c && c <= FULLWIDTH_DIGIT_9)
         || (FULLWIDTH_CAPITAL_A <= c && c <= FULLWIDTH_CAPITAL_Z)
         || (FULLWIDTH_SMALL_A <= c && c <= FULLWIDTH_SMALL_Z))
         return 0x1FE;
 
+      /* Halfwidth Katakana variants  except for U+FF65, U+FF70, U+FF9E..FF9F */
       if ((HALFWIDTH_KATAKANA_WO <= c && c <= HALFWIDTH_KATAKANA_SMALL_TSU)
         || (HALFWIDTH_KATAKANA_A <= c && c <= HALFWIDTH_KATAKANA_N))
         return 0x1FF;
@@ -3834,7 +3836,7 @@ static void do_initex (void)
     for (k = 0x10E; k <= 0x113; k++)
       kcat_code(k) = kanji;
 
-    kcat_code(0x1FD) = not_cjk; // { Latin-1 Letters }
+    /* kcat_code(0x1FD) = not_cjk; */ // { Latin-1 Letters }
     kcat_code(0x1FE) = kana; // { Fullwidth digit and latin alphabet }
     kcat_code(0x1FF) = kana; // { Halfwidth katakana }
   }
@@ -16513,7 +16515,7 @@ static pointer str_toks (pool_pointer b)
 
   str_room(1);
   p = temp_head;
-  link(p) = 0;
+  link(p) = null;
   k = b;
 
   while (k < pool_ptr)
