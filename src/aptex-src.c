@@ -4868,6 +4868,7 @@ start_of_TEX:
         no_new_control_sequence = false;
         primitive("lastnodetype", last_item, last_node_type_code);
         primitive("lastnodechar", last_item, last_node_char_code);
+        primitive("lastnodesubtype", last_item, last_node_subtype_code);
         primitive("eTeXversion", last_item, eTeX_version_code);
         primitive("eTeXrevision", convert, eTeX_revision_code);
         primitive("everyeof", assign_toks, every_eof_loc);
@@ -11262,6 +11263,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("lastnodechar");
           break;
 
+        case last_node_subtype_code:
+          print_esc("lastnodesubtype");
+          break;
+
         case eTeX_version_code:
           print_esc("eTeXversion");
           break;
@@ -15164,7 +15169,7 @@ static void scan_something_internal (small_number level, boolean negative)
 
         find_effective_tail();
 
-        if (cur_chr == last_node_type_code)
+        if ((cur_chr == last_node_type_code) || (cur_chr == last_node_subtype_code))
         {
           cur_val_level = int_val;
 
@@ -15235,6 +15240,10 @@ static void scan_something_internal (small_number level, boolean negative)
                 cur_val = unset_node;
               break;
 
+            case last_node_subtype_code:
+              cur_val = subtype(tx);
+              break;
+
             case last_node_char_code:
               ignore_font_kerning();
               break;
@@ -15257,6 +15266,10 @@ static void scan_something_internal (small_number level, boolean negative)
 
             case last_node_type_code:
               cur_val = last_node_type;
+              break;
+
+            case last_node_subtype_code:
+              cur_val = last_node_subtype;
               break;
           }
       }
@@ -27925,6 +27938,7 @@ static void fire_up (pointer c)
   last_penalty = 0;
   last_kern = 0;
   last_node_type = -1;
+  last_node_subtype = -1;
   page_depth = 0;
   page_max_depth = 0;
 
@@ -28037,6 +28051,7 @@ continu:
       last_node_type = type(p);
     else
       last_node_type = type(p) - 1; // {no |disp_node| in a vertical list}
+    last_node_subtype = subtype(p);
 
     if (type(p) == glue_node)
     {

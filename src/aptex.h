@@ -681,6 +681,7 @@ EXTERN pointer last_glue;                     // {used to implement \.{\\lastski
 EXTERN integer last_penalty;                  // {used to implement \.{\\lastpenalty}}
 EXTERN scaled last_kern;                      // {used to implement \.{\\lastkern}}
 EXTERN integer last_node_type;                // {used to implement \.{\\lastnodetype}}
+EXTERN integer last_node_subtype;             // {used to implement \.{\\lastnodesubtype}}
 EXTERN integer insert_penalties;              // {sum of the penalties for held-over insertions}
 
 EXTERN boolean output_active;                 // {are we in the midst of an output routine?}
