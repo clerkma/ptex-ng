@@ -7,7 +7,7 @@
 #define PTEXENC_C_AUTO_H
 
 /* ptexenc: the version string. */
-#define PTEXENCVERSION "ptexenc version 1.3.6/dev"
+#define PTEXENCVERSION "ptexenc version 1.3.6"
 
 /* Define to 1 if the `closedir' function returns void instead of `int'. */
 /* #undef CLOSEDIR_VOID */
@@ -140,7 +140,7 @@
 #define PTEXENC_PACKAGE_NAME "ptexenc"
 
 /* Define to the full name and version of this package. */
-#define PTEXENC_PACKAGE_STRING "ptexenc 1.3.6/dev"
+#define PTEXENC_PACKAGE_STRING "ptexenc 1.3.6"
 
 /* Define to the one symbol short name of this package. */
 #define PTEXENC_PACKAGE_TARNAME "ptexenc"
@@ -149,13 +149,13 @@
 #define PTEXENC_PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PTEXENC_PACKAGE_VERSION "1.3.6/dev"
+#define PTEXENC_PACKAGE_VERSION "1.3.6"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define PTEXENC_VERSION "1.3.6/dev"
+#define PTEXENC_VERSION "1.3.6"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE
