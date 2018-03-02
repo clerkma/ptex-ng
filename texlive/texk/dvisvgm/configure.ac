@@ -1,4 +1,4 @@
-# $Id: configure.ac 46352 2018-01-17 22:50:15Z karl $
+# $Id: configure.ac 46783 2018-03-02 03:40:00Z karl $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
@@ -70,7 +70,8 @@ AS_IF([test "x$have_libgs" = "xno"],
 		[AC_MSG_WARN(PostScript support disabled)])])
 fi
 
-if test "$HAVE_LIBGS" -eq 0; then
+if test -z "$HAVE_LIBGS" || test "$HAVE_LIBGS" -eq 0; then
+  AC_MSG_NOTICE([not linking to libgs, trying to arrange for dynamic loading])
   # Windows (native or MinGW32) has neither <dlfcn.h> nor dlopen().
   if test "x$kpse_cv_have_win32" = xno; then
     # FreeBSD neither has nor requires libdl.
@@ -105,7 +106,7 @@ else
 		[gsversion=`cat gsversion`], [gsversion=], [gsversion=unknown])
 	AC_MSG_RESULT("$gsversion")
 	rm -f gsversion
-	if test "$gsversion" -lt 831; then
+	if test -z "$gsversion" || "$gsversion" -lt 831; then
 		# current Ghostscript API was introduced in version 8.31
 		# older versions are not supported
 		AC_DEFINE(DISABLE_GS, 1, [Set to 1 if PostScript support should be disabled])
