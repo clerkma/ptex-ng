@@ -12,6 +12,13 @@ matrix:
             - info
             - bison
       script: ./build-aptex.sh
+    - os: linux
+      script:
+        - wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip
+        - unzip android-ndk-r16b-linux-x86_64.zip
+        - export PATH=`pwd`/android-ndk-r16b:$PATH
+        - cd build-android
+        - ./build-android-port.sh
     - os: osx
       osx_image: xcode9.1
       script: ./build-aptex.sh
