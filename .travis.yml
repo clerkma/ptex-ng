@@ -11,6 +11,7 @@ matrix:
           packages:
             - info
             - bison
+            - texi2html
       script: ./build-aptex.sh
     - os: linux
       script:
