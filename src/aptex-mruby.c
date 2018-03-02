@@ -25,6 +25,7 @@
 #include <kpathsea/tex-file.h>
 #include <kpathsea/tex-hush.h>
 #include <kpathsea/tex-make.h>
+#include <kpathsea/lib.h>
 #include <kpathsea/variable.h>
 
 #include <ptexenc/ptexenc.h>
