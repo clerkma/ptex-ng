@@ -1,17 +1,14 @@
 language: c
 
 compiler:
-    - gcc
+  - gcc
+
+before_script:
+  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt install bison texi2html; fi
 
 matrix:
   include:
     - os: linux
-      addons:
-        apt:
-          packages:
-            - info
-            - bison
-            - texi2html
       script: ./build-aptex.sh
     - os: linux
       script:
