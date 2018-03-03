@@ -10,16 +10,6 @@ matrix:
   include:
     - os: linux
       script: ./build-aptex.sh
-    - os: linux
-      script:
-        - echo "Downloading Android NDK ..."
-        - wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip
-        - echo "Extracting Android NDK ..."
-        - unzip -qq android-ndk-r16b-linux-x86_64.zip
-        - export PATH=`pwd`/android-ndk-r16b:$PATH
-        - cd build-android
-        - echo "Building ApTeX ..."
-        - ./build-android-port.sh
     - os: osx
       osx_image: xcode9.1
       script: ./build-aptex.sh
