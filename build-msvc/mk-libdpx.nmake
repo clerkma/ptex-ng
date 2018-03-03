@@ -1,7 +1,7 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -c -O2 -Oy -DHAVE_CONFIG_H -DWIN32 -DNO_KPSE_DLL -DLIBDPX -Ilibdpx -I. -Izlib -I../texlive/libs/zlib/zlib-src -I../texlive/libs/libpng/libpng-src -I../texlive/texk/ -I../src/libdpx/ng
-ROOT = ../src/libdpx
+CFLAGS = -nologo -c -O2 -Oy -DHAVE_CONFIG_H -DWIN32 -DNO_KPSE_DLL -Ilibdpx -I. -Izlib -I../texlive/libs/zlib/zlib-src -I../texlive/libs/libpng/libpng-src -I../texlive/texk/ -I../texlive/texk/dvipdfm-x -I../src/libdpx/ng
+ROOT = ../texlive/texk/dvipdfm-x
 OBJS = agl.obj bmpimage.obj cff.obj cff_dict.obj cid.obj cidtype0.obj cidtype2.obj cmap.obj cmap_read.obj cmap_write.obj cs_type2.obj dpxconf.obj dpxcrypt.obj dpxfile.obj dpxutil.obj dvi.obj dvipdfmx.obj epdf.obj error.obj fontmap.obj jp2image.obj jpegimage.obj mem.obj mfileio.obj mpost.obj numbers.obj otl_conf.obj otl_opt.obj pdfcolor.obj pdfdev.obj pdfdoc.obj pdfdraw.obj pdfencoding.obj pdfencrypt.obj pdffont.obj pdfnames.obj pdfobj.obj pdfparse.obj pdfresource.obj pdfximage.obj pkfont.obj pngimage.obj pst.obj pst_obj.obj sfnt.obj spc_color.obj spc_dvipdfmx.obj spc_dvips.obj spc_html.obj spc_misc.obj spc_pdfm.obj spc_tpic.obj spc_util.obj spc_xtx.obj specials.obj subfont.obj t1_char.obj t1_load.obj tfm.obj truetype.obj tt_aux.obj tt_cmap.obj tt_glyf.obj tt_gsub.obj tt_post.obj tt_table.obj type0.obj type1.obj type1c.obj unicode.obj vf.obj xbb.obj
 
 all: $(OBJS)
@@ -38,9 +38,9 @@ dpxfile.obj: $(ROOT)/dpxfile.c
 dpxutil.obj: $(ROOT)/dpxutil.c
 	$(CC) $(CFLAGS) $(ROOT)/dpxutil.c
 dvi.obj: $(ROOT)/dvi.c
-	$(CC) $(CFLAGS) $(ROOT)/dvi.c
+	$(CC) $(CFLAGS) -DLIBDPX $(ROOT)/dvi.c
 dvipdfmx.obj: $(ROOT)/dvipdfmx.c
-	$(CC) $(CFLAGS) $(ROOT)/dvipdfmx.c
+	$(CC) $(CFLAGS) -DLIBDPX $(ROOT)/dvipdfmx.c
 epdf.obj: $(ROOT)/epdf.c
 	$(CC) $(CFLAGS) $(ROOT)/epdf.c
 error.obj: $(ROOT)/error.c
@@ -80,7 +80,7 @@ pdffont.obj: $(ROOT)/pdffont.c
 pdfnames.obj: $(ROOT)/pdfnames.c
 	$(CC) $(CFLAGS) $(ROOT)/pdfnames.c
 pdfobj.obj: $(ROOT)/pdfobj.c
-	$(CC) $(CFLAGS) $(ROOT)/pdfobj.c
+	$(CC) $(CFLAGS) -DLIBDPX $(ROOT)/pdfobj.c
 pdfparse.obj: $(ROOT)/pdfparse.c
 	$(CC) $(CFLAGS) $(ROOT)/pdfparse.c
 pdfresource.obj: $(ROOT)/pdfresource.c
@@ -130,7 +130,7 @@ truetype.obj: $(ROOT)/truetype.c
 tt_aux.obj: $(ROOT)/tt_aux.c
 	$(CC) $(CFLAGS) $(ROOT)/tt_aux.c
 tt_cmap.obj: $(ROOT)/tt_cmap.c
-	$(CC) $(CFLAGS) $(ROOT)/tt_cmap.c
+	$(CC) $(CFLAGS) -DLIBDPX $(ROOT)/tt_cmap.c
 tt_glyf.obj: $(ROOT)/tt_glyf.c
 	$(CC) $(CFLAGS) $(ROOT)/tt_glyf.c
 tt_gsub.obj: $(ROOT)/tt_gsub.c
@@ -140,14 +140,14 @@ tt_post.obj: $(ROOT)/tt_post.c
 tt_table.obj: $(ROOT)/tt_table.c
 	$(CC) $(CFLAGS) $(ROOT)/tt_table.c
 type0.obj: $(ROOT)/type0.c
-	$(CC) $(CFLAGS) $(ROOT)/type0.c
+	$(CC) $(CFLAGS) -DLIBDPX $(ROOT)/type0.c
 type1.obj: $(ROOT)/type1.c
-	$(CC) $(CFLAGS) $(ROOT)/type1.c
+	$(CC) $(CFLAGS) -DLIBDPX $(ROOT)/type1.c
 type1c.obj: $(ROOT)/type1c.c
 	$(CC) $(CFLAGS) $(ROOT)/type1c.c
 unicode.obj: $(ROOT)/unicode.c
 	$(CC) $(CFLAGS) $(ROOT)/unicode.c
 vf.obj: $(ROOT)/vf.c
-	$(CC) $(CFLAGS) $(ROOT)/vf.c
+	$(CC) $(CFLAGS) -DLIBDPX $(ROOT)/vf.c
 xbb.obj: $(ROOT)/xbb.c
 	$(CC) $(CFLAGS) $(ROOT)/xbb.c
