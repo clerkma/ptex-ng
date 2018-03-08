@@ -1,4 +1,4 @@
-$Id: README 46228 2018-01-05 23:02:24Z karl $
+$Id: README 46883 2018-03-08 01:13:13Z preining $
 Public domain.  Originally written 2005 by Karl Berry.
 
 For a high-level overview of building TeX Live, see
@@ -43,6 +43,11 @@ i386-freebsd, amd64-freebsd:
 
 i386-linux: Debian 7.
 
+i386-linuxmusl:
+  Alpine 3.1 Docker image with musl libc 1.1.5
+  Binaries are taken from the CI testing on travis-ci, see the
+  source/.travis.yaml file for details on how to build.
+
 i386-openbsd, amd64-openbsd:
   e.g., see CONFIGURE_ARGS in the Makefile in
   http://cvsweb.openbsd.org/cgi-bin/cvsweb/ports/print/texlive/base/
@@ -75,4 +80,10 @@ x86_64-darwinlegacy, i386-darwin, powerpc-darwin:
     but will only be used for < 10.10 since x86_64-darwin covers newer.
   PPC binaries made with gcc-4.2 and Intel binaries with clang-3.7.
 
-x86_64-linux: Debian 6.0 (Squeeze), Feb 2009.
+x86_64-linux: Debian 8.0 (Jessie), Apr 2015.
+
+x86_64-linuxmusl:
+  Alpine 3.1 Docker image with musl libc 1.1.5
+  Binaries are taken from the CI testing on travis-ci, see the
+  source/.travis.yaml file for details on how to build.
+

@@ -1,4 +1,4 @@
-## $Id: Makefile.am 46498 2018-01-31 01:11:59Z kakuto $
+## $Id: Makefile.am 46881 2018-03-08 00:08:19Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -50,16 +50,23 @@ libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-object-private.hh \
 	@HARFBUZZ_TREE@/src/hb-open-file-private.hh \
 	@HARFBUZZ_TREE@/src/hb-open-type-private.hh \
-	@HARFBUZZ_TREE@/src/hb-ot-cbdt-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-color-cbdt-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-color-colr-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-color-cpal-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-hdmx-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-head-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-hhea-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-hmtx-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-kern-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-layout-base-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-maxp-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-name-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-os2-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-os2-unicode-ranges.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-post-macroman.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-post-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-khmer-private.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-myanmar-private.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-var-mvar-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-tag.cc \
 	@HARFBUZZ_TREE@/src/hb-private.hh \
@@ -74,6 +81,13 @@ libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-shaper-private.hh \
 	@HARFBUZZ_TREE@/src/hb-shaper.cc \
 	@HARFBUZZ_TREE@/src/hb-string-array.hh \
+	@HARFBUZZ_TREE@/src/hb-subset-glyf.cc \
+	@HARFBUZZ_TREE@/src/hb-subset-glyf.hh \
+	@HARFBUZZ_TREE@/src/hb-subset-input.cc \
+	@HARFBUZZ_TREE@/src/hb-subset-plan.cc \
+	@HARFBUZZ_TREE@/src/hb-subset-plan.hh \
+	@HARFBUZZ_TREE@/src/hb-subset-private.hh \
+	@HARFBUZZ_TREE@/src/hb-subset.h \
 	@HARFBUZZ_TREE@/src/hb-unicode-private.hh \
 	@HARFBUZZ_TREE@/src/hb-unicode.cc \
 	@HARFBUZZ_TREE@/src/hb-utf-private.hh \
