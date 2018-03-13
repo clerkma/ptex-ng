@@ -1,4 +1,4 @@
-$Id: README 46714 2018-02-22 22:32:26Z kakuto $
+$Id: README 46939 2018-03-12 23:07:15Z kakuto $
 Copyright 2006-2018 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -62,8 +62,8 @@ dvipsk - maintained here, by us
 dvisvgm 2.3.3 - checked 21feb18
   http://dvisvgm.bplaced.net/Downloads
 
-gregorio 5.0.1 - checked 16apr17
-  https://github.com/gregorio-project/gregorio/releases/
+gregorio 5.1.0 - checked 12mar18
+  CTAN/support/gregoriotex/gregorio-5.1.0.zip
 
 gsftopk - from Paul Vojta's xdvi?
 
