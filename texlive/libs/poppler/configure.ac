@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 46373 2018-01-18 23:12:02Z karl $
+dnl $Id: configure.ac 46958 2018-03-14 01:50:06Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2018 Karl Berry <tex-live@tug.org>
@@ -69,21 +69,27 @@ AC_ARG_ENABLE([fixedpoint],
 fi
 ])
 
-AC_ARG_ENABLE([dctdecoder],
-              AS_HELP_STRING([--enable-dctdecoder],
-                             [use dctdecoder]),
-              [if test "x$enableval" = xlibjpeg; then
-  AC_DEFINE([HAVE_DCT_DECODER], 1, [Do we have any DCT decoder?.])
-fi
-])
 
-AC_ARG_ENABLE([libopenjpeg],
-              AS_HELP_STRING([--enable-libopenjpeg],
-                             [use openjpeg decoder]),
-              [if test "x$enableval" = xopenjpeg2; then
-  AC_DEFINE([HAVE_JPX_DECODER], 1, [Do we have any JPX decoder?.])
-fi
-])
+# For TL, we just hardware DCT/JPX_DECODER to on.
+AC_DEFINE([HAVE_DCT_DECODER], 1, [Do we have any DCT decoder?])
+dnl
+dnl AC_ARG_ENABLE([dctdecoder],
+dnl               AS_HELP_STRING([--enable-dctdecoder],
+dnl                             [use dctdecoder]),
+dnl              [if test "x$enableval" = xlibjpeg; then
+dnl  AC_DEFINE([HAVE_DCT_DECODER], 1, [Do we have any DCT decoder?])
+dnl fi
+dnl ])
+
+AC_DEFINE([HAVE_JPX_DECODER], 1, [Do we have any JPX decoder?])
+dnl
+dnl AC_ARG_ENABLE([libopenjpeg],
+dnl              AS_HELP_STRING([--enable-libopenjpeg],
+dnl                              [use openjpeg decoder]),
+dnl               [if test "x$enableval" = xopenjpeg2; then
+dnl   AC_DEFINE([HAVE_JPX_DECODER], 1, [Do we have any JPX decoder?])
+dnl fi
+dnl ])
 
 dnl **** Checks for header files ****
 
