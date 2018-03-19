@@ -1,4 +1,4 @@
-## $Id: Makefile.am 46370 2018-01-18 23:05:30Z lscarso $
+## $Id: Makefile.am 47014 2018-03-18 21:59:37Z kakuto $
 ## Proxy Makefile.am to build poppler for TeX Live.
 ##
 ##   Copyright 2016-2018 Karl Berry <tex-live@tug.org>
@@ -122,6 +122,7 @@ poppler_libpoppler_a_sources = \
 	@POPPLER_TREE@/poppler/StructTreeRoot.cc \
 	@POPPLER_TREE@/poppler/UTF.cc \
 	@POPPLER_TREE@/poppler/UnicodeMap.cc \
+	@POPPLER_TREE@/poppler/UnicodeMapFuncs.cc \
 	@POPPLER_TREE@/poppler/UnicodeTypeTable.cc \
 	@POPPLER_TREE@/poppler/ViewerPreferences.cc \
 	@POPPLER_TREE@/poppler/XRef.cc \
