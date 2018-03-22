@@ -65,6 +65,8 @@
 #define PATH_MAX 1024
 #endif
 
+#ifndef _WIN32
+
 namespace {
 
 template< typename... >
@@ -98,6 +100,8 @@ inline const struct timespec& mtim(const struct stat& stbuf) {
 }
 
 }
+
+#endif
 
 //------------------------------------------------------------------------
 

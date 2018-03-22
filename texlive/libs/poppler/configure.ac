@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 46958 2018-03-14 01:50:06Z karl $
+dnl $Id: configure.ac 47052 2018-03-20 22:41:25Z kakuto $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2018 Karl Berry <tex-live@tug.org>
@@ -99,6 +99,10 @@ AC_HEADER_DIRENT
 dnl Checks for library functions (from goo/glibc.h and more).
 AC_CHECK_FUNCS([gettimeofday gmtime_r localtime_r mkstemp popen rand_r \
                 timegm strtok_r])
+
+dnl Check for struct stat needed by goo/gfile.c
+AC_CHECK_MEMBERS([struct stat.st_mtim])
+
 AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 AC_CHECK_FUNC([ftell64], [AC_CHECK_FUNCS([fseek64])])
