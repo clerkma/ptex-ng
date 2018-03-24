@@ -4037,18 +4037,19 @@ static void initialize (void)
   mode_line = 0;
   prev_graf = 0;
   shown_mode = 0;
-  page_contents = 0;
+  page_contents = empty;
   page_tail = page_head;
 
 #ifdef APTEX_EXTENSION
   if (aptex_env.flag_initex)
 #endif
-    link(page_head) = 0;
+    link(page_head) = null;
 
   last_glue = max_halfword;
   last_penalty = 0;
   last_kern = 0;
   last_node_type = -1;
+  last_node_subtype = -1;
   page_depth = 0;
   page_max_depth = 0;
 
@@ -27931,9 +27932,9 @@ static void fire_up (pointer c)
   if (last_glue != empty_flag)
     delete_glue_ref(last_glue);
 
-  page_contents = 0;
+  page_contents = empty;
   page_tail = page_head;
-  link(page_head) = 0;
+  link(page_head) = null;
   last_glue = max_halfword;
   last_penalty = 0;
   last_kern = 0;
