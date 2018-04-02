@@ -4,7 +4,7 @@ compiler:
   - gcc
 
 before_script:
-  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt install bison texi2html; fi
+  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt install bison texinfo; fi
 
 matrix:
   include:
