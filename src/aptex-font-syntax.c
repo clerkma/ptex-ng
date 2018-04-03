@@ -68,7 +68,7 @@
     """
   Check Name with Python:
     """
-      require yaml
+      import yaml
       spec = yaml.load("ot: {jfm: upjisr-h, font-name: yumin.ttf, font-features: [jp90, aalt: 2], baseline-shift: 20}")
       print(spec)
     """
@@ -78,45 +78,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "onigposix.h"
 #include "yaml.h"
-
-void aptex_validate_regx_fontspec (char * spec)
-{
-  regex_t regex;
-  int reg_res;
-  char msgbuf[100];
-
-  onig_set_default_syntax(ONIG_SYNTAX_RUBY);
-  reg_res = regcomp(&regex, "(ot:)([\\w\\-\\.]+)(\\[\\d\\])?((\\w{4})?(/\\w{4})?)?(;(\\w{4},)*(\\w{4}|\\*))?:([\\w-]+)", REG_EXTENDED);
-
-  if (reg_res) 
-  {
-    goto fail;
-  }
-
-  reg_res = regexec(&regex, spec, 0, NULL, 0);
-
-  if (!reg_res)
-  {
-    printf("REGEX MATCH.\n");
-  }
-  else if (reg_res == REG_NOMATCH)
-  {
-    printf("REGEX NO MATCH.\n");
-  }
-  else
-  {
-    regerror(reg_res, &regex, msgbuf, sizeof(msgbuf));
-    printf("FAILED %s\n", msgbuf);
-    goto fail;
-  }
-
-  regfree(&regex);
-
-fail:
-  printf("Failed to call oniguruma.\n");
-}
 
 void aptex_validate_yaml_fontspec (char * spec)
 {
