@@ -34845,7 +34845,7 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
   if (n == new_pos)
   {
     do {
-      if ((inhibit_xsp_type == inhibit_unused) || (inhibit_xsp_code(p) == 0) || (inhibit_xsp_code(p) == c))
+      if ((inhibit_xsp_type(p) == inhibit_unused) || (inhibit_xsp_code(p) == 0) || (inhibit_xsp_code(p) == c))
         goto done;
       
       incr(p);
