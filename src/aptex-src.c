@@ -121,7 +121,7 @@ static void print_aptex_version (void)
 {
   printf("Copyright 2014, 2015, 2016, 2017, 2018 Clerk Ma.\n"
     "banner: \"%s\"\n"
-    "base: Y&Y TeX 2.3.0, pTeX 3.8.0, upTeX 1.22\n"
+    "base: Y&Y TeX 2.3.0, pTeX 3.8.1, upTeX 1.23\n"
     "Compiled with %s\n"
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
@@ -14589,7 +14589,7 @@ static void scan_something_internal (small_number level, boolean negative)
         scan_int();
         q = get_inhibit_pos(tokanji(cur_val), cur_pos);
         cur_val_level = int_val;
-        cur_val = 3;
+        cur_val = inhibit_none;
 
         if (q != no_entry)
           cur_val = inhibit_xsp_type(q);
@@ -31845,10 +31845,12 @@ static void prefixed_command (void)
         {
           j = get_inhibit_pos(tokanji(n), new_pos);
 
-          if ((j != no_entry) && (cur_val > inhibit_after) && (global || cur_level == level_one))
+          if ((j != no_entry) && (cur_val > inhibit_after))
           {
-            n = 0;
-            cur_val = 0;
+            if (global || cur_level == level_one)
+              cur_val = inhibit_unused;
+            else
+              cur_val = inhibit_none;
           }
           else if (j == no_entry)
           {
@@ -31886,7 +31888,7 @@ static void prefixed_command (void)
 
           if ((j != no_entry) && (cur_val == 0) && (global || cur_level == level_one))
           {
-            define(kinsoku_base + j, 0, 0);
+            define(kinsoku_base + j, kinsoku_unused_code, 0);
           }
           else
           {
@@ -34843,7 +34845,7 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
   if (n == new_pos)
   {
     do {
-      if ((inhibit_xsp_code(p) == 0) || (inhibit_xsp_code(p) == c))
+      if ((inhibit_xsp_type == inhibit_unused) || (inhibit_xsp_code(p) == 0) || (inhibit_xsp_code(p) == c))
         goto done;
       
       incr(p);
@@ -34859,8 +34861,7 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
     do {
       if (inhibit_xsp_code(p) == 0)
         goto done1;
-
-      if (inhibit_xsp_code(p) == c)
+      else if ((inhibit_xsp_type(p) != inhibit_unused) && (inhibit_xsp_code(p) == c))
         goto done;
 
       incr(p);
@@ -34901,7 +34902,7 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
   if (n == new_pos)
   {
     do {
-      if ((kinsoku_type(p) == 0) || (kinsoku_code(p) == c))
+      if ((kinsoku_type(p) == 0) || (kinsoku_type(p) == kinsoku_unused_code) || (kinsoku_code(p) == c))
         goto done;
 
       incr(p);
@@ -34917,8 +34918,7 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
     do {
       if (kinsoku_type(p) == 0)
         goto done1;
-
-      if (kinsoku_code(p) == c)
+      else if ((kinsoku_type(p) != kinsoku_unused_code) && (kinsoku_code(p) == c))
         goto done;
 
       incr(p);

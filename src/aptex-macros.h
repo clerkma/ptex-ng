@@ -23,7 +23,7 @@
 #define pTeX_version 3
 #define pTeX_minor_version 8
 #define pTeX_revision ".0"
-#define pTeX_version_string "-p3.8.0"
+#define pTeX_version_string "-p3.8.1"
 
 #define upTeX_version 1
 #define upTeX_revision ".23"
@@ -2251,12 +2251,15 @@ while (0)
 #define inhibit_both      0 // {disable to insert space before 2byte-char and after it}
 #define inhibit_previous  1 // {disable to insert space before 2byte-char}
 #define inhibit_after     2 // {disable to insert space after 2byte-char}
+#define inhibit_none      3 // {enable to insert space before/after 2byte-char}
+#define inhibit_unused    4 // {unused entry}
 #define no_entry          1000
 #define new_pos           0
 #define cur_pos           1
 
 #define pre_break_penalty_code  1
 #define post_break_penalty_code 2
+#define kinsoku_unused_code     3
 
 #define dvi_yoko 0
 #define dvi_tate 1
