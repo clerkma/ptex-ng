@@ -39,3 +39,33 @@ Run the shell script:
 ## How to Install
 
 [TeX Wiki/pTeX-ng](https://texwiki.texjp.org/?pTeX-ng)
+
+### Windows (PowerShell)
+
+    tlmgr update --self --all
+    Invoke-WebRequest -Uri 'https://texlive.texjp.org/tltexjp-key.asc' -OutFile 'tltexjp-key.asc'
+    tlmgr key add tltexjp-key.asc
+    tlmgr repository add http://texlive.texjp.org/pretest/tltexjp tltexjp
+    tlmgr pinning add tltexjp "*"
+    tlmgr install ptex-ng
+
+### macOS
+
+    tlmgr update --self --all
+    curl -O https://texlive.texjp.org/tltexjp-key.asc
+    tlmgr key add tltexjp-key.asc
+    tlmgr repository add http://texlive.texjp.org/pretest/tltexjp tltexjp
+    tlmgr pinning add tltexjp '*'
+    tlmgr install ptex-ng
+    tlmgr path add
+
+### Linux
+
+    tlmgr update --self --all
+    wget https://texlive.texjp.org/tltexjp-key.asc
+    tlmgr key add tltexjp-key.asc
+    tlmgr repository add http://texlive.texjp.org/pretest/tltexjp tltexjp
+    tlmgr pinning add tltexjp '*'
+    tlmgr install ptex-ng
+    tlmgr path add
+
