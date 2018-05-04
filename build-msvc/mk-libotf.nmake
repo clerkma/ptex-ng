@@ -1,6 +1,6 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -c -O2 -Oy -I../src/libotf -I../src/libotf/src -Ifreetype-2.9/include
+CFLAGS = -nologo -c -O2 -Oy -I../src/libotf -I../src/libotf/src -I../texlive/libs/freetype2/freetype-src/include
 ROOT = ../src/libotf
 OBJS = otfdrive.obj otferror.obj otfopen.obj
 

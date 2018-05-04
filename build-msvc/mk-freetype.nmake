@@ -1,8 +1,8 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -utf-8 -c -O2 -Oy -DFT2_BUILD_LIBRARY -Ifreetype-2.9/include
-ROOT = freetype-2.9.1
-OBJS = ftbase.obj ftapi.obj ftbbox.obj ftbdf.obj ftbitmap.obj ftcid.obj ftdebug.obj ftfntfmt.obj ftfstype.obj ftgasp.obj ftglyph.obj ftgxval.obj ftinit.obj ftlcdfil.obj ftmm.obj ftotval.obj ftpatent.obj ftpfr.obj ftstroke.obj ftsynth.obj ftsystem.obj fttype1.obj ftwinfnt.obj autofit.obj bdf.obj ftcache.obj cff.obj type1cid.obj gxvalid.obj ftgzip.obj ftlzw.obj otvalid.obj pcf.obj pfr.obj psaux.obj pshinter.obj psnames.obj raster.obj smooth.obj sfnt.obj truetype.obj type1.obj type42.obj winfnt.obj
+CFLAGS = -nologo -utf-8 -c -O2 -Oy -DFT2_BUILD_LIBRARY -I../texlive/libs/freetype2/freetype-src/include
+ROOT = ../texlive/libs/freetype2/freetype-src
+OBJS = ftbase.obj ftapi.obj ftbbox.obj ftbdf.obj ftbitmap.obj ftcid.obj ftdebug.obj ftfstype.obj ftgasp.obj ftglyph.obj ftgxval.obj ftinit.obj ftmm.obj ftotval.obj ftpatent.obj ftpfr.obj ftstroke.obj ftsynth.obj ftsystem.obj fttype1.obj ftwinfnt.obj autofit.obj bdf.obj ftcache.obj cff.obj type1cid.obj gxvalid.obj ftgzip.obj ftlzw.obj otvalid.obj pcf.obj pfr.obj psaux.obj pshinter.obj psnames.obj raster.obj smooth.obj sfnt.obj truetype.obj type1.obj type42.obj winfnt.obj
 
 all: $(OBJS)
 	$(AR) -nologo -out:freetype.lib $(OBJS)
@@ -21,8 +21,6 @@ ftcid.obj: $(ROOT)/src/base/ftcid.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftcid.c
 ftdebug.obj: $(ROOT)/src/base/ftdebug.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftdebug.c
-ftfntfmt.obj: $(ROOT)/src/base/ftfntfmt.c
-	$(CC) $(CFLAGS) $(ROOT)/src/base/ftfntfmt.c
 ftfstype.obj: $(ROOT)/src/base/ftfstype.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftfstype.c
 ftgasp.obj: $(ROOT)/src/base/ftgasp.c
@@ -33,8 +31,6 @@ ftgxval.obj: $(ROOT)/src/base/ftgxval.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftgxval.c
 ftinit.obj: $(ROOT)/src/base/ftinit.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftinit.c
-ftlcdfil.obj: $(ROOT)/src/base/ftlcdfil.c
-	$(CC) $(CFLAGS) $(ROOT)/src/base/ftlcdfil.c
 ftmm.obj: $(ROOT)/src/base/ftmm.c
 	$(CC) $(CFLAGS) $(ROOT)/src/base/ftmm.c
 ftotval.obj: $(ROOT)/src/base/ftotval.c
