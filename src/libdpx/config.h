@@ -165,7 +165,7 @@
 #define PACKAGE_NAME "dvipdfm-x (TeX Live)"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "dvipdfm-x (TeX Live) 20180217"
+#define PACKAGE_STRING "dvipdfm-x (TeX Live) 20180506"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "dvipdfm-x--tex-live-"
@@ -174,7 +174,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20180217"
+#define PACKAGE_VERSION "20180506"
 
 /* The size of `char', as computed by sizeof. */
 #define SIZEOF_CHAR 1
