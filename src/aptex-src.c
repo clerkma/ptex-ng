@@ -1652,7 +1652,7 @@ static boolean is_char_kanji (integer c)
 
 static boolean check_kanji (integer c)
 {
-  if (c > cs_token_flag)
+  if (c >= cs_token_flag)
     return false;
   else if (!(XXHi(c) >= kanji && XXHi(c) <= hangul))
     return false;
