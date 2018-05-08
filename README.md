@@ -16,7 +16,7 @@ Run the shell script:
     cd build-android
     ./build-android-port.sh
 
-### Windows/MSVC (experimental)
+### Windows/MSVC
 #### nmake
 
     cd build-msvc
