@@ -1,3 +1,12 @@
+2018-05-12  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* texmfmp.c: Allow non-ascii file names for pdfTeX (w32 only).
+	Changes on 2018-05-11 were incomplete.
+
+2018-05-11  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* texmfmp.c: Allow non-ascii file names for pdfTeX (w32 only).
+
 2018-03-16  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
 
 	* texmfmp.c: Remove support of short 8.3 names (w32 only).

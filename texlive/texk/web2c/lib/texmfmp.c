@@ -674,7 +674,7 @@ void
 maininit (int ac, string *av)
 {
   string main_input_file;
-#if (IS_upTeX || defined(XeTeX)) && defined(WIN32)
+#if (IS_upTeX || defined(XeTeX) || defined(pdfTeX)) && defined(WIN32)
   string enc;
 #endif
   /* Save to pass along to topenin.  */
@@ -703,10 +703,10 @@ maininit (int ac, string *av)
   kpse_set_program_name (argv[0], NULL);
   initkanji ();
 #endif
-#if defined(XeTeX) && defined(WIN32)
+#if (defined(XeTeX) || defined(pdfTeX)) && defined(WIN32)
   kpse_set_program_name (argv[0], NULL);
 #endif
-#if (IS_upTeX || defined(XeTeX)) && defined(WIN32)
+#if (IS_upTeX || defined(XeTeX) || defined(pdfTeX)) && defined(WIN32)
   enc = kpse_var_value("command_line_encoding");
   get_command_line_args_utf8(enc, &argc, &argv);
 #endif
@@ -714,7 +714,7 @@ maininit (int ac, string *av)
   /* If the user says --help or --version, we need to notice early.  And
      since we want the --ini option, have to do it before getting into
      the web (which would read the base file, etc.).  */
-#if (IS_upTeX || defined(XeTeX)) && defined(WIN32)
+#if (IS_upTeX || defined(XeTeX) || defined(pdfTeX)) && defined(WIN32)
   parse_options (argc, argv);
 #else
   parse_options (ac, av);
@@ -738,7 +738,7 @@ maininit (int ac, string *av)
   /* Do this early so we can inspect kpse_invocation_name and
      kpse_program_name below, and because we have to do this before
      any path searching.  */
-#if IS_pTeX || (defined(XeTeX) && defined(WIN32))
+#if IS_pTeX || ((defined(XeTeX) || defined(pdfTeX)) && defined(WIN32))
   if (user_progname)
     kpse_reset_program_name (user_progname);
 #else
@@ -1375,6 +1375,24 @@ tcx_get_num (int upb,
    support extension-less names for these files).  */
 
 /* FIXME: A new format ought to be introduced for these files. */
+
+#ifdef _WIN32
+#undef fopen
+#undef xfopen
+#define fopen fsyscp_fopen
+#define xfopen fsyscp_xfopen
+#include <wchar.h>
+int fsyscp_stat(const char *path, struct stat *buffer)
+{
+  wchar_t *wpath;
+  int     ret;
+  wpath = get_wstring_from_mbstring(kpse_def->File_system_codepage,
+          path, wpath = NULL);
+  ret = _wstat(wpath, buffer);
+  free(wpath);
+  return ret;
+}
+#endif /* WIN32 */
 
 void
 readtcxfile (void)
@@ -3137,7 +3155,11 @@ void getfilemoddate(integer s)
 
     recorder_record_input(file_name);
     /* get file status */
+#ifdef _WIN32
+    if (fsyscp_stat(file_name, &file_data) == 0) {
+#else
     if (stat(file_name, &file_data) == 0) {
+#endif
         size_t len;
 
         makepdftime(file_data.st_mtime, time_str, /* utc= */false);
@@ -3167,7 +3189,11 @@ void getfilesize(integer s)
 
     recorder_record_input(file_name);
     /* get file status */
+#ifdef _WIN32
+    if (fsyscp_stat(file_name, &file_data) == 0) {
+#else
     if (stat(file_name, &file_data) == 0) {
+#endif
         size_t len;
         char buf[20];
 
