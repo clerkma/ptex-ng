@@ -1,4 +1,4 @@
-$Id: README 47476 2018-04-28 23:56:18Z kakuto $
+$Id: README 47714 2018-05-14 18:07:32Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
@@ -96,7 +96,7 @@ cd $libiconv_ver
 # foil wrong attempts at dynamic linking, etc.
 (cd $clisp_basedir/clisp-tools/lib && rm -f *.dylib *.la)
 
-clisp_ver=clisp-2.49.92
+clisp_ver=
 cd $clisp_basedir
 $wget https://haible.de/bruno/gnu/$clisp_ver.tar.bz2
 bunzip2 -dc $clisp_ver.tar.bz2 | tar xf -
