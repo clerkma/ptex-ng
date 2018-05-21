@@ -1,4 +1,4 @@
-## $Id: Makefile.am 47014 2018-03-18 21:59:37Z kakuto $
+## $Id: Makefile.am 47788 2018-05-21 04:55:02Z kakuto $
 ## Proxy Makefile.am to build poppler for TeX Live.
 ##
 ##   Copyright 2016-2018 Karl Berry <tex-live@tug.org>
@@ -48,7 +48,6 @@ goo_libGoo_a_sources = \
 	@POPPLER_TREE@/goo/grandom.cc \
 	@POPPLER_TREE@/goo/gstrtod.cc \
 	@POPPLER_TREE@/goo/FixedPoint.cc \
-	@POPPLER_TREE@/goo/GooHash.cc \
 	@POPPLER_TREE@/goo/GooList.cc \
 	@POPPLER_TREE@/goo/GooString.cc \
 	@POPPLER_TREE@/goo/GooTimer.cc
