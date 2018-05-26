@@ -1,12 +1,12 @@
 #!/usr/bin/env perl
-# $Id: tlmgr.pl 47303 2018-04-05 17:52:22Z karl $
+# $Id: tlmgr.pl 47823 2018-05-24 03:08:27Z preining $
 #
 # Copyright 2008-2018 Norbert Preining
 # This file is licensed under the GNU General Public License version 2
 # or any later version.
 
-my $svnrev = '$Revision: 47303 $';
-my $datrev = '$Date: 2018-04-05 19:52:22 +0200 (Thu, 05 Apr 2018) $';
+my $svnrev = '$Revision: 47823 $';
+my $datrev = '$Date: 2018-05-24 05:08:27 +0200 (Thu, 24 May 2018) $';
 my $tlmgrrevision;
 my $tlmgrversion;
 my $prg;
@@ -1091,7 +1091,7 @@ sub backup_and_remove_package {
     return($F_WARNING);
   }
   if ($opts{"backup"}) {
-    $tlp->make_container("xz", $localtlpdb->root,
+    $tlp->make_container($::progs{'compressor'}, $localtlpdb->root,
                          $opts{"backupdir"}, 
                          "${pkg}.r" . $tlp->revision,
                          $tlp->relocated);
@@ -1761,7 +1761,15 @@ sub get_available_backups {
   #
   for my $dirent (@dirents) {
     next if (-d $dirent);
-    next if ($dirent !~ m/^(.*)\.r([0-9]+)\.tar\.xz$/);
+    my $has_accepted_compressiontype = 0;
+    for my $comptype (@AcceptedCompressors) {
+      my $ext = $CompressorExtension{$comptype};
+      $has_accepted_compressiontype = 1 if ($dirent =~ m/\.tar\.$ext$/);
+    }
+    next if (!$has_accepted_compressiontype);
+    if ($dirent !~ m/^(.*)\.r([0-9]+)\.tar\.(.*)$/) {
+      next;
+    }
     if (!$do_stat) {
       $backups{$1}->{$2} = 1;
       next;
@@ -1796,9 +1804,13 @@ sub restore_one_package {
   my ($pkg, $rev, $bd) = @_;
   # first remove the package, then reinstall it
   # this way we get rid of useless files
-  my $restore_file = "$bd/${pkg}.r${rev}.tar.xz";
-  if (! -r $restore_file) {
-    tlwarn("$prg: Cannot read $restore_file, no action taken\n");
+  my $restore_file;
+  for my $comptype (@AcceptedCompressors) {
+    my $ext = $CompressorExtension{$comptype};
+    $restore_file = "$bd/${pkg}.r${rev}.tar.$ext" if (-r "$bd/${pkg}.r${rev}.tar.$ext");
+  }
+  if (!$restore_file) {
+    tlwarn("$prg: Cannot find restore file $bd/${pkg}.r${rev}.tar.*, no action taken\n");
     return ($F_ERROR);
   }
   $localtlpdb->remove_package($pkg);
@@ -1938,7 +1950,7 @@ sub action_restore {
     for my $p (sort keys %backups) {
       my @tmp = sort {$b <=> $a} (keys %{$backups{$p}});
       my $rev = $tmp[0];
-      print "Restoring $p, $rev from $opts{'backupdir'}/${p}.r${rev}.tar.xz\n";
+      print "Restoring $p, $rev from $opts{'backupdir'}/${p}.r${rev}.tar.*\n";
       if (!$opts{"dry-run"}) {
         # first remove the package, then reinstall it
         # this way we get rid of useless files
@@ -2128,11 +2140,13 @@ sub action_backup {
     if ($clean_mode) {
       clear_old_backups ($pkg, $opts{"backupdir"}, $opts{"clean"}, $opts{"dry-run"}, 1);
     } else {
+      # for now default to xz and allow overriding with env var
+      my $compressorextension = $CompressorExtension{$::progs{'compressor'}};
       my $tlp = $localtlpdb->get_package($pkg);
       info("saving current status of $pkg to $opts{'backupdir'}/${pkg}.r" .
-        $tlp->revision . ".tar.xz\n");
+        $tlp->revision . ".tar.$compressorextension\n");
       if (!$opts{"dry-run"}) {
-        $tlp->make_container("xz", $localtlpdb->root,
+        $tlp->make_container($::progs{'compressor'}, $localtlpdb->root,
                              $opts{"backupdir"}, "${pkg}.r" . $tlp->revision);
       }
     }
@@ -2254,24 +2268,28 @@ sub write_w32_updater {
       tlwarn("$prg: Creation of backup container of $pkg failed.\n");
       return 1; # backup failed? abort
     }
+    my $decompressor = $::progs{$DecompressorProgram{$DefaultCompressorFormat}};
+    my $compressorextension = $CompressorExtension{$DefaultCompressorFormat};
+    my @decompressorArgs = @{$DecompressorArgs{$DefaultCompressorFormat}};
     foreach my $pkg_part (@pkg_parts) {
       if ($media eq 'local_compressed') {
-        copy("$repo/$pkg_part.tar.xz", "$temp");
+        copy("$repo/$pkg_part.tar.$compressorextension", "$temp");
       } else { # net
-        TeXLive::TLUtils::download_file("$repo/$pkg_part.tar.xz", "$temp/$pkg_part.tar.xz");
+        TeXLive::TLUtils::download_file("$repo/$pkg_part.tar.$compressorextension", 
+                                        "$temp/$pkg_part.tar.$compressorextension");
       }
       # now we should have the file present
-      if (!-r "$temp/$pkg_part.tar.xz") {
-        tlwarn("$prg: Couldn't get $pkg_part.tar.xz, that is bad\n");
+      if (!-r "$temp/$pkg_part.tar.$compressorextension") {
+        tlwarn("$prg: Couldn't get $pkg_part.tar.$compressorextension, that is bad\n");
         return 1; # abort
       }
       # unpack xz archive
-      my $sysret = system("$::progs{'xzdec'} < \"$temp/$pkg_part.tar.xz\" > \"$temp/$pkg_part.tar\"");
+      my $sysret = system("$decompressor @decompressorArgs < \"$temp/$pkg_part.tar.xz\" > \"$temp/$pkg_part.tar\"");
       if ($sysret) {
-        tlwarn("$prg: Couldn't unpack $pkg_part.tar.xz\n");
+        tlwarn("$prg: Couldn't unpack $pkg_part.tar.$compressorextension\n");
         return 1; # unpack failed? abort
       }
-      unlink("$temp/$pkg_part.tar.xz"); # we don't need that archive anymore
+      unlink("$temp/$pkg_part.tar.$compressorextension"); # we don't need that archive anymore
     }
   }
   
@@ -2809,7 +2827,7 @@ sub action_update {
       $mediatlp = $remotetlpdb->get_package($pkg);
     }
     if (!defined($mediatlp)) {
-      debug("$pkg cannot be found in $location\n");
+      ddebug("$pkg cannot be found in $location\n");
       next;
     }
     my $rctanvers = $mediatlp->cataloguedata->{'version'};
@@ -3163,11 +3181,12 @@ sub action_update {
       }
 
       if ($opts{"backup"} && !$opts{"dry-run"}) {
-        $tlp->make_container("xz", $root,
+        my $compressorextension = $CompressorExtension{$::progs{'compressor'}};
+        $tlp->make_container($::progs{'compressor'}, $root,
                              $opts{"backupdir"}, "${pkg}.r" . $tlp->revision,
                              $tlp->relocated);
         $unwind_package =
-            "$opts{'backupdir'}/${pkg}.r" . $tlp->revision . ".tar.xz";
+            "$opts{'backupdir'}/${pkg}.r" . $tlp->revision . ".tar.$compressorextension";
         
         if ($autobackup) {
           # in case we do auto backups we remove older backups
@@ -4415,9 +4434,9 @@ sub action_repository {
       return ($F_ERROR);
     }
     # check if it is either url or absolute path
-    if (($p !~ m!^(https?|ftp)://!i) && 
+    if (($p !~ m!^(https?|ftp)://!i) && ($p !~ m!$TeXLive::TLUtils::SshURIRegex!) && 
         !File::Spec->file_name_is_absolute($p)) {
-      tlwarn("$prg: neither https?/ftp URL nor absolute path, no action: $p\n");
+      tlwarn("$prg: neither https?/ftp/ssh/scp/file URI nor absolute path, no action: $p\n");
       return ($F_ERROR);
     }
     my $t = shift @ARGV;
@@ -6531,7 +6550,8 @@ sub init_local_db {
   # we normalize the path only if it is
   # - a url starting with neither http or ftp
   # - if we are on Windows, it does not start with Drive:[\/]
-  if (! ( $location =~ m!^(https?|ftp)://!i  ||
+  if (! ( $location =~ m!^(https?|ftp)://!i  || 
+          $location =~ m!$TeXLive::TLUtils::SshURIRegex!i ||
           (win32() && (!(-e $location) || ($location =~ m!^.:[\\/]!) ) ) ) ) {
     # seems to be a local path, try to normalize it
     my $testloc = abs_path($location);
@@ -8297,7 +8317,7 @@ platform instead of auto detection.
 
 C<platform set auto> switches TeX Live to auto detection mode for platform.
 
-Platform detection is needed to select the proper C<xz>, C<xzdec> and 
+Platform detection is needed to select the proper C<xz> and 
 C<wget> binaries that are shipped with TeX Live.
 
 C<arch> is a synonym for C<platform>.
@@ -9517,7 +9537,7 @@ This script and its documentation were written for the TeX Live
 distribution (L<http://tug.org/texlive>) and both are licensed under the
 GNU General Public License Version 2 or later.
 
-$Id: tlmgr.pl 47303 2018-04-05 17:52:22Z karl $
+$Id: tlmgr.pl 47823 2018-05-24 03:08:27Z preining $
 =cut
 
 # to remake HTML version: pod2html --cachedir=/tmp tlmgr.pl >/tmp/tlmgr.html
