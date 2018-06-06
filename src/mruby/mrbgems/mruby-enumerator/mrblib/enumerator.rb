@@ -110,10 +110,13 @@ class Enumerator
   #     p fib.take(10) # => [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
   #
   def initialize(obj=nil, meth=:each, *args, &block)
-    if block_given?
+    if block
       obj = Generator.new(&block)
     else
       raise ArgumentError unless obj
+    end
+    if @obj and !self.respond_to?(meth)
+      raise NoMethodError, "undefined method #{meth}"
     end
 
     @obj = obj
@@ -151,8 +154,9 @@ class Enumerator
   #
   # +offset+:: the starting index to use
   #
-  def with_index(offset=0)
-    return to_enum :with_index, offset unless block_given?
+  def with_index(offset=0, &block)
+    return to_enum :with_index, offset unless block
+
     offset = if offset.nil?
       0
     elsif offset.respond_to?(:to_int)
@@ -164,7 +168,7 @@ class Enumerator
     n = offset - 1
     enumerator_block_call do |*i|
       n += 1
-      yield i.__svalue, n
+      block.call i.__svalue, n
     end
   end
 
@@ -209,11 +213,11 @@ class Enumerator
   #   # => foo:1
   #   # => foo:2
   #
-  def with_object(object)
-    return to_enum(:with_object, object) unless block_given?
+  def with_object(object, &block)
+    return to_enum(:with_object, object) unless block
 
     enumerator_block_call do |i|
-      yield [i,object]
+      block.call [i,object]
     end
     object
   end
@@ -277,7 +281,7 @@ class Enumerator
       end
       obj.args = args
     end
-    return obj unless block_given?
+    return obj unless block
     enumerator_block_call(&block)
   end
 
@@ -538,7 +542,7 @@ class Enumerator
   # just for internal
   class Yielder
     def initialize(&block)
-      raise LocalJumpError, "no block given" unless block_given?
+      raise LocalJumpError, "no block given" unless block
 
       @proc = block
     end
@@ -612,30 +616,45 @@ module Kernel
   def to_enum(meth=:each, *args)
     Enumerator.new self, meth, *args
   end
-  alias :enum_for :to_enum
+  alias enum_for to_enum
 end
 
 module Enumerable
   # use Enumerator to use infinite sequence
-  def zip(*arg)
-    ary = []
-    arg = arg.map{|a|a.each}
-    i = 0
-    self.each do |*val|
-      a = []
-      a.push(val.__svalue)
-      idx = 0
-      while idx < arg.size
-        begin
-          a.push(arg[idx].next)
-        rescue StopIteration
-          a.push(nil)
-        end
-        idx += 1
+  def zip(*args, &block)
+    args = args.map do |a|
+      if a.respond_to?(:to_ary)
+        a.to_ary.to_enum(:each)
+      elsif a.respond_to?(:each)
+        a.to_enum(:each)
+      else
+        raise TypeError, "wrong argument type #{a.class} (must respond to :each)"
       end
-      ary.push(a)
-      i += 1
     end
-    ary
+
+    result = block ? nil : []
+
+    each do |*val|
+      tmp = [val.__svalue]
+      args.each do |arg|
+        v = if arg.nil?
+          nil
+        else
+          begin
+            arg.next
+          rescue StopIteration
+            nil
+          end
+        end
+        tmp.push(v)
+      end
+      if result.nil?
+        block.call(tmp)
+      else
+        result.push(tmp)
+      end
+    end
+
+    result
   end
 end

@@ -1,12 +1,20 @@
 platform:
   - Any CPU
+cache:
+  - win_flex_bison-2.5.10.zip
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 build_script:
   - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - cmd: cd build-msvc
+  - cmd: set PATH=C:\Ruby24-x64\bin;%PATH%
+  - cmd: set YACC=..\win_flex_bison\win_bison.exe
+  - cmd: build-mruby.bat
   - cmd: build.bat
+install:
+  - if not exist win_flex_bison-2.5.10.zip appveyor DownloadFile "https://github.com/lexxmark/winflexbison/releases/download/v.2.5.10/win_flex_bison-2.5.10.zip"
+  - 7z x -y -owin_flex_bison win_flex_bison-2.5.10.zip > nul
 test_script:
   - cmd: lsotfea.exe C:\Windows\Fonts\segoeui.ttf
   - cmd: aptex.exe -mrb-load-string "(1..20).each do |i| p i end"

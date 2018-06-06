@@ -34,7 +34,7 @@ Run the shell script:
 * TeX Live 2018 (`http://tug.org/svn/texlive/trunk/Build/source/`)
 * libotf 0.9.16 (`http://cvs.savannah.gnu.org/viewvc/libotf/?root=m17n`)
 * libyaml 0.1.7 (`https://github.com/yaml/libyaml`)
-* mruby 1.3.0 (`http://mruby.org/downloads/`)
+* mruby 1.4.1 (`http://mruby.org/downloads/`)
 
 ## How to Install
 

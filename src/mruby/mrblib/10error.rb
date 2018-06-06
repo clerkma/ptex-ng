@@ -2,8 +2,8 @@
 class ArgumentError < StandardError
 end
 
-# ISO 15.2.25
-class LocalJumpError < StandardError
+# ISO 15.2.25 says "LocalJumpError < StandardError"
+class LocalJumpError < ScriptError
 end
 
 # ISO 15.2.26
@@ -49,6 +49,9 @@ class KeyError < IndexError
 end
 
 class NotImplementedError < ScriptError
+end
+
+class FrozenError < RuntimeError
 end
 
 class StopIteration < IndexError

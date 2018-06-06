@@ -123,8 +123,9 @@ fiber_init(mrb_state *mrb, mrb_value self)
 
   /* adjust return callinfo */
   ci = c->ci;
-  ci->target_class = p->target_class;
+  ci->target_class = MRB_PROC_TARGET_CLASS(p);
   ci->proc = p;
+  mrb_field_write_barrier(mrb, (struct RBasic*)mrb_obj_ptr(self), (struct RBasic*)p);
   ci->pc = p->body.irep->iseq;
   ci->nregs = p->body.irep->nregs;
   ci[1] = ci[0];
@@ -174,9 +175,6 @@ fiber_check_cfunc(mrb_state *mrb, struct mrb_context *c)
 static void
 fiber_switch_context(mrb_state *mrb, struct mrb_context *c)
 {
-  if (mrb->c->fib) {
-    mrb_write_barrier(mrb, (struct RBasic*)mrb->c->fib);
-  }
   c->status = MRB_FIBER_RUNNING;
   mrb->c = c;
 }
@@ -211,8 +209,8 @@ fiber_switch(mrb_state *mrb, mrb_value self, mrb_int len, const mrb_value *a, mr
     while (b<e) {
       *b++ = *a++;
     }
-    c->cibase->argc = len;
-    value = c->stack[0] = c->ci->proc->env->stack[0];
+    c->cibase->argc = (int)len;
+    value = c->stack[0] = MRB_PROC_ENV(c->ci->proc)->stack[0];
   }
   else {
     value = fiber_result(mrb, a, len);
@@ -252,7 +250,7 @@ fiber_resume(mrb_state *mrb, mrb_value self)
   mrb_int len;
   mrb_bool vmexec = FALSE;
 
-  mrb_get_args(mrb, "*", &a, &len);
+  mrb_get_args(mrb, "*!", &a, &len);
   if (mrb->c->ci->acc < 0) {
     vmexec = TRUE;
   }
@@ -273,12 +271,13 @@ mrb_fiber_resume(mrb_state *mrb, mrb_value fib, mrb_int len, const mrb_value *a)
  *  Returns true if the fiber can still be resumed. After finishing
  *  execution of the fiber block this method will always return false.
  */
-static mrb_value
-fiber_alive_p(mrb_state *mrb, mrb_value self)
+MRB_API mrb_value
+mrb_fiber_alive_p(mrb_state *mrb, mrb_value self)
 {
   struct mrb_context *c = fiber_check(mrb, self);
   return mrb_bool_value(c->status != MRB_FIBER_TERMINATED);
 }
+#define fiber_alive_p mrb_fiber_alive_p
 
 static mrb_value
 fiber_eq(mrb_state *mrb, mrb_value self)
@@ -312,7 +311,7 @@ fiber_transfer(mrb_state *mrb, mrb_value self)
   mrb_int len;
 
   fiber_check_cfunc(mrb, mrb->c);
-  mrb_get_args(mrb, "*", &a, &len);
+  mrb_get_args(mrb, "*!", &a, &len);
 
   if (c == mrb->root_c) {
     mrb->c->status = MRB_FIBER_TRANSFERRED;
@@ -370,7 +369,7 @@ fiber_yield(mrb_state *mrb, mrb_value self)
   mrb_value *a;
   mrb_int len;
 
-  mrb_get_args(mrb, "*", &a, &len);
+  mrb_get_args(mrb, "*!", &a, &len);
   return mrb_fiber_yield(mrb, len, a);
 }
 
