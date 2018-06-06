@@ -9,7 +9,7 @@ build_script:
   - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - cmd: cd build-msvc
   - cmd: set PATH=C:\Ruby24-x64\bin;%PATH%
-  - cmd: set YACC=..\win_flex_bison\win_bison.exe
+  - cmd: set YACC=%APPVEYOR_BUILD_FOLDER%\win_flex_bison\win_bison.exe
   - cmd: build-mruby.bat
   - cmd: build.bat
 install:
