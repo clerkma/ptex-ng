@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 46258 2018-01-09 19:23:39Z karl $
+dnl $Id: configure.ac 47940 2018-06-06 08:04:44Z kakuto $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -38,7 +38,13 @@ KPSE_ICU_FLAGS
 
 # Functions and headers
 AC_CHECK_FUNCS(atexit mprotect sysconf getpagesize mmap isatty newlocale strtod_l)
-AC_CHECK_HEADERS(unistd.h sys/mman.h xlocale.h)
+
+save_libs="$LIBS"
+LIBS="$LIBS -lm"
+AC_CHECK_FUNCS([round], ,[AC_CHECK_DECLS([round], , ,[#include <math.h>])])
+LIBS="$save_libs"
+
+AC_CHECK_HEADERS(unistd.h sys/mman.h xlocale.h stdbool.h)
 
 # Compiler flags
 AC_CANONICAL_HOST
