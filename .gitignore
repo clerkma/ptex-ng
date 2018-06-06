@@ -3,6 +3,7 @@
 *.un~
 *~
 *.exe
+build-msvc/mruby
 src/libotf/CVS
 src/libotf/src/CVS
 src/libotf/example/CVS

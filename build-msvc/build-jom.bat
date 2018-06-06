@@ -14,9 +14,6 @@ jom -nologo -f mk-libotf.nmake
 echo Building libyaml ...
 del *.obj
 jom -nologo -f mk-libyaml.nmake
-echo Building libmruby ...
-del *.obj
-jom -nologo -f mk-libmruby.nmake
 echo Building libpixman ...
 del *.obj
 jom -nologo -f mk-libpixman.nmake

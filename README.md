@@ -17,16 +17,22 @@ Run the shell script:
     ./build-android-port.sh
 
 ### Windows/MSVC
-#### nmake
+First of all, we need to install `bison` ([winflexbison](https://github.com/lexxmark/winflexbison/)) somewhere.
+
+    set YACC=path-to-winflexbison\win_flex_bison-2.5.14\win_bison.exe
+
+#### Compile with nmake
 
     cd build-msvc
+    build-mruby.bat
     build.bat
 
-#### jom
+#### Compile with jom
 
 [Jom](https://wiki.qt.io/Jom)
 
     cd build-msvc
+    build-mruby.bat
     build-jom.bat
 
 ## Source
