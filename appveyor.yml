@@ -1,5 +1,6 @@
 platform:
   - Any CPU
+clone_depth: 10
 cache:
   - win_flex_bison-2.5.14.zip
 environment:

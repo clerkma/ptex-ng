@@ -3,6 +3,9 @@ language: c
 compiler:
   - gcc
 
+git:
+  depth: 10
+
 before_script:
   - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt install bison texinfo; fi
 
