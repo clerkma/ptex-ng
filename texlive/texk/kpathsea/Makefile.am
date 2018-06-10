@@ -1,4 +1,4 @@
-## $Id: Makefile.am 43617 2017-03-27 18:00:45Z karl $
+## $Id: Makefile.am 47973 2018-06-10 06:12:41Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/kpathsea/
 ##
 ## Copyright 2017 Karl Berry <tex-live@tug.org>
@@ -283,14 +283,14 @@ uninstall-local:
 if !WIN32
 	@for f in $(dist_noinst_SCRIPTS); do \
 	  if grep "original $$f --" "$(DESTDIR)$(bindir)/$$f" >/dev/null 2>&1; then \
-	    echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
+	    echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
 	    rm -f "$(DESTDIR)$(bindir)/$$f"; \
 	  else :; fi; \
 	done
 endif !WIN32
 	@for f in $(dist_noinst_DATA); do \
 	  if grep "original $$f --" "$(DESTDIR)$(web2cdir)/$$f" >/dev/null 2>&1; then \
-	    echo " rm -f '$(DESTDIR)$(web2cdir)/$$f'"; \
+	    echo " rm -f '$(DESTDIR)$(web2cdir)/$$f'"; \
 	    rm -f "$(DESTDIR)$(web2cdir)/$$f"; \
 	  else :; fi; \
 	done
