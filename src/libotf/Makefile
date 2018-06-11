@@ -16,7 +16,7 @@ objects = \
 	otfopen.o
 
 libotf.a: $(objects)
-	$(AR) rc libotf.a $(objects)
+	$(AR) cru libotf.a $(objects)
 
 otfdrive.o: src/otfdrive.c
 	$(CC) $(CFLAGS) src/otfdrive.c

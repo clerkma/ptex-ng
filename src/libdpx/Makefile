@@ -10,7 +10,7 @@ CFLAGS := -c -I. -I./ng \
 objects := agl.o bmpimage.o cff.o cff_dict.o cid.o cidtype0.o cidtype2.o cmap.o cmap_read.o cmap_write.o cs_type2.o dpxconf.o dpxcrypt.o dpxfile.o dpxutil.o dvi.o dvipdfmx.o epdf.o error.o fontmap.o jp2image.o jpegimage.o mem.o mfileio.o mpost.o numbers.o otl_conf.o otl_opt.o pdfcolor.o pdfdev.o pdfdoc.o pdfdraw.o pdfencoding.o pdfencrypt.o pdffont.o pdfnames.o pdfobj.o pdfparse.o pdfresource.o pdfximage.o pkfont.o pngimage.o pst.o pst_obj.o sfnt.o spc_color.o spc_dvipdfmx.o spc_dvips.o spc_html.o spc_misc.o spc_pdfm.o spc_tpic.o spc_util.o spc_xtx.o specials.o subfont.o t1_char.o t1_load.o tfm.o truetype.o tt_aux.o tt_cmap.o tt_glyf.o tt_gsub.o tt_post.o tt_table.o type0.o type1.o type1c.o unicode.o vf.o xbb.o
 
 libdpx.a: $(objects)
-	ar rc libdpx.a $(objects)
+	ar cru libdpx.a $(objects)
 
 agl.o: $(ROOT)/agl.c
 	$(CC) $(CFLAGS) $(ROOT)/agl.c
