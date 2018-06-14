@@ -31,7 +31,6 @@ int main(int argc, char **argv)
 
 #ifdef WIN32
 	_setmaxstdio(2048);
-	sjisterminal = 0;
 #endif
 	set_enc_string(NULL, "uptex");
 	kpse_set_program_name(argv[0], "mendex");
@@ -167,12 +166,6 @@ int main(int argc, char **argv)
 				set_enc_string("SJIS", NULL);
 				break;
 
-#ifdef WIN32
-			case 'T':
-				sjisterminal = 1;
-				break;
-#endif
-
 			case 'U':
 				set_enc_string("UTF8", NULL);
 				break;
@@ -220,9 +213,6 @@ int main(int argc, char **argv)
 				fprintf(stderr,"-E      EUC mode.\n");
 				fprintf(stderr,"-J      JIS mode.\n");
 				fprintf(stderr,"-S      ShiftJIS mode.\n");
-#ifdef WIN32
-				fprintf(stderr,"-T      ShiftJIS terminal.\n");
-#endif
 				fprintf(stderr,"-U      UTF-8 mode.\n");
 				fprintf(stderr,"-I enc  internal encoding for keywords (enc: euc or utf8).\n");
 				fprintf(stderr,"idx...  input files.\n");
