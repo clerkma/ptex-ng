@@ -236,5 +236,6 @@ cairo-type3-glyph-surface.o : ../../texlive/libs/cairo/cairo-src/src/cairo-type3
 cairo-deflate-stream.o : ../../texlive/libs/cairo/cairo-src/src/cairo-deflate-stream.c
 	 $(CC) $(CFLAGS) ../../texlive/libs/cairo/cairo-src/src/cairo-deflate-stream.c
 clean:
-	rm $(wildcard *.o *.a)test:
+	rm $(wildcard *.o *.a)
+test:
 	$(CC) -I. -I../../texlive/libs/cairo/cairo-src/src -o test test.c libcairo.a ../libpixman.a ../libz.a -lm
