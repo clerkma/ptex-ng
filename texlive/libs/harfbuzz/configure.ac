@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 47940 2018-06-06 08:04:44Z kakuto $
+dnl $Id: configure.ac 48191 2018-07-12 23:06:34Z kakuto $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -37,7 +37,7 @@ KPSE_GRAPHITE2_FLAGS
 KPSE_ICU_FLAGS
 
 # Functions and headers
-AC_CHECK_FUNCS(atexit mprotect sysconf getpagesize mmap isatty newlocale strtod_l)
+AC_CHECK_FUNCS(atexit mprotect sysconf getpagesize mmap isatty newlocale strtod_l posix_memalign)
 
 save_libs="$LIBS"
 LIBS="$LIBS -lm"
