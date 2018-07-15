@@ -37817,7 +37817,9 @@ static void * synctex_dot_open (void)
       {
         if (SYNCTEX_NO_ERROR == synctex_record_preamble())
         {
-          synctex_mag = 1000;
+          if (synctex_mag == 0)
+            synctex_mag = 1000;
+
           synctex_unit = 1;
           synctex_busy_name = the_busy_name;
           the_busy_name = NULL;
@@ -38083,21 +38085,21 @@ void synctex_sheet (integer sync_mag)
     return;
   }
 
+  if (total_pages == 0)
+  {
+    if (sync_mag > 0)
+      synctex_mag = sync_mag;
+
+    if (SYNCTEX_NO_ERROR != synctex_record_settings()
+        || SYNCTEX_NO_ERROR != synctex_record_content())
+    {
+      synctex_abort();
+      return;
+    }
+  }
+
   if (synctex_file || (synctex && (synctex_dot_open() != NULL)))
   {
-    if (total_pages == 0)
-    {
-      if (sync_mag > 0)
-        synctex_mag = sync_mag;
-
-      if (SYNCTEX_NO_ERROR != synctex_record_settings()
-          || SYNCTEX_NO_ERROR != synctex_record_content())
-      {
-        synctex_abort();
-        return;
-      }
-    }
-
     synctex_record_sheet(total_pages + 1);
   }
 }
