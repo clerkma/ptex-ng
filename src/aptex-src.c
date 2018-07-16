@@ -37689,6 +37689,7 @@ static integer synctex_unit         = 0;
 static void *  synctex_file         = NULL;
 static integer synctex_total_length = 0;
 static boolean synctex_flag_read    = false;
+static boolean synctex_flag_ready   = false; /* content_ready */
 static boolean synctex_flag_off     = false;
 static boolean synctex_flag_flate   = false;
 static boolean synctex_flag_shipable= false;
@@ -37877,6 +37878,25 @@ static int synctex_record_input (integer tag, char * fname)
 
   synctex_abort();
   return -1;
+}
+
+static void * synctex_prepare_content (void)
+{
+  if (synctex_flag_ready)
+  {
+    return synctex_file;
+  }
+
+  if ((NULL != synctex_dot_open())
+    && (SYNCTEX_NO_ERROR == synctex_record_settings())
+    && (SYNCTEX_NO_ERROR == synctex_record_content()))
+  {
+    synctex_flag_ready = true;
+    return synctex_file;
+  }
+
+  synctex_abort();
+  return NULL;
 }
 
 void synctex_start_input (void)
@@ -38089,16 +38109,9 @@ void synctex_sheet (integer sync_mag)
   {
     if (sync_mag > 0)
       synctex_mag = sync_mag;
-
-    if (SYNCTEX_NO_ERROR != synctex_record_settings()
-        || SYNCTEX_NO_ERROR != synctex_record_content())
-    {
-      synctex_abort();
-      return;
-    }
   }
 
-  if (synctex_file || (synctex && (synctex_dot_open() != NULL)))
+  if (NULL != synctex_prepare_content())
   {
     synctex_record_sheet(total_pages + 1);
   }
