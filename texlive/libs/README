@@ -1,4 +1,4 @@
-$Id: README 48216 2018-07-17 22:07:21Z kakuto $
+$Id: README 48239 2018-07-21 07:02:37Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -48,7 +48,7 @@ mpfr 4.0.1 - checked 10feb18
 pixman 0.34.0 - checked 04feb16
   http://cairographics.org/releases/
 
-poppler 0.66.0 - checked 20jun18
+poppler 0.67.0 - checked 21jul18
   http://poppler.freedesktop.org/ - used by luatex and xetex
   (requires C++11)
 

@@ -1,4 +1,4 @@
-dnl $Id: version.ac 48060 2018-06-20 05:54:15Z kakuto $
+dnl $Id: version.ac 48239 2018-07-21 07:02:37Z kakuto $
 dnl   Copyright 2018 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
@@ -9,4 +9,4 @@ dnl
 dnl --------------------------------------------------------
 dnl
 dnl  m4-include this file to define the current poppler version
-m4_define([poppler_version], [0.66.0])
+m4_define([poppler_version], [0.67.0])
