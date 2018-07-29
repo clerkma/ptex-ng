@@ -1,4 +1,4 @@
-$Id: README 48168 2018-07-09 17:00:10Z karl $
+$Id: README 48276 2018-07-26 16:40:39Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
@@ -41,7 +41,7 @@ xindy - see just below
 
 xpdfopen 0.86 - checked 9jul18
   http://ctan.org/pkg/xpdfopen/
-  http://cs.acadiau.ca/~jdiamond/xpdfopen/ (404; no reply from author, 9jul18)
+  http://cs.acadiau.ca/~jdiamond/xpdfopen/
 
 
 xindy 2.5.1 - checked 15sep14

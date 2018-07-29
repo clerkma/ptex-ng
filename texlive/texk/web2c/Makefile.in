@@ -385,7 +385,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/web2c-disable.m4 \
 	$(top_srcdir)/../../m4/lt~obsolete.m4 \
 	$(top_srcdir)/../../version.ac $(top_srcdir)/ac/web2c.ac \
 	$(top_srcdir)/synctexdir/ac/synctex.ac \
-	$(top_srcdir)/synctexdir/synctex_parser_version.txt \
+	$(top_srcdir)/synctexdir/synctex_parser_api_level.txt \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -20094,7 +20094,7 @@ $(libsynctex_a_OBJECTS): $(ZLIB_DEPEND)
 synctexdir/synctex.log: synctex$(EXEEXT)
 libmd5/md5.log: md5main$(EXEEXT)
 
-# $Id: Makefile.in 48260 2018-07-23 21:21:12Z kakuto $
+# $Id: Makefile.in 48298 2018-07-28 22:52:20Z karl $
 # am/bin_links.am: Makefile fragment for bindir links.
 .PHONY: install-bin-links uninstall-bin-links
 
