@@ -1,4 +1,4 @@
-## $Id: Makefile.am 43567 2017-03-21 17:43:10Z karl $
+## $Id: Makefile.am 48409 2018-08-16 00:30:02Z kakuto $
 ## Proxy Makefile.am to build graphite2 for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -31,7 +31,6 @@ noinst_LIBRARIES = libgraphite2.a
 AM_CPPFLAGS = -I$(top_srcdir)/$(GRAPHITE2_SRC) -I$(top_srcdir)/$(GRAPHITE2_INC)
 AM_CPPFLAGS += -DGRAPHITE2_STATIC -DGRAPHITE2_CUSTOM_HEADER='<config.h>'
 libgraphite2_a_SOURCES =  \
-	@GRAPHITE2_TREE@/src/CachedFace.cpp \
 	@GRAPHITE2_TREE@/src/CmapCache.cpp \
 	@GRAPHITE2_TREE@/src/Code.cpp \
 	@GRAPHITE2_TREE@/src/Collider.cpp \
@@ -66,14 +65,7 @@ else !DIRECT_TYPE
 libgraphite2_a_SOURCES += @GRAPHITE2_TREE@/src/call_machine.cpp
 endif !DIRECT_TYPE
 
-if WITH_SEGCACHE
-libgraphite2_a_SOURCES += \
-	@GRAPHITE2_TREE@/src/SegCache.cpp \
-	@GRAPHITE2_TREE@/src/SegCacheEntry.cpp \
-	@GRAPHITE2_TREE@/src/SegCacheStore.cpp
-else !WITH_SEGCACHE
 AM_CPPFLAGS += -DGRAPHITE2_NSEGCACHE
-endif !WITH_SEGCACHE
 
 if WITH_FILEFACE
 libgraphite2_a_SOURCES += @GRAPHITE2_TREE@/src/FileFace.cpp 

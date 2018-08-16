@@ -15,8 +15,10 @@ AC_CONFIG_MACRO_DIR([../../m4])
 
 KPSE_BASIC([graphite2])
 
+dnl ! C++11 required since graphite2 1.3.12 !
 AC_PROG_CC
 AC_PROG_CXX
+AX_CXX_COMPILE_STDCXX([11])
 AC_PROG_RANLIB
 AC_PROG_LN_S
 
@@ -25,13 +27,6 @@ AC_CONFIG_HEADERS([config.h])
 AM_CONDITIONAL([build], [test "x$enable_build" != xno])
 
 AM_CONDITIONAL([DIRECT_TYPE], [test "x$GCC" = xyes])
-
-enable_segcache=no
-AM_CONDITIONAL([WITH_SEGCACHE], [test "x$enable_segcache" != xno])
-if test "x$enable_segcache" = no; then
-  AC_DEFINE([GRAPHITE2_NSEGCACHE], 1,
-            [Define to 1 to disable segcache support.])
-fi
 
 enable_fileface=yes
 AM_CONDITIONAL([WITH_FILEFACE], [test "x$enable_fileface" != xno])

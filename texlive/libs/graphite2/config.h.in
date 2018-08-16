@@ -3,11 +3,11 @@
 /* Define to 1 to disable fileface support. */
 #undef GRAPHITE2_NFILEFACE
 
-/* Define to 1 to disable segcache support. */
-#undef GRAPHITE2_NSEGCACHE
-
 /* Define to 1 to disable tracing support. */
 #undef GRAPHITE2_NTRACING
+
+/* define if the compiler supports basic C++11 syntax */
+#undef HAVE_CXX11
 
 /* Name of package */
 #undef PACKAGE
