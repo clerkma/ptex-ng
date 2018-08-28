@@ -2,7 +2,7 @@ CC = cl
 AR = lib
 CFLAGS = -nologo -c -O2 -Oy -DHAVE_CONFIG_H -DWIN32 -DNO_KPSE_DLL -Ilibdpx -I. -Izlib -I../texlive/libs/zlib/zlib-src -I../texlive/libs/libpng/libpng-src -I../texlive/texk/ -I../texlive/texk/dvipdfm-x -I../src/libdpx/ng
 ROOT = ../texlive/texk/dvipdfm-x
-OBJS = agl.obj bmpimage.obj cff.obj cff_dict.obj cid.obj cidtype0.obj cidtype2.obj cmap.obj cmap_read.obj cmap_write.obj cs_type2.obj dpxconf.obj dpxcrypt.obj dpxfile.obj dpxutil.obj dvi.obj dvipdfmx.obj epdf.obj error.obj fontmap.obj jp2image.obj jpegimage.obj mem.obj mfileio.obj mpost.obj numbers.obj otl_conf.obj otl_opt.obj pdfcolor.obj pdfdev.obj pdfdoc.obj pdfdraw.obj pdfencoding.obj pdfencrypt.obj pdffont.obj pdfnames.obj pdfobj.obj pdfparse.obj pdfresource.obj pdfximage.obj pkfont.obj pngimage.obj pst.obj pst_obj.obj sfnt.obj spc_color.obj spc_dvipdfmx.obj spc_dvips.obj spc_html.obj spc_misc.obj spc_pdfm.obj spc_tpic.obj spc_util.obj spc_xtx.obj specials.obj subfont.obj t1_char.obj t1_load.obj tfm.obj truetype.obj tt_aux.obj tt_cmap.obj tt_glyf.obj tt_gsub.obj tt_post.obj tt_table.obj type0.obj type1.obj type1c.obj unicode.obj vf.obj xbb.obj
+OBJS = agl.obj bmpimage.obj cff.obj cff_dict.obj cid.obj cidtype0.obj cidtype2.obj cmap.obj cmap_read.obj cmap_write.obj cs_type2.obj dpxconf.obj dpxcrypt.obj dpxfile.obj dpxutil.obj dvi.obj dvipdfmx.obj epdf.obj error.obj fontmap.obj jp2image.obj jpegimage.obj mem.obj mfileio.obj mpost.obj numbers.obj otl_opt.obj pdfcolor.obj pdfdev.obj pdfdoc.obj pdfdraw.obj pdfencoding.obj pdfencrypt.obj pdffont.obj pdfnames.obj pdfobj.obj pdfparse.obj pdfresource.obj pdfximage.obj pkfont.obj pngimage.obj pst.obj pst_obj.obj sfnt.obj spc_color.obj spc_dvipdfmx.obj spc_dvips.obj spc_html.obj spc_misc.obj spc_pdfm.obj spc_tpic.obj spc_util.obj spc_xtx.obj specials.obj subfont.obj t1_char.obj t1_load.obj tfm.obj truetype.obj tt_aux.obj tt_cmap.obj tt_glyf.obj tt_gsub.obj tt_post.obj tt_table.obj type0.obj type1.obj type1c.obj unicode.obj vf.obj xbb.obj
 
 all: $(OBJS)
 	$(AR) -nologo -out:libdpx.lib $(OBJS)
@@ -59,8 +59,6 @@ mpost.obj: $(ROOT)/mpost.c
 	$(CC) $(CFLAGS) $(ROOT)/mpost.c
 numbers.obj: $(ROOT)/numbers.c
 	$(CC) $(CFLAGS) $(ROOT)/numbers.c
-otl_conf.obj: $(ROOT)/otl_conf.c
-	$(CC) $(CFLAGS) $(ROOT)/otl_conf.c
 otl_opt.obj: $(ROOT)/otl_opt.c
 	$(CC) $(CFLAGS) $(ROOT)/otl_opt.c
 pdfcolor.obj: $(ROOT)/pdfcolor.c
