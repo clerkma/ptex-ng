@@ -108,7 +108,6 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/kpse-cairo-flags.m4 \
 	$(top_srcdir)/m4/kpse-pixman-flags.m4 \
 	$(top_srcdir)/m4/kpse-pkgs.m4 \
 	$(top_srcdir)/m4/kpse-poppler-flags.m4 \
-	$(top_srcdir)/m4/kpse-potrace-flags.m4 \
 	$(top_srcdir)/m4/kpse-ptexenc-flags.m4 \
 	$(top_srcdir)/m4/kpse-setup.m4 \
 	$(top_srcdir)/m4/kpse-teckit-flags.m4 \
@@ -184,7 +183,6 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/kpse-cairo-flags.m4 \
 	$(top_srcdir)/libs/gmp/ac/withenable.ac \
 	$(top_srcdir)/libs/cairo/ac/withenable.ac \
 	$(top_srcdir)/libs/pixman/ac/withenable.ac \
-	$(top_srcdir)/libs/potrace/ac/withenable.ac \
 	$(top_srcdir)/libs/gd/ac/withenable.ac \
 	$(top_srcdir)/libs/freetype2/ac/withenable.ac \
 	$(top_srcdir)/libs/libpng/ac/withenable.ac \
@@ -203,7 +201,6 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/kpse-cairo-flags.m4 \
 	$(top_srcdir)/libs/libpng/ac/libpng.ac \
 	$(top_srcdir)/libs/freetype2/ac/freetype2.ac \
 	$(top_srcdir)/libs/gd/ac/gd.ac \
-	$(top_srcdir)/libs/potrace/ac/potrace.ac \
 	$(top_srcdir)/libs/pixman/ac/pixman.ac \
 	$(top_srcdir)/libs/cairo/ac/cairo.ac \
 	$(top_srcdir)/libs/gmp/ac/gmp.ac \
@@ -495,7 +492,7 @@ DIST_SUBDIRS = auxdir/auxsub doc $(CONF_SUBDIRS) libs utils texk
 recurse_this = 
 recurse_top = 
 
-# $Id: Makefile.in 47714 2018-05-14 18:07:32Z karl $
+# $Id: Makefile.in 48527 2018-08-31 23:11:41Z karl $
 #
 # Requires $(recurse_this) and $(recurse_top).
 # Uses CONF_SUBDIRS and MAKE_SUBDIRS (set by kpse-setup.m4).

@@ -1,4 +1,4 @@
-# $Id: kpse-pkgs.m4 46590 2018-02-10 23:30:32Z karl $
+# $Id: kpse-pkgs.m4 48527 2018-08-31 23:11:41Z karl $
 # Private Autoconf macros for the TeX Live (TL) tree.
 # Copyright 2016-2018 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
@@ -36,7 +36,6 @@ mpfr
 gmp
 cairo
 pixman
-potrace
 gd
 freetype2
 libpng
@@ -64,7 +63,6 @@ AC_REQUIRE([KPSE_LIBPAPER_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_LIBPNG_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_FREETYPE2_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_GD_SYSTEM_FLAGS])[]dnl
-AC_REQUIRE([KPSE_POTRACE_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_PIXMAN_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_CAIRO_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_GMP_SYSTEM_FLAGS])[]dnl
