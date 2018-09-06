@@ -29,7 +29,7 @@
 #define SIZEOF_LONG 8
 
 /* Version number of package */
-#define VERSION "20180904"
+#define VERSION "20180906"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

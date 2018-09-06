@@ -1,4 +1,4 @@
-## $Id: Makefile.am 46348 2018-01-17 18:00:12Z lscarso $
+## $Id: Makefile.am 48591 2018-09-05 21:30:41Z lscarso $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/.
 ##
 ## Copyright 2017      Karl Berry <tex-live@tug.org>
@@ -237,6 +237,7 @@ include $(srcdir)/luatexdir/am/libunilib.am
 include $(srcdir)/luatexdir/am/luafontforge.am
 include $(srcdir)/luatexdir/am/libluatex.am
 include $(srcdir)/luatexdir/am/luaffi.am
+include $(srcdir)/luatexdir/am/luapplib.am 
 include $(srcdir)/luatexdir/am/luatex.am
 
 ## XeTeX
