@@ -1,8 +1,10 @@
 #! /bin/sh -vx
-# $Id: cef5conv.test 45809 2017-11-15 00:36:56Z karl $
-# Copyright 2017 Peter Breitenlohner <tex-live@tug.org>
+# $Id: cef5conv.test 48633 2018-09-09 17:56:55Z karl $
+# Copyright 2017-2018 Peter Breitenlohner <tex-live@tug.org>
 # Copyright 2011 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
+
+LC_ALL=C; export LC_ALL;  LANGUAGE=C; export LANGUAGE
 
 ./cef5conv <$srcdir/tests/cef5conv.tex >cef5conv.cjk \
 	&& diff cef5conv.cjk $srcdir/tests/cef5conv.cjk \
