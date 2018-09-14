@@ -68,7 +68,7 @@ static void ng_special_out (SIGNED_QUAD len, unsigned char **start, unsigned cha
        */
       if (!memcmp((char *)p, "Warning:", 8))
       {
-        if (verbose)
+        if (dpx_conf.verbose_level > 0)
           WARN("VF:%s", p+8);
       }
       else
