@@ -19062,6 +19062,8 @@ static FT_Face font_face[65536];
 static ot_tbl_colr * font_colr[65536];
 static ot_tbl_cpal * font_cpal[65536];
 static FT_Library font_ftlib;
+static char * output_pdf_name;
+static char * output_dvi_name;
 
 static char * area_split_name (char * s)
 {
@@ -19542,9 +19544,10 @@ static void ship_out (pointer p)
       struct pdf_setting aptex_pdf_setting;
       const char * aptex_pdf_ids[4] = {"Asiatic pTeX 2018", NULL, NULL, "Asiatic pTeX 2018"};
 
+      output_dvi_name = take_str_string(output_file_name);
       output_pdf_name = take_str_string(output_file_name);
       memcpy(output_pdf_name + length(output_file_name) - 4, ".pdf", 4);
-      aptex_pdf_ids[1] = output_pdf_name;
+      aptex_pdf_ids[1] = output_dvi_name;
       aptex_pdf_ids[2] = output_pdf_name;
 
       if ((pdf_minor_version < 0) || (pdf_minor_version > 7))
@@ -19559,12 +19562,18 @@ static void ship_out (pointer p)
 
       pdf_init_fontmaps();
 
+      /* TeX Live */
       if (kpse_find_file("pdftex.map", kpse_fontmap_format, false) != NULL)
         pdf_load_fontmap_file("pdftex.map", '+');
       if (kpse_find_file("kanjix.map", kpse_fontmap_format, false) != NULL)
         pdf_load_fontmap_file("kanjix.map", '+');
       if (kpse_find_file("ckx.map", kpse_fontmap_format, false) != NULL)
         pdf_load_fontmap_file("ckx.map", '+');
+      /* W32TeX */
+      if (kpse_find_file("dlbase14.map", kpse_fontmap_format, false) != NULL)
+        pdf_load_fontmap_file("dlbase14.map", '+');
+      if (kpse_find_file("dvipdfm.map", kpse_fontmap_format, false) != NULL)
+        pdf_load_fontmap_file("dvipdfm.map", '+');
 
       if (aptex_env.aptex_map != NULL)
       {
@@ -19583,13 +19592,15 @@ static void ship_out (pointer p)
 
       aptex_pdf_setting.media_width = 595.0;
       aptex_pdf_setting.media_height = 842.0;
+      aptex_pdf_setting.annot_grow_amount = 0.0;
+      aptex_pdf_setting.outline_open_depth = 0;
+      aptex_pdf_setting.check_gotos = !(1 << 4);
       aptex_pdf_setting.enable_encrypt = 0;
       aptex_pdf_setting.object.enable_objstm = 1;
       aptex_pdf_setting.object.enable_predictor = 1;
       aptex_pdf_setting.device.dvi2pts = sp2bp;
       aptex_pdf_setting.device.precision = 3;
       aptex_pdf_setting.device.ignore_colors = 0;
-      aptex_pdf_setting.encrypt.key_size = 0;
       pdf_open_document(utf8_mbcs(output_pdf_name), aptex_pdf_ids, aptex_pdf_setting);
       aptex_dpx_init_page(pdf_page_width, pdf_page_height);
       spc_exec_at_begin_document();
@@ -34569,6 +34580,7 @@ void close_files_and_terminate (void)
         print_int(total_pages);
         prints(" page");
         free(output_pdf_name);
+        free(output_dvi_name);
 
         if (total_pages != 1)
           print_char('s');
