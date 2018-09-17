@@ -42,11 +42,11 @@
 #include "mfileio.h"
 #include "numbers.h"
 #include "dpxconf.h"
+#include "dpxutil.h"
 
 #include "pdfdev.h"
 #include "pdfdoc.h"
 #include "pdfparse.h"
-#include "pdfencrypt.h"
 #include "pdfresource.h"
 #include "pdfdraw.h"
 
@@ -2252,18 +2252,75 @@ read_length (double *vp, double mag, const char **pp, const char *endptr)
   return  error;
 }
 
+static int
+scan_special_encrypt (int *key_bits, int32_t *permission, char *opassword, char *upassword,
+                      const char **curptr, const char *endptr)
+{
+  int   error = 0;
+  const char *p = *curptr;
+
+  skip_white(&p, endptr);
+
+  opassword[0] = '\0';
+  upassword[0] = '\0';
+  while (!error && p < endptr) {
+    char  *kp = parse_c_ident(&p, endptr);
+    if (!kp)
+      break;
+    else {
+      pdf_obj *obj;
+      skip_white(&p, endptr);
+      if (!strcmp(kp, "ownerpw")) {
+        if ((obj = parse_pdf_string(&p, endptr))) {
+          if (pdf_string_value(obj))
+            strncpy(opassword, pdf_string_value(obj), sizeof(opassword)-1);
+          pdf_release_obj(obj);
+        } else
+          error = -1;
+      } else if (!strcmp(kp, "userpw")) {
+        if ((obj = parse_pdf_string(&p, endptr))) {
+          if (pdf_string_value(obj))
+            strncpy(upassword, pdf_string_value(obj), sizeof(upassword)-1);
+          pdf_release_obj(obj);
+        } else
+          error = -1;
+      } else if (!strcmp(kp, "length")) {
+        if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
+          *key_bits = (unsigned) pdf_number_value(obj);
+        } else
+          error = -1;
+        if (obj)
+          pdf_release_obj(obj);
+      } else if (!strcmp(kp, "perm")) {
+        if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
+          *permission = (unsigned) pdf_number_value(obj);
+        } else
+          error = -1;
+        if (obj)
+          pdf_release_obj(obj);
+      } else
+        error = -1;
+      RELEASE(kp);
+    }
+    skip_white(&p, endptr);
+  }
+  *curptr = p;
+
+  return error;
+}
 
 static int
 scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
               int *majorversion, int *minorversion,
-              int *do_enc, int *key_bits, int32_t *permission,
-              char *owner_pw, char *user_pw,
+              int *enable_encryption, int *key_bits, int32_t *permission,
+              char *opassword, char *upassword,
               const char *buf, uint32_t size)
 {
   char  *q;
   const char *p = buf, *endptr;
   int    ns_pdf = 0, ns_dvipdfmx = 0, error = 0;
   double tmp;
+  double width = *wd, height = *ht; /* backup */
 
   endptr = p + size;
 
@@ -2384,50 +2441,9 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
         *majorversion = (int)strtol(kv, NULL, 10);
         RELEASE(kv);
       }
-    } else if (ns_pdf && !strcmp(q, "encrypt") && do_enc) {
-      *do_enc = 1;
-      *owner_pw = *user_pw = 0;
-      while (!error && p < endptr) {
-        char  *kp = parse_c_ident(&p, endptr);
-        if (!kp)
-          break;
-        else {
-          pdf_obj *obj;
-          skip_white(&p, endptr);
-          if (!strcmp(kp, "ownerpw")) {
-            if ((obj = parse_pdf_string(&p, endptr))) {
-              if (pdf_string_value(obj))
-                strncpy(owner_pw, pdf_string_value(obj), MAX_PWD_LEN);
-              pdf_release_obj(obj);
-            } else
-              error = -1;
-          } else if (!strcmp(kp, "userpw")) {
-            if ((obj = parse_pdf_string(&p, endptr))) {
-              if (pdf_string_value(obj))
-                strncpy(user_pw, pdf_string_value(obj), MAX_PWD_LEN);
-              pdf_release_obj(obj);
-            } else
-              error = -1;
-          } else if (!strcmp(kp, "length")) {
-            if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
-              *key_bits = (unsigned) pdf_number_value(obj);
-            } else
-              error = -1;
-            if (obj)
-              pdf_release_obj(obj);
-          } else if (!strcmp(kp, "perm")) {
-            if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
-              *permission = (unsigned) pdf_number_value(obj);
-            } else
-              error = -1;
-            if (obj)
-              pdf_release_obj(obj);
-          } else
-            error = -1;
-          RELEASE(kp);
-        }
-        skip_white(&p, endptr);
-      }
+    } else if (ns_pdf && !strcmp(q, "encrypt")) {
+      *enable_encryption = 1;
+      error = scan_special_encrypt(key_bits, permission, opassword, upassword, &p, endptr);
     } else if (ns_dvipdfmx && !strcmp(q, "config")) {
       read_config_special(&p, endptr);
     }

@@ -18974,63 +18974,83 @@ done:
 
 #ifndef APTEX_DVI_ONLY
 
-// PDF output functions
-extern void pdf_files_init(void);
-extern void pdf_files_close(void);
+// PDF output functions from texlive/texk/dvipdfm-x
 
-extern void pdf_init_device(double dvi2pts, int precision, int black_and_white);
-extern void pdf_close_device(void);
-
+/* from "dvipdfm-x/fontmap.h" */
 extern void pdf_init_fontmaps(void);
 extern void pdf_close_fontmaps(void);
+extern int pdf_load_fontmap_file(const char *filename, int map_mode);
 
-extern void pdf_open_document(const char *filename,
-  int do_encryption,
-  double media_width,
-  double media_height,
-  double annot_grow_amount,
-  int bookmark_open_depth,
-  int check_gotos);
+/* from "dvipdfm-x/pdfdoc.h" */
+struct pdf_dev_setting {
+    double      dvi2pts;   /* conversion unit */
+    int         precision; /* number of decimal digits kept */
+    int         ignore_colors; /* 1 for black or white */
+};
+
+struct pdf_enc_setting {
+    int         key_size;
+    uint32_t    permission;
+    const char *uplain, *oplain; /* password */
+    int         use_aes;
+    int         encrypt_metadata;
+};
+
+struct pdf_obj_setting {
+    int         enable_objstm;
+    int         enable_predictor;
+};
+
+struct pdf_setting
+{
+    double media_width, media_height;
+    double annot_grow_amount;
+    int    outline_open_depth;
+    int    check_gotos;
+    int    enable_encrypt;
+    struct pdf_enc_setting encrypt;
+    struct pdf_dev_setting device;
+    struct pdf_obj_setting object;
+};
+
+extern void pdf_open_document (const char *filename, const char **ids,
+                               struct pdf_setting settings);
 extern void pdf_close_document(void);
-
-extern void pdf_doc_set_creator(const char * creator);
-extern void pdf_set_version(unsigned version);
-extern void pdf_set_compression(int level);
-
-extern void graphics_mode(void);
-extern long pdf_output_stats(void);
-
-extern int spc_exec_at_begin_document(void);
-extern void spc_exec_at_end_document(void);
-
 extern void pdf_doc_begin_page(double scale, double x_origin, double y_origin);
 extern void pdf_doc_end_page(void);
-
-extern int spc_exec_at_begin_page(void);
-extern int spc_exec_at_end_page(void);
-
-typedef signed long spt_t;
-typedef long UNSIGNED_TRIPLE, SIGNED_TRIPLE, SIGNED_QUAD;
 typedef struct pdf_rect {
   double llx, lly, urx, ury;
 } pdf_rect;
+extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
 
+/* from "dvipdfm-x/pdfobj.h" */
+extern void pdf_set_version(unsigned version);
+extern void pdf_set_compression(int level);
+extern long pdf_output_stats(void);
+
+/* from "dvipdfm-x/pdfdev.h" */
+extern void graphics_mode(void);
+typedef signed long spt_t;
+extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
+extern void pdf_dev_set_dirmode(int dir_mode);
+
+/* from "dvipdfm-x/specials.h" */
+extern int spc_exec_at_begin_document(void);
+extern void spc_exec_at_end_document(void);
+extern int spc_exec_at_begin_page(void);
+extern int spc_exec_at_end_page(void);
 extern int spc_exec_special(const char *buffer, long size, double x_user, double y_user, double dpx_mag);
 
+/* from "dvipdfm-x/dvi.c" */
 extern int dvi_locate_font (const char *tfm_name, spt_t ptsize);
 extern int dvi_locate_native_font (const char *filename, uint32_t fidx,
   spt_t ptsize, int layout_dir, int extend, int slant, int embolden);
-extern void ng_set(SIGNED_QUAD ch, int ng_font_id, SIGNED_QUAD h, SIGNED_QUAD v);
+
+/* from "src/libdpx/ng/dvi_ng.c" */
+extern void ng_set(int32_t ch, int ng_font_id, int32_t h, int32_t v);
 extern void ng_gid(uint16_t gid, int ng_font_id, int32_t h, int32_t v);
 extern void ng_layer(uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, uint8_t g, uint8_t b);
-extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
-
-extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
-extern void pdf_enc_compute_id_string(char *dviname, char *pdfname);
-extern void pdf_dev_set_dirmode(int dir_mode);
-extern int pdf_load_fontmap_file(const char *filename, int map_mode);
 extern void spc_moveto(int32_t, int32_t);
-extern long pdf_output_stats(void);
 
 static const double sp2bp = 0.000015202;
 static int     font_id[65536];
@@ -19519,14 +19539,18 @@ static void ship_out (pointer p)
 
 #ifndef APTEX_DVI_ONLY
     {
+      struct pdf_setting aptex_pdf_setting;
+      const char * aptex_pdf_ids[4] = {"Asiatic pTeX 2018", NULL, NULL, "Asiatic pTeX 2018"};
+
       output_pdf_name = take_str_string(output_file_name);
       memcpy(output_pdf_name + length(output_file_name) - 4, ".pdf", 4);
-      pdf_enc_compute_id_string(output_pdf_name, output_pdf_name);
+      aptex_pdf_ids[1] = output_pdf_name;
+      aptex_pdf_ids[2] = output_pdf_name;
 
       if ((pdf_minor_version < 0) || (pdf_minor_version > 7))
-        pdf_set_version(5);
+        pdf_set_version(15);
       else
-        pdf_set_version(pdf_minor_version);
+        pdf_set_version(10 + pdf_minor_version);
 
       if ((pdf_compress_level < 0) || (pdf_compress_level > 9))
         pdf_set_compression(9);
@@ -19557,10 +19581,16 @@ static void ship_out (pointer p)
         }
       }
 
-      pdf_doc_set_creator("Asiatic pTeX 2018");
-      pdf_files_init();
-      pdf_init_device(sp2bp, 3, 0);
-      pdf_open_document(utf8_mbcs(output_pdf_name), 0, 595.0, 842.0, 0, 0, !(1 << 4));
+      aptex_pdf_setting.media_width = 595.0;
+      aptex_pdf_setting.media_height = 842.0;
+      aptex_pdf_setting.enable_encrypt = 0;
+      aptex_pdf_setting.object.enable_objstm = 1;
+      aptex_pdf_setting.object.enable_predictor = 1;
+      aptex_pdf_setting.device.dvi2pts = sp2bp;
+      aptex_pdf_setting.device.precision = 3;
+      aptex_pdf_setting.device.ignore_colors = 0;
+      aptex_pdf_setting.encrypt.key_size = 0;
+      pdf_open_document(utf8_mbcs(output_pdf_name), aptex_pdf_ids, aptex_pdf_setting);
       aptex_dpx_init_page(pdf_page_width, pdf_page_height);
       spc_exec_at_begin_document();
       FT_Init_FreeType(&font_ftlib);
@@ -34531,8 +34561,6 @@ void close_files_and_terminate (void)
 
         spc_exec_at_end_document();
         pdf_close_document();
-        pdf_close_device();
-        pdf_files_close();
         pdf_close_fontmaps();
 
         print_nl("Output written on ");
