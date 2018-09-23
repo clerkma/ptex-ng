@@ -19033,6 +19033,8 @@ extern void graphics_mode(void);
 typedef signed long spt_t;
 extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
 extern void pdf_dev_set_dirmode(int dir_mode);
+extern void pdf_dev_begin_actualtext(uint16_t * unicodes, int len);
+extern void pdf_dev_end_actualtext(void);
 
 /* from "dvipdfm-x/specials.h" */
 extern int spc_exec_at_begin_document(void);
@@ -19148,9 +19150,12 @@ static char * area_split_lang (char * s)
   return strdup("");
 }
 
-static void analysis_color_glyph (uint16_t idx, int ng_font_id, scaled h, scaled v, ot_tbl_colr * colr, ot_tbl_cpal * cpal)
+static void analysis_color_glyph (uint16_t idx, int32_t c, internal_font_number f, scaled h, scaled v)
 {
   uint32_t i, j;
+  int ng_font_id = font_id[f];
+  ot_tbl_colr * colr = font_colr[f];
+  ot_tbl_cpal * cpal = font_cpal[f];
 
   if (colr != NULL && cpal != NULL)
   {
@@ -19158,15 +19163,32 @@ static void analysis_color_glyph (uint16_t idx, int ng_font_id, scaled h, scaled
     {
       if (colr->base_glyphs[i].GID == idx)
       {
+        uint16_t actual_c[2];
+        int actual_len = 0;
+
+        if (c <= 0xFFFF)
+        {
+          actual_len = 1;
+          actual_c[0] = c;
+        }
+        else
+        {
+          actual_len = 2;
+          actual_c[0] = ((c - 0x10000) >> 10) + 0xD800;
+          actual_c[1] = ((c - 0x10000) & 0x03FF) + 0xDC00;
+        }
+
+        pdf_dev_begin_actualtext(actual_c, actual_len);
+
         for (j = 0; j < colr->base_glyphs[i].numLayers; j++)
-          ng_layer(
-            colr->layers[colr->base_glyphs[i].firstLayerIndex + j].GID,
-            ng_font_id,
-            h, v,
-            cpal->colorRecords[cpal->colorRecordIndices[0] + colr->layers[colr->base_glyphs[i].firstLayerIndex + j].paletteIndex].red,
-            cpal->colorRecords[cpal->colorRecordIndices[0] + colr->layers[colr->base_glyphs[i].firstLayerIndex + j].paletteIndex].green,
-            cpal->colorRecords[cpal->colorRecordIndices[0] + colr->layers[colr->base_glyphs[i].firstLayerIndex + j].paletteIndex].blue
-          );
+        {
+          ot_layer * g_layer = colr->layers + colr->base_glyphs[i].firstLayerIndex + j;
+          ot_color * g_color = cpal->colorRecords + cpal->colorRecordIndices[0] + g_layer->paletteIndex;
+
+          ng_layer(g_layer->GID, ng_font_id, h, v, g_color->red, g_color->green, g_color->blue);
+        }
+
+        pdf_dev_end_actualtext();
         return;
       }
     }
@@ -19287,17 +19309,17 @@ static void pdf_kanji_out (internal_font_number f, KANJI_code c)
       {
         case dir_yoko:
           pdf_dev_set_dirmode(dvi_yoko);
-          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], cur_h + glyph_hpos_delta, -cur_v - glyph_vpos_delta, font_colr[f], font_cpal[f]);
+          analysis_color_glyph(gstr->glyphs[0].glyph_id, c, f, cur_h + glyph_hpos_delta, -cur_v - glyph_vpos_delta);
           break;
 
         case dir_tate:
           pdf_dev_set_dirmode(dvi_tate);
-          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], -cur_v - glyph_vpos_delta, -cur_h - glyph_hpos_delta, font_colr[f], font_cpal[f]);
+          analysis_color_glyph(gstr->glyphs[0].glyph_id, c, f, -cur_v - glyph_vpos_delta, -cur_h - glyph_hpos_delta);
           break;
 
         case dir_dtou:
           pdf_dev_set_dirmode(dvi_dtou);
-          analysis_color_glyph(gstr->glyphs[0].glyph_id, font_id[f], cur_v + glyph_vpos_delta, cur_h + glyph_hpos_delta, font_colr[f], font_cpal[f]);
+          analysis_color_glyph(gstr->glyphs[0].glyph_id, c, f, cur_v + glyph_vpos_delta, cur_h + glyph_hpos_delta);
           break;
       }
     }
