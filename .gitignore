@@ -3,6 +3,10 @@
 *.un~
 *~
 *.exe
+GPATH
+GRTAGS
+GSYMS
+GTAGS
 build-msvc/mruby
 src/libotf/CVS
 src/libotf/src/CVS
