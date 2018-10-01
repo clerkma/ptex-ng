@@ -33,6 +33,9 @@
 #define eTeX_revision       ".6"      // { \.{\\eTeXrevision} }
 #define eTeX_version_string "-2.6"    // {current \eTeX\ version}
 
+#define epTeX_version_string "-180901"
+#define epTeX_version_number 180901
+
 #define TeXXeT_code         0         // {the \TeXXeT\ feature is optional}
 #define eTeX_states         1         // {number of \eTeX\ state variables in |eqtb|}
 
@@ -1126,8 +1129,9 @@ do {                            \
 #define ptex_version_code         (shell_escape_code + 1)   // {code for \.{\\ptexversion}}
 #define ptex_minor_version_code   (ptex_version_code + 1)   // {code for \.{\\ptexminorversion}}
 #define uptex_version_code        (ptex_minor_version_code + 1) // {code for \.{\\uptexversion}}
+#define eptex_version_code        (uptex_version_code + 1)      // {code for \.{\\epTeXversion}}
 //
-#define eTeX_int                  (badness_code + 5)        // {first of \eTeX\ codes for integers}
+#define eTeX_int                  (badness_code + 6)        // {first of \eTeX\ codes for integers}
 #define eTeX_version_code         eTeX_int                  // 
 #define current_group_level_code  (eTeX_int + 1)
 #define current_group_type_code   (eTeX_int + 2)

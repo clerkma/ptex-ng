@@ -51,7 +51,7 @@ First of all, we need to install `bison` ([winflexbison](https://github.com/lexx
     tlmgr update --self --all
     Invoke-WebRequest -Uri 'https://texlive.texjp.org/tltexjp-key.asc' -OutFile 'tltexjp-key.asc'
     tlmgr key add tltexjp-key.asc
-    tlmgr repository add http://texlive.texjp.org/pretest/tltexjp tltexjp
+    tlmgr repository add http://texlive.texjp.org/current/tltexjp tltexjp
     tlmgr pinning add tltexjp "*"
     tlmgr install ptex-ng
 
@@ -60,7 +60,7 @@ First of all, we need to install `bison` ([winflexbison](https://github.com/lexx
     tlmgr update --self --all
     curl -O https://texlive.texjp.org/tltexjp-key.asc
     tlmgr key add tltexjp-key.asc
-    tlmgr repository add http://texlive.texjp.org/pretest/tltexjp tltexjp
+    tlmgr repository add http://texlive.texjp.org/current/tltexjp tltexjp
     tlmgr pinning add tltexjp '*'
     tlmgr install ptex-ng
     tlmgr path add
@@ -70,7 +70,7 @@ First of all, we need to install `bison` ([winflexbison](https://github.com/lexx
     tlmgr update --self --all
     wget https://texlive.texjp.org/tltexjp-key.asc
     tlmgr key add tltexjp-key.asc
-    tlmgr repository add http://texlive.texjp.org/pretest/tltexjp tltexjp
+    tlmgr repository add http://texlive.texjp.org/current/tltexjp tltexjp
     tlmgr pinning add tltexjp '*'
     tlmgr install ptex-ng
     tlmgr path add

@@ -6373,6 +6373,7 @@ static void init_prim (void)
   primitive("shellescape", last_item, shell_escape_code);
   primitive("ptexversion", last_item, ptex_version_code);
   primitive("uptexversion", last_item, uptex_version_code);
+  primitive("epTeXversion", last_item, eptex_version_code);
   primitive("ptexminorversion", last_item, ptex_minor_version_code);
   primitive("number", convert, number_code);
   primitive("romannumeral", convert, roman_numeral_code);
@@ -11252,6 +11253,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("uptexversion");
           break;
 
+        case eptex_version_code:
+          print_esc("epTeXversion");
+          break;
+
         case ptex_minor_version_code:
           print_esc("ptexminorversion");
           break;
@@ -15093,6 +15098,10 @@ static void scan_something_internal (small_number level, boolean negative)
 
             case uptex_version_code:
               cur_val = upTeX_version;
+              break;
+
+            case eptex_version_code:
+              cur_val = epTeX_version_number;
               break;
 
             case ptex_minor_version_code:
