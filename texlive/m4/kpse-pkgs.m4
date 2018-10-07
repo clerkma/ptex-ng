@@ -1,4 +1,4 @@
-# $Id: kpse-pkgs.m4 48527 2018-08-31 23:11:41Z karl $
+# $Id: kpse-pkgs.m4 48839 2018-10-06 11:20:00Z hironobu $
 # Private Autoconf macros for the TeX Live (TL) tree.
 # Copyright 2016-2018 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
@@ -112,6 +112,7 @@ dtl
 dvi2tty
 dvidvi
 dviljk
+dviout-util
 dvipdfm-x
 dvipng
 dvipos

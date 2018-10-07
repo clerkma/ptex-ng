@@ -1,4 +1,4 @@
-$Id: README 48654 2018-09-13 17:10:25Z karl $
+$Id: README 48839 2018-10-06 11:20:00Z hironobu $
 Copyright 2006-2018 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -46,6 +46,9 @@ dvi2tty 6.0.0 - checked 05mar16
 dvidvi - maintained here
 
 dviljk - maintained here, by Joachim Schrod
+
+dviout-util - by Japanese TeX Development Community (Hironobu, Takuji et al.)
+  https://github.com/texjporg/tex-jp-build
 
 dvipdfm-x - maintained here, by us, contains
   dvipdfmx
