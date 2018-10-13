@@ -9,12 +9,7 @@
 
 Run the shell script:
 
-    ./build-aptex.sh
-
-### Android
-
-    cd build-android
-    ./build-android-port.sh
+    ./build-gcc/build-aptex.sh
 
 ### Windows/MSVC
 First of all, we need to install `bison` ([winflexbison](https://github.com/lexxmark/winflexbison/)) somewhere.

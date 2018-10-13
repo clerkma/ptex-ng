@@ -12,7 +12,7 @@ before_script:
 matrix:
   include:
     - os: linux
-      script: ./build-aptex.sh
+      script: ./build-gcc/build-aptex.sh
     - os: osx
       osx_image: xcode9.1
-      script: ./build-aptex.sh
+      script: ./build-gcc/build-aptex.sh
