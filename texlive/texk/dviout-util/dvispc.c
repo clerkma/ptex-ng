@@ -221,15 +221,14 @@ struct DIMENSION_REC {
 int f_dtl = 0;
 
 enum {
-    EXE2NONE, EXE2MODIFY, EXE2CHECK, EXE2SPECIAL, EXE2TEXT, EXE2DVI
+    EXE2MODIFY, EXE2CHECK, EXE2SPECIAL, EXE2TEXT, EXE2DVI
 };
 
-int  f_mode = EXE2NONE; /*  1: -c modify
-                            2: -d report only
-                            3: -s specials
-                            4: -a to_Text
-                            5: -x to_DVI   */
-/* default mode will be set in main() to be page_indep */
+int f_mode = EXE2MODIFY; /*  0: -c modify
+                             1: -d report only
+                             2: -s specials
+                             3: -a to_Text
+                             4: -x to_DVI   */
 
 int f_debug = 0;        /* -v */
 int f_overwrite = 0;
@@ -253,6 +252,14 @@ int  max_stack;
 char *out_pages ="T-L";
 int  total_book_page;
 
+/* non-stack specials */
+int  f_background = 0;
+char background[MAX_LEN];
+int  f_pdf_bgcolor = 0;
+char pdf_bgcolor[MAX_LEN];
+int  f_pn = 0;
+char tpic_pn[MAX_LEN];
+
 /* stack specials */
 int  color_depth;
 int  color_depth_max;
@@ -266,14 +273,6 @@ int  pdf_annot_depth;
 int  pdf_annot_depth_max;
 int  pdf_annot_under;
 char *pdf_annot_pt[MAX_ANNOT];
-
-/* non-stack specials */
-int  f_background = 0;
-char background[MAX_LEN];
-int  f_pdf_bgcolor = 0;
-char pdf_bgcolor[MAX_LEN];
-int  f_pn = 0;
-char tpic_pn[MAX_LEN];
 
 int  f_needs_corr; /* flag to determine if correction is needed */
 char color_buf[COLOR_BUF_SIZE]; /* common buffer for color/pdf_color */
@@ -610,8 +609,6 @@ skip: ;
        cf.  argc = (number of all arguments) + 1
         {argv[0] is the program name itself} ^^^ */
 
-    if(!f_mode) f_mode = EXE2MODIFY; /* default mode */
-
     fnum = 0;
     if(!isatty(fileno(stdin))){  /* if stdin is redirected from a file */
         fp_in = stdin;
@@ -670,13 +667,11 @@ skip: ;
             break;
 
         case 2:
-         /* if(fp_in == NULL){  */
             /* prioritize filename arguments;
                if fp_in != NULL, non-empty stdin will be discarded but don't care! */
             strcpy(infile, argv[argc-2]);
             strcpy(outfile, argv[argc-1]);
             break;
-         /*   }     */
         default:
             usage(1);
     }
@@ -691,7 +686,27 @@ skip: ;
         setmode( fileno( stdin ), O_BINARY);
 #endif
     }
-                        /* -x : text -> DVI */
+
+    /* append .dvi suffix if input/output is DVI */
+    if(f_mode == EXE2DVI || f_mode == EXE2MODIFY){
+        len = strlen(outfile);
+        if(len){
+            if(len < 4 || StrCmp(outfile + len - 4, ".dvi"))
+                strcat(outfile, ".dvi");
+        }
+    }
+    if(f_mode != EXE2DVI){
+        len = strlen(infile);
+        if(len){
+            if(len < 4 || StrCmp(infile + len - 4, ".dvi")){
+                strcat(infile, ".dvi");
+                len += 4;   /* will be reused later while preparing overwrite */
+            }
+            dvi_info.file_name = infile;
+        }
+    }
+
+    /* -x : text -> DVI */
     if(f_mode == EXE2DVI){
         /* use infile if given, otherwise use existing fp_in (= non-empty stdin)
            note that fp_in and infile are exclusive (already checked above) */
@@ -702,11 +717,8 @@ skip: ;
                 exit(1);
             }
         }
-        /* [TODO] I'd like to use outfile if given */
+        /* use outfile if given */
         if(fp_out == NULL || *outfile){
-            len = strlen(outfile);
-            if(len < 4 || StrCmp(outfile + len - 4, ".dvi"))
-                strcat(outfile, ".dvi");
             fp_out = fopen(outfile, WRITE_BINARY);
             if(fp_out == NULL){
                 fprintf(stderr, "Cannot open %s for output\n", outfile);
@@ -716,16 +728,8 @@ skip: ;
         trans2dvi();  /* files will be closed */
         return 0;
     }
-                        /* dvi->dvi or -d or -s or -a */
-    len = strlen(infile);
-    if(len){
-        if(len < 4 || StrCmp(infile + len - 4, ".dvi")){
-            strcat(infile, ".dvi");
-            len += 4;
-        }
-        dvi_info.file_name = infile;
-    }
 
+    /* dvi->dvi or -d or -s or -a */
     /* [TODO] comments not added yet */
     if(argc - i == 1){
         if(f_mode == EXE2MODIFY && !fnum){
@@ -753,9 +757,6 @@ same:       strcpy(outfile, infile);
     }else if(argc - i == 2){
 #ifdef UNIX
         struct stat infstat, outfstat;
-#endif
-        strcpy(outfile, argv[argc-1]);
-#ifdef UNIX
         if(stat(infile, &infstat) == 0 && stat(outfile, &outfstat) == 0 &&
            infstat.st_dev == outfstat.st_dev && infstat.st_ino == outfstat.st_ino)
 #else
@@ -796,11 +797,16 @@ void write_sp(FILE *fp, char *sp)
     int len;
     len = strlen(sp);
 
-    if(len > 255){
+    if(len <= 0xff)
+        fprintf(fp, "%c%c%s", XXX1, len, sp);
+    else if(len <= 0xffffffff){
+        fprintf(fp, "%c", XXX1+3);
+        write_long(len, fp);
+        fprintf(fp, "%s", sp);
+    }else{
         fprintf(stderr, "Too long special:\n%s\n", sp);
         Exit(1);
     }
-    fprintf(fp, "%c%c%s", XXX1, len, sp);
 }
 
 
@@ -1325,11 +1331,11 @@ skip:                 while (tmp--)
                            !strsubcmp(special, "ar") ||         /* ar: draw circle */
                            !strsubcmp(special, "ia")) )         /* ia: fill */
                             f_pn = -1;
-                        else if(!strsubcmp(special, "color") && !f_prescan) /* color push/pop */
+                        else if(!strsubcmp(special, "color"))   /* color push/pop */
                             sp_color(special);
-                        else if(!strsubcmp(special, "pdf:bcolor") && !f_prescan)    /* pdf:bcolor */
+                        else if(!strsubcmp(special, "pdf:bcolor"))  /* pdf:bcolor */
                             sp_pdf_bcolor(special);
-                        else if(!strsubcmp(special, "pdf:ecolor") && !f_prescan)    /* pdf:ecolor */
+                        else if(!strsubcmp(special, "pdf:ecolor"))  /* pdf:ecolor */
                             sp_pdf_ecolor(special);
                         else if(!strsubcmp(special, "background")){     /* background */
                             strncpy(background, special, MAX_LEN);
@@ -1339,13 +1345,13 @@ skip:                 while (tmp--)
                             strncpy(pdf_bgcolor, special, MAX_LEN);
                             f_pdf_bgcolor = 1;
                         }
-                        else if(!strsubcmp_n(special, "pdf:bann") && !f_prescan)    /* pdf:bann */
+                        else if(!strsubcmp_n(special, "pdf:bann"))  /* pdf:bann */
                             sp_pdf_bann(special);
-                        else if(!strsubcmp(special, "pdf:eann") && !f_prescan)      /* pdf:eann */
+                        else if(!strsubcmp(special, "pdf:eann"))    /* pdf:eann */
                             sp_pdf_eann(special);
                             break;
-                        }
-                        goto skip;
+                      }
+                    goto skip;
                 }
             }
         }
@@ -1357,6 +1363,7 @@ skip:                 while (tmp--)
 void sp_color(char *sp)
 {
     char *s;
+    if(f_prescan) return;
 
     if(strstr(sp, "pop")){
         if(--color_depth < 0){
@@ -1368,8 +1375,10 @@ void sp_color(char *sp)
         return;
     }
     if(strstr(sp, "push")){
-        if(color_depth >= MAX_COLOR)
-            error("Too many color push > 512");
+        if(color_depth >= MAX_COLOR){
+            fprintf(stderr, "Too many color push > %d\n", MAX_COLOR);
+            Exit(1);
+        }
         if(color_depth){
             s = color_pt[color_depth-1];
             s += strlen(s) + 1;
@@ -1391,10 +1400,13 @@ void sp_color(char *sp)
 void sp_pdf_bcolor(char *sp)
 {
     char *s;
+    if(f_prescan) return;
 
     /* copied from "color push" routine of sp_color */
-    if(pdf_color_depth >= MAX_COLOR)
-        error("Too many pdf:bcolor > 512");
+    if(pdf_color_depth >= MAX_COLOR){
+        fprintf(stderr, "Too many pdf:bcolor > %d\n", MAX_COLOR);
+        Exit(1);
+    }
     if(pdf_color_depth){
         s = pdf_color_pt[pdf_color_depth-1];
         s += strlen(s) + 1;
@@ -1415,6 +1427,7 @@ void sp_pdf_bcolor(char *sp)
 void sp_pdf_ecolor(char *sp)
 {
     char *s;
+    if(f_prescan) return;
 
     /* copied from "color pop" routine of sp_color */
     if(--pdf_color_depth < 0){
@@ -1430,8 +1443,11 @@ void sp_pdf_ecolor(char *sp)
 void sp_pdf_bann(char *sp)
 {
     char *s;
-    if(pdf_annot_depth >= MAX_ANNOT)
-        error("Too many pdf:bann > 8");
+    if(f_prescan) return;
+    if(pdf_annot_depth >= MAX_ANNOT){
+        fprintf(stderr, "Too many pdf:bann > %d\n", MAX_ANNOT);
+        Exit(1);
+    }
     if(pdf_annot_depth){
         s = pdf_annot_pt[pdf_annot_depth-1];
         s += strlen(s) + 1;
@@ -1452,6 +1468,7 @@ void sp_pdf_bann(char *sp)
 void sp_pdf_eann(char *sp)
 {
     char *s;
+    if(f_prescan) return;
     if(--pdf_annot_depth < 0){
         fprintf(stderr, "pdf:bann ... pdf:eann stack underflow\n");
         pdf_annot_under++;

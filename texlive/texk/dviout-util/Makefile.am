@@ -30,12 +30,14 @@ chkdvifont.log: chkdvifont$(EXEEXT)
 EXTRA_DIST = $(TESTS)
 
 ## dvispc.test
-EXTRA_DIST += \
-	tests/test.tex tests/test.dvi \
-	tests/oldindep.tex tests/oldindep.dvi \
-	tests/test.spc tests/testout.dvi tests/oldindepout.dvi
-DISTCLEANFILES = x*test.spc x*testa.txt x*testax.dvi \
-	x*oldindepout.dvi x*testout.dvi
+EXTRA_DIST += tests/test.spc \
+	tests/test.tex tests/test.dvi tests/testout.dvi \
+	tests/oldindep.tex tests/oldindep.dvi tests/oldindepout.dvi \
+	tests/longspec.tex tests/longspec.dvi tests/longspecout.dvi
+DISTCLEANFILES = x*test.spc \
+	x*testa.txt x*testax.dvi \
+	x*testout.dvi x*oldindepout.dvi x*longspecout.dvi \
+	x*write.dvi x*writeout.dvi
 
 ## chkdvifont.test
 EXTRA_DIST += tests/test.cfn \

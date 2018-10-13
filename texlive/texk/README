@@ -1,4 +1,4 @@
-$Id: README 48839 2018-10-06 11:20:00Z hironobu $
+$Id: README 48882 2018-10-11 14:22:06Z hironobu $
 Copyright 2006-2018 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -49,6 +49,7 @@ dviljk - maintained here, by Joachim Schrod
 
 dviout-util - by Japanese TeX Development Community (Hironobu, Takuji et al.)
   https://github.com/texjporg/tex-jp-build
+  but also: https://github.com/aminophen/dviout-util
 
 dvipdfm-x - maintained here, by us, contains
   dvipdfmx
