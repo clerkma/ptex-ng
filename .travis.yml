@@ -7,7 +7,7 @@ git:
   depth: 10
 
 before_script:
-  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt install bison texinfo; fi
+  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt install bison info; fi
 
 matrix:
   include:
@@ -16,7 +16,3 @@ matrix:
     - os: osx
       osx_image: xcode9.1
       script: ./build-gcc/build-aptex.sh
-    - os: windows
-      script: cd build-msvc
-      script: build-mruby.bat
-      script: build.bat
