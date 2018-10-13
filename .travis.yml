@@ -14,5 +14,5 @@ matrix:
     - os: linux
       script: ./build-gcc/build-aptex.sh
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode10
       script: ./build-gcc/build-aptex.sh
