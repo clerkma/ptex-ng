@@ -1,3 +1,23 @@
+2018-10-14  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
+
+	* dvispc.c: Fix a bug that modification of non-stack
+	specials was almost broken (my fault when prior scanning
+	was introduced). Minimize correction for tpic_pn, report
+	effective tpic_pn properly.
+	* tests/tpicpn.{tex,dvi}, tests/tpicsh.{tex,dvi},
+	tests/first.{tex,dvi}, tests/firstpn.{tex,dvi}: New tests.
+	* Makefile.am: Adjusted.
+	* configure.ac: Version 20181014.
+
+2018-10-13  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
+
+	* dvispc.c: Stop support for pdf:bann, pe:eann which was
+	not working properly.
+	* chkdvifont.test, dvispc.test: Reconstruct tests.
+	* tests/annot.{tex,dvi}, tests/longspec.{tex,dvi},
+	tests/flatnest.{tex,dvi}: Prepared for future work.
+	* Makefile.am: Adjusted.
+
 2018-10-12  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
 
 	* dvispc.c: Append .dvi suffix for DVI output.
@@ -9,7 +29,7 @@
 	* dvispc.c: Support page-independence even with long
 	specials. Use MAX_... constants for error messages.
 	* dvispc.test: Test long specials.
-	* tests/longspec.{tex,dvi}, tests/longspecout.dvi: New tests.
+	* tests/longspec.{tex,dvi}: New tests.
 	* Makefile.am: Adjusted.
 
 2018-10-10  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
@@ -108,7 +128,8 @@
 
 2017-06-03  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
 
-	* dvispc.c: Support page indendence in reverse order.
+	* dvispc.c: Support page indendence in reverse order by
+	prior scanning.
 
 2017-06-03  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
 

@@ -253,12 +253,17 @@ char *out_pages ="T-L";
 int  total_book_page;
 
 /* non-stack specials */
-int  f_background = 0;
 char background[MAX_LEN];
-int  f_pdf_bgcolor = 0;
+char background_prev[MAX_LEN];
+int  f_background = 0;  /* in each page, 0: not found; 1: found */
 char pdf_bgcolor[MAX_LEN];
-int  f_pn = 0;
+char pdf_bgcolor_prev[MAX_LEN];
+int  f_pdf_bgcolor = 0; /* in each page, 0: not found; 1: found */
 char tpic_pn[MAX_LEN];
+char tpic_pn_prev[MAX_LEN];
+int  f_pn = 0;  /* in each page, 0: not found and not actually used;
+                                 1: found before actual use
+                                -1: not found before actual use */
 
 /* stack specials */
 int  color_depth;
@@ -881,10 +886,11 @@ lastpage:           if(isdigit(*++out_pages)){
          if((f_mode == EXE2MODIFY) and (f_mode == EXE2CHECK)) */
 
     /* Prior scanning. This ensures page independence in reverse order too,
-       by checking whether non-stack specials appears somewhere in DVI.
+       (e.g. Page 1 & 2 without background (= white) and Page 3 with background)
+       by checking whether non-stack specials (except tpic_pn) appears somewhere in DVI.
        Specials with paired syntax (push/pop, bcolor/ecolor) are already safe
        without pre-scanning, so these are skipped due to f_prescan = 1.
-       Other specials (background, pdf_bgcolor, pn) are handled in this scanning. */
+       Other specials (background, pdf_bgcolor) are handled in this scanning. */
     f_prescan = 1;  /* change behavior of interpret(dvi) */
     for(page = 1; page <= dim->total_page; page++){
         fseek(dvi->file_ptr, dim->page_index[page], SEEK_SET);
@@ -897,7 +903,7 @@ lastpage:           if(isdigit(*++out_pages)){
         fseek(dvi->file_ptr, 0, SEEK_SET);
         for(size =  dim->page_index[1]; size > 0; size--)
             write_byte(read_byte(dvi->file_ptr), fp);   /* Write preamble */
-        /* [Process 1] start the first page */
+        /* [Process 1] Start writing the first page. */
         current  = ftell(fp);                           /* position of 1-st BOP */
         for(size = 41; size > 0; size--)                /* Write BOP and c[] */
             write_byte(read_byte(dvi->file_ptr), fp);
@@ -906,21 +912,25 @@ lastpage:           if(isdigit(*++out_pages)){
 
     for(page = 1; page <= dim->total_page; page++){ /* page loop start */
         fseek(dvi->file_ptr, dim->page_index[page], SEEK_SET);
-        f_background = 0;
-        f_pdf_bgcolor = 0;
-        pos = interpret(dvi->file_ptr);  /* pos = position of EOP + 1 */
-        if(f_debug){
+        pos = interpret(dvi->file_ptr); /* scanned the whole page content; now
+                                           pos = position of EOP + 1 */
+        if(f_debug){    /* EXE2CHECK always falls into this */
             fprintf(fp_out, "[%d]", page);
-            /* if(page <= dim->total_page){ */ /* always true inside loop */
             flag = color_depth;
             flag += pdf_color_depth;
             flag += pdf_annot_depth;
             if(background[0] && !f_background){
-                fprintf(fp_out, "\n%s", background);
+                if(!background_prev[0]) /* assume white */
+                    fprintf(fp_out, "\nbackground gray 1");
+                else
+                    fprintf(fp_out, "\n%s", background_prev);
                 flag++;
             }
             if(pdf_bgcolor[0] && !f_pdf_bgcolor){
-                fprintf(fp_out, "\n%s", pdf_bgcolor);
+                if(!pdf_bgcolor_prev[0]) /* assume white */
+                    fprintf(fp_out, "\npdf:bgcolor [1]");
+                else
+                    fprintf(fp_out, "\n%s", pdf_bgcolor_prev);
                 flag++;
             }
             for(count = 0; count < color_depth; count++)
@@ -929,44 +939,72 @@ lastpage:           if(isdigit(*++out_pages)){
                 fprintf(fp_out, "\n%d:%s", count+1, pdf_color_pt[count]);
             for(count = 0; count < pdf_annot_depth; count++)
                 fprintf(fp_out, "\n%d:%s", count+1, pdf_annot_pt[count]);
-            if(tpic_pn[0] && f_pn < 0){
-                fprintf(fp_out, "\n%s", tpic_pn);
-                flag++;
+            if(f_pn < 0){
+                if(!tpic_pn_prev[0])
+                    fprintf(stderr, "Cannot find valid tpic pn.\n"
+                                    "Please check your LaTeX source.\n");
+                else{
+                    fprintf(fp_out, "\n%s", tpic_pn_prev);
+                    flag++;
+                }
             }
             if(flag){
-                fprintf(fp_out, "\n");
-                f_needs_corr++;
+                fprintf(fp_out, "\n"); /* at least one special printed */
+                f_needs_corr += flag;
             }
-            /* } */
         }
-        if(f_mode == EXE2CHECK)
+        if(f_mode == EXE2CHECK){
+            if(background[0] && f_background)   /* save current status of background */
+                strncpy(background_prev, background, MAX_LEN);
+            if(pdf_bgcolor[0] && f_pdf_bgcolor) /* save current status of pdf_bgcolor */
+                strncpy(pdf_bgcolor_prev, pdf_bgcolor, MAX_LEN);
+            if(tpic_pn[0])  /* save current status of tpic_pn */
+                strncpy(tpic_pn_prev, tpic_pn, MAX_LEN);
             continue;  /* skip loop if (f_mode == EXE2CHECK);
                         * remainings in this loop are for (f_mode == EXE2MODIFY) */
+        }
 
-        /* [Process 2] at the beginning of each page,
-           recover from stack underflow, and put non-stack specials if necessary */
-        while(color_under > 0){             /* recover underflow of color stack */
+        /* [Process 2] At the beginning of each page,
+           put non-stack specials if necessary.
+           Also, if the page is suffering from stack underflow,
+           open lacking stacks beforehand */
+        while(color_under > 0){     /* recover underflow of color stack */
             write_sp(fp, "color push  Black");
             f_needs_corr++;
             color_under--;
         }
-        while(pdf_color_under > 0){         /* recover underflow of pdf:bcolor ... pdf:ecolor stack */
+        while(pdf_color_under > 0){ /* recover underflow of pdf:bcolor ... pdf:ecolor stack */
             write_sp(fp, "pdf:bcolor [0]");
             f_needs_corr++;
             pdf_color_under--;
         }
-        if(background[0] && !f_background){     /* no background in this page */
-            write_sp(fp, background);
+        if(background[0] && !f_background){     /* background from the former page is effective */
+            if(!background_prev[0]) /* assume white */
+                write_sp(fp, "background gray 1");
+            else
+                write_sp(fp, background_prev);
             f_needs_corr++;
         }
-        if(pdf_bgcolor[0] && !f_pdf_bgcolor){   /* no pdf:bgcolor in this page */
-            write_sp(fp, pdf_bgcolor);
+        if(pdf_bgcolor[0] && !f_pdf_bgcolor){   /* pdf:bgcolor from the former page is effective */
+            if(!pdf_bgcolor_prev[0]) /* assume white */
+                write_sp(fp, "pdf:bgcolor [1]");
+            else
+                write_sp(fp, pdf_bgcolor_prev);
             f_needs_corr++;
         }
-        while(pdf_annot_under > 0){         /* recover underflow of pdf:bann ... pdf:eann stack */
-            /* [TODO] what should we do here? */
-            f_needs_corr++;
-            pdf_annot_under--;
+//        while(pdf_annot_under > 0){ /* recover underflow of pdf:bann ... pdf:eann stack */
+//            /* [TODO] what should we do here? */
+//            f_needs_corr++;
+//            pdf_annot_under--;
+//        }
+        if(f_pn < 0) {    /* tpic_pn from the former page is effective */
+            if(!tpic_pn_prev[0])
+                fprintf(stderr, "\nCannot find valid tpic pn."
+                                "\nPlease check your LaTeX source.");
+            else{
+                write_sp(fp, tpic_pn_prev);
+                f_needs_corr++;
+            }
         }
 
         /* [Process 3] write contents of the current page */
@@ -984,10 +1022,10 @@ lastpage:           if(isdigit(*++out_pages)){
             write_sp(fp, "pdf:ecolor");
             f_needs_corr++;
         }
-        for(count = 0; count < pdf_annot_depth; count++){
-            write_sp(fp, "pdf:eann");
-            f_needs_corr++;
-        }
+//        for(count = 0; count < pdf_annot_depth; count++){
+//            write_sp(fp, "pdf:eann");
+//            f_needs_corr++;
+//        }
         write_byte((uchar)EOP, fp); /* write EOP */
         former = current;
         current = ftell(fp);        /* get position of BOP/POST */
@@ -1003,17 +1041,19 @@ lastpage:           if(isdigit(*++out_pages)){
                 write_sp(fp, color_pt[count]);
             for(count = 0; count < pdf_color_depth; count++)
                 write_sp(fp, pdf_color_pt[count]);
-            for(count = 0; count < pdf_annot_depth; count++)
-                write_sp(fp, pdf_annot_pt[count]);
-            if(tpic_pn[0]) {
-                write_sp(fp, tpic_pn);
-                f_needs_corr++;
-            }
+//            for(count = 0; count < pdf_annot_depth; count++)
+//                write_sp(fp, pdf_annot_pt[count]);
             f_needs_corr += color_depth;
             f_needs_corr += pdf_color_depth;
-            f_needs_corr += pdf_annot_depth;
-            if(tpic_pn[0])
-                f_needs_corr++;
+//            f_needs_corr += pdf_annot_depth;
+            /* Save current status of now, before it is (probably)
+               overwritten after scanning the whole next page. */
+            if(background[0] && f_background)   /* save current status of background */
+                strncpy(background_prev, background, MAX_LEN);
+            if(pdf_bgcolor[0] && f_pdf_bgcolor) /* save current status of pdf_bgcolor */
+                strncpy(pdf_bgcolor_prev, pdf_bgcolor, MAX_LEN);
+            if(tpic_pn[0])  /* save current status of tpic_pn */
+                strncpy(tpic_pn_prev, tpic_pn, MAX_LEN);
         }
     } /* page loop end */
 
@@ -1270,6 +1310,9 @@ int strsubcmp_n(char *s, char *t)
 uint s_work(FILE *dvi)
 {
     int code, mode, tmp = 0;
+    f_background = 0;
+    f_pdf_bgcolor = 0;
+    f_pn = 0;
 
     while ((code = (uchar)read_byte(dvi)) != EOP){
         if(code >= 128){
@@ -1323,13 +1366,12 @@ skip:                 while (tmp--)
                         while(*special && ((uchar)*special) <= ' ')
                             special++;
                         if(!strsubcmp(special, "pn")){          /* pn: tpic pen size */
-                            strncpy(tpic_pn, special, MAX_LEN);
+                            if(!f_prescan) strncpy(tpic_pn, special, MAX_LEN);
                             if(!f_pn)
                                 f_pn = 1;
                         }else if(!f_pn && 
                           (!strsubcmp(special, "pa") ||         /* pa: tpic pen at */
-                           !strsubcmp(special, "ar") ||         /* ar: draw circle */
-                           !strsubcmp(special, "ia")) )         /* ia: fill */
+                           !strsubcmp(special, "ar")) )         /* ar: draw circle */
                             f_pn = -1;
                         else if(!strsubcmp(special, "color"))   /* color push/pop */
                             sp_color(special);
@@ -1345,11 +1387,11 @@ skip:                 while (tmp--)
                             strncpy(pdf_bgcolor, special, MAX_LEN);
                             f_pdf_bgcolor = 1;
                         }
-                        else if(!strsubcmp_n(special, "pdf:bann"))  /* pdf:bann */
-                            sp_pdf_bann(special);
-                        else if(!strsubcmp(special, "pdf:eann"))    /* pdf:eann */
-                            sp_pdf_eann(special);
-                            break;
+//                        else if(!strsubcmp_n(special, "pdf:bann"))  /* pdf:bann */
+//                            sp_pdf_bann(special);
+//                        else if(!strsubcmp(special, "pdf:eann"))    /* pdf:eann */
+//                            sp_pdf_eann(special);
+                        break;
                       }
                     goto skip;
                 }
@@ -1472,7 +1514,7 @@ void sp_pdf_eann(char *sp)
     if(--pdf_annot_depth < 0){
         fprintf(stderr, "pdf:bann ... pdf:eann stack underflow\n");
         pdf_annot_under++;
-        f_needs_corr++;
+//        f_needs_corr++;
         pdf_annot_depth = 0;
     }
     return;
