@@ -13,7 +13,7 @@ TESTS =
 check_PROGRAMS =
 
 # Convenience targets:
-lib: $(BUILT_SOURCES) libharfbuzz.la libharfbuzz-subset.la
+lib: $(BUILT_SOURCES) libharfbuzz.la
 libs: $(BUILT_SOURCES) $(lib_LTLIBRARIES)
 fuzzing: $(BUILT_SOURCES) libharfbuzz-fuzzing.la libharfbuzz-subset-fuzzing.la
 
@@ -29,11 +29,9 @@ HBSOURCES =  $(HB_BASE_sources)
 HBSOURCES += $(HB_BASE_RAGEL_GENERATED_sources)
 HBHEADERS = $(HB_BASE_headers)
 
-if HAVE_OT
 HBSOURCES += $(HB_OT_sources)
 HBSOURCES += $(HB_OT_RAGEL_GENERATED_sources)
 HBHEADERS += $(HB_OT_headers)
-endif
 
 if HAVE_FALLBACK
 HBSOURCES += $(HB_FALLBACK_sources)
@@ -271,7 +269,7 @@ EXTRA_DIST += \
 CLEANFILES += $(pkgconfig_DATA)
 
 
-DEF_FILES = harfbuzz.def harfbuzz-subset.def harfbuzz-icu.def
+DEF_FILES = harfbuzz.def harfbuzz-subset.def harfbuzz-icu.def harfbuzz-deprecated.def
 if HAVE_GOBJECT
 DEF_FILES += harfbuzz-gobject.def
 endif
@@ -285,17 +283,22 @@ harfbuzz-icu.def: $(HB_ICU_headers)
 	$(AM_V_GEN) $(srcdir)/gen-def.py "$@" $^
 harfbuzz-gobject.def: $(HB_GOBJECT_headers)
 	$(AM_V_GEN) $(srcdir)/gen-def.py "$@" $^
+harfbuzz-deprecated.def: $(srcdir)/hb-deprecated.h
+	$(AM_V_GEN) $(srcdir)/gen-def.py "$@" $^
 
 
 GENERATORS = \
 	gen-arabic-table.py \
-	gen-indic-table.py \
-	gen-use-table.py \
 	gen-def.py \
+	gen-emoji-table.py \
+	gen-indic-table.py \
+	gen-os2-unicode-ranges.py \
+	gen-tag-table.py \
+	gen-use-table.py \
 	$(NULL)
 EXTRA_DIST += $(GENERATORS)
 
-unicode-tables: arabic-table indic-table use-table
+unicode-tables: arabic-table indic-table tag-table use-table emoji-table
 
 arabic-table: gen-arabic-table.py ArabicShaping.txt UnicodeData.txt Blocks.txt
 	$(AM_V_GEN) $(builddir)/$^ > $(srcdir)/hb-ot-shape-complex-arabic-table.hh \
@@ -305,13 +308,21 @@ indic-table: gen-indic-table.py IndicSyllabicCategory.txt IndicPositionalCategor
 	$(AM_V_GEN) $(builddir)/$^ > $(srcdir)/hb-ot-shape-complex-indic-table.cc \
 	|| ($(RM) $(srcdir)/hb-ot-shape-complex-indic-table.cc; false)
 
+tag-table: gen-tag-table.py languagetags language-subtag-registry
+	$(AM_V_GEN) $(builddir)/$^ > $(srcdir)/hb-ot-tag-table.hh \
+	|| ($(RM) $(srcdir)/hb-ot-tag-table.hh; false)
+
 use-table: gen-use-table.py IndicSyllabicCategory.txt IndicPositionalCategory.txt UnicodeData.txt Blocks.txt
 	$(AM_V_GEN) $(builddir)/$^ > $(srcdir)/hb-ot-shape-complex-use-table.cc \
 	|| ($(RM) $(srcdir)/hb-ot-shape-complex-use-table.cc; false)
 
+emoji-table: gen-emoji-table.py emoji-data.txt
+	$(AM_V_GEN) $(builddir)/$^ > $(srcdir)/hb-unicode-emoji-table.hh \
+	|| ($(RM) $(srcdir)/hb-unicode-emoji-table.hh; false)
+
 built-sources: $(BUILT_SOURCES)
 
-.PHONY: unicode-tables arabic-table indic-table use-table built-sources
+.PHONY: unicode-tables arabic-table indic-table tag-table use-table emoji-table built-sources
 
 RAGEL_GENERATED = \
 	$(patsubst %,$(srcdir)/%,$(HB_BASE_RAGEL_GENERATED_sources)) \

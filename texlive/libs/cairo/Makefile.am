@@ -1,4 +1,4 @@
-## $Id: Makefile.am 43567 2017-03-21 17:43:10Z karl $
+## $Id: Makefile.am 48953 2018-10-20 04:37:38Z kakuto $
 ## Proxy Makefile.am to build cairo for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>

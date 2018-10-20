@@ -132,7 +132,7 @@
 #define PACKAGE_NAME "cairo (TeX Live)"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "cairo (TeX Live) 1.14.10"
+#define PACKAGE_STRING "cairo (TeX Live) 1.16.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "cairo--tex-live-"
@@ -141,7 +141,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.14.10"
+#define PACKAGE_VERSION "1.16.0"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4
@@ -184,7 +184,7 @@
 
 
 /* Version number of package */
-#define VERSION "1.14.10"
+#define VERSION "1.16.0"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

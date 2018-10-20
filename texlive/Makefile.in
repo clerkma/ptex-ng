@@ -147,6 +147,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/kpse-cairo-flags.m4 \
 	$(top_srcdir)/texk/dvi2tty/ac/withenable.ac \
 	$(top_srcdir)/texk/dvidvi/ac/withenable.ac \
 	$(top_srcdir)/texk/dviljk/ac/withenable.ac \
+	$(top_srcdir)/texk/dviout-util/ac/withenable.ac \
 	$(top_srcdir)/texk/dvipdfm-x/ac/withenable.ac \
 	$(top_srcdir)/texk/dvipng/ac/withenable.ac \
 	$(top_srcdir)/texk/dvipng/ac/dvipng.ac \
@@ -492,7 +493,7 @@ DIST_SUBDIRS = auxdir/auxsub doc $(CONF_SUBDIRS) libs utils texk
 recurse_this = 
 recurse_top = 
 
-# $Id: Makefile.in 48527 2018-08-31 23:11:41Z karl $
+# $Id: Makefile.in 48948 2018-10-19 22:06:48Z karl $
 #
 # Requires $(recurse_this) and $(recurse_top).
 # Uses CONF_SUBDIRS and MAKE_SUBDIRS (set by kpse-setup.m4).

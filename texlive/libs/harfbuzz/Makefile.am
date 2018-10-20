@@ -1,4 +1,4 @@
-## $Id: Makefile.am 48641 2018-09-11 04:13:36Z kakuto $
+## $Id: Makefile.am 48949 2018-10-19 23:02:01Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -37,6 +37,7 @@ libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-buffer.hh \
 	@HARFBUZZ_TREE@/src/hb-buffer-serialize.cc \
 	@HARFBUZZ_TREE@/src/hb-buffer.cc \
+	@HARFBUZZ_TREE@/src/hb-cache.hh \
 	@HARFBUZZ_TREE@/src/hb-common.cc \
 	@HARFBUZZ_TREE@/src/hb-debug.hh \
 	@HARFBUZZ_TREE@/src/hb-dsalgs.hh \
@@ -70,6 +71,7 @@ libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-ot-post-macroman.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-post-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-tag.cc \
+	@HARFBUZZ_TREE@/src/hb-ot-tag-table.hh \
 	@HARFBUZZ_TREE@/src/hb-set-digest.hh \
 	@HARFBUZZ_TREE@/src/hb-set.hh \
 	@HARFBUZZ_TREE@/src/hb-set.cc \
@@ -86,6 +88,7 @@ libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-subset.hh \
 	@HARFBUZZ_TREE@/src/hb-unicode.hh \
 	@HARFBUZZ_TREE@/src/hb-unicode.cc \
+	@HARFBUZZ_TREE@/src/hb-unicode-emoji-table.hh \
 	@HARFBUZZ_TREE@/src/hb-vector.hh \
 	@HARFBUZZ_TREE@/src/hb-utf.hh \
 	@HARFBUZZ_TREE@/src/hb-warning.cc \
@@ -142,7 +145,6 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-myanmar.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-myanmar.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-thai.cc \
-	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-tibetan.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-use.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-use-table.cc \

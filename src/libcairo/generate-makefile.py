@@ -68,6 +68,7 @@ s = [
   "cairo-path-stroke-traps.o",
   "cairo-path-stroke-tristrip.o",
   "cairo-pattern.o",
+  "cairo-pdf-interchange.o",
   "cairo-pen.o",
   "cairo-polygon.o",
   "cairo-polygon-intersect.o",
@@ -94,6 +95,8 @@ s = [
   "cairo-surface-snapshot.o",
   "cairo-surface-subsurface.o",
   "cairo-surface-wrapper.o",
+  "cairo-tag-attributes.o",
+  "cairo-tag-stack.o",
   "cairo-time.o",
   "cairo-tor-scan-converter.o",
   "cairo-tor22-scan-converter.o",
@@ -127,12 +130,12 @@ makefile.write("CC = gcc\n")
 makefile.write("CFLAGS = %s\n" % CFLAGS)
 makefile.write("objects = %s\n" % " ".join(s))
 makefile.write("libcairo.a: $(objects)\n")
-makefile.write("\t ar rc libcairo.a $(objects)\n")
+makefile.write("\t ar cru libcairo.a $(objects)\n")
 for i in s:
   makefile.write("%s : %s%s\n" % (i, PREFIX, i.replace(".o", ".c")))
   makefile.write("\t $(CC) $(CFLAGS) %s%s\n" % (PREFIX, i.replace(".o", ".c")))
 makefile.write("clean:\n")
-makefile.write("\trm $(wildcard *.o *.a)")
+makefile.write("\trm $(wildcard *.o *.a)\n")
 makefile.write("test:\n")
-makefile.write("\t$(CC) -I. -I../../texlive/libs/cairo/cairo-src/src -o test test.c libcairo.a ../libpixman.a ../libz.a -lm")
+makefile.write("\t$(CC) -I. -I../../texlive/libs/cairo/cairo-src/src -o test test.c libcairo.a ../libpixman.a ../libz.a -lm\n")
 makefile.close()
