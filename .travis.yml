@@ -4,13 +4,13 @@ compiler:
   - gcc
 
 git:
-  depth: 10
+  depth: 5
 
 matrix:
   include:
     - os: linux
       services: docker
-      script: docker run -v ${TRAVIS_BUILD_DIR}:/ptex-ng -w /ptex-ng -i -t ubuntu:18.04 sh -c "apt update; apt install -y --no-install-recommends texi2html gcc ruby make bison; ./build-gcc/build-aptex.sh"
+      script: docker run -v ${TRAVIS_BUILD_DIR}:/ptex-ng -w /ptex-ng -i -t ubuntu:18.04 sh -c "apt update; apt install -y texi2html gcc ruby make bison; ./build-gcc/build-aptex.sh"
     - os: osx
       osx_image: xcode10
       script: ./build-gcc/build-aptex.sh
