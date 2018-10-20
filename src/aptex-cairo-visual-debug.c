@@ -34,6 +34,12 @@ void aptex_vdbg_ship_open (const char * out_name)
 #if CAIRO_HAS_PDF_SURFACE
   aptex_cairo_surface = cairo_pdf_surface_create(out_name, 595.0, 842.0);
   aptex_cairo_visual_debug = cairo_create(aptex_cairo_surface);
+
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+  cairo_pdf_surface_set_metadata(aptex_cairo_surface, CAIRO_PDF_METADATA_SUBJECT, "visual-debug");
+  cairo_pdf_surface_set_metadata(aptex_cairo_surface, CAIRO_PDF_METADATA_CREATOR, "ApTeX's cairo backend.");
+#endif
+
 #endif
 }
 
