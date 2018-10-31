@@ -1,4 +1,4 @@
-## $Id: Makefile.am 48949 2018-10-19 23:02:01Z kakuto $
+## $Id: Makefile.am 49031 2018-10-30 23:50:16Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -66,6 +66,9 @@ libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-ot-kern-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-maxp-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-name-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-name-language.cc \
+	@HARFBUZZ_TREE@/src/hb-ot-name-language.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-name.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-os2-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-os2-unicode-ranges.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-post-macroman.hh \
@@ -109,6 +112,8 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-trak-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-ltag-table.hh \
+	@HARFBUZZ_TREE@/src/hb-aat-map.cc \
+	@HARFBUZZ_TREE@/src/hb-aat-map.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-font.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-layout.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-layout-base-table.hh \
@@ -146,6 +151,8 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-myanmar.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-thai.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-use.cc \
+	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-vowel-constraints.cc \
+	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-vowel-constraints.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-use-table.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-use.hh \
@@ -159,6 +166,7 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-ot-var-fvar-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-var-hvar-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-var-mvar-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-vorg-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-indic-machine.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-khmer-machine.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-myanmar-machine.hh \
