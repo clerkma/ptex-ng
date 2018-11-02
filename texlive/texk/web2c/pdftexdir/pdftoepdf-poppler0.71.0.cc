@@ -22,7 +22,7 @@ This is based on the patch texlive-poppler-0.59.patch <2017-09-19> at
 https://git.archlinux.org/svntogit/packages.git/plain/texlive-bin/trunk
 by Arch Linux. A little modifications are made to avoid a crash for
 some kind of pdf images, such as figure_missing.pdf in gnuplot.
-The poppler should be 0.69.0.
+The poppler should be 0.71.0 or newer versions.
 POPPLER_VERSION should be defined.
 */
 
@@ -120,7 +120,7 @@ struct UsedEncoding {
 
 static InObj *inObjList;
 static UsedEncoding *encodingList;
-static GBool isInit = gFalse;
+static bool isInit = false;
 
 // --------------------------------------------------------------------
 // Maintain list of open embedded PDF files
@@ -566,7 +566,7 @@ static void copyObject(Object * obj)
         pdf_printf("%s", convertNumToPDF(obj->getNum()));
     } else if (obj->isString()) {
         s = (GooString *)obj->getString();
-        p = s->getCString();
+        p = (char *)s->getCString();
         l = s->getLength();
         if (strlen(p) == (unsigned int) l) {
             pdf_puts("(");
@@ -664,7 +664,7 @@ static void writeEncodings()
                     ("PDF inclusion: CID fonts are not supported"
                      " (try to disable font replacement to fix this)");
             }
-            if ((s = ((Gfx8BitFont *) r->font)->getCharName(i)) != 0)
+            if ((s = (char *)((Gfx8BitFont *) r->font)->getCharName(i)) != 0)
                 glyphNames[i] = s;
             else
                 glyphNames[i] = notdef;
@@ -683,7 +683,7 @@ static void writeEncodings()
 }
 
 // get the pagebox according to the pagebox_spec
-static PDFRectangle *get_pagebox(Page * page, int pagebox_spec)
+static const PDFRectangle *get_pagebox(Page * page, int pagebox_spec)
 {
     if (pagebox_spec == pdfboxspecmedia)
         return page->getMediaBox();
@@ -715,7 +715,7 @@ read_pdf_info(char *image_name, char *page_name, int page_num,
 {
     PdfDocument *pdf_doc;
     Page *page;
-    PDFRectangle *pagebox;
+    const PDFRectangle *pagebox;
 #ifdef POPPLER_VERSION
     int pdf_major_version_found, pdf_minor_version_found;
 #else
@@ -724,8 +724,8 @@ read_pdf_info(char *image_name, char *page_name, int page_num,
     // initialize
     if (!isInit) {
         globalParams = new GlobalParams();
-        globalParams->setErrQuiet(gFalse);
-        isInit = gTrue;
+        globalParams->setErrQuiet(false);
+        isInit = true;
     }
     // open PDF file
     pdf_doc = find_add_document(image_name);
@@ -849,7 +849,7 @@ void write_epdf(void)
     pageObj = xref->fetch(pageRef->num, pageRef->gen);
     pageDict = pageObj.getDict();
     rotate = page->getRotate();
-    PDFRectangle *pagebox;
+    const PDFRectangle *pagebox;
     // write the Page header
     pdf_puts("/Type /XObject\n");
     pdf_puts("/Subtype /Form\n");
