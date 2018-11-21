@@ -3077,6 +3077,7 @@ void initstarttime(void)
     }
 }
 
+#if !defined(XeTeX)
 char *makecstring(integer s)
 {
     static char *cstrbuf = NULL;
@@ -3125,6 +3126,7 @@ char *makecfilename(integer s)
     *q = '\0';
     return name;
 }
+#endif /* !XeTeX */
 
 void getcreationdate(void)
 {
@@ -3213,6 +3215,9 @@ void getfilesize(integer s)
     if (file_name == NULL) {
         return;                 /* empty string */
     }
+    if (! kpse_in_name_ok(file_name)) {
+       return;                  /* no permission */
+    }
 
     recorder_record_input(file_name);
     /* get file status */
@@ -3251,8 +3256,13 @@ void getfiledump(integer s, int offset, int length)
 {
     FILE *f;
     int read, i;
+#if defined(XeTeX)
+    char *readbuffer, strbuf[3];
+    int j, k;
+#else
     poolpointer data_ptr;
     poolpointer data_end;
+#endif /* XeTeX */
     char *file_name;
 
     if (length == 0) {
@@ -3275,6 +3285,9 @@ void getfiledump(integer s, int offset, int length)
     if (file_name == NULL) {
         return;                 /* empty string */
     }
+    if (! kpse_in_name_ok(file_name)) {
+       return;                  /* no permission */
+    }
 
     /* read file data */
     f = fopen(file_name, FOPEN_RBIN_MODE);
@@ -3287,6 +3300,18 @@ void getfiledump(integer s, int offset, int length)
         xfree(file_name);
         return;
     }
+#if defined(XeTeX)
+    readbuffer = (char *)xmalloc (length + 1);
+    read = fread(readbuffer, sizeof(char), length, f);
+    fclose(f);
+    for (j = 0; j < read; j++) {
+        i = snprintf (strbuf, 3, "%.2X", (unsigned int)readbuffer[j]);
+        check_nprintf(i, 3);
+        for (k = 0; k < i; k++)
+            strpool[poolptr++] = (uint16_t)strbuf[k];
+    }
+    xfree (readbuffer);
+#else
     /* there is enough space in the string pool, the read
        data are put in the upper half of the result, thus
        the conversion to hex can be done without overwriting
@@ -3303,6 +3328,7 @@ void getfiledump(integer s, int offset, int length)
         check_nprintf(i, 3);
         poolptr += i;
     }
+#endif /* XeTeX */
     xfree(file_name);
 }
 
@@ -3355,6 +3381,10 @@ void getmd5sum(strnumber s, boolean file)
         if (file_name == NULL) {
             return;             /* empty string */
         }
+        if (! kpse_in_name_ok(file_name)) {
+           return;              /* no permission */
+        }
+
         /* in case of error the empty string is returned,
            no need for xfopen that aborts on error.
          */
