@@ -1,4 +1,4 @@
-$Id: README 49193 2018-11-19 04:05:47Z kakuto $
+$Id: README 49220 2018-11-22 07:19:28Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -46,7 +46,7 @@ luajit 2.1.0-beta2 - checked 09mar16
 mpfr 4.0.1 - checked 10feb18
   http://ftp.gnu.org/gnu/mpfr/
 
-pixman 0.34.0 - checked 04feb16
+pixman 0.36.0 - checked 22nov18
   http://cairographics.org/releases/
 
 poppler 0.68.0 - checked 20aug18
