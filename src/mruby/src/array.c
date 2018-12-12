@@ -231,7 +231,7 @@ ary_expand_capa(mrb_state *mrb, struct RArray *a, mrb_int len)
 static void
 ary_shrink_capa(mrb_state *mrb, struct RArray *a)
 {
-  
+
   mrb_int capa;
 
   if (ARY_EMBED_P(a)) return;
@@ -376,6 +376,9 @@ ary_replace(mrb_state *mrb, struct RArray *a, struct RArray *b)
   shared_b:
     if (ARY_EMBED_P(a)) {
       ARY_UNSET_EMBED_FLAG(a);
+    }
+    else {
+      mrb_free(mrb, a->as.heap.ptr);
     }
     a->as.heap.ptr = b->as.heap.ptr;
     a->as.heap.len = len;
@@ -850,14 +853,14 @@ static mrb_value
 mrb_ary_aget(mrb_state *mrb, mrb_value self)
 {
   struct RArray *a = mrb_ary_ptr(self);
-  mrb_int i, len, alen = ARY_LEN(a);
+  mrb_int i, len, alen;
   mrb_value index;
 
   if (mrb_get_args(mrb, "o|i", &index, &len) == 1) {
     switch (mrb_type(index)) {
       /* a[n..m] */
     case MRB_TT_RANGE:
-      if (mrb_range_beg_len(mrb, index, &i, &len, alen, TRUE) == 1) {
+      if (mrb_range_beg_len(mrb, index, &i, &len, ARY_LEN(a), TRUE) == 1) {
         return ary_subseq(mrb, a, i, len);
       }
       else {
@@ -871,6 +874,7 @@ mrb_ary_aget(mrb_state *mrb, mrb_value self)
   }
 
   i = aget_index(mrb, index);
+  alen = ARY_LEN(a);
   if (i < 0) i += alen;
   if (i < 0 || alen < i) return mrb_nil_value();
   if (len < 0) return mrb_nil_value();
@@ -950,9 +954,10 @@ mrb_ary_delete_at(mrb_state *mrb, mrb_value self)
   mrb_int   index;
   mrb_value val;
   mrb_value *ptr;
-  mrb_int len, alen = ARY_LEN(a);
+  mrb_int len, alen;
 
   mrb_get_args(mrb, "i", &index);
+  alen = ARY_LEN(a);
   if (index < 0) index += alen;
   if (index < 0 || alen <= index) return mrb_nil_value();
 
@@ -977,16 +982,17 @@ static mrb_value
 mrb_ary_first(mrb_state *mrb, mrb_value self)
 {
   struct RArray *a = mrb_ary_ptr(self);
-  mrb_int size, alen = ARY_LEN(a);
+  mrb_int size, alen;
 
   if (mrb_get_argc(mrb) == 0) {
-    return (alen > 0)? ARY_PTR(a)[0]: mrb_nil_value();
+    return (ARY_LEN(a) > 0)? ARY_PTR(a)[0]: mrb_nil_value();
   }
   mrb_get_args(mrb, "|i", &size);
   if (size < 0) {
     mrb_raise(mrb, E_ARGUMENT_ERROR, "negative array size");
   }
 
+  alen = ARY_LEN(a);
   if (size > alen) size = alen;
   if (ARY_SHARED_P(a)) {
     return ary_subseq(mrb, a, 0, size);
@@ -998,10 +1004,13 @@ static mrb_value
 mrb_ary_last(mrb_state *mrb, mrb_value self)
 {
   struct RArray *a = mrb_ary_ptr(self);
-  mrb_int size, alen = ARY_LEN(a);
+  mrb_int n, size, alen;
 
-  if (mrb_get_args(mrb, "|i", &size) == 0)
-    return (alen > 0)? ARY_PTR(a)[alen - 1]: mrb_nil_value();
+  n = mrb_get_args(mrb, "|i", &size);
+  alen = ARY_LEN(a);
+  if (n == 0) {
+    return (alen > 0) ? ARY_PTR(a)[alen - 1]: mrb_nil_value();
+  }
 
   if (size < 0) {
     mrb_raise(mrb, E_ARGUMENT_ERROR, "negative array size");
@@ -1049,7 +1058,7 @@ mrb_ary_rindex_m(mrb_state *mrb, mrb_value self)
 MRB_API mrb_value
 mrb_ary_splat(mrb_state *mrb, mrb_value v)
 {
-  mrb_value a, recv_class;
+  mrb_value a;
 
   if (mrb_array_p(v)) {
     return v;
@@ -1060,22 +1069,11 @@ mrb_ary_splat(mrb_state *mrb, mrb_value v)
   }
 
   a = mrb_funcall(mrb, v, "to_a", 0);
-  if (mrb_array_p(a)) {
-    return a;
-  }
-  else if (mrb_nil_p(a)) {
+  if (mrb_nil_p(a)) {
     return mrb_ary_new_from_values(mrb, 1, &v);
   }
-  else {
-    recv_class = mrb_obj_value(mrb_obj_class(mrb, v));
-    mrb_raisef(mrb, E_TYPE_ERROR, "can't convert %S to Array (%S#to_a gives %S)",
-      recv_class,
-      recv_class,
-      mrb_obj_value(mrb_obj_class(mrb, a))
-    );
-    /* not reached */
-    return mrb_undef_value();
-  }
+  mrb_ensure_array_type(mrb, a);
+  return a;
 }
 
 static mrb_value
@@ -1091,6 +1089,7 @@ mrb_ary_clear(mrb_state *mrb, mrb_value self)
 {
   struct RArray *a = mrb_ary_ptr(self);
 
+  mrb_get_args(mrb, "");
   ary_modify(mrb, a);
   if (ARY_SHARED_P(a)) {
     mrb_ary_decref(mrb, a->as.heap.aux.shared);
@@ -1110,12 +1109,6 @@ mrb_ary_empty_p(mrb_state *mrb, mrb_value self)
   struct RArray *a = mrb_ary_ptr(self);
 
   return mrb_bool_value(ARY_LEN(a) == 0);
-}
-
-MRB_API mrb_value
-mrb_check_array_type(mrb_state *mrb, mrb_value ary)
-{
-  return mrb_check_convert_type(mrb, ary, MRB_TT_ARRAY, "Array", "to_ary");
 }
 
 MRB_API mrb_value
@@ -1171,7 +1164,7 @@ join_ary(mrb_state *mrb, mrb_value ary, mrb_value sep, mrb_value list)
           val = tmp;
           goto str_join;
         }
-        tmp = mrb_check_convert_type(mrb, val, MRB_TT_ARRAY, "Array", "to_ary");
+        tmp = mrb_check_array_type(mrb, val);
         if (!mrb_nil_p(tmp)) {
           val = tmp;
           goto ary_join;

@@ -23,9 +23,9 @@
 #define floor(f) floorf(f)
 #define ceil(f) ceilf(f)
 #define fmod(x,y) fmodf(x,y)
-#define MRB_FLO_TO_STR_FMT "%.7g"
+#define MRB_FLO_TO_STR_FMT "%.8g"
 #else
-#define MRB_FLO_TO_STR_FMT "%.14g"
+#define MRB_FLO_TO_STR_FMT "%.16g"
 #endif
 #endif
 
@@ -220,29 +220,40 @@ flo_mul(mrb_state *mrb, mrb_value x)
 }
 
 static void
-flodivmod(mrb_state *mrb, mrb_float x, mrb_float y, mrb_float *divp, mrb_float *modp)
+flodivmod(mrb_state *mrb, double x, double y, mrb_float *divp, mrb_float *modp)
 {
-  mrb_float div;
-  mrb_float mod;
+  double div, mod;
 
+  if (isnan(y)) {
+    /* y is NaN so all results are NaN */
+    div = mod = y;
+    goto exit;
+  }
   if (y == 0.0) {
-    if (x > 0.0) div = INFINITY;
-    else if (x < 0.0) div = -INFINITY;
-    else div = NAN;             /* x == 0.0 */
+    if (x == 0) div = NAN;
+    else if (x > 0.0) div = INFINITY;
+    else div = -INFINITY;       /* x < 0.0 */
     mod = NAN;
+    goto exit;
+  }
+  if ((x == 0.0) || (isinf(y) && !isinf(x))) {
+    mod = x;
   }
   else {
     mod = fmod(x, y);
-    if (isinf(x) && isfinite(y))
-      div = x;
-    else
-      div = (x - mod) / y;
-    if (y*mod < 0) {
-      mod += y;
-      div -= 1.0;
-    }
   }
-
+  if (isinf(x) && !isinf(y)) {
+    div = x;
+  }
+  else {
+    div = (x - mod) / y;
+    if (modp && divp) div = round(div);
+  }
+  if (y*mod < 0) {
+    mod += y;
+    div -= 1.0;
+  }
+ exit:
   if (modp) *modp = mod;
   if (divp) *divp = div;
 }
@@ -422,7 +433,7 @@ flo_shift(mrb_state *mrb, mrb_value x, mrb_int width)
     val = trunc(val);
 #else
     if (val > 0){
-        val = floor(val);    
+        val = floor(val);
     } else {
         val = ceil(val);
     }
@@ -663,7 +674,6 @@ flo_round(mrb_state *mrb, mrb_value num)
 /*
  *  call-seq:
  *     flt.to_i      ->  integer
- *     flt.to_int    ->  integer
  *     flt.truncate  ->  integer
  *
  *  Returns <i>flt</i> truncated to an <code>Integer</code>.
@@ -703,7 +713,6 @@ flo_nan_p(mrb_state *mrb, mrb_value num)
 /*
  *  call-seq:
  *     int.to_i      ->  integer
- *     int.to_int    ->  integer
  *
  *  As <i>int</i> is already an <code>Integer</code>, all these
  *  methods simply return the receiver.
@@ -1502,7 +1511,6 @@ mrb_init_numeric(mrb_state *mrb)
   MRB_SET_INSTANCE_TT(integer, MRB_TT_FIXNUM);
   mrb_undef_class_method(mrb, integer, "new");
   mrb_define_method(mrb, integer, "to_i",     int_to_i,        MRB_ARGS_NONE()); /* 15.2.8.3.24 */
-  mrb_define_method(mrb, integer, "to_int",   int_to_i,        MRB_ARGS_NONE());
 #ifndef MRB_WITHOUT_FLOAT
   mrb_define_method(mrb, integer, "ceil",     int_to_i,        MRB_ARGS_REQ(1)); /* 15.2.8.3.8 (x) */
   mrb_define_method(mrb, integer, "floor",    int_to_i,        MRB_ARGS_REQ(1)); /* 15.2.8.3.10 (x) */
@@ -1554,7 +1562,6 @@ mrb_init_numeric(mrb_state *mrb)
   mrb_define_method(mrb, fl,      "round",     flo_round,      MRB_ARGS_OPT(1)); /* 15.2.9.3.12 */
   mrb_define_method(mrb, fl,      "to_f",      flo_to_f,       MRB_ARGS_NONE()); /* 15.2.9.3.13 */
   mrb_define_method(mrb, fl,      "to_i",      flo_truncate,   MRB_ARGS_NONE()); /* 15.2.9.3.14 */
-  mrb_define_method(mrb, fl,      "to_int",    flo_truncate,   MRB_ARGS_NONE());
   mrb_define_method(mrb, fl,      "truncate",  flo_truncate,   MRB_ARGS_NONE()); /* 15.2.9.3.15 */
   mrb_define_method(mrb, fl,      "divmod",    flo_divmod,     MRB_ARGS_REQ(1));
   mrb_define_method(mrb, fl,      "eql?",      flo_eql,        MRB_ARGS_REQ(1)); /* 15.2.8.3.16 */

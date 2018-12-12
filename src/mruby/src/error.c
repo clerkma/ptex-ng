@@ -28,7 +28,7 @@ mrb_exc_new(mrb_state *mrb, struct RClass *c, const char *ptr, size_t len)
 MRB_API mrb_value
 mrb_exc_new_str(mrb_state *mrb, struct RClass* c, mrb_value str)
 {
-  str = mrb_str_to_str(mrb, str);
+  mrb_to_str(mrb, str);
   return mrb_obj_new(mrb, c, 1, &str);
 }
 
@@ -233,7 +233,7 @@ mrb_exc_set(mrb_state *mrb, mrb_value exc)
         (struct RBasic*)mrb->exc == mrb->gc.arena[mrb->gc.arena_idx-1]) {
       mrb->gc.arena_idx--;
     }
-    if (!mrb->gc.out_of_memory) {
+    if (!mrb->gc.out_of_memory && !MRB_FROZEN_P(mrb->exc)) {
       exc_debug_info(mrb, mrb->exc);
       mrb_keep_backtrace(mrb, exc);
     }

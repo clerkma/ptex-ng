@@ -68,7 +68,7 @@ read_irep_record_1(mrb_state *mrb, const uint8_t *bin, size_t *len, uint8_t flag
 
   /* Binary Data Section */
   /* ISEQ BLOCK */
-  irep->ilen = (size_t)bin_to_uint32(src);
+  irep->ilen = (uint16_t)bin_to_uint32(src);
   src += sizeof(uint32_t);
   src += skip_padding(src);
 
@@ -79,27 +79,14 @@ read_irep_record_1(mrb_state *mrb, const uint8_t *bin, size_t *len, uint8_t flag
     if ((flags & FLAG_SRC_MALLOC) == 0 &&
         (flags & FLAG_BYTEORDER_NATIVE)) {
       irep->iseq = (mrb_code*)src;
-      src += sizeof(uint32_t) * irep->ilen;
+      src += sizeof(mrb_code) * irep->ilen;
       irep->flags |= MRB_ISEQ_NO_FREE;
     }
     else {
-      irep->iseq = (mrb_code *)mrb_malloc(mrb, sizeof(mrb_code) * irep->ilen);
-      if (flags & FLAG_BYTEORDER_NATIVE) {
-        memcpy(irep->iseq, src, sizeof(uint32_t) * irep->ilen);
-        src += sizeof(uint32_t) * irep->ilen;
-      }
-      else if (flags & FLAG_BYTEORDER_BIG) {
-        for (i = 0; i < irep->ilen; i++) {
-          irep->iseq[i] = (mrb_code)bin_to_uint32(src);     /* iseq */
-          src += sizeof(uint32_t);
-        }
-      }
-      else {
-        for (i = 0; i < irep->ilen; i++) {
-          irep->iseq[i] = (mrb_code)bin_to_uint32l(src);     /* iseq */
-          src += sizeof(uint32_t);
-        }
-      }
+      size_t data_len = sizeof(mrb_code) * irep->ilen;
+      irep->iseq = (mrb_code *)mrb_malloc(mrb, data_len);
+      memcpy(irep->iseq, src, data_len);
+      src += data_len;
     }
   }
 
@@ -128,8 +115,13 @@ read_irep_record_1(mrb_state *mrb, const uint8_t *bin, size_t *len, uint8_t flag
       switch (tt) { /* pool data */
       case IREP_TT_FIXNUM: {
         mrb_value num = mrb_str_to_inum(mrb, s, 10, FALSE);
+#ifdef MRB_WITHOUT_FLOAT
+        irep->pool[i] = num;
+#else
         irep->pool[i] = mrb_float_p(num)? mrb_float_pool(mrb, mrb_float(num)) : num;
-      } break;
+#endif
+        }
+        break;
 
 #ifndef MRB_WITHOUT_FLOAT
       case IREP_TT_FLOAT:
@@ -152,7 +144,7 @@ read_irep_record_1(mrb_state *mrb, const uint8_t *bin, size_t *len, uint8_t flag
   }
 
   /* SYMS BLOCK */
-  irep->slen = (size_t)bin_to_uint32(src);  /* syms length */
+  irep->slen = (uint16_t)bin_to_uint32(src);  /* syms length */
   src += sizeof(uint32_t);
   if (irep->slen > 0) {
     if (SIZE_ERROR_MUL(irep->slen, sizeof(mrb_sym))) {
@@ -223,12 +215,11 @@ read_section_irep(mrb_state *mrb, const uint8_t *bin, uint8_t flags)
   return read_irep_record(mrb, bin, &len, flags);
 }
 
+/* ignore lineno record */
 static int
 read_lineno_record_1(mrb_state *mrb, const uint8_t *bin, mrb_irep *irep, size_t *len)
 {
   size_t i, fname_len, niseq;
-  char *fname;
-  uint16_t *lines;
 
   *len = 0;
   bin += sizeof(uint32_t); /* record size */
@@ -236,9 +227,6 @@ read_lineno_record_1(mrb_state *mrb, const uint8_t *bin, mrb_irep *irep, size_t 
   fname_len = bin_to_uint16(bin);
   bin += sizeof(uint16_t);
   *len += sizeof(uint16_t);
-  fname = (char *)mrb_malloc(mrb, fname_len + 1);
-  memcpy(fname, bin, fname_len);
-  fname[fname_len] = '\0';
   bin += fname_len;
   *len += fname_len;
 
@@ -249,15 +237,11 @@ read_lineno_record_1(mrb_state *mrb, const uint8_t *bin, mrb_irep *irep, size_t 
   if (SIZE_ERROR_MUL(niseq, sizeof(uint16_t))) {
     return MRB_DUMP_GENERAL_FAILURE;
   }
-  lines = (uint16_t *)mrb_malloc(mrb, niseq * sizeof(uint16_t));
   for (i = 0; i < niseq; i++) {
-    lines[i] = bin_to_uint16(bin);
     bin += sizeof(uint16_t); /* niseq */
     *len += sizeof(uint16_t);
   }
 
-  irep->filename = fname;
-  irep->lines = lines;
   return MRB_DUMP_OK;
 }
 
