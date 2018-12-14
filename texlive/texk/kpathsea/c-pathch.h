@@ -1,7 +1,7 @@
 /* c-pathch.h: define the characters which separate components of
    filenames and environment variable paths.
 
-   Copyright 1992, 1993, 1995, 1997, 2008 Karl Berry.
+   Copyright 1992, 1993, 1995, 1997, 2008, 2018 Karl Berry.
    Copyright 1997, 1999, 2001, 2005 Olaf Weber.
 
    This library is free software; you can redistribute it and/or
@@ -90,11 +90,22 @@
 #else
 # define ENV_SEP ':'
 # define ENV_SEP_STRING ":"
+/* Because paths in Kpathsea cnf files allow use of either ; or : separators
+   regardless of the current system, on Unix we sometimes need to check
+   for either .  */
+# define IS_KPSE_SEP(ch) ((ch) == ':' || (ch) == ';')
 #endif
 #endif /* not ENV_SEP */
 
 #ifndef IS_ENV_SEP
 #define IS_ENV_SEP(ch) ((ch) == ENV_SEP)
+#endif
+
+#ifndef IS_KPSE_SEP
+/* But for Windows, we do not want to consider : as a path separator,
+   ever, because it is the drive separator (as in c:\tex).  So just
+   check for the regular separator (;).  */
+#define IS_KPSE_SEP(ch) (IS_ENV_SEP (ch))
 #endif
 
 #endif /* not C_PATHCH_H */
