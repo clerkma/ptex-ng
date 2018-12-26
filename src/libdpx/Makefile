@@ -83,7 +83,7 @@ pdffont.o: $(ROOT)/pdffont.c
 pdfnames.o: $(ROOT)/pdfnames.c
 	$(CC) $(CFLAGS) $(ROOT)/pdfnames.c
 pdfobj.o: pdfobj.c
-	$(CC) $(CFLAGS) -DLIBDPX pdfobj.c
+	$(CC) $(CFLAGS) -I../../texlive/texk/dvipdfm-x -DLIBDPX pdfobj.c
 pdfparse.o: $(ROOT)/pdfparse.c
 	$(CC) $(CFLAGS) $(ROOT)/pdfparse.c
 pdfresource.o: $(ROOT)/pdfresource.c
