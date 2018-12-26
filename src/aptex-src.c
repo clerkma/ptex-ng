@@ -19022,8 +19022,8 @@ struct pdf_setting
     struct pdf_obj_setting object;
 };
 
-extern void pdf_open_document (const char *filename, const char **ids,
-                               struct pdf_setting settings);
+extern void pdf_open_document(const char *filename, const char * creator, 
+  const unsigned char * id1, const unsigned char * id2, struct pdf_setting settings);
 extern void pdf_close_document(void);
 extern void pdf_doc_begin_page(double scale, double x_origin, double y_origin);
 extern void pdf_doc_end_page(void);
@@ -19062,6 +19062,32 @@ extern void ng_set(int32_t ch, int ng_font_id, int32_t h, int32_t v);
 extern void ng_gid(uint16_t gid, int ng_font_id, int32_t h, int32_t v);
 extern void ng_layer(uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, uint8_t g, uint8_t b);
 extern void spc_moveto(int32_t, int32_t);
+
+/* dvipdfm-x/dvipdfmx.c */
+extern int dpx_util_format_asn_date (char *, int);
+typedef struct {
+  uint32_t A, B, C, D;
+  size_t nblocks;
+  unsigned char buf[64];
+  int count;
+} MD5_CONTEXT;
+extern void MD5_init(MD5_CONTEXT *);
+extern void MD5_write(MD5_CONTEXT *, const unsigned char *, unsigned int);
+extern void MD5_final(unsigned char *, MD5_CONTEXT *);
+
+static void dpx_compute_id_string (unsigned char * id, const char * producer, const char * dvi_file_name, const char * pdf_file_name)
+{
+  char datestr[32];
+  MD5_CONTEXT md5;
+
+  MD5_init(&md5);
+  dpx_util_format_asn_date(datestr, 0);
+  MD5_write(&md5, (const unsigned char *) datestr, strlen(datestr));
+  MD5_write(&md5, (const unsigned char *) producer, strlen(producer));
+  MD5_write(&md5, (const unsigned char *) dvi_file_name, strlen(dvi_file_name));
+  MD5_write(&md5, (const unsigned char *) pdf_file_name, strlen(pdf_file_name));
+  MD5_final(id, &md5);
+}
 
 static const double sp2bp = 0.000015202;
 static int     font_id[65536];
@@ -19573,13 +19599,14 @@ static void ship_out (pointer p)
 #ifndef APTEX_DVI_ONLY
     {
       struct pdf_setting aptex_pdf_setting;
-      const char * aptex_pdf_ids[4] = {"Asiatic pTeX 2018", NULL, NULL, "Asiatic pTeX 2018"};
+      char * aptex_producer = "Asiatic pTeX 2018";
+      unsigned char aptex_id1[16], aptex_id2[16];
 
       output_dvi_name = take_str_string(output_file_name);
       output_pdf_name = take_str_string(output_file_name);
       memcpy(output_pdf_name + length(output_file_name) - 4, ".pdf", 4);
-      aptex_pdf_ids[1] = output_dvi_name;
-      aptex_pdf_ids[2] = output_pdf_name;
+      dpx_compute_id_string(aptex_id1, aptex_producer, output_dvi_name, output_pdf_name);
+      memcpy(aptex_id2, aptex_id1, 16);
 
       if ((pdf_minor_version < 0) || (pdf_minor_version > 7))
         pdf_set_version(15);
@@ -19632,7 +19659,7 @@ static void ship_out (pointer p)
       aptex_pdf_setting.device.dvi2pts = sp2bp;
       aptex_pdf_setting.device.precision = 3;
       aptex_pdf_setting.device.ignore_colors = 0;
-      pdf_open_document(utf8_mbcs(output_pdf_name), aptex_pdf_ids, aptex_pdf_setting);
+      pdf_open_document(utf8_mbcs(output_pdf_name), aptex_producer, aptex_id1, aptex_id2, aptex_pdf_setting);
       aptex_dpx_init_page(pdf_page_width, pdf_page_height);
       spc_exec_at_begin_document();
       FT_Init_FreeType(&font_ftlib);
