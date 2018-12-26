@@ -1,4 +1,4 @@
-$Id: README 48727 2018-09-21 22:18:21Z karl $
+$Id: README 49472 2018-12-21 23:23:35Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 For a high-level overview of building TeX Live, see
@@ -39,8 +39,7 @@ i386-netbsd, amd64-netbsd:
   ./Build --enable-xindy CLISP=/usr/local/bin/clisp
 
 i386-freebsd, amd64-freebsd:
-  http://anthesphoria.net/FreeBSD/TeXLive-2018/
-  upmendex for i386 built with -DU_IS_BIG_ENDIAN=0.
+  http://anthesphoria.net/FreeBSD/TeXLive-2018/ has all details.
 
 i386-linux: see travis below.
 

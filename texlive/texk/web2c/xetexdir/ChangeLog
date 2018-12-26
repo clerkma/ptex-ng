@@ -1,3 +1,13 @@
+2018-12-25  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* pdfimage.cpp: Simplify the support of Rotate.
+
+2018-12-24  Stefan Br\"uns  <stefan.bruens@rwth-aachen.de>
+
+	* pdfimage.cpp: Avoid modification of internal poppler object,
+	fix compilation with poppler 0.70.0 and newer ones.
+	Improve the change on 2018-10-22.
+
 2018-11-17  Joseph Wright  <joseph.wright@morningstar2.co.uk>
 
 	* xetex.web, xetex.defines: Support some primitives from
@@ -5,7 +15,7 @@
 
 2018-10-22  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
 
-	* pdfimage.cpp: Cast types to support poppler 0.70.0.
+	* pdfimage.cpp: Support poppler 0.70.0.
 
 2018-09-09  Karl Berry  <karl@tug.org>
 

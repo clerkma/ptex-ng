@@ -3399,6 +3399,7 @@ else
 fi ;;
 esac
 
+##tldbg KPSE_BASIC: Remember freetype2 () as Kpse_Package (for future messages).
 
 if test "`cd $srcdir && pwd`" != "`pwd`"; then
   # Use -I$(srcdir) only when $(srcdir) != ., so that make's output
@@ -4359,14 +4360,16 @@ else
 fi
 
 
+# pass explicit --host and --build, but nothing else?
 if test "x$host" = x; then
   config_args=
 else
   config_args="--host=$host"
-  if test "x$build" != x; then
-    config_args="$config_args --build=$build"
-  fi
 fi
+if test "x$build" != x; then
+  config_args="$config_args --build=$build"
+fi
+
 
 
 FREETYPE_TREE=freetype-src

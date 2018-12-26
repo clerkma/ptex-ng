@@ -13,4 +13,4 @@ cd $NG_SRC_DIR/src/libdpx && rm -f *.o *.a
 cd $NG_SRC_DIR/src/libotf && rm -f *.o *.a
 cd $NG_SRC_DIR/src/libyaml && rm -f *.o *.a
 cd $NG_SRC_DIR/src/mruby && make clean
-cd $NG_SRC_DIR/src && rm -f *.o aptex ptex-ng
+cd $NG_SRC_DIR/src && rm -f *.o *.a aptex lsotfea ptex-ng

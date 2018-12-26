@@ -165,7 +165,7 @@
 #define PACKAGE_NAME "dvipdfm-x (TeX Live)"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "dvipdfm-x (TeX Live) 20181012"
+#define PACKAGE_STRING "dvipdfm-x (TeX Live) 20181221"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "dvipdfm-x--tex-live-"
@@ -174,7 +174,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20181012"
+#define PACKAGE_VERSION "20181221"
 
 /* The size of `char', as computed by sizeof. */
 #define SIZEOF_CHAR 1
@@ -195,7 +195,7 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Version number of package */
-#define VERSION "20181012"
+#define VERSION "20181221"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
