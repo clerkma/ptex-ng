@@ -77,8 +77,8 @@ pdffont.obj: $(ROOT)/pdffont.c
 	$(CC) $(CFLAGS) $(ROOT)/pdffont.c
 pdfnames.obj: $(ROOT)/pdfnames.c
 	$(CC) $(CFLAGS) $(ROOT)/pdfnames.c
-pdfobj.obj: $(ROOT)/pdfobj.c
-	$(CC) $(CFLAGS) -DLIBDPX $(ROOT)/pdfobj.c
+pdfobj.obj: ../src/libdpx/pdfobj.c
+	$(CC) $(CFLAGS) -DLIBDPX ../src/libdpx/pdfobj.c
 pdfparse.obj: $(ROOT)/pdfparse.c
 	$(CC) $(CFLAGS) $(ROOT)/pdfparse.c
 pdfresource.obj: $(ROOT)/pdfresource.c
