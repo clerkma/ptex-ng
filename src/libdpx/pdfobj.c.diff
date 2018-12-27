@@ -1,9 +1,0 @@
-478a479
-> static long pdf_output_file_stats = 0;
-482c483
-<   return pdf_output_file_position;
----
->   return pdf_output_file_stats;
-537a539,540
-> #else
->     pdf_output_file_stats = pdf_output_file_position;
