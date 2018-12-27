@@ -20,7 +20,7 @@ First of all, we need to install `bison` ([winflexbison](https://github.com/lexx
 
     cd build-msvc
     build-mruby.bat
-    build.bat
+    build-aptex-nmake.bat
 
 #### Compile with jom
 
@@ -28,13 +28,12 @@ First of all, we need to install `bison` ([winflexbison](https://github.com/lexx
 
     cd build-msvc
     build-mruby.bat
-    build-jom.bat
+    build-aptex-jom.bat
 
 ## Source
 
 * TeX Live 2019/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
 * libotf 0.9.16 (`http://cvs.savannah.gnu.org/viewvc/libotf/?root=m17n`)
-* libyaml 0.1.7 (`https://github.com/yaml/libyaml`)
 * mruby 2.0.0 (`http://mruby.org/downloads/`)
 
 ## How to Install

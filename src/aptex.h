@@ -90,8 +90,7 @@
 // zlib for format file and SyncTeX
 #include "zlib.h"
 
-// libyaml and libmruby
-#include "yaml.h"
+// libmruby
 #include "mruby.h"
 #include "mruby/compile.h"
 #include "aptex-mruby.h"

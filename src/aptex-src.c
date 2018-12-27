@@ -126,13 +126,12 @@ static void print_aptex_version (void)
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
     "Compiled with zlib version %s\n"
-    "Compiled with libyaml version %s\n"
     "Compiled with mruby version %s\n"
     "Compiled with synctex (build-in edition)\n"
     "Compiled with libdpx (build-in dvipdfmx)\n",
     banner, kpathsea_version_string,
     ptexenc_version_string, LIBOTF_VERSION, zlib_version,
-    yaml_get_version_string(), MRUBY_VERSION);
+    MRUBY_VERSION);
   aptex_utils_exit(EXIT_SUCCESS);
 }
 
