@@ -1,3 +1,15 @@
+2019-01-08  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	* pdftosrc-poppler0.72.0.cc: Support poppler-0.73.0.
+
+2019-01-07  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
+
+	* tounicode.c (deftounicode): suppress a compiler warning:
+	format specifies type 'unsigned int' but the argument has
+	type 'long' [-Wformat]
+	* writet3.c (writet3): suppress a compiler warning:
+	add explicit braces to avoid dangling else [-Wdangling-else]
+
 2018-12-07  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
 
 	* pdftosrc-poppler0.72.0.cc, pdftoepdf-poppler0.72.0.cc:

@@ -1,6 +1,6 @@
-# $Id: kpse-pkgs.m4 49495 2018-12-24 23:17:30Z karl $
+# $Id: kpse-pkgs.m4 49640 2019-01-08 18:57:53Z karl $
 # Private Autoconf macros for the TeX Live (TL) tree.
-# Copyright 2016-2018 Karl Berry <tex-live@tug.org>
+# Copyright 2016-2019 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 #
 # This file is free software; the copyright holder
@@ -41,7 +41,6 @@ freetype2
 libpng
 libpaper
 luajit
-lua52
 lua53
 zlib
 ])[]dnl

@@ -1389,6 +1389,9 @@ main (int argc, char **argv)
     if (FILESTRCASEEQ(base, "rmpost")){
       base++;
       restricted_mode = true;
+    } else if (FILESTRCASEEQ(base, "r-mpost")){
+      base += 2;
+      restricted_mode = true;
     }
     if (FILESTRCASEEQ(base, "dvitomp"))
       dvitomp_only=1;
@@ -1425,6 +1428,8 @@ main (int argc, char **argv)
     kpse_set_program_name(argv[0], user_progname);
     if (FILESTRCASEEQ(kpse_program_name, "rmpost"))
       kpse_program_name++;
+    else if (FILESTRCASEEQ(kpse_program_name, "r-mpost"))
+      kpse_program_name += 2;
   }
   @= /*@@=nullpass@@*/ @> 
   if(putenv(xstrdup("engine=metapost")))

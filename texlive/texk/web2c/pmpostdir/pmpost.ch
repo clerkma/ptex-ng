@@ -250,6 +250,12 @@ else
 @z
 
 @x
+    } else if (FILESTRCASEEQ(base, "r-mpost")){
+@y
+    } else if (FILESTRCASEEQ(base, "r-"@= @>P_UP@= @>"mpost")){
+@z
+
+@x
     if (FILESTRCASEEQ(base, "dvitomp"))
 @y
     if (FILESTRCASEEQ(base, P_UP@= @>"dvitomp"))
@@ -282,6 +288,12 @@ else
     if (FILESTRCASEEQ(kpse_program_name, "rmpost"))
 @y
     if (FILESTRCASEEQ(kpse_program_name, "r"@= @>P_UP@= @>"mpost"))
+@z
+
+@x
+    else if (FILESTRCASEEQ(kpse_program_name, "r-mpost"))
+@y
+    else if (FILESTRCASEEQ(kpse_program_name, "r-"@= @>P_UP@= @>"mpost"))
 @z
 
 @x

@@ -189,7 +189,6 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/kpse-cairo-flags.m4 \
 	$(top_srcdir)/libs/libpng/ac/withenable.ac \
 	$(top_srcdir)/libs/libpaper/ac/withenable.ac \
 	$(top_srcdir)/libs/luajit/ac/withenable.ac \
-	$(top_srcdir)/libs/lua52/ac/withenable.ac \
 	$(top_srcdir)/libs/lua53/ac/withenable.ac \
 	$(top_srcdir)/libs/zlib/ac/withenable.ac \
 	$(top_srcdir)/texk/ptexenc/ac/withenable.ac \
@@ -493,7 +492,7 @@ DIST_SUBDIRS = auxdir/auxsub doc $(CONF_SUBDIRS) libs utils texk
 recurse_this = 
 recurse_top = 
 
-# $Id: Makefile.in 48948 2018-10-19 22:06:48Z karl $
+# $Id: Makefile.in 49640 2019-01-08 18:57:53Z karl $
 #
 # Requires $(recurse_this) and $(recurse_top).
 # Uses CONF_SUBDIRS and MAKE_SUBDIRS (set by kpse-setup.m4).
