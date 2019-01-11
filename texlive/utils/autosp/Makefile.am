@@ -1,4 +1,4 @@
-## $Id: Makefile.am 46654 2018-02-16 22:43:14Z karl $
+## $Id: Makefile.am 49653 2019-01-09 23:14:12Z kakuto $
 ## Makefile.am for the TeX Live subdirectory utils/autosp/
 ##
 ## Copyright 2016-2018 Karl Berry <tex-live@tug.org>
@@ -21,7 +21,12 @@ bin_PROGRAMS = autosp tex2aspc
 # must use @... here or subdir $(... (literally) is created for .deps.
 autosp_SOURCES = \
 	@AUTOSP_TREE@/autosp.c \
-	@AUTOSP_TREE@/utils.c
+	@AUTOSP_TREE@/utils.c \
+	@AUTOSP_TREE@/process_score.c \
+	@AUTOSP_TREE@/process_command.c \
+	@AUTOSP_TREE@/status.c \
+	@AUTOSP_TREE@/spacing_note.c \
+	@AUTOSP_TREE@/xtuplet.c
 
 tex2aspc_SOURCES = \
 	@AUTOSP_TREE@/tex2aspc.c \
