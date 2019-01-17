@@ -1012,7 +1012,9 @@ the other arrays for the argument.
       show_banner=show_progress=show_happiness=0;
     } else
     if (*dot_pos=='d') {
-      if (sscanf(*argv+2,"%u",&kpathsea_debug)!=1) @<Print usage error...@>@;
+      if (sscanf(++dot_pos,"%u",&kpathsea_debug)!=1) @<Print usage error...@>@;
+      while (isdigit(*dot_pos)) dot_pos++; /* skip numeric part */
+      dot_pos--; /* reset to final digit */
     } else
     if(*dot_pos=='l') {
        use_language=++dot_pos;
@@ -1169,16 +1171,20 @@ standard C types for boolean values, pointers, and objects with fixed sizes.
 #include <stddef.h> /* type definition of |ptrdiff_t| */
 #include <stdint.h> /* type definition of |uint8_t| et al. */
 
-@ The |scan_args| and |cb_show_banner| routines need a few extra variables.
+@ The |scan_args| and |cb_show_banner| routines and the |bindtextdomain|
+argument string need a few extra variables.
+
+@s string int
+
+@d max_banner 50
 
 @d PATH_SEPARATOR   separators[0]
 @d DIR_SEPARATOR    separators[1]
 @d DEVICE_SEPARATOR separators[2]
 
-@d max_banner 50
-
 @<Other...@>=
-char cb_banner[max_banner];
+char cb_banner[max_banner];@/
+string texmf_locale;@/
 #ifndef SEPARATORS
 #define SEPARATORS "://"
 #endif
@@ -1228,16 +1234,22 @@ interface, and catalog \.{web2c-help} contains the ``\.{--help}'' texts for
 @.web2c-help.mo@>
 @.--help@>
 
-If such translation files are not available you may want to improve this system
-by checking out the sources and translating the strings in files \.{cweb.pot},
-\.{cweb-tl.pot}, and \.{web2c-help.pot}, and submitting the resulting \.{*.po}
-files to the maintainers at \.{tex-k@@tug.org}.
+If such translation files are not available, you may want to improve this
+system by checking out the sources and translating the strings in files
+\.{cweb.pot}, \.{cweb-tl.pot}, and \.{web2c-help.pot}, and submitting the
+resulting \.{*.po} files to the maintainers at \.{tex-k@@tug.org}.
+
+@d TEXMF_LOCALE "$TEXMFLOCALEFILES"
 
 @<Set locale...@>=
 setlocale(LC_MESSAGES, setlocale(LC_CTYPE, ""));
-bindtextdomain("cweb", "/usr/share/locale/");
-bindtextdomain("cweb-tl", "/usr/share/locale/");
-bindtextdomain("web2c-help", "/usr/share/locale/");
+texmf_locale = kpse_var_expand (TEXMF_LOCALE);
+bindtextdomain("cweb",
+  bindtextdomain("cweb-tl",
+    bindtextdomain("web2c-help",
+      strcmp(texmf_locale, TEXMF_LOCALE) ?
+        texmf_locale : "/usr/share/locale")));
+free(texmf_locale);
 textdomain("cweb"); /* the majority of |"strings"| come from ``plain \.{CWEB}'' */
 @.cweb.mo@>
 
@@ -1253,10 +1265,11 @@ The directories to be searched for come from three sources:
 \item{(a)} a user-set environment variable \.{CWEBINPUTS}
     (overriden by \.{CWEBINPUTS\_cweb});
 \item{(b)} a line in \Kpathsea/ configuration file \.{texmf.cnf},\hfil\break
-    e.g. \.{CWEBINPUTS=.:\$TEXMF/texmf/cweb//}
-    or \.{CWEBINPUTS.cweb=.:\$TEXMF/texmf/cweb//};
-\item{(c)} compile-time default directories \.{.:\$TEXMF/texmf/cweb//}
-    (specified in \.{texmf.in}).}
+    e.g., \.{CWEBINPUTS=\$TEXMFDOTDIR:\$TEXMF/texmf/cweb//}\hfil\break
+    or \.{CWEBINPUTS.cweb=\$TEXMFDOTDIR:\$TEXMF/texmf/cweb//};
+\item{(c)} compile-time default directories (specified in
+    \.{texmf.in}),\hfil\break
+    i.e., \.{\$TEXMFDOTDIR:\$TEXMF/texmf/cweb//}.\par}
 
 @d kpse_find_cweb(name) kpse_find_file(name,kpse_cweb_format,true)
 
