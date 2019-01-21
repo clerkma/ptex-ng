@@ -1,3 +1,17 @@
+2019-01-20  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch: Use braced evaluation and save a macro variable.
+
+2019-01-19  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch: Extended notes about NLS activation.
+	* po/web2c-help.pot, po/de/web2c-help.po: Fix typos.
+
+2019-01-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* po/cweb.pot, po/de/cweb.po, po/it/cweb.po:
+	Update NLS references for TP notification.
+
 2019-01-17  Andreas Scherer  <https://ascherer.github.io>
 
 	* comm-w2c.ch, comm-w2c.h,
