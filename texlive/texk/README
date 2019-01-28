@@ -1,4 +1,4 @@
-$Id: README 49819 2019-01-25 23:20:32Z karl $
+$Id: README 49846 2019-01-28 10:31:05Z kakuto $
 Copyright 2006-2018 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -74,7 +74,7 @@ gsftopk - from Paul Vojta's xdvi?
 
 kpathsea - maintained here, by us
 
-lcdf-typetools 2.107 - checked 22feb18
+lcdf-typetools 2.108 - checked 28jan19
   http://www.lcdf.org/type/
 
 makeindexk - maintained here, by us
@@ -120,8 +120,10 @@ web2c - maintained here, by us - core web2c, plain tex, etc.
                also: https://osdn.jp/projects/eptex
         etex - maintained here
       euptex - http://www.t-lab.opal.ne.jp/tex/uptex_en.html
-  mflua[jit] - https://foundry.supelec.fr/projects/mflua/
+  mflua[jit] - https://serveur-svn.lri.fr/svn/modhel/mflua
+               also: http://www.luatex.org/download.html
     mplibdir - http://tug.org/metapost
+               also: http://www.luatex.org/download.html
       luatex - http://luatex.org
       pdftex - http://pdftex.org
    [u]pmpost - nothing current, see README for old info
