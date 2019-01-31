@@ -98,9 +98,14 @@ char kanjioption[16];
     } else if (ARGUMENT_IS ("interaction")) {
 @y
     } else if (ARGUMENT_IS ("kanji")) {
-      strcpy(kanjioption, optarg);
-      if(!set_enc_string(optarg, optarg)) {
-        fprintf(stderr,"Ignoring unknown argument `%s' to --kanji", optarg);
+      if (optarg) {
+        if (strlen(optarg) > 15) {
+          optarg[15] = '\0';
+        }
+        strcpy(kanjioption, optarg);
+        if (!set_enc_string(optarg, optarg)) {
+          fprintf(stderr,"Ignoring unknown argument `%s' to --kanji\n", optarg);
+        }
       }
 
     } else if (ARGUMENT_IS ("interaction")) {
@@ -120,9 +125,14 @@ char kanjioption[16];
     } else if (option_is ("progname")) {
       user_progname = optarg;
     } else if (option_is ("kanji")) {
-      strcpy (kanjioption, optarg);
-      if(!set_enc_string(optarg, optarg)) {
-        fprintf(stderr,"Ignoring unknown argument `%s' to --kanji", optarg);
+      if (optarg) {
+        if (strlen(optarg) > 15) {
+          optarg[15] = '\0';
+        }
+        strcpy (kanjioption, optarg);
+        if (!set_enc_string(optarg, optarg)) {
+          fprintf(stderr,"Ignoring unknown argument `%s' to --kanji\n", optarg);
+        }
       }
 @z
 
@@ -234,8 +244,10 @@ else
 @z
 
 @x
+@<Declarations@>=
 #define DLLPROC dllmpostmain
 @y
+@<Declarations@>=
 #ifdef UPMP
 #define DLLPROC dllupmpostmain
 #else
@@ -263,7 +275,7 @@ else
 
 @x
   if (dvitomp_only) {
-    @<Read and set dvitomp command line options@>;
+    @<Read and set \.{dvitomp} command line options@>;
   } else {
 @y
   kanjioption[0] = '\0';
@@ -280,7 +292,7 @@ else
 #endif
 
   if (dvitomp_only) {
-    @<Read and set dvitomp command line options@>;
+    @<Read and set \.{dvitomp} command line options@>;
   } else {
 @z
 
