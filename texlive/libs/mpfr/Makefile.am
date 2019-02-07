@@ -1,4 +1,4 @@
-## $Id: Makefile.am 46140 2017-12-26 11:50:03Z kakuto $
+## $Id: Makefile.am 49896 2019-02-01 05:51:10Z kakuto $
 ## Proxy Makefile.am to build MPFR for TeX Live.
 ##
 ##   Copyright 2017 Karl Berry<tex-live@tug.org>
@@ -79,6 +79,7 @@ nodist_libmpfr_a_SOURCES = \
 	@MPFR_TREE@/src/isnum.c \
 	@MPFR_TREE@/src/isqrt.c \
 	@MPFR_TREE@/src/log.c \
+	@MPFR_TREE@/src/min_prec.c \
 	@MPFR_TREE@/src/mpfr-gmp.c \
 	@MPFR_TREE@/src/mpn_exp.c \
 	@MPFR_TREE@/src/mp_clz_tab.c \

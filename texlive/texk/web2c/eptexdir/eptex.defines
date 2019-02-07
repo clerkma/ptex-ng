@@ -17,6 +17,7 @@
 @define function fromDVI ();
 @define function toDVI ();
 @define function putc2 ();
+@define function fputs2 ();
 @define function inputline2 ();
 
 @define function setinfileenc ();
@@ -39,6 +40,9 @@
 
 @define function getintone ();
 @define procedure setintone ();
+
+@define procedure dumpkanji ();
+@define procedure undumpkanji ();
 
 @define procedure initstarttime;
 @define procedure getcreationdate;

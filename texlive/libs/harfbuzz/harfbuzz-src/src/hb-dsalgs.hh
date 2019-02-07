@@ -28,7 +28,6 @@
 #define HB_DSALGS_HH
 
 #include "hb.hh"
-
 #include "hb-null.hh"
 
 
@@ -107,7 +106,7 @@ hb_bit_storage (T v)
     _BitScanReverse (&where, v);
     return 1 + where;
   }
-# if _WIN64
+# if defined(_WIN64)
   if (sizeof (T) <= 8)
   {
     unsigned long where;
@@ -181,7 +180,7 @@ hb_ctz (T v)
     _BitScanForward (&where, v);
     return where;
   }
-# if _WIN64
+# if defined(_WIN64)
   if (sizeof (T) <= 8)
   {
     unsigned long where;
@@ -237,10 +236,13 @@ hb_ctz (T v)
 template <typename T>
 static inline T* hb_addressof (T& arg)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
   /* https://en.cppreference.com/w/cpp/memory/addressof */
   return reinterpret_cast<T*>(
 	   &const_cast<char&>(
 	      reinterpret_cast<const volatile char&>(arg)));
+#pragma GCC diagnostic pop
 }
 
 /* ASCII tag/character handling */
@@ -297,24 +299,15 @@ hb_ceil_to_4 (unsigned int v)
 }
 
 template <typename T> struct hb_is_signed;
-template <> struct hb_is_signed<signed char> { enum { value = true }; };
-template <> struct hb_is_signed<signed short> { enum { value = true }; };
-template <> struct hb_is_signed<signed int> { enum { value = true }; };
-template <> struct hb_is_signed<signed long> { enum { value = true }; };
-template <> struct hb_is_signed<unsigned char> { enum { value = false }; };
-template <> struct hb_is_signed<unsigned short> { enum { value = false }; };
-template <> struct hb_is_signed<unsigned int> { enum { value = false }; };
-template <> struct hb_is_signed<unsigned long> { enum { value = false }; };
-/* We need to define hb_is_signed for the typedefs we use on pre-Visual
- * Studio 2010 for the int8_t type, since __int8/__int64 is not considered
- * the same as char/long.  The previous lines will suffice for the other
- * types, though.  Note that somehow, unsigned __int8 is considered same
- * as unsigned char.
- * https://github.com/harfbuzz/harfbuzz/pull/1499
- */
-#if defined(_MSC_VER) && (_MSC_VER < 1600)
-template <> struct hb_is_signed<__int8> { enum { value = true }; };
-#endif
+/* https://github.com/harfbuzz/harfbuzz/issues/1535 */
+template <> struct hb_is_signed<int8_t> { enum { value = true }; };
+template <> struct hb_is_signed<int16_t> { enum { value = true }; };
+template <> struct hb_is_signed<int32_t> { enum { value = true }; };
+template <> struct hb_is_signed<int64_t> { enum { value = true }; };
+template <> struct hb_is_signed<uint8_t> { enum { value = false }; };
+template <> struct hb_is_signed<uint16_t> { enum { value = false }; };
+template <> struct hb_is_signed<uint32_t> { enum { value = false }; };
+template <> struct hb_is_signed<uint64_t> { enum { value = false }; };
 
 template <typename T> static inline bool
 hb_in_range (T u, T lo, T hi)
@@ -554,26 +547,26 @@ hb_codepoint_parse (const char *s, unsigned int len, int base, hb_codepoint_t *o
 
 struct HbOpOr
 {
-  enum { passthru_left = true };
-  enum { passthru_right = true };
+  static constexpr bool passthru_left = true;
+  static constexpr bool passthru_right = true;
   template <typename T> static void process (T &o, const T &a, const T &b) { o = a | b; }
 };
 struct HbOpAnd
 {
-  enum { passthru_left = false };
-  enum { passthru_right = false };
+  static constexpr bool passthru_left = false;
+  static constexpr bool passthru_right = false;
   template <typename T> static void process (T &o, const T &a, const T &b) { o = a & b; }
 };
 struct HbOpMinus
 {
-  enum { passthru_left = true };
-  enum { passthru_right = false };
+  static constexpr bool passthru_left = true;
+  static constexpr bool passthru_right = false;
   template <typename T> static void process (T &o, const T &a, const T &b) { o = a & ~b; }
 };
 struct HbOpXor
 {
-  enum { passthru_left = true };
-  enum { passthru_right = true };
+  static constexpr bool passthru_left = true;
+  static constexpr bool passthru_right = true;
   template <typename T> static void process (T &o, const T &a, const T &b) { o = a ^ b; }
 };
 

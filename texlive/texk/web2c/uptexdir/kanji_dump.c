@@ -26,6 +26,7 @@ void undump_kanji (FILE *fp)
 {
     char buffer[12];
     char *p;
+    int i;
 
     do_undump (buffer, 1, 12, fp);
     buffer[11] = 0;  /* force string termination, just in case */
@@ -36,6 +37,12 @@ void undump_kanji (FILE *fp)
     else
         p = buffer;
 
+    i = get_internal_enc();
+
     /* Now BUFFER and P are the file and internal encoding strings.  */
     init_kanji (NULL, p);
+    if (get_internal_enc() != i) {
+        fprintf (stderr, "Kanji internal encoding incompatible with the preloaded format.\n");
+        fprintf (stderr, "I'll stick to %s.\n", enc_to_string(get_internal_enc()));
+    }
 }
