@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014, 2015, 2016, 2017, 2018 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -119,9 +119,9 @@ static void print_aptex_usage (void)
 
 static void print_aptex_version (void)
 {
-  printf("Copyright 2014, 2015, 2016, 2017, 2018 Clerk Ma.\n"
+  printf("Copyright 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma.\n"
     "banner: \"%s\"\n"
-    "base: Y&Y TeX 2.3.0, pTeX 3.8.1, upTeX 1.23\n"
+    "base: Y&Y TeX 2.3.0, pTeX 3.8.2, upTeX 1.23\n"
     "Compiled with %s\n"
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
@@ -4163,7 +4163,6 @@ static void initialize (void)
   sa_level = level_zero;
   page_disc = null;
   split_disc = null;
-  inhibit_glue_flag = false;
   page_dir = dir_yoko;
 
   if (aptex_env.flag_initex)
@@ -6581,6 +6580,7 @@ static void init_prim (void)
   primitive("disablecjktoken", set_enable_cjk_token, set_enable_cjk_token_code);
   primitive("forcecjktoken", set_enable_cjk_token, set_force_cjk_token_code);
   primitive("inhibitglue", inhibit_glue, 0);
+  primitive("disinhibitglue", inhibit_glue, 1);
   primitive("inhibitxspcode", assign_inhibit_xsp_code, inhibit_xsp_code_base);
   primitive("prebreakpenalty", assign_kinsoku, pre_break_penalty_code);
   primitive("postbreakpenalty", assign_kinsoku, post_break_penalty_code);
@@ -12235,7 +12235,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case inhibit_glue:
-      print_esc("inhibitglue");
+      if (cur_chr > 0)
+        print_esc("disinhibitglue");
+      else
+        print_esc("inhibitglue");
       break;
 
     case assign_inhibit_xsp_code:
@@ -15404,6 +15407,8 @@ start_cs:
                 state = skip_blanks;
               else if (cat == spacer)
                 state = skip_blanks;
+              else if (cat == other_kchar)
+                state = mid_kanji;
               else
                 state = mid_line;
 
@@ -24036,6 +24041,7 @@ static void init_span (pointer p)
     normal_paragraph();
   }
 
+  inhibit_glue_flag = false;
   cur_span = p;
 }
 
@@ -24100,6 +24106,7 @@ static void fin_row (void)
     link(tail) = p;
     tail = p;
     space_factor = 1000;
+    inhibit_glue_flag = false;
   }
 
   type(p) = unset_node;
@@ -28924,7 +28931,10 @@ static void box_end (integer box_context)
       else
       {
         if (abs(mode) == hmode)
+        {
           space_factor = 1000;
+          inhibit_glue_flag = false;
+        }
         else
         {
           p = new_noad();
@@ -29061,7 +29071,7 @@ static void begin_box (integer box_context)
         {
           you_cant();
           help2("Sorry...I usually can't take things from the current page.",
-              "This \\lastbox will therefore be void.");
+                "This \\lastbox will therefore be void.");
           error();
         }
         else
@@ -29143,14 +29153,15 @@ done:;
         {
           prev_depth = ignore_depth;
 
-          if (every_vbox != 0)
+          if (every_vbox != null)
             begin_token_list(every_vbox, every_vbox_text);
         }
         else
         {
           space_factor = 1000;
+          inhibit_glue_flag = false;
 
-          if (every_hbox != 0)
+          if (every_hbox != null)
             begin_token_list(every_hbox, every_vbox_text);
         }
 
@@ -29180,8 +29191,8 @@ void scan_box (integer box_context)
   {
     print_err("A <box> was supposed to be here");
     help3("I was expecting to see \\hbox or \\vbox or \\copy or \\box or",
-        "something like that. So you might find something missing in",
-        "your output. But keep trying; you can fix this later.");
+          "something like that. So you might find something missing in",
+          "your output. But keep trying; you can fix this later.");
     back_error();
   }
 }
@@ -29210,7 +29221,7 @@ static void new_graf (boolean indented)
   space_factor = 1000;
   set_cur_lang();
   clang = cur_lang;
-  prev_graf = (norm_min(left_hyphen_min) * 64 + norm_min(right_hyphen_min)) * 65536 + cur_lang;
+  prev_graf = (norm_min(left_hyphen_min) * 0100 + norm_min(right_hyphen_min)) * 0200000 + cur_lang;
 
   if (indented)
   {
@@ -29219,7 +29230,7 @@ static void new_graf (boolean indented)
     width(tail) = par_indent;
   }
 
-  if (every_par != 0)
+  if (every_par != null)
     begin_token_list(every_par, every_par_text);
 
   if (nest_ptr == 1)
@@ -29236,7 +29247,10 @@ static void indent_in_hmode (void)
     width(p) = par_indent;
 
     if (abs(mode) == hmode)
+    {
       space_factor = 1000;
+      inhibit_glue_flag = false;
+    }
     else
     {
       q = new_noad();
@@ -29261,7 +29275,7 @@ static void head_for_vmode (void)
       print_esc("hrule");
       prints("' here except with leaders");
       help2("To put a horizontal rule in an hbox or an alignment,",
-          "you should use \\leaders or \\hrulefill (see The TeXbook).");
+            "you should use \\leaders or \\hrulefill (see The TeXbook).");
       error();
     }
   }
@@ -29318,6 +29332,7 @@ static void begin_insert_or_adjust (void)
 
   saved(0) = cur_val;
   incr(save_ptr);
+  inhibit_glue_flag = false;
   new_save_level(insert_group);
   scan_left_brace();
   normal_paragraph();
@@ -29345,6 +29360,7 @@ static void make_mark (void)
   mark_class(p) = c;
   type(p) = mark_node;
   subtype(p) = 0;
+  inhibit_glue_flag = false;
   mark_ptr(p) = def_ref;
 
   if (!is_char_node(tail) && (type(tail) == disp_node))
@@ -29356,6 +29372,7 @@ static void make_mark (void)
 static void append_penalty (void)
 {
   scan_int();
+  inhibit_glue_flag = false;
 
   if (!is_char_node(tail) && (type(tail) == disp_node))
     prev_append(new_penalty(cur_val));
@@ -29478,32 +29495,40 @@ static void unpackage (void)
   }
 
 done:
-  while (link(tail) != 0)
+  while (link(tail) != null)
   {
     p = tail;
     tail = link(tail);
 
-    if (!is_char_node(tail))
+    if (is_char_node(tail))
+      inhibit_glue_flag = false;
+    else
     {
       switch (type(tail))
       {
         case glue_node:
-          if ((subtype(tail) == kanji_skip_code + 1) ||
-            (subtype(tail) == xkanji_skip_code + 1))
           {
-            link(p) = link(tail);
-            delete_glue_ref(glue_ptr(tail));
-            free_node(tail, small_node_size);
-            tail = p;
+            inhibit_glue_flag = false;
+            if ((subtype(tail) == kanji_skip_code + 1) ||
+              (subtype(tail) == xkanji_skip_code + 1))
+            {
+              link(p) = link(tail);
+              delete_glue_ref(glue_ptr(tail));
+              free_node(tail, small_node_size);
+              tail = p;
+            }
           }
           break;
 
         case penalty_node:
-          if (subtype(tail) == widow_pena)
           {
-            link(p) = link(tail);
-            free_node(tail, small_node_size);
-            tail = p;
+            inhibit_glue_flag = false;
+            if (subtype(tail) == widow_pena)
+            {
+              link(p) = link(tail);
+              free_node(tail, small_node_size);
+              tail = p;
+            }
           }
           break;
 
@@ -29513,6 +29538,10 @@ done:
             disp = disp_dimen(tail);
             prev_node = p;
           }
+          break;
+
+        default:
+          inhibit_glue_flag = false;
           break;
       }
     }
@@ -29561,6 +29590,7 @@ static void append_discretionary (void)
   integer c;
 
   tail_append(new_disc());
+  inhibit_glue_flag = false;
 
   if (cur_chr == 1)
   {
@@ -29637,7 +29667,7 @@ done:
       {
         print_err("Direction Incompatible");
         help2("\\discretionary's argument and outer hlist must have same direction.",
-          "I delete your first part.");
+              "I delete your first part.");
         error();
         pre_break(tail) = null;
         flush_node_list(p);
@@ -29712,6 +29742,7 @@ done:
   push_nest();
   mode = -hmode;
   space_factor = 1000;
+  inhibit_glue_flag = false;
 }
 
 /* sec 1123 */
@@ -29902,6 +29933,7 @@ static void make_accent (void)
 
     append_disp_node_at_end();
     space_factor = 1000;
+    inhibit_glue_flag = false;
   }
 }
 
@@ -30499,8 +30531,6 @@ static void set_math_char (integer c)
       help1("IGNORE.");
       error();
     }
-
-    inhibit_glue_flag = false;
   }
 }
 
@@ -30692,7 +30722,6 @@ static void sub_sup (void)
 
   t = empty;
   p = null;
-  inhibit_glue_flag = false;
 
   if (tail != head)
     if (script_allowed(tail))
@@ -30787,7 +30816,6 @@ static void math_fraction (void)
   small_number c; // {the type of generalized fraction we are scanning}
 
   c = cur_chr;
-  inhibit_glue_flag = false;
 
   if (incompleat_noad != null)
   {
@@ -30851,7 +30879,6 @@ static void math_left_right (void)
   pointer q;  // {resulting mlist}
 
   t = cur_chr;
-  inhibit_glue_flag = false;
 
   if ((t != left_noad) && (cur_group != math_left_group))
   {
@@ -31074,6 +31101,7 @@ static void after_math (void)
     tail_append(new_math(math_surround, after));
     append_disp_node_at_end();
     space_factor = 1000;
+    inhibit_glue_flag = false;
     unsave();
   }
   else
@@ -32051,6 +32079,7 @@ void resume_after_display (void)
   prev_graf = prev_graf + 3;
   push_nest();
   adjust_dir = direction;
+  inhibit_glue_flag = false;
   mode = hmode;
   space_factor = 1000;
   set_cur_lang();
@@ -32916,6 +32945,8 @@ static void do_extension (void)
   integer k;  // {all-purpose integers}
   pointer p;  // {all-purpose pointers}
 
+  inhibit_glue_flag = false;
+
   switch (cur_chr)
   {
     case open_node:
@@ -33466,6 +33497,7 @@ reswitch:
     case mmode + vrule:
       {
         tail_append(scan_rule_spec());
+        inhibit_glue_flag = false;
 
         if (abs(mode) == vmode)
           prev_depth = ignore_depth;
@@ -33843,7 +33875,6 @@ reswitch:
       {
         scan_spec(vcenter_group, false);
         normal_paragraph();
-        inhibit_glue_flag = false;
         push_nest();
         mode = -vmode;
         prev_depth = ignore_depth;
@@ -33959,7 +33990,7 @@ reswitch:
       break;
 
     case any_mode(inhibit_glue):
-      inhibit_glue_flag = true;
+      inhibit_glue_flag = (cur_chr == 0);
       break;
 
     case any_mode(extension):
@@ -35351,7 +35382,6 @@ void set_math_kchar (integer c)
 
   p = new_noad();
   math_type(nucleus(p)) = math_jchar;
-  inhibit_glue_flag = false;
   character(nucleus(p)) = 0;
   math_kcode(p) = c;
   fam(nucleus(p)) = cur_jfam;

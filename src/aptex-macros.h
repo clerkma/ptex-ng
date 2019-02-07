@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016, 2017, 2018 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -510,6 +510,7 @@ enum
 #define prev_disp       cur_list.pdisp_field        // {displacemant at |prev_node|}
 #define last_jchr       cur_list.last_jchr_field    // {final jchar node on current list}
 #define disp_called     cur_list.disp_called_field  // {is a |disp_node| present in the current list?}
+#define inhibit_glue_flag cur_list.inhibit_glue_flag_field // {is \.{inhibitglue} is specified at the current list?}
 #define eTeX_aux        cur_list.eTeX_aux_field     // {auxiliary data for \eTeX}
 #define LR_save         eTeX_aux                    // {LR stack when a paragraph is interrupted}
 #define LR_box          eTeX_aux                    // {prototype box for display}
@@ -2871,7 +2872,7 @@ again_2:                                                \
                                                         \
     case inhibit_glue:                                  \
       {                                                 \
-        inhibit_glue_flag = true;                       \
+        inhibit_glue_flag = (cur_chr == 0);             \
         goto again_2;                                   \
       }                                                 \
       break;                                            \
@@ -2879,7 +2880,7 @@ again_2:                                                \
     default:                                            \
       {                                                 \
         ins_kp = max_halfword;                          \
-        cur_l = 0;                                      \
+        cur_l = -1;                                     \
         cur_r = non_char;                               \
         lig_stack = null;                               \
       }                                                 \
@@ -2956,6 +2957,8 @@ do {                                                              \
                                                                   \
   if (inhibit_glue_flag != true)                                  \
   {                                                               \
+    /*{ prints("IF"); print_int(cur_l); }*/                       \
+    if (cur_l < 0) cur_l = 0; else inhibit_glue_flag = false;     \
     if ((tail == link(head)) && (!is_char_node(tail))             \
       && (type(tail) == disp_node))                               \
       goto skip_loop;                                             \
@@ -3031,7 +3034,12 @@ do {                                                              \
       }                                                           \
     }                                                             \
   }                                                               \
-skip_loop: inhibit_glue_flag = false;                             \
+  else                                                            \
+  {                                                               \
+    /*{ prints("IF"); print_int(cur_l); }*/                       \
+    if (cur_l < 0) cur_l = 0; else inhibit_glue_flag = false;     \
+  }                                                               \
+skip_loop: do_nothing();                                          \
 } while (0)
 
 // eTeX

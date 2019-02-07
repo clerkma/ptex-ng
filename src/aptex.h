@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016, 2017, 2018 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -250,6 +250,7 @@ typedef struct
   scaled pdisp_field;
   pointer head_field, tail_field, pnode_field, last_jchr_field;
   boolean disp_called_field;
+  integer inhibit_glue_flag_field;
   pointer eTeX_aux_field;
   integer pg_field, ml_field;
   memory_word aux_field;
@@ -753,7 +754,6 @@ EXTERN integer minimum_demerits;              // {best total demerits known for 
 EXTERN pointer best_place[4];                 // {how to achieve |minimal_demerits|}
 EXTERN halfword best_pl_line[4];              // {corresponding line number}
 
-EXTERN boolean inhibit_glue_flag;
 EXTERN integer dvi_dir;                       // {a \.{DVI} reader program thinks we direct to}
 EXTERN integer cur_dir_hv;                    // {\TeX\ thinks we direct to}
 EXTERN eight_bits page_dir;
