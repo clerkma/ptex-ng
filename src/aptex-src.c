@@ -3857,7 +3857,6 @@ static void do_initex (void)
       kcat_code(0xA0 + k) = kanji; // {2 men 16 ku ... 94 ku}
   };
 
-
   for (k = int_base; k <= del_code_base - 1; k++)
     eqtb[k].cint = 0;
 
@@ -4627,7 +4626,7 @@ static void final_cleanup (void)
       show_save_groups();
   }
 
-  while (cond_ptr != 0)
+  while (cond_ptr != null)
   {
     print_nl("(");
     print_esc("end occurred ");
@@ -4636,7 +4635,7 @@ static void final_cleanup (void)
 
     if (if_line != 0)
     {
-      prints("on line ");
+      prints(" on line ");
       print_int(if_line);
     }
 
@@ -4667,7 +4666,7 @@ static void final_cleanup (void)
     {
       for (c = top_mark_code; c <= split_bot_mark_code; c++)
       {
-        if (cur_mark[c] != 0)
+        if (cur_mark[c] != null)
           delete_token_ref(cur_mark[c]);
       }
 
@@ -4974,7 +4973,7 @@ start_of_TEX:
       buffer[limit] = end_line_char;
 
     fix_date_and_time();
-    magic_offset = str_start[886] - 9 * ord_noad;
+    magic_offset = str_start[886] - 9 * ord_noad; /* math_spacing = 886 */
 
     if (interaction == batch_mode)
       selector = no_print;
@@ -5119,7 +5118,7 @@ static void sort_avail (void)
 
   p = get_node(010000000000);
   p = rlink(rover);
-  rlink(rover) = empty_flag;
+  rlink(rover) = max_halfword;
   old_rover = rover;
 
   while (p != old_rover)
@@ -5147,7 +5146,7 @@ static void sort_avail (void)
 
   p = rover;
 
-  while (rlink(p) != empty_flag)
+  while (rlink(p) != max_halfword)
   {
     llink(rlink(p)) = p;
     p = rlink(p);
@@ -6997,7 +6996,7 @@ static void print_cs (integer p)
           print_char(' ');
       }
       else
-	print_char(' ');
+        print_char(' ');
     }
     else
       print_char(' ');
@@ -7514,7 +7513,7 @@ boolean init_terminal (void)
     if (!input_ln(term_in, true)) // {this shouldn't happen}
     {
       wterm_cr();
-      puts("! End of file on the terminal... why?");
+      fputs("! End of file on the terminal... why?", stdout);
       return false;
     }
 
@@ -7526,7 +7525,7 @@ boolean init_terminal (void)
     if (loc < last)
       return true;
 
-    puts("Please type the name of your input file.");
+    fputs("Please type the name of your input file.", stdout);
   }
 }
 
@@ -8245,8 +8244,8 @@ restart:
       link(q) = empty_flag;
       node_size(q) = t - lo_mem_max;
       lo_mem_max = t;
-      link(lo_mem_max) = 0;
-      info(lo_mem_max) = 0;
+      link(lo_mem_max) = null;
+      info(lo_mem_max) = null;
       rover = q;
       goto restart;
     }
@@ -8255,7 +8254,7 @@ restart:
   /* extend lower memory downwards */
   if (mem_min - (block_size + 1) <= mem_start)
   {
-    mem = realloc_mem (mem_top / 2 + block_size, 0);
+    mem = realloc_mem(mem_top / 2 + block_size, 0);
 
     if (mem == NULL)
       return 0;
@@ -8276,7 +8275,7 @@ found:
     sync_line(r + s) = line;
   }
 
-  link(r) = 0;
+  link(r) = null;
 
 #ifdef STAT
   var_used = var_used + s;
@@ -8315,7 +8314,7 @@ static pointer new_null_box (void)
   depth(p) = 0;
   height(p) = 0;
   shift_amount(p) = 0;
-  list_ptr(p) = 0;
+  list_ptr(p) = null;
   glue_sign(p) = normal;
   glue_order(p) = normal;
   set_glue_ratio_zero(glue_set(p));
@@ -8362,7 +8361,7 @@ static pointer new_lig_item (quarterword c)
 
   p = get_node(small_node_size);
   character(p) = c;
-  lig_ptr(p) = 0;
+  lig_ptr(p) = null;
 
   return p;
 }
@@ -8375,8 +8374,8 @@ static pointer new_disc (void)
   p = get_node(small_node_size);
   type(p) = disc_node;
   replace_count(p) = 0;
-  pre_break(p) = 0;
-  post_break(p) = 0;
+  pre_break(p) = null;
+  post_break(p) = null;
 
   return p;
 }
@@ -8400,7 +8399,7 @@ static pointer new_spec (pointer p)
 
   q = get_node(glue_spec_size);
   mem[q] = mem[p];
-  glue_ref_count(q) = 0;
+  glue_ref_count(q) = null;
   width(q) = width(p);
   stretch(q) = stretch(p);
   shrink(q) = shrink(p);
@@ -8416,7 +8415,7 @@ static pointer new_param_glue (small_number n)
   p = get_node(medium_node_size);
   type(p) = glue_node;
   subtype(p) = n + 1;
-  leader_ptr(p) = 0;
+  leader_ptr(p) = null;
   q = glue_par(n);
   glue_ptr(p) = q;
   incr(glue_ref_count(q));
@@ -8431,7 +8430,7 @@ static pointer new_glue (pointer q)
   p = get_node(medium_node_size);
   type(p) = glue_node;
   subtype(p) = normal;
-  leader_ptr(p) = 0;
+  leader_ptr(p) = null;
   glue_ptr(p) = q;
   incr(glue_ref_count(q));
 
@@ -8444,7 +8443,7 @@ static pointer new_skip_param (small_number n)
 
   temp_ptr = new_spec(glue_par(n));
   p = new_glue(temp_ptr);
-  glue_ref_count(temp_ptr) = 0;
+  glue_ref_count(temp_ptr) = null;
   subtype(p) = n + 1;
 
   return p;
@@ -8491,7 +8490,7 @@ void check_mem (boolean print_locs)
   q = 0;
   clobbered = false;
 
-  while (p != 0)
+  while (p != null)
   {
     if ((p > mem_end) || (p < hi_mem_min))
       clobbered = true;
@@ -8512,7 +8511,7 @@ void check_mem (boolean print_locs)
 
 done1:
   p = rover;
-  q = 0;
+  q = null;
   clobbered = false;
 
   do {
@@ -8677,7 +8676,7 @@ static void short_display (integer p)
 {
   integer n; // {for replacement counts}
 
-  while (p != 0) /* want p != null here ! */
+  while (p != null) /* want "p != null" here ! */
   {
     if (is_char_node(p))
     {
@@ -8744,7 +8743,7 @@ static void short_display (integer p)
 
           while (n > 0)
           {
-            if (link(p) != 0)
+            if (link(p) != null)
               p = link(p);
 
             decr(n);
@@ -8914,7 +8913,7 @@ static void print_subsidiary_data (pointer p, ASCII_code c)
         break;
 
       case sub_mlist:
-        if (info(p) == 0)
+        if (info(p) == null)
         {
           print_ln();
           print_current_string();
@@ -9069,7 +9068,7 @@ void show_node_list (integer p)
 
   n = 0;
 
-  while (p != 0)
+  while (p != null) /* ori. "p > mem_min" */
   {
     print_ln();
     print_current_string(); // {display the nesting history}
@@ -10120,7 +10119,7 @@ static void push_nest (void)
 #endif
   }
 
-  nest[nest_ptr]= cur_list;
+  nest[nest_ptr] = cur_list;
   incr(nest_ptr);
   head = new_null_box();
   tail = head;
@@ -10285,7 +10284,7 @@ static void show_activities (void)
         break;
 
       case 2:
-        if (a.cint != 0)
+        if (a.cint != null)
         {
           prints("this will be denominator of:");
           show_box(a.cint);
@@ -12612,7 +12611,7 @@ static void eq_destroy (memory_word w)
       {
         q = equiv_field(w);
 
-        if (q != 0)
+        if (q != null)
           free_node(q, info(q) + info(q) + 1);
       }
       break;
