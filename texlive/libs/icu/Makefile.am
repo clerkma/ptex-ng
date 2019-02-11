@@ -1,4 +1,4 @@
-## $Id: Makefile.am 44086 2017-04-27 21:38:29Z karl $
+## $Id: Makefile.am 49996 2019-02-10 23:22:35Z karl $
 ## Wrapper Makefile.am to build ICU for TeX Live.
 ##
 ##   Copyright 2017 Karl Berry <tex-live@tug.org>
@@ -84,7 +84,13 @@ nodist_EXTRA_icutest_SOURCES = dummy.cxx
 
 icutest_CPPFLAGS = -Iinclude
 
-LDADD = icu-build/lib/libicuuc.a icu-build/lib/libicudata.a $(ICU_LIBS_EXTRA)
+LDADD = icu-build/lib/libicuuc.a
+if cross
+LDADD += icu-build/lib/libicuuc.a
+else
+icu-build/lib/libicudata.a 
+endif
+LDADD += $(ICU_LIBS_EXTRA)
 
 # Rebuild
 rebuild_prereq =
