@@ -1,4 +1,4 @@
-## $Id: Makefile.am 49996 2019-02-10 23:22:35Z karl $
+## $Id: Makefile.am 50000 2019-02-11 18:00:38Z karl $
 ## Wrapper Makefile.am to build ICU for TeX Live.
 ##
 ##   Copyright 2017 Karl Berry <tex-live@tug.org>
@@ -88,7 +88,7 @@ LDADD = icu-build/lib/libicuuc.a
 if cross
 LDADD += icu-build/lib/libicuuc.a
 else
-icu-build/lib/libicudata.a 
+LDADD += icu-build/lib/libicudata.a 
 endif
 LDADD += $(ICU_LIBS_EXTRA)
 
