@@ -40,29 +40,22 @@ First of all, we need to install `bison` ([winflexbison](https://github.com/lexx
 
 [TeX Wiki/pTeX-ng](https://texwiki.texjp.org/?pTeX-ng)
 
-### Windows (PowerShell)
+### Fetch `tltexjp-key.asc`
+
+* Windows, `Invoke-WebRequest -Uri 'https://texlive.texjp.org/tltexjp-key.asc' -OutFile 'tltexjp-key.asc'`
+* Linux/macOS, `curl -O https://texlive.texjp.org/tltexjp-key.asc` or `wget https://texlive.texjp.org/tltexjp-key.asc`
+
+### Windows (PowerShell/CMD)
 
     tlmgr update --self --all
-    Invoke-WebRequest -Uri 'https://texlive.texjp.org/tltexjp-key.asc' -OutFile 'tltexjp-key.asc'
     tlmgr key add tltexjp-key.asc
     tlmgr repository add http://texlive.texjp.org/current/tltexjp tltexjp
     tlmgr pinning add tltexjp "*"
     tlmgr install ptex-ng
 
-### macOS
+### Linux/macOS
 
     tlmgr update --self --all
-    curl -O https://texlive.texjp.org/tltexjp-key.asc
-    tlmgr key add tltexjp-key.asc
-    tlmgr repository add http://texlive.texjp.org/current/tltexjp tltexjp
-    tlmgr pinning add tltexjp '*'
-    tlmgr install ptex-ng
-    tlmgr path add
-
-### Linux
-
-    tlmgr update --self --all
-    wget https://texlive.texjp.org/tltexjp-key.asc
     tlmgr key add tltexjp-key.asc
     tlmgr repository add http://texlive.texjp.org/current/tltexjp tltexjp
     tlmgr pinning add tltexjp '*'
