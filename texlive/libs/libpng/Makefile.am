@@ -1,4 +1,4 @@
-## $Id: Makefile.am 45971 2017-12-02 23:51:48Z karl $
+## $Id: Makefile.am 50024 2019-02-14 17:11:10Z karl $
 ## Proxy Makefile.am to build libpng for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -45,7 +45,8 @@ nodist_libpng_a_SOURCES = \
 
 if PNG_ARM_NEON
 nodist_libpng_a_SOURCES += @LIBPNG_TREE@/arm/arm_init.c\
-	@LIBPNG_TREE@/arm/filter_neon.S @LIBPNG_TREE@/arm/filter_neon_intrinsics.c
+	@LIBPNG_TREE@/arm/filter_neon.S @LIBPNG_TREE@/arm/filter_neon_intrinsics.c \
+	@LIBPNG_TREE@/arm/palette_neon_intrinsics.c
 endif
 
 $(libpng_a_OBJECTS): config.force
