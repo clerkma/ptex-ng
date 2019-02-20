@@ -401,13 +401,8 @@ void writevfu(int code, FILE *fp)
 				}
 			}
 			else
-				skip = -(zw-w); /* skip=(int)((0.1)*zw); */
-			if (code == 0x2018) {
-				skip2+=0; /* skip2+=-(int)((0.65)*zh); */
-			}
-			else {
-				skip2+=0; /* skip2+=-(int)((0.6)*zh); */
-			}
+				skip = -(zw-w); /* changed */
+			/* no correction needed for skip2 */
 
 			if (kanatfm)
 				cc=4;
@@ -530,13 +525,8 @@ void writevfu(int code, FILE *fp)
 				}
 			}
 			else
-				skip = zw; /* skip=(int)((0.4)*zw); */
-			if (code == 0x2019) {
-				skip2+=0; /* skip2+=(int)((0.65)*zh); */
-			}
-			else {
-				skip2+=0; /* skip2+=(int)((0.6)*zh); */
-			}
+				skip = zw; /* changed */
+			/* no correction needed for skip2 */
 
 			if (kanatfm)
 				cc=4;
@@ -804,6 +794,10 @@ void maketfm(char *name)
 	FILE *fp;
 	int i;
 
+	if (strlen(name) >= 252) { /* <buffer size> - ".tfm" */
+		fprintf(stderr,"Too long output file name.\n");
+		exit(1);
+	}
 	strcpy(nbuf,name);
 	strcat(nbuf,".tfm");
 	fp = fopen(nbuf,"wb");
