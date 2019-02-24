@@ -26,8 +26,8 @@
 #define pTeX_version_string "-p3.8.2"
 
 #define upTeX_version 1
-#define upTeX_revision ".23"
-#define upTeX_version_string "-u1.23"
+#define upTeX_revision ".24"
+#define upTeX_version_string "-u1.24"
 
 #define eTeX_version        2         // { \.{\\eTeXversion} }
 #define eTeX_revision       ".6"      // { \.{\\eTeXrevision} }
