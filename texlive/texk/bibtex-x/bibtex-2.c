@@ -2949,14 +2949,43 @@ we use "-o" to indicate the rule of conpare.             23/sep/2009
 			char2;
 #endif
 
+#ifdef TRACE
+  if (Flag_trace)
+    TRACE_PR_LN3 ("Comparing entry %ld and %ld ...", arg1, arg2);
+#endif                      			/* TRACE */
   ptr1 = (arg1 * num_ent_strs) + sort_key_num;
   ptr2 = (arg2 * num_ent_strs) + sort_key_num;
 #ifdef UTF_8
   lenk1 = strlen((char *)&ENTRY_STRS(ptr1, 0));
   lenk2 = strlen((char *)&ENTRY_STRS(ptr2, 0));
 
+/*
+icu_toUChars() seems not working here, using u_strFromUTF8 instead. (04/mar/2019)
+*/
+
+/*
+On Windows, u_strFromUTF8() fails but u_strFromUTF8WithSub()
+with U_SENTINEL (-1) ---> 0xfffd works.
+So I use u_strFromUTF8WithSub() by replacing 0xffffffff --> 0xfffd.
+--ak (05/mar/2019)
+*/
+
+/*
   uchlen1 = icu_toUChars(entry_strs, (ptr1 * (ENT_STR_SIZE+1)), lenk1, uch1, ucap);
   uchlen2 = icu_toUChars(entry_strs, (ptr2 * (ENT_STR_SIZE+1)), lenk2, uch2, ucap);
+*/
+  u_strFromUTF8WithSub(uch1, ucap, &uchlen1, (char *)&ENTRY_STRS(ptr1, 0), lenk1, 0xfffd, NULL, &err1);
+  u_strFromUTF8WithSub(uch2, ucap, &uchlen2, (char *)&ENTRY_STRS(ptr2, 0), lenk2, 0xfffd, NULL, &err1);
+
+/*
+  If err1 != U_ZERO_ERROR, we use the original functions.
+*/
+
+  if (!U_SUCCESS(err1)) {
+    uchlen1 = icu_toUChars(entry_strs, (ptr1 * (ENT_STR_SIZE+1)), lenk1, uch1, ucap);
+    uchlen2 = icu_toUChars(entry_strs, (ptr2 * (ENT_STR_SIZE+1)), lenk2, uch2, ucap);
+    err1 = U_ZERO_ERROR;
+  }
 
   if(Flag_location)
     ucol1 = ucol_open(Str_location, &err1);
@@ -2965,6 +2994,10 @@ we use "-o" to indicate the rule of conpare.             23/sep/2009
   if (!U_SUCCESS(err1))
     printf("there is a error: U_ZERO_ERROR, open a ucol.");
   u_less = !ucol_greaterOrEqual(ucol1, uch1, uchlen1, uch2, uchlen2);
+#ifdef TRACE
+  if (Flag_trace)
+    TRACE_PR_LN2 ("... first is smaller than second? -- %s (ICU)", (u_less?"T":"F"));
+#endif                      			/* TRACE */
 
   ucol_close(ucol1);
   return u_less;
@@ -3011,6 +3044,10 @@ we use "-o" to indicate the rule of conpare.             23/sep/2009
     INCR (char_ptr);
   END
 Exit_Label:
+#ifdef TRACE
+  if (Flag_trace)
+    TRACE_PR_LN2 ("... first is smaller than second? -- %s", (less_than?"T":"F"));
+#endif                      			/* TRACE */
   return (less_than);
 #endif
 END
@@ -3126,6 +3163,7 @@ BEGIN
 	BEGIN
 		printf("2there is a error: U_ZERO_ERROR");
 	END
+	ucnv_close(ucon1);
 	
 	return len;
 END
