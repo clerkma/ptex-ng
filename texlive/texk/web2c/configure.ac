@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 48591 2018-09-05 21:30:41Z lscarso $
+dnl $Id: configure.ac 50260 2019-03-06 13:23:58Z lscarso $
 dnl Process this file with Autoconf to produce a configure script for Web2c.
 dnl
 dnl   Copyright 2018 Karl Berry <tex-live@tug.org>
@@ -233,7 +233,7 @@ if test $ac_cv_sizeof_int -lt 4; then
 fi
 AC_CHECK_SIZEOF([long])
 AC_SEARCH_LIBS([pow], [m])
-AC_CHECK_FUNCS([access atoi fmax ftime gettimeofday mkdtemp setlocale strerror strlcat strlcpy strndup])
+AC_CHECK_FUNCS([access atoi fmax ftime gettimeofday fabs labs mkdtemp setlocale strerror strlcat strlcpy strndup])
 AC_CHECK_DECLS([strndup])
 AC_CHECK_HEADERS([errno.h langinfo.h locale.h sys/time.h sys/timeb.h sys/wait.h time.h])
 AC_CHECK_SIZEOF([void *])
