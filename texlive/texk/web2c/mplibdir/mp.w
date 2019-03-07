@@ -128,7 +128,7 @@ typedef int integer;
 #define MPOST_ABS abs
 #else
 /* See source/texk/web2c/w2c/config.h */
-#if INTEGER_TYPE == long 
+#if INTEGER_MAX == LONG_MAX /* this should mean INTEGER_TYPE == long */
 #ifdef HAVE_LABS
 #define MPOST_ABS labs
 #else

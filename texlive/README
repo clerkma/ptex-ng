@@ -1,4 +1,4 @@
-$Id: README 49472 2018-12-21 23:23:35Z karl $
+$Id: README 50267 2019-03-06 22:50:00Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 For a high-level overview of building TeX Live, see
@@ -47,7 +47,7 @@ i386-openbsd, amd64-openbsd:
   e.g., see CONFIGURE_ARGS in the Makefile in
   http://cvsweb.openbsd.org/cgi-bin/cvsweb/ports/print/texlive/base/
 
-i386-solaris, x86_64-solaris, sparc-solaris:
+i386-solaris, x86_64-solaris:
   Solaris 10, gcc 5.5.  See doc/README.solaris.
 
 i386-cygwin, x86_64-cygwin: gcc-4.8.2, cygwin-1.7.29.
