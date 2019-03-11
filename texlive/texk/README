@@ -1,4 +1,4 @@
-$Id: README 50255 2019-03-06 10:32:04Z hironobu $
+$Id: README 50335 2019-03-11 02:46:28Z kakuto $
 Copyright 2006-2018 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -64,11 +64,11 @@ dvipos - maintained here, by us
 
 dvipsk - maintained here, by us
 
-dvisvgm 2.6.2 - checked 25jan19
+dvisvgm 2.6.3 - checked 10mar19
   https://dvisvgm.de/Downloads/
 
-gregorio 5.1.1 - checked 25mar18
-  CTAN/support/gregoriotex/gregorio-5.1.1.zip
+gregorio 5.2.0 - checked 11mar19
+  CTAN/support/gregoriotex/gregorio-5.2.0.zip
 
 gsftopk - from Paul Vojta's xdvi?
 
