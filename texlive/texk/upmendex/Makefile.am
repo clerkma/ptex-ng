@@ -1,4 +1,4 @@
-## $Id: Makefile.am 44086 2017-04-27 21:38:29Z karl $
+## $Id: Makefile.am 50413 2019-03-16 14:51:57Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/upmendex/
 ##
 ## Copyright 2017 Karl Berry <tex-live@tug.org>
@@ -51,7 +51,7 @@ EXTRA_DIST = \
 ##
 EXTRA_DIST += \
 	indexsty \
-	upmendex.doc
+	upmendex.ja.txt
 
 ## Tests
 ##
