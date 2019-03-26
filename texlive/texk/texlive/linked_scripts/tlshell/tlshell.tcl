@@ -10,7 +10,8 @@ package require Tk
 # security: disable send
 catch {rename send {}}
 
-# make sure TL comes first on process searchpath
+# unix: make sure TL comes first on process searchpath
+# on windows, runscript takes care of this.
 if {$::tcl_platform(platform) ne "windows"} {
   set texbin [file dirname [file normalize [info script]]]
   set savedir [pwd]
@@ -25,6 +26,18 @@ if {$::tcl_platform(platform) ne "windows"} {
   }
   unset texbin
   unset savedir
+  unset dirs
+} else {
+  # until we have a better wrapper, just hardcode stuff
+  set texbin [file dirname [file normalize [info script]]]
+  set texbin "$texbin\\..\\..\\..\\bin\\win32"
+  set texbin [file normalize $texbin]
+  set texbin [string map {/ \\} $texbin]
+  set dirs [split $::env(PATH) ";"]
+  if {[lindex $dirs 0] ne $texbin} {
+    set ::env(PATH) "${texbin};$::env(PATH)"
+  }
+  unset texbin
   unset dirs
 }
 
@@ -354,10 +367,8 @@ proc start_tlmgr {{args ""}} {
 } ; # start_tlmgr
 
 proc close_tlmgr {} {
-  catch {chan close $::tlshl}
-  catch {chan close $::err}
-  set ::perlpid 0
-}; # close_tlmgr
+  run_cmd_waiting "quit"
+}
 
 # read a line of tlmgr output
 proc read_line {} {
@@ -365,12 +376,20 @@ proc read_line {} {
   # if it wants to wait for the command to finish
   set l "" ; # will contain the line to be read
   if {([catch {chan gets $::tlshl l} len] || [chan eof $::tlshl])} {
-    #do_debug "read_line: failing to read "
-    puts stderr "Read failure; tlmgr command was $::last_cmd"
-    if {! [catch {chan close $::tlshl}]} {set ::perlpid 0}
-    # note. the right way to terminate is terminating the GUI shell.
-    # This closes stdin of tlmgr shell.
-    err_exit
+    if [chan eof $::tlshl] {
+      catch {chan close $::tlshl}
+      catch {chan close $:err}
+      unset -nocomplain ::tlshl
+      unset -nocomplain ::err
+      set ::perlpid 0
+      set ::done_waiting 1
+    } else {
+      #do_debug "read_line: failing to read "
+      puts stderr "Read failure; tlmgr command was $::last_cmd"
+      # note. the normal way to terminate is terminating the GUI shell.
+      # This closes stdin of tlmgr shell.
+      err_exit
+    }
   } elseif {$len >= 0} {
     # do_debug "read: $l"
     if $::ddebug {puts $::flid $l}
@@ -541,11 +560,11 @@ proc update_globals {} {
 
   # also update displayed status info
   if {$::have_remote && $::need_update_tlmgr} {
-    .topf.luptodate configure -text [__ "Needs updating"]
+    .topfl.luptodate configure -text [__ "Needs updating"]
   } elseif $::have_remote {
-    .topf.luptodate configure -text [__ "Up to date"]
+    .topfl.luptodate configure -text [__ "Up to date"]
   } else {
-    .topf.luptodate configure -text [__ "Unknown"]
+    .topfl.luptodate configure -text [__ "Unknown"]
   }
   # ... and status of update buttons
   selective_dis_enable
@@ -732,7 +751,7 @@ proc get_packages_info_remote {} {
   }
   get_platforms
   set ::have_remote 1
-  .topf.loaded configure -text [__ "Loaded"] -foreground black
+  .topfl.loaded configure -text [__ "Loaded"] -foreground black
   update_globals
   return 1
 } ; # get_packages_info_remote
@@ -1079,7 +1098,7 @@ proc repos_commit {} {
   }
   if $changes {
     set_repos_in_tlmgr
-    .topf.lrepos configure -text [print_repos]
+    .topfl.lrepos configure -text [print_repos]
     close_tlmgr
     start_tlmgr
     # reload remote package information
@@ -1506,22 +1525,26 @@ proc restore_backups_dialog {} {
 
 ##### package-related #####
 
+proc update_self_q {} {
+  set ans [tk_messageBox -type okcancel -icon info -message \
+      [string cat [__ "If update fails, try on a command-line:"] \
+         "\ntlmgr update --self\n" \
+         [__ "Use an administrative command prompt for an admin install."]]]
+  return [$ans eq ok]
+}
+
 proc update_tlmgr {} {
   if {! $::need_update_tlmgr} {
     tk_messageBox -message [__ "Nothing to do!"]
     return
   }
-  if {$::tcl_platform(platform) eq "windows"} {
-    set ans [tk_messageBox -type okcancel -icon info -message \
-        [string cat [__ "If update fails, try on a command-line:"] \
-           "\ntlmgr update --self\n" \
-             [__ "Use an administrative command prompt for an admin install."]]]
-    if {$ans eq "cancel"} return
-  }
+  if {$::tcl_platform(platform) eq "windows" && ! [update_self_q]} return
   run_cmd "update --self" 1
   vwait ::done_waiting
   # tlmgr restarts itself automatically
   update_local_revnumbers
+  .topfr.linfra configure -text \
+      "tlmgr: r[dict get $::pkgs texlive.infra localrev]"
   collect_filtered
 } ; # update_tlmgr
 
@@ -2008,8 +2031,12 @@ proc populate_main {} {
     .mn.opt add cascade -label [__ "GUI language (restarts tlshell)"] \
         -menu .mn.opt.lang
     menu .mn.opt.lang
-    foreach l $::langs {
-      .mn.opt.lang add command -label $l -command "set_language $l"
+    foreach l [lsort $::langs] {
+      if {$l eq $::lang} {
+        .mn.opt.lang add command -label "$l *"
+      } else {
+        .mn.opt.lang add command -label "$l" -command "set_language $l"
+      }
     }
   }
 
@@ -2051,28 +2078,36 @@ proc populate_main {} {
   ppack .showlogs -in .endbuttons -side right
 
   # various info
-  # frame .topf -background white -borderwidth 2 -relief sunken
   ppack [ttk::frame .topf] -in .bg -side top -anchor w -fill x
+
+  # left frame
+  ppack [ttk::frame .topfl] -in .topf -side left -anchor nw
+
+  ttk::label .topfl.llrepo -text [__ "Default repositories"] -anchor w
+  pgrid .topfl.llrepo -row 0 -column 0 -sticky nw
+  ttk::label .topfl.lrepos -text "" -justify left -anchor w
+  pgrid .topfl.lrepos -row 0 -column 1 -sticky nw
+  ttk::label .topfl.loaded -text [__ "Not loaded"] -foreground red -anchor w
+  pgrid .topfl.loaded -row 1 -column 1 -sticky w
+
+  ttk::label .topfl.lluptodate -text [__ "TL Manager up to date?"] -anchor w
+  pgrid .topfl.lluptodate -row 2 -column 0 -sticky w
+  ttk::label .topfl.luptodate -text [__ "Unknown"] -anchor w
+  pgrid .topfl.luptodate -row 2 -column 1 -sticky w
+
+  ttk::label .topfl.llcmd -text [__ "Last tlmgr command:"] -anchor w \
+      -wraplength [expr {60*$::cw}] -justify left
+  pgrid .topfl.llcmd -row 3 -column 0 -sticky w
+  ttk::label .topfl.lcmd -textvariable ::last_cmd -anchor w
+  pgrid .topfl.lcmd -row 3 -column 1 -sticky w
+
+  # right frame
+  ppack [ttk::frame .topfr] -in .topf -side right -anchor ne
+  pack [ttk::label .topfr.linfra] -side top -anchor e
+  pack [ttk::label .topfr.lshell] -side top -anchor e
+
   pack [ttk::separator .sp -orient horizontal] \
       -in .bg -side top -fill x -pady 6
-
-  ttk::label .topf.llrepo -text [__ "Default repositories"] -anchor w
-  pgrid .topf.llrepo -row 0 -column 0 -sticky nw
-  ttk::label .topf.lrepos -text "" -justify left -anchor w
-  pgrid .topf.lrepos -row 0 -column 1 -sticky nw
-  ttk::label .topf.loaded -text [__ "Not loaded"] -foreground red -anchor w
-  pgrid .topf.loaded -row 1 -column 1 -sticky w
-
-  ttk::label .topf.lluptodate -text [__ "TL Manager up to date?"] -anchor w
-  pgrid .topf.lluptodate -row 2 -column 0 -sticky w
-  ttk::label .topf.luptodate -text [__ "Unknown"] -anchor w
-  pgrid .topf.luptodate -row 2 -column 1 -sticky w
-
-  ttk::label .topf.llcmd -anchor w -text [__ "Last tlmgr command:"] -anchor w \
-      -wraplength [expr {60*$::cw}] -justify left
-  pgrid .topf.llcmd -row 3 -column 0 -sticky w
-  ttk::label .topf.lcmd -anchor w -textvariable ::last_cmd -anchor w
-  pgrid .topf.lcmd -row 3 -column 1 -sticky w
 
   # package list
   ttk::label .lpack -text [__ "Package list"] -font TkHeadingFont -anchor w
@@ -2263,8 +2298,13 @@ proc initialize {} {
 
   start_tlmgr
   get_repos_from_tlmgr
-  .topf.lrepos configure -text [print_repos]
+  .topfl.lrepos configure -text [print_repos]
   get_packages_info_local
+  # svns for  tlmgr and tlshell
+  .topfr.linfra configure -text \
+      "tlmgr: r[dict get $::pkgs texlive.infra localrev]"
+  .topfr.lshell configure -text \
+      "tlshell: r[dict get $::pkgs tlshell localrev]"
   collect_filtered ; # invokes display_packages_info
   selective_dis_enable
 }; # initialize
