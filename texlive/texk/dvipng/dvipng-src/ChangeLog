@@ -1,3 +1,15 @@
+2019-04-06  Jan-Åke Larsson  <jan-ake.larsson@liu.se>
+
+	* pk.c (InitPK): check for packet_length reading outside file bounds.
+	Report from Andy Nguyen of ETH Zurich.
+	
+	* tfm.c (ReadTFM): check for reading outside file bounds.
+	Report from Andy Nguyen of ETH Zurich.
+	
+	* dvi.c (DVIGetCommand): check for (unsigned value) overflow
+	so we don't fail to realloc buffer if needed.
+	Report from Andy Nguyen of ETH Zurich, found using afl-fuzz.
+
 2015-03-01  Jan-Åke Larsson  <jan-ake.larsson@liu.se>
 
 	* RELEASE: Release 1.15
