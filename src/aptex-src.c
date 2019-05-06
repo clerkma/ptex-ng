@@ -121,7 +121,7 @@ static void print_aptex_version (void)
 {
   printf("Copyright 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma.\n"
     "banner: \"%s\"\n"
-    "base: Y&Y TeX 2.3.0, pTeX 3.8.2, upTeX 1.23\n"
+    "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n"
     "Compiled with %s\n"
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
@@ -129,9 +129,9 @@ static void print_aptex_version (void)
     "Compiled with mruby version %s\n"
     "Compiled with synctex (build-in edition)\n"
     "Compiled with libdpx (build-in dvipdfmx)\n",
-    banner, kpathsea_version_string,
-    ptexenc_version_string, LIBOTF_VERSION, zlib_version,
-    MRUBY_VERSION);
+    banner, pTeX_version_string, upTeX_version_string,
+    kpathsea_version_string, ptexenc_version_string,
+    LIBOTF_VERSION, zlib_version, MRUBY_VERSION);
   aptex_utils_exit(EXIT_SUCCESS);
 }
 
@@ -2082,7 +2082,7 @@ static integer kcatcodekey (integer c)
         return 0x01FD;
     }
 
-    if (block == 0xa0)
+    if (block == 0xa1)
     {
       /* Fullwidth ASCII variants  except for U+FF01..FF0F, U+FF1A..FF20, U+FF3B..FF40, U+FF5B..FF5E */
       if ((FULLWIDTH_DIGIT_0 <= c && c <= FULLWIDTH_DIGIT_9)
@@ -17320,7 +17320,7 @@ void conditional (void)
         else if ((cur_cmd > active_char) || (cur_chr > 255))
         {
           m = relax;
-          n = 256;
+          n = max_cjk_val;
         }
         else
         {
@@ -17337,7 +17337,7 @@ void conditional (void)
         else if ((cur_cmd > active_char) || (cur_chr > 255))
         {
           cur_cmd = relax;
-          cur_chr = 256;
+          cur_chr = max_cjk_val;
         }
 
         if (this_if == if_char_code)
