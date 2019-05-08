@@ -1,4 +1,4 @@
-# $Id: configure.ac 50315 2019-03-10 18:21:29Z karl $
+# $Id: configure.ac 51034 2019-05-07 18:01:50Z karl $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
@@ -62,6 +62,9 @@ have_libgs=yes
 AC_CHECK_HEADER([ghostscript/iapi.h],
 	[AC_CHECK_LIB(gs, gsapi_revision,, [have_libgs=no])],
 	[have_libgs=no])
+if test "x$have_libgs" = xyes; then
+  HAVE_LIBGS=1
+fi
 AS_IF([test "x$have_libgs" = "xno"],
 	# Ghostscript not found, check for dlopen
 	[AC_CHECK_LIB(dl, dlopen,,
