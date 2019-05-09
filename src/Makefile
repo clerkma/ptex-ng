@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014, 2015, 2016, 2017, 2018 Clerk Ma
+# Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #
@@ -11,11 +11,11 @@ INCLUDES = \
 	-I ../texlive/texk/ \
 	-I ../texlive/libs/zlib/include \
 	-I ../texlive/libs/freetype2/freetype2 \
-	-I libcairo \
+	-I ../texlive/libs/cairo/cairo \
 	-I ../texlive/libs/cairo/cairo-src/src \
 	-I libotf/src \
 	-I mruby/include
-LDFLAGS = libdpx.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a libmruby.a -lm
+LDFLAGS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a libmruby.a -lm
 
 objects = \
 	aptex.o \

@@ -16,9 +16,11 @@ cd $NG_SRC_DIR/texlive/texk/kpathsea && ./configure && make -j || exit 1
 cp .libs/libkpathsea.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/texlive/texk/ptexenc && ./configure && make -j || exit 1
 cp .libs/libptexenc.a $NG_SRC_DIR/src
+cd $NG_SRC_DIR/texlive/libs/cairo && ./configure && make -j || exit 1
+cp libcairo.a $NG_SRC_DIR/src
 # 
 cd $NG_SRC_DIR/src/libcairo && make -j || exit 1
-cp libcairo.a $NG_SRC_DIR/src
+cp libcairo-pdf.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/src/libdpx && make -j || exit 1
 cp libdpx.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/src/libotf && make -j || exit 1
