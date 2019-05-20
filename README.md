@@ -36,6 +36,13 @@ First of all, we need to install `bison` ([winflexbison](https://github.com/lexx
 * libotf 0.9.16 (`http://cvs.savannah.gnu.org/viewvc/libotf/?root=m17n`)
 * mruby 2.0.1 (`http://mruby.org/downloads/`)
 
+## Prebuilt Binaries
+
+* [aptex-linux-x86_64.zip](http://aptex.oss-cn-beijing.aliyuncs.com/aptex-linux-x86_64.zip) (gcc-8.3.0, Ubuntu 19.04)
+* [aptex-macos-x86_64.zip](http://aptex.oss-cn-beijing.aliyuncs.com/aptex-macos-x86_64.zip) (clang-1001.0.46.4, macOS Mojave)
+* [aptex-msvc-x86.zip](http://aptex.oss-cn-beijing.aliyuncs.com/aptex-msvc-x86.zip) (Visual Studio 2019)
+* [aptex-msvc-x86_64.zip](http://aptex.oss-cn-beijing.aliyuncs.com/aptex-msvc-x86_64.zip) (Visual Studio 2019)
+
 ## How to Install
 
 [TeX Wiki/pTeX-ng](https://texwiki.texjp.org/?pTeX-ng)
