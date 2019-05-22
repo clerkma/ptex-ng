@@ -42,6 +42,7 @@ First of all, we need to install `bison` ([winflexbison](https://github.com/lexx
 * [aptex-macos-x86_64.zip](http://aptex.oss-cn-beijing.aliyuncs.com/aptex-macos-x86_64.zip) (clang-1001.0.46.4, macOS Mojave)
 * [aptex-msvc-x86.zip](http://aptex.oss-cn-beijing.aliyuncs.com/aptex-msvc-x86.zip) (Visual Studio 2019)
 * [aptex-msvc-x86_64.zip](http://aptex.oss-cn-beijing.aliyuncs.com/aptex-msvc-x86_64.zip) (Visual Studio 2019)
+* [aptex-rasberrypi.zip](http://aptex.oss-cn-beijing.aliyuncs.com/aptex-rasberrypi.zip) (Raspbian)
 
 ## How to Install
 
