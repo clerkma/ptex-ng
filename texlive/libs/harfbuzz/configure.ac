@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 48947 2018-10-19 21:35:02Z kakuto $
+dnl $Id: configure.ac 51218 2019-05-24 23:03:55Z kakuto $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -90,7 +90,6 @@ if :; then
 else
 dnl add all these to config.h.in but do not define them in config.h
   AC_DEFINE([HAVE_PTHREAD], 1, [Use POSIX threads])
-  AC_DEFINE([HAVE_UCDN], 1, [Use UCDN Unicode functions])
   AC_DEFINE([HAVE_GLIB], 1, [Use glib2 library])
   AC_DEFINE([HAVE_GTHREAD], 1, [Use gthread2 library])
   AC_DEFINE([HAVE_GOBJECT], 1, [Use gobject2 library])
