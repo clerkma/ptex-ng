@@ -1,4 +1,4 @@
-## $Id: Makefile.am 43493 2017-03-14 00:03:01Z karl $
+## $Id: Makefile.am 51335 2019-06-06 22:21:33Z karl $
 ## Makefile.am for the TeX Live top-level
 ##
 ## Copyright 2016      Karl Berry <tex-live@tug.org>
@@ -42,24 +42,39 @@ recurse_top =
 
 include $(srcdir)/am/recurse.am
 
-# This is the default target for the Build script in TeX Live.
+# This (world) is the default target for the ./Build script in TeX Live.
 .PHONY: world
 # Run texlinks here since the binaries won't be there
 # at install-data, and fmtutil.cnf won't be there at install-exec,
 # and there is no install-hook or install-local.
 texlinks_dir = texk/texlive/tl_scripts
 world: all
-## Serialize 'make all' and 'make install-strip'.
+	@echo "top-level make $@: running $(build_info_target)..."
+	$(MAKE) $(AM_MAKEFLAGS) $(build_info_target)
+#
+# Serialize 'make all' and 'make install-strip'.
 	@echo "top-level make $@: running install-strip..."
 	$(MAKE) $(AM_MAKEFLAGS) install-strip
-##
-	@echo "top-level make $@: running texlinks in $(texlinks_dir) ..."
+#
+	@echo "top-level make $@: making run-texlinks in $(texlinks_dir) ..."
 	cd $(texlinks_dir) && $(MAKE) $(AM_MAKEFLAGS) run-texlinks
-##
+#
 	@echo "top-level make $@: running $(check_target)..."
 	$(MAKE) $(AM_MAKEFLAGS) $(check_target)
-##
+#
 	@echo "top-level make $@ done."
+
+# create file buildinfo.log in working directory, to record relevant
+# information about the build environment.
+build-info:
+	-env MAKE="$(MAKE)" LDFLAGS="$(LDFLAGS)" \
+	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
+	    CXX="$(CXX)" CXXFLAGS="$(CXXFLAGS)" \
+	    OBJC="$(OBJC)" OBJCXXFLAGS="$(OBJCXXFLAGS)" \
+	$(srcdir)/doc/build-info.sh >buildinfo.log
+
+# should be harmless to run that, but just in case:
+build_info_target = build-info
 
 install-exec-hook:
 	@echo "WARNING: make install does not result in a usable TeX!"
