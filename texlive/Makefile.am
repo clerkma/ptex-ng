@@ -1,4 +1,4 @@
-## $Id: Makefile.am 51335 2019-06-06 22:21:33Z karl $
+## $Id: Makefile.am 51425 2019-06-22 22:05:57Z karl $
 ## Makefile.am for the TeX Live top-level
 ##
 ## Copyright 2016      Karl Berry <tex-live@tug.org>
@@ -49,9 +49,6 @@ include $(srcdir)/am/recurse.am
 # and there is no install-hook or install-local.
 texlinks_dir = texk/texlive/tl_scripts
 world: all
-	@echo "top-level make $@: running $(build_info_target)..."
-	$(MAKE) $(AM_MAKEFLAGS) $(build_info_target)
-#
 # Serialize 'make all' and 'make install-strip'.
 	@echo "top-level make $@: running install-strip..."
 	$(MAKE) $(AM_MAKEFLAGS) install-strip
@@ -66,15 +63,18 @@ world: all
 
 # create file buildinfo.log in working directory, to record relevant
 # information about the build environment.
-build-info:
+buildinfo:
 	-env MAKE="$(MAKE)" LDFLAGS="$(LDFLAGS)" \
 	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    CXX="$(CXX)" CXXFLAGS="$(CXXFLAGS)" \
 	    OBJC="$(OBJC)" OBJCXXFLAGS="$(OBJCXXFLAGS)" \
-	$(srcdir)/doc/build-info.sh >buildinfo.log
+	$(srcdir)/doc/buildinfo.sh >buildinfo.log
 
-# should be harmless to run that, but just in case:
-build_info_target = build-info
+# should be harmless to run it, but just in case:
+build_info_target = buildinfo
+
+# run buildinfo first.
+all-recursive: buildinfo
 
 install-exec-hook:
 	@echo "WARNING: make install does not result in a usable TeX!"
