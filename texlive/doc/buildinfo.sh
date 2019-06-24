@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: buildinfo.sh 51425 2019-06-22 22:05:57Z karl $
+# $Id: buildinfo.sh 51428 2019-06-23 17:20:20Z karl $
 # Public domain. Report basics of current system; run from top-level
 # Makefile so any make overrides will be taken into account. (And from
 # Build.) buildenv.log with full environment dump is also created.
@@ -14,13 +14,24 @@ printf 'UNAME\t"%s"\n'    "`uname -a`"
 
 # /etc/issue often contains only placeholders, so don't bother.
 
+printf 'MAKE\t"%s"\n'     "${MAKE-make}"
 printf 'MAKE-v\t"%s"\n'   "`${MAKE-make} -v 2>&1 | sed 1q`"
 # BSD make does not give version info with -v, but the
 # first line of the usage message is sort of an identifier.
 
 # our configure defaults to using gcc and g++.
+printf 'CC\t"%s"\n'       "${CC-gcc}"
+printf 'CFLAGS\t"%s"\n'   "${CFLAGS}"
 printf 'CC-v\t"%s"\n'     "`${CC-gcc} --version 2>&1 | sed 1q`"
+#
+printf 'CXX\t"%s"\n'      "${CXX-g++}"
+printf 'CXXFLAGS\t"%s"\n' "${CXXFLAGS}"
 printf 'CXX-v\t"%s"\n'    "`${CXX-g++} --version 2>&1 | sed 1q`"
+#
+printf 'OBJCXX\t"%s"\n'      "${OBJCXX-cc}"
+printf 'OBJCXXFLAGS\t"%s"\n' "${OBJCXXFLAGS}"
+#
+printf 'LDFLAGS\t"%s"\n'  "${LDFLAGS}"
 
 # Some Linux-based systems provide this, but don't worry if not there.
 # Let's hope that other systems are sufficiently identified by uname,

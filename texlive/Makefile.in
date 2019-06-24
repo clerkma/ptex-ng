@@ -492,7 +492,7 @@ DIST_SUBDIRS = auxdir/auxsub doc $(CONF_SUBDIRS) libs utils texk
 recurse_this = 
 recurse_top = 
 
-# $Id: Makefile.in 51425 2019-06-22 22:05:57Z karl $
+# $Id: Makefile.in 51428 2019-06-23 17:20:20Z karl $
 #
 # Requires $(recurse_this) and $(recurse_top).
 # Uses CONF_SUBDIRS and MAKE_SUBDIRS (set by kpse-setup.m4).
@@ -1053,7 +1053,7 @@ buildinfo:
 	-env MAKE="$(MAKE)" LDFLAGS="$(LDFLAGS)" \
 	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    CXX="$(CXX)" CXXFLAGS="$(CXXFLAGS)" \
-	    OBJC="$(OBJC)" OBJCXXFLAGS="$(OBJCXXFLAGS)" \
+	    OBJCXX="$(OBJCXX)" OBJCXXFLAGS="$(OBJCXXFLAGS)" \
 	$(srcdir)/doc/buildinfo.sh >buildinfo.log
 
 # run buildinfo first.

@@ -1,4 +1,4 @@
-## $Id: Makefile.am 51425 2019-06-22 22:05:57Z karl $
+## $Id: Makefile.am 51428 2019-06-23 17:20:20Z karl $
 ## Makefile.am for the TeX Live top-level
 ##
 ## Copyright 2016      Karl Berry <tex-live@tug.org>
@@ -67,7 +67,7 @@ buildinfo:
 	-env MAKE="$(MAKE)" LDFLAGS="$(LDFLAGS)" \
 	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    CXX="$(CXX)" CXXFLAGS="$(CXXFLAGS)" \
-	    OBJC="$(OBJC)" OBJCXXFLAGS="$(OBJCXXFLAGS)" \
+	    OBJCXX="$(OBJCXX)" OBJCXXFLAGS="$(OBJCXXFLAGS)" \
 	$(srcdir)/doc/buildinfo.sh >buildinfo.log
 
 # should be harmless to run it, but just in case:
