@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: Build 51428 2019-06-23 17:20:20Z karl $
+# $Id: Build 51486 2019-06-27 00:06:35Z preining $
 # Public domain.  Originally written many years ago by Sebastian Rahtz.
 # The basic idea is to run configure && make, but with a multitude of
 # environment variables to allow overriding everything.
@@ -15,6 +15,7 @@ LANG=C; export LANG
 # cd to our source directory.
 mydir=`dirname $0`
 cd $mydir || exit 1
+mydir=`pwd` # make absolute
 
 # We export the TL_* variables so that they can be dumped to buildenv.log.
 : ${TL_WORKDIR=Work}; export TL_WORKDIR
@@ -48,7 +49,7 @@ export MAKE; export TL_MAKE
 : ${TL_MAKE_VERBOSE=VERBOSE=1}; export TL_MAKE_VERBOSE
 
 # allow override of make target.
-: ${TL_TARGET=world}; export TL_TARGTE
+: ${TL_TARGET=world}; export TL_TARGET
 
 if test "x$1" = x--no-clean; then
   shift
@@ -114,9 +115,7 @@ cd $TL_WORKDIR || exit 1
   echo "starting TeX Live build at `date`"
   printf 'CMDLINE\t"%s"\n' "$0 $*"
   printf 'PWD\t"%s"\n'     "`pwd`"
-  #
-  # output system info (will also be done by make, to buildinfo.log).
-  $mydir/doc/buildinfo.sh --no-config-status
+  printf 'UNAME\t"%s"\n'   "`uname`"
   env | sort >buildenv.log
   echo "See also buildenv.log and buildinfo.log in `pwd`"
   echo
