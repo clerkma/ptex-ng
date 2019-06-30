@@ -1,4 +1,4 @@
-## $Id: xetex.am 46353 2018-01-17 22:54:13Z karl $
+## $Id: xetex.am 51510 2019-06-30 13:42:49Z hironobu $
 ## texk/web2c/xetexdir/am/xetex.am: Makefile fragment for XeTeX.
 ##
 ## Copyright 2017 Karl Berry <tex-live@tug.org>
@@ -200,9 +200,10 @@ EXTRA_DIST += \
 # XeTeX Tests
 #
 xetex_tests = \
+	xetexdir/xetex-filedump.test \
 	xetexdir/xetex-bug73.test \
 	xetexdir/xetex.test
-xetexdir/xetex-bug73.log xetexdir/xetex.log: xetex$(EXEEXT)
+xetexdir/xetex-filedump.log xetexdir/xetex-bug73.log xetexdir/xetex.log: xetex$(EXEEXT)
 
 EXTRA_DIST += $(xetex_tests)
 
@@ -213,3 +214,7 @@ endif XETEX
 ## xetex-bug73.test
 EXTRA_DIST += xetexdir/tests/bug73.log xetexdir/tests/bug73.tex
 DISTCLEANFILES += bug73.fmt bug73.log bug73.out bug73.tex
+
+## xetex-filedump.test
+EXTRA_DIST += xetexdir/tests/filedump.log xetexdir/tests/filedump.tex
+DISTCLEANFILES += filedump.log filedump.out filedump.tex
