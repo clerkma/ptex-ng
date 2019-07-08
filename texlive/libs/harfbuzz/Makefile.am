@@ -1,4 +1,4 @@
-## $Id: Makefile.am 51488 2019-06-27 08:20:17Z kakuto $
+## $Id: Makefile.am 51577 2019-07-08 06:07:11Z lscarso $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -29,6 +29,9 @@ noinst_LIBRARIES = libharfbuzz.a
 ## common
 AM_CPPFLAGS = -DHB_NO_MT -DHAVE_FALLBACK=1 \
 	-I$(top_srcdir)/$(HARFBUZZ_SRC)
+## For luahbtex we need this (and the rest ?)
+AM_CXXFLAGS = $(VISIBILITY_CXXFLAGS) $(WARNING_CXXFLAGS)
+
 libharfbuzz_dependencies =
 libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-algs.hh \
