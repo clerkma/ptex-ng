@@ -16026,9 +16026,14 @@ void scan_int (void)
     else if (cur_tok < cs_token_flag + single_base)
       cur_val = cur_tok - cs_token_flag - active_base;
     else
-      cur_val = cur_tok - cs_token_flag - single_base;
+    {
+      if (!(cur_cmd < kanji))
+        cur_cmd = invalid_char;
 
-    if ((cur_val > 255) && ((cur_cmd < kanji) || (cur_cmd > max_char_code)))
+      cur_val = cur_tok - cs_token_flag - single_base;
+    }
+
+    if ((cur_val > 255) && (cur_cmd < kanji))
     {
       print_err("Improper alphabetic or KANJI constant");
       help2("A one-character control sequence belongs after a ` mark.",
