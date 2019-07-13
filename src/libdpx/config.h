@@ -13,4 +13,8 @@
 
 #define VERSION "20190522"
 
+#if defined(__gnu_linux__) && defined(__i386__)
+#define _FILE_OFFSET_BITS 64
+#endif
+
 #define ZLIB_CONST 1
