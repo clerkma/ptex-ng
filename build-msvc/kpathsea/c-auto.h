@@ -24,7 +24,7 @@
 #define KPATHSEA_C_AUTO_H
 
 /* kpathsea: the version string. */
-#define KPSEVERSION "kpathsea version 6.3.0"
+#define KPSEVERSION "kpathsea version 6.3.2/dev"
 
 /* Define to 1 if the `closedir' function returns void instead of `int'. */
 /* #undef CLOSEDIR_VOID */
@@ -175,7 +175,7 @@
 #define KPSE_PACKAGE_NAME "Kpathsea"
 
 /* Define to the full name and version of this package. */
-#define KPSE_PACKAGE_STRING "Kpathsea 6.3.0"
+#define KPSE_PACKAGE_STRING "Kpathsea 6.3.2/dev"
 
 /* Define to the one symbol short name of this package. */
 #define KPSE_PACKAGE_TARNAME "kpathsea"
@@ -184,7 +184,7 @@
 #define KPSE_PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define KPSE_PACKAGE_VERSION "6.3.0"
+#define KPSE_PACKAGE_VERSION "6.3.2/dev"
 
 /* The size of `long', as computed by sizeof. */
 #define SIZEOF_LONG 8
@@ -193,7 +193,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define KPSE_VERSION "6.3.0"
+#define KPSE_VERSION "6.3.2/dev"
 
 /* Define to 1 if we need (v)snprintf wrapper functions. */
 /* #undef WRAP_SNPRINTF */

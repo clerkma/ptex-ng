@@ -63,6 +63,10 @@
 #define DEFAULT_WEB2C "/nonesuch"
 #endif
 
+#ifndef DEFAULT_TEXMFDOTDIR
+#define DEFAULT_TEXMFDOTDIR "/nonesuch"
+#endif
+
 #ifndef DEFAULT_TEXINPUTS
 #define DEFAULT_TEXINPUTS "/nonesuch"
 #endif
@@ -263,6 +267,10 @@
 #define DEFAULT_TEXSOURCES "/nonesuch"
 #endif
 
+#ifndef DEFAULT_TEXMFLOCALEDIR
+#define DEFAULT_TEXMFLOCALEDIR "/nonesuch"
+#endif
+
 #ifndef DEFAULT_WEBINPUTS
 #define DEFAULT_WEBINPUTS "/nonesuch"
 #endif
@@ -324,7 +332,7 @@
 #endif
 
 #ifndef DEFAULT_CLUAINPUTS
-#define DEFAULT_CLUAINPUTS ".:$SELFAUTOLOC/lib/{$progname,$engine,}/lua//"
+#define DEFAULT_CLUAINPUTS "$TEXMFDOTDIR:$SELFAUTOLOC/lib/{$progname,$engine,}/lua//"
 #endif
 
 #ifndef DEFAULT_TEXMFSCRIPTS
