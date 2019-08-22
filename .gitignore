@@ -26,6 +26,8 @@ src/libkpathsea.a
 src/libmruby.a
 src/libotf.a
 src/libotf/libotf.a
+src/libmd5.a
+src/libmd5/libmd5.a
 src/libpaper.a
 src/libpixman.a
 src/libpng.a
