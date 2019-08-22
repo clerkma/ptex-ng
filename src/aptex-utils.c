@@ -58,8 +58,8 @@ void aptex_utils_get_seconds_and_micros (uint64_t * s, uint64_t * m)
 static int32_t start_time_set = 0;
 static time_t start_time = 0;
 
-static char start_time_str[30];
-static char time_str[30];
+static char start_time_str[38];
+static char time_str[38];
 
 static uint32_t SOURCE_DATE_EPOCH_set = 0;
 static uint32_t FORCE_SOURCE_DATE_set = 0;
@@ -109,7 +109,7 @@ static void make_asn1_date (time_t t, char * time_str, int32_t utc)
   {
     off_hours = off / 60;
     off_mins = abs(off - off_hours * 60);
-    snprintf(&time_str[size], 9, "%+03d'%02d'", off_hours, off_mins);
+    snprintf(&time_str[size], 22, "%+03d'%02d'", off_hours, off_mins);
   }
 }
 
@@ -272,10 +272,14 @@ char * aptex_utils_get_file_dump (char * file_name, uint32_t s, uint32_t l)
     if (file_buffer != NULL)
     {
       fseek(f, s, SEEK_SET);
-      fread(file_buffer, sizeof(char), l, f);
-      buffer_hex_dump = gen_hex_dump(file_buffer, l);
-      free(file_buffer);
-      return buffer_hex_dump;
+
+      if (fread(file_buffer, sizeof(char), l, f) == l)
+      {
+        buffer_hex_dump = gen_hex_dump(file_buffer, l);
+        free(file_buffer);
+
+        return buffer_hex_dump;
+      }
     }
   }
 
