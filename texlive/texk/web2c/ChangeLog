@@ -1,3 +1,23 @@
+2019-08-09  Karl Berry  <karl@freefriends.org>
+
+	* tex.ch (53.1374): only log \openout files if the log_openout
+	config value is true. Report from David Fuchs.
+	* cpascal.h (texmfyes): #define texmf_yesno, for web visibility.
+	* triptest.test: no need to remove \openout lines since they are
+	no longer written.
+	* triptrap/trip.diffs: update.
+
+2019-08-06  Karl Berry  <karl@freefriends.org>
+
+	* texmfmp-help.h (ALEPHHELP, EPTEXHELP, ETEXHELP, EUPTEXHELP,
+	MFHELP, PDFTEXHELP, PTEXHELP, TEXHELP, UPTEXHELP, XETEXHELP):
+	add -cnf-line. (I.e., everything but the lua-based engines,
+	as they do not share the common source.)
+
+2019-08-04  Karl Berry  <karl@freefriends.org>
+
+	* doc/web2c.texi (Shell escapes): default value no longer as stated.
+
 2019-07-19  Karl Berry  <karl@tug.org>
 
 	* patgen.ch: mention adding swap/zram to deal with larger tries.

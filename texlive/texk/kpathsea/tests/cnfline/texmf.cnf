@@ -1,0 +1,5 @@
+# $Id: texmf.cnf 51830 2019-08-06 23:33:17Z karl $
+# Public domain. This tiny texmf.cnf is for kpathsea/tests/cnfline.test. 
+maxpr=100
+maxpr.kpsewhich=200
+othervar=300

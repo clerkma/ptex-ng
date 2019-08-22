@@ -5,7 +5,7 @@
    
    This file is public domain.  */
 
-/* This file is included from, e.g., texextra,c after
+/* This file is included from, e.g., texextra.c after
       #define EXTERN
       #include <texd.h>
    to instantiate data from texd.h here.  The ?d.h file is what
@@ -14,6 +14,7 @@
 
 #include <kpathsea/config.h>
 #include <kpathsea/c-ctype.h>
+#include <kpathsea/cnf.h>
 #include <kpathsea/line.h>
 #include <kpathsea/readable.h>
 #include <kpathsea/variable.h>
@@ -130,9 +131,18 @@
    --output-directory option is given.
    Borrowed from LuaTeX.
 */
+#if defined(_WIN32)
+#if defined(pdfTeX) || defined(upTeX) || defined(eupTeX) || defined(XeTeX)
+#define W32USYNCTEX 1
+#endif
+#endif
+
 char *generic_synctex_get_current_name (void)
 {
   char *pwdbuf, *ret;
+#if defined(W32USYNCTEX)
+  wchar_t *wpwd;
+#endif /* W32USYNCTEX */
   if (!fullnameoffile) {
     ret = xstrdup("");
     return ret;
@@ -141,6 +151,14 @@ char *generic_synctex_get_current_name (void)
      return xstrdup(fullnameoffile);
   }
   pwdbuf = xgetcwd();
+#if defined(W32USYNCTEX)
+  if (file_system_codepage != 0 && file_system_codepage != win32_codepage) {
+     wpwd = get_wstring_from_mbstring(win32_codepage, pwdbuf, wpwd=NULL);
+     free (pwdbuf);
+     pwdbuf = get_mbstring_from_wstring(file_system_codepage, wpwd, pwdbuf=NULL);
+     free (wpwd);
+  }
+#endif /* W32USYNCTEX */
   ret = concat3(pwdbuf, DIR_SEP_STRING, fullnameoffile);
   free(pwdbuf) ;
   return ret;
@@ -663,6 +681,10 @@ int argc;
 /* If the user overrides argv[0] with -progname.  */
 static const_string user_progname;
 
+/* Array and count of values given with --config-line.  */
+static string *user_cnf_lines = NULL;
+static unsigned user_cnf_nlines = 0;
+
 /* The C version of the jobname, if given. */
 static const_string c_job_name;
 
@@ -687,8 +709,10 @@ static void parse_options (int, string *);
 /* Try to figure out if we have been given a filename. */
 static string get_input_file_name (void);
 
-/* Get a true/false value for a variable from texmf.cnf and the environment. */
-static boolean
+/* Get a true/false value for a variable from texmf.cnf and the
+   environment.  Not static because we call it from tex.ch.  */
+
+boolean
 texmf_yesno(const_string var)
 {
   string value = kpse_var_value (var);
@@ -705,8 +729,10 @@ static string
 normalize_quotes (const_string name, const_string mesg);
 #endif /* WIN32 */
 
-/* The entry point: set up for reading the command line, which will
-   happen in `topenin', then call the main body.  */
+/* maininit, called from main() - this is most of the main routine,
+   including our C-level option handling and concomitant kpse setup.
+   The original TeX/MF code for handling first lines is still live, and
+   we set up for that in `topenin' (which is called from the .web).  */
 
 void
 maininit (int ac, string *av)
@@ -745,6 +771,30 @@ maininit (int ac, string *av)
   kpse_set_program_name (argv[0], NULL);
 #endif
 #if (IS_upTeX || defined(XeTeX) || defined(pdfTeX)) && defined(WIN32)
+/* 
+   -cnf-line=command_line_encoding=value cannot give effect because
+   command_line_encoding is read here before parsing the command
+   line. So we add the following.
+*/
+  { /* support old compilers which are incompatible with C99 */
+    int n;
+    for (n = 1; n < ac; n++) {
+      if (!strncasecmp (av[n], "-cnf-line=command_line_encoding=", 32)) {
+        putenv (av[n] + 10);
+        break;
+      }
+      if (!strncasecmp (av[n], "--cnf-line=command_line_encoding=", 33)) {
+        putenv (av[n] + 11);
+        break;
+      }
+      if (n < ac - 1 && (!strncasecmp (av[n], "-cnf-line", 9) ||
+          !strncasecmp (av[n], "--cnf-line", 10)) &&
+          !strncasecmp (av[n+1], "command_line_encoding=", 22)) {
+        putenv (av[n+1]);
+        break;
+      }
+    }
+  }
   enc = kpse_var_value("command_line_encoding");
   get_command_line_args_utf8(enc, &argc, &argv);
 #endif
@@ -796,23 +846,30 @@ maininit (int ac, string *av)
 
 #if defined(MF)
 #if defined(MFLua)
-  /* If the program name is "mflua-nowin", then reset the name as "mflua". */
+  /* Reset mf*-nowin program names.  */
   if (strncasecmp (kpse_invocation_name, "mflua-nowin", 11) == 0)
     kpse_reset_program_name ("mflua");
 #elif defined(MFLuaJIT)
-  /* If the program name is "mfluajit-nowin", then reset the name as "mfluajit". */
   if (strncasecmp (kpse_invocation_name, "mfluajit-nowin", 14) == 0)
     kpse_reset_program_name ("mfluajit");
 #else
-  /* If the program name is "mf-nowin", then reset the name as "mf". */
   if (strncasecmp (kpse_invocation_name, "mf-nowin", 8) == 0)
     kpse_reset_program_name ("mf");
 #endif
 #endif
 
-  /* FIXME: gather engine names in a single spot. */
+  /* Make the given engine name available in the variable `engine'.  */
   xputenv ("engine", TEXMFENGINENAME);
   
+  if (user_cnf_lines) {
+    unsigned i;
+    for (i = 0; i < user_cnf_nlines; i++) {
+      /* debug printf ("ucnf%d: %s\n", i, user_cnf_lines[i]); */
+      kpathsea_cnf_line_env_progname (kpse_def, user_cnf_lines[i]);
+      free (user_cnf_lines[i]);
+    }
+  }
+
   /* Were we given a simple filename? */
   main_input_file = get_input_file_name ();
 
@@ -879,7 +936,6 @@ maininit (int ac, string *av)
   }
   /* Check whether there still is no translate_filename known.  If so,
      use the default_translate_filename. */
-  /* FIXME: deprecated. */
   if (!translate_filename) {
     translate_filename = default_translate_filename;
   }
@@ -995,9 +1051,10 @@ maininit (int ac, string *av)
 #endif /* TeX */
 }
 
-/* The entry point: set up for reading the command line, which will
-   happen in `topenin', then call the main body.  */
-
+/* main: Set up for reading the command line, which will happen in
+   `maininit' and `topenin', then call the main body, plus
+   special Windows/Kanji initializations.  */
+ 
 int
 #if defined(DLLPROC)
 DLLPROC (int ac, string *av)
@@ -1432,8 +1489,6 @@ tcx_get_num (int upb,
    tex.pool.  If no suffix in FNAME, use .tcx (don't bother trying to
    support extension-less names for these files).  */
 
-/* FIXME: A new format ought to be introduced for these files. */
-
 void
 readtcxfile (void)
 {
@@ -1633,17 +1688,18 @@ get_input_file_name (void)
 static struct option long_options[]
   = { { DUMP_OPTION,                 1, 0, 0 },
 #ifdef TeX
-      /* FIXME: Obsolete -- for backward compatibility only. */
+      /* Obsolete -- for backward compatibility only. */
       { "efmt",                      1, 0, 0 },
 #endif
+      { "cnf-line",                  1, 0, 0 },
       { "help",                      0, 0, 0 },
       { "ini",                       0, &iniversion, 1 },
       { "interaction",               1, 0, 0 },
       { "halt-on-error",             0, &haltonerrorp, 1 },
       { "kpathsea-debug",            1, 0, 0 },
       { "progname",                  1, 0, 0 },
-      { "version",                   0, 0, 0 },
       { "recorder",                  0, &recorder_enabled, 1 },
+      { "version",                   0, 0, 0 },
 #ifdef TeX
 #ifdef IPC
       { "ipc",                       0, &ipcon, 1 },
@@ -1721,7 +1777,6 @@ parse_options (int argc, string *argv)
       break;
 
     if (g == '?') { /* Unknown option.  */
-      /* FIXME: usage (argv[0]); replaced by continue. */
       continue;
     }
 
@@ -1740,6 +1795,17 @@ parse_options (int argc, string *argv)
     } else if (ARGUMENT_IS ("progname")) {
       user_progname = optarg;
 
+    } else if (ARGUMENT_IS ("cnf-line")) {
+      if (user_cnf_lines == NULL) {
+        user_cnf_nlines = 1;
+        user_cnf_lines = xmalloc (sizeof (const_string));
+      } else {
+        user_cnf_nlines++;
+        user_cnf_lines = xrealloc (user_cnf_lines,
+                                   user_cnf_nlines * sizeof (const_string));
+      }
+      user_cnf_lines[user_cnf_nlines-1] = xstrdup (optarg);
+
     } else if (ARGUMENT_IS ("jobname")) {
 #ifdef XeTeX
       c_job_name = optarg;
@@ -1752,7 +1818,7 @@ parse_options (int argc, string *argv)
       dumpoption = true;
 
 #ifdef TeX
-    /* FIXME: Obsolete -- for backward compatibility only. */
+    /* For backward compatibility only. */
     } else if (ARGUMENT_IS ("efmt")) {
       dump_name = optarg;
       dumpoption = true;
@@ -2008,7 +2074,6 @@ parse_first_line (const_string filename)
           s = *parse+16;
         }
         /* Just set the name, no sanity checks here. */
-        /* FIXME: remove trailing spaces. */
         if (s && *s) {
           translate_filename = xstrdup(s);
         }
@@ -2772,7 +2837,7 @@ do_undump (char *p, int item_size, int nitems, FILE *in_file)
 #endif
 }
 
-/* FIXME -- some (most?) of this can/should be moved to the Pascal/WEB side. */
+/* Some (most?) of this could be moved to the WEB side, but oh well.  */
 #if defined(TeX) || defined(MF)
 #if !defined(pdfTeX)
 static void

@@ -1,7 +1,7 @@
-## $Id: Makefile.am 47973 2018-06-10 06:12:41Z takuji $
+## $Id: Makefile.am 51875 2019-08-13 22:43:09Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/kpathsea/
 ##
-## Copyright 2017 Karl Berry <tex-live@tug.org>
+## Copyright 2017-2019 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 
@@ -307,16 +307,20 @@ uninstall-hook: uninstall-bin-links
 AM_TESTS_ENVIRONMENT  = LN_S='$(LN_S)'; export LN_S;
 AM_TESTS_ENVIRONMENT += LT_OBJDIR='$(LT_OBJDIR)'; export LT_OBJDIR;
 #
-TESTS  = tests/cnfnewline.test tests/kpseaccess.test
+TESTS  = tests/cnfline.test tests/cnfnewline.test tests/cnfprog.test
+TESTS += tests/kpseaccess.test
 TESTS += tests/kpsereadlink.test tests/kpsestat.test tests/kpsewhich.test
 #
-tests/cnfnewline.log tests/kpsewhich.log: kpsewhich$(EXEEXT)
+tests/cnfline.log tests/cnfnewline.log tests/cnfprog.log \
+  tests/kpsewhich.log: kpsewhich$(EXEEXT)
 tests/kpseaccess.log: kpseaccess$(EXEEXT)
 tests/kpsereadlink.log: kpsereadlink$(EXEEXT)
 tests/kpsestat.log: kpsestat$(EXEEXT)
 #
 EXTRA_DIST += $(TESTS)
+EXTRA_DIST += tests/cnfline/texmf.cnf
 EXTRA_DIST += tests/cnfnewline/texmf.cnf
+EXTRA_DIST += tests/cnfprog/texmf.cnf
 
 # Rebuild
 rebuild_prereq =

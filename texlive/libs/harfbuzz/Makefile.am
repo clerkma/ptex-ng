@@ -1,4 +1,4 @@
-## $Id: Makefile.am 51577 2019-07-08 06:07:11Z lscarso $
+## $Id: Makefile.am 51882 2019-08-14 22:15:47Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -144,6 +144,7 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-kerx-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-lcar-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-morx-table.hh \
+	@HARFBUZZ_TREE@/src/hb-aat-layout-opbd-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-trak-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-ltag-table.hh \
@@ -169,6 +170,10 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-ot-map.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-math.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-math-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-meta-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-meta.cc \
+	@HARFBUZZ_TREE@/src/hb-ot-metrics.cc \
+	@HARFBUZZ_TREE@/src/hb-ot-metrics.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-arabic.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-arabic-fallback.hh \
