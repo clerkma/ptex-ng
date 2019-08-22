@@ -36,6 +36,9 @@ jom -nologo -f mk-ptexenc.nmake
 echo Building libdpx ...
 del *.obj
 jom -nologo -f mk-libdpx.nmake
+echo Building libmd5 ...
+del *.obj
+jom -nologo -f mk-libmd5.nmake
 echo Building aptex/ptex-ng
 del *.obj
 jom -nologo -f mk-aptex.nmake

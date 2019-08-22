@@ -99,6 +99,7 @@
 #include "aptex-cairo-visual-debug.h"
 #include "aptex-opentype.h"
 #include "aptex-unicode.h"
+#include "aptex-utils.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -330,6 +331,12 @@ EXTERN boolean OK_to_interrupt;               // {should interrupts be observed?
 
 EXTERN boolean arith_error;                   // {has arithmetic overflow occurred recently?}
 EXTERN scaled ng_remainder;                   // {amount subtracted to get an exact division}
+
+EXTERN integer randoms[55];                   // {the last 55 random values generated}
+EXTERN uint32_t j_random;                     // {the number of unused |randoms|}
+EXTERN scaled random_seed;                    // {the default random seed}
+EXTERN integer two_to_the[32];                // {powers of two}
+EXTERN integer spec_log[29];                  // {special logarithms}
 
 EXTERN halfword temp_ptr;                     // {a pointer variable for occasional emergency use}
 
@@ -713,6 +720,11 @@ EXTERN boolean write_open[18];
 
 EXTERN pointer write_loc;                     // {|eqtb| address of \.{\\write}}
 
+EXTERN scaled cur_page_width;                 // {"physical" width of page being shipped}
+EXTERN scaled cur_page_height;                // {"physical" height of page being shipped}
+EXTERN integer pdf_last_x_pos;
+EXTERN integer pdf_last_y_pos;
+
 EXTERN boolean eTeX_mode;                     // {identifies compatibility and extended mode}
 
 EXTERN boolean eof_seen[max_in_open + 1];     // {has eof been seen?}
@@ -766,6 +778,8 @@ EXTERN int fbyte;
 // eTeX
 EXTERN boolean is_print_utf8;
 EXTERN str_number last_tokens_string;
+EXTERN integer epochseconds;
+EXTERN integer microseconds;
 
 // for SyncTeX
 EXTERN integer synctex_option;

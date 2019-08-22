@@ -25,6 +25,8 @@ cd $NG_SRC_DIR/src/libdpx && make -j || exit 1
 cp libdpx.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/src/libotf && make -j || exit 1
 cp libotf.a $NG_SRC_DIR/src
+cs $NG_SRC_DIR/src/libmd5 && make -j || exit 1
+cp libmd5.a $NG_SRC_DIR/src
 #
 cd $NG_SRC_DIR/src/mruby && make -j || exit 1
 cp build/host/lib/libmruby.a $NG_SRC_DIR/src

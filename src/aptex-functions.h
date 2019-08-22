@@ -545,6 +545,21 @@ static inline void aptex_error (const char * t, const char * p)
   prints(p);
   succumb();
 }
+
+static inline integer get_microinterval()
+{
+  integer s, m;
+
+  aptex_utils_get_seconds_and_micros(&s, &m);
+
+  if ((s - epochseconds) > 32767)
+    return 0x7FFFFFFF;
+  else if (microseconds > m)
+    return ((s - 1 - epochseconds) * 65536) + (((m + 1000000 - microseconds) / 100) * 65536) / 10000;
+  else
+    return ((s - epochseconds) * 65536) + (((m - microseconds) / 100) * 65536) / 10000;
+}
+
 static inline str_number tokens_to_string (pointer p)
 {
   if (selector == new_string)

@@ -1,0 +1,11 @@
+CC = cl
+AR = lib
+CFLAGS = -nologo -c -O2 -Oy -I../texlive/texk/web2c/libmd5
+ROOT = ../texlive/texk/web2c/libmd5
+OBJS = libmd5-md5.obj
+
+all: $(OBJS)
+	$(AR) -nologo -out:libmd5.lib $(OBJS)
+
+libmd5-md5.obj: $(ROOT)/md5.c
+	$(CC) $(CFLAGS) -Folibmd5-md5.obj $(ROOT)/md5.c

@@ -2,15 +2,15 @@ CC = cl
 AR = lib
 CFLAGS = -nologo -c -O2 -Oy -I../src/libotf -I../src/libotf/src -I../texlive/libs/freetype2/freetype-src/include
 ROOT = ../src/libotf
-OBJS = otfdrive.obj otferror.obj otfopen.obj
+OBJS = libotf-otfdrive.obj libotf-otferror.obj libotf-otfopen.obj
 
 all: $(OBJS)
 	$(AR) -nologo -out:libotf.lib $(OBJS)
 
-otfdrive.obj: $(ROOT)/src/otfdrive.c
-	$(CC) $(CFLAGS) $(ROOT)/src/otfdrive.c
-otferror.obj: $(ROOT)/src/otferror.c
-	$(CC) $(CFLAGS) $(ROOT)/src/otferror.c
-otfopen.obj: $(ROOT)/src/otfopen.c
-	$(CC) $(CFLAGS) $(ROOT)/src/otfopen.c
+libotf-otfdrive.obj: $(ROOT)/src/otfdrive.c
+	$(CC) $(CFLAGS) -Folibotf-otfdrive.obj $(ROOT)/src/otfdrive.c
+libotf-otferror.obj: $(ROOT)/src/otferror.c
+	$(CC) $(CFLAGS) -Folibotf-otferror.obj $(ROOT)/src/otferror.c
+libotf-otfopen.obj: $(ROOT)/src/otfopen.c
+	$(CC) $(CFLAGS) -Folibotf-otfopen.obj $(ROOT)/src/otfopen.c
 

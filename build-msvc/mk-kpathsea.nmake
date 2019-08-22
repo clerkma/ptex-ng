@@ -2,120 +2,120 @@ CC = cl
 AR = lib
 CFLAGS = -nologo -c -O2 -Oy -DWIN32=1 -DNO_KPSE_DLL=1 -DMAKE_KPSE_DLL=1 -I. -I../texlive/texk
 ROOT = ../texlive/texk/kpathsea
-OBJS = tex-file.obj absolute.obj atou.obj cnf.obj concat.obj concat3.obj concatn.obj db.obj debug.obj dir.obj dirent.obj elt-dirs.obj expand.obj extend-fname.obj file-p.obj find-suffix.obj fn.obj fontmap.obj getopt.obj getopt1.obj hash.obj kdefault.obj kpathsea.obj line.obj magstep.obj make-suffix.obj path-elt.obj pathsearch.obj proginit.obj progname.obj readable.obj rm-suffix.obj str-list.obj str-llist.obj tex-glyph.obj tex-hush.obj tex-make.obj tilde.obj uppercasify.obj variable.obj version.obj xbasename.obj xcalloc.obj xdirname.obj xfopen.obj xfseek.obj xftell.obj xgetcwd.obj xmalloc.obj xopendir.obj xputenv.obj xrealloc.obj xstat.obj xstrdup.obj win32lib.obj knj.obj
+OBJS = kpathsea-tex-file.obj kpathsea-absolute.obj kpathsea-atou.obj kpathsea-cnf.obj kpathsea-concat.obj kpathsea-concat3.obj kpathsea-concatn.obj kpathsea-db.obj kpathsea-debug.obj kpathsea-dir.obj kpathsea-dirent.obj kpathsea-elt-dirs.obj kpathsea-expand.obj kpathsea-extend-fname.obj kpathsea-file-p.obj kpathsea-find-suffix.obj kpathsea-fn.obj kpathsea-fontmap.obj kpathsea-getopt.obj kpathsea-getopt1.obj kpathsea-hash.obj kpathsea-kdefault.obj kpathsea-kpathsea.obj kpathsea-line.obj kpathsea-magstep.obj kpathsea-make-suffix.obj kpathsea-path-elt.obj kpathsea-pathsearch.obj kpathsea-proginit.obj kpathsea-progname.obj kpathsea-readable.obj kpathsea-rm-suffix.obj kpathsea-str-list.obj kpathsea-str-llist.obj kpathsea-tex-glyph.obj kpathsea-tex-hush.obj kpathsea-tex-make.obj kpathsea-tilde.obj kpathsea-uppercasify.obj kpathsea-variable.obj kpathsea-version.obj kpathsea-xbasename.obj kpathsea-xcalloc.obj kpathsea-xdirname.obj kpathsea-xfopen.obj kpathsea-xfseek.obj kpathsea-xftell.obj kpathsea-xgetcwd.obj kpathsea-xmalloc.obj kpathsea-xopendir.obj kpathsea-xputenv.obj kpathsea-xrealloc.obj kpathsea-xstat.obj kpathsea-xstrdup.obj kpathsea-win32lib.obj kpathsea-knj.obj
 
 all: $(OBJS)
 	$(AR) -nologo -out:kpathsea.lib $(OBJS)
 
-tex-file.obj: $(ROOT)/tex-file.c
-	$(CC) $(CFLAGS) $(ROOT)/tex-file.c
-absolute.obj: $(ROOT)/absolute.c
-	$(CC) $(CFLAGS) $(ROOT)/absolute.c
-atou.obj: $(ROOT)/atou.c
-	$(CC) $(CFLAGS) $(ROOT)/atou.c
-cnf.obj: $(ROOT)/cnf.c
-	$(CC) $(CFLAGS) $(ROOT)/cnf.c
-concat.obj: $(ROOT)/concat.c
-	$(CC) $(CFLAGS) $(ROOT)/concat.c
-concat3.obj: $(ROOT)/concat3.c
-	$(CC) $(CFLAGS) $(ROOT)/concat3.c
-concatn.obj: $(ROOT)/concatn.c
-	$(CC) $(CFLAGS) $(ROOT)/concatn.c
-db.obj: $(ROOT)/db.c
-	$(CC) $(CFLAGS) $(ROOT)/db.c
-debug.obj: $(ROOT)/debug.c
-	$(CC) $(CFLAGS) $(ROOT)/debug.c
-dir.obj: $(ROOT)/dir.c
-	$(CC) $(CFLAGS) $(ROOT)/dir.c
-dirent.obj: ./kpathsea/dirent.c
-	$(CC) $(CFLAGS) ./kpathsea/dirent.c
-elt-dirs.obj: $(ROOT)/elt-dirs.c
-	$(CC) $(CFLAGS) $(ROOT)/elt-dirs.c
-expand.obj: $(ROOT)/expand.c
-	$(CC) $(CFLAGS) $(ROOT)/expand.c
-extend-fname.obj: $(ROOT)/extend-fname.c
-	$(CC) $(CFLAGS) $(ROOT)/extend-fname.c
-file-p.obj: $(ROOT)/file-p.c
-	$(CC) $(CFLAGS) $(ROOT)/file-p.c
-find-suffix.obj: $(ROOT)/find-suffix.c
-	$(CC) $(CFLAGS) $(ROOT)/find-suffix.c
-fn.obj: $(ROOT)/fn.c
-	$(CC) $(CFLAGS) $(ROOT)/fn.c
-fontmap.obj: $(ROOT)/fontmap.c
-	$(CC) $(CFLAGS) $(ROOT)/fontmap.c
-getopt.obj: $(ROOT)/getopt.c
-	$(CC) $(CFLAGS) $(ROOT)/getopt.c
-getopt1.obj: $(ROOT)/getopt1.c
-	$(CC) $(CFLAGS) $(ROOT)/getopt1.c
-hash.obj: $(ROOT)/hash.c
-	$(CC) $(CFLAGS) $(ROOT)/hash.c
-kdefault.obj: $(ROOT)/kdefault.c
-	$(CC) $(CFLAGS) $(ROOT)/kdefault.c
-kpathsea.obj: $(ROOT)/kpathsea.c
-	$(CC) $(CFLAGS) $(ROOT)/kpathsea.c
-line.obj: $(ROOT)/line.c
-	$(CC) $(CFLAGS) $(ROOT)/line.c
-magstep.obj: $(ROOT)/magstep.c
-	$(CC) $(CFLAGS) $(ROOT)/magstep.c
-make-suffix.obj: $(ROOT)/make-suffix.c
-	$(CC) $(CFLAGS) $(ROOT)/make-suffix.c
-path-elt.obj: $(ROOT)/path-elt.c
-	$(CC) $(CFLAGS) $(ROOT)/path-elt.c
-pathsearch.obj: $(ROOT)/pathsearch.c
-	$(CC) $(CFLAGS) $(ROOT)/pathsearch.c
-proginit.obj: $(ROOT)/proginit.c
-	$(CC) $(CFLAGS) $(ROOT)/proginit.c
-progname.obj: $(ROOT)/progname.c
-	$(CC) $(CFLAGS) $(ROOT)/progname.c
-readable.obj: $(ROOT)/readable.c
-	$(CC) $(CFLAGS) $(ROOT)/readable.c
-rm-suffix.obj: $(ROOT)/rm-suffix.c
-	$(CC) $(CFLAGS) $(ROOT)/rm-suffix.c
-str-list.obj: $(ROOT)/str-list.c
-	$(CC) $(CFLAGS) $(ROOT)/str-list.c
-str-llist.obj: $(ROOT)/str-llist.c
-	$(CC) $(CFLAGS) $(ROOT)/str-llist.c
-tex-glyph.obj: $(ROOT)/tex-glyph.c
-	$(CC) $(CFLAGS) $(ROOT)/tex-glyph.c
-tex-hush.obj: $(ROOT)/tex-hush.c
-	$(CC) $(CFLAGS) $(ROOT)/tex-hush.c
-tex-make.obj: $(ROOT)/tex-make.c
-	$(CC) $(CFLAGS) $(ROOT)/tex-make.c
-tilde.obj: $(ROOT)/tilde.c
-	$(CC) $(CFLAGS) $(ROOT)/tilde.c
-uppercasify.obj: $(ROOT)/uppercasify.c
-	$(CC) $(CFLAGS) $(ROOT)/uppercasify.c
-variable.obj: $(ROOT)/variable.c
-	$(CC) $(CFLAGS) $(ROOT)/variable.c
-version.obj: $(ROOT)/version.c
-	$(CC) $(CFLAGS) $(ROOT)/version.c
-xbasename.obj: $(ROOT)/xbasename.c
-	$(CC) $(CFLAGS) $(ROOT)/xbasename.c
-xcalloc.obj: $(ROOT)/xcalloc.c
-	$(CC) $(CFLAGS) $(ROOT)/xcalloc.c
-xdirname.obj: $(ROOT)/xdirname.c
-	$(CC) $(CFLAGS) $(ROOT)/xdirname.c
-xfopen.obj: $(ROOT)/xfopen.c
-	$(CC) $(CFLAGS) $(ROOT)/xfopen.c
-xfseek.obj: $(ROOT)/xfseek.c
-	$(CC) $(CFLAGS) $(ROOT)/xfseek.c
-xftell.obj: $(ROOT)/xftell.c
-	$(CC) $(CFLAGS) $(ROOT)/xftell.c
-xgetcwd.obj: $(ROOT)/xgetcwd.c
-	$(CC) $(CFLAGS) $(ROOT)/xgetcwd.c
-xmalloc.obj: $(ROOT)/xmalloc.c
-	$(CC) $(CFLAGS) $(ROOT)/xmalloc.c
-xopendir.obj: $(ROOT)/xopendir.c
-	$(CC) $(CFLAGS) $(ROOT)/xopendir.c
-xputenv.obj: $(ROOT)/xputenv.c
-	$(CC) $(CFLAGS) $(ROOT)/xputenv.c
-xrealloc.obj: $(ROOT)/xrealloc.c
-	$(CC) $(CFLAGS) $(ROOT)/xrealloc.c
-xstat.obj: $(ROOT)/xstat.c
-	$(CC) $(CFLAGS) $(ROOT)/xstat.c
-xstrdup.obj: $(ROOT)/xstrdup.c
-	$(CC) $(CFLAGS) $(ROOT)/xstrdup.c
-win32lib.obj: $(ROOT)/win32lib.c
-	$(CC) $(CFLAGS) $(ROOT)/win32lib.c
-knj.obj: $(ROOT)/knj.c
-	$(CC) $(CFLAGS) $(ROOT)/knj.c
+kpathsea-tex-file.obj: $(ROOT)/tex-file.c
+	$(CC) $(CFLAGS) -Fokpathsea-tex-file.obj $(ROOT)/tex-file.c
+kpathsea-absolute.obj: $(ROOT)/absolute.c
+	$(CC) $(CFLAGS) -Fokpathsea-absolute.obj $(ROOT)/absolute.c
+kpathsea-atou.obj: $(ROOT)/atou.c
+	$(CC) $(CFLAGS) -Fokpathsea-atou.obj $(ROOT)/atou.c
+kpathsea-cnf.obj: $(ROOT)/cnf.c
+	$(CC) $(CFLAGS) -Fokpathsea-cnf.obj $(ROOT)/cnf.c
+kpathsea-concat.obj: $(ROOT)/concat.c
+	$(CC) $(CFLAGS) -Fokpathsea-concat.obj $(ROOT)/concat.c
+kpathsea-concat3.obj: $(ROOT)/concat3.c
+	$(CC) $(CFLAGS) -Fokpathsea-concat3.obj $(ROOT)/concat3.c
+kpathsea-concatn.obj: $(ROOT)/concatn.c
+	$(CC) $(CFLAGS) -Fokpathsea-concatn.obj $(ROOT)/concatn.c
+kpathsea-db.obj: $(ROOT)/db.c
+	$(CC) $(CFLAGS) -Fokpathsea-db.obj $(ROOT)/db.c
+kpathsea-debug.obj: $(ROOT)/debug.c
+	$(CC) $(CFLAGS) -Fokpathsea-debug.obj $(ROOT)/debug.c
+kpathsea-dir.obj: $(ROOT)/dir.c
+	$(CC) $(CFLAGS) -Fokpathsea-dir.obj $(ROOT)/dir.c
+kpathsea-dirent.obj: ./kpathsea/dirent.c
+	$(CC) $(CFLAGS) -Fokpathsea-dirent.obj ./kpathsea/dirent.c
+kpathsea-elt-dirs.obj: $(ROOT)/elt-dirs.c
+	$(CC) $(CFLAGS) -Fokpathsea-elt-dirs.obj $(ROOT)/elt-dirs.c
+kpathsea-expand.obj: $(ROOT)/expand.c
+	$(CC) $(CFLAGS) -Fokpathsea-expand.obj $(ROOT)/expand.c
+kpathsea-extend-fname.obj: $(ROOT)/extend-fname.c
+	$(CC) $(CFLAGS) -Fokpathsea-extend-fname.obj $(ROOT)/extend-fname.c
+kpathsea-file-p.obj: $(ROOT)/file-p.c
+	$(CC) $(CFLAGS) -Fokpathsea-file-p.obj $(ROOT)/file-p.c
+kpathsea-find-suffix.obj: $(ROOT)/find-suffix.c
+	$(CC) $(CFLAGS) -Fokpathsea-find-suffix.obj $(ROOT)/find-suffix.c
+kpathsea-fn.obj: $(ROOT)/fn.c
+	$(CC) $(CFLAGS) -Fokpathsea-fn.obj $(ROOT)/fn.c
+kpathsea-fontmap.obj: $(ROOT)/fontmap.c
+	$(CC) $(CFLAGS) -Fokpathsea-fontmap.obj $(ROOT)/fontmap.c
+kpathsea-getopt.obj: $(ROOT)/getopt.c
+	$(CC) $(CFLAGS) -Fokpathsea-getopt.obj $(ROOT)/getopt.c
+kpathsea-getopt1.obj: $(ROOT)/getopt1.c
+	$(CC) $(CFLAGS) -Fokpathsea-getopt1.obj $(ROOT)/getopt1.c
+kpathsea-hash.obj: $(ROOT)/hash.c
+	$(CC) $(CFLAGS) -Fokpathsea-hash.obj $(ROOT)/hash.c
+kpathsea-kdefault.obj: $(ROOT)/kdefault.c
+	$(CC) $(CFLAGS) -Fokpathsea-kdefault.obj $(ROOT)/kdefault.c
+kpathsea-kpathsea.obj: $(ROOT)/kpathsea.c
+	$(CC) $(CFLAGS) -Fokpathsea-kpathsea.obj $(ROOT)/kpathsea.c
+kpathsea-line.obj: $(ROOT)/line.c
+	$(CC) $(CFLAGS) -Fokpathsea-line.obj $(ROOT)/line.c
+kpathsea-magstep.obj: $(ROOT)/magstep.c
+	$(CC) $(CFLAGS) -Fokpathsea-magstep.obj $(ROOT)/magstep.c
+kpathsea-make-suffix.obj: $(ROOT)/make-suffix.c
+	$(CC) $(CFLAGS) -Fokpathsea-make-suffix.obj $(ROOT)/make-suffix.c
+kpathsea-path-elt.obj: $(ROOT)/path-elt.c
+	$(CC) $(CFLAGS) -Fokpathsea-path-elt.obj $(ROOT)/path-elt.c
+kpathsea-pathsearch.obj: $(ROOT)/pathsearch.c
+	$(CC) $(CFLAGS) -Fokpathsea-pathsearch.obj $(ROOT)/pathsearch.c
+kpathsea-proginit.obj: $(ROOT)/proginit.c
+	$(CC) $(CFLAGS) -Fokpathsea-proginit.obj $(ROOT)/proginit.c
+kpathsea-progname.obj: $(ROOT)/progname.c
+	$(CC) $(CFLAGS) -Fokpathsea-progname.obj $(ROOT)/progname.c
+kpathsea-readable.obj: $(ROOT)/readable.c
+	$(CC) $(CFLAGS) -Fokpathsea-readable.obj $(ROOT)/readable.c
+kpathsea-rm-suffix.obj: $(ROOT)/rm-suffix.c
+	$(CC) $(CFLAGS) -Fokpathsea-rm-suffix.obj $(ROOT)/rm-suffix.c
+kpathsea-str-list.obj: $(ROOT)/str-list.c
+	$(CC) $(CFLAGS) -Fokpathsea-str-list.obj $(ROOT)/str-list.c
+kpathsea-str-llist.obj: $(ROOT)/str-llist.c
+	$(CC) $(CFLAGS) -Fokpathsea-str-llist.obj $(ROOT)/str-llist.c
+kpathsea-tex-glyph.obj: $(ROOT)/tex-glyph.c
+	$(CC) $(CFLAGS) -Fokpathsea-tex-glyph.obj $(ROOT)/tex-glyph.c
+kpathsea-tex-hush.obj: $(ROOT)/tex-hush.c
+	$(CC) $(CFLAGS) -Fokpathsea-tex-hush.obj $(ROOT)/tex-hush.c
+kpathsea-tex-make.obj: $(ROOT)/tex-make.c
+	$(CC) $(CFLAGS) -Fokpathsea-tex-make.obj $(ROOT)/tex-make.c
+kpathsea-tilde.obj: $(ROOT)/tilde.c
+	$(CC) $(CFLAGS) -Fokpathsea-tilde.obj $(ROOT)/tilde.c
+kpathsea-uppercasify.obj: $(ROOT)/uppercasify.c
+	$(CC) $(CFLAGS) -Fokpathsea-uppercasify.obj $(ROOT)/uppercasify.c
+kpathsea-variable.obj: $(ROOT)/variable.c
+	$(CC) $(CFLAGS) -Fokpathsea-variable.obj $(ROOT)/variable.c
+kpathsea-version.obj: $(ROOT)/version.c
+	$(CC) $(CFLAGS) -Fokpathsea-version.obj $(ROOT)/version.c
+kpathsea-xbasename.obj: $(ROOT)/xbasename.c
+	$(CC) $(CFLAGS) -Fokpathsea-xbasename.obj $(ROOT)/xbasename.c
+kpathsea-xcalloc.obj: $(ROOT)/xcalloc.c
+	$(CC) $(CFLAGS) -Fokpathsea-xcalloc.obj $(ROOT)/xcalloc.c
+kpathsea-xdirname.obj: $(ROOT)/xdirname.c
+	$(CC) $(CFLAGS) -Fokpathsea-xdirname.obj $(ROOT)/xdirname.c
+kpathsea-xfopen.obj: $(ROOT)/xfopen.c
+	$(CC) $(CFLAGS) -Fokpathsea-xfopen.obj $(ROOT)/xfopen.c
+kpathsea-xfseek.obj: $(ROOT)/xfseek.c
+	$(CC) $(CFLAGS) -Fokpathsea-xfseek.obj $(ROOT)/xfseek.c
+kpathsea-xftell.obj: $(ROOT)/xftell.c
+	$(CC) $(CFLAGS) -Fokpathsea-xftell.obj $(ROOT)/xftell.c
+kpathsea-xgetcwd.obj: $(ROOT)/xgetcwd.c
+	$(CC) $(CFLAGS) -Fokpathsea-xgetcwd.obj $(ROOT)/xgetcwd.c
+kpathsea-xmalloc.obj: $(ROOT)/xmalloc.c
+	$(CC) $(CFLAGS) -Fokpathsea-xmalloc.obj $(ROOT)/xmalloc.c
+kpathsea-xopendir.obj: $(ROOT)/xopendir.c
+	$(CC) $(CFLAGS) -Fokpathsea-xopendir.obj $(ROOT)/xopendir.c
+kpathsea-xputenv.obj: $(ROOT)/xputenv.c
+	$(CC) $(CFLAGS) -Fokpathsea-xputenv.obj $(ROOT)/xputenv.c
+kpathsea-xrealloc.obj: $(ROOT)/xrealloc.c
+	$(CC) $(CFLAGS) -Fokpathsea-xrealloc.obj $(ROOT)/xrealloc.c
+kpathsea-xstat.obj: $(ROOT)/xstat.c
+	$(CC) $(CFLAGS) -Fokpathsea-xstat.obj $(ROOT)/xstat.c
+kpathsea-xstrdup.obj: $(ROOT)/xstrdup.c
+	$(CC) $(CFLAGS) -Fokpathsea-xstrdup.obj $(ROOT)/xstrdup.c
+kpathsea-win32lib.obj: $(ROOT)/win32lib.c
+	$(CC) $(CFLAGS) -Fokpathsea-win32lib.obj $(ROOT)/win32lib.c
+kpathsea-knj.obj: $(ROOT)/knj.c
+	$(CC) $(CFLAGS) -Fokpathsea-knj.obj $(ROOT)/knj.c

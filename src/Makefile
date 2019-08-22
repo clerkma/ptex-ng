@@ -13,15 +13,17 @@ INCLUDES = \
 	-I ../texlive/libs/freetype2/freetype2 \
 	-I ../texlive/libs/cairo/cairo \
 	-I ../texlive/libs/cairo/cairo-src/src \
+	-I ../texlive/texk/web2c/libmd5 \
 	-I libotf/src \
 	-I mruby/include
-LDFLAGS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a libmruby.a -lm
+LDFLAGS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a libmd5.a libmruby.a -lm
 
 objects = \
 	aptex.o \
 	aptex-cairo-visual-debug.o \
 	aptex-opentype.o \
 	aptex-unicode.o \
+	aptex-utils.o \
 	aptex-mruby.o \
 	aptex-src.o
 
@@ -53,6 +55,9 @@ aptex-opentype.o: aptex-opentype.c $(headers)
 
 aptex-unicode.o: aptex-unicode.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-unicode.c
+
+aptex-utils.o: aptex-utils.c $(headers)
+	$(CC) $(CFLAGS) $(INCLUDES) aptex-utils.c
 
 aptex-mruby.o: aptex-mruby.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-mruby.c

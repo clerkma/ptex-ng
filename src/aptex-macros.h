@@ -106,6 +106,12 @@ enum
 /* sec 0101 */
 #define unity 0200000 // {$2^{16}$, represents 1.00000}
 #define two   0400000 // {$2^{17}$, represents 2.00000}
+/* sec 0095 @ metafont */
+#define el_gordo 017777777777
+/* sec 0105 @ metafont */
+#define fraction_half 01000000000  // {$2^{27}$, represents 0.50000000}
+#define fraction_one  02000000000  // {$2^{28}$, represents 1.00000000}
+#define fraction_four 010000000000 // {$2^{30}$, represents 4.00000000}
 /* sec 0105 */
 #define nx_plus_y(a, b, c)  mult_and_add(a, b, c, 07777777777)
 #define mult_integers(a, b) mult_and_add(a, b, 0, 017777777777)
@@ -1131,8 +1137,12 @@ do {                            \
 #define ptex_minor_version_code   (ptex_version_code + 1)   // {code for \.{\\ptexminorversion}}
 #define uptex_version_code        (ptex_minor_version_code + 1) // {code for \.{\\uptexversion}}
 #define eptex_version_code        (uptex_version_code + 1)      // {code for \.{\\epTeXversion}}
+#define pdf_last_x_pos_code       (eptex_version_code + 1)      // {code for \.{\\pdflastxpos}}
+#define pdf_last_y_pos_code       (pdf_last_x_pos_code + 1)     // {code for \.{\\pdflastypos}}
+#define elapsed_time_code         (pdf_last_y_pos_code + 1)     // {code for \.{\\elapsedtime}}
+#define random_seed_code          (elapsed_time_code + 1)       // {code for \.{\\randomseed}}
 //
-#define eTeX_int                  (badness_code + 6)        // {first of \eTeX\ codes for integers}
+#define eTeX_int                  (badness_code + 10)        // {first of \eTeX\ codes for integers}
 #define eTeX_version_code         eTeX_int                  // 
 #define current_group_level_code  (eTeX_int + 1)
 #define current_group_type_code   (eTeX_int + 2)
@@ -1190,12 +1200,20 @@ do {                          \
 #define kuten_code          9  // {command code for \.{\\kuten}}
 #define ucs_code            10 // {command code for \.{\\ucs}}
 #define eTeX_revision_code  11 // {base for \eTeX's command codes}
-#define ng_strcmp_code      12 //
-#define ng_banner_code      13 //
-#define ng_os_type_code     14 //
+#define ng_strcmp_code      12 // {command code for \.{\\pdfstrcmp}}
+#define ng_banner_code      13 // {command code for \.{\\ngbanner}}
+#define ng_os_type_code     14 // {command code for \.{\\ngostype}}
 #define ptex_revision_code  15 // {command code for \.{\\ptexrevision}}
 #define uptex_revision_code 16 // {command code for \.{\\uptexrevision}}
-#define job_name_code       17 //
+#define pdf_creation_date_code   17 // {command code for \.{\\pdfcreationdate}}
+#define pdf_file_mod_date_code   18 // {command code for \.{\\pdffilemodedate}}
+#define pdf_file_size_code       19 // {command code for \.{\\pdffilesize}}
+#define pdf_mdfive_sum_code      20 // {command code for \.{\\pdfmdfivesum}}
+#define pdf_file_dump_code       21 // {command code for \.{\\pdffiledump}}
+#define pdf_uniform_deviate_code 22 // {command code for \.{\\pdfuniformdeviate}}
+#define pdf_normal_deviate_code  23 // {command code for \.{\\pdfnormaldeviate}}
+#define expanded_code            24 // {command code for \.{\\expanded}}
+#define job_name_code            25 // {command code for \.{\\jobname}}
 /* sec 0480 */
 #define closed    2
 #define just_open 1
@@ -1986,6 +2004,9 @@ do {                                        \
 /* sec 1344 */
 #define immediate_code    4 // {command modifier for \.{\\immediate}}
 #define set_language_code 5 // {command modifier for \.{\\setlanguage}}
+#define pdf_save_pos_node 6
+#define reset_timer_code  7
+#define set_random_seed_code 8
 /* sec 1371 */
 #define end_write_token (cs_token_flag + end_write)
 // macros of pTeX

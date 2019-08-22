@@ -4038,6 +4038,31 @@ static void initialize (void)
   interrupt = 0;
   OK_to_interrupt = true;
 
+  /* Random numbers. */
+  two_to_the[0] = 1;
+
+  for (k = 1; k <= 30; k++)
+    two_to_the[k] = 2 * two_to_the[k - 1];
+
+  spec_log[1] = 93032640;
+  spec_log[2] = 38612034;
+  spec_log[3] = 17922280;
+  spec_log[4] = 8662214;
+  spec_log[5] = 4261238;
+  spec_log[6] = 2113709;
+  spec_log[7] = 1052693;
+  spec_log[8] = 525315;
+  spec_log[9] = 262400;
+  spec_log[10] = 131136;
+  spec_log[11] = 65552;
+  spec_log[12] = 32772;
+  spec_log[13] = 16385;
+
+  for (k = 14; k <= 27; k++)
+    spec_log[k] = two_to_the[27 - k];
+
+  spec_log[28] = 1;
+
 #ifdef APTEX_DEBUG
   was_mem_end = mem_min;
   was_lo_max = mem_bot; // mem_min
@@ -6398,6 +6423,10 @@ static void init_prim (void)
   primitive("uptexversion", last_item, uptex_version_code);
   primitive("epTeXversion", last_item, eptex_version_code);
   primitive("ptexminorversion", last_item, ptex_minor_version_code);
+  primitive("pdflastxpos", last_item, pdf_last_x_pos_code);
+  primitive("pdflastypos", last_item, pdf_last_y_pos_code);
+  primitive("pdfelapsedtime", last_item, elapsed_time_code);
+  primitive("pdfrandomseed", last_item, random_seed_code);
   primitive("number", convert, number_code);
   primitive("romannumeral", convert, roman_numeral_code);
   primitive("kansuji", convert, kansuji_code);
@@ -6414,6 +6443,14 @@ static void init_prim (void)
   primitive("pdfstrcmp", convert, ng_strcmp_code);
   primitive("ngbanner", convert, ng_banner_code);
   primitive("ngostype", convert, ng_os_type_code);
+  primitive("pdfcreationdate", convert, pdf_creation_date_code);
+  primitive("pdffilemoddate", convert, pdf_file_mod_date_code);
+  primitive("pdffilesize", convert, pdf_file_size_code);
+  primitive("pdfmdfivesum", convert, pdf_mdfive_sum_code);
+  primitive("pdffiledump", convert, pdf_file_dump_code);
+  primitive("pdfuniformdeviate", convert, pdf_uniform_deviate_code);
+  primitive("pdfnormaldeviate", convert, pdf_normal_deviate_code);
+  primitive("expanded", convert, expanded_code);
   primitive("jobname", convert, job_name_code);
   primitive("if", if_test, if_char_code);
   primitive("ifcat", if_test, if_cat_code);
@@ -6596,6 +6633,9 @@ static void init_prim (void)
   primitive("special", extension, special_node);
   primitive("immediate", extension, immediate_code);
   primitive("setlanguage", extension, set_language_code);
+  primitive("pdfsavepos", extension, pdf_save_pos_node);
+  primitive("pdfresettimer", extension, reset_timer_code);
+  primitive("pdfsetrandomseed", extension, set_random_seed_code);
   primitive("kansujichar", set_kansuji_char, 0);
   primitive("autospacing", set_auto_spacing, set_auto_spacing_code);
   primitive("noautospacing", set_auto_spacing, reset_auto_spacing_code);
@@ -7636,6 +7676,381 @@ static void print_two (integer n)
   n = abs(n) % 100;
   print_char('0' + (n / 10));
   print_char('0' + (n % 10));
+}
+
+// Random numbers.
+
+static inline integer halfp (integer x)
+{
+  return x / 2;
+}
+
+#define _double(f) f = f + f
+
+static integer make_frac (integer p, integer q)
+{
+  integer f; // {the fraction bits, with a leading 1 bit}
+  integer n; // {the integer part of $\vert p/q\vert$}
+  boolean negative; // {should the result be negated?}
+  integer be_careful; // {disables certain compiler optimizations}
+
+  if (p >= 0)
+    negative = false;
+  else
+  {
+    negate(p);
+    negative = true;
+  }
+
+  if (q <= 0)
+  {
+    negate(q);
+    negative = !negative;
+  }
+
+  n = p / q;
+  p = p % q;
+
+  if (n >= 8)
+  {
+    arith_error = true;
+
+    if (negative)
+      return -el_gordo;
+    else
+      return el_gordo;
+  }
+  else
+  {
+    n = (n - 1) * fraction_one;
+
+    // @<Compute $f=\lfloor 2^{28}(1+p/q)+{1\over2}\rfloor$@>;
+    f = 1;
+
+    do {
+      be_careful = p - q;
+      p = be_careful + p;
+
+      if (p >= 0)
+        f = f + f + 1;
+      else
+      {
+        _double(f);
+        p = p + q;
+      }
+    } while (!(f >= fraction_one));
+
+    be_careful = p - q;
+
+    if (be_careful + p >= 0)
+      incr(f);
+
+    if (negative)
+      return -(f + n);
+    else
+      return (f + n);
+  }
+}
+
+static integer take_frac (integer q, integer f)
+{
+  integer p; // {the fraction so far}
+  boolean negative; // {should the result be negated?}
+  integer n; // {additional multiple of $q$}
+  integer be_careful; // {disables certain compiler optimizations}
+
+  // @<Reduce to the case that |f>=0| and |q>0|@>;
+  if (f >= 0)
+    negative = false;
+  else
+  {
+    negate(f);
+    negative = true;
+  }
+
+  if (q < 0)
+  {
+    negate(q);
+    negative = !negative;
+  }
+
+  if (f < fraction_one)
+    n = 0;
+  else
+  {
+    n = f / fraction_one;
+    f = f % fraction_one;
+
+    if (q <= el_gordo / n)
+      n = n * q;
+    else
+    {
+      arith_error = true;
+      n = el_gordo;
+    }
+  }
+
+  f = f + fraction_one;
+  // @<Compute $p=\lfloor qf/2^{28}+{1\over2}\rfloor-q$@>;
+  p = fraction_half; // {that's $2^{27}$; the invariants hold now with $k=28$}
+  if (q < fraction_four) 
+    do {
+      if (odd(f))
+        p = halfp(p + q);
+      else
+        p = halfp(p);
+
+      f = halfp(f);
+    } while (!(f == 1));
+  else
+    do {
+      if (odd(f))
+        p = p + halfp(q - p);
+      else
+        p = halfp(p);
+
+      f = halfp(f);
+    } while (!(f == 1));
+  
+  be_careful = n - el_gordo;
+
+  if (be_careful + p > 0) 
+  {
+    arith_error = true;
+    n = el_gordo - p;
+  }
+
+  if (negative)
+    return -(n + p);
+  else
+    return n + p;
+}
+
+static integer m_log (integer x)
+{
+  integer y, z; // {auxiliary registers}
+  integer k; // {iteration counter}
+
+  if (x <= 0)
+  {
+    print_err("Logarithm of ");
+    print_scaled(x);
+    prints(" has been replaced by 0");
+    help2("Since I don't take logs of non-positive numbers,",
+          "I'm zeroing this one. Proceed, with fingers crossed.");
+    error();
+    return 0;
+  }
+  else
+  {
+    y = 1302456956 + 4 - 100; // {$14\times2^{27}\ln2\approx1302456956.421063$}
+    z = 27595 + 6553600; // {and $2^{16}\times .421063\approx 27595$}
+
+    while (x < fraction_four)
+    {
+      _double(x);
+      y = y - 93032639;
+      z = z - 48782;
+    }
+    // {$2^{27}\ln2\approx 93032639.74436163$
+    // and $2^{16}\times.74436163\approx 48782$}
+    y = y + (z / unity);
+    k = 2;
+
+    while (x > fraction_four + 4)
+    {
+      z = ((x - 1) / two_to_the[k]) + 1; // {$z=\lceil x/2^k\rceil$}
+
+      while (x < fraction_four + z)
+      {
+        z = halfp(z + 1);
+        k = k + 1;
+      }
+
+      y = y + spec_log[k];
+      x = x - z;
+    }
+
+    return y / 8;
+  }
+}
+
+static integer ab_vs_cd (integer a, integer b, integer c, integer d)
+{
+  integer q, r; // {temporary registers}
+
+  //@<Reduce to the case that |a,c>=0|, |b,d>0|@>;
+  if (a < 0) 
+  {
+    negate(a);
+    negate(b);
+  }
+
+  if (c < 0)
+  {
+    negate(c);
+    negate(d);
+  }
+
+  if (d <= 0)
+  {
+    if (b >= 0) 
+      if (((a == 0) || (b == 0)) && ((c == 0) || (d == 0)))
+        return 0;
+      else
+        return 1;
+
+    if (d == 0)
+      if (a == 0)
+        return 0;
+      else
+        return -1;
+    
+    get_microinterval();
+    q = a;
+    a = c; c = q; q = -b; b = -d; d = q;
+  }
+  else if (b <= 0)
+  {
+    if (b < 0)
+      if (a > 0)
+        return -1;
+
+    if (c == 0)
+      return 0;
+    else
+      return -1;
+  }
+
+  for (;;)
+  {
+    q = a / d;
+    r = c / b;
+
+    if (q != r)
+      if (q > r)
+        return 1;
+      else
+        return -1;
+
+    q = a % d;
+    r = c % b;
+
+    if (r == 0)
+      if (q == 0)
+        return 0;
+      else
+        return 1;
+
+    if (q == 0)
+      return -1;
+
+    a = b;
+    b = q;
+    c = d;
+    d = r;
+  } //{now |a>d>0| and |c>b>0|}
+}
+
+#define next_random() \
+do {                  \
+  if (j_random == 0)  \
+    new_randoms();    \
+  else                \
+    decr(j_random);   \
+} while (0)
+
+static void new_randoms()
+{
+  uint32_t k; // {index into |randoms|}
+  integer x; // {accumulator}
+
+  for (k = 0; k <= 23; k++)
+  {
+    x = randoms[k] - randoms[k + 31];
+
+    if (x < 0)
+      x = x + fraction_one;
+
+    randoms[k] = x;
+  }
+
+  for (k = 24; k <= 54; k++)
+  {
+    x = randoms[k] - randoms[k - 24];
+
+    if (x < 0)
+      x = x + fraction_one;
+
+    randoms[k] = x;
+  }
+
+  j_random = 54;
+}
+
+static void init_randoms (integer seed)
+{
+  integer j, jj, k; // {more or less random integers}
+  uint32_t i; // {index into |randoms|}
+
+  j = abs(seed);
+
+  while (j >= fraction_one)
+    j = halfp(j);
+
+  k = 1;
+
+  for (i = 0; i <= 54; i++)
+  {
+    jj = k;
+    k = j-k;
+    j = jj;
+
+    if (k < 0)
+      k = k + fraction_one;
+
+    randoms[(i * 21) % 55] = j;
+  }
+
+  new_randoms();
+  new_randoms();
+  new_randoms(); // {``warm up'' the array}
+}
+
+static integer unif_rand (integer x)
+{
+  integer y; // {trial value}
+
+  next_random();
+  y = take_frac(abs(x), randoms[j_random]);
+
+  if (y == abs(x))
+    return 0;
+  else if (x > 0)
+    return y;
+  else
+    return -y;
+}
+
+static integer norm_rand()
+{
+  integer x, u, l; // {what the book would call $2^{16}X$, $2^{28}U$,
+                   //  and $-2^{24}\ln U$}
+
+  do {
+    do {
+      next_random();
+      x = take_frac(112429, randoms[j_random] - fraction_half);
+      // {$2^{16}\sqrt{8/e}\approx 112428.82793$}
+      next_random();
+      u = randoms[j_random];
+    } while (!(abs(x) < u));
+
+    x = make_frac(x,u);
+    l = 139548960 - m_log(u); // {$2^{24}\cdot12\ln2\approx139548959.6165$}
+  } while (!(ab_vs_cd(1024,l,x,x) >= 0));
+
+  return x;  
 }
 
 // prints a positive integer in hexadecimal form
@@ -9291,6 +9706,18 @@ void show_node_list (integer p)
             }
             break;
 
+          case pdf_save_pos_node:
+            print_esc("pdfsavepos");
+            break;
+
+          case set_random_seed_code:
+            print_esc("pdfsetrandomseed");
+            break;
+
+          case reset_timer_code:
+            print_esc("pdfresettimer");
+            break;
+
           default:
             prints("whatsit?");
             break;
@@ -9759,6 +10186,10 @@ void flush_node_list (pointer p)
                 free_node(p, small_node_size);
                 break;
 
+              case pdf_save_pos_node:
+                free_node(p, small_node_size);
+                break;
+
               default:
                 confusion("ext3");
                 break;
@@ -9990,6 +10421,10 @@ static pointer copy_node_list (pointer p)
               r = get_node(small_node_size);
               words = small_node_size;
             }
+            break;
+
+          case pdf_save_pos_node:
+            r = get_node(small_node_size);
             break;
 
           default:
@@ -11301,6 +11736,22 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("eTeXversion");
           break;
 
+        case pdf_last_x_pos_code:
+          print_esc("pdflastxpos");
+          break;
+
+        case pdf_last_y_pos_code:
+          print_esc("pdflastypos");
+          break;
+
+        case elapsed_time_code:
+          print_esc("pdfelapsedtime");
+          break;
+
+        case random_seed_code:
+          print_esc("pdfrandomseed");
+          break;
+
         case current_group_level_code:
           print_esc("currentgrouplevel");
           break;
@@ -11464,6 +11915,34 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
         case ng_os_type_code:
           print_esc("ngostype");
+          break;
+
+        case pdf_creation_date_code:
+          print_esc("pdfcreationdate");
+          break;
+
+        case pdf_file_mod_date_code:
+          print_esc("pdffilemoddate");
+          break;
+
+        case pdf_file_size_code:
+          print_esc("pdffilesize");
+          break;
+
+        case pdf_mdfive_sum_code:
+          print_esc("pdfmdfivesum");
+          break;
+
+        case pdf_file_dump_code:
+          print_esc("pdffiledump");
+          break;
+
+        case pdf_uniform_deviate_code:
+          print_esc("pdfuniformdeviate");
+          break;
+
+        case pdf_normal_deviate_code:
+          print_esc("pdfnormaldeviate");
           break;
 
         default:
@@ -12220,6 +12699,18 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
         case set_language_code:
           print_esc("setlanguage");
+          break;
+
+        case pdf_save_pos_node:
+          print_esc("pdfsavepos");
+          break;
+
+        case reset_timer_code:
+          print_esc("pdfresettimer");
+          break;
+
+        case set_random_seed_code:
+          print_esc("pdfsetrandomseed");
           break;
 
         default:
@@ -15115,6 +15606,22 @@ static void scan_something_internal (small_number level, boolean negative)
               cur_val = last_badness;
               break;
 
+            case pdf_last_x_pos_code:
+              cur_val = pdf_last_x_pos;
+              break;
+
+            case pdf_last_y_pos_code:
+              cur_val = pdf_last_y_pos;
+              break;
+
+            case elapsed_time_code:
+              cur_val = get_microinterval();
+              break;
+
+            case random_seed_code:
+              cur_val = random_seed;
+              break;
+
             case shell_escape_code:
               cur_val = aptex_env.flag_shell_escape;
               break;
@@ -16706,6 +17213,164 @@ void ins_the_toks (void)
   ins_list(link(temp_head));
 }
 
+#define save_cur_string()           \
+do {                                \
+  if (str_start[str_ptr] < pool_ptr)\
+    u = make_string();              \
+  else                              \
+    u = 0;                          \
+} while (0)
+
+#define restore_cur_string()  \
+do {                          \
+  if (u != 0)                 \
+    decr(str_ptr);            \
+} while (0)
+
+#define scan_pdf_ext_toks() \
+do {                        \
+  scan_toks(false, true);   \
+} while (0)
+
+
+static char * aptex_find_file (str_number s)
+{
+  char * file_name_kpse = NULL;
+  char * file_name_mbcs = NULL;
+  char * file_name_utf8 = NULL;
+
+  file_name_utf8 = take_str_string(s);
+
+  if (file_name_utf8 != NULL)
+  {
+    file_name_mbcs = utf8_mbcs(file_name_utf8);
+
+    if (file_name_mbcs != NULL)
+    {
+      file_name_kpse = kpse_find_tex((const_string) file_name_mbcs);
+      free(file_name_mbcs);
+    }
+
+    free(file_name_utf8);
+  }
+
+  return file_name_kpse;
+}
+
+static void get_creation_date()
+{
+  size_t date_len;
+  char * date_str;
+
+  date_str = aptex_utils_get_creation_date();
+  date_len = strlen(date_str);
+  str_room(date_len);
+  memcpy(&str_pool[pool_ptr], date_str, date_len);
+  pool_ptr += date_len;
+}
+
+static void get_file_mod_date (str_number s)
+{
+  char * file_name;
+  char * file_mod_date;
+  size_t file_mod_date_len;
+
+  file_name = aptex_find_file(s);
+
+  if (file_name != NULL)
+  {
+    file_mod_date = aptex_utils_get_file_mod_date(file_name);
+
+    if (file_mod_date != NULL)
+    {
+      file_mod_date_len = strlen(file_mod_date);
+      str_room(file_mod_date_len);
+      memcpy(&str_pool[pool_ptr], file_mod_date, file_mod_date_len);
+      pool_ptr += file_mod_date_len;
+    }
+
+    free(file_name);
+  }
+}
+
+static void get_file_size (str_number s)
+{
+  char * file_name;
+  char * file_size_str;
+  size_t file_size_str_len;
+
+  file_name = aptex_find_file(s);
+
+  if (file_name != NULL)
+  {
+    file_size_str = aptex_utils_get_file_size(file_name);
+
+    if (file_size_str != NULL)
+    {
+      file_size_str_len = strlen(file_size_str);
+      str_room(file_size_str_len);
+      memcpy(&str_pool[pool_ptr], file_size_str, file_size_str_len);
+      pool_ptr += file_size_str_len;
+      free(file_size_str);
+    }
+
+    free(file_name);
+  }
+}
+
+static void get_md5_sum (str_number s, boolean f)
+{
+  char * file_name;
+  char * file_md5_sum;
+  size_t file_md5_sum_len;
+
+  if (f == 1)
+    file_name = aptex_find_file(s);
+  else
+    file_name = take_str_string(s);
+
+  if (file_name != NULL)
+  {
+    file_md5_sum = aptex_utils_get_md5_sum(file_name, f);
+
+    if (file_md5_sum != NULL)
+    {
+      file_md5_sum_len = strlen(file_md5_sum);
+      str_room(file_md5_sum_len);
+      memcpy(&str_pool[pool_ptr], file_md5_sum, file_md5_sum_len);
+      pool_ptr += file_md5_sum_len;
+      free(file_md5_sum);
+    }
+
+    free(file_name);
+  }
+}
+
+static void get_file_dump (str_number s, integer i, integer j)
+{
+  char * file_name;
+  char * file_dump;
+  size_t file_dump_len;
+
+  file_name = aptex_find_file(s);
+
+  if (file_name != NULL)
+  {
+    file_dump = aptex_utils_get_file_dump(file_name, i, j);
+
+    if (file_dump != NULL)
+    {
+      file_dump_len = strlen(file_dump);
+      str_room(file_dump_len);
+      memcpy(&str_pool[pool_ptr], file_dump, file_dump_len);
+      pool_ptr += file_dump_len;
+      free(file_dump);
+    }
+
+    free(file_name);
+  }
+}
+
 void conv_toks (void)
 {
   char old_setting;
@@ -16713,7 +17378,12 @@ void conv_toks (void)
   char c;
   small_number save_scanner_status;
   pointer save_def_ref;
+  pointer save_warning_index;
+  boolean boolvar;
   str_number u;
+  str_number s;
+  integer i;
+  integer j;
   pool_pointer b;
 
   c = cur_chr;
@@ -16763,18 +17433,11 @@ void conv_toks (void)
       {
         save_scanner_status = scanner_status;
         save_def_ref = def_ref;
-
-        if (str_start[str_ptr] < pool_ptr)
-          u = make_string();
-        else
-          u = 0;
-
+        save_cur_string();
         compare_strings();
         def_ref = save_def_ref;
         scanner_status = save_scanner_status;
-
-        if (u != 0)
-          decr(str_ptr);
+        restore_cur_string();
       }
       break;
 
@@ -16784,6 +17447,176 @@ void conv_toks (void)
 
     case ng_os_type_code:
       do_nothing();
+      break;
+
+    case pdf_creation_date_code:
+      {
+        b = pool_ptr;
+        get_creation_date();
+        link(garbage) = str_toks(b);
+        ins_list(link(temp_head));
+        return;
+      }
+      break;
+
+    case pdf_file_mod_date_code:
+      {
+        save_scanner_status = scanner_status;
+        save_warning_index = warning_index;
+        save_def_ref = def_ref;
+        save_cur_string();
+        scan_pdf_ext_toks();
+        s = tokens_to_string(def_ref);
+        delete_token_ref(def_ref);
+        def_ref = save_def_ref;
+        warning_index = save_warning_index;
+        scanner_status = save_scanner_status;
+        b = pool_ptr;
+        get_file_mod_date(s);
+        link(garbage) = str_toks(b);
+        flush_str(s);
+        ins_list(link(temp_head));
+        restore_cur_string();
+        return;
+      }
+      break;
+
+    case pdf_file_size_code:
+      {
+        save_scanner_status = scanner_status;
+        save_warning_index = warning_index;
+        save_def_ref = def_ref;
+        save_cur_string();
+        scan_pdf_ext_toks();
+        s = tokens_to_string(def_ref);
+        delete_token_ref(def_ref);
+        def_ref = save_def_ref;
+        warning_index = save_warning_index;
+        scanner_status = save_scanner_status;
+        b = pool_ptr;
+        get_file_size(s);
+        link(garbage) = str_toks(b);
+        flush_str(s);
+        ins_list(link(temp_head));
+        restore_cur_string();
+        return;
+      }
+      break;
+
+    case pdf_mdfive_sum_code:
+      {
+        save_scanner_status = scanner_status;
+        save_warning_index = warning_index;
+        save_def_ref = def_ref;
+        save_cur_string();
+        boolvar = scan_keyword("file");
+        scan_pdf_ext_toks();
+
+        if (boolvar)
+          s = tokens_to_string(def_ref);
+        else
+        {
+          is_print_utf8 = true;
+          s = tokens_to_string(def_ref);
+          is_print_utf8 = false;
+        }
+
+        delete_token_ref(def_ref);
+        def_ref = save_def_ref;
+        warning_index = save_warning_index;
+        scanner_status = save_scanner_status;
+        b = pool_ptr;
+        get_md5_sum(s, boolvar);
+        link(garbage) = str_toks(b);
+        flush_str(s);
+        ins_list(link(temp_head));
+        restore_cur_string();
+        return;
+      }
+      break;
+
+    case pdf_file_dump_code:
+      {
+        save_scanner_status = scanner_status;
+        save_warning_index = warning_index;
+        save_def_ref = def_ref;
+        save_cur_string();
+
+        // {scan offset}
+        cur_val = 0;
+
+        if (scan_keyword("offset"))
+        {
+          scan_int();
+
+          if (cur_val < 0)
+          {
+            print_err("Bad file offset");
+            help2("A file offset must be between 0 and 2^{31}-1,", "I changed this one to zero.");
+            int_error(cur_val);
+            cur_val = 0;
+          }
+        }
+
+        i = cur_val;
+
+        // {scan length}
+        cur_val = 0;
+
+        if (scan_keyword("length"))
+        {
+          scan_int();
+
+          if (cur_val < 0)
+          {
+            print_err("Bad dump length");
+            help2("A dump length must be between 0 and 2^{31}-1,", "I changed this one to zero.");
+            int_error(cur_val);
+            cur_val = 0;
+          }
+        }
+
+        j = cur_val;
+
+        //{scan file name}
+        scan_pdf_ext_toks();
+        s = tokens_to_string(def_ref);
+        delete_token_ref(def_ref);
+        def_ref = save_def_ref;
+        warning_index = save_warning_index;
+        scanner_status = save_scanner_status;
+        b = pool_ptr;
+        get_file_dump(s, i, j);
+        link(garbage) = str_toks(b);
+        flush_str(s);
+        ins_list(link(temp_head));
+        restore_cur_string();
+        return;
+      }
+      break;
+
+    case pdf_uniform_deviate_code:
+      scan_int();
+      break;
+
+    case pdf_normal_deviate_code:
+      do_nothing();
+      break;
+
+    case expanded_code:
+      {
+        save_scanner_status = scanner_status;
+        save_warning_index = warning_index;
+        save_def_ref = def_ref;
+        save_cur_string();
+        scan_pdf_ext_toks();
+        warning_index = save_warning_index;
+        scanner_status = save_scanner_status;
+        ins_list(link(def_ref));
+        def_ref = save_def_ref;
+        restore_cur_string();
+        return;
+      }
       break;
 
     case job_name_code:
@@ -19293,7 +20126,7 @@ static void pdf_locate_font (internal_font_number f)
       font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
   }
   else
-    font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
+	  font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
 
   free(lfont_name);
   free(lfont_area);
@@ -19601,6 +20434,21 @@ static void ship_out (pointer p)
   dvi_f = null_font;
   dvi_dir = dir_yoko;
   cur_dir_hv = dvi_dir;
+
+  if (pdf_page_height != 0)
+    cur_page_height = pdf_page_height;
+  else if ((box_dir(p) == dir_tate) || (box_dir(p) == dir_dtou))
+    cur_page_height = width(p) + 2 * v_offset + 2 * 4736286;
+  else
+    cur_page_height = height(p) + depth(p) + 2 * v_offset + 2 * 4736286;
+
+  if (pdf_page_width != 0)
+    cur_page_width = pdf_page_width;
+  else if ((box_dir(p) == dir_tate) || (box_dir(p) == dir_dtou))
+    cur_page_width = height(p) + depth(p) + 2 * h_offset + 2 * 4736286;
+  else
+    cur_page_width = width(p) + 2 * h_offset + 2 * 4736286;
+
   ensure_dvi_open();
 
   if (total_pages == 0)
@@ -19987,7 +20835,7 @@ void hlist_out (void)
   left_edge = cur_h;
   // @<Start hlist {\sl Sync\TeX} information record@>
   synctex_hlist(this_box);
-
+ 
   /*
     @<Output node |p| for |hlist_out| and move to the next node,
     maintaining the condition |cur_v=base_line|@>
@@ -20002,7 +20850,7 @@ reswitch:
 
     do {
       f = font(p);
-      c = character(p);
+	  c = character(p);
 
       // @<Change font |dvi_f| to |f|@>
       if (f != dvi_f)
@@ -20011,7 +20859,7 @@ reswitch:
         {
           dvi_font_def(f);
 #ifndef APTEX_DVI_ONLY
-          pdf_locate_font(f);
+		  pdf_locate_font(f);
 #endif
           font_used[f] = true;
         }
@@ -21104,6 +21952,37 @@ void out_what (pointer p)
 
     case language_node:
       do_nothing();
+      break;
+
+    case pdf_save_pos_node:
+	  {
+        switch (dvi_dir)
+        {
+          case dir_yoko:
+            {
+              pdf_last_x_pos = cur_h;
+              pdf_last_y_pos = cur_v;
+            }
+            break;
+
+          case dir_tate:
+            {
+              pdf_last_x_pos = -cur_v;
+              pdf_last_y_pos = cur_h;
+            }
+            break;
+
+          case dir_dtou:
+            {
+              pdf_last_x_pos = cur_v;
+              pdf_last_y_pos = -cur_h;
+            }
+            break;
+        }
+
+        pdf_last_x_pos = pdf_last_x_pos + 4736286;
+        pdf_last_y_pos = cur_page_height - pdf_last_y_pos - 4736286;
+      }
       break;
 
     default:
@@ -33061,6 +33940,30 @@ static void do_extension (void)
       }
       break;
 
+    case pdf_save_pos_node:
+      {
+        new_whatsit(pdf_save_pos_node, small_node_size);
+      }
+      break;
+
+    case reset_timer_code:
+      {
+        aptex_utils_get_seconds_and_micros(&epochseconds, &microseconds);
+      }
+      break;
+
+    case set_random_seed_code:
+      {
+        scan_int();
+
+        if (cur_val < 0)
+          negate(cur_val);
+
+        random_seed = cur_val;
+        init_randoms(random_seed);
+      }
+      break;
+
     default:
       confusion("ext1");
       break;
@@ -35230,6 +36133,8 @@ void adjust_hlist (pointer p, boolean pf)
   ASCII_code ax;
   boolean do_ins;
 
+  k = 0;
+
   if (link(p) == null)
     goto exit;
 
@@ -36231,6 +37136,10 @@ void just_copy (pointer p, pointer h, pointer t)
               r = get_node(small_node_size);
               words = small_node_size;
             }
+            break;
+
+          case pdf_save_pos_node:
+            r = get_node(small_node_size);
             break;
 
           default:

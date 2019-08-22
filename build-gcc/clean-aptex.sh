@@ -12,5 +12,6 @@ cd $NG_SRC_DIR/texlive/libs/cairo && make distclean
 cd $NG_SRC_DIR/src/libcairo && rm -f *.o *.a
 cd $NG_SRC_DIR/src/libdpx && rm -f *.o *.a
 cd $NG_SRC_DIR/src/libotf && rm -f *.o *.a
+cd $NG_SRC_DIR/src/libmd5 && rm -f *.o *.a
 cd $NG_SRC_DIR/src/mruby && make clean
 cd $NG_SRC_DIR/src && rm -f *.o *.a aptex lsotfea ptex-ng
