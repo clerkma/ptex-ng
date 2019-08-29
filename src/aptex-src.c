@@ -4215,6 +4215,9 @@ static void initialize (void)
   split_disc = null;
   page_dir = dir_yoko;
 
+  aptex_utils_get_seconds_and_micros(&epochseconds, &microseconds);
+  aptex_utils_init_start_time();
+
   if (aptex_env.flag_initex)
     do_initex();
 }
@@ -17711,6 +17714,14 @@ void conv_toks (void)
 
     case ng_os_type_code:
       prints(dist);
+      break;
+
+    case pdf_uniform_deviate_code:
+      print_int(unif_rand(cur_val));
+      break;
+
+    case pdf_normal_deviate_code:
+      print_int(norm_rand());
       break;
 
     case job_name_code:

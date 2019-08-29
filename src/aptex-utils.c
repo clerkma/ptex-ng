@@ -43,9 +43,9 @@ void aptex_utils_get_seconds_and_micros (uint64_t * s, uint64_t * m)
 
   GetSystemTimeAsFileTime(&ft);
   intervals = ((uint64_t) ft.dwHighDateTime << 32) | ft.dwLowDateTime;
-  intervals -= 116444736000000000;
-  *s = intervals / 10000000;
-  *m = (intervals % 10000000) / 10;
+  intervals -= 116444736000000000ULL;
+  *s = intervals / 10000000L;
+  *m = (intervals % 10000000L) / 10;
 #else
   struct timeval tv;
 
