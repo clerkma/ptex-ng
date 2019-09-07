@@ -142,6 +142,11 @@ void aptex_utils_init_start_time (void)
     {
       start_time = time((time_t *) NULL);
     }
+
+    if (source_date_epoch)
+      make_asn1_date(start_time, start_time_str, 1);
+    else
+      make_asn1_date(start_time, start_time_str, 0);
   }
 }
 
