@@ -18018,13 +18018,27 @@ void read_toks (integer n, pointer r, halfword j)
     {
       while (loc <= limit)  // {current line not yet finished}
       {
-        cur_chr = buffer[loc];
-        incr(loc);
+        cur_chr = fromBUFF(buffer, limit + 1, loc);
+        cur_tok = kcat_code(kcatcodekey(cur_chr));
 
-        if (cur_chr == ' ')
-          cur_tok = space_token;
+        if ((multistrlen(buffer, limit + 1, loc) > 1) && check_kcat_code(cur_tok))
+        {
+          if (cur_tok == not_cjk)
+            cur_tok = other_kchar;
+
+          cur_tok = cur_chr + cur_tok * max_cjk_val;
+          loc = loc + multistrlen(buffer, limit + 1, loc);
+        }
         else
-          cur_tok = cur_chr + other_token;
+        {
+          cur_chr = buffer[loc];
+          incr(loc);
+
+          if (cur_chr == ' ')
+            cur_tok = space_token;
+          else
+            cur_tok = cur_chr + other_token;
+        }
 
         store_new_token(cur_tok);
       }

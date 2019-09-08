@@ -33,8 +33,8 @@
 #define eTeX_revision       ".6"      // { \.{\\eTeXrevision} }
 #define eTeX_version_string "-2.6"    // {current \eTeX\ version}
 
-#define epTeX_version_string "-180901"
-#define epTeX_version_number 180901
+#define epTeX_version_string "-190908"
+#define epTeX_version_number 190908
 
 #define TeXXeT_code         0         // {the \TeXXeT\ feature is optional}
 #define eTeX_states         1         // {number of \eTeX\ state variables in |eqtb|}
