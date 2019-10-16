@@ -15122,6 +15122,24 @@ static void scan_something_internal (small_number level, boolean negative)
       }
       break;
 
+    case set_kansuji_char:
+      {
+        scan_int();
+
+        if ((cur_val < 0) || (cur_val > 9))
+        {
+          print_err("Invalid KANSUJI number (");
+          print_int(cur_val);
+          print_char(')');
+          help1("I'm skipping this control sequences.");
+          error();
+          return;
+        }
+        else
+          cur_val = fromDVI(kansuji_char(cur_val));
+      }
+      break;
+
     case def_code:
       {
         if (m == math_code_base)

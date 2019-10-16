@@ -22,8 +22,8 @@
 
 #define pTeX_version 3
 #define pTeX_minor_version 8
-#define pTeX_revision ".2"
-#define pTeX_version_string "-p3.8.2"
+#define pTeX_revision ".3"
+#define pTeX_version_string "-p3.8.3"
 
 #define upTeX_version 1
 #define upTeX_revision ".25"

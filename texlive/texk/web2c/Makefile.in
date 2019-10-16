@@ -3336,8 +3336,9 @@ EXTRA_DIST = PROJECTS cftests cpascal.h help.h w2c/config.h \
 	synctexdir/synctex-e-rec.ch0 synctexdir/synctex-p-mem.ch0 \
 	synctexdir/synctex-p-mem.ch1 synctexdir/synctex-p-rec.ch0 \
 	synctexdir/synctex-p-rec.ch1 synctexdir/synctex-ep-mem.ch0 \
-	synctexdir/synctex-ep-mem.ch1 synctexdir/synctex-pdf-rec.ch2 \
-	synctexdir/synctex-xe-rec.ch3 $(synctex_tests) libmd5/md5.test
+	synctexdir/synctex-ep-mem.ch1 synctexdir/synctex-ep-rec.ch0 \
+	synctexdir/synctex-pdf-rec.ch2 synctexdir/synctex-xe-rec.ch3 \
+	$(synctex_tests) libmd5/md5.test
 DISTCLEANFILES = CXXLD.sh tangle.c tangle.h tangle.p tangle-web2c \
 	tangleboot.c tangleboot.h tangleboot.p tangleboot-web2c \
 	ctangle.c cweb.c common-ctangle ctangleboot.c cwebboot.c \
@@ -5006,6 +5007,7 @@ pkgconfigdir = ${libdir}/pkgconfig
 @EPTEX_SYNCTEX_TRUE@	synctexdir/synctex-p-rec.ch0 \
 @EPTEX_SYNCTEX_TRUE@	synctexdir/synctex-rec.ch0 \
 @EPTEX_SYNCTEX_TRUE@	synctexdir/synctex-rec.ch1 \
+@EPTEX_SYNCTEX_TRUE@	synctexdir/synctex-ep-rec.ch0 \
 @EPTEX_SYNCTEX_TRUE@	synctexdir/synctex-e-rec.ch0 \
 @EPTEX_SYNCTEX_TRUE@	synctexdir/synctex-p-rec.ch1
 
@@ -5018,6 +5020,7 @@ pkgconfigdir = ${libdir}/pkgconfig
 @EUPTEX_SYNCTEX_TRUE@	synctexdir/synctex-p-rec.ch0 \
 @EUPTEX_SYNCTEX_TRUE@	synctexdir/synctex-rec.ch0 \
 @EUPTEX_SYNCTEX_TRUE@	synctexdir/synctex-rec.ch1 \
+@EUPTEX_SYNCTEX_TRUE@	synctexdir/synctex-ep-rec.ch0 \
 @EUPTEX_SYNCTEX_TRUE@	synctexdir/synctex-e-rec.ch0 \
 @EUPTEX_SYNCTEX_TRUE@	synctexdir/synctex-p-rec.ch1
 
@@ -19883,7 +19886,7 @@ $(libsynctex_a_OBJECTS): $(ZLIB_DEPEND)
 synctexdir/synctex.log: synctex$(EXEEXT)
 libmd5/md5.log: md5main$(EXEEXT)
 
-# $Id: Makefile.in 51830 2019-08-06 23:33:17Z karl $
+# $Id: Makefile.in 52388 2019-10-15 12:54:51Z hironobu $
 # am/bin_links.am: Makefile fragment for bindir links.
 .PHONY: install-bin-links uninstall-bin-links
 
