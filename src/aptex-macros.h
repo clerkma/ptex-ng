@@ -1142,30 +1142,33 @@ do {                            \
 #define elapsed_time_code         (pdf_last_y_pos_code + 1)     // {code for \.{\\elapsedtime}}
 #define random_seed_code          (elapsed_time_code + 1)       // {code for \.{\\randomseed}}
 //
-#define eTeX_int                  (badness_code + 10)        // {first of \eTeX\ codes for integers}
-#define eTeX_version_code         eTeX_int                  // 
-#define current_group_level_code  (eTeX_int + 1)
-#define current_group_type_code   (eTeX_int + 2)
-#define current_if_level_code     (eTeX_int + 3)
-#define current_if_type_code      (eTeX_int + 4)
-#define current_if_branch_code    (eTeX_int + 5)
-#define glue_stretch_order_code   (eTeX_int + 6)
-#define glue_shrink_order_code    (eTeX_int + 7)
-#define eTeX_dim                  (eTeX_int + 8)
-#define font_char_wd_code         eTeX_dim
-#define font_char_ht_code         (eTeX_dim + 1)
-#define font_char_dp_code         (eTeX_dim + 2)
-#define font_char_ic_code         (eTeX_dim + 3)
-#define par_shape_length_code     (eTeX_dim + 4)
-#define par_shape_indent_code     (eTeX_dim + 5)
-#define par_shape_dimen_code      (eTeX_dim + 6)
-#define glue_stretch_code         (eTeX_dim + 7)
-#define glue_shrink_code          (eTeX_dim + 8)
-#define eTeX_glue                 (eTeX_dim + 9)
-#define eTeX_mu                   (eTeX_glue + 1)
-#define mu_to_glue_code           eTeX_glue
-#define glue_to_mu_code           eTeX_mu
-#define eTeX_expr                 (eTeX_mu + 1)
+#define eTeX_int                   (badness_code + 10)        // {first of \eTeX\ codes for integers}
+#define eTeX_version_code          eTeX_int                  // 
+#define current_group_level_code   (eTeX_int + 1)
+#define current_group_type_code    (eTeX_int + 2)
+#define current_if_level_code      (eTeX_int + 3)
+#define current_if_type_code       (eTeX_int + 4)
+#define current_if_branch_code     (eTeX_int + 5)
+#define glue_stretch_order_code    (eTeX_int + 6)
+#define glue_shrink_order_code     (eTeX_int + 7)
+#define current_spacing_mode_code  (eTeX_int + 8)
+#define current_xspacing_mode_code (eTeX_int + 9)
+#define current_cjk_token_code     (eTeX_int + 10)
+#define eTeX_dim                   (eTeX_int + 11)
+#define font_char_wd_code          eTeX_dim
+#define font_char_ht_code          (eTeX_dim + 1)
+#define font_char_dp_code          (eTeX_dim + 2)
+#define font_char_ic_code          (eTeX_dim + 3)
+#define par_shape_length_code      (eTeX_dim + 4)
+#define par_shape_indent_code      (eTeX_dim + 5)
+#define par_shape_dimen_code       (eTeX_dim + 6)
+#define glue_stretch_code          (eTeX_dim + 7)
+#define glue_shrink_code           (eTeX_dim + 8)
+#define eTeX_glue                  (eTeX_dim + 9)
+#define eTeX_mu                    (eTeX_glue + 1)
+#define mu_to_glue_code            eTeX_glue
+#define glue_to_mu_code            eTeX_mu
+#define eTeX_expr                  (eTeX_mu + 1)
 /* sec 0421 */
 #define max_dimen 07777777777
 /* sec 0438 */

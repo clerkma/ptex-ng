@@ -4970,6 +4970,9 @@ start_of_TEX:
         primitive("muexpr", last_item, eTeX_expr - int_val + mu_val);
         primitive("gluestretchorder", last_item, glue_stretch_order_code);
         primitive("glueshrinkorder", last_item, glue_shrink_order_code);
+        primitive("currentspacingmode", last_item, current_spacing_mode_code);
+        primitive("currentxspacingmode", last_item, current_xspacing_mode_code);
+        primitive("currentcjktoken", last_item, current_cjk_token_code);
         primitive("gluestretch", last_item, glue_stretch_code);
         primitive("glueshrink", last_item, glue_shrink_code);
         primitive("mutoglue", last_item, mu_to_glue_code);
@@ -11827,6 +11830,18 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("glueshrinkorder");
           break;
 
+        case current_spacing_mode_code:
+          print_esc("currentspacingmode");
+          break;
+
+        case current_xspacing_mode_code:
+          print_esc("currentxspacingmode");
+          break;
+
+        case current_cjk_token_code:
+          print_esc("currentcjktoken");
+          break;
+
         case glue_stretch_code:
           print_esc("gluestretch");
           break;
@@ -15719,6 +15734,18 @@ static void scan_something_internal (small_number level, boolean negative)
 
                 delete_glue_ref(q);
               }
+              break;
+
+            case current_spacing_mode_code:
+              cur_val = auto_spacing;
+              break;
+
+            case current_xspacing_mode_code:
+              cur_val = auto_xspacing;
+              break;
+
+            case current_cjk_token_code:
+              cur_val = enable_cjk_token;
               break;
           }
 
