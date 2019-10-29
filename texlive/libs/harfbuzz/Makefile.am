@@ -1,4 +1,4 @@
-## $Id: Makefile.am 52233 2019-09-30 22:08:36Z kakuto $
+## $Id: Makefile.am 52560 2019-10-28 23:44:53Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -129,7 +129,6 @@ libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-unicode-emoji-table.hh \
 	@HARFBUZZ_TREE@/src/hb-vector.hh \
 	@HARFBUZZ_TREE@/src/hb-utf.hh \
-	@HARFBUZZ_TREE@/src/hb-warning.cc \
 	@HARFBUZZ_TREE@/src/hb-buffer-deserialize-json.hh \
 	@HARFBUZZ_TREE@/src/hb-buffer-deserialize-text.hh \
 	@HARFBUZZ_TREE@/src/hb-fallback-shape.cc \
@@ -208,6 +207,7 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-ot-var.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-var-avar-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-var-fvar-table.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-var-gvar-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-var-hvar-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-var-mvar-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-vorg-table.hh \
