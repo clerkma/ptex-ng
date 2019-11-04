@@ -1,4 +1,4 @@
-## $Id: Makefile.am 51944 2019-08-23 22:51:26Z karl $
+## $Id: Makefile.am 52631 2019-11-03 22:55:12Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2019 Karl Berry <tex-live@tug.org>
@@ -101,6 +101,7 @@ texmf_other_scripts = \
 	bundledoc/bundledoc \
 	cachepic/cachepic.tlu \
 	checkcites/checkcites.lua \
+	chklref/chklref.pl \
 	cjk-gs-integrate/cjk-gs-integrate.pl \
 	clojure-pamphlet/pamphletangler \
 	cluttex/cluttex.lua \
