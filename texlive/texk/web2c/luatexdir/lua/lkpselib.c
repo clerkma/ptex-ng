@@ -843,6 +843,49 @@ static int lua_record_output_file(lua_State * L)
     return 0;
 }
 
+#ifndef MF_LUA
+/*tex moved here */
+
+static int lua_check_permissions(lua_State *L)
+{
+    const char *filename = luaL_checkstring(L, 1);
+    if (filename == NULL) {
+        lua_pushboolean(L,0);
+        lua_pushliteral(L,"no command name given");
+    } else if (shellenabledp <= 0) {
+        lua_pushboolean(L,0);
+        lua_pushliteral(L,"all command execution is disabled");
+    } else if (restrictedshell == 0) {
+        lua_pushboolean(L,1);
+        lua_pushstring(L,filename);
+    } else {
+        char *safecmd = NULL;
+        char *cmdname = NULL;
+        switch (shell_cmd_is_allowed(filename, &safecmd, &cmdname)) {
+            case 0:
+                lua_pushboolean(L,0);
+                lua_pushliteral(L, "specific command execution disabled");
+                break;
+            case 1:
+                /* doesn't happen */
+                lua_pushboolean(L,1);
+                lua_pushstring(L,filename);
+                break;
+            case 2:
+                lua_pushboolean(L,1);
+                lua_pushstring(L,safecmd);
+                break;
+            default:
+                /* -1 */
+                lua_pushboolean(L,0);
+                lua_pushliteral(L, "bad command line quoting");
+                break;
+        }
+    }
+    return 2;
+}
+#endif /* !MF_LUA */
+
 static const struct luaL_Reg kpselib_m[] = {
     {"__gc", lua_kpathsea_finish},
     {"init_prog", lua_kpathsea_init_prog},
@@ -858,7 +901,8 @@ static const struct luaL_Reg kpselib_m[] = {
     {"default_texmfcnf", show_texmfcnf},
     {"record_input_file", lua_record_input_file},
     {"record_output_file", lua_record_output_file},
-    {NULL, NULL}                /* sentinel */
+    /* sentinel */
+    {NULL, NULL}
 };
 
 static const struct luaL_Reg kpselib_l[] = {
@@ -875,7 +919,14 @@ static const struct luaL_Reg kpselib_l[] = {
     {"lookup", lua_kpse_lookup},
     {"version", lua_kpse_version},
     {"default_texmfcnf", show_texmfcnf},
-    {NULL, NULL}                /* sentinel */
+    {"record_input_file", lua_record_input_file},
+    {"record_output_file", lua_record_output_file},
+#ifndef MF_LUA
+    /* extra */
+    {"check_permission", lua_check_permissions},
+    /* sentinel */
+#endif /* !MF_LUA */
+    {NULL, NULL}
 };
 
 int luaopen_kpse(lua_State * L)
