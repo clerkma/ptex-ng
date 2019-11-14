@@ -6457,6 +6457,8 @@ static void init_prim (void)
   primitive("pdfuniformdeviate", convert, pdf_uniform_deviate_code);
   primitive("pdfnormaldeviate", convert, pdf_normal_deviate_code);
   primitive("expanded", convert, expanded_code);
+  primitive("Uchar", convert, Uchar_convert_code);
+  primitive("Ucharcat", convert, Ucharcat_convert_code);
   primitive("jobname", convert, job_name_code);
   primitive("if", if_test, if_char_code);
   primitive("ifcat", if_test, if_cat_code);
@@ -11963,6 +11965,14 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("pdfnormaldeviate");
           break;
 
+        case Uchar_convert_code:
+          print_esc("Uchar");
+          break;
+
+        case Ucharcat_convert_code:
+          print_esc("Ucharcat");
+          break;
+
         default:
           print_esc("jobname");
           break;
@@ -17117,7 +17127,7 @@ reswitch:
 }
 
 // changes the string |str_pool[b..pool_ptr]| to a token list
-static pointer str_toks (pool_pointer b)
+static pointer str_toks_cat (pool_pointer b, uint32_t cat)
 {
   pointer p;
   pointer q;
@@ -17135,9 +17145,11 @@ static pointer str_toks (pool_pointer b)
     t = fromBUFF(str_pool, pool_ptr, k);
     cc = kcat_code(kcatcodekey(t));
 
-    if ((multistrlen(str_pool, pool_ptr, k) > 1) && check_kcat_code(cc))
+    if ((multistrlen(str_pool, pool_ptr, k) > 1) && ((cat >= kanji) || check_kcat_code(cc)))
     {
-      if (cc == not_cjk)
+      if (cat >= kanji)
+        cc = cat;
+      else if (cc == not_cjk)
         cc = other_kchar;
 
       t = t + cc * max_cjk_val;
@@ -17147,10 +17159,14 @@ static pointer str_toks (pool_pointer b)
     {
       t = str_pool[k];
 
-      if (t == ' ')
+      if ((t == ' ') && (cat == 0))
         t = space_token;
-      else
+      else if ((cat == 0) || (cat >= kanji))
         t = other_token + t;
+      else if (cat == active_char)
+        t = cs_token_flag + active_base + t;
+      else
+        t = left_brace_token * cat + t;
     }
 
     fast_store_new_token(t);
@@ -17160,6 +17176,11 @@ static pointer str_toks (pool_pointer b)
   pool_ptr = b;
 
   return p;
+}
+
+static pointer str_toks(pool_pointer b)
+{
+  return str_toks_cat(b, 0);
 }
 
 static pointer the_toks (void)
@@ -17432,8 +17453,10 @@ void conv_toks (void)
   str_number s;
   integer i;
   integer j;
+  uint32_t cat;
   pool_pointer b;
 
+  cat = 0;
   c = cur_chr;
   KANJI(cx) = 0;
 
@@ -17667,6 +17690,70 @@ void conv_toks (void)
       }
       break;
 
+    case Uchar_convert_code:
+      {
+        scan_char_num();
+
+        if (!is_char_ascii(cur_val))
+          if (kcat_code(kcatcodekey(cur_val)) == not_cjk)
+            cat = other_kchar;
+      }
+      break;
+
+    case Ucharcat_convert_code:
+      {
+        scan_char_num();
+        i = cur_val;
+        scan_int();
+
+        if (i <= 0x7F) //{ no |wchar_token| }
+        {
+          if (illegal_Ucharcat_ascii_catcode(cur_val))
+          {
+            print_err("Invalid code (");
+            print_int(cur_val);
+            prints("), should be in the ranges 1..4, 6..8, 10..13");
+            help1("I'm going to use 12 instead of that illegal code value.");
+            error();
+            cat = 12;
+          }
+          else
+            cat = cur_val;
+        }
+        else if (i <= 0xFF)
+        {
+          if ((illegal_Ucharcat_ascii_catcode(cur_val))
+            && (illegal_Ucharcat_wchar_catcode(cur_val)))
+          {
+            print_err("Invalid code (");
+            print_int(cur_val);
+            prints("), should be in the ranges 1..4, 6..8, 10..13, 16..19");
+            help1("I'm going to use 12 instead of that illegal code value.");
+            error();
+            cat = 12;
+          }
+          else
+            cat = cur_val;
+        }
+        else //{ |wchar_token| only }
+        {
+          if (illegal_Ucharcat_wchar_catcode(cur_val))
+          {
+            print_err("Invalid code (");
+            print_int(cur_val);
+            prints("), should be in the ranges 16..19");
+            help1("I'm going to use 18 instead of that illegal code value.");
+            error();
+            cat = other_kchar;
+          }
+          else
+            cat = cur_val;
+        }
+
+        cur_val = i;
+      }
+      break;
+
     case job_name_code:
       if (job_name == 0)
         open_log_file();
@@ -17769,13 +17856,27 @@ void conv_toks (void)
       print_int(norm_rand());
       break;
 
+    case Uchar_convert_code:
+      if (is_char_ascii(cur_val))
+        print_char(cur_val);
+      else
+        print_kanji(cur_val);
+      break;
+
+    case Ucharcat_convert_code:
+      if (cat < kanji)
+        print_char(cur_val);
+      else
+        print_kanji(cur_val);
+      break;
+
     case job_name_code:
       print(job_name);
       break;
   }
 
   selector = old_setting;
-  link(garbage) = str_toks(b);
+  link(garbage) = str_toks_cat(b, cat);
   ins_list(link(temp_head));
 }
 

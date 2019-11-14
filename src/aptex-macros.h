@@ -1216,7 +1216,9 @@ do {                          \
 #define pdf_uniform_deviate_code 22 // {command code for \.{\\pdfuniformdeviate}}
 #define pdf_normal_deviate_code  23 // {command code for \.{\\pdfnormaldeviate}}
 #define expanded_code            24 // {command code for \.{\\expanded}}
-#define job_name_code            25 // {command code for \.{\\jobname}}
+#define Uchar_convert_code       25 // {command code for \.{\\Uchar}}
+#define Ucharcat_convert_code    26 // {command code for \.{\\Ucharcat}}
+#define job_name_code            27 // {command code for \.{\\jobname}}
 /* sec 0480 */
 #define closed    2
 #define just_open 1
@@ -3472,5 +3474,10 @@ do {                                        \
 #define tail_page_disc  disc_ptr[copy_code]
 #define page_disc       disc_ptr[last_box_code]
 #define split_disc      disc_ptr[vsplit_code]
+
+#define illegal_Ucharcat_ascii_catcode(a) \
+  (a<left_brace)||(a>active_char)||(a==out_param)||(a==ignore)
+#define illegal_Ucharcat_wchar_catcode(a) \
+  (a<kanji)||(a>hangul)
 
 #endif
