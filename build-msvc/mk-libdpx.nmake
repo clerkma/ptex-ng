@@ -2,7 +2,7 @@ CC = cl
 AR = lib
 CFLAGS = -nologo -c -O2 -Oy -D_CRT_DECLARE_NONSTDC_NAMES=0 -DHAVE_CONFIG_H -DWIN32 -DNO_KPSE_DLL -Ilibdpx -I. -Izlib -I../texlive/libs/zlib/zlib-src -I../texlive/libs/libpng/libpng-src -I../texlive/texk/ -I../texlive/texk/dvipdfm-x -I../src/libdpx/ng
 ROOT = ../texlive/texk/dvipdfm-x
-OBJS = libdpx-agl.obj libdpx-bmpimage.obj libdpx-cff.obj libdpx-cff_dict.obj libdpx-cid.obj libdpx-cidtype0.obj libdpx-cidtype2.obj libdpx-cmap.obj libdpx-cmap_read.obj libdpx-cmap_write.obj libdpx-cs_type2.obj libdpx-dpxconf.obj libdpx-dpxcrypt.obj libdpx-dpxfile.obj libdpx-dpxutil.obj libdpx-dvi.obj libdpx-dvipdfmx.obj libdpx-epdf.obj libdpx-error.obj libdpx-fontmap.obj libdpx-jp2image.obj libdpx-jpegimage.obj libdpx-mem.obj libdpx-mfileio.obj libdpx-mpost.obj libdpx-numbers.obj libdpx-otl_opt.obj libdpx-pdfcolor.obj libdpx-pdfdev.obj libdpx-pdfdoc.obj libdpx-pdfdraw.obj libdpx-pdfencoding.obj libdpx-pdfencrypt.obj libdpx-pdffont.obj libdpx-pdfnames.obj libdpx-pdfobj.obj libdpx-pdfparse.obj libdpx-pdfresource.obj libdpx-pdfximage.obj libdpx-pkfont.obj libdpx-pngimage.obj libdpx-pst.obj libdpx-pst_obj.obj libdpx-sfnt.obj libdpx-spc_color.obj libdpx-spc_dvipdfmx.obj libdpx-spc_dvips.obj libdpx-spc_html.obj libdpx-spc_misc.obj libdpx-spc_pdfm.obj libdpx-spc_tpic.obj libdpx-spc_util.obj libdpx-spc_xtx.obj libdpx-specials.obj libdpx-subfont.obj libdpx-t1_char.obj libdpx-t1_load.obj libdpx-tfm.obj libdpx-truetype.obj libdpx-tt_aux.obj libdpx-tt_cmap.obj libdpx-tt_glyf.obj libdpx-tt_gsub.obj libdpx-tt_post.obj libdpx-tt_table.obj libdpx-type0.obj libdpx-type1.obj libdpx-type1c.obj libdpx-unicode.obj libdpx-vf.obj libdpx-xbb.obj
+OBJS = libdpx-agl.obj libdpx-bmpimage.obj libdpx-cff.obj libdpx-cff_dict.obj libdpx-cid.obj libdpx-cidtype0.obj libdpx-cidtype2.obj libdpx-cmap.obj libdpx-cmap_read.obj libdpx-cmap_write.obj libdpx-cs_type2.obj libdpx-dpxconf.obj libdpx-dpxcrypt.obj libdpx-dpxfile.obj libdpx-dpxutil.obj libdpx-dvi.obj libdpx-dvipdfmx.obj libdpx-epdf.obj libdpx-error.obj libdpx-fontmap.obj libdpx-jp2image.obj libdpx-jpegimage.obj libdpx-mem.obj libdpx-mfileio.obj libdpx-mpost.obj libdpx-mt19937ar.obj libdpx-numbers.obj libdpx-otl_opt.obj libdpx-pdfcolor.obj libdpx-pdfdev.obj libdpx-pdfdoc.obj libdpx-pdfdraw.obj libdpx-pdfencoding.obj libdpx-pdfencrypt.obj libdpx-pdffont.obj libdpx-pdfnames.obj libdpx-pdfobj.obj libdpx-pdfparse.obj libdpx-pdfresource.obj libdpx-pdfximage.obj libdpx-pkfont.obj libdpx-pngimage.obj libdpx-pst.obj libdpx-pst_obj.obj libdpx-sfnt.obj libdpx-spc_color.obj libdpx-spc_dvipdfmx.obj libdpx-spc_dvips.obj libdpx-spc_html.obj libdpx-spc_misc.obj libdpx-spc_pdfm.obj libdpx-spc_tpic.obj libdpx-spc_util.obj libdpx-spc_xtx.obj libdpx-specials.obj libdpx-subfont.obj libdpx-t1_char.obj libdpx-t1_load.obj libdpx-tfm.obj libdpx-truetype.obj libdpx-tt_aux.obj libdpx-tt_cmap.obj libdpx-tt_glyf.obj libdpx-tt_gsub.obj libdpx-tt_post.obj libdpx-tt_table.obj libdpx-type0.obj libdpx-type1.obj libdpx-type1c.obj libdpx-unicode.obj libdpx-vf.obj libdpx-xbb.obj
 
 all: $(OBJS)
 	$(AR) -nologo -out:libdpx.lib $(OBJS)
@@ -57,6 +57,8 @@ libdpx-mfileio.obj: $(ROOT)/mfileio.c
 	$(CC) $(CFLAGS) -Folibdpx-mfileio.obj $(ROOT)/mfileio.c
 libdpx-mpost.obj: $(ROOT)/mpost.c
 	$(CC) $(CFLAGS) -Folibdpx-mpost.obj $(ROOT)/mpost.c
+libdpx-mt19937ar.obj: $(ROOT)/mt19937ar.c
+	$(CC) $(CFLAGS) -Folibdpx-mt19937ar.obj $(ROOT)/mt19937ar.c
 libdpx-numbers.obj: $(ROOT)/numbers.c
 	$(CC) $(CFLAGS) -Folibdpx-numbers.obj $(ROOT)/numbers.c
 libdpx-otl_opt.obj: $(ROOT)/otl_opt.c
