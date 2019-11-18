@@ -1,6 +1,6 @@
-## $Id: Makefile.am 50656 2019-03-30 10:13:17Z hironobu $
+## $Id: Makefile.am 52830 2019-11-17 17:05:39Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
-## Copyright 2018 Karl Berry <tex-live@tug.org>
+## Copyright 2015-2019 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##
@@ -62,7 +62,9 @@ EXTRA_DIST += ptex.man ppltotf.man ptftopl.man
 
 if LUATEX
 man_sources += luatex.man
-man1_links += luatex:texlua luatex:texluac
+man1_links += luatex:texlua luatex:texluac \
+  luatex:luahbtex luatex:luajittex \
+  luatex:dviluatex
 endif LUATEX
 EXTRA_DIST += luatex.man
 
@@ -89,7 +91,15 @@ EXTRA_DIST += $(misc_man_sources)
 misc_man_sources = \
 	amstex.man \
 	latex.man \
+	latex-dev.man \
 	pdfetex.man
+
+man1_links += latex-dev:pdflatex-dev \
+  latex-dev:xelatex-dev \
+  latex-dev:lualatex-dev \
+  latex-dev:dvilualatex-dev \
+  latex-dev:platex-dev \
+  latex-dev:uplatex-dev
 
 include $(top_srcdir)/../../am/man.am
 
