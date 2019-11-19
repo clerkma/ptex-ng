@@ -1,4 +1,4 @@
-## $Id: Makefile.am 52631 2019-11-03 22:55:12Z karl $
+## $Id: Makefile.am 52857 2019-11-19 00:11:53Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2019 Karl Berry <tex-live@tug.org>
@@ -67,18 +67,7 @@ texmf_shell_scripts = \
 	ltxfileinfo/ltxfileinfo \
 	lua2dox/lua2dox_filter \
 	pdfbook2/pdfbook2 \
-	pdfjam/pdf180 \
-	pdfjam/pdf270 \
-	pdfjam/pdf90 \
-	pdfjam/pdfbook \
-	pdfjam/pdfflip \
 	pdfjam/pdfjam \
-	pdfjam/pdfjam-pocketmod \
-	pdfjam/pdfjam-slides3up \
-	pdfjam/pdfjam-slides6up \
-	pdfjam/pdfjoin \
-	pdfjam/pdfnup \
-	pdfjam/pdfpun \
 	pdftex-quiet/pdftex-quiet \
 	pdfxup/pdfxup \
 	pst-pdf/ps4pdf \
