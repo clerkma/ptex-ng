@@ -1,4 +1,4 @@
-/* ANSI-C code produced by gperf version 3.0.4 */
+/* ANSI-C code produced by gperf version 3.1 */
 /* Command-line: gperf -DClt -L ANSI-C -Nlookup_ftag -I -Kdict --output-file=lsotfea-ftag.c lsotfea-ftag.gperf  */
 /* Computed positions: -k'1-4' */
 
@@ -26,7 +26,7 @@
       && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
       && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
 /* The character set is not based on ISO-646.  */
-#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
+#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gperf@gnu.org>."
 #endif
 
 #line 1 "lsotfea-ftag.gperf"
@@ -49,7 +49,7 @@ inline
 #endif
 /*ARGSUSED*/
 static unsigned int
-hash (register const char *str, register unsigned int len)
+hash (register const char *str, register size_t len)
 {
   static const unsigned short asso_values[] =
     {
@@ -84,14 +84,8 @@ hash (register const char *str, register unsigned int len)
   return asso_values[(unsigned char)str[3]] + asso_values[(unsigned char)str[2]+9] + asso_values[(unsigned char)str[1]+1] + asso_values[(unsigned char)str[0]];
 }
 
-#ifdef __GNUC__
-__inline
-#if defined __GNUC_STDC_INLINE__ || defined __GNUC_GNU_INLINE__
-__attribute__ ((__gnu_inline__))
-#endif
-#endif
 const struct otlex *
-lookup_ftag (register const char *str, register unsigned int len)
+lookup_ftag (register const char *str, register size_t len)
 {
   static const unsigned char lengthtable[] =
     {
@@ -118,39 +112,39 @@ lookup_ftag (register const char *str, register unsigned int len)
 #line 213 "lsotfea-ftag.gperf"
       {"ss16", "Stylistic Set 16"},
 #line 37 "lsotfea-ftag.gperf"
-      {"cv16", "Character Variants"},
+      {"cv16", "Character Variants 16"},
 #line 216 "lsotfea-ftag.gperf"
       {"ss19", "Stylistic Set 19"},
 #line 57 "lsotfea-ftag.gperf"
-      {"cv36", "Character Variants"},
+      {"cv36", "Character Variants 36"},
 #line 203 "lsotfea-ftag.gperf"
       {"ss06", "Stylistic Set 6"},
 #line 40 "lsotfea-ftag.gperf"
-      {"cv19", "Character Variants"},
+      {"cv19", "Character Variants 19"},
 #line 60 "lsotfea-ftag.gperf"
-      {"cv39", "Character Variants"},
+      {"cv39", "Character Variants 39"},
 #line 27 "lsotfea-ftag.gperf"
-      {"cv06", "Character Variants"},
+      {"cv06", "Character Variants 06"},
 #line 206 "lsotfea-ftag.gperf"
       {"ss09", "Stylistic Set 9"},
 #line 212 "lsotfea-ftag.gperf"
       {"ss15", "Stylistic Set 15"},
 #line 30 "lsotfea-ftag.gperf"
-      {"cv09", "Character Variants"},
+      {"cv09", "Character Variants 09"},
 #line 36 "lsotfea-ftag.gperf"
-      {"cv15", "Character Variants"},
+      {"cv15", "Character Variants 15"},
 #line 210 "lsotfea-ftag.gperf"
       {"ss13", "Stylistic Set 13"},
 #line 56 "lsotfea-ftag.gperf"
-      {"cv35", "Character Variants"},
+      {"cv35", "Character Variants 35"},
 #line 202 "lsotfea-ftag.gperf"
       {"ss05", "Stylistic Set 5"},
 #line 34 "lsotfea-ftag.gperf"
-      {"cv13", "Character Variants"},
+      {"cv13", "Character Variants 13"},
 #line 54 "lsotfea-ftag.gperf"
-      {"cv33", "Character Variants"},
+      {"cv33", "Character Variants 33"},
 #line 26 "lsotfea-ftag.gperf"
-      {"cv05", "Character Variants"},
+      {"cv05", "Character Variants 05"},
 #line 200 "lsotfea-ftag.gperf"
       {"ss03", "Stylistic Set 3"},
 #line 193 "lsotfea-ftag.gperf"
@@ -158,31 +152,31 @@ lookup_ftag (register const char *str, register unsigned int len)
 #line 208 "lsotfea-ftag.gperf"
       {"ss11", "Stylistic Set 11"},
 #line 24 "lsotfea-ftag.gperf"
-      {"cv03", "Character Variants"},
+      {"cv03", "Character Variants 03"},
 #line 12 "lsotfea-ftag.gperf"
       {"calt", "Contextual Alternates"},
 #line 32 "lsotfea-ftag.gperf"
-      {"cv11", "Character Variants"},
+      {"cv11", "Character Variants 11"},
 #line 209 "lsotfea-ftag.gperf"
       {"ss12", "Stylistic Set 12"},
 #line 52 "lsotfea-ftag.gperf"
-      {"cv31", "Character Variants"},
+      {"cv31", "Character Variants 31"},
 #line 128 "lsotfea-ftag.gperf"
       {"falt", "Final Glyph on Line Alternates"},
 #line 198 "lsotfea-ftag.gperf"
       {"ss01", "Stylistic Set 1"},
 #line 33 "lsotfea-ftag.gperf"
-      {"cv12", "Character Variants"},
+      {"cv12", "Character Variants 12"},
 #line 53 "lsotfea-ftag.gperf"
-      {"cv32", "Character Variants"},
+      {"cv32", "Character Variants 32"},
 #line 22 "lsotfea-ftag.gperf"
-      {"cv01", "Character Variants"},
+      {"cv01", "Character Variants 01"},
 #line 199 "lsotfea-ftag.gperf"
       {"ss02", "Stylistic Set 2"},
 #line 21 "lsotfea-ftag.gperf"
       {"curs", "Cursive Positioning"},
 #line 23 "lsotfea-ftag.gperf"
-      {"cv02", "Character Variants"},
+      {"cv02", "Character Variants 02"},
 #line 232 "lsotfea-ftag.gperf"
       {"vert", "Vertical Writing"},
 #line 215 "lsotfea-ftag.gperf"
@@ -190,101 +184,101 @@ lookup_ftag (register const char *str, register unsigned int len)
 #line 230 "lsotfea-ftag.gperf"
       {"valt", "Alternate Vertical Metrics"},
 #line 39 "lsotfea-ftag.gperf"
-      {"cv18", "Character Variants"},
+      {"cv18", "Character Variants 18"},
 #line 59 "lsotfea-ftag.gperf"
-      {"cv38", "Character Variants"},
+      {"cv38", "Character Variants 38"},
 #line 205 "lsotfea-ftag.gperf"
       {"ss08", "Stylistic Set 8"},
 #line 87 "lsotfea-ftag.gperf"
-      {"cv66", "Character Variants"},
+      {"cv66", "Character Variants 66"},
 #line 29 "lsotfea-ftag.gperf"
-      {"cv08", "Character Variants"},
+      {"cv08", "Character Variants 08"},
 #line 77 "lsotfea-ftag.gperf"
-      {"cv56", "Character Variants"},
+      {"cv56", "Character Variants 56"},
 #line 90 "lsotfea-ftag.gperf"
-      {"cv69", "Character Variants"},
+      {"cv69", "Character Variants 69"},
 #line 214 "lsotfea-ftag.gperf"
       {"ss17", "Stylistic Set 17"},
 #line 11 "lsotfea-ftag.gperf"
       {"blws", "Below-base Substitutions"},
 #line 80 "lsotfea-ftag.gperf"
-      {"cv59", "Character Variants"},
+      {"cv59", "Character Variants 59"},
 #line 38 "lsotfea-ftag.gperf"
-      {"cv17", "Character Variants"},
+      {"cv17", "Character Variants 17"},
 #line 58 "lsotfea-ftag.gperf"
-      {"cv37", "Character Variants"},
+      {"cv37", "Character Variants 37"},
 #line 204 "lsotfea-ftag.gperf"
       {"ss07", "Stylistic Set 7"},
 #line 9 "lsotfea-ftag.gperf"
       {"blwf", "Below-base Forms"},
 #line 86 "lsotfea-ftag.gperf"
-      {"cv65", "Character Variants"},
+      {"cv65", "Character Variants 65"},
 #line 47 "lsotfea-ftag.gperf"
-      {"cv26", "Character Variants"},
+      {"cv26", "Character Variants 26"},
 #line 28 "lsotfea-ftag.gperf"
-      {"cv07", "Character Variants"},
+      {"cv07", "Character Variants 07"},
 #line 76 "lsotfea-ftag.gperf"
-      {"cv55", "Character Variants"},
+      {"cv55", "Character Variants 55"},
 #line 84 "lsotfea-ftag.gperf"
-      {"cv63", "Character Variants"},
+      {"cv63", "Character Variants 63"},
 #line 50 "lsotfea-ftag.gperf"
-      {"cv29", "Character Variants"},
+      {"cv29", "Character Variants 29"},
 #line 67 "lsotfea-ftag.gperf"
-      {"cv46", "Character Variants"},
+      {"cv46", "Character Variants 46"},
 #line 74 "lsotfea-ftag.gperf"
-      {"cv53", "Character Variants"},
+      {"cv53", "Character Variants 53"},
 #line 194 "lsotfea-ftag.gperf"
       {"sinf", "Scientific Inferiors"},
 #line 70 "lsotfea-ftag.gperf"
-      {"cv49", "Character Variants"},
+      {"cv49", "Character Variants 49"},
 #line 133 "lsotfea-ftag.gperf"
       {"frac", "Fractions"},
 #line 82 "lsotfea-ftag.gperf"
-      {"cv61", "Character Variants"},
+      {"cv61", "Character Variants 61"},
 #line 46 "lsotfea-ftag.gperf"
-      {"cv25", "Character Variants"},
+      {"cv25", "Character Variants 25"},
 #line 168 "lsotfea-ftag.gperf"
       {"nukt", "Nukta Forms"},
 #line 72 "lsotfea-ftag.gperf"
-      {"cv51", "Character Variants"},
+      {"cv51", "Character Variants 51"},
 #line 83 "lsotfea-ftag.gperf"
-      {"cv62", "Character Variants"},
+      {"cv62", "Character Variants 62"},
 #line 44 "lsotfea-ftag.gperf"
-      {"cv23", "Character Variants"},
+      {"cv23", "Character Variants 23"},
 #line 10 "lsotfea-ftag.gperf"
       {"blwm", "Below-base Mark Positioning"},
 #line 66 "lsotfea-ftag.gperf"
-      {"cv45", "Character Variants"},
+      {"cv45", "Character Variants 45"},
 #line 73 "lsotfea-ftag.gperf"
-      {"cv52", "Character Variants"},
+      {"cv52", "Character Variants 52"},
 #line 165 "lsotfea-ftag.gperf"
       {"mset", "Mark Positioning via Substitution"},
 #line 166 "lsotfea-ftag.gperf"
       {"nalt", "Alternate Annotation Forms"},
 #line 64 "lsotfea-ftag.gperf"
-      {"cv43", "Character Variants"},
+      {"cv43", "Character Variants 43"},
 #line 161 "lsotfea-ftag.gperf"
       {"med2", "Medial Forms #2"},
 #line 42 "lsotfea-ftag.gperf"
-      {"cv21", "Character Variants"},
+      {"cv21", "Character Variants 21"},
 #line 130 "lsotfea-ftag.gperf"
       {"fin3", "Terminal Forms #3"},
 #line 147 "lsotfea-ftag.gperf"
       {"jalt", "Justification Alternates"},
 #line 89 "lsotfea-ftag.gperf"
-      {"cv68", "Character Variants"},
+      {"cv68", "Character Variants 68"},
 #line 43 "lsotfea-ftag.gperf"
-      {"cv22", "Character Variants"},
+      {"cv22", "Character Variants 22"},
 #line 62 "lsotfea-ftag.gperf"
-      {"cv41", "Character Variants"},
+      {"cv41", "Character Variants 41"},
 #line 79 "lsotfea-ftag.gperf"
-      {"cv58", "Character Variants"},
+      {"cv58", "Character Variants 58"},
 #line 220 "lsotfea-ftag.gperf"
       {"subs", "Subscript"},
 #line 221 "lsotfea-ftag.gperf"
       {"sups", "Superscript"},
 #line 63 "lsotfea-ftag.gperf"
-      {"cv42", "Character Variants"},
+      {"cv42", "Character Variants 42"},
 #line 132 "lsotfea-ftag.gperf"
       {"flac", "Flattened accent forms"},
 #line 126 "lsotfea-ftag.gperf"
@@ -294,37 +288,37 @@ lookup_ftag (register const char *str, register unsigned int len)
 #line 121 "lsotfea-ftag.gperf"
       {"c2pc", "Petite Capitals From Capitals"},
 #line 88 "lsotfea-ftag.gperf"
-      {"cv67", "Character Variants"},
+      {"cv67", "Character Variants 67"},
 #line 49 "lsotfea-ftag.gperf"
-      {"cv28", "Character Variants"},
+      {"cv28", "Character Variants 28"},
 #line 78 "lsotfea-ftag.gperf"
-      {"cv57", "Character Variants"},
+      {"cv57", "Character Variants 57"},
 #line 195 "lsotfea-ftag.gperf"
       {"size", "Optical size"},
 #line 69 "lsotfea-ftag.gperf"
-      {"cv48", "Character Variants"},
+      {"cv48", "Character Variants 48"},
 #line 191 "lsotfea-ftag.gperf"
       {"rtlm", "Right-to-left mirrored forms"},
 #line 207 "lsotfea-ftag.gperf"
       {"ss10", "Stylistic Set 10"},
 #line 48 "lsotfea-ftag.gperf"
-      {"cv27", "Character Variants"},
+      {"cv27", "Character Variants 27"},
 #line 159 "lsotfea-ftag.gperf"
       {"ltrm", "Left-to-right mirrored forms"},
 #line 31 "lsotfea-ftag.gperf"
-      {"cv10", "Character Variants"},
+      {"cv10", "Character Variants 10"},
 #line 211 "lsotfea-ftag.gperf"
       {"ss14", "Stylistic Set 14"},
 #line 51 "lsotfea-ftag.gperf"
-      {"cv30", "Character Variants"},
+      {"cv30", "Character Variants 30"},
 #line 68 "lsotfea-ftag.gperf"
-      {"cv47", "Character Variants"},
+      {"cv47", "Character Variants 47"},
 #line 35 "lsotfea-ftag.gperf"
-      {"cv14", "Character Variants"},
+      {"cv14", "Character Variants 14"},
 #line 231 "lsotfea-ftag.gperf"
       {"vatu", "Vattu Variants"},
 #line 55 "lsotfea-ftag.gperf"
-      {"cv34", "Character Variants"},
+      {"cv34", "Character Variants 34"},
 #line 20 "lsotfea-ftag.gperf"
       {"cswh", "Contextual Swash"},
 #line 201 "lsotfea-ftag.gperf"
@@ -332,23 +326,23 @@ lookup_ftag (register const char *str, register unsigned int len)
 #line 238 "lsotfea-ftag.gperf"
       {"vrt2", "Vertical Alternates and Rotation"},
 #line 25 "lsotfea-ftag.gperf"
-      {"cv04", "Character Variants"},
+      {"cv04", "Character Variants 04"},
 #line 107 "lsotfea-ftag.gperf"
-      {"cv86", "Character Variants"},
+      {"cv86", "Character Variants 86"},
 #line 97 "lsotfea-ftag.gperf"
-      {"cv76", "Character Variants"},
+      {"cv76", "Character Variants 76"},
 #line 110 "lsotfea-ftag.gperf"
-      {"cv89", "Character Variants"},
+      {"cv89", "Character Variants 89"},
 #line 117 "lsotfea-ftag.gperf"
-      {"cv96", "Character Variants"},
+      {"cv96", "Character Variants 96"},
 #line 100 "lsotfea-ftag.gperf"
-      {"cv79", "Character Variants"},
+      {"cv79", "Character Variants 79"},
 #line 120 "lsotfea-ftag.gperf"
-      {"cv99", "Character Variants"},
+      {"cv99", "Character Variants 99"},
 #line 137 "lsotfea-ftag.gperf"
       {"halt", "Alternate Half Widths"},
 #line 106 "lsotfea-ftag.gperf"
-      {"cv85", "Character Variants"},
+      {"cv85", "Character Variants 85"},
 #line 173 "lsotfea-ftag.gperf"
       {"ornm", "Ornaments"},
 #line 160 "lsotfea-ftag.gperf"
@@ -356,23 +350,23 @@ lookup_ftag (register const char *str, register unsigned int len)
 #line 239 "lsotfea-ftag.gperf"
       {"zero", "Slashed Zero"},
 #line 96 "lsotfea-ftag.gperf"
-      {"cv75", "Character Variants"},
+      {"cv75", "Character Variants 75"},
 #line 104 "lsotfea-ftag.gperf"
-      {"cv83", "Character Variants"},
+      {"cv83", "Character Variants 83"},
 #line 135 "lsotfea-ftag.gperf"
       {"half", "Half Forms"},
 #line 116 "lsotfea-ftag.gperf"
-      {"cv95", "Character Variants"},
+      {"cv95", "Character Variants 95"},
 #line 94 "lsotfea-ftag.gperf"
-      {"cv73", "Character Variants"},
+      {"cv73", "Character Variants 73"},
 #line 17 "lsotfea-ftag.gperf"
       {"clig", "Contextual Ligatures"},
 #line 114 "lsotfea-ftag.gperf"
-      {"cv93", "Character Variants"},
+      {"cv93", "Character Variants 93"},
 #line 3 "lsotfea-ftag.gperf"
       {"aalt", "Access All Alternates"},
 #line 102 "lsotfea-ftag.gperf"
-      {"cv81", "Character Variants"},
+      {"cv81", "Character Variants 81"},
 #line 16 "lsotfea-ftag.gperf"
       {"cjct", "Conjunct Forms"},
 #line 218 "lsotfea-ftag.gperf"
@@ -380,65 +374,65 @@ lookup_ftag (register const char *str, register unsigned int len)
 #line 152 "lsotfea-ftag.gperf"
       {"kern", "Kerning"},
 #line 92 "lsotfea-ftag.gperf"
-      {"cv71", "Character Variants"},
+      {"cv71", "Character Variants 71"},
 #line 103 "lsotfea-ftag.gperf"
-      {"cv82", "Character Variants"},
+      {"cv82", "Character Variants 82"},
 #line 127 "lsotfea-ftag.gperf"
       {"expt", "Expert Forms"},
 #line 112 "lsotfea-ftag.gperf"
-      {"cv91", "Character Variants"},
+      {"cv91", "Character Variants 91"},
 #line 93 "lsotfea-ftag.gperf"
-      {"cv72", "Character Variants"},
+      {"cv72", "Character Variants 72"},
 #line 81 "lsotfea-ftag.gperf"
-      {"cv60", "Character Variants"},
+      {"cv60", "Character Variants 60"},
 #line 227 "lsotfea-ftag.gperf"
       {"trad", "Traditional Forms"},
 #line 113 "lsotfea-ftag.gperf"
-      {"cv92", "Character Variants"},
+      {"cv92", "Character Variants 92"},
 #line 71 "lsotfea-ftag.gperf"
-      {"cv50", "Character Variants"},
+      {"cv50", "Character Variants 50"},
 #line 85 "lsotfea-ftag.gperf"
-      {"cv64", "Character Variants"},
+      {"cv64", "Character Variants 64"},
 #line 122 "lsotfea-ftag.gperf"
       {"c2sc", "Small Capitals From Capitals"},
 #line 236 "lsotfea-ftag.gperf"
       {"vkrn", "Vertical Kerning"},
 #line 75 "lsotfea-ftag.gperf"
-      {"cv54", "Character Variants"},
+      {"cv54", "Character Variants 54"},
 #line 109 "lsotfea-ftag.gperf"
-      {"cv88", "Character Variants"},
+      {"cv88", "Character Variants 88"},
 #line 174 "lsotfea-ftag.gperf"
       {"palt", "Proportional Alternate Widths"},
 #line 217 "lsotfea-ftag.gperf"
       {"ss20", "Stylistic Set 20"},
 #line 99 "lsotfea-ftag.gperf"
-      {"cv78", "Character Variants"},
+      {"cv78", "Character Variants 78"},
 #line 13 "lsotfea-ftag.gperf"
       {"case", "Case-Sensitive Forms"},
 #line 41 "lsotfea-ftag.gperf"
-      {"cv20", "Character Variants"},
+      {"cv20", "Character Variants 20"},
 #line 119 "lsotfea-ftag.gperf"
-      {"cv98", "Character Variants"},
+      {"cv98", "Character Variants 98"},
 #line 45 "lsotfea-ftag.gperf"
-      {"cv24", "Character Variants"},
+      {"cv24", "Character Variants 24"},
 #line 61 "lsotfea-ftag.gperf"
-      {"cv40", "Character Variants"},
+      {"cv40", "Character Variants 40"},
 #line 169 "lsotfea-ftag.gperf"
       {"numr", "Numerators"},
 #line 108 "lsotfea-ftag.gperf"
-      {"cv87", "Character Variants"},
+      {"cv87", "Character Variants 87"},
 #line 7 "lsotfea-ftag.gperf"
       {"afrc", "Alternative Fractions"},
 #line 65 "lsotfea-ftag.gperf"
-      {"cv44", "Character Variants"},
+      {"cv44", "Character Variants 44"},
 #line 98 "lsotfea-ftag.gperf"
-      {"cv77", "Character Variants"},
+      {"cv77", "Character Variants 77"},
 #line 186 "lsotfea-ftag.gperf"
       {"rkrf", "Rakar Forms"},
 #line 185 "lsotfea-ftag.gperf"
       {"rclt", "Required Contextual Alternates"},
 #line 118 "lsotfea-ftag.gperf"
-      {"cv97", "Character Variants"},
+      {"cv97", "Character Variants 97"},
 #line 15 "lsotfea-ftag.gperf"
       {"cfar", "Conjunct Form After Ro"},
 #line 219 "lsotfea-ftag.gperf"
@@ -502,23 +496,23 @@ lookup_ftag (register const char *str, register unsigned int len)
 #line 226 "lsotfea-ftag.gperf"
       {"tnum", "Tabular Figures"},
 #line 101 "lsotfea-ftag.gperf"
-      {"cv80", "Character Variants"},
+      {"cv80", "Character Variants 80"},
 #line 5 "lsotfea-ftag.gperf"
       {"abvm", "Above-base Mark Positioning"},
 #line 91 "lsotfea-ftag.gperf"
-      {"cv70", "Character Variants"},
+      {"cv70", "Character Variants 70"},
 #line 105 "lsotfea-ftag.gperf"
-      {"cv84", "Character Variants"},
+      {"cv84", "Character Variants 84"},
 #line 124 "lsotfea-ftag.gperf"
       {"dlig", "Discretionary Ligatures"},
 #line 111 "lsotfea-ftag.gperf"
-      {"cv90", "Character Variants"},
+      {"cv90", "Character Variants 90"},
 #line 95 "lsotfea-ftag.gperf"
-      {"cv74", "Character Variants"},
+      {"cv74", "Character Variants 74"},
 #line 125 "lsotfea-ftag.gperf"
       {"dnom", "Denominators"},
 #line 115 "lsotfea-ftag.gperf"
-      {"cv94", "Character Variants"},
+      {"cv94", "Character Variants 94"},
 #line 192 "lsotfea-ftag.gperf"
       {"ruby", "Ruby Notation Forms"},
 #line 189 "lsotfea-ftag.gperf"
@@ -673,9 +667,9 @@ lookup_ftag (register const char *str, register unsigned int len)
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {
-      register int key = hash (str, len);
+      register unsigned int key = hash (str, len);
 
-      if (key <= MAX_HASH_VALUE && key >= 0)
+      if (key <= MAX_HASH_VALUE)
         {
           register int index = lookup[key];
 
