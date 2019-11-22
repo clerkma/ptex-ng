@@ -1,4 +1,4 @@
-# $Id: configure.ac 51034 2019-05-07 18:01:50Z karl $
+# $Id: configure.ac 52883 2019-11-22 02:37:37Z preining $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
@@ -15,7 +15,7 @@ dnl
 AC_PREREQ([2.65])
 m4_include([version.ac])[] dnl define dvisvgm_version
 AC_INIT([dvisvgm (TeX Live)], dvisvgm_version, [tex-k@tug.org])
-DATE="March 2019"
+DATE="November 2019"
 AC_CONFIG_SRCDIR([dvisvgm-src/src/dvisvgm.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIRS([../../m4])dnl not just _DIR
@@ -233,5 +233,6 @@ AC_CONFIG_FILES([Makefile
 	dvisvgm-src/libs/xxHash/Makefile
 	dvisvgm-src/src/Makefile
 	dvisvgm-src/src/version.hpp
+	dvisvgm-src/src/optimizer/Makefile
 ])dnl TL: skipping tests/* and doc/*
 AC_OUTPUT
