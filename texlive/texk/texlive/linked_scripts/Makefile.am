@@ -1,4 +1,4 @@
-## $Id: Makefile.am 52857 2019-11-19 00:11:53Z karl $
+## $Id: Makefile.am 52909 2019-11-24 21:34:37Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2019 Karl Berry <tex-live@tug.org>
@@ -83,6 +83,7 @@ texmf_other_scripts = \
 	accfonts/vpl2ovp \
 	accfonts/vpl2vpl \
 	arara/arara.sh \
+	attachfile2/pdfatfi.pl \
 	authorindex/authorindex \
 	bib2gls/bib2gls.sh \
 	bib2gls/convertgls2bib.sh \
@@ -157,7 +158,6 @@ texmf_other_scripts = \
 	multibibliography/multibibliography.pl \
 	musixtex/musixflx.lua \
 	musixtex/musixtex.lua \
-	oberdiek/pdfatfi.pl \
 	pax/pdfannotextractor.pl \
 	pdfcrop/pdfcrop.pl \
 	pdflatexpicscale/pdflatexpicscale.pl \
