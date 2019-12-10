@@ -4743,6 +4743,8 @@ static void final_cleanup (void)
   }
 }
 
+static void init_randoms (integer seed);
+
 static int aptex_program (void)
 {
   history = fatal_error_stop;
@@ -5030,6 +5032,8 @@ start_of_TEX:
       buffer[limit] = end_line_char;
 
     fix_date_and_time();
+    random_seed = (microseconds * 1000) + (epochseconds % 1000000);
+    init_randoms(random_seed);
     magic_offset = str_start[886] - 9 * ord_noad; /* math_spacing = 886 */
 
     if (interaction == batch_mode)
