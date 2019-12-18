@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: bibtex-auxinclude.test 47980 2018-06-10 22:25:18Z karl $
+# $Id: bibtex-bigauth.test 53153 2019-12-17 19:05:32Z karl $
 # Copyright 2019 Karl Berry <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
