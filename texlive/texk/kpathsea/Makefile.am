@@ -1,4 +1,4 @@
-## $Id: Makefile.am 51875 2019-08-13 22:43:09Z karl $
+## $Id: Makefile.am 53235 2019-12-25 23:23:15Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/kpathsea/
 ##
 ## Copyright 2017-2019 Karl Berry <tex-live@tug.org>
@@ -250,10 +250,6 @@ xdirtest_LDADD = libkpathsea.la
 
 ## The scripts and their data
 web2cdir = $(datarootdir)/texmf-dist/web2c
-
-dist_web2c_SCRIPTS = mktexdir mktexnam mktexupd
-
-dist_web2c_DATA = mktex.opt mktexdir.opt mktexnam.opt
 
 dist_noinst_SCRIPTS = mktexlsr mktexmf mktexpk mktextfm
 
