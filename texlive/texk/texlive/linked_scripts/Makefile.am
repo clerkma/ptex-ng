@@ -1,4 +1,4 @@
-## $Id: Makefile.am 53230 2019-12-25 22:48:02Z karl $
+## $Id: Makefile.am 53254 2019-12-29 19:18:55Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2019 Karl Berry <tex-live@tug.org>
@@ -195,6 +195,10 @@ texmf_other_scripts = \
 	texlive/fmtutil-sys.sh \
 	texlive/fmtutil-user.sh \
 	texlive/fmtutil.pl \
+	texlive/mktexlsr \
+	texlive/mktexmf \
+	texlive/mktexpk \
+	texlive/mktextfm \
 	texlive/rungs.tlu \
 	texlive/tlmgr.pl \
 	texlive/updmap-sys.sh \
@@ -234,6 +238,7 @@ bin_links = \
 	cluttex:clxelatex \
 	cluttex:cllualatex \
 	epstopdf:repstopdf \
+	mktexlsr:texhash \
 	pdfcrop:rpdfcrop \
 	texdef:latexdef
 
