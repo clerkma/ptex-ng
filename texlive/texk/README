@@ -1,4 +1,4 @@
-$Id: README 53185 2019-12-19 03:28:00Z kakuto $
+$Id: README 53328 2020-01-05 22:16:43Z kakuto $
 Copyright 2006-2019 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -56,9 +56,8 @@ dvipdfm-x - maintained here, by us, contains
   xdvipdfmx
     old info: http://project.ktug.org/dvipdfmx/
 
-dvipng 1.16 - checked 7apr19
-  http://savannah.nongnu.org/files/?group=dvipng
-  http://mirror.ctan.org/dviware/dvipng/ (but maybe stale)
+dvipng 1.17 - checked 06jan20
+  http://mirror.ctan.org/dviware/dvipng/
 
 dvipos - maintained here, by us
 
