@@ -1,4 +1,4 @@
-## $Id: Makefile.am 50641 2019-03-29 18:02:17Z karl $
+## $Id: Makefile.am 53372 2020-01-11 23:45:23Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/dvipsk/
 ##
 ## Copyright 2017-2019 Karl Berry <tex-live@tug.org>
@@ -18,6 +18,7 @@ $(afm2tfm_OBJECTS): $(KPATHSEA_DEPEND)
 
 dvips_SOURCES = \
 	bbox.c \
+	bitmapenc.c \
 	color.c \
 	config.h \
 	debug.h \

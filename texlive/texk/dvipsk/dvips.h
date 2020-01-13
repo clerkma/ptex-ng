@@ -1,4 +1,4 @@
-/*   $Id: dvips.h 50001 2019-02-11 18:22:31Z karl $
+/*   $Id: dvips.h 53372 2020-01-11 23:45:23Z karl $
  *   Copyright 1986-2019 Tomas Rokicki.
  *   This is dvips, a freely redistributable PostScript driver
  *   for dvi files. You may freely use, modify and/or distribute this
@@ -180,6 +180,7 @@ typedef struct tfd {
    quarterword psflag;
    quarterword codewidth;
    integer maxchars;
+   integer llx, lly, urx, ury ;
    char *name, *area;
    struct resfont *resfont;
    struct tft *localfonts;
