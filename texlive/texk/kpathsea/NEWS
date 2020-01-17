@@ -1,5 +1,13 @@
-$Id: NEWS 50836 2019-04-07 01:42:55Z karl $
+$Id: NEWS 53427 2020-01-16 22:02:50Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+6.3.2 (for TeX Live 2020)
+* New option --cnf-line for kpsewhich (and tex and mf) to support
+  arbitrary configuration settings on the command line.
+* Warn about unusual program name qualifiers.
+* The mktex* programs are no longer maintained or present here, but in
+  TeX Live's Master/texmf-dist/scripts/texlive (with copies in
+  Build/source/texk/texlive/linked_scripts as usual).
 
 6.3.1 (for TeX Live 2019, 7 April 2019)
 * kpsewhich --var-value does brace expansion as well as variable and
