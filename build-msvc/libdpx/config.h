@@ -9,6 +9,6 @@
 #define HAVE_ZLIB 1
 #define HAVE_ZLIB_COMPRESS2 1
 
-#define VERSION "20191114"
+#define VERSION "20200116"
 
 #define ZLIB_CONST 1
