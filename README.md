@@ -32,7 +32,7 @@ First of all, we need to install `bison` ([winflexbison](https://github.com/lexx
 
 ## Source
 
-* TeX Live 2020/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
+* TeX Live 2020 (`http://tug.org/svn/texlive/trunk/Build/source/`)
 * libotf 0.9.16 (`http://cvs.savannah.gnu.org/viewvc/libotf/?root=m17n`)
 * mruby 2.1.0 (`http://mruby.org/downloads/`)
 
