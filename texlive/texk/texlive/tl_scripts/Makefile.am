@@ -1,4 +1,4 @@
-## $Id: Makefile.am 53254 2019-12-29 19:18:55Z karl $
+## $Id: Makefile.am 53480 2020-01-21 18:33:23Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/tl_scripts/
 ##
 ## Copyright 2013-2019 Karl Berry <tex-live@tug.org>
@@ -26,8 +26,6 @@ EXTRA_DIST = scripts.lst
 # These first variable definitions are what scripts_links.am requires.
 perl_scripts = e2pall
 sh_scripts = \
-	allcm \
-	allneeded \
 	dvi2fax \
 	dvired \
 	fontinst \
