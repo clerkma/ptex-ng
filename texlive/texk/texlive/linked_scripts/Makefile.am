@@ -1,4 +1,4 @@
-## $Id: Makefile.am 53480 2020-01-21 18:33:23Z karl $
+## $Id: Makefile.am 53554 2020-01-26 23:58:37Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2019 Karl Berry <tex-live@tug.org>
@@ -72,11 +72,27 @@ texmf_shell_scripts = \
 	pdfxup/pdfxup \
 	pst-pdf/ps4pdf \
 	simpdftex/simpdftex \
+	texlive-extra/allcm.sh \
+	texlive-extra/allneeded.sh \
+	texlive-extra/dvi2fax.sh \
+	texlive-extra/dvired.sh \
+	texlive-extra/fontinst.sh \
+	texlive-extra/kpsetool.sh \
+	texlive-extra/kpsewhere.sh \
+	texlive-extra/ps2frag.sh \
+	texlive-extra/pslatex.sh \
+	texlive-extra/rubibtex.sh \
+	texlive-extra/rumakeindex.sh \
+	texlive-extra/texconfig-dialog.sh \
+	texlive-extra/texconfig-sys.sh \
+	texlive-extra/texconfig.sh \
+	texlive-extra/texlinks.sh \
 	texosquery/texosquery.sh \
 	texosquery/texosquery-jre5.sh \
 	texosquery/texosquery-jre8.sh \
 	typeoutfileinfo/typeoutfileinfo.sh \
 	wordcount/wordcount.sh
+
 texmf_other_scripts = \
 	a2ping/a2ping.pl \
 	accfonts/mkt1font \
@@ -204,8 +220,7 @@ texmf_other_scripts = \
 	texlive/updmap-sys.sh \
 	texlive/updmap-user.sh \
 	texlive/updmap.pl \
-	texlive-extra/allcm.sh \
-	texlive-extra/allneeded.sh \
+	texlive-extra/e2pall.pl \
 	texliveonfly/texliveonfly.py \
 	texloganalyser/texloganalyser \
 	texplate/texplate.sh \
@@ -218,6 +233,7 @@ texmf_other_scripts = \
 	webquiz/webquiz.py \
 	xindex/xindex.lua \
 	yplan/yplan
+
 texmf_context_scripts = \
 	context/stubs/unix/context \
 	context/stubs/unix/contextjit \
@@ -242,10 +258,14 @@ bin_links = \
 	cluttex:clxelatex \
 	cluttex:cllualatex \
 	epstopdf:repstopdf \
+	fmtutil:mktexfmt \
+	kpsetool:kpsexpand \
+	kpsetool:kpsepath \
 	mktexlsr:texhash \
 	pdfcrop:rpdfcrop \
 	texdef:latexdef
 
+# 
 # The idea is to install the scripts themselves in texmf*/scripts, and
 # have bin/arch/foo be a symlink to, say,
 # ../../texmf-dist/scripts/foo/foo.pl.  That way we save a bit of disk
