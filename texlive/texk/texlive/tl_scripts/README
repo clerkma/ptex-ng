@@ -1,7 +1,0 @@
-$Id: README 53554 2020-01-26 23:58:37Z karl $
-Public domain.
-
-This directory contains documentation for scripts which are maintained
-as part of TeX Live. The scripts themselves are maintained under Master:
-Master/texmf-dist/scripts/texlive/
-Master/texmf-dist/scripts/texlive-extra
