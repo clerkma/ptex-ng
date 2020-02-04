@@ -6489,6 +6489,8 @@ static void init_prim (void)
   primitive("ifybox", if_test, if_ybox_code);
   primitive("ifdbox", if_test, if_dbox_code);
   primitive("ifmbox", if_test, if_mbox_code);
+  primitive("ifjfont", if_test, if_jfont_code);
+  primitive("iftfont", if_test, if_tfont_code);
   primitive("fi", fi_or_else, fi_code);
   text(frozen_fi) = make_str_string("fi");
   eqtb[frozen_fi] = eqtb[cur_val];
@@ -12084,6 +12086,14 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
           case if_mbox_code:
             print_esc("ifmbox");
+            break;
+
+          case if_jfont_code:
+            print_esc("ifjfont");
+            break;
+
+          case if_tfont_code:
+            print_esc("iftfont");
             break;
 
           case if_def_code:
@@ -18479,6 +18489,18 @@ void conditional (void)
           else
             b = (box_dir(p) < 0);
         }
+      }
+      break;
+
+    case if_jfont_code:
+    case if_tfont_code:
+      {
+        scan_font_ident();
+
+        if (this_if == if_jfont_code)
+          b = (font_dir[cur_val] == dir_yoko);
+        else if (this_if == if_tfont_code)
+          b = (font_dir[cur_val] == dir_tate);
       }
       break;
 

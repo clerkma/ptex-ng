@@ -1253,6 +1253,8 @@ do {                          \
 #define if_ybox_code      (if_tbox_code + 1)
 #define if_dbox_code      (if_ybox_code + 1)
 #define if_mbox_code      (if_dbox_code + 1)
+#define if_jfont_code     (if_mbox_code + 1)
+#define if_tfont_code     (if_jfont_code + 1)
 /* sec 0489 */
 #define if_node_size     2
 #define if_line_field(a) mem[(a) + 1].cint
