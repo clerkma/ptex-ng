@@ -2623,6 +2623,7 @@ loop@+begin if (cur_cmd>other_char)or(cur_chr>255) then {not a character}
   if not more_name(cur_chr) then goto done;
   get_x_token;
   end;
+  end;
 done: end_name; name_in_progress:=false;
 @y
 skip_mode:=false;
@@ -2640,6 +2641,7 @@ loop@+begin
    spurious spaces to file names in some cases.}
    else if ((cur_chr=" ") and (state<>token_list) and (loc>limit)) or not more_name(cur_chr) then goto done;
   get_x_token;
+  end;
   end;
 done: end_name; name_in_progress:=false;
 skip_mode:=true;
@@ -6422,7 +6424,7 @@ else
 end;
 
 @ @<Fetch kansuji char code from some table@>=
-begin scan_int;
+begin scan_int; cur_val_level:=int_val;
   if (cur_val<0)or(cur_val>9) then
     begin print_err("Invalid KANSUJI number ("); print_int(cur_val); print_char(")");
     help1("I'm skipping this control sequences.");@/
