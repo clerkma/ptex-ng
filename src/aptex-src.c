@@ -6429,6 +6429,7 @@ static void init_prim (void)
   primitive("inputlineno", last_item, input_line_no_code);
   primitive("badness", last_item, badness_code);
   primitive("shellescape", last_item, shell_escape_code);
+  primitive("pdfshellescape", last_item, shell_escape_code);
   primitive("ptexversion", last_item, ptex_version_code);
   primitive("uptexversion", last_item, uptex_version_code);
   primitive("epTeXversion", last_item, eptex_version_code);
@@ -11971,6 +11972,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("pdfnormaldeviate");
           break;
 
+        case expanded_code:
+          print_esc("expanded");
+          break;
+
         case Uchar_convert_code:
           print_esc("Uchar");
           break;
@@ -15164,6 +15169,7 @@ static void scan_something_internal (small_number level, boolean negative)
     case set_kansuji_char:
       {
         scan_int();
+        cur_val_level = int_val;
 
         if ((cur_val < 0) || (cur_val > 9))
         {
