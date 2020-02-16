@@ -2,7 +2,7 @@
 
 luainit.w
 
-Copyright 2006-2019 Taco Hoekwater <taco@@luatex.org>
+Copyright 2006-2020 Taco Hoekwater <taco@@luatex.org>
 
 This file is part of LuaTeX.
 
@@ -448,7 +448,7 @@ static void parse_options(int ac, char **av)
                  "the terms of the GNU General Public License, version 2 or (at your option)\n"
                  "any later version. For more information about these matters, see the file\n"
                  "named COPYING and the LuaTeX source.\n\n"
-                 "LuaTeX is Copyright 2019 Taco Hoekwater and the LuaTeX Team.\n");
+                 "LuaTeX is Copyright 2020 Taco Hoekwater and the LuaTeX Team.\n");
             /* *INDENT-ON* */
             uexit(0);
         } else if (ARGUMENT_IS("credits")) {
@@ -677,6 +677,7 @@ static int luatex_kpse_lua_find(lua_State * L)
         /*tex library not found in this path */
         return 1;
     }
+    recorder_record_input(filename);
     if (luaL_loadfile(L, filename) != 0) {
         luaL_error(L, "error loading module %s from file %s:\n\t%s",
             lua_tostring(L, 1), filename, lua_tostring(L, -1));
@@ -714,6 +715,7 @@ static int luatex_kpse_clua_find(lua_State * L)
             /*tex library not found in this path */
             return 1;
         }
+        recorder_record_input(filename);
         extensionless = strdup(filename);
         if (!extensionless) {
             /*tex allocation failure */
