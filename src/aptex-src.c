@@ -119,7 +119,7 @@ static void print_aptex_usage (void)
 
 static void print_aptex_version (void)
 {
-  printf("Copyright 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma.\n"
+  printf("Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma.\n"
     "banner: \"%s\"\n"
     "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n"
     "Compiled with %s\n"
