@@ -3606,6 +3606,8 @@ static void reset_trie(void);
 static boolean get_strings_started(void);
 static void init_prim(void);
 static void store_fmt_file(void);
+static boolean str_eq_str(str_number s, str_number t);
+static pointer prim_lookup(str_number s);
 static void primitive_(str_number s, quarterword c, halfword o);
 static void fix_date_and_time(void);
 
