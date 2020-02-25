@@ -15745,13 +15745,29 @@ restart:
               {
                 scan_font_ident();
                 q = cur_val;
-                scan_char_num();
 
                 if (font_dir[q] != dir_default)
                 {
-                  if (cur_val >= 256)
+                  scan_int();
+                  
+                  if (cur_val >= 0)
                   {
-                    i = char_info(q, get_jfm_pos(KANJI(cur_val), q));
+                    if (is_char_kanji(cur_val))
+                      cur_val = get_jfm_pos(KANJI(cur_val), q); 
+                    else
+                      cur_val = -1;
+                  }
+                  else
+                  {
+                    cur_val = -(cur_val + 1);
+
+                    if ((font_bc[q] > cur_val) || (font_ec[q] < cur_val))
+                      cur_val = -1;
+                  }
+
+                  if (cur_val != -1)
+                  {
+                    i = char_info(q, cur_val);
 
                     switch (m)
                     {
@@ -15775,31 +15791,36 @@ restart:
                   else
                     cur_val = 0;
                 }
-                else if ((font_bc[q] <= cur_val) && (font_ec[q] >= cur_val))
-                {
-                  i = char_info(q, cur_val);
-
-                  switch (m)
-                  {
-                    case font_char_wd_code:
-                      cur_val = char_width(q, i);
-                      break;
-
-                    case font_char_ht_code:
-                      cur_val = char_height(q, height_depth(i));
-                      break;
-
-                    case font_char_dp_code:
-                      cur_val = char_depth(q, height_depth(i));
-                      break;
-
-                    case font_char_ic_code:
-                      cur_val = char_italic(q, i);
-                      break;
-                  }
-                }
                 else
-                  cur_val = 0;
+                {
+                  scan_char_num();
+
+                  if ((font_bc[q] <= cur_val) && (font_ec[q] >= cur_val))
+                  {
+                    i = char_info(q, cur_val);
+
+                    switch (m)
+                    {
+                      case font_char_wd_code:
+                        cur_val = char_width(q, i);
+                        break;
+
+                      case font_char_ht_code:
+                        cur_val = char_height(q, height_depth(i));
+                        break;
+
+                      case font_char_dp_code:
+                        cur_val = char_depth(q, height_depth(i));
+                        break;
+
+                      case font_char_ic_code:
+                        cur_val = char_italic(q, i);
+                        break;
+                    }
+                  }
+                  else
+                    cur_val = 0;
+                }
               }
               break;
 
@@ -18942,12 +18963,28 @@ void conditional (void)
       {
         scan_font_ident();
         n = cur_val;
-        scan_char_num();
 
-        if ((font_bc[n] <= cur_val) && (font_ec[n] >= cur_val))
-          b = char_exists(char_info(n, cur_val));
+        if (font_dir[n] != dir_default)
+        {
+          scan_int();
+
+          if (cur_val >= 0)
+            b = is_char_kanji(cur_val);
+          else
+          {
+            cur_val = -(cur_val + 1);
+            b = (font_bc[n] <= cur_val) && (font_ec[n] >= cur_val);
+          }
+        }
         else
-          b = false;
+        {
+          scan_char_num();
+
+          if ((font_bc[n] <= cur_val) && (font_ec[n] >= cur_val))
+            b = char_exists(char_info(n, cur_val));
+          else
+            b = false;
+        }
       }
       break;
 
