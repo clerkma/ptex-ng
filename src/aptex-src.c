@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1557,6 +1557,8 @@ void aptex_run (int argc, char ** argv)
 
   // for synctex
   synctex_option = INT_MAX;
+  stop_at_space = true;
+  is_in_csname = false;
   // for kpathsea init
   kpse_set_program_name(aptex_env.argv[0], NULL);
   kpse_set_program_enabled(kpse_fontmap_format, true, kpse_src_texmf_cnf);
@@ -1854,165 +1856,173 @@ static long ucs_range[] =
   0xFE70, /* Arabic Presentation Forms-B                         */ /* 0xA0 */
   0xFF00, /* Halfwidth and Fullwidth Forms                       */
   0xFFF0, /* Specials                                            */
-  0x10000, /* Linear B Syllabary                                 */
-  0x10080, /* Linear B Ideograms                                 */
-  0x10100, /* Aegean Numbers                                     */
-  0x10140, /* Ancient Greek Numbers                              */
-  0x10190, /* Ancient Symbols                                    */
-  0x101D0, /* Phaistos Disc                                      */
-  0x10280, /* Lycian                                             */
-  0x102A0, /* Carian                                             */
-  0x102E0, /* Coptic Epact Numbers                               */
-  0x10300, /* Old Italic                                         */
-  0x10330, /* Gothic                                             */
-  0x10350, /* Old Permic                                         */
-  0x10380, /* Ugaritic                                           */
-  0x103A0, /* Old Persian                                        */ /* 0xB0 */
-  0x10400, /* Deseret                                            */
-  0x10450, /* Shavian                                            */
-  0x10480, /* Osmanya                                            */
-  0x104B0, /* Osage                                              */
-  0x10500, /* Elbasan                                            */
-  0x10530, /* Caucasian Albanian                                 */
-  0x10600, /* Linear A                                           */
-  0x10800, /* Cypriot Syllabary                                  */
-  0x10840, /* Imperial Aramaic                                   */
-  0x10860, /* Palmyrene                                          */
-  0x10880, /* Nabataean                                          */
-  0x108E0, /* Hatran                                             */
-  0x10900, /* Phoenician                                         */
-  0x10920, /* Lydian                                             */
-  0x10980, /* Meroitic Hieroglyphs                               */
-  0x109A0, /* Meroitic Cursive                                   */ /* 0xC0 */
-  0x10A00, /* Kharoshthi                                         */
-  0x10A60, /* Old South Arabian                                  */
-  0x10A80, /* Old North Arabian                                  */
-  0x10AC0, /* Manichaean                                         */
-  0x10B00, /* Avestan                                            */
-  0x10B40, /* Inscriptional Parthian                             */
-  0x10B60, /* Inscriptional Pahlavi                              */
-  0x10B80, /* Psalter Pahlavi                                    */
-  0x10C00, /* Old Turkic                                         */
-  0x10C80, /* Old Hungarian                                      */
-  0x10D00, /* Hanifi Rohingya                                    */
-  0x10E60, /* Rumi Numeral Symbols                               */
-  0x10F00, /* Old Sogdian                                        */
-  0x10F30, /* Sogdian                                            */
-  0x10FE0, /* Elymaic                                            */
-  0x11000, /* Brahmi                                             */ /* 0xD0 */
-  0x11080, /* Kaithi                                             */
-  0x110D0, /* Sora Sompeng                                       */
-  0x11100, /* Chakma                                             */
-  0x11150, /* Mahajani                                           */
-  0x11180, /* Sharada                                            */
-  0x111E0, /* Sinhala Archaic Numbers                            */
-  0x11200, /* Khojki                                             */
-  0x11280, /* Multani                                            */
-  0x112B0, /* Khudawadi                                          */
-  0x11300, /* Grantha                                            */
-  0x11400, /* Newa                                               */
-  0x11480, /* Tirhuta                                            */
-  0x11580, /* Siddham                                            */
-  0x11600, /* Modi                                               */
-  0x11660, /* Mongolian Supplement                               */
-  0x11680, /* Takri                                              */ /* 0xE0 */
-  0x11700, /* Ahom                                               */
-  0x11800, /* Dogra                                              */
-  0x118A0, /* Warang Citi                                        */
-  0x119A0, /* Nandinagari                                        */
-  0x11A00, /* Zanabazar Square                                   */
-  0x11A50, /* Soyombo                                            */
-  0x11AC0, /* Pau Cin Hau                                        */
-  0x11C00, /* Bhaiksuki                                          */
-  0x11C70, /* Marchen                                            */
-  0x11D00, /* Masaram Gondi                                      */
-  0x11D60, /* Gunjala Gondi                                      */
-  0x11EE0, /* Makasar                                            */
-  0x11FC0, /* Tamil Supplement                                   */
-  0x12000, /* Cuneiform                                          */
-  0x12400, /* Cuneiform Numbers and Punctuation                  */
-  0x12480, /* Early Dynastic Cuneiform                           */ /* 0xF0 */
-  0x13000, /* Egyptian Hieroglyphs                               */
-  0x13430, /* Egyptian Hieroglyph Format Controls                */
-  0x14400, /* Anatolian Hieroglyphs                              */
-  0x16800, /* Bamum Supplement                                   */
-  0x16A40, /* Mro                                                */
-  0x16AD0, /* Bassa Vah                                          */
-  0x16B00, /* Pahawh Hmong                                       */
-  0x16E40, /* Medefaidrin                                        */
-  0x16F00, /* Miao                                               */
-  0x16FE0, /* Ideographic Symbols and Punctuation                */
-  0x17000, /* Tangut                                             */
-  0x18800, /* Tangut Components                                  */
-  0x1B000, /* Kana Supplement                                    */
-  0x1B100, /* Kana Extended-A                                    */
-  0x1B130, /* Small Kana Extension                               */
-  0x1B170, /* Nushu                                              */ /* 0x100 */
-  0x1BC00, /* Duployan                                           */
-  0x1BCA0, /* Shorthand Format Controls                          */
-  0x1D000, /* Byzantine Musical Symbols                          */
-  0x1D100, /* Musical Symbols                                    */
-  0x1D200, /* Ancient Greek Musical Notation                     */
-  0x1D2E0, /* Mayan Numerals                                     */
-  0x1D300, /* Tai Xuan Jing Symbols                              */
-  0x1D360, /* Counting Rod Numerals                              */
-  0x1D400, /* Mathematical Alphanumeric Symbols                  */
-  0x1D800, /* Sutton SignWriting                                 */
-  0x1E000, /* Glagolitic Supplement                              */
-  0x1E100, /* Nyiakeng Puachue Hmong                             */
-  0x1E2C0, /* Wancho                                             */
-  0x1E800, /* Mende Kikakui                                      */
-  0x1E900, /* Adlam                                              */
-  0x1EC70, /* Indic Siyaq Numbers                                */ /* 0x110 */
-  0x1ED00, /* Ottoman Siyaq Numbers                              */
-  0x1EE00, /* Arabic Mathematical Alphabetic Symbols             */
-  0x1F000, /* Mahjong Tiles                                      */
-  0x1F030, /* Domino Tiles                                       */
-  0x1F0A0, /* Playing Cards                                      */
-  0x1F100, /* Enclosed Alphanumeric Supplement                   */
-  0x1F200, /* Enclosed Ideographic Supplement                    */
-  0x1F300, /* Miscellaneous Symbols and Pictographs              */
-  0x1F600, /* Emoticons                                          */
-  0x1F650, /* Ornamental Dingbats                                */
-  0x1F680, /* Transport and Map Symbols                          */
-  0x1F700, /* Alchemical Symbols                                 */
-  0x1F780, /* Geometric Shapes Extended                          */
-  0x1F800, /* Supplemental Arrows-C                              */
-  0x1F900, /* Supplemental Symbols and Pictographs               */
-  0x1FA00, /* Chess Symbols                                      */ /* 0x120 */
-  0x1FA70, /* Symbols and Pictographs Extended-A                 */
-  0x20000, /* CJK Unified Ideographs Extension B                 */
-  0x2A700, /* CJK Unified Ideographs Extension C                 */
-  0x2B740, /* CJK Unified Ideographs Extension D                 */
-  0x2B820, /* CJK Unified Ideographs Extension E                 */
-  0x2CEB0, /* CJK Unified Ideographs Extension F                 */
-  0x2F800, /* CJK Compatibility Ideographs Supplement            */
-  0x30000, /* Reserved                                           */
-  0x40000, /* Reserved                                           */
-  0x50000, /* Reserved                                           */
-  0x60000, /* Reserved                                           */
-  0x70000, /* Reserved                                           */
-  0x80000, /* Reserved                                           */
-  0x90000, /* Reserved                                           */
-  0xA0000, /* Reserved                                           */
-  0xB0000, /* Reserved                                           */ /* 0x130 */
-  0xC0000, /* Reserved                                           */
-  0xD0000, /* Reserved                                           */
-  0xE0000, /* Tags                                               */
-  0xE0100, /* Variation Selectors Supplement                     */
-  0xF0000, /* Supplementary Private Use Area-A                   */
-  0x100000, /* Supplementary Private Use Area-B                  */
+  0x10000, /* Linear B Syllabary                                  */
+  0x10080, /* Linear B Ideograms                                  */
+  0x10100, /* Aegean Numbers                                      */
+  0x10140, /* Ancient Greek Numbers                               */
+  0x10190, /* Ancient Symbols                                     */
+  0x101D0, /* Phaistos Disc                                       */
+  0x10280, /* Lycian                                              */
+  0x102A0, /* Carian                                              */
+  0x102E0, /* Coptic Epact Numbers                                */
+  0x10300, /* Old Italic                                          */
+  0x10330, /* Gothic                                              */
+  0x10350, /* Old Permic                                          */
+  0x10380, /* Ugaritic                                            */
+  0x103A0, /* Old Persian                                         */ /* 0xB0 */
+  0x10400, /* Deseret                                             */
+  0x10450, /* Shavian                                             */
+  0x10480, /* Osmanya                                             */
+  0x104B0, /* Osage                                               */
+  0x10500, /* Elbasan                                             */
+  0x10530, /* Caucasian Albanian                                  */
+  0x10600, /* Linear A                                            */
+  0x10800, /* Cypriot Syllabary                                   */
+  0x10840, /* Imperial Aramaic                                    */
+  0x10860, /* Palmyrene                                           */
+  0x10880, /* Nabataean                                           */
+  0x108E0, /* Hatran                                              */
+  0x10900, /* Phoenician                                          */
+  0x10920, /* Lydian                                              */
+  0x10980, /* Meroitic Hieroglyphs                                */
+  0x109A0, /* Meroitic Cursive                                    */ /* 0xC0 */
+  0x10A00, /* Kharoshthi                                          */
+  0x10A60, /* Old South Arabian                                   */
+  0x10A80, /* Old North Arabian                                   */
+  0x10AC0, /* Manichaean                                          */
+  0x10B00, /* Avestan                                             */
+  0x10B40, /* Inscriptional Parthian                              */
+  0x10B60, /* Inscriptional Pahlavi                               */
+  0x10B80, /* Psalter Pahlavi                                     */
+  0x10C00, /* Old Turkic                                          */
+  0x10C80, /* Old Hungarian                                       */
+  0x10D00, /* Hanifi Rohingya                                     */
+  0x10E60, /* Rumi Numeral Symbols                                */
+  0x10E80, /* Yezidi                                              */
+  0x10F00, /* Old Sogdian                                         */
+  0x10F30, /* Sogdian                                             */
+  0x10FB0, /* Chorasmian                                          */ /* 0xD0 */
+  0x10FE0, /* Elymaic                                             */
+  0x11000, /* Brahmi                                              */
+  0x11080, /* Kaithi                                              */
+  0x110D0, /* Sora Sompeng                                        */
+  0x11100, /* Chakma                                              */
+  0x11150, /* Mahajani                                            */
+  0x11180, /* Sharada                                             */
+  0x111E0, /* Sinhala Archaic Numbers                             */
+  0x11200, /* Khojki                                              */
+  0x11280, /* Multani                                             */
+  0x112B0, /* Khudawadi                                           */
+  0x11300, /* Grantha                                             */
+  0x11400, /* Newa                                                */
+  0x11480, /* Tirhuta                                             */
+  0x11580, /* Siddham                                             */
+  0x11600, /* Modi                                                */ /* 0xE0 */
+  0x11660, /* Mongolian Supplement                                */
+  0x11680, /* Takri                                               */
+  0x11700, /* Ahom                                                */
+  0x11800, /* Dogra                                               */
+  0x118A0, /* Warang Citi                                         */
+  0x11900, /* Dives Akuru                                         */
+  0x119A0, /* Nandinagari                                         */
+  0x11A00, /* Zanabazar Square                                    */
+  0x11A50, /* Soyombo                                             */
+  0x11AC0, /* Pau Cin Hau                                         */
+  0x11C00, /* Bhaiksuki                                           */
+  0x11C70, /* Marchen                                             */
+  0x11D00, /* Masaram Gondi                                       */
+  0x11D60, /* Gunjala Gondi                                       */
+  0x11EE0, /* Makasar                                             */
+  0x11FB0, /* Lisu Supplement                                     */ /* 0xF0 */
+  0x11FC0, /* Tamil Supplement                                    */
+  0x12000, /* Cuneiform                                           */
+  0x12400, /* Cuneiform Numbers and Punctuation                   */
+  0x12480, /* Early Dynastic Cuneiform                            */
+  0x13000, /* Egyptian Hieroglyphs                                */
+  0x13430, /* Egyptian Hieroglyph Format Controls                 */
+  0x14400, /* Anatolian Hieroglyphs                               */
+  0x16800, /* Bamum Supplement                                    */
+  0x16A40, /* Mro                                                 */
+  0x16AD0, /* Bassa Vah                                           */
+  0x16B00, /* Pahawh Hmong                                        */
+  0x16E40, /* Medefaidrin                                         */
+  0x16F00, /* Miao                                                */
+  0x16FE0, /* Ideographic Symbols and Punctuation                 */
+  0x17000, /* Tangut                                              */
+  0x18800, /* Tangut Components                                   */ /* 0x100 */
+  0x18B00, /* Khitan Small Script                                 */
+  0x18D00, /* Tangut Supplement                                   */
+  0x1B000, /* Kana Supplement                                     */
+  0x1B100, /* Kana Extended-A                                     */
+  0x1B130, /* Small Kana Extension                                */
+  0x1B170, /* Nushu                                               */
+  0x1BC00, /* Duployan                                            */
+  0x1BCA0, /* Shorthand Format Controls                           */
+  0x1D000, /* Byzantine Musical Symbols                           */
+  0x1D100, /* Musical Symbols                                     */
+  0x1D200, /* Ancient Greek Musical Notation                      */
+  0x1D2E0, /* Mayan Numerals                                      */
+  0x1D300, /* Tai Xuan Jing Symbols                               */
+  0x1D360, /* Counting Rod Numerals                               */
+  0x1D400, /* Mathematical Alphanumeric Symbols                   */
+  0x1D800, /* Sutton SignWriting                                  */ /* 0x110 */
+  0x1E000, /* Glagolitic Supplement                               */
+  0x1E100, /* Nyiakeng Puachue Hmong                              */
+  0x1E2C0, /* Wancho                                              */
+  0x1E800, /* Mende Kikakui                                       */
+  0x1E900, /* Adlam                                               */
+  0x1EC70, /* Indic Siyaq Numbers                                 */
+  0x1ED00, /* Ottoman Siyaq Numbers                               */
+  0x1EE00, /* Arabic Mathematical Alphabetic Symbols              */
+  0x1F000, /* Mahjong Tiles                                       */
+  0x1F030, /* Domino Tiles                                        */
+  0x1F0A0, /* Playing Cards                                       */
+  0x1F100, /* Enclosed Alphanumeric Supplement                    */
+  0x1F200, /* Enclosed Ideographic Supplement                     */
+  0x1F300, /* Miscellaneous Symbols and Pictographs               */
+  0x1F600, /* Emoticons                                           */
+  0x1F650, /* Ornamental Dingbats                                 */ /* 0x120 */
+  0x1F680, /* Transport and Map Symbols                           */
+  0x1F700, /* Alchemical Symbols                                  */
+  0x1F780, /* Geometric Shapes Extended                           */
+  0x1F800, /* Supplemental Arrows-C                               */
+  0x1F900, /* Supplemental Symbols and Pictographs                */
+  0x1FA00, /* Chess Symbols                                       */
+  0x1FA70, /* Symbols and Pictographs Extended-A                  */
+  0x1FB00, /* Symbols for Legacy Computing                        */
+  0x20000, /* CJK Unified Ideographs Extension B                  */
+  0x2A700, /* CJK Unified Ideographs Extension C                  */
+  0x2B740, /* CJK Unified Ideographs Extension D                  */
+  0x2B820, /* CJK Unified Ideographs Extension E                  */
+  0x2CEB0, /* CJK Unified Ideographs Extension F                  */
+  0x2F800, /* CJK Compatibility Ideographs Supplement             */
+  0x30000, /* CJK Unified Ideographs Extension G                  */
+  0x31350, /* Reserved                                            */ /* 0x130 */
+  0x40000, /* Reserved                                            */
+  0x50000, /* Reserved                                            */
+  0x60000, /* Reserved                                            */
+  0x70000, /* Reserved                                            */
+  0x80000, /* Reserved                                            */
+  0x90000, /* Reserved                                            */
+  0xA0000, /* Reserved                                            */
+  0xB0000, /* Reserved                                            */
+  0xC0000, /* Reserved                                            */
+  0xD0000, /* Reserved                                            */
+  0xE0000, /* Tags                                                */
+  0xE0100, /* Variation Selectors Supplement                      */
+  0xF0000, /* Supplementary Private Use Area-A                    */
+  0x100000, /* Supplementary Private Use Area-B                    */
 /* Value over 0x10FFFF is illegal under Unicode, They are for some special use.  *** experimental ***  */
   0x110000, /* Reserved                                          */
   0x120000, /* Reserved                                          */
   0x130000, /* Reserved                                          */
-  0x140000, /* Reserved                                          */
+  0x140000, /* Reserved                                          */ /* 0x140 */
   0x150000, /* Reserved                                          */
   0x160000, /* Reserved                                          */
   0x170000, /* Reserved                                          */
   0x180000, /* Reserved                                          */
   0x190000, /* Reserved                                          */
-  0x1A0000, /* Reserved                                          */ /* 0x140 */
+  0x1A0000, /* Reserved                                          */
   0x1B0000, /* Reserved                                          */
   0x1C0000, /* Reserved                                          */
   0x1D0000, /* Reserved                                          */
@@ -2020,7 +2030,7 @@ static long ucs_range[] =
   0x1F0000, /* Reserved                                          */
   0x200000, /* Reserved                                          */
   0x210000, /* Reserved                                          */
-  0x220000, /* Reserved                                          */
+  0x220000, /* Reserved                                          */ /* 0x150 */
   max_cjk_val
 };
 
@@ -3854,11 +3864,11 @@ static void do_initex (void)
     // { kcat_code(0xA1) = other_kchar; Halfwidth and Fullwidth Forms }
 
     // { Kana Supplement .. Small Kana Extension }
-    for (k = 0xFD; k <= 0xFF; k++)
+    for (k = 0x103; k <= 0x105; k++)
       kcat_code(0xF1) = kana;
  
     // { CJK Unified Ideographs Extension B .. CJK Compatibility Ideographs Supplement }
-    for (k = 0x122; k <= 0x127; k++)
+    for (k = 0x129; k <= 0x12F; k++)
       kcat_code(k) = kanji;
 
     kcat_code(0x1FD) = not_cjk; // { Latin-1 Letters }
@@ -3910,7 +3920,12 @@ static void do_initex (void)
     puts("initex cs_count = 0 ");
 
   eq_type(frozen_dont_expand) = dont_expand;
+  prim_used = prim_size; // {nothing is used}
   text(frozen_dont_expand) = 499;  /* "notexpanded:" */
+  eq_type(frozen_primitive) = ignore_spaces;
+  equiv(frozen_primitive) = 1;
+  eq_level(frozen_primitive) = level_one;
+  text(frozen_primitive) = make_str_string("pdfprimitive");
 
   font_ptr                    = null_font;
   fmem_ptr                    = 7;
@@ -4106,6 +4121,12 @@ static void initialize (void)
     xeq_level[k] = level_one;
 
   no_new_control_sequence = true;
+  prim_next(0) = 0;
+  prim_text(0) = 0;
+
+  for (k = 1; k <= prim_size; k++)
+    prim[k] = prim[0];
+
   next(hash_base) = 0;
   text(hash_base) = 0;
 
@@ -4460,6 +4481,9 @@ static boolean load_fmt_file (void)
     return -1;
 
   undump_int(cs_count);
+
+  for (p = 0; p <= prim_size; p++)
+    undump_hh(prim[p]);
 
   // Undump the font information
   {
@@ -4965,6 +4989,7 @@ start_of_TEX:
         primitive("ifdefined", if_test, if_def_code);
         primitive("ifcsname", if_test, if_cs_code);
         primitive("iffontchar", if_test, if_font_char_code);
+        primitive("ifincsname", if_test, if_in_csname_code);
         primitive("protected", prefix, 8);
         primitive("numexpr", last_item, eTeX_expr - int_val + int_val);
         primitive("dimexpr", last_item, eTeX_expr - int_val + dimen_val);
@@ -5245,13 +5270,17 @@ static void fix_date_and_time (void)
 /* sec 0264 */
 static void primitive_ (str_number s, quarterword c, halfword o)
 { 
-  pool_pointer k;
+  pool_pointer k; // {index into |str_pool|}
+  integer prim_val; // {needed to fill |prim_eqtb|}
   int j;
   /* small_number l; */
   int l;
 
   if (s < 256)
+  {
     cur_val = s + single_base;
+    prim_val = prim_lookup(s);
+  }
   else
   {
     k = str_start[s];
@@ -5274,11 +5303,15 @@ static void primitive_ (str_number s, quarterword c, halfword o)
     cur_val = id_lookup(first, l);
     flush_string();
     text(cur_val) = s;
+    prim_val = prim_lookup(s);
   }
 
   eq_level(cur_val) = level_one;
   eq_type(cur_val) = c;
   equiv(cur_val) = o;
+  prim_eq_level(prim_val) = level_one;
+  prim_eq_type(prim_val) = c;
+  prim_equiv(prim_val) = o;
 }
 /* sec 0944 */
 static trie_op_code new_trie_op (small_number d, small_number n, trie_op_code v)
@@ -6097,6 +6130,9 @@ done2:
   print_int(cs_count);
   prints(" multiletter control sequences");
 
+  for (p = 0; p <= prim_size; p++)
+    dump_hh(prim[p]);
+
   // Dump the font information
   dump_int(fmem_ptr);
 
@@ -6385,6 +6421,7 @@ static void init_prim (void)
   primitive("noalign", no_align, 0);
   primitive("noboundary", no_boundary, 0);
   primitive("noexpand", no_expand, 0);
+  primitive("pdfprimitive", no_expand, 1);
   primitive("nonscript", non_script, 0);
   primitive("omit", omit, 0);
   primitive("parshape", set_shape, par_shape_loc);
@@ -6430,6 +6467,7 @@ static void init_prim (void)
   primitive("badness", last_item, badness_code);
   primitive("shellescape", last_item, shell_escape_code);
   primitive("pdfshellescape", last_item, shell_escape_code);
+  primitive("ifpdfprimitive", if_test, if_pdfprimitive_code);
   primitive("ptexversion", last_item, ptex_version_code);
   primitive("uptexversion", last_item, uptex_version_code);
   primitive("epTeXversion", last_item, eptex_version_code);
@@ -7028,6 +7066,90 @@ void print_int (integer n)
   print_the_digs(k);
 }
 
+static pointer prim_lookup(str_number s) //{search the primitives table}
+{
+ integer h; // {hash code}
+ pointer p; // {index in |hash| array}
+ pointer k; // {index in string pool}
+ integer j, l;
+
+  if (s <= biggest_char)
+  {
+    if (s < 0)
+    {
+      p = undefined_primitive;
+      goto found;
+    }
+    else
+      p = (s % prim_prime) + prim_base; // {we start searching here}
+  }
+  else
+  {
+    j = str_start[s];
+
+    if (s == str_ptr)
+      l = cur_length;
+    else
+      l = length(s);
+
+    // @<Compute the primitive code |h|@>;
+    h = str_pool[j];
+
+    for (k = j + 1; k <= j + l - 1; k++)
+    {
+      h = h + h + str_pool[k];
+
+      while (h >= prim_prime)
+        h = h - prim_prime;
+    }
+
+    p = h + prim_base; //{we start searching here; note that |0<=h<prim_prime|}
+  }
+
+  while (true)
+  {
+    if (prim_text(p) > 1 + biggest_char) // { |p| points a multi-letter primitive }
+    {
+      if (length(prim_text(p) - 1) == l)
+        if (str_eq_str(prim_text(p) - 1, s))
+          goto found;
+    }
+    else if (prim_text(p) == 1 + s)
+      goto found; // { |p| points a single-letter primitive }
+
+    if (prim_next(p) == 0)
+    {
+      if (no_new_control_sequence)
+        p = undefined_primitive;
+      else //@<Insert a new primitive after |p|, then make
+        //|p| point to it@>;
+      {
+        if (prim_text(p) > 0)
+        {
+          do {
+            if (prim_is_full)
+              overflow("primitive size", prim_size);
+
+            decr(prim_used);
+          } while (!(prim_text(prim_used) == 0)); // {search for an empty location in |prim|}
+
+          prim_next(p) = prim_used;
+          p = prim_used;
+        }
+
+        prim_text(p) = s + 1;
+      }
+
+      goto found;
+    }
+
+    p = prim_next(p);
+  }
+
+found:
+  return p;
+}
+
 // prints a purported control sequence
 static void print_cs (integer p)
 {
@@ -7064,7 +7186,11 @@ static void print_cs (integer p)
     print_esc("NONEXISTENT.");
   else
   {
-    l = text(p);
+    if ((p >= prim_eqtb_base) && (p < frozen_null_font))
+      l = prim_text(p - prim_eqtb_base) - 1;
+    else
+      l = text(p);
+
     sprint_esc(l);
     j = str_start[l];
     l = str_start[l + 1];
@@ -7099,6 +7225,8 @@ static void sprint_cs (pointer p)
       print_esc("endcsname");
     }
   }
+  else if ((p >= prim_eqtb_base) && (p < frozen_null_font))
+    sprint_esc(prim_text(p - prim_eqtb_base) - 1);
   else
     sprint_esc(text(p));
 }
@@ -11445,7 +11573,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case ignore_spaces:
-      print_esc("ignorespaces");
+      if (chr_code == 0)
+        print_esc("ignorespaces");
+      else
+        print_esc("pdfprimitive");
       break;
 
     case insert:
@@ -11494,7 +11625,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case no_expand:
-      print_esc("noexpand");
+      if (chr_code == 0)
+        print_esc("noexpand");
+      else
+        print_esc("pdfprimitive");
       break;
 
     case non_script:
@@ -12093,6 +12227,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
             print_esc("ifmbox");
             break;
 
+          case if_pdfprimitive_code:
+            print_esc("ifpdfprimitive");
+            break;
+
           case if_jfont_code:
             print_esc("ifjfont");
             break;
@@ -12111,6 +12249,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
           case if_font_char_code:
             print_esc("iffontchar");
+            break;
+
+          case if_in_csname_code:
+            print_esc("ifincsname");
             break;
 
           default:
@@ -14501,6 +14643,7 @@ static void insert_relax (void)
 static void expand (void)
 {
   halfword t; // {token that is being ``expanded after''}
+  boolean b; // {keep track of nested csnames}
   pointer p, q, r;  // {for list manipulation}
   integer j;  // {index into |buffer|}
   integer cv_backup;  // {to save the global quantity |cur_val|}
@@ -14590,6 +14733,7 @@ reswitch:
         break;
 
       case no_expand:
+        if (cur_chr == 0)
         {
           save_scanner_status = scanner_status;
           scanner_status = normal;
@@ -14607,12 +14751,49 @@ reswitch:
             loc = p;
           }
         }
+        else
+        {
+          save_scanner_status = scanner_status;
+          scanner_status = normal;
+          get_token();
+          scanner_status = save_scanner_status;
+
+          if (cur_cs < hash_base)
+            cur_cs = prim_lookup(cur_cs - single_base);
+          else
+            cur_cs = prim_lookup(text(cur_cs));
+
+          if (cur_cs != undefined_primitive)
+          {
+            t = prim_eq_type(cur_cs);
+
+            if (t > max_command)
+            {
+              cur_cmd = t;
+              cur_chr = prim_equiv(cur_cs);
+              cur_tok = (cur_cmd * 0400) + cur_chr;
+              cur_cs  = 0;
+              goto reswitch;
+            }
+            else
+            {
+              back_input(); // { now |loc| and |start| point to a one-item list }
+              p = get_avail();
+              info(p) = cs_token_flag + frozen_primitive;
+              link(p) = loc;
+              loc = p;
+              start = p;
+            }
+          }
+        }
         break;
 
       case cs_name:
         {
           r = get_avail();
           p = r;
+          b = is_in_csname;
+          is_in_csname = true;
 
           do {
             get_x_token();
@@ -14631,10 +14812,11 @@ reswitch:
             back_error();
           }
 
+          is_in_csname = b;
           j = first;
           p = link(r);
 
-          while (p != 0)
+          while (p != null)
           {
             if (j >= max_buf_stack)
             {
@@ -14895,10 +15077,12 @@ static boolean scan_keyword (const char * s)
   pointer p;  // {tail of the backup list}
   pointer q;  // {new node being added to the token list via |store_new_token|}
   const char * k; // {index into |str_pool|}
+  pointer save_cur_cs; // {to save |cur_cs|}
 
   p = backup_head;
-  link(p) = 0;
+  link(p) = null;
   k = s;
+  save_cur_cs = cur_cs;
 
   while (*k)
   {
@@ -14916,6 +15100,7 @@ static boolean scan_keyword (const char * s)
       if (p != backup_head)
         back_list(link(backup_head));
 
+      cur_cs = save_cur_cs;
       return false;
     }
   }
@@ -15138,6 +15323,7 @@ static void scan_something_internal (small_number level, boolean negative)
   integer p;
   pointer q, r;
 
+restart:
   m = cur_chr;
 
   switch (cur_cmd)
@@ -15897,6 +16083,35 @@ static void scan_something_internal (small_number level, boolean negative)
       }
       break;
 
+    case ignore_spaces: // {trap unexpandable primitives}
+      if (cur_chr == 1)
+      {
+        get_token();
+
+        if (cur_cs < hash_base)
+          cur_cs = prim_lookup(cur_cs - single_base);
+        else
+          cur_cs = prim_lookup(text(cur_cs));
+
+        if (cur_cs != undefined_primitive)
+        {
+          cur_cmd = prim_eq_type(cur_cs);
+          cur_chr = prim_equiv(cur_cs);
+          cur_cs = prim_eqtb_base + cur_cs;
+          cur_tok = cs_token_flag + cur_cs;
+        }
+        else
+        {
+          cur_cmd = relax;
+          cur_chr = 0;
+          cur_tok = cs_token_flag + frozen_relax;
+          cur_cs = frozen_relax;
+        }
+
+        goto restart;
+      }
+      break;
+
     default:
       {
         print_err("You can't use `");
@@ -16584,6 +16799,7 @@ void scan_int (void)
     }
   } while (!(cur_tok != other_token + '+'));
 
+restart:
   if (cur_tok == alpha_token)
   {
     get_token();
@@ -16635,6 +16851,32 @@ void scan_int (void)
     }
 
     skip_mode = true;
+  }
+  else if (cur_tok == cs_token_flag + frozen_primitive)
+  {
+    get_token();
+
+    if (cur_cs < hash_base)
+      cur_cs = prim_lookup(cur_cs - single_base);
+    else
+      cur_cs = prim_lookup(text(cur_cs));
+
+    if (cur_cs != undefined_primitive)
+    {
+      cur_cmd = prim_eq_type(cur_cs);
+      cur_chr = prim_equiv(cur_cs);
+      cur_cs = prim_eqtb_base + cur_cs;
+      cur_tok = cs_token_flag + cur_cs;
+    }
+    else
+    {
+      cur_cmd = relax;
+      cur_chr = 0;
+      cur_tok = cs_token_flag + frozen_relax;
+      cur_cs = frozen_relax;
+    }
+
+    goto restart;
   }
   else if ((cur_cmd >= min_internal) && (cur_cmd <= max_internal))
     scan_something_internal(int_val, false);
@@ -18303,7 +18545,8 @@ static void change_if_limit (small_number l, pointer p)
 
 void conditional (void)
 {
-  boolean b;  // {is the condition true?}
+  boolean b; // {is the condition true?}
+  boolean e; // {keep track of nested csnames}
   char r; // {relation to be evaluated}
   integer m, n; // {to be tested against the second operand}
   pointer p, q; // {for traversing token lists in \.{\\ifx} tests}
@@ -18498,6 +18741,25 @@ void conditional (void)
       }
       break;
 
+    case if_pdfprimitive_code:
+      {
+        save_scanner_status = scanner_status;
+        scanner_status = normal;
+        get_next();
+        scanner_status = save_scanner_status;
+
+        if (cur_cs < hash_base)
+          m = prim_lookup(cur_cs - single_base);
+        else
+          m = prim_lookup(text(cur_cs));
+
+        b = ((cur_cmd != undefined_cs) &&
+             (m != undefined_primitive) &&
+             (cur_cmd == prim_eq_type(m)) &&
+             (cur_chr == prim_equiv(m)));
+      }
+      break;
+
     case if_jfont_code:
     case if_tfont_code:
       {
@@ -18584,6 +18846,8 @@ void conditional (void)
       {
         n = get_avail();
         p = n;
+        e = is_in_csname;
+        is_in_csname = true;
 
         do {
           get_x_token();
@@ -18664,7 +18928,12 @@ void conditional (void)
 
         flush_list(n);
         b = (eq_type(cur_cs) != undefined_cs);
+        is_in_csname = e;
       }
+      break;
+
+    case if_in_csname_code:
+      b = is_in_csname;
       break;
 
     case if_font_char_code:
@@ -18800,7 +19069,7 @@ static void begin_name (void)
 
 static boolean more_name (ASCII_code c)
 {
-  if (!quoted_file_name && c == ' ')
+  if (stop_at_space && !quoted_file_name && c == ' ')
     return false;
   else if (quoted_file_name && c == '"')
   {
@@ -18965,61 +19234,124 @@ str_number w_make_name_string (word_file f)
   return make_name_string();
 }
 
+static void scan_file_name_braced(void);
+
 static void scan_file_name (void)
 {
-  name_in_progress = true;
-  begin_name();
+  pointer save_warning_index;
+
+  save_warning_index = warning_index;
+  warning_index = cur_cs; // {store |cur_cs| here to remember until later}
 
   do {
-    get_x_token(); 
-  } while (!(cur_cmd != spacer));
+    get_x_token();
+  } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
 
-  quoted_file_name = false;
+  back_input(); // {return the last token to be read by either code path}
 
-  if (aptex_env.flag_allow_quoted)
+  if (cur_cmd == left_brace)
+    scan_file_name_braced();
+  else
   {
-    if (cur_chr == '"')
+    name_in_progress = true;
+    begin_name();
+
+    do {
+      get_x_token(); 
+    } while (!(cur_cmd != spacer));
+
+    quoted_file_name = false;
+
+    if (aptex_env.flag_allow_quoted)
     {
-      quoted_file_name = true;
+      if (cur_chr == '"')
+      {
+        quoted_file_name = true;
+        get_x_token();
+      }
+    }
+
+    skip_mode = false;
+
+    while (true)
+    {
+      if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+      {
+        str_room(4);
+        cur_chr = toBUFF(cur_chr);
+
+        if (BYTE1(cur_chr) != 0)
+          append_char(BYTE1(cur_chr));
+
+        if (BYTE2(cur_chr) != 0)
+          append_char(BYTE2(cur_chr));
+
+        if (BYTE3(cur_chr) != 0)
+          append_char(BYTE3(cur_chr));
+
+        append_char(BYTE4(cur_chr));
+      }
+      else if ((cur_cmd > other_char) || (cur_chr > 255)) 
+      {
+        back_input();
+        goto done; 
+      }
+      else if (((cur_chr == ' ') && (state != token_list) && (loc > limit)) || !more_name(cur_chr))
+        goto done;
+
       get_x_token();
     }
-  }
-
-  skip_mode = false;
-
-  while (true)
-  {
-    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
-    {
-      str_room(4);
-      cur_chr = toBUFF(cur_chr);
-
-      if (BYTE1(cur_chr) != 0)
-        append_char(BYTE1(cur_chr));
-
-      if (BYTE2(cur_chr) != 0)
-        append_char(BYTE2(cur_chr));
-
-      if (BYTE3(cur_chr) != 0)
-        append_char(BYTE3(cur_chr));
-
-      append_char(BYTE4(cur_chr));
-    }
-    else if ((cur_cmd > other_char) || (cur_chr > 255)) 
-    {
-      back_input();
-      goto done; 
-    }
-    else if (((cur_chr == ' ') && (state != token_list) && (loc > limit)) || !more_name(cur_chr))
-      goto done;
-
-    get_x_token();
   }
 
 done:
   end_name();
   name_in_progress = false;
   skip_mode = true;
+  warning_index = save_warning_index; // {restore |warning_index|}
+}
+
+static void scan_file_name_braced(void)
+{
+  small_number save_scanner_status; // {|scanner_status| upon entry}
+  pointer save_def_ref; // {|def_ref| upon entry, important if inside `\.{\\message}}
+  pointer save_cur_cs;
+  str_number s; // {temp string}
+  pointer p; // {temp pointer}
+  integer i; // {loop tally}
+  boolean save_stop_at_space; // {this should be in tex.ch}
+  boolean dummy; //{Initialising}
+
+  save_scanner_status = scanner_status; // {|scan_toks| sets |scanner_status| to |absorbing|}
+  save_def_ref = def_ref; // {|scan_toks| uses |def_ref| to point to the token list just read}
+  save_cur_cs = cur_cs; // {we set |cur_cs| back a few tokens to use in runaway errors}
+  //  {Scanning a token list}
+  cur_cs = warning_index; // {for possible runaway error}
+  // {mimick |call_func| from pdfTeX}
+
+  if (scan_toks(false, true) != 0)
+    do_nothing(); // {actually do the scanning}
+ 
+  // {s := tokens_to_string(def_ref);}
+  old_setting = selector;
+  selector = new_string;
+  show_token_list(link(def_ref), null, pool_size - pool_ptr);
+  selector = old_setting;
+  s = make_string();
+  // {turns the token list read in a string to input}
+  //  {Restoring some variables}
+  delete_token_ref(def_ref); // {remove the token list from memory}
+  def_ref = save_def_ref; // {and restore |def_ref|}
+  cur_cs = save_cur_cs; // {restore |cur_cs|}
+  scanner_status = save_scanner_status; // {restore |scanner_status|}
+  //  {Passing the read string to the input machinery}
+  save_stop_at_space = stop_at_space; // {save |stop_at_space|}
+  stop_at_space = false; // {set |stop_at_space| to false to allow spaces in file names}
+  begin_name();
+
+  for (i = str_start[s]; i <= str_start[s + 1] - 1; i++)
+    dummy = more_name(str_pool[i]); // {add each read character to the current file name}
+
+  stop_at_space = save_stop_at_space; // {restore |stop_at_space|}
 }
 
 void pack_job_name_(str_number s)
@@ -34576,12 +34908,33 @@ reswitch:
       break;
 
     case any_mode(ignore_spaces):
+      if (cur_chr == 0)
       {
         do {
           get_x_token();
         } while (!(cur_cmd != spacer));
 
         goto reswitch;
+      }
+      else
+      {
+        t = scanner_status;
+        scanner_status = normal;
+        get_next();
+        scanner_status = t;
+
+        if (cur_cs < hash_base)
+          cur_cs = prim_lookup(cur_cs - single_base);
+        else
+          cur_cs = prim_lookup(text(cur_cs));
+
+        if (cur_cs != undefined_primitive)
+        {
+          cur_cmd = prim_eq_type(cur_cs);
+          cur_chr = prim_equiv(cur_cs);
+          cur_tok = cs_token_flag + prim_eqtb_base + cur_cs;
+          goto reswitch;
+        }
       }
       break;
 

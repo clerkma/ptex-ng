@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -388,6 +388,9 @@ EXTERN two_halves zzzae[undefined_control_sequence - hash_base];
 EXTERN pointer hash_used;                     // {allocation pointer for |hash|}
 EXTERN boolean no_new_control_sequence;       // {are new identifiers legal?}
 EXTERN integer cs_count;                      // {total number of known identifiers}
+// #
+EXTERN two_halves prim[prim_size + 1]; // {the primitives table}
+EXTERN pointer prim_used; // {allocation pointer for |prim|}
 
 def_array(save_stack, memory_word, save_size + 1);
 
@@ -783,6 +786,8 @@ EXTERN integer microseconds;
 
 // for SyncTeX
 EXTERN integer synctex_option;
+EXTERN boolean stop_at_space;
+EXTERN boolean is_in_csname;
 
 EXTERN struct {
   // enviroment in UTF-8

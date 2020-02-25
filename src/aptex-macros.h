@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,8 +26,8 @@
 #define pTeX_version_string "-p3.8.3"
 
 #define upTeX_version 1
-#define upTeX_revision ".25"
-#define upTeX_version_string "-u1.25"
+#define upTeX_revision ".26"
+#define upTeX_version_string "-u1.26"
 
 #define eTeX_version        2         // { \.{\\eTeXversion} }
 #define eTeX_revision       ".6"      // { \.{\\eTeXrevision} }
@@ -553,7 +553,10 @@ enum
 #define frozen_relax                  (frozen_control_sequence + 7)     // {permanent `\.{\\relax}'}
 #define end_write                     (frozen_control_sequence + 8)     // {permanent `\.{\\endwrite}'}
 #define frozen_dont_expand            (frozen_control_sequence + 9)     // {permanent `\.{\\notexpanded:}'}
-#define frozen_null_font              (frozen_control_sequence + 10)    // {permanent `\.{\\nullfont}'}
+#define frozen_primitive              (frozen_control_sequence + 10)    // {permanent `\.{\\pdfprimitive}'}
+#define prim_eqtb_base                (frozen_primitive + 1)
+#define prim_size                     2100                              // {maximum number of primitives }
+#define frozen_null_font              (prim_eqtb_base + prim_size + 1)  // {permanent `\.{\\nullfont}'}
 #define font_id_base                  (frozen_null_font - font_base)    // {begins table of 257 permanent font identifiers}
 #define undefined_control_sequence    (frozen_null_font + font_max + 2) // {dummy location}
 #define glue_base                     (undefined_control_sequence + 1)  // {beginning of region 3}
@@ -918,6 +921,20 @@ enum
 #define text(a)         hash[a].rh  // {string number for control sequence name}
 #define hash_is_full    (hash_used == hash_base)  // {test if all positions are occupied}
 #define font_id_text(a) text(font_id_base + a)    // {a frozen font identifier's name}
+// #
+#define prim_prime 1777 // {about 85\pct! of |primitive_size|}
+#define prim_base 1
+#define prim_next(a) prim[a].lh // {link for coalesced lists}
+#define prim_text(a) prim[a].rh // {string number for control sequence name, plus one}
+#define prim_is_full (prim_used == prim_base) // {test if all positions are occupied}
+#define prim_eq_level_field(a) a.hh.b1
+#define prim_eq_type_field(a) a.hh.b0
+#define prim_equiv_field(a) a.hh.rh
+#define prim_eq_level(a) prim_eq_level_field(eqtb[prim_eqtb_base+a]) // {level of definition}
+#define prim_eq_type(a) prim_eq_type_field(eqtb[prim_eqtb_base+a]) // {command code for equivalent}
+#define prim_equiv(a) prim_equiv_field(eqtb[prim_eqtb_base+a]) // {equivalent value}
+#define undefined_primitive 0
+#define biggest_char 255 // { 65535 in XeTeX }
 /* sec 0268 */
 #define save_type(a)      save_stack[a].hh.b0 // {classifies a |save_stack| entry}
 #define save_level(a)     save_stack[a].hh.b1 // {saved level for regions 5 and 6, or group code}
@@ -1245,16 +1262,18 @@ do {                          \
 #define if_cs_code        18
 #define if_font_char_code 19
 //#
-#define if_tdir_code      (if_case_code + 4)
-#define if_ydir_code      (if_tdir_code + 1)
-#define if_ddir_code      (if_ydir_code + 1)
-#define if_mdir_code      (if_ddir_code + 1)
-#define if_tbox_code      (if_mdir_code + 1)
-#define if_ybox_code      (if_tbox_code + 1)
-#define if_dbox_code      (if_ybox_code + 1)
-#define if_mbox_code      (if_dbox_code + 1)
-#define if_jfont_code     (if_mbox_code + 1)
-#define if_tfont_code     (if_jfont_code + 1)
+#define if_in_csname_code     (if_case_code + 4)
+#define if_pdfprimitive_code  (if_in_csname_code + 1)
+#define if_tdir_code          (if_pdfprimitive_code + 1)
+#define if_ydir_code          (if_tdir_code + 1)
+#define if_ddir_code          (if_ydir_code + 1)
+#define if_mdir_code          (if_ddir_code + 1)
+#define if_tbox_code          (if_mdir_code + 1)
+#define if_ybox_code          (if_tbox_code + 1)
+#define if_dbox_code          (if_ybox_code + 1)
+#define if_mbox_code          (if_dbox_code + 1)
+#define if_jfont_code         (if_mbox_code + 1)
+#define if_tfont_code         (if_jfont_code + 1)
 /* sec 0489 */
 #define if_node_size     2
 #define if_line_field(a) mem[(a) + 1].cint
