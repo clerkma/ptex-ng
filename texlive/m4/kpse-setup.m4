@@ -1,4 +1,4 @@
-# $Id: kpse-setup.m4 53385 2020-01-13 00:02:12Z karl $
+# $Id: kpse-setup.m4 54256 2020-03-12 20:11:04Z karl $
 # Private macros for the TeX Live (TL) tree.
 # Copyright 2017-2018 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
@@ -88,7 +88,7 @@ AC_FOREACH([Kpse_Pkg], [luajittex luajithbtex mfluajit mfluajit-nowin], [dnl
 AS_CASE([$enable_[]AS_TR_SH([Kpse_Pkg])],
         [yes | no], [:],
           [AS_CASE([$host],
-                   [alpha* | sparc* | x86_64-*-solaris* | powerpc-*-darwin* ],
+                   [alpha* | sparc* | x86_64-*-solaris* | powerpc-* ],
                      [AC_MSG_NOTICE([$host -> `--disable-]Kpse_Pkg['])
                       ac_configure_args="$ac_configure_args '--disable-]Kpse_Pkg['"])])
 ])
