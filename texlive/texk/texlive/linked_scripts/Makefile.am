@@ -1,4 +1,4 @@
-## $Id: Makefile.am 53554 2020-01-26 23:58:37Z karl $
+## $Id: Makefile.am 54316 2020-03-15 01:37:49Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2019 Karl Berry <tex-live@tug.org>
@@ -65,7 +65,6 @@ texmf_shell_scripts = \
 	listbib/listbib \
 	listings-ext/listings-ext.sh \
 	ltxfileinfo/ltxfileinfo \
-	lua2dox/lua2dox_filter \
 	pdfbook2/pdfbook2 \
 	pdfjam/pdfjam \
 	pdftex-quiet/pdftex-quiet \
