@@ -1,4 +1,4 @@
-$Id: README 54342 2020-03-16 01:11:57Z karl $
+$Id: README 54408 2020-03-19 22:09:18Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
@@ -19,7 +19,7 @@ lacheck - maintained here, by us
 m-tx 0.63a - checked 29apr18
   http://ctan.org/pkg/m-tx/
 
-pmx 2.9.4 - checked 07feb20
+pmx 2.9.4 - checked 19mar20
   http://ctan.org/pkg/pmx/
 
 ps2eps 1.68 - checked 10may12
