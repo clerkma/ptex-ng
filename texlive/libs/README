@@ -1,4 +1,4 @@
-$Id: README 53461 2020-01-19 23:36:31Z kakuto $
+$Id: README 54637 2020-04-10 03:54:17Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -15,13 +15,13 @@ cairo 1.16.0 - checked 20oct18
 freetype2 2.10.1 - checked 02jul19
   http://savannah.nongnu.org/download/freetype/
 
-gd 2.2.5 - checked 30aug17
+gd 2.3.0 - checked 10apr20
   https://github.com/libgd/libgd/releases
 
 gmp 6.2.0 - checked 20jan20
   http://ftp.gnu.org/gnu/gmp/
 
-graphite2 1.3.13 - checked 21dec18
+graphite2 1.3.14 - checked 10apr20
   http://sourceforge.net/projects/silgraphite/files/graphite2/
   (requires C++11)
 
