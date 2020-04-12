@@ -83,6 +83,18 @@ common_init(void)
 @z
 
 @x
+@d minus_gt_ast 027 /* `\.{->*}'\,;  corresponds to MIT's {\tentex\char'27} */
+@y
+@d minus_gt_ast 027 /* `\.{->*}'\,;  corresponds to MIT's {\tentex\char'27} */
+
+@<Definitions...@>=
+char section_text[longest_name+1]; /* name being sought for */
+char *section_text_end = section_text+longest_name; /* end of |section_text| */
+char *id_first; /* where the current identifier begins in the buffer */
+char *id_loc; /* just after the current identifier in the buffer */
+@z
+
+@x
 @d buf_size 100 /* for \.{CWEAVE} and \.{CTANGLE} */
 @y
 @d buf_size 1000 /* for \.{CWEAVE} and \.{CTANGLE} */
@@ -854,6 +866,7 @@ overflow(
 @d show_happiness flags['h'] /* should lack of errors be announced? */
 @y
 @d show_happiness flags['h'] /* should lack of errors be announced? */
+@d temporary_output flags['t'] /* should temporary output take precedence? */
 @d make_xrefs flags['x'] /* should cross references be output? */
 @z
 
@@ -874,6 +887,7 @@ const char *use_language=""; /* prefix of \.{cwebmac.tex} in \TEX/ output */
 @x
 show_banner=show_happiness=show_progress=1;
 @y
+temporary_output=1; /* Check temporary output for changes */
 @z
 
 @x
