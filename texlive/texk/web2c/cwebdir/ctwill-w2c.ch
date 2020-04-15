@@ -246,8 +246,6 @@ can also be replaced by a string. For example,
 $$\.{@@\$printf "<stdio.h>" \\zip@@>}$$
 will generate a mini-index entry like `\\{printf}, \.{<stdio.h>}.'.
 
-\vfill\eject
-
 A special ``proofmode'' is provided so that you can check \.{CTWILL}'s
 conclusions about cross-references. Run \.{CTWILL} with the
 flag \.{+P}, and \TeX\ will produce a specially formatted document
@@ -289,13 +287,6 @@ char **av; /* argument values */
 int main (@t\1\1@>
 int ac, /* argument count */
 char **av@t\2\2@>) /* argument values */
-@z
-
-@x
-  argc=ac; argv=av;
-@y
-  extern const char *use_language; /* prefix to \.{cwebmac.tex} in \TEX/ output */
-  argc=ac; argv=av;
 @z
 
 @x
@@ -3151,6 +3142,12 @@ static void set_file_flag(name_pointer);@/
 static void skip_limbo(void);@/
 static void squash(scrap_pointer,short,eight_bits,short,short);@/
 static void update_node(name_pointer p);@/
+
+@* Language setting.  This global variable is defined and set in \.{COMMON} by
+the `\.{+l}' (or `\.{-l}') commandline option.
+
+@<Global var...@>=
+extern const char *use_language; /* prefix to \.{cwebmac.tex} in \TEX/ output */
 
 @* Output file update.  Most \CEE/ projects are controlled by a
 \.{Makefile} that automatically takes care of the temporal dependecies

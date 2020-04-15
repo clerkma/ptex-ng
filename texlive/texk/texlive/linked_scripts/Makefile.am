@@ -1,4 +1,4 @@
-## $Id: Makefile.am 54316 2020-03-15 01:37:49Z karl $
+## $Id: Makefile.am 54732 2020-04-14 14:53:54Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2019 Karl Berry <tex-live@tug.org>
@@ -60,6 +60,7 @@ texmf_shell_scripts = \
 	checklistings/checklistings.sh \
 	ctanbib/ctanbib \
 	dtxgen/dtxgen \
+	git-latexdiff/git-latexdiff \
 	installfont/installfont-tl \
 	latexfileversion/latexfileversion \
 	listbib/listbib \
