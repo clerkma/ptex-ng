@@ -1,4 +1,4 @@
-$Id: README 54637 2020-04-10 03:54:17Z kakuto $
+$Id: README 54824 2020-04-21 18:43:36Z lscarso $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -8,6 +8,9 @@ maintained as patches and use a proxy build system, either
 bypassing or using the original one.
 
 See also comments in ../texk/README.
+
+pplib 2.05.0 - checked 21apr20
+  https://github.com/contextgarden/pplib
 
 cairo 1.16.0 - checked 20oct18
   http://cairographics.org/releases/
@@ -49,7 +52,7 @@ luajit 2.1.0-beta3 - checked 20jun17
 mpfr 4.0.2 - checked 1jan19
   http://ftp.gnu.org/gnu/mpfr/
 
-pixman 0.38.4 - checked 03may19
+pixman 0.40.0 - checked 21apr20
   http://cairographics.org/releases/
 
 poppler 0.68.0 - checked 20aug18

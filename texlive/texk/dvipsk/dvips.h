@@ -1,4 +1,4 @@
-/*   $Id: dvips.h 53427 2020-01-16 22:02:50Z karl $
+/*   $Id: dvips.h 54794 2020-04-19 05:49:02Z takuji $
  *   Copyright 1986-2020 Tomas Rokicki.
  *   This is dvips, a freely redistributable PostScript driver
  *   for dvi files. You may freely use, modify and/or distribute this
@@ -188,8 +188,12 @@ typedef struct tfd {
    struct tfd *nextsize;
    char *scalename;
    chardesctype *chardesc;
-   int iswide;
+   int iswide, kind;
 } fontdesctype;
+
+#define VF_TEX   (1)
+#define VF_OMEGA (2)
+#define VF_PTEX  (3)
 
 /*  A fontmap associates a fontdesc with a font number.
  */

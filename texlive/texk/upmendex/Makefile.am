@@ -1,4 +1,4 @@
-## $Id: Makefile.am 53103 2019-12-12 18:25:29Z karl $
+## $Id: Makefile.am 54953 2020-04-30 23:59:13Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/upmendex/
 ##
 ## Copyright 2015-2019 Karl Berry <tex-live@tug.org>
@@ -22,6 +22,7 @@ upmendex_SOURCES = \
 	ktable.h \
 	main.c \
 	mendex.h \
+	version.h \
 	pageread.c \
 	qsort.c \
 	qsort.h \

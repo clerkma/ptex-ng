@@ -43,17 +43,22 @@
 @d cweave 1
 @y
 |program|. And \.{CTWILL} adds some extra twists.
-
-@d ctangle 0
-@d cweave 1
-@d ctwill 2
 @z
 
 @x
 typedef short boolean;
+@y
+typedef uint8_t eight_bits;
+typedef uint16_t sixteen_bits;
+@z
+
+@x
 boolean program; /* \.{CWEAVE} or \.{CTANGLE}? */
 @y
-int program; /* \.{CWEAVE} or \.{CTANGLE} or \.{CTWILL}? */
+typedef enum {
+  ctangle, cweave, ctwill
+} cweb;
+cweb program; /* \.{CTANGLE} or \.{CWEAVE} or \.{CTWILL}? */
 @z
 
 @x
@@ -74,6 +79,15 @@ common_init(void)
   @<Set locale and bind language catalogs@>@;
   @<Set the default options common to \.{CTANGLE} and \.{CWEAVE}@>@;
   @<Scan arguments and open output files@>@;
+@z
+
+@x
+\.{ctype.h} header file.
+
+@<Include files@>=
+#include <ctype.h>
+@y
+\.{ctype.h} header file, included through the \Kpathsea/ interface.
 @z
 
 @x
@@ -106,6 +120,13 @@ char *id_loc; /* just after the current identifier in the buffer */
 @y
 @d xisspace(c) (isspace((eight_bits)c)&&((eight_bits)c<0200))
 @d xisupper(c) (isupper((eight_bits)c)&&((eight_bits)c<0200))
+@z
+
+@x
+@ @<Include files@>=
+#include <stdio.h>
+@y
+@ Most of the standard \CEE/ interface comes from \Kpathsea/.
 @z
 
 @x
@@ -273,8 +294,6 @@ if ((found_filename=kpse_find_cweb(change_file_name))==NULL || @|
 @x
 typedef unsigned short sixteen_bits;
 @y
-typedef uint8_t eight_bits;
-typedef uint16_t sixteen_bits;
 @z
 
 @x
@@ -320,6 +339,12 @@ The remainder of the \.{@@i} line after the file name is ignored.
         err_print("! Include file name too long"); goto restart;}
 @y
         err_print(_("! Include file name too long")); goto restart;}
+@z
+
+@x
+@<Include...@>=
+#include <stdlib.h> /* declaration of |getenv| and |exit| */
+@y
 @z
 
 @x
@@ -891,6 +916,14 @@ temporary_output=1; /* Check temporary output for changes */
 @z
 
 @x
+file.  It may have an extension, or it may omit the extension to get |".w"| or
+|".web"| added.  The \TEX/ output file name is formed by replacing the \.{CWEB}
+@y
+file.  It may have an extension, or it may omit the extension to get |".w"|
+added.  The \TEX/ output file name is formed by replacing the \.{CWEB}
+@z
+
+@x
 An omitted change file argument means that |"/dev/null"| should be used,
 when no changes are desired.
 @y
@@ -1124,13 +1157,10 @@ extern char* strcpy(); /* copy one string to another */
 extern int strncmp(); /* compare up to $n$ string characters */
 extern char* strncpy(); /* copy up to $n$ string characters */
 @y
-@ For string handling we include the {\mc ANSI C} system header file instead
-of predeclaring the standard system functions |strlen|, |strcmp|, |strcpy|,
-|strncmp|, and |strncpy|.
+@ For string handling we include the {\mc ANSI C} system header file---through
+the \Kpathsea/ interface---instead of predeclaring the standard system
+functions |strlen|, |strcmp|, |strcpy|, |strncmp|, and |strncpy|.
 @^system dependencies@>
-
-@<Include...@>=
-#include <string.h>
 @z
 
 @x
@@ -1148,7 +1178,7 @@ section should have the same number as the original ``\&{82.~Index},'' and
 additional material follows below.
 
 @* Function declarations. Here are declarations---conforming to
-{\mc ANSI~C}---of all functions in this code that appear in |"common.h"|
+{\mc ANSI~C}---of all functions in this code that appear in \.{common.h}
 and thus should agree with \.{CTANGLE} and \.{CWEAVE}.
 
 @<Predecl...@>=
@@ -1162,7 +1192,7 @@ void print_section_name(name_pointer);@/
 void reset_input(void);@/
 void sprint_section_name(char *,name_pointer);@/
 
-@ The following functions are private to |"common.w"|.
+@ The following functions are private to \.{common.w}.
 
 @<Predecl...@>=
 static boolean input_ln(FILE *);@/
@@ -1173,12 +1203,12 @@ static void check_change(void);@/
 static void prime_the_change_buffer(void);@/
 
 @* Standard C library interfaces.  This updated version of \.{CWEB} uses
-standard C types for boolean values, pointers, and objects with fixed sizes.
+standard C types for boolean values, pointers, and objects with fixed sizes
+(already in \Kpathsea/).
 
 @<Include files@>=
 #include <stdbool.h> /* type definition of |bool| */
 #include <stddef.h> /* type definition of |ptrdiff_t| */
-#include <stdint.h> /* type definition of |uint8_t| et al. */
 
 @ The |scan_args| and |cb_show_banner| routines and the |bindtextdomain|
 argument string need a few extra variables.
@@ -1252,7 +1282,7 @@ resulting \.{*.po} files to the maintainers at \.{tex-k@@tug.org}.
 does \\{not} set |HAVE_GETTEXT| at build-time, so \.{i18n} is ``off'' by
 default.  If you want to create \.{CWEB} executables with NLS support, you
 have to recompile the \TeX~Live sources with a positive value for
-|HAVE_GETTEXT| both in \.{"comm-w2c.ch"} and \.{"comm-w2c.h"}.  Also you
+|HAVE_GETTEXT| both in \.{comm-w2c.ch} and \.{comm-w2c.h}.  Also you
 have to ``compile'' the NLS catalogs provided for \.{CWEB} in the source
 tree with \.{msgfmt} and store the resulting \.{.mo} files at an appropriate
 place in the file system.
@@ -1326,7 +1356,7 @@ This allows different flavors of \.{CWEB} to have different search paths.
 kpse_set_program_name(argv[0], "cweb");
 
 @ When the files you expect are not found, the thing to do is to enable
-`kpathsea' runtime debugging by assigning to the |kpathsea_debug| variable a
+\Kpathsea/ runtime debugging by assigning to the |kpathsea_debug| variable a
 small number via the `\.{-d}' option. The meaning of this number is shown
 below. To set more than one debugging option, simply sum the corresponding
 numbers.
@@ -1352,9 +1382,9 @@ cb_usagehelp(program==ctangle ? CTANGLEHELP :
   program==cweave ? CWEAVEHELP : CTWILLHELP, NULL);
 @.--help@>
 
-@ Special variants from \Kpathsea/ for i18n/t10n.
+@ Special variants from Web2c's `\.{lib/usage.c}', adapted for \.{i18n}/\.{t10n}.
 We simply filter the strings through the catalogs (if available).
-
+@s const_string int
 @c
 static void cb_usage (const_string str)
 {

@@ -1,6 +1,22 @@
+2020-04-30  Andreas Scherer  <https://ascherer.github.io>
+
+	* tie-w2c.ch: Fix type format in section 60.
+
+2020-04-27  Andreas Scherer  <https://ascherer.github.io>
+
+	* tie-w2c.ch: Editorial modifications for tie.w.
+
+2020-04-26  Andreas Scherer  <https://ascherer.github.io>
+
+	* tie-w2c.ch: Fix several typos in tie.w.
+
+2020-04-23  Andreas Scherer  <https://ascherer.github.io>
+
+	* tie-w2c.ch: Fix typographic deviations from original tie.
+
 2018-01-18  Karl Berry  <karl@tug.org>
 
-	* tie.w (print, print_ln): printf %s instead of direct string
+	* tie-w2c.w (print, print_ln): printf %s instead of direct string
 	(from Debian).
 
 2014-02-12  Peter Breitenlohner  <peb@mppmu.mpg.de>

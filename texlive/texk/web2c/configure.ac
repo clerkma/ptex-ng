@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 51470 2019-06-26 16:09:52Z karl $
+dnl $Id: configure.ac 54824 2020-04-21 18:43:36Z lscarso $
 dnl Process this file with Autoconf to produce a configure script for Web2c.
 dnl
 dnl   Copyright 2018-2019 Karl Berry <tex-live@tug.org>
@@ -249,6 +249,7 @@ AC_TYPE_SIGNAL
 
 KPSE_KPATHSEA_FLAGS
 KPSE_PTEXENC_FLAGS
+KPSE_PPLIB_FLAGS
 KPSE_ZLIB_FLAGS
 KPSE_LUA53_FLAGS
 KPSE_LUA52_FLAGS

@@ -17,7 +17,9 @@ typedef int boolean;
 typedef char* string;
 @y
 @ Furthermore we include the additional types |boolean| and |string|.
-/* boolean, false, true; string; all from cpascal.h */
+/* |boolean|, |false|, |true|; |string|; all from \.{<kpathsea/simpletypes.h>} */
+@s boolean int
+@s string int
 @z
 
 @x -- we need more input files.
@@ -28,14 +30,79 @@ typedef char* string;
 /* we don't think that anyone needs more than 32 change files,
 @z
 
+@x
+@d print(a)  fprintf(term_out,a) /* `|print|' means write on the terminal */
+@y
+@d print(a)  fprintf(term_out,"%s",a) /* `|print|' means write on the terminal */
+@z
+
+@x
+@d print_ln(v)  {fprintf(term_out,v);term_new_line;}
+@y
+@d print_ln(v)  {fprintf(term_out,"%s",v);term_new_line;}
+@z
+
 @x -- add to global includes.
 #include <stdio.h>
 @y
-#include "cpascal.h"
-#include <stdio.h>
+#include "cpascal.h" /* |decr| and |incr| */
 #include <kpathsea/kpathsea.h>
-/* Also redefine usage to avoid clash with function from lib. */
-#define usage tieusage
+#define usage tieusage /* Also redefine |usage| to avoid clash with function from lib. */
+@z
+
+Section 16: Remove redundant #include directives.
+
+@x l.483
+This should cause no trouble in any \Cl\ program.
+@^system dependencies@>
+
+@<Global |#include|s@>=
+#ifdef __STDC__
+#include <stdlib.h>
+#else
+#include <malloc.h>
+#endif
+@y
+This should cause no trouble in any \Cl\ program.
+The \.{kpathsea} include files handle the definition of |malloc()|,
+too.
+@^system dependencies@>
+@z
+
+Sections 18 and 19: use enum as requested in tie.w
+
+@x l.530
+#define search 0
+#define test 1
+#define reading 2
+#define ignore 3
+typedef int in_file_modes; /* should be |enum(search,test,reading,ignore)| */
+#define unknown 0
+#define master 1
+#define chf 2
+typedef int file_types; /* should be |enum(unknown,master,chf)| */
+@y
+typedef enum {
+    search,
+    test,
+    reading,
+    ignore } in_file_modes;
+typedef enum {
+    unknown,
+    master,
+    chf } file_types;
+@z
+
+@x l.548
+#define normal 0
+#define pre 1
+#define post 2
+typedef int out_md_type; /* should be |enum(normal,pre,post)| */
+@y
+typedef enum {
+    normal,
+    pre,
+    post } out_md_type;
 @z
 
 @x l.617
@@ -124,6 +191,32 @@ static boolean
 e_of_ch_preamble (file_index i)
 @z
 
+@x l.1005
+a line to write and |test_input| ist set to |none|.
+@y
+a line to write and |test_input| is set to |none|.
+@z
+
+Section 48: fix indentation of nested loop.
+
+@x l.1044
+if (prod_chf==chf) {
+  loop @+ {
+    @<Test for normal, |break| when done@>@;
+    @<Test for pre, |break| when done@>@;
+    @<Test for post, |break| when done@>@;
+  }
+} else
+@y
+if (prod_chf==chf)
+  loop @+ {
+    @<Test for normal, |break| when done@>@;
+    @<Test for pre, |break| when done@>@;
+    @<Test for post, |break| when done@>@;
+  }
+else
+@z
+
 @x
 void usage()
 {
@@ -133,6 +226,12 @@ static
 void usage (void)
 {
    print("Usage: tie -m|-c outfile master changefile(s)");
+@z
+
+@x l.1169
+change files.  The names fo the file parameters will be inserted into
+@y
+change files.  The names of the file parameters will be inserted into
 @z
 
 @x
@@ -152,9 +251,19 @@ int main (int argc, string *argv)
   print_ln(copyright); /* include the copyright notice */
 @z
 
+@x l.1256
+Additionaly we report the history to the user, although this may not
+@y
+Additionally we report the history to the user, although this may not
+@z
+
 @x
+@<Print the job |history|@>=
 {string msg;
 @y
+@s const_string int
+
+@<Print the job |history|@>=
 {const_string msg;
 @z
 
