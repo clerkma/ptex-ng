@@ -1,6 +1,6 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -utf-8 -c -O2 -Oy -DPACKAGE=pixman -DPACKAGE_VERSION="" -DPACKAGE_BUGREPORT="" -Ipixman -I../texlive/libs/pixman/pixman-src/pixman
+CFLAGS = -nologo -utf-8 -c -O2 -Oy -DPACKAGE=pixman -DPACKAGE_VERSION="" -DPACKAGE_BUGREPORT="" -DPIXMAN_API="" -Ipixman -I../texlive/libs/pixman/pixman-src/pixman
 ROOT = ../texlive/libs/pixman/pixman-src/pixman
 OBJS = pixman.obj pixman-access.obj pixman-access-accessors.obj pixman-bits-image.obj pixman-combine32.obj pixman-combine-float.obj pixman-conical-gradient.obj pixman-filter.obj pixman-x86.obj pixman-mips.obj pixman-arm.obj pixman-ppc.obj pixman-edge.obj pixman-edge-accessors.obj pixman-fast-path.obj pixman-glyph.obj pixman-general.obj pixman-gradient-walker.obj pixman-image.obj pixman-implementation.obj pixman-linear-gradient.obj pixman-matrix.obj pixman-noop.obj pixman-radial-gradient.obj pixman-region16.obj pixman-region32.obj pixman-solid-fill.obj pixman-timer.obj pixman-trap.obj pixman-utils.obj
 
