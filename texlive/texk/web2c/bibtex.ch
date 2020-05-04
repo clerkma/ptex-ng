@@ -378,6 +378,9 @@ for i:=0 to @'377 do id_class[i] := legal_id_char;
 @z
 
 @x [38] File opening.
+@
+@^system dependencies@>
+@:PASCAL H}{\ph@>
 The \ph\ compiler with which the present version of \TeX\ was prepared has
 extended the rules of \PASCAL\ in a very convenient way. To open file~|f|,
 we can write
@@ -415,7 +418,8 @@ end;
 @y
 @ File opening will be done in C. But we want an auxiliary function to
 change a \BibTeX\ string into a C string, to keep string pool stuff
-out of the C code in @.{lib/openclose.c}.
+out of the C code in \.{lib/openclose.c}.
+@.lib/openclose.c@>
 
 @d no_file_path = -1
 
