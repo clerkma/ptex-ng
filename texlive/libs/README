@@ -1,4 +1,4 @@
-$Id: README 54824 2020-04-21 18:43:36Z lscarso $
+$Id: README 55038 2020-05-06 00:45:53Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -59,8 +59,8 @@ poppler 0.68.0 - checked 20aug18
   http://poppler.freedesktop.org/ - used by xetex
   (requires C++11)
 
-teckit 2.5.9 - checked 03may19
-  https://github.com/silnrsi/teckit/archive/2.5.9.tar.gz
+teckit 2.5.10 - checked 06may20
+  https://github.com/silnrsi/teckit/archive/2.5.10.tar.gz
 
 xpdf 4.02 - checked 29sep19
   http://www.xpdfreader.com/download.html
