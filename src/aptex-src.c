@@ -34421,14 +34421,13 @@ static void new_write_whatsit (small_number w)
   }
 
   write_stream(tail) = cur_val;
+  inhibit_glue_flag = false;
 }
 
 static void do_extension (void)
 {
   integer k;  // {all-purpose integers}
   pointer p;  // {all-purpose pointers}
-
-  inhibit_glue_flag = false;
 
   switch (cur_chr)
   {
@@ -34467,9 +34466,10 @@ static void do_extension (void)
       // @<Implement \.{\\special}@>
       {
         new_whatsit(special_node, write_node_size);
-        write_stream(tail) = 0;
+        write_stream(tail) = null;
         p = scan_toks(false, true);
         write_tokens(tail) = def_ref;
+        inhibit_glue_flag = false;
       }
       break;
 
@@ -34485,7 +34485,8 @@ static void do_extension (void)
           out_what(tail);
           flush_node_list(tail);
           tail = p;
-          link(p) = 0;
+          link(p) = null;
+          inhibit_glue_flag = k;
         }
         else
           back_input();
@@ -34498,6 +34499,7 @@ static void do_extension (void)
         report_illegal_case();
       else
       {
+        inhibit_glue_flag = false;
         new_whatsit(language_node, small_node_size);
         scan_int();
 
@@ -34517,6 +34519,7 @@ static void do_extension (void)
     case pdf_save_pos_node:
       {
         new_whatsit(pdf_save_pos_node, small_node_size);
+        inhibit_glue_flag = false;
       }
       break;
 
@@ -34558,6 +34561,7 @@ static void fix_language (void)
 
   if (l != clang)
   {
+    inhibit_glue_flag = false;
     new_whatsit(language_node, small_node_size);
     what_lang(tail) = l;
     clang = l;
