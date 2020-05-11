@@ -1,4 +1,4 @@
-$Id: README 55038 2020-05-06 00:45:53Z kakuto $
+$Id: README 55087 2020-05-10 06:48:17Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -15,7 +15,7 @@ pplib 2.05.0 - checked 21apr20
 cairo 1.16.0 - checked 20oct18
   http://cairographics.org/releases/
 
-freetype2 2.10.1 - checked 02jul19
+freetype2 2.10.2 - checked 10may20
   http://savannah.nongnu.org/download/freetype/
 
 gd 2.3.0 - checked 10apr20
