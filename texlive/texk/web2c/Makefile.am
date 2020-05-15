@@ -1,7 +1,7 @@
-## $Id: Makefile.am 54824 2020-04-21 18:43:36Z lscarso $
+## $Id: Makefile.am 55138 2020-05-14 17:47:47Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/.
 ##
-## Copyright 2017      Karl Berry <tex-live@tug.org>
+## Copyright 2017-2020 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##
@@ -109,8 +109,6 @@ $(proglib): ${srcdir}/lib/*.c
 @XPDF_RULE@
 ## Rebuild pplib
 @PPLIB_RULE@
-## Rebuild poppler
-@POPPLER_RULE@
 ## Rebuild libzzip
 @ZZIPLIB_RULE@
 ## Rebuild libTEXkit

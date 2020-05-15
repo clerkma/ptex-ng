@@ -1,4 +1,4 @@
-# $Id$
+# $Id: kpse-luajit-flags.m4 55138 2020-05-14 17:47:47Z karl $
 # Public macros for the TeX Live (TL) tree.
 # Copyright 2019 Karl Berry <tex-live@tug.org>
 # Copyright 2014 Peter Breitenlohner <tex-live@tug.org>
