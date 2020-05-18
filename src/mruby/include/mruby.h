@@ -1,7 +1,7 @@
 /*
 ** mruby - An embeddable Ruby implementation
 **
-** Copyright (c) mruby developers 2010-2019
+** Copyright (c) mruby developers 2010-2020
 **
 ** Permission is hereby granted, free of charge, to any person obtaining
 ** a copy of this software and associated documentation files (the
@@ -70,6 +70,11 @@
 
 #include "mrbconf.h"
 
+#include <mruby/common.h>
+#include <mruby/value.h>
+#include <mruby/gc.h>
+#include <mruby/version.h>
+
 #ifndef MRB_WITHOUT_FLOAT
 #ifndef FLT_EPSILON
 #define FLT_EPSILON (1.19209290e-07f)
@@ -87,11 +92,6 @@
 #define MRB_FLOAT_EPSILON DBL_EPSILON
 #endif
 #endif
-
-#include <mruby/common.h>
-#include <mruby/value.h>
-#include <mruby/gc.h>
-#include <mruby/version.h>
 
 /**
  * MRuby C API entry point
@@ -1232,6 +1232,7 @@ MRB_API mrb_noreturn void mrb_raise(mrb_state *mrb, struct RClass *c, const char
 MRB_API mrb_noreturn void mrb_raisef(mrb_state *mrb, struct RClass *c, const char *fmt, ...);
 MRB_API mrb_noreturn void mrb_name_error(mrb_state *mrb, mrb_sym id, const char *fmt, ...);
 MRB_API mrb_noreturn void mrb_frozen_error(mrb_state *mrb, void *frozen_obj);
+MRB_API mrb_noreturn void mrb_argnum_error(mrb_state *mrb, mrb_int argc, int min, int max);
 MRB_API void mrb_warn(mrb_state *mrb, const char *fmt, ...);
 MRB_API mrb_noreturn void mrb_bug(mrb_state *mrb, const char *fmt, ...);
 MRB_API void mrb_print_backtrace(mrb_state *mrb);

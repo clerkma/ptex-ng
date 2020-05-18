@@ -599,7 +599,7 @@ new_lit(codegen_scope *s, mrb_value val)
 
   switch (mrb_type(val)) {
   case MRB_TT_STRING:
-    *pv = mrb_str_pool(s->mrb, val);
+    *pv = mrb_str_pool(s->mrb, RSTRING_PTR(val), RSTRING_LEN(val), RSTR_NOFREE_P(RSTRING(val)));
     break;
 
 #ifndef MRB_WITHOUT_FLOAT
@@ -771,7 +771,7 @@ lambda_body(codegen_scope *s, node *tree, int blk)
     s->ainfo = (((ma+oa) & 0x3f) << 7) /* (12bits = 5:1:5:1) */
       | ((ra & 0x1) << 6)
       | ((pa & 0x1f) << 1)
-      | (kd & 0x1);
+      | ((ka | kd) != 0 ? 0x01 : 0x00);
     genop_W(s, OP_ENTER, a);
     /* generate jump table for optional arguments initializer */
     pos = new_label(s);
@@ -1121,6 +1121,10 @@ gen_assignment(codegen_scope *s, node *tree, int sp, int val)
         up = up->prev;
       }
     }
+    break;
+  case NODE_NVAR:
+    idx = nint(tree);
+    codegen_error(s, "Can't assign to numbered parameter");
     break;
   case NODE_IVAR:
     idx = new_sym(s, nsym(tree));
@@ -2336,6 +2340,17 @@ codegen(codegen_scope *s, node *tree, int val)
           up = up->prev;
         }
       }
+      push();
+    }
+    break;
+
+  case NODE_NVAR:
+    if (val) {
+      int idx = nint(tree);
+
+      gen_move(s, cursp(), idx, val);
+      if (val && on_eval(s)) genop_0(s, OP_NOP);
+
       push();
     }
     break;

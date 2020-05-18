@@ -71,23 +71,8 @@ typedef unsigned int stack_type;
 #define nint(x) ((node*)(intptr_t)(x))
 #define intn(x) ((int)(intptr_t)(x))
 
-#if defined(MRB_COMPLEX_NUMBERS) || defined(MRB_RATIONAL_NUMBERS)
-  #define MRB_SUFFIX_SUPPORT
-
-  #ifdef MRB_RATIONAL_NUMBERS
-    #define NUM_SUFFIX_R   (1<<0)
-  #else
-    #define NUM_SUFFIX_R   0
-  #endif
-
-  #ifdef MRB_COMPLEX_NUMBERS
-    #define NUM_SUFFIX_I   (1<<1)
-  #else
-    #define NUM_SUFFIX_I   0
-  #endif
-
-  #define NUM_SUFFIX_ALL (NUM_SUFFIX_R | NUM_SUFFIX_I)
-#endif
+#define NUM_SUFFIX_R   (1<<0)
+#define NUM_SUFFIX_I   (1<<1)
 
 static inline mrb_sym
 intern_cstr_gen(parser_state *p, const char *s)
@@ -103,12 +88,7 @@ intern_gen(parser_state *p, const char *s, size_t len)
 }
 #define intern(s,len) intern_gen(p,(s),(len))
 
-static inline mrb_sym
-intern_gen_c(parser_state *p, const char c)
-{
-  return mrb_intern(p->mrb, &c, 1);
-}
-#define intern_c(c) intern_gen_c(p,(c))
+#define intern_lit(s) mrb_intern_lit(p->mrb, s)
 
 static void
 cons_free_gen(parser_state *p, node *cons)
@@ -333,6 +313,24 @@ static node*
 locals_node(parser_state *p)
 {
   return p->locals ? p->locals->car : NULL;
+}
+
+static void
+nvars_nest(parser_state *p)
+{
+  p->nvars = cons(nint(0), p->nvars);
+}
+
+static void
+nvars_block(parser_state *p)
+{
+  p->nvars = cons(nint(-2), p->nvars);
+}
+
+static void
+nvars_unnest(parser_state *p)
+{
+  p->nvars = p->nvars->cdr;
 }
 
 /* (:scope (vars..) (prog...)) */
@@ -669,6 +667,16 @@ new_cvar(parser_state *p, mrb_sym sym)
   return cons((node*)NODE_CVAR, nsym(sym));
 }
 
+/* (:nvar . a) */
+static node*
+new_nvar(parser_state *p, int num)
+{
+  int nvars = intn(p->nvars->car);
+
+  p->nvars->car = nint(nvars > num ? nvars : num);
+  return cons((node*)NODE_NVAR, nint(num));
+}
+
 /* (:const . a) */
 static node*
 new_const(parser_state *p, mrb_sym sym)
@@ -793,15 +801,15 @@ new_args_tail(parser_state *p, node *kws, node *kwrest, mrb_sym blk)
 
   local_add_blk(p, blk);
 
-  // allocate register for keywords arguments
-  // order is for Proc#parameters
+  /* allocate register for keywords arguments */
+  /* order is for Proc#parameters */
   for (k = kws; k; k = k->cdr) {
-    if (!k->car->cdr->cdr->car) { // allocate required keywords
+    if (!k->car->cdr->cdr->car) { /* allocate required keywords */
       local_add_f(p, sym(k->car->cdr->car));
     }
   }
   for (k = kws; k; k = k->cdr) {
-    if (k->car->cdr->cdr->car) { // allocate keywords with default
+    if (k->car->cdr->cdr->car) { /* allocate keywords with default */
       local_add_lv(p, k->car->cdr->cdr->car->cdr);
       k->car->cdr->cdr->car = k->car->cdr->cdr->car->car;
       local_add_f(p, sym(k->car->cdr->car));
@@ -826,10 +834,41 @@ new_block_arg(parser_state *p, node *a)
   return cons((node*)NODE_BLOCK_ARG, a);
 }
 
+static node*
+setup_numparams(parser_state *p, node *a)
+{
+  int nvars = intn(p->nvars->car);
+  if (nvars > 0) {
+    int i;
+    mrb_sym sym;
+    // m || opt || rest || tail
+    if (a && (a->car || (a->cdr && a->cdr->car) || (a->cdr->cdr && a->cdr->cdr->car) || (a->cdr->cdr->cdr->cdr && a->cdr->cdr->cdr->cdr->car))) {
+      yyerror(p, "ordinary parameter is defined");
+    }
+    else if (p->locals) {
+      /* p->locals should not be NULL unless error happens before the point */
+      node* args = 0;
+      for (i = nvars; i > 0; i--) {
+        char buf[3];
+
+        buf[0] = '_';
+        buf[1] = i+'0';
+        buf[2] = '\0';
+        sym = intern_cstr(buf);
+        args = cons(new_arg(p, sym), args);
+        p->locals->car = cons(nsym(sym), p->locals->car);
+      }
+      a = new_args(p, args, 0, 0, 0, 0);
+    }
+  }
+  return a;
+}
+
 /* (:block arg body) */
 static node*
 new_block(parser_state *p, node *a, node *b)
 {
+  a = setup_numparams(p, a);
   return list4((node*)NODE_BLOCK, locals_node(p), a, b);
 }
 
@@ -871,37 +910,29 @@ new_op_asgn(parser_state *p, node *a, mrb_sym op, node *b)
   return list4((node*)NODE_OP_ASGN, a, nsym(op), b);
 }
 
-#ifdef MRB_COMPLEX_NUMBERS
 static node*
 new_imaginary(parser_state *p, node *imaginary)
 {
-  return new_call(p, new_const(p, intern_cstr("Kernel")), intern_cstr("Complex"), list1(list2(list3((node*)NODE_INT, (node*)strdup("0"), nint(10)), imaginary)), 1);
+  return new_call(p, new_const(p, intern_lit("Kernel")), intern_lit("Complex"), list1(list2(list3((node*)NODE_INT, (node*)strdup("0"), nint(10)), imaginary)), 1);
 }
-#endif
 
-#ifdef MRB_RATIONAL_NUMBERS
 static node*
 new_rational(parser_state *p, node *rational)
 {
-  return new_call(p, new_const(p, intern_cstr("Kernel")), intern_cstr("Rational"), list1(list1(rational)), 1);
+  return new_call(p, new_const(p, intern_lit("Kernel")), intern_lit("Rational"), list1(list1(rational)), 1);
 }
-#endif
 
 /* (:int . i) */
 static node*
 new_int(parser_state *p, const char *s, int base, int suffix)
 {
   node* result = list3((node*)NODE_INT, (node*)strdup(s), nint(base));
-#ifdef MRB_RATIONAL_NUMBERS
   if (suffix & NUM_SUFFIX_R) {
     result = new_rational(p, result);
   }
-#endif
-#ifdef MRB_COMPLEX_NUMBERS
   if (suffix & NUM_SUFFIX_I) {
     result = new_imaginary(p, result);
   }
-#endif
   return result;
 }
 
@@ -911,16 +942,12 @@ static node*
 new_float(parser_state *p, const char *s, int suffix)
 {
   node* result = cons((node*)NODE_FLOAT, (node*)strdup(s));
-#ifdef MRB_RATIONAL_NUMBERS
   if (suffix & NUM_SUFFIX_R) {
     result = new_rational(p, result);
   }
-#endif
-#ifdef MRB_COMPLEX_NUMBERS
   if (suffix & NUM_SUFFIX_I) {
     result = new_imaginary(p, result);
   }
-#endif
   return result;
 }
 #endif
@@ -1281,7 +1308,6 @@ heredoc_end(parser_state *p)
   p->parsing_heredoc = p->parsing_heredoc->cdr;
   if (p->parsing_heredoc == NULL) {
     p->lstate = EXPR_BEG;
-    p->cmd_start = TRUE;
     end_strterm(p);
     p->lex_strterm = p->lex_strterm_before_heredoc;
     p->lex_strterm_before_heredoc = NULL;
@@ -1366,6 +1392,7 @@ heredoc_end(parser_state *p)
 %token <nd>  tSTRING tSTRING_PART tSTRING_MID
 %token <nd>  tNTH_REF tBACK_REF
 %token <num> tREGEXP_END
+%token <num> tNUMPARAM
 
 %type <nd> singleton string string_fragment string_rep string_interp xstring regexp
 %type <nd> literal numeric cpath symbol
@@ -1498,11 +1525,13 @@ top_stmt        : stmt
                 | keyword_BEGIN
                     {
                       $<nd>$ = local_switch(p);
+                      nvars_block(p);
                     }
                   '{' top_compstmt '}'
                     {
                       yyerror(p, "BEGIN not supported");
                       local_resume(p, $<nd>2);
+                      nvars_unnest(p);
                       $$ = 0;
                     }
                 ;
@@ -1620,9 +1649,9 @@ command_asgn    : lhs '=' command_rhs
                     {
                       $$ = new_op_asgn(p, $1, $2, $3);
                     }
-                | primary_value '[' opt_call_args rbracket tOP_ASGN command_rhs
+                | primary_value '[' opt_call_args ']' tOP_ASGN command_rhs
                     {
-                      $$ = new_op_asgn(p, new_call(p, $1, intern("[]",2), $3, '.'), $5, $6);
+                      $$ = new_op_asgn(p, new_call(p, $1, intern_lit("[]"), $3, '.'), $5, $6);
                     }
                 | primary_value call_op tIDENTIFIER tOP_ASGN command_rhs
                     {
@@ -1700,6 +1729,7 @@ block_command   : block_call
 cmd_brace_block : tLBRACE_ARG
                     {
                       local_nest(p);
+                      nvars_nest(p);
                     }
                   opt_block_param
                   compstmt
@@ -1707,6 +1737,7 @@ cmd_brace_block : tLBRACE_ARG
                     {
                       $$ = new_block(p, $3, $4);
                       local_unnest(p);
+                      nvars_unnest(p);
                     }
                 ;
 
@@ -1849,9 +1880,9 @@ mlhs_node       : variable
                     {
                       assignable(p, $1);
                     }
-                | primary_value '[' opt_call_args rbracket
+                | primary_value '[' opt_call_args ']'
                     {
-                      $$ = new_call(p, $1, intern("[]",2), $3, '.');
+                      $$ = new_call(p, $1, intern_lit("[]"), $3, '.');
                     }
                 | primary_value call_op tIDENTIFIER
                     {
@@ -1888,9 +1919,9 @@ lhs             : variable
                     {
                       assignable(p, $1);
                     }
-                | primary_value '[' opt_call_args rbracket
+                | primary_value '[' opt_call_args ']'
                     {
-                      $$ = new_call(p, $1, intern("[]",2), $3, '.');
+                      $$ = new_call(p, $1, intern_lit("[]"), $3, '.');
                     }
                 | primary_value call_op tIDENTIFIER
                     {
@@ -1920,6 +1951,10 @@ lhs             : variable
                     {
                       backref_error(p, $1);
                       $$ = 0;
+                    }
+                | tNUMPARAM
+                    {
+                      yyerror(p, "can't assign to numbered parameter");
                     }
                 ;
 
@@ -1974,36 +2009,36 @@ undef_list      : fsym
                     }
                 ;
 
-op              : '|'           { $$ = intern_c('|');   }
-                | '^'           { $$ = intern_c('^');   }
-                | '&'           { $$ = intern_c('&');   }
-                | tCMP          { $$ = intern("<=>",3); }
-                | tEQ           { $$ = intern("==",2);  }
-                | tEQQ          { $$ = intern("===",3); }
-                | tMATCH        { $$ = intern("=~",2);  }
-                | tNMATCH       { $$ = intern("!~",2);  }
-                | '>'           { $$ = intern_c('>');   }
-                | tGEQ          { $$ = intern(">=",2);  }
-                | '<'           { $$ = intern_c('<');   }
-                | tLEQ          { $$ = intern("<=",2);  }
-                | tNEQ          { $$ = intern("!=",2);  }
-                | tLSHFT        { $$ = intern("<<",2);  }
-                | tRSHFT        { $$ = intern(">>",2);  }
-                | '+'           { $$ = intern_c('+');   }
-                | '-'           { $$ = intern_c('-');   }
-                | '*'           { $$ = intern_c('*');   }
-                | tSTAR         { $$ = intern_c('*');   }
-                | '/'           { $$ = intern_c('/');   }
-                | '%'           { $$ = intern_c('%');   }
-                | tPOW          { $$ = intern("**",2);  }
-                | tDSTAR        { $$ = intern("**",2);  }
-                | '!'           { $$ = intern_c('!');   }
-                | '~'           { $$ = intern_c('~');   }
-                | tUPLUS        { $$ = intern("+@",2);  }
-                | tUMINUS       { $$ = intern("-@",2);  }
-                | tAREF         { $$ = intern("[]",2);  }
-                | tASET         { $$ = intern("[]=",3); }
-                | '`'           { $$ = intern_c('`');   }
+op              : '|'           { $$ = intern_lit("|");   }
+                | '^'           { $$ = intern_lit("^");   }
+                | '&'           { $$ = intern_lit("&");   }
+                | tCMP          { $$ = intern_lit("<=>"); }
+                | tEQ           { $$ = intern_lit("==");  }
+                | tEQQ          { $$ = intern_lit("==="); }
+                | tMATCH        { $$ = intern_lit("=~");  }
+                | tNMATCH       { $$ = intern_lit("!~");  }
+                | '>'           { $$ = intern_lit(">");   }
+                | tGEQ          { $$ = intern_lit(">=");  }
+                | '<'           { $$ = intern_lit("<");   }
+                | tLEQ          { $$ = intern_lit("<=");  }
+                | tNEQ          { $$ = intern_lit("!=");  }
+                | tLSHFT        { $$ = intern_lit("<<");  }
+                | tRSHFT        { $$ = intern_lit(">>");  }
+                | '+'           { $$ = intern_lit("+");   }
+                | '-'           { $$ = intern_lit("-");   }
+                | '*'           { $$ = intern_lit("*");   }
+                | tSTAR         { $$ = intern_lit("*");   }
+                | '/'           { $$ = intern_lit("/");   }
+                | '%'           { $$ = intern_lit("%");   }
+                | tPOW          { $$ = intern_lit("**");  }
+                | tDSTAR        { $$ = intern_lit("**");  }
+                | '!'           { $$ = intern_lit("!");   }
+                | '~'           { $$ = intern_lit("~");   }
+                | tUPLUS        { $$ = intern_lit("+@");  }
+                | tUMINUS       { $$ = intern_lit("-@");  }
+                | tAREF         { $$ = intern_lit("[]");  }
+                | tASET         { $$ = intern_lit("[]="); }
+                | '`'           { $$ = intern_lit("`");   }
                 ;
 
 reswords        : keyword__LINE__ | keyword__FILE__ | keyword__ENCODING__
@@ -2028,9 +2063,9 @@ arg             : lhs '=' arg_rhs
                     {
                       $$ = new_op_asgn(p, $1, $2, $3);
                     }
-                | primary_value '[' opt_call_args rbracket tOP_ASGN arg_rhs
+                | primary_value '[' opt_call_args ']' tOP_ASGN arg_rhs
                     {
-                      $$ = new_op_asgn(p, new_call(p, $1, intern("[]",2), $3, '.'), $5, $6);
+                      $$ = new_op_asgn(p, new_call(p, $1, intern_lit("[]"), $3, '.'), $5, $6);
                     }
                 | primary_value call_op tIDENTIFIER tOP_ASGN arg_rhs
                     {
@@ -2226,7 +2261,7 @@ arg_rhs         : arg %prec tOP_ASGN
                     }
                 ;
 
-paren_args      : '(' opt_call_args rparen
+paren_args      : '(' opt_call_args ')'
                     {
                       $$ = $2;
                     }
@@ -2237,18 +2272,18 @@ opt_paren_args  : none
                 ;
 
 opt_call_args   : none
-                | call_args
-                | args ','
+                | call_args opt_terms
+                | args comma
                     {
                       $$ = cons($1,0);
                       NODE_LINENO($$, $1);
                     }
-                | args comma assocs ','
+                | args comma assocs comma
                     {
                       $$ = cons(push($1, new_kw_hash(p, $3)), 0);
                       NODE_LINENO($$, $1);
                     }
-                | assocs ','
+                | assocs comma
                     {
                       $$ = cons(list1(new_kw_hash(p, $1)), 0);
                       NODE_LINENO($$, $1);
@@ -2311,7 +2346,7 @@ opt_block_arg   : comma block_arg
                 ;
 
 comma           : ','
-                | ','  heredoc_bodies
+                | ','  opt_nl heredoc_bodies
                 ;
 
 args            : arg
@@ -2362,6 +2397,10 @@ primary         : literal
                 | heredoc
                 | var_ref
                 | backref
+                | tNUMPARAM
+                    {
+                      $$ = new_nvar(p, $1);
+                    }
                 | tFID
                     {
                       $$ = new_fcall(p, $1, 0);
@@ -2514,6 +2553,7 @@ primary         : literal
                       if (p->in_def || p->in_single)
                         yyerror(p, "class definition in method body");
                       $<nd>$ = local_switch(p);
+                      nvars_block(p);
                     }
                   bodystmt
                   keyword_end
@@ -2521,6 +2561,7 @@ primary         : literal
                       $$ = new_class(p, $2, $3, $5);
                       SET_LINENO($$, $1);
                       local_resume(p, $<nd>4);
+                      nvars_unnest(p);
                     }
                 | keyword_class
                   tLSHFT expr
@@ -2531,6 +2572,7 @@ primary         : literal
                   term
                     {
                       $<nd>$ = cons(local_switch(p), nint(p->in_single));
+                      nvars_block(p);
                       p->in_single = 0;
                     }
                   bodystmt
@@ -2539,6 +2581,7 @@ primary         : literal
                       $$ = new_sclass(p, $3, $7);
                       SET_LINENO($$, $1);
                       local_resume(p, $<nd>6->car);
+                      nvars_unnest(p);
                       p->in_def = $<num>4;
                       p->in_single = intn($<nd>6->cdr);
                     }
@@ -2548,6 +2591,7 @@ primary         : literal
                       if (p->in_def || p->in_single)
                         yyerror(p, "module definition in method body");
                       $<nd>$ = local_switch(p);
+                      nvars_block(p);
                     }
                   bodystmt
                   keyword_end
@@ -2555,6 +2599,7 @@ primary         : literal
                       $$ = new_module(p, $2, $4);
                       SET_LINENO($$, $1);
                       local_resume(p, $<nd>3);
+                      nvars_unnest(p);
                     }
                 | keyword_def fname
                     {
@@ -2564,6 +2609,7 @@ primary         : literal
                     {
                       p->in_def++;
                       $<nd>$ = local_switch(p);
+                      nvars_block(p);
                     }
                   f_arglist
                   bodystmt
@@ -2572,6 +2618,7 @@ primary         : literal
                       $$ = new_def(p, $2, $5, $6);
                       SET_LINENO($$, $1);
                       local_resume(p, $<nd>4);
+                      nvars_unnest(p);
                       p->in_def--;
                       p->cmdarg_stack = $<stack>3;
                     }
@@ -2586,6 +2633,7 @@ primary         : literal
                       p->in_single++;
                       p->lstate = EXPR_ENDFN; /* force for args */
                       $<nd>$ = local_switch(p);
+                      nvars_block(p);
                     }
                   f_arglist
                   bodystmt
@@ -2594,6 +2642,7 @@ primary         : literal
                       $$ = new_sdef(p, $2, $5, $7, $8);
                       SET_LINENO($$, $1);
                       local_resume(p, $<nd>6);
+                      nvars_unnest(p);
                       p->in_single--;
                       p->cmdarg_stack = $<stack>4;
                     }
@@ -2861,6 +2910,7 @@ lambda_body     : tLAMBEG compstmt '}'
 do_block        : keyword_do_block
                     {
                       local_nest(p);
+                      nvars_nest(p);
                     }
                   opt_block_param
                   bodystmt
@@ -2868,6 +2918,7 @@ do_block        : keyword_do_block
                     {
                       $$ = new_block(p,$3,$4);
                       local_unnest(p);
+                      nvars_unnest(p);
                     }
                 ;
 
@@ -2915,11 +2966,11 @@ method_call     : operation paren_args
                     }
                 | primary_value call_op paren_args
                     {
-                      $$ = new_call(p, $1, intern("call",4), $3, $2);
+                      $$ = new_call(p, $1, intern_lit("call"), $3, $2);
                     }
                 | primary_value tCOLON2 paren_args
                     {
-                      $$ = new_call(p, $1, intern("call",4), $3, tCOLON2);
+                      $$ = new_call(p, $1, intern_lit("call"), $3, tCOLON2);
                     }
                 | keyword_super paren_args
                     {
@@ -2929,15 +2980,16 @@ method_call     : operation paren_args
                     {
                       $$ = new_zsuper(p);
                     }
-                | primary_value '[' opt_call_args rbracket
+                | primary_value '[' opt_call_args ']'
                     {
-                      $$ = new_call(p, $1, intern("[]",2), $3, '.');
+                      $$ = new_call(p, $1, intern_lit("[]"), $3, '.');
                     }
                 ;
 
 brace_block     : '{'
                     {
                       local_nest(p);
+                      nvars_nest(p);
                       $<num>$ = p->lineno;
                     }
                   opt_block_param
@@ -2946,10 +2998,12 @@ brace_block     : '{'
                       $$ = new_block(p,$3,$4);
                       SET_LINENO($$, $<num>2);
                       local_unnest(p);
+                      nvars_unnest(p);
                     }
                 | keyword_do
                     {
                       local_nest(p);
+                      nvars_nest(p);
                       $<num>$ = p->lineno;
                     }
                   opt_block_param
@@ -2958,6 +3012,7 @@ brace_block     : '{'
                       $$ = new_block(p,$3,$4);
                       SET_LINENO($$, $<num>2);
                       local_unnest(p);
+                      nvars_unnest(p);
                     }
                 ;
 
@@ -3224,6 +3279,10 @@ var_lhs         : variable
                     {
                       assignable(p, $1);
                     }
+                | tNUMPARAM
+                    {
+                      yyerror(p, "can't assign to numbered parameter");
+                    }
                 ;
 
 var_ref         : variable
@@ -3329,11 +3388,13 @@ f_kw            : f_label arg
 
 f_block_kw      : f_label primary_value
                     {
-                      $$ = new_kw_arg(p, $1, $2);
+                      $$ = new_kw_arg(p, $1, cons($2, locals_node(p)));
+                      local_unnest(p);
                     }
                 | f_label
                     {
                       $$ = new_kw_arg(p, $1, 0);
+                      local_unnest(p);
                     }
                 ;
 
@@ -3480,6 +3541,11 @@ f_bad_arg       : tCONSTANT
                 | tCVAR
                     {
                       yyerror(p, "formal argument cannot be a class variable");
+                      $$ = 0;
+                    }
+                | tNUMPARAM
+                    {
+                      yyerror(p, "formal argument cannot be a numbered parameter");
                       $$ = 0;
                     }
                 ;
@@ -3643,10 +3709,14 @@ assocs          : assoc
                       $$ = list1($1);
                       NODE_LINENO($$, $1);
                     }
-                | assocs ',' assoc
+                | assocs comma assoc
                     {
                       $$ = push($1, $3);
                     }
+                ;
+
+label_tag       : tLABEL_TAG
+                | tLABEL_TAG heredoc_bodies
                 ;
 
 assoc           : arg tASSOC arg
@@ -3655,12 +3725,12 @@ assoc           : arg tASSOC arg
                       void_expr_error(p, $3);
                       $$ = cons($1, $3);
                     }
-                | tIDENTIFIER tLABEL_TAG arg
+                | tIDENTIFIER label_tag arg
                     {
                       void_expr_error(p, $3);
                       $$ = cons(new_sym(p, $1), $3);
                     }
-                | string_fragment tLABEL_TAG arg
+                | string_fragment label_tag arg
                     {
                       void_expr_error(p, $3);
                       if ($1->car == (node*)NODE_DSTR) {
@@ -3722,14 +3792,11 @@ opt_nl          : /* none */
                 | nl
                 ;
 
-rparen          : opt_nl ')'
-                ;
-
-rbracket        : opt_nl ']'
+rparen          : opt_terms ')'
                 ;
 
 trailer         : /* none */
-                | nl
+                | terms
                 | comma
                 ;
 
@@ -3900,6 +3967,27 @@ static mrb_bool peeks(parser_state *p, const char *s);
 static mrb_bool skips(parser_state *p, const char *s);
 
 static inline int
+nextc0(parser_state *p)
+{
+  int c;
+#ifndef MRB_DISABLE_STDIO
+  if (p->f) {
+    if (feof(p->f)) return -1;
+    c = fgetc(p->f);
+    if (c == EOF) return -1;
+  }
+  else
+#endif
+    if (!p->s || p->s >= p->send) {
+      return -1;
+    }
+    else {
+      c = (unsigned char)*p->s++;
+    }
+  return c;
+}
+
+static inline int
 nextc(parser_state *p)
 {
   int c;
@@ -3913,23 +4001,18 @@ nextc(parser_state *p)
     cons_free(tmp);
   }
   else {
-#ifndef MRB_DISABLE_STDIO
-    if (p->f) {
-      if (feof(p->f)) goto eof;
-      c = fgetc(p->f);
-      if (c == EOF) goto eof;
-    }
-    else
-#endif
-      if (!p->s || p->s >= p->send) {
-        goto eof;
-      }
-      else {
-        c = (unsigned char)*p->s++;
-      }
+    c = nextc0(p);
+    if (c < 0) goto eof;
   }
   if (c >= 0) {
     p->column++;
+  }
+  if (c == '\r') {
+    const int lf = nextc0(p);
+    if (lf == '\n') {
+      return '\n';
+    }
+    if (lf > 0) pushback(p, lf);
   }
   return c;
 
@@ -4387,12 +4470,7 @@ parse_string(parser_state *p)
           }
         }
         if ((len-1 == hinf->term_len) && (strncmp(s, hinf->term, len-1) == 0)) {
-          if (c < 0) {
-            p->parsing_heredoc = NULL;
-          }
-          else {
-            return tHEREDOC_END;
-          }
+          return tHEREDOC_END;
         }
       }
       if (c < 0) {
@@ -4596,13 +4674,13 @@ parse_string(parser_state *p)
   return tSTRING;
 }
 
-#ifdef MRB_SUFFIX_SUPPORT
 static int
-number_literal_suffix(parser_state *p, int mask)
+number_literal_suffix(parser_state *p)
 {
   int c, result = 0;
   node *list = 0;
   int column = p->column;
+  int mask = NUM_SUFFIX_R|NUM_SUFFIX_I;
 
   while ((c = nextc(p)) != -1) {
     list = push(list, (node*)(intptr_t)c);
@@ -4634,7 +4712,6 @@ number_literal_suffix(parser_state *p, int mask)
   }
   return result;
 }
-#endif
 
 static int
 heredoc_identifier(parser_state *p)
@@ -4819,7 +4896,7 @@ parser_yylex(parser_state *p)
   case '*':
     if ((c = nextc(p)) == '*') {
       if ((c = nextc(p)) == '=') {
-        pylval.id = intern("**",2);
+        pylval.id = intern_lit("**");
         p->lstate = EXPR_BEG;
         return tOP_ASGN;
       }
@@ -4837,7 +4914,7 @@ parser_yylex(parser_state *p)
     }
     else {
       if (c == '=') {
-        pylval.id = intern_c('*');
+        pylval.id = intern_lit("*");
         p->lstate = EXPR_BEG;
         return tOP_ASGN;
       }
@@ -4953,7 +5030,7 @@ parser_yylex(parser_state *p)
     }
     if (c == '<') {
       if ((c = nextc(p)) == '=') {
-        pylval.id = intern("<<",2);
+        pylval.id = intern_lit("<<");
         p->lstate = EXPR_BEG;
         return tOP_ASGN;
       }
@@ -4975,7 +5052,7 @@ parser_yylex(parser_state *p)
     }
     if (c == '>') {
       if ((c = nextc(p)) == '=') {
-        pylval.id = intern(">>",2);
+        pylval.id = intern_lit(">>");
         p->lstate = EXPR_BEG;
         return tOP_ASGN;
       }
@@ -5083,7 +5160,7 @@ parser_yylex(parser_state *p)
     if ((c = nextc(p)) == '&') {
       p->lstate = EXPR_BEG;
       if ((c = nextc(p)) == '=') {
-        pylval.id = intern("&&",2);
+        pylval.id = intern_lit("&&");
         p->lstate = EXPR_BEG;
         return tOP_ASGN;
       }
@@ -5095,7 +5172,7 @@ parser_yylex(parser_state *p)
       return tANDDOT;
     }
     else if (c == '=') {
-      pylval.id = intern_c('&');
+      pylval.id = intern_lit("&");
       p->lstate = EXPR_BEG;
       return tOP_ASGN;
     }
@@ -5122,7 +5199,7 @@ parser_yylex(parser_state *p)
     if ((c = nextc(p)) == '|') {
       p->lstate = EXPR_BEG;
       if ((c = nextc(p)) == '=') {
-        pylval.id = intern("||",2);
+        pylval.id = intern_lit("||");
         p->lstate = EXPR_BEG;
         return tOP_ASGN;
       }
@@ -5130,7 +5207,7 @@ parser_yylex(parser_state *p)
       return tOROP;
     }
     if (c == '=') {
-      pylval.id = intern_c('|');
+      pylval.id = intern_lit("|");
       p->lstate = EXPR_BEG;
       return tOP_ASGN;
     }
@@ -5154,7 +5231,7 @@ parser_yylex(parser_state *p)
       return '+';
     }
     if (c == '=') {
-      pylval.id = intern_c('+');
+      pylval.id = intern_lit("+");
       p->lstate = EXPR_BEG;
       return tOP_ASGN;
     }
@@ -5182,7 +5259,7 @@ parser_yylex(parser_state *p)
       return '-';
     }
     if (c == '=') {
-      pylval.id = intern_c('-');
+      pylval.id = intern_lit("-");
       p->lstate = EXPR_BEG;
       return tOP_ASGN;
     }
@@ -5257,9 +5334,7 @@ parser_yylex(parser_state *p)
           no_digits();
         }
         else if (nondigit) goto trailing_uc;
-        #ifdef MRB_SUFFIX_SUPPORT
-        suffix = number_literal_suffix(p, NUM_SUFFIX_ALL);
-        #endif
+        suffix = number_literal_suffix(p);
         pylval.nd = new_int(p, tok(p), 16, suffix);
         return tINTEGER;
       }
@@ -5284,9 +5359,7 @@ parser_yylex(parser_state *p)
           no_digits();
         }
         else if (nondigit) goto trailing_uc;
-        #ifdef MRB_SUFFIX_SUPPORT
-        suffix = number_literal_suffix(p, NUM_SUFFIX_ALL);
-        #endif
+        suffix = number_literal_suffix(p);
         pylval.nd = new_int(p, tok(p), 2, suffix);
         return tINTEGER;
       }
@@ -5311,9 +5384,7 @@ parser_yylex(parser_state *p)
           no_digits();
         }
         else if (nondigit) goto trailing_uc;
-        #ifdef MRB_SUFFIX_SUPPORT
-        suffix = number_literal_suffix(p, NUM_SUFFIX_ALL);
-        #endif
+        suffix = number_literal_suffix(p);
         pylval.nd = new_int(p, tok(p), 10, suffix);
         return tINTEGER;
       }
@@ -5347,9 +5418,7 @@ parser_yylex(parser_state *p)
           pushback(p, c);
           tokfix(p);
           if (nondigit) goto trailing_uc;
-          #ifdef MRB_SUFFIX_SUPPORT
-          suffix = number_literal_suffix(p, NUM_SUFFIX_ALL);
-          #endif
+          suffix = number_literal_suffix(p);
           pylval.nd = new_int(p, tok(p), 8, suffix);
           return tINTEGER;
         }
@@ -5367,9 +5436,7 @@ parser_yylex(parser_state *p)
       }
       else {
         pushback(p, c);
-        #ifdef MRB_SUFFIX_SUPPORT
-        suffix = number_literal_suffix(p, NUM_SUFFIX_ALL);
-        #endif
+        suffix = number_literal_suffix(p);
         pylval.nd = new_int(p, "0", 10, suffix);
         return tINTEGER;
       }
@@ -5459,16 +5526,12 @@ parser_yylex(parser_state *p)
         yywarning_s(p, "float out of range", tok(p));
         errno = 0;
       }
-      #ifdef MRB_SUFFIX_SUPPORT
-      suffix = number_literal_suffix(p, NUM_SUFFIX_ALL);
-      #endif
+      suffix = number_literal_suffix(p);
       pylval.nd = new_float(p, tok(p), suffix);
       return tFLOAT;
 #endif
     }
-    #ifdef MRB_SUFFIX_SUPPORT
-    suffix = number_literal_suffix(p, NUM_SUFFIX_ALL);
-    #endif
+    suffix = number_literal_suffix(p);
     pylval.nd = new_int(p, tok(p), 10, suffix);
     return tINTEGER;
   }
@@ -5516,7 +5579,7 @@ parser_yylex(parser_state *p)
       return tREGEXP_BEG;
     }
     if ((c = nextc(p)) == '=') {
-      pylval.id = intern_c('/');
+      pylval.id = intern_lit("/");
       p->lstate = EXPR_BEG;
       return tOP_ASGN;
     }
@@ -5535,7 +5598,7 @@ parser_yylex(parser_state *p)
 
   case '^':
     if ((c = nextc(p)) == '=') {
-      pylval.id = intern_c('^');
+      pylval.id = intern_lit("^");
       p->lstate = EXPR_BEG;
       return tOP_ASGN;
     }
@@ -5712,7 +5775,7 @@ parser_yylex(parser_state *p)
       }
     }
     if ((c = nextc(p)) == '=') {
-      pylval.id = intern_c('%');
+      pylval.id = intern_lit("%");
       p->lstate = EXPR_BEG;
       return tOP_ASGN;
     }
@@ -5766,7 +5829,7 @@ parser_yylex(parser_state *p)
       tokadd(p, '$');
       tokadd(p, c);
       tokfix(p);
-      pylval.id = intern_cstr(tok(p));
+      pylval.id = intern(tok(p), toklen(p));
       return tGVAR;
 
     case '-':
@@ -5776,7 +5839,7 @@ parser_yylex(parser_state *p)
       pushback(p, c);
       gvar:
       tokfix(p);
-      pylval.id = intern_cstr(tok(p));
+      pylval.id = intern(tok(p), toklen(p));
       return tGVAR;
 
     case '&':     /* $&: last match */
@@ -5914,12 +5977,54 @@ parser_yylex(parser_state *p)
         result = tIVAR;
       break;
 
+    case '_':
+      if (toklen(p) == 2 && ISDIGIT(tok(p)[1]) && p->nvars) {
+        int n = tok(p)[1] - '0';
+        int nvar;
+
+        if (n > 0) {
+          node *nvars = p->nvars->cdr;
+
+          while (nvars) {
+            nvar = intn(nvars->car);
+            if (nvar == -2) break; /* top of the scope */
+            if (nvar > 0) {
+              yywarning(p, "numbered parameter used in outer block");
+              break;
+            }
+            nvars->car = nint(-1);
+            nvars = nvars->cdr;
+          }
+          nvar = intn(p->nvars->car);
+          if (nvar == -1) {
+            yywarning(p, "numbered parameter used in inner block");
+          }
+          if (nvar >= -1) {
+            pylval.num = n;
+            p->lstate = EXPR_END;
+            return tNUMPARAM;
+          }
+          else {
+            yywarning(p, "identifier for numbered parameter; consider another name");
+          }
+        }
+      }
+      /* fall through */
     default:
       if (toklast(p) == '!' || toklast(p) == '?') {
         result = tFID;
       }
       else {
         if (p->lstate == EXPR_FNAME) {
+          if ((c = nextc(p)) == '=' && !peek(p, '~') && !peek(p, '>') &&
+              (!peek(p, '=') || (peek_n(p, '>', 1)))) {
+            result = tIDENTIFIER;
+            tokadd(p, c);
+            tokfix(p);
+          }
+          else {
+            pushback(p, c);
+          }
           if ((c = nextc(p)) == '=' && !peek(p, '~') && !peek(p, '>') &&
               (!peek(p, '=') || (peek_n(p, '>', 1)))) {
             result = tIDENTIFIER;
@@ -5942,7 +6047,7 @@ parser_yylex(parser_state *p)
         if (IS_LABEL_SUFFIX(0)) {
           p->lstate = EXPR_END;
           tokfix(p);
-          pylval.id = intern_cstr(tok(p));
+          pylval.id = intern(tok(p), toklen(p));
           return tIDENTIFIER;
         }
       }
@@ -6001,7 +6106,7 @@ parser_yylex(parser_state *p)
       }
     }
     {
-      mrb_sym ident = intern_cstr(tok(p));
+      mrb_sym ident = intern(tok(p), toklen(p));
 
       pylval.id = ident;
       if (last_state != EXPR_DOT && ISLOWER(tok(p)[0]) && local_var_p(p, ident)) {
@@ -6894,6 +6999,10 @@ mrb_parser_dump(mrb_state *mrb, node *tree, int offset)
 
   case NODE_CVAR:
     printf("NODE_CVAR %s\n", mrb_sym_name(mrb, sym(tree)));
+    break;
+
+  case NODE_NVAR:
+    printf("NODE_NVAR %d\n", intn(tree));
     break;
 
   case NODE_CONST:

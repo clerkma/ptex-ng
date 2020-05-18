@@ -280,8 +280,9 @@ mrb_free(mrb_state *mrb, void *p)
 MRB_API void*
 mrb_alloca(mrb_state *mrb, size_t size)
 {
-  mrb_value str = mrb_str_new(mrb, NULL, size);
-  return RSTRING_PTR(str);
+  struct RString *s;
+  s = (struct RString*)mrb_obj_alloc(mrb, MRB_TT_STRING, mrb->string_class);
+  return s->as.heap.ptr = (char*)mrb_malloc(mrb, size);
 }
 
 static mrb_bool
@@ -806,10 +807,12 @@ obj_free(mrb_state *mrb, struct RBasic *obj, int end)
   case MRB_TT_SCLASS:
     mrb_gc_free_mt(mrb, (struct RClass*)obj);
     mrb_gc_free_iv(mrb, (struct RObject*)obj);
+    mrb_mc_clear_by_class(mrb, (struct RClass*)obj);
     break;
   case MRB_TT_ICLASS:
     if (MRB_FLAG_TEST(obj, MRB_FL_CLASS_IS_ORIGIN))
       mrb_gc_free_mt(mrb, (struct RClass*)obj);
+    mrb_mc_clear_by_class(mrb, (struct RClass*)obj);
     break;
   case MRB_TT_ENV:
     {
@@ -1608,6 +1611,9 @@ void
 mrb_init_gc(mrb_state *mrb)
 {
   struct RClass *gc;
+
+  mrb_static_assert(sizeof(RVALUE) <= sizeof(void*) * 6,
+                    "RVALUE size must be within 6 words");
 
   gc = mrb_define_module(mrb, "GC");
 

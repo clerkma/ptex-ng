@@ -11,11 +11,10 @@
 #include <mruby.h>
 #include <mruby/class.h>
 #include <mruby/data.h>
+#include <mruby/numeric.h>
 #include <mruby/time.h>
 
-#ifndef MRB_DISABLE_STDIO
-#include <stdio.h>
-#else
+#ifdef MRB_DISABLE_STDIO
 #include <string.h>
 #endif
 
@@ -74,11 +73,6 @@ double round(double x) {
 /* mktime() creates tm structure for localtime; timegm() is for UTC time */
 /* define following macro to use probably faster timegm() on the platform */
 /* #define USE_SYSTEM_TIMEGM */
-
-/* time_t */
-/* If your platform supports time_t as uint (e.g. uint32_t, uint64_t), */
-/* uncomment following macro. */
-/* #define MRB_TIME_T_UINT */
 
 /** end of Time class configuration */
 
@@ -213,15 +207,22 @@ typedef mrb_int mrb_sec;
 #define mrb_sec_value(mrb, sec) mrb_fixnum_value(sec)
 #endif
 
-#ifdef MRB_TIME_T_UINT
-typedef uint64_t mrb_time_int;
-# define MRB_TIME_MIN 0
-# define MRB_TIME_MAX (sizeof(time_t) <= 4 ? UINT32_MAX : UINT64_MAX)
-#else
-typedef int64_t mrb_time_int;
-# define MRB_TIME_MIN (sizeof(time_t) <= 4 ? INT32_MIN : INT64_MIN)
-# define MRB_TIME_MAX (sizeof(time_t) <= 4 ? INT32_MAX : INT64_MAX)
-#endif
+#define MRB_TIME_T_UINT (~(time_t)0 > 0)
+#define MRB_TIME_MIN (                                                      \
+  MRB_TIME_T_UINT ? 0 :                                                     \
+                    (sizeof(time_t) <= 4 ? INT32_MIN : INT64_MIN)           \
+)
+#define MRB_TIME_MAX (                                                      \
+  MRB_TIME_T_UINT ? (sizeof(time_t) <= 4 ? UINT32_MAX : UINT64_MAX) :       \
+                    (sizeof(time_t) <= 4 ? INT32_MAX : INT64_MAX)           \
+)
+
+static mrb_bool
+fixable_time_t_p(time_t v)
+{
+  if (MRB_INT_MIN <= MRB_TIME_MIN && MRB_TIME_MAX <= MRB_INT_MAX) return TRUE;
+  return FIXABLE(v);
+}
 
 static time_t
 mrb_to_time_t(mrb_state *mrb, mrb_value obj, time_t *usec)
@@ -235,7 +236,7 @@ mrb_to_time_t(mrb_state *mrb, mrb_value obj, time_t *usec)
         mrb_float f = mrb_float(obj);
 
         mrb_check_num_exact(mrb, f);
-        if (f > (mrb_float)MRB_TIME_MAX || (mrb_float)MRB_TIME_MIN > f) {
+        if (f >= ((mrb_float)MRB_TIME_MAX-1.0) || f < ((mrb_float)MRB_TIME_MIN+1.0)) {
           goto out_of_range;
         }
 
@@ -254,7 +255,8 @@ mrb_to_time_t(mrb_state *mrb, mrb_value obj, time_t *usec)
       {
         mrb_int i = mrb_int(mrb, obj);
 
-        if ((mrb_time_int)i > MRB_TIME_MAX || MRB_TIME_MIN > i) {
+        if ((MRB_INT_MAX > MRB_TIME_MAX && i > 0 && i > (mrb_int)MRB_TIME_MAX) ||
+            (MRB_TIME_MIN > MRB_INT_MIN && MRB_TIME_MIN > i)) {
           goto out_of_range;
         }
 
@@ -867,7 +869,7 @@ mrb_time_to_i(mrb_state *mrb, mrb_value self)
 
   tm = time_get_ptr(mrb, self);
 #ifndef MRB_WITHOUT_FLOAT
-  if (tm->sec > MRB_INT_MAX || tm->sec < MRB_INT_MIN) {
+  if (!fixable_time_t_p(tm->sec)) {
     return mrb_float_value(mrb, (mrb_float)tm->sec);
   }
 #endif
@@ -883,7 +885,7 @@ mrb_time_usec(mrb_state *mrb, mrb_value self)
 
   tm = time_get_ptr(mrb, self);
 #ifndef MRB_WITHOUT_FLOAT
-  if (tm->usec > MRB_INT_MAX || tm->usec < MRB_INT_MIN) {
+  if (!fixable_time_t_p(tm->usec)) {
     return mrb_float_value(mrb, (mrb_float)tm->usec);
   }
 #endif

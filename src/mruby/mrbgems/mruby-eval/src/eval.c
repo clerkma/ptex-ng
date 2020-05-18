@@ -110,8 +110,8 @@ patch_irep(mrb_state *mrb, mrb_irep *irep, int bnest, mrb_irep *top)
     insn = iseq[i];
     switch(insn){
     case OP_EPUSH:
-      b = PEEK_S(iseq+i+1);
-      patch_irep(mrb, irep->reps[b], bnest + 1, top);
+      a = PEEK_B(iseq+i+1);
+      patch_irep(mrb, irep->reps[a], bnest + 1, top);
       break;
 
     case OP_LAMBDA:
@@ -390,7 +390,7 @@ void
 mrb_mruby_eval_gem_init(mrb_state* mrb)
 {
   mrb_define_module_function(mrb, mrb->kernel_module, "eval", f_eval, MRB_ARGS_ARG(1, 3));
-  mrb_define_method(mrb, mrb_class_get(mrb, "BasicObject"), "instance_eval", f_instance_eval, MRB_ARGS_ARG(1, 2));
+  mrb_define_method(mrb, mrb_class_get(mrb, "BasicObject"), "instance_eval", f_instance_eval, MRB_ARGS_OPT(3)|MRB_ARGS_BLOCK());
 }
 
 void

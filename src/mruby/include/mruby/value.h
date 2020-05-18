@@ -34,10 +34,6 @@ typedef uint32_t mrb_sym;
 typedef uint8_t mrb_bool;
 struct mrb_state;
 
-#if defined(MRB_INT16) && defined(MRB_INT64)
-# error "You can't define MRB_INT16 and MRB_INT64 at the same time."
-#endif
-
 #if defined _MSC_VER && _MSC_VER < 1800
 # define PRIo64 "llo"
 # define PRId64 "lld"
@@ -63,14 +59,6 @@ struct mrb_state;
 # define MRB_PRIo PRIo64
 # define MRB_PRId PRId64
 # define MRB_PRIx PRIx64
-#elif defined(MRB_INT16)
-  typedef int16_t mrb_int;
-# define MRB_INT_BIT 16
-# define MRB_INT_MIN (INT16_MIN>>MRB_FIXNUM_SHIFT)
-# define MRB_INT_MAX (INT16_MAX>>MRB_FIXNUM_SHIFT)
-# define MRB_PRIo PRIo16
-# define MRB_PRId PRId16
-# define MRB_PRIx PRIx16
 #else
   typedef int32_t mrb_int;
 # define MRB_INT_BIT 32
@@ -169,9 +157,15 @@ typedef void mrb_value;
 #include "boxing_no.h"
 #endif
 
-#if !defined(MRB_SYMBOL_BITSIZE)
-#define MRB_SYMBOL_BITSIZE (sizeof(mrb_sym) * CHAR_BIT)
-#define MRB_SYMBOL_MAX      UINT32_MAX
+#define MRB_SYMBOL_BIT (sizeof(mrb_sym) * CHAR_BIT - MRB_SYMBOL_SHIFT)
+#define MRB_SYMBOL_MAX (UINT32_MAX >> MRB_SYMBOL_SHIFT)
+
+#if INTPTR_MAX < MRB_INT_MAX
+  typedef intptr_t mrb_ssize;
+# define MRB_SSIZE_MAX (INTPTR_MAX>>MRB_FIXNUM_SHIFT)
+#else
+  typedef mrb_int mrb_ssize;
+# define MRB_SSIZE_MAX MRB_INT_MAX
 #endif
 
 #ifndef mrb_immediate_p
