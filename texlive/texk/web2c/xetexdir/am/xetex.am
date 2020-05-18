@@ -1,4 +1,4 @@
-## $Id: xetex.am 54889 2020-04-26 17:49:07Z karl $
+## $Id: xetex.am 55176 2020-05-17 13:39:51Z lscarso $
 ## texk/web2c/xetexdir/am/xetex.am: Makefile fragment for XeTeX.
 ##
 ## Copyright 2017-2020 Karl Berry <tex-live@tug.org>
@@ -39,8 +39,8 @@ xetex_ldadd += $(ICU_LIBS) $(ICU_LIBS_EXTRA)
 xetex_ldadd += $(TECKIT_LIBS)
 xetex_ldadd += $(LIBPNG_LIBS)
 xetex_ldadd += $(FREETYPE2_LIBS)
-xetex_ldadd += $(ZLIB_LIBS)
 xetex_ldadd += $(PPLIB_LIBS)
+xetex_ldadd += $(ZLIB_LIBS)
 xetex_ldadd += libmd5.a
 xetex_dependencies = $(proglib)
 xetex_dependencies += $(KPATHSEA_DEPEND)
