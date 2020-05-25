@@ -1,4 +1,4 @@
-$Id: README 54456 2020-03-21 22:04:56Z karl $
+$Id: README 55255 2020-05-24 10:16:15Z ascherer $
 Copyright 2006-2020 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -116,7 +116,8 @@ web2c - maintained here, by us - core web2c, plain tex, etc.
        aleph - maintained here
         ctie - CTAN
         cweb - https://github.com/ascherer/cwebbin
-               (original Knuth, ftp://ftp.cs.stanford.edu/pub/cweb/)
+               (original Knuth, ftp://ftp.cs.stanford.edu/pub/cweb/
+               and ftp://ftp.cs.stanford.edu/pub/ctwill/)
        eptex - https://github.com/texjporg/tex-jp-build
                also: https://osdn.jp/projects/eptex
         etex - maintained here
