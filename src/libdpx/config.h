@@ -11,7 +11,7 @@
 #define HAVE_ZLIB 1
 #define HAVE_ZLIB_COMPRESS2 1
 
-#define VERSION "20200315"
+#define VERSION "20200526"
 
 #if defined(__gnu_linux__) && defined(__i386__)
 #define _FILE_OFFSET_BITS 64
