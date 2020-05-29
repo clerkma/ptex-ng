@@ -491,7 +491,7 @@ DIST_SUBDIRS = auxdir/auxsub doc $(CONF_SUBDIRS) libs utils texk
 recurse_this = 
 recurse_top = 
 
-# $Id: Makefile.in 55138 2020-05-14 17:47:47Z karl $
+# $Id: Makefile.in 55329 2020-05-28 22:03:59Z karl $
 #
 # Requires $(recurse_this) and $(recurse_top).
 # Uses CONF_SUBDIRS and MAKE_SUBDIRS (set by kpse-setup.m4).
@@ -1044,8 +1044,11 @@ world: all
 	@echo "top-level make $@: running install-strip..."
 	$(MAKE) $(AM_MAKEFLAGS) install-strip
 #
-	@echo "top-level make $@: making run-texlinks in $(texlinks_dir) ..."
-	cd $(texlinks_dir) && $(MAKE) $(AM_MAKEFLAGS) run-texlinks
+# Just in case it's not a full checkout.
+	if test -d "$(texlinks_dir)"; then \
+	  echo "top-level make $@: making run-texlinks in $(texlinks_dir) ..."; \
+	  cd $(texlinks_dir) && $(MAKE) $(AM_MAKEFLAGS) run-texlinks; \
+	else :; fi
 #
 	@echo "top-level make $@: running $(check_target)..."
 	$(MAKE) $(AM_MAKEFLAGS) $(check_target)

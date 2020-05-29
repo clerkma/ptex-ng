@@ -1,4 +1,4 @@
-## $Id: Makefile.am 53614 2020-01-31 18:59:27Z karl $
+## $Id: Makefile.am 55329 2020-05-28 22:03:59Z karl $
 ## Makefile.am for the TeX Live top-level
 ##
 ## Copyright 2016-2020 Karl Berry <tex-live@tug.org>
@@ -53,8 +53,11 @@ world: all
 	@echo "top-level make $@: running install-strip..."
 	$(MAKE) $(AM_MAKEFLAGS) install-strip
 #
-	@echo "top-level make $@: making run-texlinks in $(texlinks_dir) ..."
-	cd $(texlinks_dir) && $(MAKE) $(AM_MAKEFLAGS) run-texlinks
+# Just in case it's not a full checkout.
+	if test -d "$(texlinks_dir)"; then \
+	  echo "top-level make $@: making run-texlinks in $(texlinks_dir) ..."; \
+	  cd $(texlinks_dir) && $(MAKE) $(AM_MAKEFLAGS) run-texlinks; \
+	else :; fi
 #
 	@echo "top-level make $@: running $(check_target)..."
 	$(MAKE) $(AM_MAKEFLAGS) $(check_target)
