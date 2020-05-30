@@ -1,6 +1,6 @@
 % Changes to adapt tie to web2c.
-% Copyright 2001 by Olaf Weber
-% Copyright 2020 Andreas Scherer
+% Created 2001 by Olaf Weber
+% Updated 2020 by Andreas Scherer
 % This file is in the Public Domain.
 
 Limbo
