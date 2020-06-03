@@ -143,7 +143,12 @@ begin
 end;
 @z
 
-@x [45] Redefine pk_byte, pk_halfword, pk_three_bytes, and pk_word.
+@x [44] Redefine pk_byte, pk_halfword, pk_three_bytes, and pk_word.
+@ We also need a few routines to write data to the \.{PK} file.  We write
+data in 4-, 8-, 16-, 24-, and 32-bit chunks, so we define the appropriate
+routines. We must be careful not to let the sign bit mess us up, as some
+\PASCAL s implement division of a negative integer differently.
+
 @p procedure pk_byte(a:integer) ;
 begin
    if pk_open then begin
@@ -186,7 +191,12 @@ begin
    end ;
 end ;
 @y
-@ Output is handled through |putbyte| which is supplied by web2c.
+@ We also need a few routines to write data to the \.{PK} file.  We write
+data in 4-, 8-, 16-, 24-, and 32-bit chunks, so we define the appropriate
+routines. We must be careful not to let the sign bit mess us up, as some
+\PASCAL s implement division of a negative integer differently.
+
+Output is handled through |putbyte| which is supplied by web2c.
 
 @d pk_byte(#)==begin putbyte(#, pk_file); incr(pk_loc) end
 
@@ -368,6 +378,7 @@ end ;
 @ @<Set init...@>=
 comment := preamble_comment ;
 @y
+@ This module is empty in the C version.
 @z
 
 @x [86] Remove the final_end label
@@ -389,6 +400,7 @@ itself will get a new section number.
 Parse a Unix-style command line.
 
 @d argument_is (#) == (strcmp (long_options[option_index].name, #) = 0)
+@d do_nothing ==        {empty statement}
 
 @<Define |parse_arguments|@> =
 procedure parse_arguments;
@@ -404,7 +416,7 @@ begin
     getopt_return_val := getopt_long_only (argc, argv, '', long_options,
                                            address_of (option_index));
     if getopt_return_val = -1 then begin
-      {End of arguments; we exit the loop below.} ;
+      do_nothing; {End of arguments; we exit the loop below.}
 
     end else if getopt_return_val = "?" then begin
       usage (my_name); {|getopt| has already given an error message.}

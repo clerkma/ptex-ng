@@ -3753,6 +3753,7 @@ inserted from \.{\\mkern} specifications in math formulas).
 @d kern_node=11 {|type| of a kern node}
 @d explicit=1 {|subtype| of kern nodes from \.{\\kern} and \.{\\/}}
 @d acc_kern=2 {|subtype| of kern nodes from accents}
+@d auto_kern=3 {|subtype| of kern nodes created by |get_auto_kern|}
 
 @# {memory structure for marginal kerns}
 @d margin_kern_node = 40
@@ -3776,7 +3777,6 @@ inserted from \.{\\mkern} specifications in math formulas).
 @d kn_bc_code_base == 10
 @d kn_ac_code_base == 11
 
-@d auto_kern == explicit
 
 @d no_lig_code == 6
 
@@ -4409,6 +4409,7 @@ if subtype(p)<>mu_glue then
   print_scaled(width(p));
   if subtype(p)=acc_kern then print(" (for accent)");
 @.for accent@>
+  if subtype(p)=auto_kern then print(" (for \pdfprependkern/\pdfappendkern)");
   end
 else  begin print_esc("mkern"); print_scaled(width(p)); print("mu");
   end
@@ -4995,7 +4996,7 @@ any more details about the page-building process.
 @<Set init...@>=
 nest_ptr:=0; max_nest_stack:=0;
 mode:=vmode; head:=contrib_head; tail:=contrib_head;
-eTeX_aux:=null;
+eTeX_aux:=null; save_tail:=null;
 prev_depth:=ignore_depth; mode_line:=0;
 prev_graf:=0; shown_mode:=0;
 @<Start a new current page@>;
