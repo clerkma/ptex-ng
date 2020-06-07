@@ -38,7 +38,7 @@ permission notice identical to this one.
 }
 @y
 \def\Kpathsea/{{\mc KPATHSEA\spacefactor1000}}
-
+\let\maybe=\iftrue
 \def\title{The CTIE processor}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont CTIE} processor}
@@ -113,9 +113,10 @@ replaces the complex \.{TIE} character set handling (based on that of
 the original \.{WEB} system) with the standard \.{CWEB} behaviour, and
 so uses the |char| type for input and output.
 
-The \.{kpathsea} library (version 3.4.5 and higher) defines the |true|,
-|false|, |boolean| and |string| types in \.{<kpathsea/simpletypes.h>},
-so we do not actually need to define them here.
+The \.{kpathsea} library (version 3.4.5 and higher) defines the |@!boolean|
+(with the values |@!true| and |@!false|) and |@!string| (and |@!const_string|)
+types in \.{<kpathsea/simpletypes.h>}, so we do not actually need to define
+them here.
 
 @s boolean int
 @s string int
@@ -162,9 +163,9 @@ int history=spotless;
 @y
 @<Global variables@>=
 typedef enum {
-    spotless,
-    troublesome,
-    fatal } return_code;
+    @!spotless,
+    @!troublesome,
+    @!fatal } return_code;
 static return_code history=spotless;
 @z
 
@@ -195,8 +196,7 @@ This should cause no trouble in any \CEE/ program.
 @y
 @ And we need dynamic memory allocation.
 This should cause no trouble in any \CEE/ program.
-The \.{kpathsea} include files handle the definition of |malloc()|,
-too.
+The \.{kpathsea} include files handle the definition of |@!malloc|, too.
 @^system dependencies@>
 @z
 
@@ -220,14 +220,14 @@ typedef int in_file_modes; /* should be |enum(search, test, reading, ignore)| */
 typedef int file_types; /* should be |enum(unknown, master, chf)| */
 @y
 typedef enum {
-    search,
-    test,
-    reading,
-    ignore } in_file_modes;
+    @!search,
+    @!test,
+    @!reading,
+    @!ignore } in_file_modes;
 typedef enum {
-    unknown,
-    master,
-    chf } file_types;
+    @!unknown,
+    @!master,
+    @!chf } file_types;
 @z
 
 @x l.230 dito
@@ -237,9 +237,9 @@ typedef enum {
 typedef int out_md_type; /* should be |enum(normal, pre, post)| */
 @y
 typedef enum {
-    normal,
-    pre,
-    post } out_md_type;
+    @!normal,
+    @!pre,
+    @!post } out_md_type;
 @z
 
 @x l.284 way too short!

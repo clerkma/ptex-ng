@@ -36,14 +36,14 @@ typedef bool boolean;
 typedef uint8_t eight_bits;
 typedef uint16_t sixteen_bits;
 typedef enum {
-  ctangle, cweave, ctwill
+  @!ctangle, @!cweave, @!ctwill
 } cweb;
 extern cweb program; /* \.{CTANGLE} or \.{CWEAVE} or \.{CTWILL}? */
 extern int phase; /* which phase are we in? */
 
 @ You may have noticed that almost all \.{"strings"} in the \.{CWEB} sources
 are placed in the context of the `|_|'~macro.  This is just a shortcut for the
-`|gettext|' function from the ``GNU~gettext utilities.'' For systems that do
+`|@!gettext|' function from the ``GNU~gettext utilities.'' For systems that do
 not have this library installed, we wrap things for neutral behavior without
 internationalization.
 
@@ -60,8 +60,8 @@ internationalization.
 #define gettext(A) A
 #endif
 @#
-#include <stdbool.h>
-#include <stdint.h>
+#include <stdbool.h> /* |@!bool|, |@!true|, |@!false| */
+#include <stdint.h> /* |@!uint8_t|, |@!uint16_t| */
 #include <stdio.h>
 
 @ Code related to the character set:

@@ -56,7 +56,7 @@ typedef uint16_t sixteen_bits;
 boolean program; /* \.{CWEAVE} or \.{CTANGLE}? */
 @y
 typedef enum {
-  ctangle, cweave, ctwill
+  @!ctangle, @!cweave, @!ctwill
 } cweb;
 cweb program; /* \.{CTANGLE} or \.{CWEAVE} or \.{CTWILL}? */
 @z
@@ -333,6 +333,7 @@ double quotes.
 The actual file lookup is done with the help of the \Kpathsea/ library;
 see section~\X90:File lookup with \Kpathsea/\X~for details. % FIXME
 The remainder of the \.{@@i} line after the file name is ignored.
+@^system dependencies@> @.CWEBINPUTS@>
 @z
 
 @x
@@ -345,6 +346,12 @@ The remainder of the \.{@@i} line after the file name is ignored.
 @<Include...@>=
 #include <stdlib.h> /* declaration of |getenv| and |exit| */
 @y
+@z
+
+@x
+@ @<Try to open...@>= {
+@y
+@ @.CWEBINPUTS@>@<Try to open...@>= {
 @z
 
 @x
@@ -802,7 +809,7 @@ int wrap_up() {
   putchar('\n');
 @y
 int wrap_up(void) {
-  if (show_progress) new_line;
+  if (show_progress || show_happiness || (history > spotless)) new_line;
 @z
 
 @x
@@ -862,7 +869,7 @@ fatal(
 @x
   if (*s) printf(s);
 @y
-  if (*s) fputs(s,stdout);
+  if (*s) err_print(s);
 @z
 
 @x
@@ -1122,6 +1129,10 @@ else {
 @ @<Scan arguments and open output files@>=
 scan_args();
 if (program==ctangle) {
+  if ((C_file=fopen(C_file_name,"a"))==NULL)
+    fatal(_("! Cannot open output file "), C_file_name);
+@.Cannot open output file@>
+  else fclose(C_file); /* Test accessability */
   strcpy(check_file_name,C_file_name);
   if(check_file_name[0]!='\0') {
     char *dot_pos=strrchr(check_file_name,'.');
@@ -1133,6 +1144,9 @@ if (program==ctangle) {
 @.Cannot open output file@>
 }
 else {
+  if ((tex_file=fopen(tex_file_name,"a"))==NULL)
+    fatal(_("! Cannot open output file "), tex_file_name);
+  else fclose(tex_file); /* Test accessability */
   strcpy(check_file_name,tex_file_name);
   if(check_file_name[0]!='\0') {
     char *dot_pos=strrchr(check_file_name,'.');
@@ -1241,7 +1255,7 @@ if(strlen(check_file_name)) /* Delete the temporary file in case of a break */
 
 @* Internationalization.  You may have noticed that almost all \.{"strings"}
 in the \.{CWEB} sources are placed in the context of the `|_|'~macro.
-This is just a shortcut for the `|gettext|' function from the ``GNU~gettext
+This is just a shortcut for the `|@!gettext|' function from the ``GNU~gettext
 utilities.'' For systems that do not have this library installed, we wrap
 things for neutral behavior without internationalization.
 
@@ -1334,6 +1348,7 @@ The directories to be searched for come from three sources:
 \item{(c)} compile-time default directories (specified in
     \.{texmf.in}),\hfil\break
     i.e., \.{\$TEXMFDOTDIR:\$TEXMF/texmf/cweb//}.\par}
+@.CWEBINPUTS@>
 
 @d kpse_find_cweb(name) kpse_find_file(name,kpse_cweb_format,true)
 
@@ -1351,6 +1366,7 @@ typedef bool boolean;
 \.{CWEBINPUTS.cweb} is present in \.{texmf.cnf} (or \.{CWEBINPUTS\_cweb}
 in the environment) its value will be used as the search path for filenames.
 This allows different flavors of \.{CWEB} to have different search paths.
+@.CWEBINPUTS@>
 
 @<Set up |PROGNAME| feature and initialize the search path mechanism@>=
 kpse_set_program_name(argv[0], "cweb");

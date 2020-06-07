@@ -30,6 +30,7 @@ entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 }
 @y
+\let\maybe=\iftrue
 \def\covernote{\vbox{\noindent
 Copyright \copyright~1989, 1992
    by Technische Hochschule Darmstadt,\hfill\break
@@ -76,8 +77,8 @@ Section 4
 typedef int boolean;
 typedef char* string;
 @y
-@ The types |boolean| (with values |false| and |true|) and
-|string| come from \.{<kpathsea/simpletypes.h>}.
+@ The types |@!boolean| (with values |@!false| and |@!true|) and
+|@!string| come from \.{<kpathsea/simpletypes.h>}.
 @s boolean int
 @s string int
 @z
@@ -105,9 +106,9 @@ static int history=spotless;
 @y
 @<Global variables@>=
 typedef enum {
-    spotless,
-    troublesome,
-    fatal } return_code;
+    @!spotless,
+    @!troublesome,
+    @!fatal } return_code;
 static return_code history=spotless;
 @z
 
@@ -142,7 +143,7 @@ Section 15
 #include <stdio.h>
 @y
 @<Global \&{\#include}s@>=
-#include "cpascal.h" /* |decr| and |incr| */
+#include "cpascal.h" /* |@!decr| and |@!incr| */
 #include <kpathsea/kpathsea.h>
 #define usage tieusage /* Also redefine |usage| to avoid clash with function from lib. */
 @z
@@ -161,8 +162,7 @@ This should cause no trouble in any \Cl\ program.
 #endif
 @y
 This should cause no trouble in any \Cl\ program.
-The \.{kpathsea} include files handle the definition of |malloc()|,
-too.
+The \.{kpathsea} include files handle the definition of |@!malloc|, too.
 @^system dependencies@>
 @z
 
@@ -180,14 +180,14 @@ typedef int in_file_modes; /* should be |enum(search,test,reading,ignore)| */
 typedef int file_types; /* should be |enum(unknown,master,chf)| */
 @y
 typedef enum {
-    search,
-    test,
-    reading,
-    ignore } in_file_modes;
+    @!search,
+    @!test,
+    @!reading,
+    @!ignore } in_file_modes;
 typedef enum {
-    unknown,
-    master,
-    chf } file_types;
+    @!unknown,
+    @!master,
+    @!chf } file_types;
 @z
 
 @x l.548
@@ -197,9 +197,9 @@ typedef enum {
 typedef int out_md_type; /* should be |enum(normal,pre,post)| */
 @y
 typedef enum {
-    normal,
-    pre,
-    post } out_md_type;
+    @!normal,
+    @!pre,
+    @!post } out_md_type;
 @z
 
 Section 24
