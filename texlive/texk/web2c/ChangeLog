@@ -1,3 +1,20 @@
+2020-06-09  Andreas Scherer  <https://ascherer.github.io>
+
+	* weave.ch: Max out array sizes similar to CWEB.
+
+2020-06-07  Karl Berry  <karl@freefriends.org>
+
+	* ac/web2c.ac: omit $Id$ from output.
+
+2020-06-07  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctangleboot.cin,
+	* cwebboot.cin: Add date to table-of-contents page.
+
+2020-06-07  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctangleboot.cin: Handle special 'files' as secondary output.
+
 2020-06-07  Andreas Scherer  <https://ascherer.github.io>
 
 	* ctangleboot.cin,

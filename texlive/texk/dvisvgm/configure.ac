@@ -1,4 +1,4 @@
-# $Id: configure.ac 54335 2020-03-15 22:49:59Z karl $
+dnl $Id: configure.ac 55466 2020-06-07 18:00:56Z karl $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
