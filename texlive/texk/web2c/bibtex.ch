@@ -637,12 +637,15 @@ end;
 @z
 
 @x [65] max_strings=hash_size settable at runtime.
+@
+@<Globals in the outer block@>=
 @!hash_next : packed array[hash_loc] of hash_pointer;   {coalesced-list link}
 @!hash_text : packed array[hash_loc] of str_number;     {pointer to a string}
 @!hash_ilk : packed array[hash_loc] of str_ilk;         {the type of string}
 @!ilk_info : packed array[hash_loc] of integer;         {|ilk|-specific info}
 @!hash_used : hash_base..hash_max+1;    {allocation pointer for hash table}
 @y
+@ @<Globals in the outer block@>=
 @!hash_next : ^hash_pointer;   {coalesced-list link}
 @!hash_text : ^str_number;     {pointer to a string}
 @!hash_ilk : ^str_ilk;         {the type of string}
@@ -745,6 +748,10 @@ aux_not_found:
 aux_found:                      {now we're ready to read the \.{.aux} file}
 end;
 @y
+This module and the next two must be changed on those systems using
+command-line arguments.
+@^system dependencies@>
+
 @<Procedures and functions for the reading and processing of input files@>=
 procedure get_the_top_level_aux_file_name;
 label aux_found,@!aux_not_found;
@@ -1684,8 +1691,7 @@ long_options[current_option].flag := 0;
 long_options[current_option].val := 0;
 incr (current_option);
 
-@
-@<Glob...@> =
+@ @<Glob...@> =
 @!min_crossrefs: integer;
 
 @ Set |min_crossrefs| to two by default, so we match the

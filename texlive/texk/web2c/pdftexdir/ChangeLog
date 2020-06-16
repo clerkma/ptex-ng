@@ -1,13 +1,41 @@
+2020-06-11  Thanh Han The  <hanthethanh@gmail.com>
+
+	* pdftex.web (Create link annotations...): check for gen_running_link.
+	(pdf_running_link_{off,on}_node): new @d for new primitives.
+	(Put each ...): define them.
+	(Cases of |print_cmd_chr|...): print them.
+	(Declare act...): switch on them.
+	(Implement \.{\\pdfrunninglinkoff}, ...on): new modules to
+	implement them.
+	(Display the whatsit...),
+	(Mark a partial copy...),
+	(Wipe out the whatsit...): handle them as whatsits.
+	(gen_running_link): new global, define and initialize.
+	(Output the whatsit...): set gen_running_link according
+	to the new primitives.
+	pdftex r835. Following suggestion from Ulrike Fischer,
+	https://tug.org/pipermail/tex-live/2018-November/042759.html.
+
+2020-06-10  Thanh Han The  <hanthethanh@gmail.com>
+
+	* pdftex.web (end_link): warn instead of fatal for
+	"\pdfendlink ended up in different nesting level than \pdfstartlink".
+	pdftex r832. Suggestion from Ulrike Fischer,
+	https://tug.org/pipermail/tex-live/2018-November/042759.html.
+
 2020-06-03  Thanh Han The  <hanthethanh@gmail.com>
 
-	* pdftex.web: Initialize save_tail to avoid a value of 0 given at compile
-	time. Remove unnecessary codes. (from Hironobu Yamashita). pdftex r829.
+	* pdftex.web: Initialize save_tail to avoid a value of 0 given at
+	compile time. Remove unnecessary codes. (from Hironobu
+	Yamashita). pdftex r829.
+	https://mailman.ntg.nl/pipermail/ntg-pdftex/2020-May/004330.html
 
 2020-06-02  Thanh Han The  <hanthethanh@gmail.com>
 
 	* pdftex.web (auto_kern): @d=3, rather than "explicit".
 	(Display kern |p|): report auto_kern message; avoid link(r)
-	when r=null. pdftex r828.
+	when r=null. pdftex r828. Report from Robert Schlict,
+	https://mailman.ntg.nl/pipermail/ntg-pdftex/2020-May/004317.html
 
 2020-05-31  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
 
