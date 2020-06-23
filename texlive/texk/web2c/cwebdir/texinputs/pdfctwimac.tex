@@ -24,8 +24,6 @@
 \let\:=\. % preserve a way to get the dot accent
  % (all other accents will still work as usual)
 
-\def\contentspagenumber{0} % default page number for table of contents
-
 \newdimen\em \em=10pt % this "em" will not change with font size
 \parskip 0pt plus .1pt % almost no stretch between paragraphs
 \parindent 1\em % for paragraphs and for the first line of C text
@@ -237,7 +235,7 @@
 \let\yskip=\smallskip
 \def\?{\mathrel?}
 \def\note#1#2.{\par\penalty5000
-  \Y\noindent{\hangindent2\em\baselineskip10pt
+  \Y\noindent{\hangindent2\em\baselineskip10pt%
     \eightrm#1~\ifacro{\pdfnote#2.}\else#2\fi.\par}}
 
 \newtoks\toksA \newtoks\toksB \newtoks\toksC \newtoks\toksD
@@ -406,6 +404,7 @@
 \def\A{\note{See also section}} % xref for doubly defined section name
 \def\As{\note{See also sections}} % xref for multiply defined section name
 \def\B{\iftenpoint\ninepoint\fi
+  \font\niness=cmss9 \let\cmntfont\niness % alternative comment font
   \rightskip=0pt plus 100pt minus 10pt % go into C mode
   \sfcode`;=3000
   \pretolerance 10000
@@ -506,12 +505,6 @@
 \newcount\@n \newcount\@m \newcount\@p
 \newdimen\pageht \pageht=19cm
 \newdimen\pagewd \pagewd=13cm
-\ifacro
-  \pdfpagewidth=\pagewd  \advance\pdfpagewidth by 2cm
-  \pdfpageheight=\pageht \advance\pdfpageheight by 4cm
-  \ifpdftex \pdfhorigin=1cm \pdfvorigin=1cm
-  \else \global\hoffset=-1.54cm \global\voffset=-1.54cm \fi
-\fi
 \newdimen\colwd \colwd=\pagewd
  \advance\colwd by -2pc \divide\colwd by 3 % for three columns
 \newdimen\fullpageht \fullpageht=\pageht \advance\fullpageht by 4pc
@@ -646,9 +639,10 @@
 
 \hsize=\pagewd \vsize=\maxdimen \output={\twillout}
 
+\def\contentspagenumber{0} % default page number for table of contents
 \def\contentsfile{\jobname.toc} % file that gets table of contents info
 \def\readcontents{\input \contentsfile}
-\def\readsections{\relax}%\input \jobname.scn}
+\def\readsections{\input \jobname.scn}
 
 \newwrite\cont
 \ifpdftex
@@ -660,33 +654,21 @@
   \ifpdftex
     \immediate\write\cont{\catcode `\noexpand\@=12\relax} % \makeatother
     \immediate\closeout\cont % the contents information has been fully gathered
-  \fi
-}
-\def\fin{\ifpdftex \makebookmarks \fi
-  \parfillskip 0pt plus 1fil
-  \gtitle={NAMES OF THE SECTIONS}
-  \let\topsecno=\nullsec
-  \message{Section names:}
-  \def\note##1##2.{\quad{\eightrm##1~\ifacro{\pdfnote##2.}\else{##2}\fi.}}
-  \def\Q{\note{Cited in section}} % crossref for mention of a section
-  \def\Qs{\note{Cited in sections}} % crossref for mentions of a section
-  \def\U{\note{Used in section}} % crossref for use of a section
-  \def\Us{\note{Used in sections}} % crossref for uses of a section
-  \def\I{\par\hangindent 2em}\let\*=*
-  %\ifacro \def\outsecname{Names of the sections} \let\Xpdf\X
-  %\ifpdftex \pdfdest name {NOS} fith
-    %\pdfoutline goto name {NOS} count -\secno {\outsecname}
-    %\def\X##1:##2\X{\Xpdf##1:##2\X \firstsecno##1.%
-      %{\toksF={}\makeoutlinetoks##2\outlinedone\outlinedone}%
-      %\pdfoutline goto num \the\toksA \expandafter{\the\toksE}}
-  %\else \special{pdf: outline -1 << /Title (\outsecname)
-      %/Dest [ @thispage /FitH @ypos ] >>}
-    %\def\X##1:##2\X{\Xpdf##1:##2\X \firstsecno##1.%
-      %{\toksF={}\makeoutlinetoks##2\outlinedone\outlinedone}%
-      %\special{pdf: outline 0 << /Title (\the\toksE)
-        %/A << /S /GoTo /D (\romannumeral\the\toksA) >> >>}}
-  %\fi\fi
-  \readsections}
+  \fi}
+\def\fin{\ifacro \message{Section names:}
+  \def\U##1.{} \def\Us##1.{} \let\I=\relax \let\*=*
+  \def\outsecname{Names of the sections}
+  \ifpdftex \makebookmarks
+    \pdfoutline goto num 1 count -\secno {\outsecname}
+    \def\X##1:##2\X{\firstsecno##1.%
+      {\toksF={}\makeoutlinetoks##2\outlinedone\outlinedone}%
+      \pdfoutline goto num \the\toksA \expandafter{\the\toksE}}
+  \else \special{pdf: outline -1 << /Title (\outsecname) >>}%
+    \def\X##1:##2\X{\firstsecno##1.%
+      {\toksF={}\makeoutlinetoks##2\outlinedone\outlinedone}%
+      \special{pdf: outline 0 << /Title (\the\toksE)
+        /A << /S /GoTo /D (\romannumeral\the\toksA) >> >>}}
+  \fi \readsections \fi}
 \def\makebookmarks{\let\ZZ=\writebookmarkline \readcontents\relax}
 \def\writebookmarkline#1#2#3#4#5{{%
   \let\(=\let \let\)=\let \let\[=\let \let\]=\let \let\/=\let

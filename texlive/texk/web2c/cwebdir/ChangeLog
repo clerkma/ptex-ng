@@ -1,3 +1,34 @@
+2020-06-21  Andreas Scherer  <https://ascherer.github.io>
+
+	* texinputs/pdfwebtocfront.tex: Fix start pageno after dynamic to.
+	MF and [{pdf|Xe}]TeX start their main body on pageno 3.
+
+2020-06-20  Andreas Scherer  <https://ascherer.github.io>
+
+	* texinputs/pdfwebtocfront.tex: Generic solution for the headers in
+	WEB and CWEB programs (with four special cases with their own '\N').
+
+2020-06-20  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch: Clarify triple responsibility.
+
+2020-06-19  Andreas Scherer  <https://ascherer.github.io>
+
+	* texinputs/pdfwebtocfront.tex: Generic 'group title' on the first
+	page after the table-of-contents.
+
+2020-06-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* texinputs/pdfctimac.tex: Bookmarks for "Names of the sections".
+
+2020-06-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctang-w2c.ch: Translate another message string.
+	* ctwill-w2c.ch,
+	* prod-twill.w: Page breaks for CWILL format.  Fix final header.
+	* texinputs/pdfctimac.tex: Alternative comment font (9pt).
+	Don't force small borders in standard macros for PDF output.
+
 2020-06-15  Andreas Scherer  <https://ascherer.github.io>
 
 	* texinputs/pdfctimac.tex: Unified color management;

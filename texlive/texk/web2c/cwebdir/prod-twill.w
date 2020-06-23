@@ -4,7 +4,7 @@
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
 % Version 3.6 --- May 2000
 %
-@ Here is a table of all the productions.  Each production that
+@* Table of all productions.  Each production that
 combines two or more consecutive scraps implicitly inserts a {\tt \$}
 where necessary, that is, between scraps whose abutting boundaries
 have different |mathness|.  In this way we never get double {\tt\$\$}.
@@ -117,6 +117,7 @@ We use \\{in}, \\{out}, \\{back} and
      |decl_head| \altt|comma| |semi| |rpar| \hfill
      $D=D$\alt $B$ $C$ \unskip$E$ & \malt {\&{int} $f(\&{int}\ x=2)$} |int b:1| \cr
 \+& |decl_head| |cast| & |decl_head| & |int f(int)|\cr
+\penalty-10000
 \+& |decl_head| \altt|int_like| |lbrace| |decl| & |fn_decl|
                    \altt|int_like| |lbrace| |decl| \hfill $F=D\,|in|\,|in|$
                              & |long time () {|\cr
@@ -207,6 +208,7 @@ We use \\{in}, \\{out}, \\{back} and
    &$\langle\,$section name$\,\rangle$;\cr
 \+& |section_scrap| & |exp| &$\langle\,$section name$\,\rangle$\cr
 \+& |insert| |any| & |any| & \.{\v\#include\v}\cr
+\penalty-10000
 \+& |prelangle| & |binop| \hfill \.< & $<$ not in template\cr
 \+& |prerangle| & |binop| \hfill \.> & $>$ not in template\cr
 \+& |langle| |prerangle| & |cast| \hfill $L\.{\\,}P$ & $\langle\,\rangle$\cr
@@ -248,7 +250,7 @@ We use \\{in}, \\{out}, \\{back} and
     $O$\.\ \alt $N$ $S$ & |operator delete|\cr
 \+& |operator_like| |comma| & |exp| & \&{operator},\cr
 \+\dagit& |operator_like| & |new_exp| & |operator char*|\cr
-\advance\midcol-3pt
+\penalty-10000 \advance\midcol-3pt
 \+\dag200\enspace& |typedef_like| |decl_head| \alt|exp| |int_like| &
       |typedef_like| |decl_head| \hfill $D=D$\alt $E^{**}$ $I^{**}$ \unskip &
           \&{typedef} \&{char} \&{ch};\cr
