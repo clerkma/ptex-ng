@@ -1,3 +1,16 @@
+2020-06-24  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-w2c.ch,
+	* ctwill-mini.ch,
+	* ctwill.bux,
+	* system.bux,
+	* prod-mini.ch: Add editorial material to produce 'ctwill.pdf'
+	with CTWILL itself.
+
+2020-06-23  Andreas Scherer  <https://ascherer.github.io>
+
+	* prod-twill.w: Roll back editorial changes.
+
 2020-06-21  Andreas Scherer  <https://ascherer.github.io>
 
 	* texinputs/pdfwebtocfront.tex: Fix start pageno after dynamic to.
