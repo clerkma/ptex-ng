@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2018 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2020 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -58,6 +58,13 @@ extern int      spc_begin_annot   (struct spc_env *spe, pdf_obj *annot_dict);
 extern int      spc_end_annot     (struct spc_env *spe);
 extern int      spc_resume_annot  (struct spc_env *spe);
 extern int      spc_suspend_annot (struct spc_env *spe);
+
+extern int      spc_is_tracking_boxes (struct spc_env *spe);
+
+/* linkmode 0: normal, 1: capture phantom texts */
+extern void     spc_set_linkmode (struct spc_env *spe, int mode);
+/* set default height of phantom texts */
+extern void     spc_set_phantom  (struct spc_env *spe, double height, double depth);
 
 extern void     spc_push_object   (const char *key, pdf_obj *value);
 extern void     spc_flush_object  (const char *key);

@@ -1,3 +1,26 @@
+2020-06-28  Shunsaku Hirata  <shunsaku.hirata74@gmail.com>
+
+	* dvi.[ch], spc_dvipdfmx.c, spc_pdfm.c, specials.[ch]: Two new
+	special commands added as workarounds for \phantom text issue
+	in creating annotation (link). "pdf:xann" which extends the
+	current annotation area by a specified amount.
+	"dvipdfmx:catch_phantom" to control the behavior of dvipdfmx,
+	when this is set to true, then dvipdfmx extends the annotation
+	area when it encounters "horizontal movement" such as DVI
+	"right". Optionally height and depth of such area can be
+	specified (default: current font size for height and depth 0).
+	* pdfcolor.c: Change prefix for ColorSpace resource name to "XC".
+	* pdfdoc.c: Add missing release object.
+
+2020-06-27  Shunsaku Hirata  <shunsaku.hirata74@gmail.com>
+
+	* pdfcolor.[ch], pdfdoc.c, pdfdraw.c, spc_util.c: An extension
+	to the color support. All color-spaces can be supported (only
+	for pdf: color commands). ColorSpace can be specified by a
+	name key (e.g. DeviceRGB) or an object reference which is a
+	reference to an object defining ColorSpace itself.
+	* configure.ac: Version 20200627.
+
 2020-06-24  Akira Kakuto  <kakuto@w32tex.org>
 
 	* dpxfile.c, pdfximage.c: Remove unnecessary changes on

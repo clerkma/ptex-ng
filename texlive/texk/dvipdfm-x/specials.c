@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2019 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2020 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
     
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -104,7 +104,24 @@ spc_suspend_annot (struct spc_env *spe)
   return  0;
 }
 
+/* Added this for supporting bann-eann erea only with \phantom text */
+int
+spc_is_tracking_boxes (struct spc_env *spe)
+{
+  return dvi_is_tracking_boxes();
+}
 
+void
+spc_set_linkmode (struct spc_env *spe, int mode)
+{
+  dvi_set_linkmode(mode);
+}
+
+void
+spc_set_phantom (struct spc_env *spe, double height, double depth)
+{
+  dvi_set_phantom_height(height, depth);
+}
 
 static struct ht_table *named_objects = NULL;
 
