@@ -91,6 +91,8 @@ texlive/libs/libpng/include/pnglibconf.h
 texlive/libs/libpng/libpng-src/.deps/
 texlive/libs/libpng/libpng-src/.dirstamp
 texlive/libs/libpng/libpng-src/arm/.deps/
+texlive/libs/libpng/libpng-src/powerpc/.deps/
+texlive/libs/libpng/libpng-src/powerpc/.dirstamp
 texlive/libs/libpng/libpng.a
 texlive/libs/libpng/stamp-h1
 texlive/libs/pixman/.deps/

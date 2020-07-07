@@ -7425,6 +7425,8 @@ void error (void)
     while (true)
     {
 continu:
+      if (interaction != error_stop_mode)
+        return;
       clear_for_error_prompt();
       prompt_input("? ");
 
