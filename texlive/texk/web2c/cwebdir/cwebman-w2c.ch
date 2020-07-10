@@ -125,11 +125,12 @@ email address in a \.{CWEB} file (e.g., \.{levy@@math.berkeley.edu}%
 it cannot find them in the current directory.
 @y
 it cannot find them in the current directory.%
-\cwebfootnote{In this extended implementation, if an \.{@i}nclude file can
-not be found in the current directory, \.{CWEB} will use the conventions of
-the \Kpathsea/ library as outlined in section~\X90:File lookup with
-\Kpathsea/\X~of appendix~D to look for it.  (This is true for any other input
-or change file lookup.)}% FIXME
+\cwebfootnote{\acrofalse In this extended implementation, if an \.{@i}nclude
+file can not be found in the current directory, \.{CWEB} will use the
+conventions of the \Kpathsea/ library as outlined in section~\X90:File lookup
+with \Kpathsea/\X~of \pdfURL{appendix~D}{common-changes.pdf} to look for it.
+% FIXME
+(This is true for any other input or change file lookup.)}
 @z
 
 @x
@@ -139,6 +140,10 @@ output by \.{CWEAVE}. (On by default.) (Has no effect on \.{CTANGLE}.)%
 \cwebfootnote{This extended version of \.{CWEB} adds the following options
 to the list:
 \hfil\smallskip
+\option d Set the debugging variable \\{kpathsea\_debug} to the numeric
+value $N\in[0,127]$ of this option.  See section~92 % FIXME
+of \pdfURL{appendix~D}{common-changes.pdf} for details.
+\hfil\vskip\normallineskip
 \option i Indent parameters in function declarations.  This causes the
 formal parameter declarations in function heads to be indented.  (On by
 default; \.{-i} typesets declarations flush left; some people think this
@@ -206,14 +211,17 @@ the output of \.{CWEAVE}, and \Appendix C discusses how to use some of those
 @z
 
 @x
+appendices D, E, and~F, which exhibit the complete source code for
 \.{CTANGLE} and \.{CWEAVE}.
 
 \vfil\eject\titletrue
 @y
+appendices \pdfURL{D}{common.pdf}, \pdfURL{E}{ctangle.pdf},
+and~\pdfURL{F}{cweave.pdf}, which exhibit the complete source code for
 \.{CTANGLE} and \.{CWEAVE}.%
-\cwebfootnote{Actually, appendix~D contains the source code for \.{COMMON},
-and the additional appendix~G exhibits the source code for \.{CTWILL}, which
-is based on \.{CWEAVE}.}
+\cwebfootnote{Actually, \pdfURL{appendix~D}{common.pdf} contains the source
+code for \.{COMMON}, and the additional \pdfURL{appendix~G}{ctwill.pdf}
+exhibits the source code for \.{CTWILL}, which is based on \.{CWEAVE}.}
 
 \eject\titletrue
 @z
@@ -271,8 +279,9 @@ And here's what the same excerpt looks like when typeset.
 @x
 if you have a duplex printer. Appendices D, E, and F of the complete
 @y
-if you have a duplex printer. Appendices D, E, and F\cwebfootnote{And
-Appendix~G.} of the complete
+if you have a duplex printer. Appendices \pdfURL{D}{common.pdf},
+\pdfURL{E}{ctangle.pdf}, and \pdfURL{F}{cweave.pdf}\cwebfootnote{And
+\pdfURL{Appendix~G}{ctwill.pdf}.} of the complete
 @z
 
 @x
