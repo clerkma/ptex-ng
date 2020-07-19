@@ -20095,8 +20095,15 @@ static void char_warning (internal_font_number f, eight_bits c)
     if (eTeX_ex && (tracing_lost_chars > 1))
       tracing_online = 1;
 
-    begin_diagnostic();
-    print_nl("Missing character: there is no ");
+    if (tracing_lost_chars > 2)
+    {
+      print_err("Missing character: There is no ");
+    }
+    else
+    {
+      begin_diagnostic();
+      print_nl("Missing character: there is no ");
+    }
 
     if ((c < ' ') || (c > '~'))
     {
@@ -20116,11 +20123,28 @@ static void char_warning (internal_font_number f, eight_bits c)
     else
       print(c);
 
+    if (tracing_lost_chars > 2)
+    {
+      prints(" (");
+      print_hex(c);
+      prints(")");
+    }
+
     prints(" in font ");
     slow_print(font_name[f]);
-    print_char('!');
-    end_diagnostic(false);
+
+    if (tracing_lost_chars < 3)
+      print_char('!');
+
     tracing_online = old_setting;
+
+    if (tracing_lost_chars > 2)
+    {
+      help0();
+      error();
+    }
+    else
+      end_diagnostic(false);
   }
 }
 
