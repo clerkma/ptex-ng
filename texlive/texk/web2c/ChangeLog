@@ -1,3 +1,11 @@
+2020-07-19  Karl Berry  <karl@freefriends.org>
+
+	* doc/web2c.texi (TeX extensions): add [e][u]pTeX. Other small
+	additions to the engine descriptions.
+
+	* NEWS: mention new \tracinglostchars>=3 causing an error.
+	See pdftexdir/ChangeLog for details.
+
 2020-07-17  Andreas Scherer  <https://ascherer.github.io>
 
 	* Makefile.am,
@@ -20,7 +28,7 @@
 	call in unusual interactive sequences can mess up
 	the selector value, ultimately causing a segmentation fault
 	from writing to a closed stream \write15. Fix primarily
-	from David Fuchs.
+	from David Fuchs. Original report from Xiao Zhang,
 	https://tex.stackexchange.com/questions/551313/
 	https://tug.org/pipermail/tex-live/2020-June/045876.html
 

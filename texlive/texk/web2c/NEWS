@@ -1,5 +1,12 @@
 This file records noteworthy changes.  (Public domain.)
 
+* pdftex, xetex, e(u)ptex: if \tracinglostchars >= 3,
+make missing characters an error (not just a log message),
+and always report the character code in hex.
+
+* obscure interaction sequences try to avoid crashing.
+
+
 2020 (for TeX Live 2020, 27 March 2020)
 * \input now also accepts a group-delimited filename, e.g.,
 \input{foo.tex}. The usage with a standard space/token-delimited

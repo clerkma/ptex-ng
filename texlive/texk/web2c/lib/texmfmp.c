@@ -137,7 +137,8 @@
 #endif
 #endif
 
-char *generic_synctex_get_current_name (void)
+char *
+generic_synctex_get_current_name (void)
 {
   char *pwdbuf, *ret;
 #if defined(W32USYNCTEX)
@@ -174,7 +175,8 @@ FILE *Poptr;
 #define fopen fsyscp_fopen
 #define xfopen fsyscp_xfopen
 #include <wchar.h>
-int fsyscp_stat(const char *path, struct stat *buffer)
+int
+fsyscp_stat(const char *path, struct stat *buffer)
 {
   wchar_t *wpath;
   int     ret;
@@ -187,7 +189,8 @@ int fsyscp_stat(const char *path, struct stat *buffer)
   return ret;
 }
 #include <sys/stat.h>
-int fsyscp_dir_p(char *path)
+int
+fsyscp_dir_p(char *path)
 {
   struct stat stats;
   int    ret;
@@ -195,7 +198,8 @@ int fsyscp_dir_p(char *path)
   ret = fsyscp_stat(path, &stats) == 0 && S_ISDIR (stats.st_mode);
   return ret;
 }
-int fsyscp_access(const char *path, int mode)
+int
+fsyscp_access(const char *path, int mode)
 {
   wchar_t *wpath;
   int     ret;
@@ -2564,7 +2568,7 @@ calledit (packedASCIIcode *filename,
 {
   char *temp, *command, *fullcmd;
   char c;
-  int sdone, ddone, i;
+  int sdone, ddone;
 
 #ifdef WIN32
   char *fp, *ffp, *env, editorname[256], buffer[256];
@@ -2575,13 +2579,76 @@ calledit (packedASCIIcode *filename,
   sdone = ddone = 0;
   filename += fnstart;
 
-  /* Close any open input files, since we're going to kill the job.  */
-  for (i = 1; i <= inopen; i++)
+  /* Close any open input files, since we're going to kill the job and
+     the editor might well want to open them for writing.  On Windows,
+     at least, that would not be allowed when the file is still open.
+     
+     Unfortunately, the input_file array contains both the open files
+     that we want to close, and junk references to non-files for
+     terminal interaction that we must not try to close.  For example,
+     consider this input sequence:
+       \input test % contains a single line \bla, that is, any undefined cs
+       i\bum x     % insert another undefined control sequence
+       e           % invoke the editor
+     At this point input_file will have an open file for test.tex,
+     and a non-file for the insert. https://tex.stackexchange.com/q/552113 
+     
+     Therefore, we have to traverse down input_stack (not input_file),
+     looking for name_field values >17, which correspond to open
+     files, and then the index_field value of that entry tells us the
+     corresponding element of input_file, which is what we need to close.
+
+     We test for >17 because name_field=0 means the terminal,
+     name_field=1..16 means \openin stream n - 1,
+     name_field=17 means an invalid stream number (for read_toks).
+     Although ... seems like we should close any opened \openin files also.
+     Whoever is reading this, please implement that? Sigh.
+     
+     Description in modules 300--304 of tex.web: "Input stacks and states."
+     
+     Here, we do not have to look at cur_input, the global variable
+     which is effectively the top of input_stack, because it will always
+     be a terminal (non-file) interaction -- the one where the user
+     typed "e" to start the edit.  */
+ {  
+  int is_ptr; /* element of input_stack, 0 < input_ptr */  
+  for (is_ptr = 0; is_ptr < inputptr; is_ptr++) {
+    if (inputstack[is_ptr].namefield <= 17) {
+        ; /* fprintf (stderr, "calledit: skipped input_stack[%d], ", is_ptr);
+             fprintf (stderr, "namefield=%d <= 17\n",
+                      inputstack[is_ptr].namefield); */
+    } else {
+      FILE *f;
+      /* when name_field > 17, index_field specifies the element of
+         the input_file array, 1 <= in_open */
+      int if_ptr = inputstack[is_ptr].indexfield;
+      if (if_ptr < 1 || if_ptr > inopen) {
+      fprintf (stderr, "%s:calledit: unexpected if_ptr=%d not in range 1..%d,",
+                 argv[0], if_ptr, inopen);
+        fprintf (stderr, "from input_stack[%d].namefield=%d\n",
+                 is_ptr, inputstack[is_ptr].namefield);
+        exit (1);
+      }
+      
 #ifdef XeTeX
-    xfclose (inputfile[i]->f, "inputfile");
+      f = inputfile[if_ptr]->f;
 #else
-    xfclose (inputfile[i], "inputfile");
+      f = inputfile[if_ptr];
 #endif
+       /* fprintf (stderr,"calledit: input_stack #%d -> input_file #%d = %x\n",
+                   is_ptr, if_ptr, f); */
+      /* Although it should never happen, if the file value happens to
+         be zero, let's not gratuitously abort.  */
+      if (f) {
+        xfclose (f, "inputfile");
+      } else {
+        fprintf (stderr, "%s:calledit: not closing unexpected zero", argv[0]);
+        fprintf (stderr, " input_file[%d] from input_stack[%d].namefield=%d\n",
+                 if_ptr, is_ptr, inputstack[is_ptr].namefield);        
+      }
+    } /* end name_field > 17 */
+  }   /* end for loop for input_stack */
+ }    /* end block for variable declarations */
 
   /* Replace the default with the value of the appropriate environment
      variable or config file value, if it's set.  */
@@ -2590,7 +2657,7 @@ calledit (packedASCIIcode *filename,
     edit_value = temp;
 
   /* Construct the command string.  The `11' is the maximum length an
-     integer might be.  */
+     integer might be (64 bits).  */
   command = xmalloc (strlen (edit_value) + fnlength + 11);
 
   /* So we can construct it as we go.  */
@@ -2611,6 +2678,7 @@ calledit (packedASCIIcode *filename,
     {
       if (c == '%')
         {
+          int i;
           switch (c = *edit_value++)
             {
 	    case 'd':
@@ -3076,7 +3144,8 @@ makesrcspecial (strnumber srcfilename, int lineno)
 static char print_buf[PRINTF_BUF_SIZE];
 
 /* Helper for pdftex_fail. */
-static void safe_print(const char *str)
+static void
+safe_print(const char *str)
 {
     const char *c;
     for (c = str; *c; ++c)
@@ -3117,9 +3186,9 @@ char start_time_str[TIME_STR_SIZE];
 static char time_str[TIME_STR_SIZE];
     /* minimum size for time_str is 24: "D:YYYYmmddHHMMSS+HH'MM'" */
 
-static void makepdftime(time_t t, char *time_str, boolean utc)
+static void
+makepdftime(time_t t, char *time_str, boolean utc)
 {
-
     struct tm lt, gmt;
     size_t size;
     int i, off, off_hours, off_mins;
@@ -3170,7 +3239,8 @@ static void makepdftime(time_t t, char *time_str, boolean utc)
     }
 }
 
-void initstarttime(void)
+void
+initstarttime(void)
 {
     if (!start_time_set) {
         init_start_time ();
@@ -3217,7 +3287,8 @@ find_input_file(integer s)
 }
 
 #if !defined(XeTeX)
-char *makecstring(integer s)
+char *
+makecstring(integer s)
 {
     static char *cstrbuf = NULL;
     char *p;
@@ -3251,7 +3322,8 @@ char *makecstring(integer s)
     That means, file names that are legal on some operation systems
     cannot any more be used since pdfTeX version 1.30.4.
 */
-char *makecfilename(integer s)
+char *
+makecfilename(integer s)
 {
     char *name = makecstring(s);
     char *p = name;
@@ -3267,7 +3339,8 @@ char *makecfilename(integer s)
 }
 #endif /* !XeTeX */
 
-void getcreationdate(void)
+void
+getcreationdate(void)
 {
     size_t len;
 #if defined(XeTeX)
@@ -3295,7 +3368,8 @@ void getcreationdate(void)
 #endif
 }
 
-void getfilemoddate(integer s)
+void
+getfilemoddate(integer s)
 {
     struct stat file_data;
 
@@ -3338,7 +3412,8 @@ void getfilemoddate(integer s)
     xfree(file_name);
 }
 
-void getfilesize(integer s)
+void
+getfilesize(integer s)
 {
     struct stat file_data;
     int i;
@@ -3384,7 +3459,8 @@ void getfilesize(integer s)
     xfree(file_name);
 }
 
-void getfiledump(integer s, int offset, int length)
+void
+getfiledump(integer s, int offset, int length)
 {
     FILE *f;
     int read, i;
@@ -3465,7 +3541,8 @@ void getfiledump(integer s, int offset, int length)
  * hexadecimal encoded;
  * sizeof(out) should be at least lin*2+1.
  */
-void convertStringToHexString(const char *in, char *out, int lin)
+void
+convertStringToHexString(const char *in, char *out, int lin)
 {
     int i, j, k;
     char buf[3];
@@ -3483,7 +3560,8 @@ void convertStringToHexString(const char *in, char *out, int lin)
 #define DIGEST_SIZE 16
 #define FILE_BUF_SIZE 1024
 
-void getmd5sum(strnumber s, boolean file)
+void
+getmd5sum(strnumber s, boolean file)
 {
     md5_state_t state;
     md5_byte_t digest[DIGEST_SIZE];
