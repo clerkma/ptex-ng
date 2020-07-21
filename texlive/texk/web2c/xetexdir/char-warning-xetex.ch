@@ -1,4 +1,4 @@
-% $Id: char-warning-xetex.ch 55874 2020-07-19 15:42:51Z karl $
+% $Id: char-warning-xetex.ch 55885 2020-07-20 15:27:35Z ascherer $
 % Public domain. See ../pdftexdir/char-warning-pdftex.ch for basic info.
 % In addition to the basic change, we also define a new procedure
 % print_ucs_code to print in the format U+.... for system fonts.
@@ -34,7 +34,7 @@ begin if tracing_lost_chars>0 then
  end;
 end;
 @y
-procedure print_ucs_code(@!n: UnicodeScalar); { cf. print_hex }
+procedure print_ucs_code(@!n: UnicodeScalar); { cf.~|print_hex| }
     var k: 0..22; {index to current digit; we assume that $0\L n<16^{22}$}
     begin
         k := 0;

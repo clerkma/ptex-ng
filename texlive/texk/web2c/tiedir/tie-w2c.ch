@@ -54,6 +54,11 @@ permission notice identical to this one.
 
 Section 1.
 
+@x l.96
+E.g.\ it will not use the |enum| type declarations.
+@y
+@z
+
 @x l.105
 @d banner  "This is TIE, CWEB Version 2.4."
 @y
@@ -177,6 +182,12 @@ The \.{kpathsea} include files handle the definition of |@!malloc|, too.
 @z
 
 Sections 18 and 19: use enum as requested in tie.w
+
+@x l.526 Fix case glitch.
+the kind of output. (this would even be necessary if we
+@y
+the kind of output. (This would even be necessary if we
+@z
 
 @x l.530
 #define search 0
