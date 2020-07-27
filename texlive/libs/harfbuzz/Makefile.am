@@ -1,4 +1,4 @@
-## $Id: Makefile.am 55630 2020-06-22 22:26:59Z kakuto $
+## $Id: Makefile.am 55937 2020-07-25 10:48:52Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -140,7 +140,6 @@ libharfbuzz_a_SOURCES =  \
 
 ## native OpenType Layout backend
 libharfbuzz_a_SOURCES += \
-	@HARFBUZZ_TREE@/src/hb-aat-fdsc-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout.cc \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-common.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-ankr-table.hh \
@@ -148,7 +147,6 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-feat-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-just-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-kerx-table.hh \
-	@HARFBUZZ_TREE@/src/hb-aat-layout-lcar-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-morx-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-opbd-table.hh \
 	@HARFBUZZ_TREE@/src/hb-aat-layout-trak-table.hh \

@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: xdvipdfm-psz.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: xdvipdfm-psz.test 55950 2020-07-26 05:55:46Z kakuto $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.

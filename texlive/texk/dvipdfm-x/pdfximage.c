@@ -38,7 +38,6 @@
 #include "pdfdev.h"
 #include "pdfdraw.h"
 #include "pdfnames.h"
-#include "specials.h"
 
 #include "epdf.h"
 #include "mpost.h"
@@ -416,7 +415,7 @@ pdf_ximage_load_image (const char *ident, const char *filename, load_options opt
         I->attr.bbox_type == options.bbox_type) {
       return id;
     }
-    f = I->filename;
+    f = I->fullname;
   }
   if (f) {
     /* we already have converted this file; f is the temporary file name */
