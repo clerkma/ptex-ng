@@ -768,9 +768,10 @@ enum
 #define eTeX_state_code               69  // {\eTeX\ state variables}
 #define tracing_fontloaders_code      70
 #define pdf_compress_level_code       71
-#define pdf_minor_version_code        72
-#define synctex_code                  73
-#define int_pars                      74
+#define pdf_major_version_code        72
+#define pdf_minor_version_code        73
+#define synctex_code                  74
+#define int_pars                      75
 #define count_base                    (int_base + int_pars) // {256 user \.{\\count} registers}
 #define del_code_base                 (count_base + 256)    // {256 delimiter code mappings}
 #define dimen_base                    (del_code_base + 256) // {beginning of region 6}
@@ -851,6 +852,7 @@ enum
 #define saving_vdiscards              int_par(saving_vdiscards_code)
 #define saving_hyph_codes             int_par(saving_hyph_codes_code)
 #define pdf_compress_level            int_par(pdf_compress_level_code)
+#define pdf_major_version             int_par(pdf_major_version_code)
 #define pdf_minor_version             int_par(pdf_minor_version_code)
 #define synctex                       int_par(synctex_code)
 /* sec 0247 */

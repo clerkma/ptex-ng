@@ -3905,6 +3905,7 @@ static void do_initex (void)
   escape_char = '\\';
   end_line_char = carriage_return;
   pdf_compress_level = 9;
+  pdf_major_version = 1;
   pdf_minor_version = 5;
 
   for (k = 0; k <= 255; k++)
@@ -6360,6 +6361,7 @@ static void init_prim (void)
   primitive("scriptbaselineshiftfactor", assign_int, int_base + script_baseline_shift_factor_code);
   primitive("scriptscriptbaselineshiftfactor", assign_int, int_base + scriptscript_baseline_shift_factor_code);
   primitive("pdfcompresslevel", assign_int, int_base + pdf_compress_level_code);
+  primitive("pdfmajorversion", assign_int, int_base + pdf_major_version_code);
   primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
   primitive("synctex", assign_int, int_base + synctex_code);
   /* sec 0248 */
@@ -11192,6 +11194,10 @@ static void print_param (integer n)
 
     case pdf_compress_level_code:
       print_esc("pdfcompresslevel");
+      break;
+
+    case pdf_major_version_code:
+      print_esc("pdfmajorversion");
       break;
 
     case pdf_minor_version_code:
@@ -20475,14 +20481,17 @@ struct pdf_enc_setting {
 struct pdf_obj_setting {
     int         enable_objstm;
     int         enable_predictor;
+    int         compression_level;
 };
 
 struct pdf_setting
 {
+    int    ver_major, ver_minor;
     double media_width, media_height;
     double annot_grow_amount;
     int    outline_open_depth;
     int    check_gotos;
+    int    enable_manual_thumb;
     int    enable_encrypt;
     struct pdf_enc_setting encrypt;
     struct pdf_dev_setting device;
@@ -20500,8 +20509,6 @@ typedef struct pdf_rect {
 extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
 
 /* from "dvipdfm-x/pdfobj.h" */
-extern void pdf_set_version(unsigned version);
-extern void pdf_set_compression(int level);
 extern long pdf_output_stats(void);
 
 /* from "dvipdfm-x/pdfdev.h" */
@@ -20511,6 +20518,10 @@ extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
 extern void pdf_dev_set_dirmode(int dir_mode);
 extern void pdf_dev_begin_actualtext(uint16_t * unicodes, int len);
 extern void pdf_dev_end_actualtext(void);
+
+/* from "dvipdfm-x/pdflimits.h" */
+#define PDF_VERSION_MIN 13
+#define PDF_VERSION_MAX 20
 
 /* from "dvipdfm-x/specials.h" */
 extern int spc_exec_at_begin_document(void);
@@ -21081,7 +21092,8 @@ static void ship_out (pointer p)
 #ifndef APTEX_DVI_ONLY
     {
       struct pdf_setting aptex_pdf_setting;
-      char * aptex_producer = "Asiatic pTeX 2018";
+      char * aptex_producer = "Asiatic pTeX 2020";
+      int aptex_pdf_version;
       unsigned char aptex_id1[16], aptex_id2[16];
 
       output_dvi_name = take_str_string(output_file_name);
@@ -21090,15 +21102,22 @@ static void ship_out (pointer p)
       dpx_compute_id_string(aptex_id1, aptex_producer, output_dvi_name, output_pdf_name);
       memcpy(aptex_id2, aptex_id1, 16);
 
-      if ((pdf_minor_version < 0) || (pdf_minor_version > 7))
-        pdf_set_version(15);
+      aptex_pdf_version = 10 * pdf_major_version + pdf_minor_version;
+      if ((aptex_pdf_version < PDF_VERSION_MIN) || (aptex_pdf_version > PDF_VERSION_MAX))
+      {
+        aptex_pdf_setting.ver_major = 1;
+        aptex_pdf_setting.ver_minor = 5;
+      }
       else
-        pdf_set_version(10 + pdf_minor_version);
+      {
+        aptex_pdf_setting.ver_major = pdf_major_version;
+        aptex_pdf_setting.ver_minor = pdf_minor_version;
+      }
 
       if ((pdf_compress_level < 0) || (pdf_compress_level > 9))
-        pdf_set_compression(9);
+        aptex_pdf_setting.object.compression_level = 9;
       else
-        pdf_set_compression(pdf_compress_level);
+        aptex_pdf_setting.object.compression_level = pdf_compress_level;
 
       pdf_init_fontmaps();
 
@@ -34506,6 +34525,7 @@ static void do_extension (void)
 
         if ((cur_cmd == extension) && (cur_chr <= close_node))
         {
+          k = inhibit_glue_flag;
           p = tail;
           do_extension();
           out_what(tail);
