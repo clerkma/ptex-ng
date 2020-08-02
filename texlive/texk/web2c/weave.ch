@@ -63,6 +63,13 @@
 @z
 
 @x [2] No global labels, define and call parse_arguments.
+calls the `|jump_out|' procedure, which goes to the label |end_of_WEAVE|.
+
+@d end_of_WEAVE = 9999 {go here to wrap it up}
+@y
+calls the `|jump_out|' procedure.
+@z
+@x
 label end_of_WEAVE; {go here to finish}
 const @<Constants in the outer block@>@/
 type @<Types in the outer block@>@/
@@ -225,7 +232,24 @@ rewrite(tex_file,tex_name);
       begin while not eoln(f) do vgetc(f);
 @z
 
-@x [??] Fix jump_out
+@x [33] Fix jump_out
+@ The |jump_out| procedure just cuts across all active procedure levels
+and jumps out of the program. This is the only non-local \&{goto} statement
+in \.{WEAVE}. It is used when no recovery from a particular error has
+been provided.
+
+Some \PASCAL\ compilers do not implement non-local |goto| statements.
+@^system dependencies@>
+In such cases the code that appears at label |end_of_WEAVE| should be
+copied into the |jump_out| procedure, followed by a call to a system procedure
+that terminates the program.
+@y
+@ The |jump_out| procedure just cuts across all active procedure levels
+and jumps out of the program.
+It is used when no recovery from a particular error has
+been provided.
+@z
+@x
 @d fatal_error(#)==begin new_line; print(#); error; mark_fatal; jump_out;
   end
 
