@@ -1,6 +1,8 @@
 #!/bin/bash
 
 export NG_SRC_DIR=`pwd`
+export have_brotli=no
+export with_brotli=no
 # libraries from TeX Live.
 cd $NG_SRC_DIR/texlive/libs/zlib && ./configure && make -j || exit 1
 cp libz.a $NG_SRC_DIR/src
