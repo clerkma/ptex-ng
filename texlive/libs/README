@@ -1,4 +1,4 @@
-$Id: README 55937 2020-07-25 10:48:52Z kakuto $
+$Id: README 56107 2020-08-13 22:28:17Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -25,8 +25,8 @@ graphite2 1.3.14 - checked 10apr20
   http://sourceforge.net/projects/silgraphite/files/graphite2/
   (requires C++11)
 
-harfbuzz 2.7.0 - checked 25jul20
-  https://github.com/harfbuzz/harfbuzz/releases/download/2.7.0/
+harfbuzz 2.7.1 - checked 14aug20
+  https://github.com/harfbuzz/harfbuzz/releases/download/2.7.1/
 
 icu 63.1 - checked 8jan19
   http://download.icu-project.org/files/icu4c/

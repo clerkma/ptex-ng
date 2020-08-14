@@ -1,4 +1,4 @@
-## $Id: Makefile.am 55937 2020-07-25 10:48:52Z kakuto $
+## $Id: Makefile.am 56107 2020-08-13 22:28:17Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -182,6 +182,7 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-arabic.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-arabic-fallback.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-arabic.hh \
+	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-arabic-joining-list.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-arabic-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-arabic-win1256.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-default.cc \
