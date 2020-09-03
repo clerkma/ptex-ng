@@ -18,11 +18,6 @@ struct RFloat {
 };
 #endif
 
-struct RCptr {
-  MRB_OBJECT_HEADER;
-  void *p;
-};
-
 enum mrb_special_consts {
   MRB_Qnil    =  0,
   MRB_Qfalse  =  4,
@@ -142,7 +137,6 @@ MRB_API mrb_value mrb_word_boxing_float_pool(struct mrb_state*, mrb_float);
 #define mrb_sclass_p(o) BOXWORD_OBJ_TYPE_P(o, SCLASS)
 #define mrb_proc_p(o) BOXWORD_OBJ_TYPE_P(o, PROC)
 #define mrb_range_p(o) BOXWORD_OBJ_TYPE_P(o, RANGE)
-#define mrb_file_p(o) BOXWORD_OBJ_TYPE_P(o, FILE)
 #define mrb_env_p(o) BOXWORD_OBJ_TYPE_P(o, ENV)
 #define mrb_data_p(o) BOXWORD_OBJ_TYPE_P(o, DATA)
 #define mrb_fiber_p(o) BOXWORD_OBJ_TYPE_P(o, FIBER)

@@ -172,11 +172,13 @@ sym_intern(mrb_state *mrb, const char *name, size_t len, mrb_bool lit)
   if (sym > 0) return sym;
 
   /* registering a new symbol */
-  sym = ++mrb->symidx;
+  sym = mrb->symidx + 1;
   if (mrb->symcapa < sym) {
-    if (mrb->symcapa == 0) mrb->symcapa = 100;
-    else mrb->symcapa = (size_t)(mrb->symcapa * 6 / 5);
-    mrb->symtbl = (symbol_name*)mrb_realloc(mrb, mrb->symtbl, sizeof(symbol_name)*(mrb->symcapa+1));
+    size_t symcapa = mrb->symcapa;
+    if (symcapa == 0) symcapa = 100;
+    else symcapa = (size_t)(symcapa * 6 / 5);
+    mrb->symtbl = (symbol_name*)mrb_realloc(mrb, mrb->symtbl, sizeof(symbol_name)*(symcapa+1));
+    mrb->symcapa = symcapa;
   }
   sname = &mrb->symtbl[sym];
   sname->len = (uint16_t)len;
@@ -201,7 +203,7 @@ sym_intern(mrb_state *mrb, const char *name, size_t len, mrb_bool lit)
   else {
     sname->prev = 0;
   }
-  mrb->symhash[hash] = sym;
+  mrb->symhash[hash] = mrb->symidx = sym;
 
   return sym<<SYMBOL_NORMAL_SHIFT;
 }
@@ -562,10 +564,9 @@ mrb_sym_dump(mrb_state *mrb, mrb_sym sym)
 static mrb_value
 sym_cmp(mrb_state *mrb, mrb_value s1)
 {
-  mrb_value s2;
+  mrb_value s2 = mrb_get_arg1(mrb);
   mrb_sym sym1, sym2;
 
-  mrb_get_args(mrb, "o", &s2);
   if (!mrb_symbol_p(s2)) return mrb_nil_value();
   sym1 = mrb_symbol(s1);
   sym2 = mrb_symbol(s2);

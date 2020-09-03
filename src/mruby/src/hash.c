@@ -73,7 +73,7 @@ ht_hash_func(mrb_state *mrb, htable *t, mrb_value key)
 
   default:
     hv = mrb_funcall(mrb, key, "hash", 0);
-    h = (size_t)t ^ (size_t)mrb_fixnum(hv);
+    h = (size_t)tt ^ (size_t)mrb_fixnum(hv);
     break;
   }
   if (index && (index != t->index || capa != index->capa)) {
@@ -365,7 +365,7 @@ ht_put(mrb_state *mrb, htable *t, mrb_value key, mrb_value val)
       if (!seg->next && i >= t->last_len) {
         seg->e[i].key = key;
         seg->e[i].val = val;
-        t->last_len = i+1;
+        t->last_len = (uint16_t)i+1;
         t->size++;
         return;
       }
@@ -373,7 +373,7 @@ ht_put(mrb_state *mrb, htable *t, mrb_value key, mrb_value val)
         deleted++;
         continue;
       }
-      if (ht_hash_equal(mrb, t, k, key)) {
+      if (ht_hash_equal(mrb, t, key, k)) {
         seg->e[i].val = val;
         return;
       }
@@ -407,7 +407,7 @@ ht_put(mrb_state *mrb, htable *t, mrb_value key, mrb_value val)
   }
   seg->e[i].key = key;
   seg->e[i].val = val;
-  t->last_len = i+1;
+  t->last_len = (uint16_t)i+1;
   if (t->index == NULL && t->size > MRB_HT_INIT_SIZE*4) {
     ht_index(mrb, t);
   }
@@ -454,7 +454,7 @@ ht_get(mrb_state *mrb, htable *t, mrb_value key, mrb_value *vp)
         return FALSE;
       }
       if (mrb_undef_p(k)) continue;
-      if (ht_hash_equal(mrb, t, k, key)) {
+      if (ht_hash_equal(mrb, t, key, k)) {
         if (vp) *vp = seg->e[i].val;
         return TRUE;
       }
@@ -641,12 +641,11 @@ static mrb_value hash_default(mrb_state *mrb, mrb_value hash, mrb_value key);
 static mrb_value
 mrb_hash_init_copy(mrb_state *mrb, mrb_value self)
 {
-  mrb_value orig;
+  mrb_value orig = mrb_get_arg1(mrb);
   struct RHash* copy;
   htable *orig_h;
   mrb_value ifnone, vret;
 
-  mrb_get_args(mrb, "o", &orig);
   if (mrb_obj_equal(mrb, self, orig)) return self;
   if ((mrb_type(self) != mrb_type(orig)) || (mrb_obj_class(mrb, self) != mrb_obj_class(mrb, orig))) {
       mrb_raise(mrb, E_TYPE_ERROR, "initialize_copy should take same class object");
@@ -828,9 +827,8 @@ mrb_hash_init(mrb_state *mrb, mrb_value hash)
 static mrb_value
 mrb_hash_aget(mrb_state *mrb, mrb_value self)
 {
-  mrb_value key;
+  mrb_value key = mrb_get_arg1(mrb);
 
-  mrb_get_args(mrb, "o", &key);
   return mrb_hash_get(mrb, self, key);
 }
 
@@ -913,9 +911,8 @@ mrb_hash_default(mrb_state *mrb, mrb_value hash)
 static mrb_value
 mrb_hash_set_default(mrb_state *mrb, mrb_value hash)
 {
-  mrb_value ifnone;
+  mrb_value ifnone = mrb_get_arg1(mrb);
 
-  mrb_get_args(mrb, "o", &ifnone);
   mrb_hash_modify(mrb, hash);
   mrb_iv_set(mrb, hash, mrb_intern_lit(mrb, "ifnone"), ifnone);
   RHASH(hash)->flags &= ~MRB_HASH_PROC_DEFAULT;
@@ -969,9 +966,8 @@ mrb_hash_default_proc(mrb_state *mrb, mrb_value hash)
 static mrb_value
 mrb_hash_set_default_proc(mrb_state *mrb, mrb_value hash)
 {
-  mrb_value ifnone;
+  mrb_value ifnone = mrb_get_arg1(mrb);
 
-  mrb_get_args(mrb, "o", &ifnone);
   mrb_hash_modify(mrb, hash);
   mrb_iv_set(mrb, hash, mrb_intern_lit(mrb, "ifnone"), ifnone);
   if (!mrb_nil_p(ifnone)) {
@@ -1003,9 +999,8 @@ mrb_hash_delete_key(mrb_state *mrb, mrb_value hash, mrb_value key)
 static mrb_value
 mrb_hash_delete(mrb_state *mrb, mrb_value self)
 {
-  mrb_value key;
+  mrb_value key = mrb_get_arg1(mrb);
 
-  mrb_get_args(mrb, "o", &key);
   mrb_hash_modify(mrb, self);
   return mrb_hash_delete_key(mrb, self, key);
 }
@@ -1288,10 +1283,9 @@ mrb_hash_key_p(mrb_state *mrb, mrb_value hash, mrb_value key)
 static mrb_value
 mrb_hash_has_key(mrb_state *mrb, mrb_value hash)
 {
-  mrb_value key;
+  mrb_value key = mrb_get_arg1(mrb);
   mrb_bool key_p;
 
-  mrb_get_args(mrb, "o", &key);
   key_p = mrb_hash_key_p(mrb, hash, key);
   return mrb_bool_value(key_p);
 }
@@ -1331,10 +1325,9 @@ hash_has_value_i(mrb_state *mrb, mrb_value key, mrb_value val, void *p)
 static mrb_value
 mrb_hash_has_value(mrb_state *mrb, mrb_value hash)
 {
-  mrb_value val;
+  mrb_value val = mrb_get_arg1(mrb);
   struct has_v_arg arg;
   
-  mrb_get_args(mrb, "o", &val);
   arg.found = FALSE;
   arg.val = val;
   ht_foreach(mrb, RHASH_TBL(hash), hash_has_value_i, &arg);

@@ -146,24 +146,23 @@ mrb_local_variables(mrb_state *mrb, mrb_value self)
   while (proc) {
     if (MRB_PROC_CFUNC_P(proc)) break;
     irep = proc->body.irep;
-    if (!irep->lv) break;
-    for (i = 0; i + 1 < irep->nlocals; ++i) {
-      if (irep->lv[i].name) {
-        mrb_sym sym = irep->lv[i].name;
-        const char *name = mrb_sym_name(mrb, sym);
-        switch (name[0]) {
-        case '*': case '&':
-          break;
-        default:
-          mrb_hash_set(mrb, vars, mrb_symbol_value(sym), mrb_true_value());
-          break;
+    if (irep->lv) {
+      for (i = 0; i + 1 < irep->nlocals; ++i) {
+        if (irep->lv[i].name) {
+          mrb_sym sym = irep->lv[i].name;
+          const char *name = mrb_sym_name(mrb, sym);
+          switch (name[0]) {
+          case '*': case '&':
+            break;
+          default:
+            mrb_hash_set(mrb, vars, mrb_symbol_value(sym), mrb_true_value());
+            break;
+          }
         }
       }
     }
-    if (!MRB_PROC_ENV_P(proc)) break;
+    if (MRB_PROC_SCOPE_P(proc)) break;
     proc = proc->upper;
-    //if (MRB_PROC_SCOPE_P(proc)) break;
-    if (!proc->c) break;
   }
 
   return mrb_hash_keys(mrb, vars);
@@ -671,8 +670,7 @@ mrb_mod_s_nesting(mrb_state *mrb, mrb_value mod)
 
   ary = mrb_ary_new(mrb);
   proc = mrb->c->ci[-1].proc;   /* callee proc */
-  mrb_assert(!MRB_PROC_CFUNC_P(proc));
-  while (proc) {
+  while (proc && !MRB_PROC_CFUNC_P(proc)) {
     if (MRB_PROC_SCOPE_P(proc)) {
       struct RClass *c2 = MRB_PROC_TARGET_CLASS(proc);
 

@@ -76,6 +76,7 @@
 #include <mruby/version.h>
 
 #ifndef MRB_WITHOUT_FLOAT
+#include <float.h>
 #ifndef FLT_EPSILON
 #define FLT_EPSILON (1.19209290e-07f)
 #endif
@@ -164,8 +165,8 @@ struct mrb_context {
   struct RProc **ensure;                  /* ensure handler stack */
   uint16_t esize, eidx;
 
-  enum mrb_fiber_state status;
-  mrb_bool vmexec;
+  enum mrb_fiber_state status : 4;
+  mrb_bool vmexec : 1;
   struct RFiber *fib;
 };
 
@@ -317,7 +318,9 @@ MRB_API struct RClass *mrb_define_class(mrb_state *mrb, const char *name, struct
  * @return [struct RClass *] Reference to the newly defined module.
  */
 MRB_API struct RClass *mrb_define_module(mrb_state *mrb, const char *name);
+
 MRB_API mrb_value mrb_singleton_class(mrb_state *mrb, mrb_value val);
+MRB_API struct RClass *mrb_singleton_class_ptr(mrb_state *mrb, mrb_value val);
 
 /**
  * Include a module in another class or module.
@@ -956,7 +959,20 @@ mrb_get_mid(mrb_state *mrb) /* get method symbol */
  */
 MRB_API mrb_int mrb_get_argc(mrb_state *mrb);
 
+/**
+ * Retrieve an array of arguments from mrb_state.
+ *
+ * Correctly handles *splat arguments.
+ */
 MRB_API mrb_value* mrb_get_argv(mrb_state *mrb);
+
+/**
+ * Retrieve the first and only argument from mrb_state.
+ * Raises ArgumentError unless the number of arguments is exactly one.
+ *
+ * Correctly handles *splat arguments.
+ */
+MRB_API mrb_value mrb_get_arg1(mrb_state *mrb);
 
 /* `strlen` for character string literals (use with caution or `strlen` instead)
     Adjacent string literals are concatenated in C/C++ in translation phase 6.
@@ -1148,7 +1164,6 @@ MRB_API void mrb_close(mrb_state *mrb);
 MRB_API void* mrb_default_allocf(mrb_state*, void*, size_t, void*);
 
 MRB_API mrb_value mrb_top_self(mrb_state *mrb);
-MRB_API mrb_value mrb_run(mrb_state *mrb, struct RProc* proc, mrb_value self);
 MRB_API mrb_value mrb_top_run(mrb_state *mrb, struct RProc *proc, mrb_value self, unsigned int stack_keep);
 MRB_API mrb_value mrb_vm_run(mrb_state *mrb, struct RProc *proc, mrb_value self, unsigned int stack_keep);
 MRB_API mrb_value mrb_vm_exec(mrb_state *mrb, struct RProc *proc, const mrb_code *iseq);

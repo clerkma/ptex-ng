@@ -36,8 +36,6 @@ usage(const char *name)
   "-v           print version number, then turn on verbose mode",
   "-g           produce debugging information",
   "-B<symbol>   binary <symbol> output in C language format",
-  "-e           generate little endian iseq data",
-  "-E           generate big endian iseq data",
   "--remove-lv  remove local variables",
   "--verbose    run at verbose mode",
   "--version    print the version",
@@ -54,19 +52,26 @@ usage(const char *name)
 static char *
 get_outfilename(mrb_state *mrb, char *infile, const char *ext)
 {
-  size_t infilelen;
-  size_t extlen;
+  size_t ilen, flen, elen;
   char *outfile;
-  char *p;
+  char *p = NULL;
 
-  infilelen = strlen(infile);
-  extlen = strlen(ext);
-  outfile = (char*)mrb_malloc(mrb, infilelen + extlen + 1);
-  memcpy(outfile, infile, infilelen + 1);
+  ilen = strlen(infile);
+  flen = ilen;
   if (*ext) {
-    if ((p = strrchr(outfile, '.')) == NULL)
-      p = outfile + infilelen;
-    memcpy(p, ext, extlen + 1);
+    elen = strlen(ext);
+    if ((p = strrchr(infile, '.'))) {
+      ilen = p - infile;
+    }
+    flen += elen;
+  }
+  else {
+    flen = ilen;
+  }
+  outfile = (char*)mrb_malloc(mrb, flen+1);
+  strncpy(outfile, infile, ilen+1);
+  if (p) {
+    strncpy(outfile+ilen, ext, elen+1);
   }
 
   return outfile;
@@ -124,10 +129,8 @@ parse_args(mrb_state *mrb, int argc, char **argv, struct mrbc_args *args)
         args->flags |= DUMP_DEBUG_INFO;
         break;
       case 'E':
-        args->flags = DUMP_ENDIAN_BIG | (args->flags & ~DUMP_ENDIAN_MASK);
-        break;
       case 'e':
-        args->flags = DUMP_ENDIAN_LIL | (args->flags & ~DUMP_ENDIAN_MASK);
+        fprintf(stderr, "%s: -e/-E option no longer needed.\n", args->prog);
         break;
       case 'h':
         return -1;
@@ -159,10 +162,6 @@ parse_args(mrb_state *mrb, int argc, char **argv, struct mrbc_args *args)
     else {
       break;
     }
-  }
-  if (args->verbose && args->initname && (args->flags & DUMP_ENDIAN_MASK) == 0) {
-    fprintf(stderr, "%s: generating %s endian C file. specify -e/-E for cross compiling.\n",
-            args->prog, bigendian_p() ? "big" : "little");
   }
   return i;
 }

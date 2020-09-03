@@ -549,6 +549,23 @@ mrb_get_argv(mrb_state *mrb)
   return array_argv;
 }
 
+MRB_API mrb_value
+mrb_get_arg1(mrb_state *mrb)
+{
+  mrb_int argc = mrb->c->ci->argc;
+  mrb_value *array_argv = mrb->c->stack + 1;
+  if (argc < 0) {
+    struct RArray *a = mrb_ary_ptr(*array_argv);
+
+    argc = ARY_LEN(a);
+    array_argv = ARY_PTR(a);
+  }
+  if (argc != 1) {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "wrong number of arguments");
+  }
+  return array_argv[0];
+}
+
 void mrb_hash_check_kdict(mrb_state *mrb, mrb_value self);
 
 /*
@@ -1212,10 +1229,9 @@ mrb_mod_ancestors(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_mod_extend_object(mrb_state *mrb, mrb_value mod)
 {
-  mrb_value obj;
+  mrb_value obj = mrb_get_arg1(mrb);
 
   mrb_check_type(mrb, mod, MRB_TT_MODULE);
-  mrb_get_args(mrb, "o", &obj);
   mrb_include_module(mrb, mrb_class_ptr(mrb_singleton_class(mrb, obj)), mrb_class_ptr(mod));
   return mod;
 }
@@ -1242,33 +1258,45 @@ mrb_mod_dummy_visibility(mrb_state *mrb, mrb_value mod)
   return mod;
 }
 
-MRB_API mrb_value
-mrb_singleton_class(mrb_state *mrb, mrb_value v)
+/* returns mrb_class_ptr(mrb_singleton_class()) */
+/* except that it return NULL for immediate values */
+MRB_API struct RClass*
+mrb_singleton_class_ptr(mrb_state *mrb, mrb_value v)
 {
   struct RBasic *obj;
 
   switch (mrb_type(v)) {
   case MRB_TT_FALSE:
     if (mrb_nil_p(v))
-      return mrb_obj_value(mrb->nil_class);
-    return mrb_obj_value(mrb->false_class);
+      return mrb->nil_class;
+    return mrb->false_class;
   case MRB_TT_TRUE:
-    return mrb_obj_value(mrb->true_class);
+    return mrb->true_class;
   case MRB_TT_CPTR:
-    return mrb_obj_value(mrb->object_class);
+    return mrb->object_class;
   case MRB_TT_SYMBOL:
   case MRB_TT_FIXNUM:
 #ifndef MRB_WITHOUT_FLOAT
   case MRB_TT_FLOAT:
 #endif
-    mrb_raise(mrb, E_TYPE_ERROR, "can't define singleton");
-    return mrb_nil_value();    /* not reached */
+    return NULL;
   default:
     break;
   }
   obj = mrb_basic_ptr(v);
   prepare_singleton_class(mrb, obj);
-  return mrb_obj_value(obj->c);
+  return obj->c;
+}
+
+MRB_API mrb_value
+mrb_singleton_class(mrb_state *mrb, mrb_value v)
+{
+  struct RClass *c = mrb_singleton_class_ptr(mrb, v);
+
+  if (c == NULL) {
+    mrb_raise(mrb, E_TYPE_ERROR, "can't define singleton");
+  }
+  return mrb_obj_value(c);
 }
 
 MRB_API void
@@ -1481,9 +1509,8 @@ static mrb_value
 attr_writer(mrb_state *mrb, mrb_value obj)
 {
   mrb_value name = mrb_proc_cfunc_env_get(mrb, 0);
-  mrb_value val;
+  mrb_value val = mrb_get_arg1(mrb);
 
-  mrb_get_args(mrb, "o", &val);
   mrb_iv_set(mrb, obj, to_sym(mrb, name), val);
   return val;
 }
@@ -1651,19 +1678,9 @@ mrb_bob_not(mrb_state *mrb, mrb_value cv)
 mrb_value
 mrb_obj_equal_m(mrb_state *mrb, mrb_value self)
 {
-  mrb_value arg;
+  mrb_value arg = mrb_get_arg1(mrb);
 
-  mrb_get_args(mrb, "o", &arg);
   return mrb_bool_value(mrb_obj_equal(mrb, self, arg));
-}
-
-static mrb_value
-mrb_obj_not_equal_m(mrb_state *mrb, mrb_value self)
-{
-  mrb_value arg;
-
-  mrb_get_args(mrb, "o", &arg);
-  return mrb_bool_value(!mrb_equal(mrb, self, arg));
 }
 
 MRB_API mrb_bool
@@ -1716,7 +1733,10 @@ mrb_class_real(struct RClass* cl)
 MRB_API const char*
 mrb_class_name(mrb_state *mrb, struct RClass* c)
 {
-  mrb_value name = class_name_str(mrb, c);
+  mrb_value name;
+
+  if (c == NULL) return NULL;
+  name = class_name_str(mrb, c);
   return RSTRING_PTR(name);
 }
 
@@ -1960,12 +1980,10 @@ mrb_const_get_sym(mrb_state *mrb, mrb_value mod, mrb_sym id)
 static mrb_value
 mrb_mod_const_get(mrb_state *mrb, mrb_value mod)
 {
-  mrb_value path;
+  mrb_value path = mrb_get_arg1(mrb);
   mrb_sym id;
   char *ptr;
   mrb_int off, end, len;
-
-  mrb_get_args(mrb, "o", &path);
 
   if (mrb_symbol_p(path)) {
     /* const get with symbol */
@@ -2119,10 +2137,9 @@ top_define_method(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_mod_eqq(mrb_state *mrb, mrb_value mod)
 {
-  mrb_value obj;
+  mrb_value obj = mrb_get_arg1(mrb);
   mrb_bool eqq;
 
-  mrb_get_args(mrb, "o", &obj);
   eqq = mrb_obj_is_kind_of(mrb, obj, mrb_class_ptr(mod));
 
   return mrb_bool_value(eqq);
@@ -2257,7 +2274,6 @@ mrb_init_class(mrb_state *mrb)
   mrb_define_method(mrb, bob, "initialize",              mrb_bob_init,             MRB_ARGS_NONE());
   mrb_define_method(mrb, bob, "!",                       mrb_bob_not,              MRB_ARGS_NONE());
   mrb_define_method(mrb, bob, "==",                      mrb_obj_equal_m,          MRB_ARGS_REQ(1)); /* 15.3.1.3.1  */
-  mrb_define_method(mrb, bob, "!=",                      mrb_obj_not_equal_m,      MRB_ARGS_REQ(1));
   mrb_define_method(mrb, bob, "__id__",                  mrb_obj_id_m,             MRB_ARGS_NONE()); /* 15.3.1.3.4  */
   mrb_define_method(mrb, bob, "__send__",                mrb_f_send,               MRB_ARGS_REQ(1)|MRB_ARGS_REST()|MRB_ARGS_BLOCK());  /* 15.3.1.3.5  */
   mrb_define_method(mrb, bob, "equal?",                  mrb_obj_equal_m,          MRB_ARGS_REQ(1)); /* 15.3.1.3.11 */

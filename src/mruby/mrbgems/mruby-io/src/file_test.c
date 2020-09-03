@@ -85,7 +85,7 @@ mrb_lstat(mrb_state *mrb, mrb_value obj, struct stat *st)
  *    File.directory?(".")
  */
 
-mrb_value
+static mrb_value
 mrb_filetest_s_directory_p(mrb_state *mrb, mrb_value klass)
 {
 #ifndef S_ISDIR
@@ -93,9 +93,7 @@ mrb_filetest_s_directory_p(mrb_state *mrb, mrb_value klass)
 #endif
 
   struct stat st;
-  mrb_value obj;
-
-  mrb_get_args(mrb, "o", &obj);
+  mrb_value obj = mrb_get_arg1(mrb);
 
   if (mrb_stat(mrb, obj, &st) < 0)
     return mrb_false_value();
@@ -112,7 +110,7 @@ mrb_filetest_s_directory_p(mrb_state *mrb, mrb_value klass)
  * Returns <code>true</code> if the named file is a pipe.
  */
 
-mrb_value
+static mrb_value
 mrb_filetest_s_pipe_p(mrb_state *mrb, mrb_value klass)
 {
 #if defined(_WIN32) || defined(_WIN64)
@@ -124,9 +122,7 @@ mrb_filetest_s_pipe_p(mrb_state *mrb, mrb_value klass)
 #  endif
 
   struct stat st;
-  mrb_value obj;
-
-  mrb_get_args(mrb, "o", &obj);
+  mrb_value obj = mrb_get_arg1(mrb);
 
   if (mrb_stat(mrb, obj, &st) < 0)
     return mrb_false_value();
@@ -145,7 +141,7 @@ mrb_filetest_s_pipe_p(mrb_state *mrb, mrb_value klass)
  * Returns <code>true</code> if the named file is a symbolic link.
  */
 
-mrb_value
+static mrb_value
 mrb_filetest_s_symlink_p(mrb_state *mrb, mrb_value klass)
 {
 #if defined(_WIN32) || defined(_WIN64)
@@ -167,9 +163,7 @@ mrb_filetest_s_symlink_p(mrb_state *mrb, mrb_value klass)
 
 #ifdef S_ISLNK
   struct stat st;
-  mrb_value obj;
-
-  mrb_get_args(mrb, "o", &obj);
+  mrb_value obj = mrb_get_arg1(mrb);
 
   if (mrb_lstat(mrb, obj, &st) == -1)
     return mrb_false_value();
@@ -188,7 +182,7 @@ mrb_filetest_s_symlink_p(mrb_state *mrb, mrb_value klass)
  * Returns <code>true</code> if the named file is a socket.
  */
 
-mrb_value
+static mrb_value
 mrb_filetest_s_socket_p(mrb_state *mrb, mrb_value klass)
 {
 #if defined(_WIN32) || defined(_WIN64)
@@ -210,9 +204,7 @@ mrb_filetest_s_socket_p(mrb_state *mrb, mrb_value klass)
 
 #ifdef S_ISSOCK
   struct stat st;
-  mrb_value obj;
-
-  mrb_get_args(mrb, "o", &obj);
+  mrb_value obj = mrb_get_arg1(mrb);
 
   if (mrb_stat(mrb, obj, &st) < 0)
     return mrb_false_value();
@@ -232,13 +224,12 @@ mrb_filetest_s_socket_p(mrb_state *mrb, mrb_value klass)
  * Return <code>true</code> if the named file exists.
  */
 
-mrb_value
+static mrb_value
 mrb_filetest_s_exist_p(mrb_state *mrb, mrb_value klass)
 {
   struct stat st;
-  mrb_value obj;
+  mrb_value obj = mrb_get_arg1(mrb);
 
-  mrb_get_args(mrb, "o", &obj);
   if (mrb_stat(mrb, obj, &st) < 0)
     return mrb_false_value();
 
@@ -253,7 +244,7 @@ mrb_filetest_s_exist_p(mrb_state *mrb, mrb_value klass)
  * regular file.
  */
 
-mrb_value
+static mrb_value
 mrb_filetest_s_file_p(mrb_state *mrb, mrb_value klass)
 {
 #ifndef S_ISREG
@@ -261,9 +252,7 @@ mrb_filetest_s_file_p(mrb_state *mrb, mrb_value klass)
 #endif
 
   struct stat st;
-  mrb_value obj;
-
-  mrb_get_args(mrb, "o", &obj);
+  mrb_value obj = mrb_get_arg1(mrb);
 
   if (mrb_stat(mrb, obj, &st) < 0)
     return mrb_false_value();
@@ -281,13 +270,11 @@ mrb_filetest_s_file_p(mrb_state *mrb, mrb_value klass)
  * a zero size.
  */
 
-mrb_value
+static mrb_value
 mrb_filetest_s_zero_p(mrb_state *mrb, mrb_value klass)
 {
   struct stat st;
-  mrb_value obj;
-
-  mrb_get_args(mrb, "o", &obj);
+  mrb_value obj = mrb_get_arg1(mrb);
 
   if (mrb_stat(mrb, obj, &st) < 0)
     return mrb_false_value();
@@ -306,13 +293,11 @@ mrb_filetest_s_zero_p(mrb_state *mrb, mrb_value klass)
  * _file_name_ can be an IO object.
  */
 
-mrb_value
+static mrb_value
 mrb_filetest_s_size(mrb_state *mrb, mrb_value klass)
 {
   struct stat st;
-  mrb_value obj;
-
-  mrb_get_args(mrb, "o", &obj);
+  mrb_value obj = mrb_get_arg1(mrb);
 
   if (mrb_stat(mrb, obj, &st) < 0)
     mrb_sys_fail(mrb, "mrb_stat");
@@ -328,13 +313,11 @@ mrb_filetest_s_size(mrb_state *mrb, mrb_value klass)
  * file otherwise.
  */
 
-mrb_value
+static mrb_value
 mrb_filetest_s_size_p(mrb_state *mrb, mrb_value klass)
 {
   struct stat st;
-  mrb_value obj;
-
-  mrb_get_args(mrb, "o", &obj);
+  mrb_value obj = mrb_get_arg1(mrb);
 
   if (mrb_stat(mrb, obj, &st) < 0)
     return mrb_nil_value();
