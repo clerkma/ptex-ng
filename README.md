@@ -12,9 +12,6 @@ Run the shell script:
     ./build-gcc/build-aptex.sh
 
 ### Windows/MSVC
-First of all, we need to install `bison` ([winflexbison](https://github.com/lexxmark/winflexbison/)) somewhere.
-
-    set YACC=path-to-winflexbison\win_flex_bison-2.5.14\win_bison.exe
 
 #### Compile with nmake
 

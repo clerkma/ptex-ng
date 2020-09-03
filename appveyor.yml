@@ -1,8 +1,6 @@
 platform:
   - Any CPU
 clone_depth: 10
-cache:
-  - winflexbison-2.5.16.zip
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
@@ -10,12 +8,8 @@ build_script:
   - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - cmd: cd build-msvc
   - cmd: set PATH=C:\Ruby25-x64\bin;%PATH%
-  - cmd: set YACC=%APPVEYOR_BUILD_FOLDER%\winflexbison\win_bison.exe
   - cmd: build-mruby.bat
   - cmd: build-aptex-nmake.bat
-install:
-  - if not exist winflexbison-2.5.16.zip appveyor DownloadFile "https://github.com/lexxmark/winflexbison/releases/download/v2.5.16/winflexbison-2.5.16.zip"
-  - 7z x -y -owinflexbison winflexbison-2.5.16.zip > nul
 test_script:
   - cmd: lsotfea.exe C:\Windows\Fonts\segoeui.ttf
   - cmd: aptex.exe -mrb-load-string "(1..20).each do |i| p i end"
