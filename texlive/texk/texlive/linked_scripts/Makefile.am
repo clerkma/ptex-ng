@@ -1,4 +1,4 @@
-## $Id: Makefile.am 55933 2020-07-24 21:59:43Z karl $
+## $Id: Makefile.am 56352 2020-09-15 21:14:32Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2020 Karl Berry <tex-live@tug.org>
@@ -158,6 +158,7 @@ texmf_other_scripts = \
 	latexindent/latexindent.pl \
 	latexmk/latexmk.pl \
 	latexpand/latexpand \
+	light-latex-make/llmk.lua \
 	lilyglyphs/lily-glyph-commands.py \
 	lilyglyphs/lily-image-commands.py \
 	lilyglyphs/lily-rebuild-pdfs.py \
