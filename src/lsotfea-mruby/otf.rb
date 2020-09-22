@@ -94,7 +94,7 @@ class GTabParser
   end
 
   def list_feature(feature_index_list)
-    lines = feature_index_list.length / 4
+    lines = (feature_index_list.length + 3).div(4)
     lines.times do |line|
       one_line = feature_index_list[4 * line, 4].map {|i| @feature_list[i][0]}
       puts("    " + one_line.join(" "))
@@ -136,10 +136,14 @@ class ParseBinary
       tag, check_sum, offset, length = src[one_offset + 12 + 16 * tableIndex, 16].unpack("a4L>3")
       if tag == "GSUB"
         @gsub = GTabParser.new(src[offset, length])
-        @gsub.list_info("Table 'GSUB'")
+        if @gsub != nil
+          @gsub.list_info("Table 'GSUB'")
+        end
       elsif tag == "GPOS"
         @gpos = GTabParser.new(src[offset, length])
-        @gpos.list_info("Table 'GPOS'")
+        if @gpos != nil
+          @gpos.list_info("Table 'GPOS'")
+        end
       end
     end
   end
