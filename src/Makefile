@@ -1,11 +1,12 @@
 #
-# Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019 Clerk Ma
+# Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #
 
 CC = gcc
-CFLAGS = -c -O2
+CDEBUG =
+CFLAGS = $(CDEBUG) -c -O2
 INCLUDES = \
 	-I ../texlive/texk/ptexenc/ \
 	-I ../texlive/texk/ \
@@ -16,7 +17,8 @@ INCLUDES = \
 	-I ../texlive/texk/web2c/libmd5 \
 	-I libotf/src \
 	-I mruby/include
-LDFLAGS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a libmd5.a libmruby.a -lm
+LDLIBS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a libmd5.a libmruby.a -lm
+LDFLAGS = -s -o
 
 objects = \
 	aptex.o \
@@ -38,11 +40,11 @@ lsotfea_objects = \
 all: aptex lsotfea
 
 aptex: $(objects)
-	$(CC) -s -o aptex $(objects) $(LDFLAGS)
+	$(CC) $(LDFLAGS) aptex $(objects) $(LDLIBS)
 	cp aptex ptex-ng
 
 lsotfea: lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-ltag.c lsotfea-src/lsotfea-ftag.c
-	$(CC) -s -O2 -o lsotfea $(INCLUDES) lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-ltag.c lsotfea-src/lsotfea-ftag.c libotf.a libfreetype.a
+	$(CC) $(LDFLAGS) -O2 lsotfea $(INCLUDES) lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-ltag.c lsotfea-src/lsotfea-ftag.c libotf.a libfreetype.a
 
 aptex.o: aptex.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex.c
