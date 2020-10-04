@@ -20528,7 +20528,8 @@ extern int spc_exec_at_begin_document(void);
 extern void spc_exec_at_end_document(void);
 extern int spc_exec_at_begin_page(void);
 extern int spc_exec_at_end_page(void);
-extern int spc_exec_special(const char *buffer, long size, double x_user, double y_user, double dpx_mag);
+extern int spc_exec_special(const char *buffer, long size,
+ double x_user, double y_user, double dpx_mag, int * is_drawable, pdf_rect *rect);
 
 /* from "dvipdfm-x/dvi.c" */
 extern int dvi_locate_font (const char *tfm_name, spt_t ptsize);
@@ -21154,6 +21155,7 @@ static void ship_out (pointer p)
       aptex_pdf_setting.annot_grow_amount = 0.0;
       aptex_pdf_setting.outline_open_depth = 0;
       aptex_pdf_setting.check_gotos = !(1 << 4);
+      aptex_pdf_setting.enable_manual_thumb = 0;
       aptex_pdf_setting.enable_encrypt = 0;
       aptex_pdf_setting.object.enable_objstm = 1;
       aptex_pdf_setting.object.enable_predictor = 1;
@@ -22386,10 +22388,15 @@ static void special_out (pointer p)
         break;
     }
 
-    graphics_mode();
-    spc_moveto(cur_h * sp2bp / 1.5202, cur_v * sp2bp / 1.5202);
-    spc_exec_special(spc_str, cur_length,
-      spc_h * sp2bp, spc_v * sp2bp, mag / 1000.0);
+    {
+      int is_drawable = 0;
+      pdf_rect rect = {0.0, 0.0, 0.0, 0.0};
+
+      graphics_mode();
+      spc_moveto(cur_h * sp2bp / 1.5202, cur_v * sp2bp / 1.5202);
+      spc_exec_special(spc_str, cur_length,
+        spc_h * sp2bp, spc_v * sp2bp, mag / 1000.0, &is_drawable, &rect);
+    }
   }
 #endif
   pool_ptr = str_start[str_ptr];
