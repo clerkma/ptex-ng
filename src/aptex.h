@@ -159,7 +159,7 @@ def_const(max_cjk_val,        0x1000000, 0x1000000);// {to separate wchar and kc
 def_const(max_in_open,        15,     15);          // {maximum number of input files and error insertions that can be going on simultaneously}
 def_const(block_size,         1000,   1000);
 
-def_const(default_mem_top,    0,      262140);
+def_const(default_mem_top,    0,      2621400);
 def_const(error_line,         79,     79);          // {width of context lines on terminal error messages}
 def_const(half_error_line,    50,     50);          // {width of first lines of contexts in terminal error messages; should be between 30 and |error_line-15|}
 def_const(max_print_line,     79,     79);          // {width of longest text lines output; should be at least 60}
@@ -197,8 +197,8 @@ typedef integer str_number;
 typedef integer scaled;
 typedef integer nonnegative_integer;
 
-def_alter(mem_top, integer, 262140);
-def_alter(mem_max, integer, 262140);
+def_alter(mem_top, integer, 2621400);
+def_alter(mem_max, integer, 2621400);
 def_alter(mem_min, integer, 0);
 
 def_const(max_mem_size, 0, (max_halfword / 8 - 1));

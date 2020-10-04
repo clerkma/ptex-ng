@@ -75,7 +75,7 @@ void ng_gid (uint16_t gid, int ng_font_id, int32_t h, int32_t v)
 
   wbuf[0] = gid >> 8;
   wbuf[1] = gid & 0xff;
-  pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id, -1);
+  pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id);
 }
 
 void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, uint8_t g, uint8_t b)
@@ -132,7 +132,7 @@ void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, ui
 
   wbuf[0] = gid >> 8;
   wbuf[1] = gid & 0xff;
-  pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id, -1);
+  pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id);
   {
     pdf_color_pop();
   }
@@ -157,25 +157,25 @@ void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v)
         wbuf[1] =  UTF32toUTF16HS(ch)       & 0xff;
         wbuf[2] = (UTF32toUTF16LS(ch) >> 8) & 0xff;
         wbuf[3] =  UTF32toUTF16LS(ch)       & 0xff;
-        pdf_dev_set_string(h, v, wbuf, 4, width, font->font_id, 2);
+        pdf_dev_set_string(h, v, wbuf, 4, width, font->font_id);
       }
       else if (ch > 255)
       {
         wbuf[0] = (ch >> 8) & 0xff;
         wbuf[1] =  ch & 0xff;
-        pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id, 2);
+        pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id);
       }
       else if (font->subfont_id >= 0)
       {
         unsigned short uch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
         wbuf[0] = (uch >> 8) & 0xff;
         wbuf[1] =  uch & 0xff;
-        pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id, 2);
+        pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id);
       }
       else
       {
         wbuf[0] = (unsigned char) ch;
-        pdf_dev_set_string(h, v, wbuf, 1, width, font->font_id, 1);
+        pdf_dev_set_string(h, v, wbuf, 1, width, font->font_id);
       }
 
       if (dvi_is_tracking_boxes())
