@@ -44,7 +44,7 @@ aptex: $(objects)
 	cp aptex ptex-ng
 
 lsotfea: lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-ltag.c lsotfea-src/lsotfea-ftag.c
-	$(CC) $(LDFLAGS) -O2 lsotfea $(INCLUDES) lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-ltag.c lsotfea-src/lsotfea-ftag.c libotf.a libfreetype.a
+	$(CC) -O2 $(LDFLAGS) lsotfea $(INCLUDES) lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-ltag.c lsotfea-src/lsotfea-ftag.c libotf.a libfreetype.a
 
 aptex.o: aptex.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex.c

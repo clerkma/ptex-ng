@@ -1,4 +1,4 @@
-/* Copyright 2014 Clerk Ma
+/* Copyright 2014, 2020 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,41 +34,15 @@ void ng_gid (uint16_t gid, int ng_font_id, int32_t h, int32_t v)
   struct loaded_font *font;
   unsigned char wbuf[2];
   spt_t width, height, depth;
-  unsigned advance;
-  double ascent, descent;
 
   font = &loaded_fonts[ng_font_id];
-  ascent = (double) font->ascent;
-  descent = (double) font->descent;
-
-  if (font->cffont)
-  {
-    cff_index * cstrings = font->cffont->cstrings;
-    t1_ginfo gm;
-
-    if (font->cffont->is_notdef_notzero)
-      gid += 1;
-
-    t1char_get_metrics(cstrings->data + cstrings->offset[gid] - 1,
-        cstrings->offset[gid + 1] - cstrings->offset[gid], 
-        font->cffont->subrs[0], &gm);
-    advance = font->layout_dir == 0 ? gm.wx : gm.wy;
-    ascent = gm.bbox.ury;
-    descent = gm.bbox.lly;
-  }
-  else
-  {
-    advance = font->hvmt[gid].advance;
-  }
-
-  width = (double) font->size * (double) advance / (double) font->unitsPerEm;
-  width = width * font->extend;
+  width = font->gm[gid].advance;
 
   if (dvi_is_tracking_boxes())
   {
     pdf_rect rect;
-    height = (double) font->size * ascent / (double) font->unitsPerEm;
-    depth  = (double) font->size * -descent / (double) font->unitsPerEm;
+    height = font->gm[gid].ascent;
+    depth  = -font->gm[gid].descent;
     pdf_dev_set_rect(&rect, h, v, width, height, depth);
     pdf_doc_expand_box(&rect);
   }
@@ -83,12 +57,9 @@ void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, ui
   struct loaded_font *font;
   unsigned char wbuf[2];
   spt_t width, height, depth;
-  unsigned advance;
-  double ascent, descent;
 
   font = &loaded_fonts[ng_font_id];
-  ascent = (double) font->ascent;
-  descent = (double) font->descent;
+  width = font->gm[gid].advance;
   {
     pdf_color color;
     pdf_color_rgbcolor(&color,
@@ -98,34 +69,11 @@ void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, ui
     pdf_color_push(&color, &color);
   }
 
-  if (font->cffont)
-  {
-    cff_index * cstrings = font->cffont->cstrings;
-    t1_ginfo gm;
-
-    if (font->cffont->is_notdef_notzero)
-      gid += 1;
-
-    t1char_get_metrics(cstrings->data + cstrings->offset[gid] - 1,
-        cstrings->offset[gid + 1] - cstrings->offset[gid], 
-        font->cffont->subrs[0], &gm);
-    advance = font->layout_dir == 0 ? gm.wx : gm.wy;
-    ascent = gm.bbox.ury;
-    descent = gm.bbox.lly;
-  }
-  else
-  {
-    advance = font->hvmt[gid].advance;
-  }
-
-  width = (double) font->size * (double) advance / (double) font->unitsPerEm;
-  width = width * font->extend;
-
   if (dvi_is_tracking_boxes())
   {
     pdf_rect rect;
-    height = (double) font->size * ascent / (double) font->unitsPerEm;
-    depth  = (double) font->size * -descent / (double) font->unitsPerEm;
+    height = font->gm[gid].ascent;
+    depth  = -font->gm[gid].descent;
     pdf_dev_set_rect(&rect, h, v, width, height, depth);
     pdf_doc_expand_box(&rect);
   }
