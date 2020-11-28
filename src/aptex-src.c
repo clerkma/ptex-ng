@@ -26673,7 +26673,7 @@ static void line_break (boolean d)
                   {
                     goto continu;
                   }
-                  else if ((type(s) == penalty_node) && !(subtype(s) == normal))
+                  else if ((type(s) == penalty_node) && (subtype(s) != normal))
                   {
                     goto continu;
                   }
@@ -33259,14 +33259,14 @@ static void prefixed_command (void)
           {
             help1("I'm going to use 0 instead of that illegal code value.");
             error();
+            cur_val = 0;
           }
           else
           {
             help1("I'm going to use 16 instead of that illegal code value.");
             error();
+            cur_val = 16;
           }
-
-          cur_val = m;
         }
 
         if (p < math_code_base)
