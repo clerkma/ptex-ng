@@ -18,7 +18,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-$ot_tag_hash = {
+$ot_tag_feature = {
   "aalt" => "Access All Alternates",
   "abvf" => "Above-base Forms",
   "abvm" => "Above-base Mark Positioning",
@@ -256,6 +256,8 @@ $ot_tag_hash = {
   "vpal" => "Proportional Alternate Vertical Metrics",
   "vrt2" => "Vertical Alternates and Rotation",
   "zero" => "Slashed Zero",
+}
+$ot_tag_language = {
   "ABA " => "Abaza",
   "ABK " => "Abkhazian",
   "ACH " => "Acholi",
@@ -859,6 +861,8 @@ $ot_tag_hash = {
   "ZND " => "Zande",
   "ZUL " => "Zulu",
   "ZZA " => "Zazaki",
+}
+$ot_tag_script = {
   "adlm" => "Adlam",
   "ahom" => "Ahom",
   "hluw" => "Anatolian Hieroglyphs",

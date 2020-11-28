@@ -27,47 +27,133 @@ class GTabParser
     end
   end
 
-  def parse_script_list(data, script_list_offset)
+  def parse_coverage(base_offset)
+    format, count = unpack(base_offset, 4, "S>2")
+    if format == 1
+      return format, count, unpack(base_offset + 4, count * 2, "S>*")
+    elsif format == 2
+      return format, count, unpack(base_offset + 4, count * 6, "S>*")
+    end
+  end
+
+  def parse_class(base_offset)
+    format = unpack(base_offset, 2, "S>")[0]
+    if format == 1
+      start_glyph_id, count = unpack(base_offset + 2, 4, "S>2")
+      class_value = unpack(base_offset + 6, count * 2, "S>*")
+      return format, start_glyph_id, count, class_value
+    elsif format == 2
+      count = unpack(base_offset + 2, 2, "S>")[0]
+      data = unpack(base_offset + 4, count * 6, "S>")
+      return format, count, data
+    end
+  end
+
+  def parse_lang_sys(base_offset)
+    lookup_order, required_feature_index, feature_index_count = unpack(base_offset, 6, "S>*")
+    feature_index_list = unpack(base_offset + 6, 2 * feature_index_count, "S>*")
+    [lookup_order, required_feature_index, feature_index_list]
+  end
+
+  def parse_script_list(base_offset)
     script_list = []
-    script_count = unpack(script_list_offset, 2, "S>")[0]
+    script_count = unpack(base_offset, 2, "S>")[0]
     script_count.times do |script_index|
       script = []
-      script_one_offset = script_list_offset + 2 + 6 * script_index
+      script_one_offset = base_offset + 2 + 6 * script_index
       script_tag, script_offset = unpack(script_one_offset, 6, "a4S>")
-      script_offset += script_list_offset
+      script_offset += base_offset
       default_lang_sys_offset, lang_sys_count = unpack(script_offset, 4, "S>*")
       if default_lang_sys_offset != 0
         offset = script_offset + default_lang_sys_offset
-        lookup_order, required_feature_index, feature_index_count = unpack(offset, 6, "S>*")
-        feature_index_list = unpack(offset + 6, 2 * feature_index_count, "S>*")
-        default_lang_sys = [lookup_order, required_feature_index, feature_index_list]
+        default_lang_sys = parse_lang_sys(offset)
       else
         default_lang_sys = nil
       end
       lang_sys_count.times do |lang_sys_index|
         offset = script_offset + 4 + 6 * lang_sys_index
-        lang_sys_tag, lang_sys_offset = unpack(offset, 6, "a4S>")
-        lang_sys_offset +=  script_offset
-        lookup_order, required_feature_index, feature_index_count = unpack(lang_sys_offset, 6, "S>*")
-        feature_index_list = unpack(lang_sys_offset + 6, 2 * feature_index_count, "S>*")
-        script << [lang_sys_tag, lookup_order, required_feature_index, feature_index_list]
+        tag, offset = unpack(offset, 6, "a4S>")
+        offset +=  script_offset
+        script << [tag, parse_lang_sys(offset)]
       end
       script_list << [script_tag, default_lang_sys, script]
     end
     script_list
   end
 
-  def parse_feature_list(data, feature_list_offset)
+  def parse_feature_list(base_offset)
     feature_list = []
-    feature_count = unpack(feature_list_offset, 2, "S>")[0]
+    feature_count = unpack(base_offset, 2, "S>")[0]
     feature_count.times do |feature_index|
-      feature_tag, feature_offset = unpack(feature_list_offset + 2 + 6 * feature_index, 6, "a4S>")
-      feature_offset += feature_list_offset
-      feature_params, lookup_index_count = data[feature_offset, 4].unpack("S>2")
-      lookup_index_list = unpack(feature_offset + 4, 2 * lookup_index_count, "S>*")
-      feature_list << [feature_tag, feature_params, lookup_index_list]
+      tag, offset = unpack(base_offset + 2 + 6 * feature_index, 6, "a4S>")
+      offset += base_offset
+      params, lookup_index_count = unpack(offset, 4, "S>2")
+      lookup_index_list = unpack(offset + 4, 2 * lookup_index_count, "S>*")
+      feature_list << [tag, params, lookup_index_list]
     end
     feature_list
+  end
+
+  def parse_lookup_sub(base_offset, type)
+    format = unpack(base_offset, 2, "S>")[0]
+    if type == 1
+      if format == 1
+        coverage_offset, delta_glyph_id = unpack(base_offset + 2, 4, "S>s>")
+        coverage = parse_coverage(base_offset + coverage_offset)
+      elsif format == 2
+        coverage_offset, count = unpack(base_offset + 2, 4, "S>S>")
+        coverage = parse_coverage(base_offset + coverage_offset)
+        substitute_glyph_list = unpack(base_offset + 6, count * 2, "S>*")
+      end
+    elsif type == 2 or type == 3
+      if format == 1
+        coverage_offset, count = unpack(base_offset + 2, 4, "S>S>")
+        coverage = parse_coverage(base_offset + coverage_offset)
+        sequence_offset_list = unpack(base_offset + 6, count * 2, "S>*")
+        sequence_list = []
+        sequence_offset_list.each do |sequence_offset|
+          count = unpack(base_offset + sequence_offset, 2, "S>")[0]
+          sequence = unpack(base_offset + sequence_offset + 2, count * 2, "S>*")
+          sequence_list << sequence
+        end
+      end
+    elsif type == 4
+      if format == 1
+        coverage_offset, count = unpack(base_offset + 2, 4, "S>S>")
+        coverage = parse_coverage(base_offset + coverage_offset)
+        ligature_set = []
+        unpack(base_offset + 6, count * 2, "S>*").map do |i|
+          ligature = []
+          if i != 0
+            i += base_offset
+            ligature_count = unpack(i, 2, "S>")[0]
+            unpack(offset + 2, ligature_count * 2, "S>*").map do |j|
+              j += i
+              ligature_glyph, component_count = unpack(j, 4, "S>S>")
+              component = unpack(j + 4, component_count * 2, "S>*")
+              ligature << [ligature_glyph, component]
+            end
+          end
+          ligature_set << ligature
+        end
+      end
+    end
+  end
+
+  def parse_lookup(base_offset)
+    type, flag, count = unpack(base_offset, 6, "S>3")
+    offset_list = unpack(base_offset + 6, count * 2, "S>*")
+    table_list = []
+    return type, flag, table_list
+  end
+
+  def parse_lookup_list(base_offset)
+    lookup_list = []
+    lookup_count = unpack(base_offset, 2, "S>")[0]
+    lookup_offset_list = unpack(base_offset, lookup_count * 2, "S>*")
+    lookup_offset_list.each do |lookup_offset|
+      lookup_list << parse_lookup(base_offset + lookup_offset)
+    end
   end
 
   def initialize(data)
@@ -77,15 +163,23 @@ class GTabParser
     version = data[0, 4].unpack("S>2")
     if version == [1, 0]
       script_list_offset, feature_list_offset, lookup_list_offset = data[4, 6].unpack("S>*")
-      @script_list = parse_script_list(data, script_list_offset)
-      @feature_list = parse_feature_list(data, feature_list_offset)
+      @script_list = parse_script_list(script_list_offset)
+      @feature_list = parse_feature_list(feature_list_offset)
     end
   rescue
     nil
   end
 
-  def get_tag(tag)
-    meaning = $ot_tag_hash[tag]
+  def get_tag(tag, category)
+    meaning = nil
+    if category == :feature
+      meaning = $ot_tag_feature[tag]
+    elsif category == :language
+      meaning = $ot_tag_language[tag]
+    elsif  category == :script
+      meaning = $ot_tag_script[tag]
+    end
+
     if meaning == nil
       "'#{tag}'"
     else
@@ -104,7 +198,7 @@ class GTabParser
   def list_info(banner)
     puts(banner)
     @script_list.each do |script|
-      puts("script #{get_tag(script[0])}:")
+      puts("script #{get_tag(script[0], :script)}:")
       puts("  default features:")
       if script[1] == nil
         puts("    (none)")
@@ -112,8 +206,8 @@ class GTabParser
         list_feature(script[1][2])
       end
       script[2].each do |lang_sys|
-        puts("  language #{get_tag(lang_sys[0])}:")
-        list_feature(lang_sys[3])
+        puts("  language #{get_tag(lang_sys[0], :language)}:")
+        list_feature(lang_sys[1][2])
       end
     end
   end
