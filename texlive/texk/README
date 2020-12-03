@@ -1,4 +1,4 @@
-$Id: README 55553 2020-06-15 11:23:15Z hironobu $
+$Id: README 57051 2020-12-03 10:39:54Z hironobu $
 Copyright 2006-2020 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -34,7 +34,7 @@ chktex 1.7.6 - checked 15mar20
 cjkutils 4.8.4 - checked 18apr15
   http://cjk.ffii.org/cjk-4.8.4.tar.gz
 
-detex 2.8.7 - checked 15jun20
+detex 2.8.9 - checked 03dec20
   https://github.com/pkubowicz/opendetex/releases
     old info: http://www.cs.purdue.edu/homes/trinkle/detex/
 
