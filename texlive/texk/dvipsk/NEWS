@@ -1,9 +1,10 @@
-$Id: NEWS 57027 2020-11-28 22:49:12Z karl $
+$Id: NEWS 57071 2020-12-05 03:24:25Z takuji $
 This file records noteworthy changes.  (Public domain.)
 
-dvips 2021.1 (TeX Live 2020):
+dvips 2021.1 (TeX Live 2021):
   Default title is now the basename of the input file isntead of the
   full path, and can be overridden with new option -title.
+  Support new feature of virtual font to fallback Japanese font definition.
 
 dvips 2020.1 (TeX Live 2020):
   Encodings for bitmap fonts.

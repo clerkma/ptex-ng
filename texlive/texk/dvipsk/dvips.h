@@ -1,4 +1,4 @@
-/*   $Id: dvips.h 54794 2020-04-19 05:49:02Z takuji $
+/*   $Id: dvips.h 57073 2020-12-05 05:22:50Z takuji $
  *   Copyright 1986-2020 Tomas Rokicki.
  *   This is dvips, a freely redistributable PostScript driver
  *   for dvi files. You may freely use, modify and/or distribute this
@@ -309,6 +309,19 @@ struct papsiz {
 
 #define USE_PCLOSE (801)
 #define USE_FCLOSE (802)
+
+/* output Unicode string on console in windows */
+#if defined(KPATHSEA) && defined(WIN32)
+#undef  perror
+#define fprintf_str  win32_fprintf
+#define fputs_str    win32_fputs
+#define putc_str     win32_putc
+#define perror       win32_perror
+#else
+#define fprintf_str  fprintf
+#define fputs_str    fputs
+#define putc_str     putc
+#endif
 
 /* Things that KPATHSEA knows, and are useful even without it. */
 #if !defined(KPATHSEA)

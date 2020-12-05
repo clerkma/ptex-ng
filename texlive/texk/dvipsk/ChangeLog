@@ -1,3 +1,13 @@
+2020-12-05  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* NEWS: Mention new/jfm feature.
+	* dospecial.c:
+	Output error of html special not to STDOUT but to STDERR.
+	* dvips.h, {bitmapenc,color,dopage,dospecial,download,dvips,
+	emspecial,finclude,fontdef,header,loadfont,output,pprescan,prescan,
+	resident,scanpage,search,t1part,virtualfont,writet1}.c:
+	Allow Unicode error messages on Windows console. (Windows only)
+
 2020-11-28  Akira Kakuto  <kakuto@w32tex.org>
 
 	* protos.h (titlename): new global.
