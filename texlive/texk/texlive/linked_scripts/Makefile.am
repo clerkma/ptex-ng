@@ -1,4 +1,4 @@
-## $Id: Makefile.am 56987 2020-11-23 03:49:37Z kakuto $
+## $Id: Makefile.am 57089 2020-12-07 22:10:16Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2020 Karl Berry <tex-live@tug.org>
@@ -99,6 +99,7 @@ texmf_other_scripts = \
 	accfonts/mkt1font \
 	accfonts/vpl2ovp \
 	accfonts/vpl2vpl \
+	albatross/albatross.sh \
 	arara/arara.sh \
 	attachfile2/pdfatfi.pl \
 	authorindex/authorindex \
