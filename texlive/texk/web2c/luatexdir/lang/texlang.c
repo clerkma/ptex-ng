@@ -1023,6 +1023,12 @@ void hnj_hyphenation(halfword head, halfword tail)
                 break;
             }
             wordlen++;
+            if (wordlen >= MAX_WORD_LEN) {
+             while (r && type(r) == glyph_node) {
+               r = vlink(r);
+             }
+             goto PICKUP;
+            }
             if (lchar <= 32) {
                 if (lchar == 32) {
                     lchar = 0 ;
@@ -1049,7 +1055,7 @@ void hnj_hyphenation(halfword head, halfword tail)
         if (explicit_hyphen == true) {
             /*tex we are not at the start, so we only need to look ahead */
             halfword t = vlink(r) ;
-            if ((automatic_hyphen_mode_par == 0 || automatic_hyphen_mode_par == 1) && (t != null) && ((type(t) == glyph_node) && (character(t) != ex_hyphen_char_par))) {
+            if ((automatic_hyphen_mode_par == 0 || automatic_hyphen_mode_par == 1) && (t != null) && ((type(t) == glyph_node) && is_simple_character(t) && (character(t) != ex_hyphen_char_par))) {
                 /*tex we have a word already but the next character may not be a hyphen too */
                 r = compound_word_break(r, char_lang(r));
                 if (compound_hyphen) {
@@ -1063,7 +1069,7 @@ void hnj_hyphenation(halfword head, halfword tail)
                 }
             } else {
                 /*tex we jump over the sequence of hyphens */
-               while ((t != null) && (type(t) == glyph_node) && (character(t) == ex_hyphen_char_par)) {
+               while ((t != null) && (type(t) == glyph_node) && is_simple_character(t) && (character(t) == ex_hyphen_char_par)) {
                     r = t ;
                     t = vlink(r) ;
                 }
@@ -1140,6 +1146,7 @@ void hnj_hyphenation(halfword head, halfword tail)
                 }
             }
         }
+PICKUP:
         expstart = null ;
         explicit_hyphen = false;
         wordlen = 0;
