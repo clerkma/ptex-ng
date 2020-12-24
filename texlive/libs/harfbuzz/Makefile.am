@@ -1,4 +1,4 @@
-## $Id: Makefile.am 56107 2020-08-13 22:28:17Z kakuto $
+## $Id: Makefile.am 57216 2020-12-24 07:21:30Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -193,6 +193,7 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-indic-table.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-khmer.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-khmer.cc \
+	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-machine-index.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-myanmar.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-myanmar.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-thai.cc \
