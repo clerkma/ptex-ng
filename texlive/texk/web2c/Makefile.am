@@ -1,4 +1,4 @@
-## $Id: Makefile.am 55138 2020-05-14 17:47:47Z karl $
+## $Id: Makefile.am 57374 2021-01-10 20:13:26Z lscarso $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/.
 ##
 ## Copyright 2017-2020 Karl Berry <tex-live@tug.org>
@@ -195,6 +195,7 @@ include $(srcdir)/am/texmf.am
 
 ## MFLua
 include $(srcdir)/mfluadir/am/mflua.am
+include $(srcdir)/mfluadir/am/mfluaotfcc.am
 
 ## MFLuaJIT
 include $(srcdir)/mfluajitdir/am/mfluajit.am
