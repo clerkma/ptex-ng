@@ -21093,7 +21093,7 @@ static void ship_out (pointer p)
 #ifndef APTEX_DVI_ONLY
     {
       struct pdf_setting aptex_pdf_setting;
-      char * aptex_producer = "Asiatic pTeX 2020";
+      char * aptex_producer = "Asiatic pTeX 2021";
       int aptex_pdf_version;
       unsigned char aptex_id1[16], aptex_id2[16];
 
