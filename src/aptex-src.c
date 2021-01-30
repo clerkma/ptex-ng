@@ -60,9 +60,9 @@ static const char * dist = "Unknown";
 #endif
 
 #if defined (W32TeX)
-static const char * banner = "This is Asiatic pTeX, Version 3.14159265 (W32TeX)";
+static const char * banner = "This is Asiatic pTeX, Version 3.141592653 (W32TeX)";
 #else
-static const char * banner = "This is Asiatic pTeX, Version 3.14159265";
+static const char * banner = "This is Asiatic pTeX, Version 3.141592653";
 #endif
 
 static void aptex_utils_exit (int unix_code)
@@ -4678,6 +4678,9 @@ static void final_cleanup (void)
 
   c = cur_chr;
 
+  if (c != 1)
+    new_line_char = -1;
+
   if (job_name == 0)
     open_log_file();
 
@@ -5257,18 +5260,23 @@ static void fix_date_and_time (void)
 
   if (tm_ptr == NULL)
   {
-    year     = 2038;
-    month    = 1;
-    day      = 18;
-    tex_time = 22 * 60 + 14;
+    sys_year  = 2038;
+    sys_month = 1;
+    sys_day   = 18;
+    sys_time  = 22 * 60 + 14;
   }
   else
   {
-    tex_time = tm_ptr->tm_hour * 60 + tm_ptr->tm_min;
-    day      = tm_ptr->tm_mday;
-    month    = tm_ptr->tm_mon + 1;
-    year     = tm_ptr->tm_year + 1900;
+    sys_time  = tm_ptr->tm_hour * 60 + tm_ptr->tm_min;
+    sys_day   = tm_ptr->tm_mday;
+    sys_month = tm_ptr->tm_mon + 1;
+    sys_year  = tm_ptr->tm_year + 1900;
   }
+
+  tex_time = sys_time;
+  day = sys_day;
+  month = sys_month;
+  year = sys_year;
 }
 /* sec 0264 */
 static void primitive_ (str_number s, quarterword c, halfword o)
@@ -6681,7 +6689,7 @@ static void init_prim (void)
   primitive("show", xray, show_code);
   primitive("showbox", xray, show_box_code);
   primitive("showthe", xray, show_the_code);
-  primitive("showlists", xray, show_lists);
+  primitive("showlists", xray, show_lists_code);
   primitive("showmode", xray, show_mode);
   primitive("openout", extension, open_node);
   primitive("write", extension, write_node);
@@ -7424,199 +7432,207 @@ void error (void)
 
   if (interaction == error_stop_mode)
   {
-    while (true)
+    if (selector != log_only)
     {
-continu:
-      if (interaction != error_stop_mode)
-        return;
-      clear_for_error_prompt();
-      prompt_input("? ");
-
-      if (last == first)
-        return;
-
-      c = buffer[first];
-
-      if (c >= 'a')
-        c = c + 'A' - 'a'; // {convert to uppercase}
-
-      switch (c)
+      while (true)
       {
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-          if (deletions_allowed)
-          {
-            s1 = cur_tok;
-            s2 = cur_cmd;
-            s3 = cur_chr;
-            s4 = align_state;
-            align_state = 1000000;
-            OK_to_interrupt = false;
+  continu:
+        if (interaction != error_stop_mode)
+          return;
+        clear_for_error_prompt();
+        prompt_input("? ");
 
-            if ((last > first + 1) && (buffer[first + 1] >= '0') &&
-              (buffer[first + 1] <= '9'))
-              c = c * 10 + buffer[first + 1] - '0' * 11;
-            else
-              c = c - '0';
+        if (last == first)
+          return;
 
-            while (c > 0)
-            {
-              get_token(); // {one-level recursive call of |error| is possible}
-              decr(c);
-            }
+        c = buffer[first];
 
-            cur_tok = s1;
-            cur_cmd = s2;
-            cur_chr = s3;
-            align_state = s4;
-            OK_to_interrupt = true;
-            help2("I have just deleted some text, as you asked.",
-              "You can now delete more, or insert, or whatever.");
-            show_context();
-            goto continu;
-          }
-          break;
+        if (c >= 'a')
+          c = c + 'A' - 'a'; // {convert to uppercase}
 
-#ifdef APTEX_DEBUG
-        case 'D':
+        switch (c)
         {
-          debug_help();
-          goto continu;
-        }
-        break;
-#endif
-
-        case 'E':
-          if (base_ptr > 0)
-          {
-            print_nl("You want to edit file ");
-            slow_print(input_stack[base_ptr].name_field);
-            prints(" at line ");
-            print_int(line);
-            interaction = scroll_mode;
-            jump_out();
-          }
-          break;
-
-        case 'H':
-          {
-            if (use_err_help)
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+            if (deletions_allowed)
             {
-              give_err_help();
-              use_err_help = false;
-            }
-            else
-            {
-              if (help_ptr == 0)
-                help2("Sorry, I don't know how to help in this situation.",
-                  "Maybe you should try asking a human?");
+              s1 = cur_tok;
+              s2 = cur_cmd;
+              s3 = cur_chr;
+              s4 = align_state;
+              align_state = 1000000;
+              OK_to_interrupt = false;
 
-              do {
-                decr(help_ptr);
-                prints(help_line[help_ptr]);
-                print_ln();
-              } while (!(help_ptr == 0));
-            }
+              if ((last > first + 1) && (buffer[first + 1] >= '0') &&
+                (buffer[first + 1] <= '9'))
+                c = c * 10 + buffer[first + 1] - '0' * 11;
+              else
+                c = c - '0';
 
-            help4("Sorry, I already gave what help I could...",
-              "Maybe you should try asking a human?",
-              "An error might have occurred before I noticed any problems.",
-              "``If all else fails, read the instructions.''");
+              while (c > 0)
+              {
+                get_token(); // {one-level recursive call of |error| is possible}
+                decr(c);
+              }
+
+              cur_tok = s1;
+              cur_cmd = s2;
+              cur_chr = s3;
+              align_state = s4;
+              OK_to_interrupt = true;
+              help2("I have just deleted some text, as you asked.",
+                "You can now delete more, or insert, or whatever.");
+              show_context();
+              goto continu;
+            }
+            break;
+
+  #ifdef APTEX_DEBUG
+          case 'D':
+          {
+            debug_help();
             goto continu;
           }
           break;
+  #endif
 
-        case 'I':
-          {
-            begin_file_reading(); // {enter a new syntactic level for terminal input}
-
-            if (last > first + 1)
+          case 'E':
+            if (base_ptr > 0)
             {
-              loc = first + 1;
-              buffer[first] = ' ';
+              if (input_stack[base_ptr].name_field >= 256)
+              {
+                print_nl("You want to edit file ");
+                slow_print(input_stack[base_ptr].name_field);
+                prints(" at line ");
+                print_int(line);
+                interaction = scroll_mode;
+                jump_out();
+              }
             }
-            else
+            break;
+
+          case 'H':
             {
-              prompt_input("insert>");
-              loc = first;
+              if (use_err_help)
+              {
+                give_err_help();
+                use_err_help = false;
+              }
+              else
+              {
+                if (help_ptr == 0)
+                  help2("Sorry, I don't know how to help in this situation.",
+                    "Maybe you should try asking a human?");
+
+                do {
+                  decr(help_ptr);
+                  prints(help_line[help_ptr]);
+                  print_ln();
+                } while (!(help_ptr == 0));
+              }
+
+              help4("Sorry, I already gave what help I could...",
+                "Maybe you should try asking a human?",
+                "An error might have occurred before I noticed any problems.",
+                "``If all else fails, read the instructions.''");
+              goto continu;
             }
+            break;
 
-            first = last;
-            cur_input.limit_field = last - 1; // {no |end_line_char| ends this line}
-
-            return;
-          }
-          break;
-
-        case 'Q':
-        case 'R':
-        case 'S':
-          {
-            error_count = 0;
-            interaction = batch_mode + c - 'Q';
-            prints("OK, entering ");
-
-            switch (c)
+          case 'I':
             {
-              case 'Q':
-                {
-                  print_esc("batchmode");
-                  decr(selector);
-                }
-                break;
+              begin_file_reading(); // {enter a new syntactic level for terminal input}
 
-              case 'R':
-                print_esc("nonstopmode");
-                break;
+              if (last > first + 1)
+              {
+                loc = first + 1;
+                buffer[first] = ' ';
+              }
+              else
+              {
+                prompt_input("insert>");
+                loc = first;
+              }
 
-              case 'S':
-                print_esc("scrollmode");
-                break;
+              first = last;
+              cur_input.limit_field = last - 1; // {no |end_line_char| ends this line}
+
+              return;
             }
+            break;
 
-            prints("...");
-            print_ln();
-            update_terminal();
+          case 'Q':
+          case 'R':
+          case 'S':
+            {
+              error_count = 0;
+              interaction = batch_mode + c - 'Q';
+              prints("OK, entering ");
 
-            return;
-          }
-          break;
+              switch (c)
+              {
+                case 'Q':
+                  {
+                    print_esc("batchmode");
+                    decr(selector);
+                  }
+                  break;
 
-        case 'X':
-          {
-            interaction = scroll_mode;
-            jump_out();
-          }
-          break;
+                case 'R':
+                  print_esc("nonstopmode");
+                  break;
 
-        default:
-          do_nothing();
-          break;
-      }
-      // Print the menu of available options
-      {
-        prints("Type <return> to proceed, S to scroll future error messages,");
-        print_nl("R to run without stopping, Q to run quietly,");
-        print_nl("I to insert something, ");
+                case 'S':
+                  print_esc("scrollmode");
+                  break;
+              }
 
-        if (base_ptr > 0)
-          prints("E to edit your file,");
+              prints("...");
+              print_ln();
+              update_terminal();
 
-        if (deletions_allowed)
-          print_nl("1 or ... or 9 to ignore the next 1 to 9 tokens of input,");
+              return;
+            }
+            break;
 
-        print_nl("H for help, X to quit.");
+          case 'X':
+            {
+              interaction = scroll_mode;
+              jump_out();
+            }
+            break;
+
+          default:
+            do_nothing();
+            break;
+        }
+        // Print the menu of available options
+        {
+          prints("Type <return> to proceed, S to scroll future error messages,");
+          print_nl("R to run without stopping, Q to run quietly,");
+          print_nl("I to insert something, ");
+
+          if (base_ptr > 0)
+            if (input_stack[base_ptr].name_field >= 256)
+              prints("E to edit your file,");
+
+          if (deletions_allowed)
+            print_nl("1 or ... or 9 to ignore the next 1 to 9 tokens of input,");
+
+          print_nl("H for help, X to quit.");
+        }
       }
     }
   }
+
 
   incr(error_count);
 
@@ -8328,7 +8344,7 @@ void pause_for_instructions (void)
 
     print_err("Interruption");
     help3("You rang?",
-        "Try to insert some instructions for me (e.g.,`I\\showlists'),",
+        "Try to insert an instructions for me (e.g.,`I\\showlists'),",
         "unless you just want to quit by typing `X'.");
     deletions_allowed = false;
     error();
@@ -10896,7 +10912,7 @@ static void show_activities (void)
       case 2:
         if (a.cint != null)
         {
-          prints("this will be denominator of:");
+          prints("this will begin denominator of:");
           show_box(a.cint);
         }
         break;
@@ -12813,7 +12829,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("showthe");
           break;
 
-        case show_lists:
+        case show_lists_code:
           print_esc("showlists");
           break;
 
@@ -14580,7 +14596,7 @@ found:
       {
         if ((m == 1) && (info(p) < right_brace_limit) && (p != temp_head))
         {
-          link(rbrace_ptr) = 0;
+          link(rbrace_ptr) = null;
           free_avail(p);
           p = link(temp_head);
           pstack[n] = link(p);
@@ -18199,6 +18215,7 @@ pointer scan_toks (boolean macro_def, boolean xpand)
     // @<Scan and build the parameter part of the macro definition@>
     while (true)
     {
+continu:
       get_token();  // {set |cur_cmd|, |cur_chr|, |cur_tok|}
 
       if (cur_tok < right_brace_limit)
@@ -18214,7 +18231,7 @@ pointer scan_toks (boolean macro_def, boolean xpand)
         s = match_token + cur_chr;
         get_token();
 
-        if (cur_cmd == left_brace)
+        if (cur_tok < left_brace_limit)
         {
           hash_brace = cur_tok;
           store_new_token(cur_tok);
@@ -18225,8 +18242,10 @@ pointer scan_toks (boolean macro_def, boolean xpand)
         if (t == zero_token + 9)
         {
           print_err("You already have nine parameters");
-          help1("I'm going to ignore the # sign you just used.");
+          help2("I'm going to ignore the # sign you just used.",
+            "as well as the token that followed it.");
           error();
+          goto continu;
         }
         else
         {
@@ -18436,6 +18455,7 @@ void read_toks (integer n, pointer r, halfword j)
           print_esc("read");
           help1("This \\read has unbalanced braces.");
           align_state = 1000000;
+          limit = 0;
           error();
         }
       }
@@ -19506,19 +19526,19 @@ void open_log_file (void)
       slow_print(format_ident);
 
     prints("  ");
-    print_int(day);
+    print_int(sys_day);
     print_char(' ');
     months = " JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
 
-    for (k = 3 * month - 2; k <= 3 * month; k++)
+    for (k = 3 * sys_month - 2; k <= 3 * sys_month; k++)
       wlog(months[k]);
 
     print_char(' ');
-    print_int(year);
+    print_int(sys_year);
     print_char(' ');
-    print_two(tex_time / 60);
+    print_two(sys_time / 60);
     print_char(':');
-    print_two(tex_time % 60);
+    print_two(sys_time % 60);
 
     if (eTeX_ex)
     {
@@ -23926,6 +23946,7 @@ static void fetch (pointer a)
     {
       char_warning(cur_f, cur_c);
       math_type(a) = empty;
+      cur_i = null_character;
     }
   }
 }
@@ -25194,10 +25215,7 @@ done_with_node:
         break;
 
       case fraction_noad:
-        {
-          t = inner_noad;
-          s = fraction_noad_size;
-        }
+        s = fraction_noad_size;
         break;
 
       case left_noad:
@@ -26113,6 +26131,7 @@ static boolean fin_col (void)
       v_part(p) = link(hold_head);
       cur_loop = link(cur_loop);
       link(p) = new_glue(glue_ptr(cur_loop));
+      subtype(link(p)) = tab_skip_code + 1;
     }
     else
     {
@@ -34271,7 +34290,7 @@ static void show_whatever (void)
 
   switch (cur_chr)
   {
-    case show_lists:
+    case show_lists_code:
       {
         begin_diagnostic();
         show_activities();
@@ -36039,6 +36058,8 @@ void close_files_and_terminate (void)
       a_close(write_file[k]);
   }
 
+  new_line_char = -1;
+
 #ifdef STAT
   // @<Output statistics about this job@>
   if (tracing_stats > 0)
@@ -36301,6 +36322,8 @@ void close_files_and_terminate (void)
 void debug_help (void) 
 {
   integer k, l, m, n;
+
+  clear_terminal();
 
   while (true)
   {

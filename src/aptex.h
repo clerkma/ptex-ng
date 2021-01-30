@@ -379,6 +379,7 @@ EXTERN list_state_record cur_list;            // {the ``top'' semantic state}
 EXTERN int shown_mode;                        // {most recent mode shown by \.{\\tracingcommands}}
 
 EXTERN int old_setting;
+EXTERN integer sys_time, sys_day, sys_month, sys_year; // {date and time supplied by external system}
 
 EXTERN memory_word eqtb[eqtb_size + 1];
 EXTERN quarterword zzzad[eqtb_size - int_base + 1];

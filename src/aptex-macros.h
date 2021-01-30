@@ -1965,14 +1965,14 @@ while (0)
 #define toks_def_code      6  // {|shorthand_def| for \.{\\toksdef}}
 #define kchar_def_code     7  // {|shorthand_def| for \.{\\kchardef}}
 /* sec 1290 */
-#define show_code     0 // { \.{\\show} }
-#define show_box_code 1 // { \.{\\showbox} }
-#define show_the_code 2 // { \.{\\showthe} }
-#define show_lists    3 // { \.{\\showlists} }
-#define show_groups   4 // { \.{\\showgroups} }
-#define show_tokens   5 // { \.{\\showtokens} , must be odd! }
-#define show_ifs      6 // { \.{\\showifs} }
-#define show_mode     7 // { \.{\\showmode} }
+#define show_code       0 // { \.{\\show} }
+#define show_box_code   1 // { \.{\\showbox} }
+#define show_the_code   2 // { \.{\\showthe} }
+#define show_lists_code 3 // { \.{\\showlists} }
+#define show_groups     4 // { \.{\\showgroups} }
+#define show_tokens     5 // { \.{\\showtokens} , must be odd! }
+#define show_ifs        6 // { \.{\\showifs} }
+#define show_mode       7 // { \.{\\showmode} }
 /* sec 1306 */
 #define undump(va, vb, vc)        \
 do {                              \
