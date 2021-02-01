@@ -1,4 +1,4 @@
-## $Id: Makefile.am 50122 2019-02-25 03:01:12Z kakuto $
+## $Id: Makefile.am 57588 2021-02-01 06:11:18Z kakuto $
 ## Proxy Makefile.am to build xpdf for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -62,6 +62,7 @@ goo_libGoo_a_sources = \
 	@XPDF_TREE@/goo/GHash.cc \
 	@XPDF_TREE@/goo/GList.cc \
 	@XPDF_TREE@/goo/GString.cc \
+	@XPDF_TREE@/goo/Trace.cc \
 	@XPDF_TREE@/goo/gfile.cc \
 	@XPDF_TREE@/goo/gmem.cc \
 	@XPDF_TREE@/goo/gmempp.cc
@@ -87,7 +88,6 @@ xpdf_libxpdf_a_sources = \
 	@XPDF_TREE@/xpdf/Dict.cc \
 	@XPDF_TREE@/xpdf/Error.cc \
 	@XPDF_TREE@/xpdf/FontEncodingTables.cc \
-	@XPDF_TREE@/xpdf/Form.cc \
 	@XPDF_TREE@/xpdf/Function.cc \
 	@XPDF_TREE@/xpdf/Gfx.cc \
 	@XPDF_TREE@/xpdf/GfxFont.cc \
@@ -115,7 +115,7 @@ xpdf_libxpdf_a_sources = \
 	@XPDF_TREE@/xpdf/UnicodeMap.cc \
 	@XPDF_TREE@/xpdf/UnicodeRemapping.cc \
 	@XPDF_TREE@/xpdf/UTF8.cc \
-	@XPDF_TREE@/xpdf/XFAForm.cc \
+	@XPDF_TREE@/xpdf/XFAScanner.cc \
 	@XPDF_TREE@/xpdf/XRef.cc \
 	@XPDF_TREE@/xpdf/Zoox.cc
 
