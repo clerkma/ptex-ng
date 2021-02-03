@@ -1,4 +1,4 @@
-$Id: README 57588 2021-02-01 06:11:18Z kakuto $
+$Id: README 57607 2021-02-03 06:51:32Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -15,7 +15,7 @@ cairo 1.16.0 - checked 20oct18
 freetype2 2.10.4 - checked 21oct20
   http://savannah.nongnu.org/download/freetype/
 
-gd 2.3.0 - checked 10apr20
+gd 2.3.1 - checked 03feb21
   https://github.com/libgd/libgd/releases
 
 gmp 6.2.1 - checked 15nov20
