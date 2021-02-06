@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -7432,71 +7432,69 @@ void error (void)
 
   if (interaction == error_stop_mode)
   {
-    if (selector != log_only)
+    while (true)
     {
-      while (true)
+continu:
+      if (interaction != error_stop_mode)
+        return;
+      clear_for_error_prompt();
+      prompt_input("? ");
+
+      if (last == first)
+        return;
+
+      c = buffer[first];
+
+      if (c >= 'a')
+        c = c + 'A' - 'a'; // {convert to uppercase}
+
+      switch (c)
       {
-  continu:
-        if (interaction != error_stop_mode)
-          return;
-        clear_for_error_prompt();
-        prompt_input("? ");
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+          if (deletions_allowed)
+          {
+            s1 = cur_tok;
+            s2 = cur_cmd;
+            s3 = cur_chr;
+            s4 = align_state;
+            align_state = 1000000;
+            OK_to_interrupt = false;
 
-        if (last == first)
-          return;
+            if ((last > first + 1) && (buffer[first + 1] >= '0') &&
+              (buffer[first + 1] <= '9'))
+              c = c * 10 + buffer[first + 1] - '0' * 11;
+            else
+              c = c - '0';
 
-        c = buffer[first];
-
-        if (c >= 'a')
-          c = c + 'A' - 'a'; // {convert to uppercase}
-
-        switch (c)
-        {
-          case '0':
-          case '1':
-          case '2':
-          case '3':
-          case '4':
-          case '5':
-          case '6':
-          case '7':
-          case '8':
-          case '9':
-            if (deletions_allowed)
+            while (c > 0)
             {
-              s1 = cur_tok;
-              s2 = cur_cmd;
-              s3 = cur_chr;
-              s4 = align_state;
-              align_state = 1000000;
-              OK_to_interrupt = false;
-
-              if ((last > first + 1) && (buffer[first + 1] >= '0') &&
-                (buffer[first + 1] <= '9'))
-                c = c * 10 + buffer[first + 1] - '0' * 11;
-              else
-                c = c - '0';
-
-              while (c > 0)
-              {
-                get_token(); // {one-level recursive call of |error| is possible}
-                decr(c);
-              }
-
-              cur_tok = s1;
-              cur_cmd = s2;
-              cur_chr = s3;
-              align_state = s4;
-              OK_to_interrupt = true;
-              help2("I have just deleted some text, as you asked.",
-                "You can now delete more, or insert, or whatever.");
-              show_context();
-              goto continu;
+              get_token(); // {one-level recursive call of |error| is possible}
+              decr(c);
             }
-            break;
+
+            cur_tok = s1;
+            cur_cmd = s2;
+            cur_chr = s3;
+            align_state = s4;
+            OK_to_interrupt = true;
+            help2("I have just deleted some text, as you asked.",
+              "You can now delete more, or insert, or whatever.");
+            show_context();
+            goto continu;
+          }
+          break;
 
   #ifdef APTEX_DEBUG
-          case 'D':
+        case 'D':
           {
             debug_help();
             goto continu;
@@ -7504,133 +7502,132 @@ void error (void)
           break;
   #endif
 
-          case 'E':
-            if (base_ptr > 0)
+        case 'E':
+          if (base_ptr > 0)
+          {
+            if (input_stack[base_ptr].name_field >= 256)
             {
-              if (input_stack[base_ptr].name_field >= 256)
-              {
-                print_nl("You want to edit file ");
-                slow_print(input_stack[base_ptr].name_field);
-                prints(" at line ");
-                print_int(line);
-                interaction = scroll_mode;
-                jump_out();
-              }
-            }
-            break;
-
-          case 'H':
-            {
-              if (use_err_help)
-              {
-                give_err_help();
-                use_err_help = false;
-              }
-              else
-              {
-                if (help_ptr == 0)
-                  help2("Sorry, I don't know how to help in this situation.",
-                    "Maybe you should try asking a human?");
-
-                do {
-                  decr(help_ptr);
-                  prints(help_line[help_ptr]);
-                  print_ln();
-                } while (!(help_ptr == 0));
-              }
-
-              help4("Sorry, I already gave what help I could...",
-                "Maybe you should try asking a human?",
-                "An error might have occurred before I noticed any problems.",
-                "``If all else fails, read the instructions.''");
-              goto continu;
-            }
-            break;
-
-          case 'I':
-            {
-              begin_file_reading(); // {enter a new syntactic level for terminal input}
-
-              if (last > first + 1)
-              {
-                loc = first + 1;
-                buffer[first] = ' ';
-              }
-              else
-              {
-                prompt_input("insert>");
-                loc = first;
-              }
-
-              first = last;
-              cur_input.limit_field = last - 1; // {no |end_line_char| ends this line}
-
-              return;
-            }
-            break;
-
-          case 'Q':
-          case 'R':
-          case 'S':
-            {
-              error_count = 0;
-              interaction = batch_mode + c - 'Q';
-              prints("OK, entering ");
-
-              switch (c)
-              {
-                case 'Q':
-                  {
-                    print_esc("batchmode");
-                    decr(selector);
-                  }
-                  break;
-
-                case 'R':
-                  print_esc("nonstopmode");
-                  break;
-
-                case 'S':
-                  print_esc("scrollmode");
-                  break;
-              }
-
-              prints("...");
-              print_ln();
-              update_terminal();
-
-              return;
-            }
-            break;
-
-          case 'X':
-            {
+              print_nl("You want to edit file ");
+              slow_print(input_stack[base_ptr].name_field);
+              prints(" at line ");
+              print_int(line);
               interaction = scroll_mode;
               jump_out();
             }
-            break;
+          }
+          break;
 
-          default:
-            do_nothing();
-            break;
-        }
-        // Print the menu of available options
-        {
-          prints("Type <return> to proceed, S to scroll future error messages,");
-          print_nl("R to run without stopping, Q to run quietly,");
-          print_nl("I to insert something, ");
+        case 'H':
+          {
+            if (use_err_help)
+            {
+              give_err_help();
+              use_err_help = false;
+            }
+            else
+            {
+              if (help_ptr == 0)
+                help2("Sorry, I don't know how to help in this situation.",
+                  "Maybe you should try asking a human?");
 
-          if (base_ptr > 0)
-            if (input_stack[base_ptr].name_field >= 256)
-              prints("E to edit your file,");
+              do {
+                decr(help_ptr);
+                prints(help_line[help_ptr]);
+                print_ln();
+              } while (!(help_ptr == 0));
+            }
 
-          if (deletions_allowed)
-            print_nl("1 or ... or 9 to ignore the next 1 to 9 tokens of input,");
+            help4("Sorry, I already gave what help I could...",
+              "Maybe you should try asking a human?",
+              "An error might have occurred before I noticed any problems.",
+              "``If all else fails, read the instructions.''");
+            goto continu;
+          }
+          break;
 
-          print_nl("H for help, X to quit.");
-        }
+        case 'I':
+          {
+            begin_file_reading(); // {enter a new syntactic level for terminal input}
+
+            if (last > first + 1)
+            {
+              loc = first + 1;
+              buffer[first] = ' ';
+            }
+            else
+            {
+              prompt_input("insert>");
+              loc = first;
+            }
+
+            first = last;
+            cur_input.limit_field = last - 1; // {no |end_line_char| ends this line}
+
+            return;
+          }
+          break;
+
+        case 'Q':
+        case 'R':
+        case 'S':
+          {
+            error_count = 0;
+            interaction = batch_mode + c - 'Q';
+            prints("OK, entering ");
+
+            switch (c)
+            {
+              case 'Q':
+                {
+                  print_esc("batchmode");
+                  decr(selector);
+                }
+                break;
+
+              case 'R':
+                print_esc("nonstopmode");
+                break;
+
+              case 'S':
+                print_esc("scrollmode");
+                break;
+            }
+
+            prints("...");
+            print_ln();
+            update_terminal();
+
+            return;
+          }
+          break;
+
+        case 'X':
+          {
+            interaction = scroll_mode;
+            jump_out();
+          }
+          break;
+
+        default:
+          do_nothing();
+          break;
       }
-    }
+      // Print the menu of available options
+      {
+        prints("Type <return> to proceed, S to scroll future error messages,");
+        print_nl("R to run without stopping, Q to run quietly,");
+        print_nl("I to insert something, ");
+
+        if (base_ptr > 0)
+          if (input_stack[base_ptr].name_field >= 256)
+            prints("E to edit your file,");
+
+        if (deletions_allowed)
+          print_nl("1 or ... or 9 to ignore the next 1 to 9 tokens of input,");
+
+        print_nl("H for help, X to quit.");
+      }
+      }
   }
 
 
@@ -27196,6 +27193,10 @@ pointer finite_shrink (pointer p)
   if (no_shrink_error_yet)
   {
     no_shrink_error_yet = false;
+#ifdef STAT
+    if (tracing_paragraphs > 0)
+      end_diagnostic(true);
+#endif
     print_err("Infinite glue shrinkage found in a paragraph");
     help5("The paragraph just ended includes some glue that has",
         "infinite shrinkability, e.g., `\\hskip 0pt minus 1fil'.",
@@ -27203,6 +27204,10 @@ pointer finite_shrink (pointer p)
         "of any length to fit on one line. But it's safe to proceed,",
         "since the offensive shrinkability has been made finite.");
     error();
+#ifdef STAT
+    if (tracing_paragraphs > 0)
+      begin_diagnostic();
+#endif
   }
 
   q = new_spec(p);
@@ -27227,7 +27232,7 @@ void try_break (integer pi, small_number break_type)
   halfword l;                   // {line number of current active node}
   boolean node_r_stays_active;  // {should node |r| remain in the active list?}
   scaled line_width;            // {the current line will be justified to this width}
-  uint32_t fit_class;               // {possible fitness class of test line}
+  uint32_t fit_class;           // {possible fitness class of test line}
   halfword b;                   // {badness of test line}
   integer d;                    // {demerits of test line}
   boolean artificial_demerits;  // {has |d| been forced to zero?}
@@ -27733,11 +27738,11 @@ found:
         if (pi != 0)
           if (pi > 0)
             d = d + pi * pi;
-          else if (pi > -10000)
+          else if (pi > eject_penalty)
             d = d - pi * pi;
 
         if ((break_type == hyphenated) && (type(r) == hyphenated))
-          if (cur_p != 0)
+          if (cur_p != null)
             d = d + double_hyphen_demerits;
           else
             d = d + final_hyphen_demerits;
@@ -27753,12 +27758,12 @@ found:
         {
           print_nl("");
 
-          if (cur_p == 0)
+          if (cur_p == null)
             short_display(link(printed_node));
           else
           {
             save_link = link(cur_p);
-            link(cur_p) = 0;
+            link(cur_p) = null;
             print_nl("");
             short_display(link(printed_node));
             link(cur_p) = save_link;
@@ -27769,7 +27774,7 @@ found:
 
         print_nl("@");
 
-        if (cur_p == 0)
+        if (cur_p == null)
           print_esc("par");
         else if ((type(cur_p) != glue_node) && (!is_char_node(cur_p)))
         {
@@ -27785,7 +27790,7 @@ found:
 
         prints(" via @@");
 
-        if (break_node(r) == 0)
+        if (break_node(r) == null)
           print_char('0');
         else
           print_int(serial(break_node(r)));
@@ -27849,10 +27854,10 @@ deactivate:
       {
         r = link(prev_r);
 
-        if (r == active)
+        if (r == last_active)
         {
           do_all_six(downdate_width);
-          link(prev_prev_r) = active;
+          link(prev_prev_r) = last_active;
           free_node(prev_r, delta_node_size);
           prev_r = prev_prev_r;
         }
@@ -27870,7 +27875,7 @@ deactivate:
 exit:
 #ifdef STAT
   if (cur_p == printed_node)
-    if (cur_p != 0)
+    if (cur_p != null)
       if (type(cur_p) == disc_node)
       {
         t = replace_count(cur_p);
@@ -27898,14 +27903,14 @@ void post_line_break (boolean d)
 
   LR_ptr = LR_save;
   q = break_node(best_bet);
-  cur_p = 0;
+  cur_p = null;
 
   do {
     r = q;
     q = prev_break(q);
     next_break(r) = cur_p;
     cur_p = r;
-  } while (!(q == 0));
+  } while (!(q == null));
 
   cur_line = prev_graf + 1;
   last_disp = 0;
@@ -27944,7 +27949,7 @@ void post_line_break (boolean d)
     disc_break = false;
     post_disc_break = false;
 
-    if (q != 0)
+    if (q != null)
     {
       if (!is_char_node(q))
         if (type(q) == glue_node)
@@ -27975,33 +27980,33 @@ void post_line_break (boolean d)
 
               s = link(r);
               r = link(s);
-              link(s) = 0;
+              link(s) = null;
               flush_node_list(link(q));
               replace_count(q) = 0;
             }
 
-            if (post_break(q) != 0)
+            if (post_break(q) != null)
             {
               s = post_break(q);
 
-              while (link(s) != 0)
+              while (link(s) != null)
                 s = link(s);
 
               link(s) = r;
               r = post_break(q);
-              post_break(q) = 0;
+              post_break(q) = null;
               post_disc_break = true;
             }
 
-            if (pre_break(q) != 0)
+            if (pre_break(q) != null)
             {
               s = prev_break(q);
               link(q) = s;
 
-              while (link(s) != 0)
+              while (link(s) != null)
                 s = link(s);
 
-              prev_break(q) = 0;
+              prev_break(q) = null;
               q = s;
             }
 
@@ -28023,7 +28028,7 @@ void post_line_break (boolean d)
     {
       q = temp_head;
 
-      while (link(q) != 0)
+      while (link(q) != null)
         q = link(q);
     }
 
@@ -28059,7 +28064,7 @@ done:
       }
 
     r = link(q);
-    link(q) = 0;
+    link(q) = null;
     q = link(temp_head);
     link(temp_head) = r;
 
@@ -28085,15 +28090,15 @@ done:
       cur_width = second_width;
       cur_indent = second_indent;
     }
-    else if (par_shape_ptr == 0)
+    else if (par_shape_ptr == null)
     {
       cur_width = first_width;
       cur_indent = first_indent;
     }
     else
     {
-      cur_width = mem[par_shape_ptr + 2 * cur_line].cint;
-      cur_indent = mem[par_shape_ptr + 2 * cur_line - 1].cint;
+      cur_width = mem[par_shape_ptr + 2 * cur_line].sc;
+      cur_indent = mem[par_shape_ptr + 2 * cur_line - 1].sc;
     }
 
     adjust_tail = adjust_head;
@@ -28107,7 +28112,7 @@ done:
       tail = adjust_tail;
     }
 
-    adjust_tail = 0;
+    adjust_tail = null;
 
     if (cur_line + 1 != best_line)
     {
@@ -28173,7 +28178,7 @@ done:
     incr(cur_line);
     cur_p = next_break(cur_p);
 
-    if (cur_p != 0)
+    if (cur_p != null)
       if (!post_disc_break)
       {
         r = temp_head;
@@ -28205,14 +28210,14 @@ done:
 done1:
         if (r != temp_head)
         {
-          link(r) = 0;
+          link(r) = null;
           flush_node_list(link(temp_head));
           link(temp_head) = q;
         }
       }
-  } while (!(cur_p == 0));
+  } while (!(cur_p == null));
 
-  if ((cur_line != best_line) || (link(temp_head) != 0))
+  if ((cur_line != best_line) || (link(temp_head) != null))
     confusion("line breaking");
 
   prev_graf = best_line - 1;
@@ -28232,7 +28237,7 @@ static small_number reconstitute (small_number j, small_number n, halfword bchar
   hyphen_passed = 0;
   t = hold_head;
   w = 0;
-  link(hold_head) = 0;
+  link(hold_head) = null;
   cur_l = hu[j];
   cur_q = t;
 
@@ -28244,7 +28249,7 @@ static small_number reconstitute (small_number j, small_number n, halfword bchar
     if (ligature_present)
       lft_hit = init_lft; 
 
-    while (p != 0)
+    while (p != null)
     {
       append_charnode_to_t(character(p));
       p = link(p);
@@ -28253,7 +28258,7 @@ static small_number reconstitute (small_number j, small_number n, halfword bchar
   else if (cur_l < non_char)
     append_charnode_to_t(cur_l);
 
-  lig_stack = 0;
+  lig_stack = null;
   set_cur_r();
 
 continu:
@@ -28314,7 +28319,7 @@ continu:
               lft_hit = true;
 
             if (j == n)
-              if (lig_stack == 0)
+              if (lig_stack == null)
                 rt_hit = true;
 
             check_interrupt();
@@ -28334,7 +28339,7 @@ continu:
                 {
                   cur_r = rem_byte(q);
 
-                  if (lig_stack != 0)
+                  if (lig_stack != null)
                     character(lig_stack) = cur_r;
                   else
                   {
@@ -28377,7 +28382,7 @@ continu:
                   cur_l = rem_byte(q);
                   ligature_present = true;
 
-                  if (lig_stack != 0)
+                  if (lig_stack != null)
                     pop_lig_stack();
                   else if (j == n)
                     goto done;
@@ -28426,7 +28431,7 @@ done:
     sync_tag(t + medium_node_size) = 0;
   }
 
-  if (lig_stack != 0)
+  if (lig_stack != null)
   {
     cur_q = t;
     cur_l = character(lig_stack);
