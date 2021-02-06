@@ -28499,7 +28499,7 @@ void hyphenate (void)
 
       s = hyph_list[h];
 
-      while (s != 0)
+      while (s != null)
       {
         hyf[info(s)] = 1;
         s = link(s);
@@ -28568,9 +28568,9 @@ found:
 
 found1:
   q = link(hb);
-  link(hb) = 0;
+  link(hb) = null;
   r = link(ha);
-  link(ha) = 0;
+  link(ha) = null;
   bchar = hyf_bchar;
 
   if (is_char_node(ha))
@@ -28610,7 +28610,7 @@ found1:
 
     j = 1;
     s = ha;
-    init_list = 0;
+    init_list = null;
     goto common_ending;
   }
 
@@ -28627,7 +28627,7 @@ found2:
   j = 0;
   hu[0] = 256;
   init_lig = false;
-  init_list = 0;
+  init_list = null;
 
 common_ending:
   flush_node_list(r);
@@ -28640,14 +28640,14 @@ common_ending:
     {
       link(s) = link(hold_head);
 
-      while (link(s) != 0)
+      while (link(s) != null)
         s = link(s);
 
       if (odd(hyf[j - 1]))
       {
         l = j;
         hyphen_passed = j - 1;
-        link(hold_head) = 0;
+        link(hold_head) = null;
       }
     }
 
@@ -28659,16 +28659,16 @@ common_ending:
         major_tail = r;
         r_count = 0;
 
-        while (link(major_tail) != 0)
+        while (link(major_tail) != null)
           advance_major_tail();
 
         i = hyphen_passed;
         hyf[i] = 0;
-        minor_tail = 0;
-        pre_break(r) = 0;
+        minor_tail = null;
+        pre_break(r) = null;
         hyf_node = new_character(hf, hyf_char);
 
-        if (hyf_node != 0)
+        if (hyf_node != null)
         {
           incr(i);
           c = hu[i];
@@ -28680,29 +28680,29 @@ common_ending:
         {
           l = reconstitute(l, i, font_bchar[hf], non_char) + 1;
 
-          if (link(hold_head) != 0) /* BUG FIX ??? */
+          if (link(hold_head) != null)
           {
-            if (minor_tail == 0)
+            if (minor_tail == null)
               pre_break(r) = link(hold_head);
             else
               link(minor_tail) = link(hold_head);
 
             minor_tail = link(hold_head);
 
-            while (link(minor_tail) != 0)  /* BUG FIX */
+            while (link(minor_tail) != null)
               minor_tail = link(minor_tail);
           }
         }
 
-        if (hyf_node != 0)
+        if (hyf_node != null)
         {
           hu[i] = c;
           l = i;
           decr(i);
         }
 
-        minor_tail = 0;
-        post_break(r) = 0;
+        minor_tail = null;
+        post_break(r) = null;
         c_loc = 0;
 
         if (bchar_label[hf] != non_address)
@@ -28710,13 +28710,13 @@ common_ending:
           decr(l);
           c = hu[l];
           c_loc = l;
-          hu[l]= 256;
+          hu[l] = 256;
         }
 
         while (l < j)
         {
           do {
-            l = reconstitute(l, hn, bchar, 256) + 1;
+            l = reconstitute(l, hn, bchar, non_char) + 1;
 
             if (c_loc > 0)
             {
@@ -28724,16 +28724,16 @@ common_ending:
               c_loc = 0;
             }
 
-            if (link(hold_head) != 0)     /* BUG FIX */
+            if (link(hold_head) != null)
             {
-              if (minor_tail == 0)
+              if (minor_tail == null)
                 post_break(r) = link(hold_head);
               else
                 link(minor_tail) = link(hold_head);
 
               minor_tail = link(hold_head);
 
-              while (link(minor_tail) != 0)
+              while (link(minor_tail) != null)
                 minor_tail = link(minor_tail);
             }
           } while (!(l >= j));
@@ -28743,7 +28743,7 @@ common_ending:
             j = reconstitute(j, hn, bchar, non_char) + 1;
             link(major_tail) = link(hold_head);
 
-            while (link(major_tail) != 0)
+            while (link(major_tail) != null)
               advance_major_tail();
           }
         }
@@ -28751,7 +28751,7 @@ common_ending:
         if (r_count > 127)
         {
           link(s) = link(r);
-          link(r) = 0;
+          link(r) = null;
           flush_node_list(r);
         }
         else
@@ -28762,7 +28762,7 @@ common_ending:
 
         s = major_tail;
         hyphen_passed = j - 1;
-        link(hold_head) = 0;
+        link(hold_head) = null;
       } while (!(!odd(hyf[j - 1])));
   } while (!(j > hn));
 
@@ -28795,7 +28795,7 @@ void new_hyph_exceptions (void)
 
 not_found1:
   n = 0;
-  p = 0;
+  p = null;
 
   while (true)
   {
@@ -28917,7 +28917,7 @@ not_found:
             return;
 
           n = 0;
-          p = 0;
+          p = null;
         }
         break;
 
@@ -28943,7 +28943,7 @@ static pointer prune_page_top (pointer p, boolean s)
   prev_p = temp_head;
   link(temp_head) = p;
 
-  while (p != 0)
+  while (p != null)
     switch (type(p))
     {
       case dir_node:
@@ -28960,7 +28960,7 @@ static pointer prune_page_top (pointer p, boolean s)
           else
             width(temp_ptr) = 0;
 
-          p = 0;
+          p = null;
         }
         break;
 
@@ -28979,7 +28979,7 @@ static pointer prune_page_top (pointer p, boolean s)
         {
           q = p;
           p = link(q);
-          link(q) = 0;
+          link(q) = null;
           link(prev_p) = p;
 
           if (s)
@@ -29025,7 +29025,7 @@ static pointer vert_break (pointer p, scaled h, scaled d)
 
   while (true)
   {
-    if (p == 0)
+    if (p == null)
       pi = eject_penalty;
     else switch (type(p))
     {
@@ -29053,7 +29053,7 @@ static pointer vert_break (pointer p, scaled h, scaled d)
 
       case kern_node:
         {
-          if (link(p) == 0)
+          if (link(p) == null)
             t = penalty_node;
           else
             t = type(link(p));
@@ -29115,7 +29115,6 @@ static pointer vert_break (pointer p, scaled h, scaled d)
       goto not_found;
 
 update_heights:
-
     if (type(p) == kern_node)
       q = p;
     else
@@ -29175,17 +29174,17 @@ static pointer vsplit (halfword n, scaled h)
     if (do_marks(vsplit_init, 0, sa_mark))
       sa_mark = null;
 
-  if (split_first_mark != 0)
+  if (split_first_mark != null)
   {
     delete_token_ref(split_first_mark);
-    split_first_mark = 0;
+    split_first_mark = null;
     delete_token_ref(split_bot_mark);
-    split_bot_mark = 0;
+    split_bot_mark = null;
   }
 
-  if (v == 0)
+  if (v == null)
   {
-    return 0;
+    return null;
   }
 
   if (type(v) == dir_node)
@@ -29206,7 +29205,7 @@ static pointer vsplit (halfword n, scaled h)
     help2("The box you are trying to split is an \\hbox.",
         "I can't split such a box, so I'll leave it alone.");
     error();
-    return 0;
+    return null;
   }
 
   flush_node_list(link(v));
@@ -29215,7 +29214,7 @@ static pointer vsplit (halfword n, scaled h)
   p = list_ptr(v);
 
   if (p == q)
-    list_ptr(v) = 0;
+    list_ptr(v) = null;
   else while (true)
   {
     if (type(p) == mark_node)
@@ -29234,7 +29233,7 @@ static pointer vsplit (halfword n, scaled h)
         sa_split_bot_mark(cur_ptr) = mark_ptr(p);
         add_token_ref(mark_ptr(p));
       }
-      else if (split_first_mark == 0)
+      else if (split_first_mark == null)
       {
         split_first_mark = mark_ptr(p);
         split_bot_mark = split_first_mark;
@@ -29249,7 +29248,7 @@ static pointer vsplit (halfword n, scaled h)
 
     if (link(p) == q)
     {
-      link(p) = 0;
+      link(p) = null;
       goto done;
     }
 
@@ -29260,7 +29259,7 @@ done:
   q = prune_page_top(q, saving_vdiscards > 0);
   p = list_ptr(v);
  
-  if (q != 0)
+  if (q != null)
   {
     q = vpackage(q, 0, 1, max_dimen);
     set_box_dir(q, box_dir(v));
@@ -29374,21 +29373,21 @@ static void fire_up (pointer c)
     if (do_marks(fire_up_init, 0, sa_mark))
       sa_mark = null;
 
-  if (bot_mark != 0)
+  if (bot_mark != null)
   {
-    if (top_mark != 0)
+    if (top_mark != null)
       delete_token_ref(top_mark);
 
     top_mark = bot_mark;
     add_token_ref(top_mark);
     delete_token_ref(first_mark);
-    first_mark = 0;
+    first_mark = null;
   }
 
   if (c == best_page_break)
-    best_page_break = 0;
+    best_page_break = null;
 
-  if (box(255) != 0)
+  if (box(255) != null)
   {
     print_err("");
     print_esc("box");
@@ -29407,17 +29406,17 @@ static void fire_up (pointer c)
 
     while (r != page_ins_head)
     {
-      if (best_ins_ptr(r) != 0)
+      if (best_ins_ptr(r) != null)
       {
         n = subtype(r);
         ensure_vbox(n);
 
-        if (box(n) == 0)
+        if (box(n) == null)
           box(n) = new_null_box();
 
         p = box(n) + list_offset;
 
-        while (link(p) != 0)
+        while (link(p) != null)
           p = link(p);
 
         last_ins_ptr(r) = p;
@@ -29428,7 +29427,7 @@ static void fire_up (pointer c)
   }
 
   q = hold_head;
-  link(q) = 0;
+  link(q) = null;
   prev_p = page_head;
   p = link(prev_p);
 
@@ -29443,7 +29442,7 @@ static void fire_up (pointer c)
         while (subtype(r) != subtype(p))
           r = link(r);
 
-        if (best_ins_ptr(r) == 0)
+        if (best_ins_ptr(r) == null)
           wait = true;
         else
         {
@@ -29476,16 +29475,16 @@ static void fire_up (pointer c)
           if (best_ins_ptr(r) == p)
           {
             if (type(r) == split_up)
-              if ((broken_ins(r) == p) && (broken_ins(r) != 0))
+              if ((broken_ins(r) == p) && (broken_ins(r) != null))
               {
                 while (link(s) != broken_ptr(r))
                   s = link(s);
 
-                link(s) = 0;
+                link(s) = null;
                 split_top_skip = split_top_ptr(p);
                 ins_ptr(p) = prune_page_top(broken_ptr(r), false);
 
-                if (ins_ptr(p) != 0)
+                if (ins_ptr(p) != null)
                 {
                   temp_ptr = vpackage(ins_ptr(p), 0, 1, max_dimen);
                   height(p) = height(temp_ptr) + depth(temp_ptr);
@@ -29496,7 +29495,7 @@ static void fire_up (pointer c)
                 }
               }
 
-            best_ins_ptr(r) = 0;
+            best_ins_ptr(r) = null;
             n = subtype(r);
             temp_ptr = list_ptr(box(n));
             delete_glue_ref(space_ptr(box(n)));
@@ -29508,7 +29507,7 @@ static void fire_up (pointer c)
           }
           else
           {
-            while (link(s) != 0)
+            while (link(s) != null)
               s = link(s);
 
             last_ins_ptr(r) = s;
@@ -29516,7 +29515,7 @@ static void fire_up (pointer c)
         }
 
         link(prev_p) = link(p);
-        link(p) = 0;
+        link(p) = null;
 
         if (wait)
         {
@@ -29534,7 +29533,7 @@ static void fire_up (pointer c)
       }
     }
     else if (type(p) == mark_node)
-      if (mark_class(p) != 0)
+      if (mark_class(p) != null)
       {
         find_sa_element(mark_val, mark_class(p), true);
 
@@ -29552,13 +29551,13 @@ static void fire_up (pointer c)
       }
       else
       {
-        if (first_mark == 0)
+        if (first_mark == null)
         {
           first_mark = mark_ptr(p);
           add_token_ref(first_mark);
         }
 
-        if (bot_mark != 0)
+        if (bot_mark != null)
           delete_token_ref(bot_mark);
 
         bot_mark = mark_ptr(p);
@@ -29571,9 +29570,9 @@ static void fire_up (pointer c)
 
   split_top_skip = save_split_top_skip;
 
-  if (p != 0)
+  if (p != null)
   {
-    if (link(contrib_head) == 0)
+    if (link(contrib_head) == null)
       if (nest_ptr == 0)
         tail = page_tail;
       else
@@ -29581,7 +29580,7 @@ static void fire_up (pointer c)
 
     link(page_tail) = link(contrib_head);
     link(contrib_head) = p;
-    link(prev_p) = 0;
+    link(prev_p) = null;
   }
 
   save_vbadness = vbadness;
@@ -29593,7 +29592,7 @@ static void fire_up (pointer c)
   vbadness = save_vbadness;
   vfuzz = save_vfuzz;
 
-  if (last_glue != empty_flag)
+  if (last_glue != max_halfword)
     delete_glue_ref(last_glue);
 
   page_contents = empty;
@@ -29628,13 +29627,13 @@ static void fire_up (pointer c)
     if (do_marks(fire_up_done, 0, sa_mark))
       sa_mark = null;
 
-  if ((top_mark != 0) && (first_mark == 0))
+  if ((top_mark != null) && (first_mark == null))
   {
     first_mark = top_mark;
     add_token_ref(top_mark);
   }
 
-  if (output_routine != 0)
+  if (output_routine != null)
     if (dead_cycles >= max_dead_cycles)
     {
       print_err("Output loop---");
@@ -29661,9 +29660,9 @@ static void fire_up (pointer c)
     }
 
   {
-    if (link(page_head) != 0)
+    if (link(page_head) != null)
     {
-      if (link(contrib_head) == 0)
+      if (link(contrib_head) == null)
         if (nest_ptr == 0)
           tail = page_tail;
         else
@@ -29672,14 +29671,14 @@ static void fire_up (pointer c)
         link(page_tail) = link(contrib_head);
 
       link(contrib_head) = link(page_head);
-      link(page_head) = 0;
+      link(page_head) = null;
       page_tail = page_head;
     }
 
     flush_node_list(page_disc);
     page_disc = null;
     ship_out(box(255));
-    box(255) = 0;
+    box(255) = null;
   }
 }
 
@@ -29939,13 +29938,13 @@ continu:
                 begin_diagnostic();
                 print_nl("% split");
                 print_int(n);
-                prints(" to");
+                prints(" to ");
                 print_scaled(w);
                 print_char(',');
                 print_scaled(best_height_plus_depth);
                 prints(" p=");
 
-                if (q == 0)
+                if (q == null)
                   print_int(eject_penalty);
                 else if (type(q) == penalty_node)
                   print_int(penalty(q));
@@ -29964,7 +29963,7 @@ continu:
               broken_ins(r) = p;
 
               if (q == null)
-                insert_penalties = insert_penalties + (eject_penalty);
+                insert_penalties = insert_penalties + eject_penalty;
               else if (type(q) == penalty_node)
                 insert_penalties = insert_penalties + penalty(q);
             }
