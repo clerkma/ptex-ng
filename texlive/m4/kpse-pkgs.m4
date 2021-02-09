@@ -1,4 +1,4 @@
-# $Id: kpse-pkgs.m4 55138 2020-05-14 17:47:47Z karl $
+# $Id: kpse-pkgs.m4 57680 2021-02-08 15:49:16Z karl $
 # Private Autoconf macros for the TeX Live (TL) tree.
 # Copyright 2016-2020 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
@@ -92,6 +92,7 @@ texdoctk
 tpic2pdftex
 vlna
 xindy
+xml2pmx
 xpdfopen
 ])]) # KPSE_UTILS_PKGS
 
