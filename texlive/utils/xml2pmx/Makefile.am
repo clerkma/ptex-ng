@@ -1,4 +1,4 @@
-## $Id: Makefile.am 57688 2021-02-09 18:23:15Z karl $
+## $Id: Makefile.am 57693 2021-02-09 23:08:35Z karl $
 ## Makefile.am for the TeX Live subdirectory utils/xml2pmx/
 ##
 ## Copyright 2021 Bob Tennent <rdt@queensu.org>
@@ -32,6 +32,7 @@ xml2pmx_SOURCES = \
 	@XML2PMX_TREE@/primtab.h \
 	@XML2PMX_TREE@/primtab0.c \
 	@XML2PMX_TREE@/support.c \
+	@XML2PMX_TREE@/wrapper.c \
 	@XML2PMX_TREE@/xmain.c
 
 man1_MANS = \

@@ -1,9 +1,9 @@
 #! /bin/sh -vx
-# $Id: test-missing-image.test 57681 2021-02-08 15:54:09Z karl $
+# $Id: test-missing-image.test 57697 2021-02-10 02:02:05Z karl $
 # Public domain. Test that dvips exits with bad status when there is a
 # missing image file.
 # 
-# BTW, to just run this test on its own:
+# BTW, to run just this test on its own:
 # make -C $wp TESTS=test-missing-image.test check 
 # where wp=.../Work/texk/dvipsk
 
