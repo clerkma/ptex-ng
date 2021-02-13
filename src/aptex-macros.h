@@ -771,7 +771,8 @@ enum
 #define pdf_major_version_code        72
 #define pdf_minor_version_code        73
 #define synctex_code                  74
-#define int_pars                      75
+#define tracing_stack_levels_code     75
+#define int_pars                      76
 #define count_base                    (int_base + int_pars) // {256 user \.{\\count} registers}
 #define del_code_base                 (count_base + 256)    // {256 delimiter code mappings}
 #define dimen_base                    (del_code_base + 256) // {beginning of region 6}
@@ -855,6 +856,7 @@ enum
 #define pdf_major_version             int_par(pdf_major_version_code)
 #define pdf_minor_version             int_par(pdf_minor_version_code)
 #define synctex                       int_par(synctex_code)
+#define tracing_stack_levels          int_par(tracing_stack_levels_code)
 /* sec 0247 */
 #define par_indent_code               0   // {indentation of paragraphs}
 #define math_surround_code            1   // {space around math in text}

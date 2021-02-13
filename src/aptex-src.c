@@ -6372,6 +6372,7 @@ static void init_prim (void)
   primitive("pdfmajorversion", assign_int, int_base + pdf_major_version_code);
   primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
   primitive("synctex", assign_int, int_base + synctex_code);
+  primitive("tracingstacklevels", assign_int, int_base + tracing_stack_levels_code);
   /* sec 0248 */
   primitive("parindent", assign_dimen, dimen_base + par_indent_code);
   primitive("mathsurround", assign_dimen, dimen_base + math_surround_code);
@@ -11221,6 +11222,10 @@ static void print_param (integer n)
       print_esc("synctex");
       break;
 
+    case tracing_stack_levels_code:
+      print_esc("tracingstacklevels");
+      break;
+
     default:
       prints("[unknown integer parameter!]");
       break;
@@ -14370,9 +14375,36 @@ static void macro_call (void)
   {
     // @<Show the text of the macro being expanded@>
     begin_diagnostic();
-    print_ln();
-    print_cs(warning_index);
-    token_show(ref_count);
+
+    if (tracing_stack_levels > 0)
+      if (input_ptr < tracing_stack_levels)
+      {
+        v = input_ptr;
+        print_ln();
+        print_char('~');
+
+        while (v > 0)
+        {
+          print_char('.');
+          decr(v);
+        };
+
+        print_cs(warning_index);
+        token_show(ref_count);
+      }
+      else
+      {
+        print_char('~');
+        print_char('~');
+        print_cs(warning_index);
+      }
+    else
+    {
+      print_ln();
+      print_cs(warning_index);
+      token_show(ref_count);
+    }
+
     end_diagnostic(false);
   }
 
@@ -14389,10 +14421,10 @@ static void macro_call (void)
       long_state = long_state - 2;
 
     do {
-      link(temp_head) = 0;
+      link(temp_head) = null;
 
       if ((info(r) > match_token + 255) || (info(r) < match_token))
-        s = 0;
+        s = null;
       else
       {
         match_chr = info(r) - match_token;
@@ -14422,7 +14454,7 @@ continu:
 
       if (s != r)
       {
-        if (s == 0)
+        if (s == null)
         {
           print_err("Use of ");
           sprint_cs(warning_index);
@@ -14589,7 +14621,7 @@ done1:
         goto continu;
 
 found:
-      if (s != 0)
+      if (s != null)
       {
         if ((m == 1) && (info(p) < right_brace_limit) && (p != temp_head))
         {
@@ -14605,20 +14637,21 @@ found:
         incr(n);
 
         if (tracing_macros > 0)
-        {
-          begin_diagnostic();
-          print_nl("");
-          print(match_chr);
-          print_int(n);
-          prints("<-");
-          show_token_list(pstack[n - 1], 0, 1000);
-          end_diagnostic(false);
-        }
+          if ((tracing_stack_levels == 0) || (input_ptr < tracing_stack_levels))
+          {
+            begin_diagnostic();
+            print_nl("");
+            print(match_chr);
+            print_int(n);
+            prints("<-");
+            show_token_list(pstack[n - 1], null, 1000);
+            end_diagnostic(false);
+          }
       }
     } while (!(info(r) == end_match_token));
   }
 
-  while ((state == token_list) && (loc == 0) && (token_type != v_template))
+  while ((state == token_list) && (loc == null) && (token_type != v_template))
     end_token_list();
 
   begin_token_list(ref_count, macro);
@@ -19561,6 +19594,8 @@ void open_log_file (void)
 // \TeX\ will \.{\\input} something
 void start_input (void)
 {
+  pointer v;
+
   scan_file_name();
   pack_cur_name();
 
@@ -19593,6 +19628,29 @@ done:
   incr(open_parens);
   slow_print(name);
   update_terminal();
+
+  if (tracing_stack_levels > 0)
+  {
+    begin_diagnostic();
+    print_ln();
+    print_char('~');
+    v = input_ptr - 1;
+
+    if (v < tracing_stack_levels)
+      while (v > 0)
+      {
+        print_char('.');
+        decr(v);
+      }
+    else
+      print_char('~');
+
+    prints_("INPUT "); // slow_print
+    slow_print(cur_name);
+    print_ln();
+    end_diagnostic(false);
+  }
+
   state = new_line;
 
   synctex_start_input();
@@ -19882,7 +19940,7 @@ not_found:;
     {
       alpha = 16;
 
-      while (z >= 8388608L)   /* 2^23 */
+      while (z >= 040000000)
       {
         z = z / 2;
         alpha = alpha + alpha;
@@ -19893,22 +19951,22 @@ not_found:;
     }
 
     for (k = width_base[f]; k <= lig_kern_base[f] - 1; k++)
-      store_scaled(font_info[k].cint);
+      store_scaled(font_info[k].sc);
 
-    if (font_info[width_base[f]].cint != 0)
+    if (font_info[width_base[f]].sc != 0)
       goto bad_tfm;
 
-    if (font_info[height_base[f]].cint != 0)
+    if (font_info[height_base[f]].sc != 0)
       goto bad_tfm;
 
-    if (font_info[depth_base[f]].cint != 0)
+    if (font_info[depth_base[f]].sc != 0)
       goto bad_tfm;
 
-    if (font_info[italic_base[f]].cint != 0)
+    if (font_info[italic_base[f]].sc != 0)
       goto bad_tfm;
   }
 
-  bch_label = 32767;     /* '77777 */
+  bch_label = 077777;
   bchar = 256;
 
   if (nl > 0)
@@ -19955,7 +20013,7 @@ not_found:;
   }
 
   for (k = kern_base[f] + kern_base_offset; k <= exten_base[f] - 1; k++)
-    store_scaled(font_info[k].cint);
+    store_scaled(font_info[k].sc);
 
   if (jfm_flag != dir_default)
   {
@@ -19994,17 +20052,17 @@ not_found:;
         fget();
         sw = sw * 256 + fbyte;
         fget();
-        font_info[param_base[f]].cint = (sw * 16) + (fbyte / 16);
+        font_info[param_base[f]].sc = (sw * 16) + (fbyte / 16);
       }
       else
-        store_scaled(font_info[param_base[f] + k - 1].cint);
+        store_scaled(font_info[param_base[f] + k - 1].sc);
     }
 
     if (feof(tfm_file))
       goto bad_tfm;
 
     for (k = np + 1; k <= 7; k++)
-      font_info[param_base[f] + k - 1].cint = 0;
+      font_info[param_base[f] + k - 1].sc = 0;
   }
 
   if (np >= 7)
@@ -20036,7 +20094,7 @@ not_found:;
   font_area[f] = aire;
   font_bc[f] = bc;
   font_ec[f] = ec;
-  font_glue[f] = 0;
+  font_glue[f] = null;
   adjust(ctype_base);
   adjust(char_base);
   adjust(width_base);
@@ -20190,7 +20248,7 @@ static pointer new_character (internal_font_number f, eight_bits c)
   }
 
   char_warning(f, c);
-  return 0;
+  return null;
 }
 
 // {outputs half of the buffer}
@@ -20262,7 +20320,7 @@ void movement (scaled w, eight_bits o)
   p = link(q);
   mstate = none_seen;
 
-  while (p != 0)
+  while (p != null)
   {
     if (width(p) == w)
     {
@@ -20449,7 +20507,7 @@ void prune_movements (integer l)
 {
   pointer p;
 
-  while (down_ptr != 0)
+  while (down_ptr != null)
   {
     if (location(down_ptr) < l)
       goto done;
@@ -20460,7 +20518,7 @@ void prune_movements (integer l)
   }
 
 done:
-  while (right_ptr != 0)
+  while (right_ptr != null)
   {
     if (location(right_ptr) < l)
       return;
@@ -20755,7 +20813,7 @@ static void pdf_locate_font (internal_font_number f)
       font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
   }
   else
-	  font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
+    font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
 
   free(lfont_name);
   free(lfont_area);
@@ -21488,7 +21546,7 @@ reswitch:
 
     do {
       f = font(p);
-	  c = character(p);
+      c = character(p);
 
       // @<Change font |dvi_f| to |f|@>
       if (f != dvi_f)
@@ -21497,7 +21555,7 @@ reswitch:
         {
           dvi_font_def(f);
 #ifndef APTEX_DVI_ONLY
-		  pdf_locate_font(f);
+          pdf_locate_font(f);
 #endif
           font_used[f] = true;
         }
@@ -22598,7 +22656,7 @@ void out_what (pointer p)
       break;
 
     case pdf_save_pos_node:
-	  {
+      {
         switch (dvi_dir)
         {
           case dir_yoko:
@@ -23772,9 +23830,9 @@ static void flush_math (void)
 {
   flush_node_list(link(head));
   flush_node_list(incompleat_noad);
-  link(head) = 0;
+  link(head) = null;
   tail = head;
-  incompleat_noad = 0;
+  incompleat_noad = null;
 }
 
 // { We assume that |math_type(q)=sub_exp_box| }
@@ -24683,13 +24741,13 @@ static void make_scripts (pointer q, scaled delta)
     }
   }
 
-  if (new_hlist(q) == 0)
+  if (new_hlist(q) == null)
     new_hlist(q) = x;
   else
   {
     p = new_hlist(q);
 
-    while (link(p) != 0)
+    while (link(p) != null)
       p = link(p);
 
     link(p) = x;
@@ -26358,7 +26416,7 @@ static void line_break (boolean d)
     q = glue_ptr(last_line_fill);
 
     if ((stretch(q) > 0) && (stretch_order(q) > normal))
-	  {
+    {
       if ((background[3] == 0) && (background[4] == 0) && (background[5] == 0))
       {
         do_last_line_fit = true;
@@ -26368,7 +26426,7 @@ static void line_break (boolean d)
         fill_width[2] = 0;
         fill_width[stretch_order(q) - 1] = stretch(q);
       }
-	  }
+    }
   }
 
   minimum_demerits = awful_bad;
