@@ -1,4 +1,4 @@
-## $Id: pdftex.am 57725 2021-02-13 04:17:10Z kakuto $
+## $Id: pdftex.am 57736 2021-02-13 23:02:37Z karl $
 ## texk/web2c/pdftexdir/am/pdftex.am: Makefile fragment for pdfTeX.
 ##
 ## Copyright 2016-2021 Karl Berry <tex-live@tug.org>
@@ -72,7 +72,9 @@ pdftex_ch_srcs = \
 	tex.ch \
 	tracingstacklevels.ch \
 	zlib-fmt.ch \
-	enctex2.ch \
+	enctexdir/enctex1.ch \
+	enctexdir/enctex-pdftex.ch \
+	enctexdir/enctex2.ch \
 	$(pdftex_ch_synctex) \
 	pdftexdir/pdftex.ch \
 	pdftexdir/char-warning-pdftex.ch \
