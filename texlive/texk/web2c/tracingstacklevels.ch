@@ -1,4 +1,4 @@
-% $Id: tracingstacklevels.ch 57724 2021-02-13 02:14:44Z karl $
+% $Id: tracingstacklevels.ch 57745 2021-02-14 23:24:25Z karl $
 % Public domain. From Petr Olsak, tex-implementors 2feb2021,
 % with adaptations by Akira Kakuto.
 %
@@ -111,7 +111,7 @@ begin
   if v < tracing_stack_levels then
     while v > 0 do begin print_char("."); decr(v); end
   else print_char("~");
-  slow_print("INPUT "); slow_print(cur_name); print_ln;
+  slow_print("INPUT "); slow_print(cur_name); slow_print(cur_ext); print_ln;
   end_diagnostic(false);
 end;
 @z
