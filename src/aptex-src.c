@@ -19647,6 +19647,7 @@ done:
 
     prints_("INPUT "); // slow_print
     slow_print(cur_name);
+    slow_print(cur_ext);
     print_ln();
     end_diagnostic(false);
   }
