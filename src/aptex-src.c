@@ -1313,7 +1313,6 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.flag_suppress_f_ligs      = false;
   aptex_env.flag_reset_trie           = false;
   aptex_env.flag_reset_hyphen         = false;
-  aptex_env.flag_allow_quoted         = true;
   aptex_env.flag_shell_escape         = false;
   aptex_env.flag_tex82                = false;
   aptex_env.flag_compact_fmt          = true;
@@ -19162,13 +19161,14 @@ static void begin_name (void)
   area_delimiter = 0;
   ext_delimiter = 0;
   prev_char = 0;
+  quoted_file_name = false;
 }
 
 static boolean more_name (ASCII_code c)
 {
-  if (stop_at_space && !quoted_file_name && c == ' ')
+  if (c == ' ' && stop_at_space && !quoted_file_name)
     return false;
-  else if (quoted_file_name && c == '"')
+  else if (c == '"')
   {
     quoted_file_name = !quoted_file_name; // catch next space character 
     return true;     // accept ending quote, but throw away
@@ -19357,17 +19357,6 @@ static void scan_file_name (void)
       get_x_token(); 
     } while (!(cur_cmd != spacer));
 
-    quoted_file_name = false;
-
-    if (aptex_env.flag_allow_quoted)
-    {
-      if (cur_chr == '"')
-      {
-        quoted_file_name = true;
-        get_x_token();
-      }
-    }
-
     skip_mode = false;
 
     while (true)
@@ -19492,17 +19481,6 @@ void prompt_file_name_(const char * s, str_number e)
 
     while ((buffer[k] == ' ') && (k < last))
       incr(k);
-
-    quoted_file_name = false;
-
-    if (aptex_env.flag_allow_quoted && (k < last))
-    {
-      if (buffer[k] == '"')
-      {
-        quoted_file_name = true;
-        incr(k);
-      }
-    }
 
     while (true)
     {
