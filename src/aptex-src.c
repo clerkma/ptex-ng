@@ -20564,7 +20564,9 @@ struct pdf_setting
 {
     int    ver_major, ver_minor;
     double media_width, media_height;
-    double annot_grow_amount;
+    struct {
+      double x, y;
+    } annot_grow_amount;
     int    outline_open_depth;
     int    check_gotos;
     int    enable_manual_thumb;
@@ -21228,7 +21230,8 @@ static void ship_out (pointer p)
 
       aptex_pdf_setting.media_width = 595.0;
       aptex_pdf_setting.media_height = 842.0;
-      aptex_pdf_setting.annot_grow_amount = 0.0;
+      aptex_pdf_setting.annot_grow_amount.x = 0.0;
+      aptex_pdf_setting.annot_grow_amount.y = 0.0;
       aptex_pdf_setting.outline_open_depth = 0;
       aptex_pdf_setting.check_gotos = !(1 << 4);
       aptex_pdf_setting.enable_manual_thumb = 0;
@@ -22568,8 +22571,8 @@ static void write_out (pointer p)
       }
       if (clobbered)
         prints("clobbered");
-      else  /*{We have the command.See if we're allowed to execute it,
-             and report in the log.We don't check the actual exit status of
+      else  /*{We have the command. See if we're allowed to execute it,
+             and report in the log. We don't check the actual exit status of
              the command, or do anything with the output.}*/
       {
         char * shell_cmd = calloc(cur_length, 1);

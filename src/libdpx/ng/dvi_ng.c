@@ -1,4 +1,4 @@
-/* Copyright 2014, 2020 Clerk Ma
+/* Copyright 2014, 2020, 2021 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -105,25 +105,25 @@ void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v)
         wbuf[1] =  UTF32toUTF16HS(ch)       & 0xff;
         wbuf[2] = (UTF32toUTF16LS(ch) >> 8) & 0xff;
         wbuf[3] =  UTF32toUTF16LS(ch)       & 0xff;
-        pdf_dev_set_string(h, v, wbuf, 4, width, font->font_id);
+        set_string(h, v, wbuf, 4, width, font->font_id);
       }
       else if (ch > 255)
       {
-        wbuf[0] = (ch >> 8) & 0xff;
-        wbuf[1] =  ch & 0xff;
-        pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id);
+        wbuf[2] = (ch >> 8) & 0xff;
+        wbuf[3] =  ch & 0xff;
+        set_string(h, v, wbuf + 2, 2, width, font->font_id);
       }
       else if (font->subfont_id >= 0)
       {
         unsigned short uch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
-        wbuf[0] = (uch >> 8) & 0xff;
-        wbuf[1] =  uch & 0xff;
-        pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id);
+        wbuf[2] = (uch >> 8) & 0xff;
+        wbuf[3] =  uch & 0xff;
+        set_string(h, v, wbuf + 2, 2, width, font->font_id);
       }
       else
       {
-        wbuf[0] = (unsigned char) ch;
-        pdf_dev_set_string(h, v, wbuf, 1, width, font->font_id);
+        wbuf[3] = (unsigned char) ch;
+        set_string(h, v, wbuf + 3, 1, width, font->font_id);
       }
 
       if (dvi_is_tracking_boxes())
