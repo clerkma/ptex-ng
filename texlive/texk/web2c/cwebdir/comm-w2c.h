@@ -132,10 +132,10 @@ typedef name_info *name_pointer; /* pointer into array of \&{name\_info}s */
 typedef name_pointer *hash_pointer;
 extern char byte_mem[]; /* characters of names */
 extern char *byte_mem_end; /* end of |byte_mem| */
+extern char *byte_ptr; /* first unused position in |byte_mem| */
 extern name_info name_dir[]; /* information about names */
 extern name_pointer name_dir_end; /* end of |name_dir| */
 extern name_pointer name_ptr; /* first unused position in |name_dir| */
-extern char *byte_ptr; /* first unused position in |byte_mem| */
 extern name_pointer hash[]; /* heads of hash lists */
 extern hash_pointer hash_end; /* end of |hash| */
 extern hash_pointer h; /* index into hash-head array */
@@ -260,7 +260,7 @@ handle \TEX/, so they should be sufficient for most applications of
 @d max_texts 10239 /* number of replacement texts, must be less than 10240 */
 @d longest_name 10000 /* file and section names and section texts shouldn't be longer than this */
 @d stack_size 500 /* number of simultaneous levels of macro expansion */
-@d buf_size 1000 /* for \.{CWEAVE} */
+@d buf_size 1000 /* maximum length of input line, plus one */
 @d long_buf_size (buf_size+longest_name) /* for \.{CWEAVE} */
 
 @ End of \.{COMMON} interface.
