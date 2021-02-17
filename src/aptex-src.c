@@ -26707,7 +26707,7 @@ static void line_break (boolean d)
               prev_s = cur_p;
               s = link(prev_s);
 
-              if (s != 0)
+              if (s != null)
               {
                 while (true)
                 {
@@ -26735,7 +26735,7 @@ static void line_break (boolean d)
                   }
                   else if (type(s) == ligature_node)
                   {
-                    if (lig_ptr(s) == 0)
+                    if (lig_ptr(s) == null)
                       goto continu;
                     else
                     {
@@ -26823,10 +26823,10 @@ done2:
                     j = hn;
                     q = lig_ptr(s);
 
-                    if (q != 0)
+                    if (q != null)
                       hyf_bchar = character(q);
 
-                    while (q != 0)
+                    while (q != null)
                     {
                       c = character(q);
                       set_lc_code(c);
@@ -26935,7 +26935,7 @@ done1:;
             s = pre_break(cur_p);
             disc_width = 0;
 
-            if (s == 0)
+            if (s == null)
               try_break(ex_hyphen_penalty, hyphenated);
             else
             {
@@ -26975,7 +26975,7 @@ done1:;
                 }
 
                 s = link(s);
-              } while (!(s == 0));
+              } while (!(s == null));
 
               act_width = act_width + disc_width;
               try_break(hyphen_penalty, hyphenated);
@@ -27060,7 +27060,7 @@ done1:;
 done5:;
     }
 
-    if (cur_p == 0)
+    if (cur_p == null)
     {
       try_break(eject_penalty, hyphenated);
 
@@ -27141,7 +27141,7 @@ done5:;
 
     q = passive;
 
-    while (q != 0)
+    while (q != null)
     {
       cur_p = link(q);
       free_node(q, passive_node_size);
@@ -27329,7 +27329,7 @@ continu:
             s = cur_p;
 
             if (break_type > unhyphenated)
-              if (cur_p != 0)
+              if (cur_p != null)
               {
                 t = replace_count(cur_p);
                 v = cur_p;
@@ -27375,7 +27375,7 @@ continu:
                   }
                 }
 
-                while (s != 0)
+                while (s != null)
                 {
                   if (is_char_node(s))
                   {
@@ -27416,11 +27416,11 @@ continu:
 
                 break_width[1] = break_width[1] + disc_width;
 
-                if (post_break(cur_p) == 0)
+                if (post_break(cur_p) == null)
                   s = link(v);
               }
 
-            while (s != 0)
+            while (s != null)
             {
               if (is_char_node(s))
               {
@@ -27559,7 +27559,7 @@ done:;
 
                 prints(" -> @@");
 
-                if (prev_break(passive) == 0)
+                if (prev_break(passive) == null)
                   print_char('0');
                 else
                   print_int(serial(prev_break(passive)));
@@ -27602,7 +27602,7 @@ done:;
           else if (par_shape_ptr == 0)
             line_width = first_width;
           else
-            line_width = mem[par_shape_ptr + 2 * l].cint;
+            line_width = mem[par_shape_ptr + 2 * l].sc;
         }
       }
     }
