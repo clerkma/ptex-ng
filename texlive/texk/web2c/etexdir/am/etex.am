@@ -1,4 +1,4 @@
-## $Id$
+## $Id: etex.am 57769 2021-02-17 03:03:54Z karl $
 ## texk/web2c/etexdir/am/etex.am: Makefile fragment for e-TeX.
 ##
 ## Copyright 2015-2021 Karl Berry <tex-live@tug.org>

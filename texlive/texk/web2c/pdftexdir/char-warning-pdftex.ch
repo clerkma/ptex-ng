@@ -1,4 +1,4 @@
-% $Id: char-warning-pdftex.ch 55874 2020-07-19 15:42:51Z karl $
+% $Id: char-warning-pdftex.ch 57769 2021-02-17 03:03:54Z karl $
 % Public domain (from David Jones, tex-implementors 30jun2020).
 % Unfortunately this cannot be in pdftex.ch since the ordering
 % of changes gets messed up.
@@ -14,7 +14,7 @@
 % should get:
 %   ! Missing character: There is no c ("63) in font logo10.
 
-@x [30] If \tracinglostchars > 2, then promote full errors.
+@x [30] If \tracinglostchars > 2, then promote to full error.
 @p procedure char_warning(@!f:internal_font_number;@!c:eight_bits);
 var old_setting: integer; {saved value of |tracing_online|}
 begin if tracing_lost_chars>0 then

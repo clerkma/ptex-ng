@@ -1,5 +1,5 @@
-dnl $Id: version.ac 54634 2020-04-10 00:57:04Z karl $
-dnl   Copyright 2016-2020 Karl Berry <tex-live@tug.org>
+dnl $Id: version.ac 57769 2021-02-17 03:03:54Z karl $
+dnl   Copyright 2016-2021 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
 dnl   This file is free software; the copyright holder
@@ -20,4 +20,4 @@ dnl     append "dev", to distinguish binaries built between releases.
 dnl --------------------------------------------------------
 dnl
 dnl This file is m4-included from configure.ac.
-m4_define([kpse_version], [6.3.3/dev])
+m4_define([kpse_version], [6.3.3])

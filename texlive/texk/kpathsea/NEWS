@@ -1,5 +1,10 @@
-$Id: NEWS 54578 2020-03-27 00:29:26Z karl $
+$Id: NEWS 57769 2021-02-17 03:03:54Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+6.3.3 (for TeX Live 2021)
+* The library does not emit warnings for unrecognized filenames,
+  leaving it up to the caller.
+* Double save_size limit to 200,000 for tex4ht, l3regex, etc.
 
 6.3.2 (for TeX Live 2020, 27 March 2020)
 * New option --cnf-line for kpsewhich (and tex and mf) to support

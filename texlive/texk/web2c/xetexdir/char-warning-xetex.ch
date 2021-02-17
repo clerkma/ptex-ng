@@ -1,4 +1,4 @@
-% $Id: char-warning-xetex.ch 55885 2020-07-20 15:27:35Z ascherer $
+% $Id: char-warning-xetex.ch 57769 2021-02-17 03:03:54Z karl $
 % Public domain. See ../pdftexdir/char-warning-pdftex.ch for basic info.
 % In addition to the basic change, we also define a new procedure
 % print_ucs_code to print in the format U+.... for system fonts.
@@ -16,7 +16,7 @@
 % Assuming that font is findable as a system font, e.g., shown by
 %   fc-list :scalable=true family
 
-@x [30] If \tracinglostchars > 2, then promote full errors.
+@x [30] If \tracinglostchars > 2, then promote to full error.
 procedure char_warning(@!f:internal_font_number;@!c:integer);
 var old_setting: integer; {saved value of |tracing_online|}
 begin if tracing_lost_chars>0 then
