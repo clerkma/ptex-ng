@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
 #define APTEX_MACROS_H
 
 #define pTeX_version 3
-#define pTeX_minor_version 8
-#define pTeX_revision ".3"
-#define pTeX_version_string "-p3.8.3"
+#define pTeX_minor_version 9
+#define pTeX_revision ".0"
+#define pTeX_version_string "-p3.9.0"
 
 #define upTeX_version 1
 #define upTeX_revision ".26"
@@ -33,8 +33,8 @@
 #define eTeX_revision       ".6"      // { \.{\\eTeXrevision} }
 #define eTeX_version_string "-2.6"    // {current \eTeX\ version}
 
-#define epTeX_version_string "-190908"
-#define epTeX_version_number 190908
+#define epTeX_version_string "-210218"
+#define epTeX_version_number 210218
 
 #define TeXXeT_code         0         // {the \TeXXeT\ feature is optional}
 #define eTeX_states         1         // {number of \eTeX\ state variables in |eqtb|}
