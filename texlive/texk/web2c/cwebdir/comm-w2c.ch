@@ -259,7 +259,7 @@ The remainder of the \.{@@i} line after the file name is ignored.
     strcpy(cur_file_name,temp_file_name);
     cur_file_name[l]='/'; /* \UNIX/ pathname separator */
     if ((cur_file=fopen(cur_file_name,"r"))!=NULL) {
-      cur_line=0; print_where=1;
+      cur_line=0; print_where=true;
       goto restart; /* success */
     }
   }
@@ -523,10 +523,10 @@ otherwise we add |".w"|.
   { show_banner=show_progress=show_happiness=0; continue; }
   for(dot_pos=*argv+1;*dot_pos>'\0';dot_pos++)
     if (*dot_pos=='v') {
-      show_banner=show_progress=show_happiness=1;
+      show_banner=show_progress=show_happiness=true;
     } else
     if (*dot_pos=='q') {
-      show_banner=show_progress=show_happiness=0;
+      show_banner=show_progress=show_happiness=false;
     } else
     if (*dot_pos=='d') {
       if (sscanf(++dot_pos,"%u",&kpathsea_debug)!=1) @<Print usage error...@>@;

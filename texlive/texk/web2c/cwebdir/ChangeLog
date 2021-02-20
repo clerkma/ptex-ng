@@ -1,10 +1,42 @@
+2021-02-19  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-bs.ch,
+	* comm-mac.ch,
+	* com-ql.ch,
+	* comm-w2c.ch,
+	* comm-w2c.h,
+	* common.c,
+	* common.h,
+	* common.w,
+	* ctang-bs.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-w2c.ch,
+	* cweav-bs.ch,
+	* cweave.w,
+	* cwebman.tex: Replace 'boolean' values upstream.
+
+2021-02-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* cweave.w: Purge unused macro definition.
+
+2021-02-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctangle.c,
+	* ctangle.w,
+	* cweave.w: Reshuffle a few variables (upstream).
+
+2021-02-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* cweave.w: Fix an 'aspell'ing error and one old macro call.
+
 2021-02-17  Andreas Scherer  <https://ascherer.github.io>
 
-	* cweave.w: Fix 'Illegal hardware instruction on MacOS.
+	* cweave.w: Fix 'Illegal hardware instruction' on MacOS.
 
 2021-02-17  Andreas Scherer  <https://ascherer.github.io>
 
-	* Makefile: Main CWEB modules depend on COMMON inteface.
+	* Makefile: Main CWEB modules depend on COMMON interface.
 
 2021-02-16  Andreas Scherer  <https://ascherer.github.io>
 

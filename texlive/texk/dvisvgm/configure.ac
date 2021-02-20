@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 57501 2021-01-23 08:47:24Z takuji $
+dnl $Id: configure.ac 57804 2021-02-19 23:14:47Z karl $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
@@ -164,6 +164,8 @@ AC_STRUCT_TM
 # Check for library functions.
 AC_FUNC_STAT
 AC_CHECK_FUNCS_ONCE([ftime gettimeofday sigaction umask uselocale])
+
+AC_SEARCH_LIBS(clock_gettime, rt)dnl for Solaris 10 and other old libc
 
 AC_ARG_ENABLE([woff],
 	[AS_HELP_STRING([--disable-woff], [Disable WOFF support @<:@default=no@:>@])],
