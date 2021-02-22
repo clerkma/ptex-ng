@@ -1,6 +1,6 @@
 # This file is part of CWEB.
 # It is distributed WITHOUT ANY WARRANTY, express or implied.
-# Version 4.0 --- February 2021
+# Version 4.1 --- February 2021
 
 # Copyright (C) 1987,1990,1993,2000 Silvio Levy and Donald E. Knuth
 
@@ -63,8 +63,10 @@ RM= /bin/rm
 CP= /bin/cp
 
 # uncomment the second line if you use pdftex to bypass .dvi files
+# uncomment the third line if you use xetex to bypass .dvi files
 PDFTEX = dvipdfm
 #PDFTEX = pdftex
+#PDFTEX = xetex
 
 ##########  You shouldn't have to change anything after this point #######
 
@@ -105,6 +107,7 @@ ALL =  common.w ctangle.w cweave.w prod.w \
 	case "$(PDFTEX)" in \
 	 dvipdfm ) tex "\let\pdf+ \input $*"; dvipdfm $* ;; \
 	 pdftex ) pdftex $* ;; \
+	 xetex ) xetex $* ;; \
 	esac
 
 all: ctangle cweave

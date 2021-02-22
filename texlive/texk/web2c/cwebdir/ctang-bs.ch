@@ -17,12 +17,12 @@ by using "huge" pointers.
 The ``banner line'' defined here should be changed whenever \.{CTANGLE}
 is modified.
 
-@d banner "This is CTANGLE (Version 4.0)"
+@d banner "This is CTANGLE (Version 4.1)"
 @y
 The ``banner line'' defined here should be changed whenever \.{CTANGLE}
 is modified.
 
-@d banner "This is CTANGLE (Version 4.0pc/big)"
+@d banner "This is CTANGLE (Version 4.1pc/big)"
 @z
 
 
@@ -141,13 +141,13 @@ typedef text *text_pointer;
 
 
 @x Section 17.
-eight_bits tok_mem[max_toks];
-eight_bits *tok_mem_end=tok_mem+max_toks-1;
-eight_bits *tok_ptr; /* first unused position in |tok_mem| */
+static eight_bits tok_mem[max_toks];
+static eight_bits *tok_mem_end=tok_mem+max_toks-1;
+static eight_bits *tok_ptr; /* first unused position in |tok_mem| */
 @y
-eight_bits huge tok_mem[max_toks];
-eight_bits huge* tok_mem_end;
-eight_bits huge* tok_ptr; /* first unused position in |tok_mem| */
+static eight_bits huge tok_mem[max_toks];
+static eight_bits huge* tok_mem_end;
+static eight_bits huge* tok_ptr; /* first unused position in |tok_mem| */
 @z
 
 

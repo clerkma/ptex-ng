@@ -14,7 +14,7 @@ Section 1.
 @z
 
 @x
-@d banner "This is CTWILL, Version 4.0"
+@d banner "This is CTWILL, Version 4.1"
 @y
 \bigskip
 {\font\itt=cmitt10 \font\bit=cmbxti10
@@ -35,7 +35,7 @@ be even more ``off'' from {\itt cweave.w}.  Care has been taken to give a
 faithful overall rendering of {\itt CTWILL}'s code, though. \hfill
 ---Enjoy!\bigskip}
 
-@d banner "This is CTWILL, Version 4.0"
+@d banner "This is CTWILL, Version 4.1"
 @z
 
 Section 2.
@@ -109,7 +109,15 @@ Section 9.
 @-c@>
 @z
 
-Section 10.
+Section 12.
+
+@x
+@ Code related to section numbers:
+@y
+@ Code related to section numbers:
+@z
+
+Section 13.
 
 @x
 @ Code related to identifier and section name storage:
@@ -118,21 +126,13 @@ Section 10.
 @-c@>
 @z
 
-Section 12.
+Section 15.
 
 @x
 @ Code related to error handling:
 @y
 @ Code related to error handling:
 @-s@>
-@z
-
-Section 16.
-
-@x
-@ Code related to section numbers:
-@y
-@ Code related to section numbers:
 @z
 
 Section 17.
@@ -146,9 +146,9 @@ extern const char *use_language; /* prefix to \.{ctwimac.tex} in \TEX/ output */
 Section 18.
 
 @x
-@ Code relating to output:
+@ Code related to output:
 @y
-@ Code relating to output:
+@ Code related to output:
 @-a@>
 @-b@>
 @-c@>
@@ -1079,17 +1079,6 @@ Section 277.
 @r @ @<Output information about usage of id's defined in other sections@>=
 @z
 
-Section 283.
-
-@x
-the index section itself---NOT!
-
-@<Global...@>=
-sixteen_bits k_section; /* runs through the sections */
-@y
-the index section itself---NOT!
-@z
-
 Section 284.
 
 @x
@@ -1097,13 +1086,6 @@ Section 284.
 @y
 @ A left-to-right radix sorting method is used, since this makes it easy to
 @-c@>
-@z
-
-@x
-name_pointer blink[max_names]; /* links in the buckets */
-@y
-name_pointer blink[max_names]; /* links in the buckets */
-sixteen_bits k_section; /* runs through the sections */
 @z
 
 Section 286.
