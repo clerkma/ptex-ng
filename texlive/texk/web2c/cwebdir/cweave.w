@@ -99,6 +99,7 @@ char **av@t\2\2@>) /* argument values */
   phase_one(); /* read all the user's text and store the cross-references */
   phase_two(); /* read all the text again and translate it to \TEX/ form */
   phase_three(); /* output the cross-reference index */
+  if (tracing==2 && !show_progress) new_line;
   return wrap_up(); /* and exit gracefully */
 }
 
@@ -597,7 +598,7 @@ skip_limbo(void) {
   while(true) {
     if (loc>limit && get_line()==false) return;
     *(limit+1)='@@';
-    while (*loc!='@@') loc++; /* look for '@@', then skip two chars */
+    while (*loc!='@@') loc++; /* look for `\.{@@}', then skip two chars */
     if (loc++ <=limit) { int c=ccode[(eight_bits)*loc++];
       if (c==new_section) return;
       if (c==noop) skip_restricted();
