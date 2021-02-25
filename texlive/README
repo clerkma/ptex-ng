@@ -1,4 +1,4 @@
-$Id: README 54144 2020-03-06 23:51:39Z karl $
+$Id: README 57875 2021-02-24 18:27:49Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 For a high-level overview of building TeX Live, see
@@ -43,12 +43,9 @@ i386-netbsd, amd64-netbsd:
   Except that we take Nelson's asy build.
 
 i386-freebsd, amd64-freebsd:
-  http://anthesphoria.net/FreeBSD/TeXLive-2018/ has details for 2018.
-  2019 and forward built on contextgarden (see below).
-  In 2020: FreeBSD 12.1-RELEASE-p1
-  (e.g.,
-https://build.contextgarden.net/#/builders/56/builds/141/steps/2/logs/build _info
-  ) Except that we take Nelson's asy build.
+  Built on contextgarden, see below.
+  FreeBSD 11.4
+  Except that we take Nelson's asy build.
 
 i386-linux: see travis below.
 
