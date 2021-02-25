@@ -1,4 +1,4 @@
-$Id: README 57875 2021-02-24 18:27:49Z karl $
+$Id: README 57908 2021-02-25 18:01:39Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 For a high-level overview of building TeX Live, see
@@ -60,7 +60,7 @@ i386-solaris, x86_64-solaris:
 i386-cygwin, x86_64-cygwin: gcc-4.8.2, cygwin-1.7.29.
   ./Build (with --enable-xindy for i386).
 
-x86_64-darwin: See Master/source/mactexdoc.tar.xz.
+universal-darwin: See Master/source/mactexdoc.tar.xz.
 
 x86_64-darwinlegacy:
   Mac OS X 10.6, clang 5.0, libc++ required
