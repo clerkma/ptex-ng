@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Clerk Ma
+   Copyright 2019, 2021 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #endif
 
 #include "md5.h"
+#include "yaml.h"
 
 void aptex_utils_get_seconds_and_micros (uint64_t * s, uint64_t * m)
 {
@@ -198,7 +199,7 @@ char * aptex_utils_get_file_size (char * file_name)
   return file_size_str;
 }
 
-static char * gen_hex_dump (char * in, uint32_t len)
+static char * gen_hex_dump (unsigned char * in, uint32_t len)
 {
   char * output_buffer;
   uint32_t step;
@@ -209,7 +210,7 @@ static char * gen_hex_dump (char * in, uint32_t len)
   {
     for (step = 0; step < len; step++)
     {
-      sprintf(&output_buffer[2 * step], "%02X", (unsigned int) (unsigned char) in[step]);
+      sprintf(&output_buffer[2 * step], "%02X", in[step]);
     }
   }
 
@@ -268,20 +269,21 @@ char * aptex_utils_get_file_dump (char * file_name, uint32_t s, uint32_t l)
   if (readable != 0 && (file_stat.st_size > s + l))
   {
     FILE * f;
-    char * file_buffer;
+    unsigned char * file_buffer;
     char * buffer_hex_dump;
 
     f = fopen(file_name, "rb");
-    file_buffer = calloc(sizeof(char), l);
+    file_buffer = calloc(sizeof(unsigned char), l);
 
     if (file_buffer != NULL)
     {
       fseek(f, s, SEEK_SET);
 
-      if (fread(file_buffer, sizeof(char), l, f) == l)
+      if (fread(file_buffer, sizeof(unsigned char), l, f) == l)
       {
         buffer_hex_dump = gen_hex_dump(file_buffer, l);
         free(file_buffer);
+        fclose(f);
 
         return buffer_hex_dump;
       }
@@ -289,4 +291,72 @@ char * aptex_utils_get_file_dump (char * file_name, uint32_t s, uint32_t l)
   }
 
   return NULL;
+}
+
+struct native_info {
+  char * src;
+  uint16_t idx;
+  char * act;
+};
+
+int read_native_yaml (unsigned char* spec, size_t spec_len, struct native_info* spec_native)
+{
+  yaml_parser_t parser;
+  yaml_document_t document;
+  yaml_node_t* root;
+  int result = 0;
+
+  yaml_parser_initialize(&parser);
+  yaml_parser_set_input_string(&parser, spec, strlen(spec));
+  yaml_parser_load(&parser, &document);
+
+  if (parser.error != YAML_NO_ERROR)
+  {
+    result = 1;
+    goto done;
+  }
+
+  root = yaml_document_get_root_node(&document);
+  if (root->type != YAML_MAPPING_NODE)
+  {
+    result = 2;
+    goto done;
+  }
+  else
+  {
+    yaml_node_t* key;
+    yaml_node_t* val;
+    yaml_node_pair_t* pair;
+
+    for (pair = root->data.mapping.pairs.start; pair < root->data.mapping.pairs.top; pair++)
+    {
+      key = yaml_document_get_node(&document, pair->key);
+      val = yaml_document_get_node(&document, pair->value);
+
+      if (key->type == YAML_SCALAR_NODE && val->type == YAML_SCALAR_NODE)
+      {
+        if (strcmp(key->data.scalar.value, "src") == 0)
+          spec_native->src = strdup(val->data.scalar.value);
+        else if (strcmp(key->data.scalar.value, "act") == 0)
+          spec_native->act = strdup(val->data.scalar.value);
+        else if (strcmp(key->data.scalar.value, "idx") == 0)
+        {
+          int idx;
+          char* endp;
+          idx = strtol(val->data.scalar.value, &endp, 10);
+          spec_native->idx = idx;
+        }
+      }
+      else
+      {
+        result = 3;
+        goto done;
+      }
+    }
+  }
+
+done:
+  yaml_parser_delete(&parser);
+
+  return result;
 }

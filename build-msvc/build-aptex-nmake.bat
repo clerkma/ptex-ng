@@ -35,6 +35,9 @@ nmake -s -nologo -f mk-ptexenc.nmake
 echo Building libdpx ...
 del *.obj
 nmake -s -nologo -f mk-libdpx.nmake
+echo Building libyaml ...
+del *.obj
+nmake -s -nologo -f mk-libyaml.nmake
 echo Building libmd5 ...
 del *.obj
 nmake -s -nologo -f mk-libmd5.nmake
