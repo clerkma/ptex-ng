@@ -1,9 +1,13 @@
 #!/bin/sh -vx
-# $Id: cnfline.test 51830 2019-08-06 23:33:17Z karl $
+# $Id: cnfline.test 58227 2021-03-08 18:40:56Z karl $
 # Copyright 2019 Karl Berry <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
 cnf_dir=$srcdir/tests/cnfline
+
+# just in case they are set in the environment
+unset maxpr
+unset othervar
 
 # Just for fun, let's first try the --cnf-line feature to set TEXMFCNF.
 val=`./kpsewhich "--cnf-line=TEXMFCNF=$cnf_dir" --var-value=othervar`
