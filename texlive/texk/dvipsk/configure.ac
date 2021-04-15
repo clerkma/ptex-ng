@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 57769 2021-02-17 03:03:54Z karl $
+dnl $Id: configure.ac 58827 2021-04-11 04:11:47Z takuji $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016-2021 Karl Berry <tex-live@tug.org>
@@ -23,6 +23,10 @@ AC_CONFIG_HEADERS([c-auto.h:c-auto.in])
 AC_CHECK_SIZEOF([int])
 
 AC_SEARCH_LIBS([pow], [m])
+
+m4_include([../../version.ac])[] dnl define tex_live_version
+AC_DEFINE([TL_VERSION], ["TeX Live tex_live_version()"],
+          [Define to the current TeX Live version string.])
 
 KPSE_KPATHSEA_FLAGS
 
