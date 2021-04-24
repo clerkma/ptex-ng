@@ -37,7 +37,7 @@ Kpathsea library
 ****************
 
 This manual documents the Kpathsea library for path searching.  It
-corresponds to version 6.3.3, released in February 2021.
+corresponds to version 6.3.3, released in April 2021.
 
 * Menu:
 
@@ -62,7 +62,7 @@ File: kpathsea.info,  Node: Introduction,  Next: unixtex.ftp,  Prev: Top,  Up: T
 **************
 
 This manual corresponds to version 6.3.3 of the Kpathsea library,
-released in February 2021.
+released in April 2021.
 
    The library's fundamental purpose is to return a filename from a list
 of directories specified by the user, similar to what shells do when
@@ -293,7 +293,7 @@ distribution.  It conforms to both the GNU coding standards and the TeX
 directory structure (TDS) standard.  For rationale and further
 explanation, please see those documents.  The GNU document is available
 from <https://gnu.org/prep/standards>.  The TDS document is available
-from <http://mirror.ctan.org/tds> (*note unixtex.ftp::).
+from <https://ctan.org/pkg/tds> (*note unixtex.ftp::).
 
    In short, here is a skeleton of the default directory structure,
 extracted from the TDS document:
@@ -3956,62 +3956,62 @@ Index
 
 Tag Table:
 Node: Top1480
-Node: Introduction2263
-Node: History4333
-Node: unixtex.ftp8929
-Node: Security10399
-Node: TeX directory structure12903
-Node: Path searching16944
-Node: Searching overview17902
-Node: Path sources21721
-Node: Config files22947
-Node: Path expansion28210
-Node: Default expansion29163
-Node: Variable expansion31233
-Node: Tilde expansion32634
-Node: Brace expansion33614
-Node: KPSE_DOT expansion34553
-Node: Subdirectory expansion35066
-Node: Casefolding search37414
-Node: Casefolding rationale38183
-Node: Casefolding examples39529
-Node: Filename database44575
-Node: ls-R45557
-Node: Filename aliases49233
-Node: Database format50411
-Node: Invoking kpsewhich51424
-Node: Path searching options52379
-Node: Specially-recognized files61977
-Node: Auxiliary tasks63332
-Node: Standard options67057
-Node: TeX support67413
-Node: Supported file formats68767
-Node: File lookup76435
-Node: Glyph lookup78184
-Node: Basic glyph lookup79308
-Node: Fontmap80188
-Node: Fallback font82717
-Node: Suppressing warnings83629
-Node: mktex scripts84756
-Node: mktex configuration85971
-Node: mktex script names91774
-Node: mktex script arguments93160
-Node: Programming94039
-Node: Programming overview94612
-Node: Calling sequence97473
-Node: Program-specific files104002
-Node: Programming with config files105025
-Node: Reporting bugs106612
-Node: Bug checklist107290
-Node: Mailing lists110759
-Node: Debugging111436
-Node: Logging116513
-Node: Common problems118380
-Node: Unable to find files118857
-Node: Slow path searching121267
-Node: Unable to generate fonts122642
-Node: TeX or Metafont failing125114
-Node: Index126316
+Node: Introduction2260
+Node: History4327
+Node: unixtex.ftp8923
+Node: Security10393
+Node: TeX directory structure12897
+Node: Path searching16936
+Node: Searching overview17894
+Node: Path sources21713
+Node: Config files22939
+Node: Path expansion28202
+Node: Default expansion29155
+Node: Variable expansion31225
+Node: Tilde expansion32626
+Node: Brace expansion33606
+Node: KPSE_DOT expansion34545
+Node: Subdirectory expansion35058
+Node: Casefolding search37406
+Node: Casefolding rationale38175
+Node: Casefolding examples39521
+Node: Filename database44567
+Node: ls-R45549
+Node: Filename aliases49225
+Node: Database format50403
+Node: Invoking kpsewhich51416
+Node: Path searching options52371
+Node: Specially-recognized files61969
+Node: Auxiliary tasks63324
+Node: Standard options67049
+Node: TeX support67405
+Node: Supported file formats68759
+Node: File lookup76427
+Node: Glyph lookup78176
+Node: Basic glyph lookup79300
+Node: Fontmap80180
+Node: Fallback font82709
+Node: Suppressing warnings83621
+Node: mktex scripts84748
+Node: mktex configuration85963
+Node: mktex script names91766
+Node: mktex script arguments93152
+Node: Programming94031
+Node: Programming overview94604
+Node: Calling sequence97465
+Node: Program-specific files103994
+Node: Programming with config files105017
+Node: Reporting bugs106604
+Node: Bug checklist107282
+Node: Mailing lists110751
+Node: Debugging111428
+Node: Logging116505
+Node: Common problems118372
+Node: Unable to find files118849
+Node: Slow path searching121259
+Node: Unable to generate fonts122634
+Node: TeX or Metafont failing125106
+Node: Index126308
 
 End Tag Table
 
