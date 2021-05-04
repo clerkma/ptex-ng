@@ -2,7 +2,7 @@
 % This program by Silvio Levy and Donald E. Knuth
 % is based on a program by Knuth.
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 4.3 --- April 2021
+% Version 4.3 --- May 2021
 
 % Copyright (C) 1987,1990,1993,2000 Silvio Levy and Donald E. Knuth
 
@@ -117,8 +117,6 @@ handle \TEX/, so they should be sufficient for most applications of \.{CWEAVE}.
 @d line_length 80 /* lines of \TEX/ output have at most this many characters;
   should be less than 256 */
 @d max_refs 65535 /* number of cross-references; must be less than 65536 */
-@d max_texts 10239 /* number of phrases in \CEE/ texts being parsed;
-  must be less than 10240 */
 @d max_scraps 10000 /* number of tokens in \CEE/ texts being parsed */
 
 @* Data structures exclusive to {\tt CWEAVE}.
@@ -249,7 +247,7 @@ If one were careful, one could probably make more changes around section
 @d append_xref(c) if (xref_ptr==xmem_end) overflow("cross-reference");
   else (++xref_ptr)->num=c;
 @d no_xref (!make_xrefs)
-@d is_tiny(p) ((p+1)->byte_start==(p)->byte_start+1)
+@d is_tiny(p) (length(p)==1)
 @d unindexed(a) (a<res_wd_end && a->ilk>=custom)
       /* tells if uses of a name are to be indexed */
 
@@ -577,10 +575,12 @@ representation by means of the table |ccode|.
 @<Private...@>=
 static eight_bits ccode[256]; /* meaning of a char following \.{@@} */
 
-@ @<Set ini...@>=
-{int c; for (c=0; c<256; c++) ccode[c]=ignore;}
+@ @<Set ini...@>= {
+  int c; /* must be |int| so the |for| loop will end */
+  for (c=0; c<256; c++) ccode[c]=ignore;
+}
 ccode[' ']=ccode['\t']=ccode['\n']=ccode['\v']=ccode['\r']=ccode['\f']
-   =ccode['*']=new_section;
+  =ccode['*']=new_section;
 ccode['@@']='@@'; /* `quoted' at sign */
 ccode['=']=verbatim;
 ccode['d']=ccode['D']=definition;
@@ -808,9 +808,9 @@ switch(c) {
 
 @ @<Get an identifier@>= {
   id_first=--loc;
-  do {
+  do
     ++loc;
-  } while (isalpha((eight_bits)*loc) || isdigit((eight_bits)*loc) @|
+  while (isalpha((eight_bits)*loc) || isdigit((eight_bits)*loc) @|
       || isxalpha((eight_bits)*loc) || ishigh((eight_bits)*loc));
   id_loc=loc; return identifier;
 }
@@ -2246,15 +2246,18 @@ text_pointer p)
   if (p>=text_ptr) printf("BAD");
   else for (j=*p; j<*(p+1); j++) {
     r=*j%id_flag;
-    switch (*j/id_flag) {
-      case 1: printf("\\\\{"@q}@>); print_id((name_dir+r)); printf(@q{@>"}");
-        break; /* |id_flag| */
-      case 2: printf("\\&{"@q}@>); print_id((name_dir+r)); printf(@q{@>"}");
-        break; /* |res_flag| */
-      case 3: putchar('<'); print_section_name((name_dir+r)); putchar('>');
-        break; /* |section_flag| */
-      case 4: printf("[[%d]]",r); break; /* |tok_flag| */
-      case 5: printf("|[[%d]]|",r); break; /* |inner_tok_flag| */
+    switch (*j) {
+      case id_flag:
+        printf("\\\\{"@q}@>); print_id((name_dir+r)); putchar(@q{@>'}');
+        break;
+      case res_flag:
+        printf("\\&{"@q}@>); print_id((name_dir+r)); putchar(@q{@>'}');
+        break;
+      case section_flag:
+        putchar('<'); print_section_name((name_dir+r)); putchar('>');
+        break;
+      case tok_flag: printf("[[%d]]",r); break;
+      case inner_tok_flag: printf("|[[%d]]|",r); break;
       default: @<Print token |r| in symbolic form@>@;
     }
   }
@@ -2766,7 +2769,7 @@ if (cat1==comma) {
 else if (cat1==ubinop) {
   big_app1_insert(pp,'{'); big_app('}'); reduce(pp,2,decl_head,-1,34);
 }
-else if (cat1==exp && cat2!=lpar && cat2!=exp && cat2!=cast) {
+else if (cat1==exp && cat2!=lpar && cat2!=lbrack && cat2!=exp && cat2!=cast) {
   make_underlined(pp+1); squash(pp,2,decl_head,-1,35);
 }
 else if ((cat1==binop||cat1==colon) && cat2==exp && (cat3==comma ||
@@ -3298,19 +3301,18 @@ a sequence of two or more irreducible scraps will be printed out when
 static int tracing=off; /* can be used to show parsing details */
 
 @ @<Print a snapsh...@>=
-{ scrap_pointer k_l; /* pointer into |scrap_info| */
-  if (tracing==fully) {
-    printf("\n%d:",n);
-    for (k_l=scrap_base; k_l<=lo_ptr; k_l++) {
-      if (k_l==pp) putchar('*'); else putchar(' ');
-      if (k_l->mathness %4 ==  yes_math) putchar('+');
-      else if (k_l->mathness %4 ==  no_math) putchar('-');
-      print_cat(k_l->cat);
-      if (k_l->mathness /4 ==  yes_math) putchar('+');
-      else if (k_l->mathness /4 ==  no_math) putchar('-');
-    }
-    if (hi_ptr<=scrap_ptr) printf("..."); /* indicate that more is coming */
+if (tracing==fully) {
+  scrap_pointer k_l; /* pointer into |scrap_info| */
+  printf("\n%d:",n);
+  for (k_l=scrap_base; k_l<=lo_ptr; k_l++) {
+    if (k_l==pp) putchar('*'); else putchar(' ');
+    if (k_l->mathness %4 ==  yes_math) putchar('+');
+    else if (k_l->mathness %4 ==  no_math) putchar('-');
+    print_cat(k_l->cat);
+    if (k_l->mathness /4 ==  yes_math) putchar('+');
+    else if (k_l->mathness /4 ==  no_math) putchar('-');
   }
+  if (hi_ptr<=scrap_ptr) printf("..."); /* indicate that more is coming */
 }
 
 @ The |translate| function assumes that scraps have been stored in
@@ -3398,7 +3400,6 @@ static void
 C_parse( /* creates scraps from \CEE/ tokens */
   eight_bits spec_ctrl)
 {
-  int count; /* characters remaining before string break */
   while (next_control<format_code || next_control==spec_ctrl) {
     @<Append the scrap appropriate to |next_control|@>@;
     next_control=get_next();
@@ -3551,8 +3552,7 @@ Many of the special characters in a string must be prefixed by `\.\\' so that
 \TEX/ will print them properly.
 @^special string characters@>
 
-@<Append a string or...@>=
-count= -1;
+@<Append a string or...@>={@+ int count=-1; /* characters remaining before string break */
 if (next_control==constant) app_str("\\T{"@q}@>);
 @.\\T@>
 else if (next_control==string) {
@@ -3596,6 +3596,7 @@ while (id_first<id_loc) {
 }
 app(@q{@>'}');
 app_scrap(exp,maybe_math);
+}
 
 @ We do not make the \TEX/ string into a scrap, because there is no
 telling what the user will be putting into it; instead we leave it
@@ -4486,8 +4487,8 @@ static void
 footnote( /* outputs section cross-references */
 sixteen_bits flag)
 {
-  xref_pointer q; /* cross-reference pointer variable */
-  if (cur_xref->num<=flag) return;
+  xref_pointer q=cur_xref; /* cross-reference pointer variable */
+  if (q->num<=flag) return;
   finish_line(); out('\\');
 @.\\A@>
 @.\\Q@>
@@ -4504,7 +4505,7 @@ of cross-references is one, two, or more than two. Variable |q| points
 to the first cross-reference, and the last link is a zero.
 
 @<Output all the section numbers...@>=
-q=cur_xref; if (q->xlink->num>flag) out('s'); /* plural */
+if (q->xlink->num>flag) out('s'); /* plural */
 while (true) {
   out_section(cur_xref->num-flag);
   cur_xref=cur_xref->xlink; /* point to the next cross-reference to output */
@@ -4649,7 +4650,6 @@ name_pointer Head;
 @f sort_pointer int
 @d sort_pointer scrap_pointer /* ditto */
 @d sort_ptr scrap_ptr /* ditto */
-@d max_sorts max_scraps /* ditto */
 
 @<Private...@>=
 static eight_bits cur_depth; /* depth of current buckets */
@@ -4781,10 +4781,10 @@ while (sort_ptr>scrap_info) {
 }
 
 @ @<Output the name...@>=
-switch (cur_name->ilk) {
+switch (cur_name->ilk) {@+char *j;
   case normal: case func_template:
     if (is_tiny(cur_name)) out_str("\\|");
-    else {@+char *j;
+    else {
       for (j=cur_name->byte_start;j<(cur_name+1)->byte_start;j++)
         if (xislower(*j)) goto lowcase;
       out_str("\\."); break;
@@ -4799,12 +4799,12 @@ lowcase: out_str("\\\\");
   case typewriter: out_str("\\.");
 @.\\.@>
   case roman: not_an_identifier: out_name(cur_name,false); goto name_done;
-  case custom: {char *j; out_str("$\\");
+  case custom:
+    out_str("$\\");
     for (j=cur_name->byte_start;j<(cur_name+1)->byte_start;j++)
       out(*j=='_'? 'x': *j=='$'? 'X': *j);
     out('$');
     goto name_done;
-    }
   default: out_str("\\&");
 @.\\\&@>
 }

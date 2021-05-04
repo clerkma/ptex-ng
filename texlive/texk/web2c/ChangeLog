@@ -1,8 +1,7 @@
-2021-04-16  Andreas Scherer  <https://ascherer.github.io>
+2021-04-13  Andreas Scherer  <https://ascherer.github.io>
 
 	* ctangleboot.cin,
-	* cwebboot.cin,
-	* help.h: CWEB release 4.3.
+	* cwebboot.cin: CWEB release 4.3.
 
 2021-03-24  Andreas Scherer  <https://ascherer.github.io>
 

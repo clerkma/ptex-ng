@@ -1,7 +1,8 @@
+@$ctangle {CTWILL}3 \&{enum} \&{cweb}@>
+@$ctwill {CTWILL}3 \&{enum} \&{cweb}@>
+@$cweave {CTWILL}3 \&{enum} \&{cweb}@>
+
 @$program {COMMON.W}18 \&{int}@>
-@$ctangle {COMMON.W}2 \&{int}@>
-@$ctwill {COMMON.W}2 \&{int}@>
-@$cweave {COMMON.W}2 \&{int}@>
 @$phase {COMMON.W}19 \&{int}@>
 @$common_init {COMMON.W}20 \&{void} (\,)@>
 @$section_text {COMMON.W}21 \&{char} [\,][\,]@>

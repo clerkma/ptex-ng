@@ -219,20 +219,7 @@ static char huge* cur_byte; /* index into |byte_mem| */
 
 
 @x Section 264.
-switch (cur_name->ilk) {
-  case normal: case func_template:
-    if (is_tiny(cur_name)) out_str("\\|");
-    else {@+char *j;
+switch (cur_name->ilk) {@+char *j;
 @y
-switch (cur_name->ilk) {
-  case normal: case func_template:
-    if (is_tiny(cur_name)) out_str("\\|");
-    else {@+char huge* j;
-@z
-
-
-@x Section 264.
-  case custom: {char *j; out_str("$\\");
-@y
-  case custom: {char huge* j; out_str("$\\");
+switch (cur_name->ilk) {@+char huge* j;
 @z

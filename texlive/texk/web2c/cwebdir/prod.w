@@ -324,8 +324,8 @@ We use \\{in}, \\{out}, \\{back}, \\{bsp}, and \\{din} as shorthands for
 \parindent=0pt
 \dag{\bf Notes}
 \yskip
-Rule 35: The |exp| must not be immediately followed by |lpar|, |exp|,
- or~|cast|.
+Rule 35: The |exp| must not be immediately followed by |lpar|, |lbrack|,
+|exp|, or~|cast|.
 
 Rule 48: The |exp| or |int_like| must not be immediately followed by |base|.
 

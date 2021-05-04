@@ -2,7 +2,7 @@
 % This program by Silvio Levy and Donald E. Knuth
 % is based on a program by Knuth.
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 4.3 --- April 2021 (works also with later versions)
+% Version 4.3 --- May 2021 (works also with later versions)
 
 % Copyright (C) 1987,1990,1993 Silvio Levy and Donald E. Knuth
 
@@ -179,7 +179,7 @@ extern void sprint_section_name(char *,name_pointer);
 @d harmless_message 1 /* |history| value when non-serious info was printed */
 @d error_message 2 /* |history| value when an error was noted */
 @d fatal_message 3 /* |history| value when we had to stop prematurely */
-@d mark_harmless {if (history==spotless) history=harmless_message;}
+@d mark_harmless if (history==spotless) history=harmless_message
 @d mark_error history=error_message
 @d confusion(s) fatal("! This can't happen: ",s)
 @.This can't happen@>
@@ -196,8 +196,8 @@ extern void overflow(const char *); /* succumb because a table has overflowed */
 @ Code related to command line arguments:
 @d show_banner flags['b'] /* should the banner line be printed? */
 @d show_progress flags['p'] /* should progress reports be printed? */
-@d show_stats flags['s'] /* should statistics be printed at end of run? */
 @d show_happiness flags['h'] /* should lack of errors be announced? */
+@d show_stats flags['s'] /* should statistics be printed at end of run? */
 @d make_xrefs flags['x'] /* should cross references be output? */
 
 @<Common code...@>=

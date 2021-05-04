@@ -2,7 +2,7 @@
 % This program by Silvio Levy and Donald E. Knuth
 % is based on a program by Knuth.
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 4.3 --- April 2021
+% Version 4.3 --- May 2021
 
 % Copyright (C) 1987,1990,1993,2000 Silvio Levy and Donald E. Knuth
 
@@ -778,20 +778,20 @@ static eight_bits ccode[256]; /* meaning of a char following \.{@@} */
 @ @<Set ini...@>= {
   int c; /* must be |int| so the |for| loop will end */
   for (c=0; c<256; c++) ccode[c]=ignore;
-  ccode[' ']=ccode['\t']=ccode['\n']=ccode['\v']=ccode['\r']=ccode['\f']
-   =ccode['*']=new_section;
-  ccode['@@']='@@'; ccode['=']=string;
-  ccode['d']=ccode['D']=definition;
-  ccode['f']=ccode['F']=ccode['s']=ccode['S']=format_code;
-  ccode['c']=ccode['C']=ccode['p']=ccode['P']=begin_C;
-  ccode['^']=ccode[':']=ccode['.']=ccode['t']=ccode['T']=
-   ccode['q']=ccode['Q']=control_text;
-  ccode['h']=ccode['H']=output_defs_code;
-  ccode['l']=ccode['L']=translit_code;
-  ccode['&']=join;
-  ccode['<']=ccode['(']=section_name;
-  ccode['\'']=ord;
 }
+ccode[' ']=ccode['\t']=ccode['\n']=ccode['\v']=ccode['\r']=ccode['\f']
+  =ccode['*']=new_section;
+ccode['@@']='@@'; ccode['=']=string;
+ccode['d']=ccode['D']=definition;
+ccode['f']=ccode['F']=ccode['s']=ccode['S']=format_code;
+ccode['c']=ccode['C']=ccode['p']=ccode['P']=begin_C;
+ccode['^']=ccode[':']=ccode['.']=ccode['t']=ccode['T']=
+ccode['q']=ccode['Q']=control_text;
+ccode['h']=ccode['H']=output_defs_code;
+ccode['l']=ccode['L']=translit_code;
+ccode['&']=join;
+ccode['<']=ccode['(']=section_name;
+ccode['\'']=ord;
 
 @ The |skip_ahead| procedure reads through the input at fairly high speed
 until finding the next non-ignorable control code, which it returns.
@@ -953,9 +953,9 @@ switch(c) {
 
 @ @<Get an identifier@>= {
   id_first=--loc;
-  do {
+  do
     ++loc;
-  } while (isalpha((eight_bits)*loc) || isdigit((eight_bits)*loc) @|
+  while (isalpha((eight_bits)*loc) || isdigit((eight_bits)*loc) @|
       || isxalpha((eight_bits)*loc) || ishigh((eight_bits)*loc));
   id_loc=loc; return identifier;
 }

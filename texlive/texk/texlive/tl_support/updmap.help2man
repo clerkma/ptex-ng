@@ -1,4 +1,4 @@
-# $Id: updmap.help2man 31440 2013-08-15 22:39:10Z karl $
+# $Id: updmap.help2man 59062 2021-05-03 15:46:54Z karl $
 # This help2man auxiliary file is in the public domain.
 # Originally created by Karl Berry.
 # The FILES text from Claire Connelly.
@@ -6,9 +6,11 @@
 # do not fill the long TEXMF* tables.
 
 [NAME]
-updmap \- manage TeX font maps, per-user
+updmap \- manage TeX font maps
 .br
 updmap-sys \- manage TeX font maps, system-wide
+.br
+updmap-user \- manage TeX font maps, per-user
 
 /Adapt the font and file/
 .nf

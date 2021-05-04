@@ -2,7 +2,7 @@
 % This program by Silvio Levy and Donald E. Knuth
 % is based on a program by Knuth.
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 4.3 --- April 2021
+% Version 4.3 --- May 2021
 
 % Copyright (C) 1987,1990,1993,2000 Silvio Levy and Donald E. Knuth
 
@@ -445,7 +445,7 @@ The remainder of the \.{@@i} line after the file name is ignored.
 @d too_long() {include_depth--;
         err_print("! Include file name too long"); goto restart;}
 
-@.CWEBINPUTS@>@<Try to open...@>= {
+@<Try to open...@>= {
   char temp_file_name[max_file_name_length];
   char *cur_file_name_end=cur_file_name+max_file_name_length-1;
   char *kk, *k=cur_file_name;
@@ -464,8 +464,8 @@ The remainder of the \.{@@i} line after the file name is ignored.
     cur_line=0; print_where=true;
     goto restart; /* success */
   }
-  kk=getenv("CWEBINPUTS");
-  if (kk!=NULL) {
+  if ((kk=getenv("CWEBINPUTS"))!=NULL) {
+@.CWEBINPUTS@>
     if ((l=strlen(kk))>max_file_name_length-2) too_long();
     strcpy(temp_file_name,kk);
   }
@@ -702,7 +702,7 @@ and if it too is a prefix (ending with blank) its |link| will point
 to additional chunks in the same way. Null links are represented by
 |name_dir|.
 
-@d first_chunk(p)  ((p)->byte_start+2)
+@d first_chunk(p) ((p)->byte_start+2)
 @d prefix_length(p) (int)((eight_bits)*((p)->byte_start)*256 +
                 (eight_bits)*((p)->byte_start+1))
 @d set_prefix_length(p,m) (*((p)->byte_start)=(m)/256,
@@ -1140,8 +1140,7 @@ scanning the arguments; if additional flags are |true| by default they
 should be set before calling |common_init|.
 
 @<Set the default options common to \.{CTANGLE} and \.{CWEAVE}@>=
-show_banner=show_happiness=show_progress=make_xrefs=true;@/
-show_stats=false;
+show_banner=show_happiness=show_progress=make_xrefs=true;
 
 @ We now must look at the command line arguments and set the file names
 accordingly.  At least one file name must be present: the \.{CWEB}

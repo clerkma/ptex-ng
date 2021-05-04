@@ -69,15 +69,15 @@
 #define harmless_message 1
 #define error_message 2
 #define fatal_message 3
-#define mark_harmless {if(history==spotless) history= harmless_message;}
+#define mark_harmless if(history==spotless) history= harmless_message
 #define mark_error history= error_message
 #define confusion(s) fatal("! This can't happen: ",s)  \
  \
 
 #define show_banner flags['b']
 #define show_progress flags['p']
-#define show_stats flags['s']
 #define show_happiness flags['h']
+#define show_stats flags['s']
 #define make_xrefs flags['x'] \
 
 #define update_terminal fflush(stdout) 
@@ -484,6 +484,7 @@ for(i= 0;i<128;i++)sprintf(translit[i],"X%02X",(unsigned int)(128+i));
 {
 int c;
 for(c= 0;c<256;c++)ccode[c]= ignore;
+}
 ccode[' ']= ccode['\t']= ccode['\n']= ccode['\v']= ccode['\r']= ccode['\f']
 = ccode['*']= new_section;
 ccode['@']= '@';ccode['=']= string;
@@ -497,7 +498,6 @@ ccode['l']= ccode['L']= translit_code;
 ccode['&']= join;
 ccode['<']= ccode['(']= section_name;
 ccode['\'']= ord;
-}
 
 /*:63*//*78:*/
 #line 1111 "ctangle.w"
@@ -1051,9 +1051,9 @@ else if(isalpha(c)||isxalpha(c)||ishigh(c))
 #line 954 "ctangle.w"
 {
 id_first= --loc;
-do{
+do
 ++loc;
-}while(isalpha((eight_bits)*loc)||isdigit((eight_bits)*loc)
+while(isalpha((eight_bits)*loc)||isdigit((eight_bits)*loc)
 ||isxalpha((eight_bits)*loc)||ishigh((eight_bits)*loc));
 id_loc= loc;return identifier;
 }

@@ -100,9 +100,9 @@
 @z
 
 @x
-\vskip 18pt\centerline{(Version 4.3 --- April 2021)}
+\vskip 18pt\centerline{(Version 4.3 --- May 2021)}
 @y
-\vskip 18pt\centerline{(Version 4.3 --- April 2021)%
+\vskip 18pt\centerline{(Version 4.3 --- May 2021)%
 \footnote*{This document describes the extended \.{CWEB} (Version 4.3 [\TeX~Live]).}}
 @z
 

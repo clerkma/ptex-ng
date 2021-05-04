@@ -239,8 +239,8 @@ The remainder of the \.{@@i} line after the file name is ignored.
 @z
 
 @x
-  kk=getenv("CWEBINPUTS");
-  if (kk!=NULL) {
+  if ((kk=getenv("CWEBINPUTS"))!=NULL) {
+@.CWEBINPUTS@>
     if ((l=strlen(kk))>max_file_name_length-2) too_long();
     strcpy(temp_file_name,kk);
   }
@@ -443,10 +443,9 @@ char check_file_name[max_file_name_length]; /* name of |check_file| */
 @z
 
 @x
-show_banner=show_happiness=show_progress=make_xrefs=true;@/
+show_banner=show_happiness=show_progress=make_xrefs=true;
 @y
-make_xrefs=true;@/
-check_for_change=true; /* Check temporary output for changes */
+make_xrefs=check_for_change=true;
 @z
 
 @x

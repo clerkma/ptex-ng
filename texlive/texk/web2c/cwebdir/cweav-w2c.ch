@@ -256,7 +256,12 @@ print_text( /* prints a token list for debugging; not used in |main| */
 @y
 @d inner_tok_flag 5*id_flag /* signifies a token list in `\pb' */
 
-@c
+@<Predecl...@>=
+#if 0
+static void print_text(text_pointer p);
+#endif
+
+@ @c
 #if 0
 @t\4\4@>static void
 print_text( /* prints a token list for debugging; not used in |main| */
@@ -272,10 +277,6 @@ print_text( /* prints a token list for debugging; not used in |main| */
 @x
 @ @<Predecl...@>=@+static void print_text(text_pointer p);
 @y
-@ @<Predecl...@>=
-#if 0
-static void print_text(text_pointer p);
-#endif
 @z
 
 @x
@@ -300,7 +301,7 @@ if (cat1==comma) {
 else if (cat1==ubinop) {
   big_app1_insert(pp,'{'); big_app('}'); reduce(pp,2,decl_head,-1,34);
 }
-else if (cat1==exp && cat2!=lpar && cat2!=exp && cat2!=cast) {
+else if (cat1==exp && cat2!=lpar && cat2!=lbrack && cat2!=exp && cat2!=cast) {
   make_underlined(pp+1); squash(pp,2,decl_head,-1,35);
 }
 else if ((cat1==binop||cat1==colon) && cat2==exp && (cat3==comma ||
@@ -320,7 +321,7 @@ else if (cat1==ubinop) {
   big_app1_insert(pp,'{'); big_app('}');
   reduce(pp,2,decl_head,-1,34);
 }
-else if (cat1==exp && cat2!=lpar && cat2!=exp && cat2!=cast) {
+else if (cat1==exp && cat2!=lpar && cat2!=lbrack && cat2!=exp && cat2!=cast) {
   make_underlined(pp+1); squash(pp,2,decl_head,-1,35);
 }
 else if ((cat1==binop||cat1==colon) && cat2==exp && (cat3==comma ||
@@ -651,8 +652,7 @@ be found in the program \.{NUWEB} by Preston Briggs, to whom credit is due.
 
 @<Update the result...@>=
 if((tex_file=fopen(tex_file_name,"r"))!=NULL) {
-  char x[BUFSIZ],y[BUFSIZ];
-  int x_size,y_size,comparison=false;
+  boolean comparison=false;
 
   if((check_file=fopen(check_file_name,"r"))==NULL)
     fatal(_("! Cannot open output file "),check_file_name);
@@ -673,10 +673,10 @@ strcpy(check_file_name,""); /* We want to get rid of the temporary file */
 
 @<Compare the temporary output to the previous output@>=
 do {
-  x_size = fread(x,1,BUFSIZ,tex_file);
-  y_size = fread(y,1,BUFSIZ,check_file);
-  comparison = (x_size == y_size); /* Do not merge these statements! */
-  if(comparison) comparison = !memcmp(x,y,x_size);
+  char x[BUFSIZ],y[BUFSIZ];
+  int x_size = fread(x,sizeof(char),BUFSIZ,tex_file);
+  int y_size = fread(y,sizeof(char),BUFSIZ,check_file);
+  comparison = (x_size == y_size) && !memcmp(x,y,x_size);
 } while(comparison && !feof(tex_file) && !feof(check_file));
 
 @ Note the superfluous call to |remove| before |rename|.  We're using it to
@@ -690,7 +690,7 @@ else {
   rename(check_file_name,tex_file_name);
 }
 
-@* Put ``version'' information in a single spot.
+@* Print ``version'' information.
 Don't do this at home, kids! Push our local macro to the variable in \.{COMMON}
 for printing the |banner| and the |versionstring| from there.
 
