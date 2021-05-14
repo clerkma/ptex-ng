@@ -1,4 +1,4 @@
-# $Id: updmap.help2man 59062 2021-05-03 15:46:54Z karl $
+# $Id: updmap.help2man 59152 2021-05-09 21:49:52Z karl $
 # This help2man auxiliary file is in the public domain.
 # Originally created by Karl Berry.
 # The FILES text from Claire Connelly.
@@ -95,7 +95,7 @@ Loads \fIpsfonts_t1\&.map\fP instead
 of \fIpsfonts\&.map\fP\&.
 .IP "\fIconfig\&.pdf\fP"
 Loads \fIpsfonts_t1\&.map\fP instead
-of \fIpsfonts\&.map\fP and has additional optimizations for PDF generation\&.
+of \fIpsfonts\&.map\fP and has additional settings for PDF generation\&.
 .IP "\fIconfig\&.pk\fP"
 Loads \fIpsfonts_pk\&.map\fP instead
 of \fIpsfonts\&.map\fP\&.
