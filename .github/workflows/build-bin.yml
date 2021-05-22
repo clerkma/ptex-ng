@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: install deps
-      run: sudo apt install automake autoconf libtool texinfo texi2html gcc ruby make
-    - name: build
-      run: ./build-gcc/build-aptex.sh
+        - uses: actions/checkout@v2
+        - name: install deps
+          run: sudo apt install automake autoconf libtool texinfo texi2html gcc ruby make
+        - name: build
+          run: ./build-gcc/build-aptex.sh
