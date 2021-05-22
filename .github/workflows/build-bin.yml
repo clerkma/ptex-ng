@@ -14,6 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: install deps
-      run: apt install automake autoconf libtool texinfo texi2html gcc ruby make
+      run: sudo apt install automake autoconf libtool texinfo texi2html gcc ruby make
     - name: build
       run: ./build-gcc/build-aptex.sh
