@@ -29,7 +29,7 @@ cd $NG_SRC_DIR/src/libotf && make -j || exit 1
 cp libotf.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/src/libmd5 && make -j || exit 1
 cp libmd5.a $NG_SRC_DIR/src
-cd $NG_SRC_DIR/src/libyaml && ./configure && make -j || exit 1
+cd $NG_SRC_DIR/src/libyaml && touch * && ./configure && make -j || exit 1
 cp src/.libs/libyaml.a $NG_SRC_DIR/src
 #
 cd $NG_SRC_DIR/src/mruby && make -j || exit 1
