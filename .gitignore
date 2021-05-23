@@ -73,6 +73,7 @@ src/libyaml/tests/run-parser
 src/libyaml/tests/run-parser-test-suite
 src/libyaml/tests/run-scanner
 src/libyaml/yaml-0.1.pc
+texlive/.github/
 texlive/libs/cairo/.deps/
 texlive/libs/cairo/Makefile
 texlive/libs/cairo/cairo-features.h
