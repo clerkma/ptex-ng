@@ -9,8 +9,7 @@ git:
 matrix:
   include:
     - os: linux
-      services: docker
-      script: docker run -v ${TRAVIS_BUILD_DIR}:/ptex-ng -w /ptex-ng -i -t ubuntu:18.04 sh -c "apt update; apt install -y automake autoconf libtool texinfo texi2html gcc ruby make; ./build-gcc/build-aptex.sh"
+      script: sh -c "apt update; apt install -y automake autoconf libtool texinfo texi2html gcc ruby make; ./build-gcc/build-aptex.sh"
     - os: osx
       osx_image: xcode10
       script: ./build-gcc/build-aptex.sh
