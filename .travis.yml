@@ -10,6 +10,7 @@ matrix:
   include:
     - os: linux
       before_install:
+        - sudo apt update
         - sudo apt install -y automake autoconf libtool texinfo texi2html gcc ruby make
       script: ./build-gcc/build-aptex.sh
     - os: osx
