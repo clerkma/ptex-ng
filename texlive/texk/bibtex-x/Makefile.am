@@ -1,7 +1,7 @@
-## $Id: Makefile.am 50997 2019-05-05 12:51:20Z hironobu $
+## $Id: Makefile.am 59662 2021-06-20 22:56:11Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/bibtex-x/
 ##
-## Copyright 2017-2019 Karl Berry <tex-live@tug.org>
+## Copyright 2017-2021 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##
@@ -44,7 +44,7 @@ bibtexu_SOURCES = $(common_sources)
 nodist_EXTRA_bibtexu_SOURCES = dummy.cxx
 bibtexu_CPPFLAGS = $(AM_CPPFLAGS) $(ICU_INCLUDES) -DUTF_8
 $(bibtexu_OBJECTS): $(KPATHSEA_DEPEND) $(ICU_DEPEND)
-bibtexu_LDADD = $(KPATHSEA_LIBS) $(ICU_LIBS) $(ICU_LIBS_EXTRA)
+bibtexu_LDADD = $(KPATHSEA_LIBS) $(ICU_LIBS) $(PTHREAD_LIB) $(ICU_LIBS_EXTRA)
 
 dist_man1_MANS = bibtex8.1 bibtexu.1
 
@@ -76,7 +76,8 @@ dist_btdoc_DATA = \
 ## Tests.
 ##
 bibtex8_tests = tests/bibtex8.test tests/bibtex8-mem.test tests/sort.test
-bibtexu_tests = tests/bibtexu.test tests/bibtexu-yannis.test
+bibtexu_tests = tests/bibtexu.test tests/bibtexu-basic.test \
+                tests/bibtexu-range.test tests/bibtexu-yannis.test
 
 TESTS =
 if BIBTEX8
@@ -86,7 +87,8 @@ tests/bibtex8.log tests/bibtex8-mem.log tests/sort.log: bibtex8$(EXEEXT)
 if BIBTEXU
 TESTS += $(bibtexu_tests)
 endif BIBTEXU
-tests/bibtexu.log tests/bibtexu-yannis.log: bibtexu$(EXEEXT)
+tests/bibtexu.log tests/bibtexu-basic.log tests/bibtexu-range.log \
+  tests/bibtexu-yannis.log: bibtexu$(EXEEXT)
 
 EXTRA_DIST = $(bibtex8_tests) $(bibtexu_tests)
 DISTCLEANFILES =
@@ -99,8 +101,18 @@ EXTRA_DIST += tests/sort.aux \
 	tests/sort1.csf tests/sort2.csf tests/sort3.csf \
 	tests/testdata.bib tests/teststyle.bst
 DISTCLEANFILES += tests/xsort.aux tests/xsort.bbl tests/xsort.blg
+##
 ## tests/bibtex8-mem.test
 DISTCLEANFILES += tests/memtest.bib tests/memtest?.*
+##
+## tests/bibtexu-basic.test
+EXTRA_DIST += tests/ubasic.aux tests/ubasic.bbl tests/ubasic.bib
+DISTCLEANFILES += tests/xubasic.aux tests/xubasic.bbl tests/xubasic.blg
+##
+## tests/bibtexu-range.test
+EXTRA_DIST += tests/urange.aux tests/urange.bbl tests/urange.bib
+DISTCLEANFILES += tests/xurange.aux tests/xurange.bbl tests/xurange.blg
+##
 ## tests/bibtexu-yannis.test
 EXTRA_DIST += tests/yannis.aux tests/yannis.bbl tests/yannis.bib
 DISTCLEANFILES += tests/xyannis.aux tests/xyannis.bbl tests/xyannis.blg
