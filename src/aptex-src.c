@@ -13134,13 +13134,50 @@ static void show_eqtb (pointer n)
       }
       else if (n < kinsoku_base)
       {
-        print_esc("(inhibitxspcode table) ");
+        print_esc("inhibitxspcode table ");
         print_int(n - inhibit_xsp_code_base);
+        prints(", type=");
+        switch (eq_type(n))
+        {
+          case 0:
+            prints("both");   // { |inhibit_both| }
+            break;
+          case 1:
+            prints("before"); // { |inhibit_previous| }
+            break;
+          case 2:
+            prints("after"); // { |inhibit_after| }
+            break;
+          case 3:
+            prints("none");  // { |inhibit_none| }
+            break;
+          case 4:
+            prints("unused"); // { |inhibit_unused| }
+            break;
+        }
+        prints(", code");
       }
       else if (n < kansuji_base)
       {
-        print_esc("(kinsoku table) ");
+        print_esc("kinsoku table ");
         print_int(n - kinsoku_base);
+        prints(", type=");
+        switch (eq_type(n))
+        {
+          case 0:
+            print("no");
+            break;
+          case 1:
+            prints("pre");    // { |pre_break_penalty_code| }
+            break;
+          case 2:
+            prints("post");   // { |post_break_penalty_code| }
+            break;
+          case 3:
+            prints("unused"); // { |kinsoku_unused_code| }
+            break;
+        }
+        prints(", code");
       }
       else if (n < lc_code_base)
       {
@@ -13206,7 +13243,12 @@ static void show_eqtb (pointer n)
     prints("pt");
   }
   else if (n <= eqtb_size)
-    prints("kinsoku");
+  {
+    prints("kinsoku table ");
+    print_int(n - kinsoku_penalty_base);
+    print(", penalty=");
+    print_int(eqtb[n].cint);
+  }
   else
     print_char('?');
 }
@@ -15404,6 +15446,9 @@ restart:
 
         if (q != no_entry)
           cur_val = inhibit_xsp_type(q);
+
+        if (cur_val > inhibit_none)
+          cur_val = inhibit_none;
       }
       break;
 
@@ -26350,7 +26395,6 @@ static void line_break (boolean d)
   cur_xkanji_skip = xspace_ptr(head);
   add_glue_ref(cur_kanji_skip);
   add_glue_ref(cur_xkanji_skip);
-  link(temp_head) = link(head);
 
   if (!is_char_node(tail) && (type(tail) == disp_node))
   {
@@ -26358,6 +26402,8 @@ static void line_break (boolean d)
     tail = prev_node;
     link(tail) = null;
   }
+
+  link(temp_head) = link(head);
 
   if (is_char_node(tail))
     tail_append(new_penalty(inf_penalty));
@@ -30890,6 +30936,13 @@ static void end_graf (void)
 {
   if (mode == hmode)
   {
+    if ((link(head) == tail) && (!is_char_node(tail) && (type(tail) == disp_node)))
+    {
+      free_node(tail, small_node_size);
+      tail = head;
+      link(head) = null;
+    }
+
     if (head == tail)
       pop_nest();
     else
@@ -31674,6 +31727,14 @@ static void init_math (void)
       pop_nest();
       set_value_of_x();
     }
+    else if ((link(head) == tail) && (!is_char_node(tail) && (type(tail) == disp_node)))
+    {
+      free_node(tail, small_node_size);
+      tail = head;
+      link(head) = null;
+      pop_nest();
+      set_value_of_x();
+    } // { |disp_node|-only paragraphs are ignored }
     else
     {
       adjust_hlist(head, true);
@@ -36617,31 +36678,46 @@ eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f)
 
 pointer get_inhibit_pos (KANJI_code c, small_number n)
 {
-  pointer p, s;
+  pointer p, pp, s;
 
   s = calc_pos(c);
   p = s;
+  pp = no_entry;
 
   if (n == new_pos)
   {
     do {
-      if ((inhibit_xsp_type(p) == inhibit_unused) || (inhibit_xsp_code(p) == 0) || (inhibit_xsp_code(p) == c))
+      if (inhibit_xsp_code(p) == c)
+        goto done; // { found, update there }
+
+      if (inhibit_xsp_code(p) == 0) // { no further scan needed }
+      {
+        if (pp != no_entry)
+          p = pp;
         goto done;
+      }
       
+      if (inhibit_xsp_type(p) == inhibit_unused)
+      {
+        if (pp == no_entry)
+          pp = p; // { save the nearest unused hash }
+      }
+
       incr(p);
       
       if (p > 255)
         p = 0;
     } while (!(s == p));
 
-    p = no_entry;
+    p = pp;
   }
   else
   {
     do {
       if (inhibit_xsp_code(p) == 0)
         goto done1;
-      else if ((inhibit_xsp_type(p) != inhibit_unused) && (inhibit_xsp_code(p) == c))
+
+      if (inhibit_xsp_code(p) == c)
         goto done;
 
       incr(p);
@@ -36660,10 +36736,11 @@ done:
 
 pointer get_kinsoku_pos (KANJI_code c, small_number n)
 {
-  pointer p, s;
+  pointer p, pp, s;
 
   s = calc_pos(c);
   p = s;
+  pp = no_entry;
 
 #ifdef APTEX_DEBUG
   print_ln();
@@ -36682,8 +36759,21 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
   if (n == new_pos)
   {
     do {
-      if ((kinsoku_type(p) == 0) || (kinsoku_type(p) == kinsoku_unused_code) || (kinsoku_code(p) == c))
+      if (kinsoku_code(p) == c) // { found, update there }
         goto done;
+
+      if (kinsoku_type(p) == 0) // { no further scan needed }
+      {
+        if (pp != no_entry)
+          p = pp;
+        goto done;
+      }
+
+      if (kinsoku_type(p) = kinsoku_unused_code)
+      {
+        if (pp == no_entry)
+          pp = p; // { save the nearest unused hash }
+      }
 
       incr(p);
 
@@ -36691,14 +36781,15 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
         p = 0;
     } while (!(s == p));
 
-    p = no_entry;
+    p = pp;
   }
   else
   {
     do {
       if (kinsoku_type(p) == 0)
         goto done1;
-      else if ((kinsoku_type(p) != kinsoku_unused_code) && (kinsoku_code(p) == c))
+
+      if (kinsoku_code(p) == c)
         goto done;
 
       incr(p);
