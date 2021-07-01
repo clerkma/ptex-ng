@@ -6501,6 +6501,7 @@ static void init_prim (void)
   primitive("ptexrevision", convert, ptex_revision_code);
   primitive("uptexrevision", convert, uptex_revision_code);
   primitive("ucs", convert, ucs_code);
+  primitive("toucs", convert, toucs_code);
   primitive("pdfstrcmp", convert, ng_strcmp_code);
   primitive("ngbanner", convert, ng_banner_code);
   primitive("ngostype", convert, ng_os_type_code);
@@ -8230,6 +8231,14 @@ static void print_hex (integer n)
   } while (!(n == 0));
 
   print_the_digs(k);
+}
+
+static void print_hex_safe (integer n)
+{
+  if (n < 0)
+    print_int(n);
+  else
+    print_hex(n);
 }
 
 static void print_roman_int (integer n)
@@ -12087,6 +12096,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
         case ucs_code:
           print_esc("ucs");
+          break;
+
+        case toucs_code:
+          print_esc("toucs");
           break;
 
         case eTeX_revision_code:
@@ -16170,7 +16183,18 @@ restart:
               break;
 
             case last_node_subtype_code:
-              cur_val = subtype(tx);
+              if (type(tx) <= unset_node)
+                cur_val = subtype(tx);
+              else
+              {
+                cur_val = type(tx);
+                if (cur_val < unset_node + 4)
+                  cur_val = cur_val - unset_node - 1;
+                else if (cur_val == unset_node + 4)
+                  cur_val = cur_val - unset_node - 1 + subtype(tx);
+                else
+                  cur_val = cur_val - unset_node + 1;
+              }
               break;
 
             case last_node_char_code:
@@ -17853,6 +17877,7 @@ void conv_toks (void)
     case jis_code:
     case kuten_code:
     case ucs_code:
+    case toucs_code:
       scan_int();
       break;
 
@@ -18158,19 +18183,43 @@ void conv_toks (void)
       break;
 
     case jis_code:
-      print_int(fromJIS(cur_val));
+      {
+        cur_val = fromJIS(cur_val);
+        if (cur_val == 0)
+          print_int(-1);
+        else
+          print_int(cur_val);
+      }
       break;
 
     case euc_code:
-      print_int(fromEUC(cur_val));
+      {
+        cur_val = fromEUC(cur_val);
+        if (cur_val == 0)
+          print_int(-1);
+        else
+          print_int(cur_val);
+      }
       break;
 
     case sjis_code:
-      print_int(fromSJIS(cur_val));
+      {
+        cur_val = fromSJIS(cur_val);
+        if (cur_val == 0)
+          print_int(-1);
+        else
+          print_int(cur_val);
+      }
       break;
 
     case kuten_code:
-      print_int(fromKUTEN(cur_val));
+      {
+        cur_val = fromKUTEN(cur_val);
+        if (cur_val == 0)
+          print_int(-1);
+        else
+          print_int(cur_val);
+      }
       break;
 
     case ptex_revision_code:
@@ -18182,7 +18231,29 @@ void conv_toks (void)
       break;
 
     case ucs_code:
-      print_int(fromUCS(cur_val));
+      if (is_internalUPTEX())
+        print_int(fromUCS(cur_val));
+      else
+      {
+        cur_val = fromUCS(cur_val);
+        if (cur_val == 0)
+          print_int(-1);
+        else
+          print_int(cur_val);
+      }
+      break;
+
+    case toucs_code:
+      if (is_internalUPTEX())
+        print_int(toUCS(cur_val));
+      else
+      {
+        cur_val = toUCS(cur_val);
+        if (cur_val == 0)
+          print_int(-1);
+        else
+          print_int(cur_val);
+      }
       break;
 
     case kansuji_code:
@@ -33580,7 +33651,7 @@ static void prefixed_command (void)
         if (!is_char_kanji(cur_val))
         {
           print_err("Invalid KANSUJI char (");
-          print_hex(cur_val);
+          print_hex_safe(cur_val);
           print_char(')');
           help1("I'm skipping this control sequences.");
           error();
@@ -33650,7 +33721,7 @@ static void prefixed_command (void)
         else
         {
           print_err("Invalid KANJI code (");
-          print_hex(n);
+          print_hex_safe(n);
           print_char(')');
           help1("I'm skipping this control sequences.");
           error();
@@ -33706,7 +33777,7 @@ static void prefixed_command (void)
             print_char('?');
 
           prints("breakpenalty (");
-          print_hex(n);
+          print_hex_safe(n);
           print_char(')');
           help1("I'm skipping this control sequences.");
           error();
@@ -34847,6 +34918,7 @@ static void handle_right_brace (void)
           {
             r = get_node(small_node_size);
             type(r) = adjust_node;
+            subtype(r) = 0; // {the |subtype| is not used}
             adjust_ptr(r) = list_ptr(p);
             delete_glue_ref(q);
 

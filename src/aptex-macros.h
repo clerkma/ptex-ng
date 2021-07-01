@@ -21,9 +21,9 @@
 #define APTEX_MACROS_H
 
 #define pTeX_version 3
-#define pTeX_minor_version 9
-#define pTeX_revision ".1"
-#define pTeX_version_string "-p3.9.1"
+#define pTeX_minor_version 10
+#define pTeX_revision ".0"
+#define pTeX_version_string "-p3.10.0"
 
 #define upTeX_version 1
 #define upTeX_revision ".26"
@@ -1223,23 +1223,24 @@ do {                          \
 #define jis_code            8  // {command code for \.{\\jis}}
 #define kuten_code          9  // {command code for \.{\\kuten}}
 #define ucs_code            10 // {command code for \.{\\ucs}}
-#define eTeX_revision_code  11 // {base for \eTeX's command codes}
-#define ng_strcmp_code      12 // {command code for \.{\\pdfstrcmp}}
-#define ng_banner_code      13 // {command code for \.{\\ngbanner}}
-#define ng_os_type_code     14 // {command code for \.{\\ngostype}}
-#define ptex_revision_code  15 // {command code for \.{\\ptexrevision}}
-#define uptex_revision_code 16 // {command code for \.{\\uptexrevision}}
-#define pdf_creation_date_code   17 // {command code for \.{\\pdfcreationdate}}
-#define pdf_file_mod_date_code   18 // {command code for \.{\\pdffilemodedate}}
-#define pdf_file_size_code       19 // {command code for \.{\\pdffilesize}}
-#define pdf_mdfive_sum_code      20 // {command code for \.{\\pdfmdfivesum}}
-#define pdf_file_dump_code       21 // {command code for \.{\\pdffiledump}}
-#define pdf_uniform_deviate_code 22 // {command code for \.{\\pdfuniformdeviate}}
-#define pdf_normal_deviate_code  23 // {command code for \.{\\pdfnormaldeviate}}
-#define expanded_code            24 // {command code for \.{\\expanded}}
-#define Uchar_convert_code       25 // {command code for \.{\\Uchar}}
-#define Ucharcat_convert_code    26 // {command code for \.{\\Ucharcat}}
-#define job_name_code            27 // {command code for \.{\\jobname}}
+#define toucs_code          11 // {command code for \.{\\toucs}}
+#define eTeX_revision_code  12 // {base for \eTeX's command codes}
+#define ng_strcmp_code      13 // {command code for \.{\\pdfstrcmp}}
+#define ng_banner_code      14 // {command code for \.{\\ngbanner}}
+#define ng_os_type_code     15 // {command code for \.{\\ngostype}}
+#define ptex_revision_code  16 // {command code for \.{\\ptexrevision}}
+#define uptex_revision_code 17 // {command code for \.{\\uptexrevision}}
+#define pdf_creation_date_code   18 // {command code for \.{\\pdfcreationdate}}
+#define pdf_file_mod_date_code   19 // {command code for \.{\\pdffilemodedate}}
+#define pdf_file_size_code       20 // {command code for \.{\\pdffilesize}}
+#define pdf_mdfive_sum_code      21 // {command code for \.{\\pdfmdfivesum}}
+#define pdf_file_dump_code       22 // {command code for \.{\\pdffiledump}}
+#define pdf_uniform_deviate_code 23 // {command code for \.{\\pdfuniformdeviate}}
+#define pdf_normal_deviate_code  24 // {command code for \.{\\pdfnormaldeviate}}
+#define expanded_code            25 // {command code for \.{\\expanded}}
+#define Uchar_convert_code       26 // {command code for \.{\\Uchar}}
+#define Ucharcat_convert_code    27 // {command code for \.{\\Ucharcat}}
+#define job_name_code            28 // {command code for \.{\\jobname}}
 /* sec 0480 */
 #define closed    2
 #define just_open 1
