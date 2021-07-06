@@ -1,4 +1,4 @@
-% $Id: idxhello.tex 43602 2017-03-25 21:11:20Z karl $
+% $Id: idxhello.tex 59854 2021-07-06 17:14:52Z karl $
 % public domain. minimal index test:
 % latex idxhello && texindy idxhello.idx && cat idxhello.ind # inspect output
 % (or makeindex for that matter.)
@@ -7,6 +7,7 @@
 % out of Master/bin/*.
 %
 \documentclass{article}
+\usepackage{makeidx}\makeindex
 \begin{document}
 \index{xyz}xyz
 \index{abc}abc

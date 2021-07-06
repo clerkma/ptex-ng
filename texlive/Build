@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: Build 51486 2019-06-27 00:06:35Z preining $
+# $Id: Build 59855 2021-07-06 17:52:36Z karl $
 # Public domain.  Originally written many years ago by Sebastian Rahtz.
 # The basic idea is to run configure && make, but with a multitude of
 # environment variables to allow overriding everything.
@@ -53,6 +53,8 @@ export MAKE; export TL_MAKE
 
 if test "x$1" = x--no-clean; then
   shift
+  echo "$0: --no-clean given, so keeping build and install dirs: " \
+       "$TL_WORKDIR $TL_INSTALL_DEST"
 else
   test -f Makefile && $MAKE clean 
   rm -rf $TL_WORKDIR $TL_INSTALL_DEST
