@@ -1,4 +1,4 @@
-## $Id: Makefile.am 52830 2019-11-17 17:05:39Z karl $
+## $Id: Makefile.am 59927 2021-07-14 13:34:36Z hironobu $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
 ## Copyright 2015-2019 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
@@ -82,7 +82,6 @@ otangle_man_sources = ofm2opl.man opl2ofm.man ovf2ovp.man ovp2ovf.man
 
 if ALEPH
 man_sources += aleph.man
-man1_links += aleph:lamed
 endif ALEPH
 EXTRA_DIST += aleph.man
 
