@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: cnfline.test 51834 2019-08-07 03:54:14Z kakuto $
+# $Id: cnfline.test 60054 2021-07-25 16:07:35Z karl $
 # Public domain. Originally written by Karl Berry
 # Basic check that --cnf-line does something.
 
@@ -8,7 +8,7 @@ LC_ALL=C; export LC_ALL;  LANGUAGE=C; export LANGUAGE
 TEXMFCNF=$srcdir/../kpathsea; export TEXMFCNF
 TEXINPUTS=$srcdir/pdftexdir/tests; export TEXINPUTS
 
-./pdftex -ini --interaction=batchmode \
+./pdftex -ini --interaction=nonstopmode \
   --cnf-line=max_print_line=500 cnfline.tex || exit $?
 
 if grep 'those hyphens are' cnfline.log >/dev/null; then

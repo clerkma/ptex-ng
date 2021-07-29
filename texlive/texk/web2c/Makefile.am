@@ -1,4 +1,4 @@
-## $Id: Makefile.am 57558 2021-01-30 01:42:07Z karl $
+## $Id: Makefile.am 60055 2021-07-25 17:24:28Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/.
 ##
 ## Copyright 2017-2021 Karl Berry <tex-live@tug.org>
@@ -78,8 +78,32 @@ web2c/stamp-web2c: $(web2c_common) ${srcdir}/web2c/*.[chly]
 web2c/stamp-makecpool: $(web2c_common) ${srcdir}/web2c/makecpool.c
 	cd web2c && $(MAKE) $(AM_MAKEFLAGS) stamp-makecpool
 
-# Rebuild $(proglib)
-$(proglib): ${srcdir}/lib/*.c
+# Rebuild $(proglib). We have to list all the sources,
+# not use *.c, because texmfmp.c is not part of lib.a.
+# Otherwise make will think that lib.a will need to be remade when
+# texmfmp.c is changed, even though it doesn't. The result is that we
+# will see the ctangle calls for every cweb program, since ctangleboot
+# depends on lib.a, but isn't getting remade. So this ad hoc variable is
+# a copy of lib_a_SOURCES in lib/Makefile.am, with "${srcdir}/lib/" prepended.
+proglib_sources = \
+	${srcdir}/lib/basechsuffix.c \
+	${srcdir}/lib/chartostring.c \
+	${srcdir}/lib/coredump.c \
+	${srcdir}/lib/eofeoln.c \
+	${srcdir}/lib/fprintreal.c \
+	${srcdir}/lib/inputint.c \
+	${srcdir}/lib/input2int.c \
+	${srcdir}/lib/lib.h \
+	${srcdir}/lib/main.c \
+	${srcdir}/lib/openclose.c \
+	${srcdir}/lib/printversion.c \
+	${srcdir}/lib/setupvar.c \
+	${srcdir}/lib/uexit.c \
+	${srcdir}/lib/usage.c \
+	${srcdir}/lib/version.c \
+	${srcdir}/lib/zround.c
+
+$(proglib): $(proglib_sources)
 	cd lib && $(MAKE) $(AM_MAKEFLAGS) lib.a
 ## Rebuild libkpathsea
 @KPATHSEA_RULE@

@@ -1,3 +1,4 @@
+% $Id: tex.ch 60074 2021-07-26 10:29:11Z hironobu $
 % tex.ch for C compilation with web2c, derived from various other change files.
 % By Tim Morgan, UC Irvine ICS Department, and many others.
 %
@@ -785,7 +786,7 @@ if translate_filename then begin
 end;
 @z
 
-@x [5.??] term_input: set limit when fatal_error
+@x [5.71] term_input: set limit when fatal_error
 if not input_ln(term_in,true) then fatal_error("End of file on the terminal!");
 @y
 if not input_ln(term_in,true) then begin
@@ -1537,7 +1538,7 @@ cur_order:=co_backup; link(backup_head):=backup_backup;
 decr(expand_depth_count);
 @z
 
-@x [27.???] set limit when fatal_error
+@x [27.484] set limit when fatal_error
 else fatal_error("*** (cannot \read from terminal in nonstop modes)")
 @y
 else begin
@@ -3522,7 +3523,7 @@ format_debug('string pool checksum')(x);
 if x<>@$ then begin {check that strings are the same}
   wake_up_terminal;
   wterm_ln('---! ', stringcast(name_of_file+1),
-           ' made by different executable version');
+           ' made by different executable version, strings are different');
   goto bad_fmt;
 end;
 @<Undump |xord|, |xchr|, and |xprn|@>;

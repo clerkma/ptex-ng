@@ -1,4 +1,4 @@
-## $Id: xetex.am 57724 2021-02-13 02:14:44Z karl $
+## $Id: xetex.am 60054 2021-07-25 16:07:35Z karl $
 ## texk/web2c/xetexdir/am/xetex.am: Makefile fragment for XeTeX.
 ##
 ## Copyright 2017-2021 Karl Berry <tex-live@tug.org>
@@ -114,6 +114,8 @@ xetex_ch_srcs = \
 	xetexdir/tex.ch0 \
 	tex.ch \
 	tracingstacklevels.ch \
+	partoken-102.ch \
+	partoken.ch \
 	$(xetex_ch_synctex) \
 	xetexdir/xetex.ch \
 	$(xetex_post_ch_synctex) \

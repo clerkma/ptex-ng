@@ -97,9 +97,11 @@
 inline static double my_fmax(double x, double y) { return (x < y) ? y : x; }
 #endif
 
+/* I use the definition in kpathsea --ak
 #ifdef WIN32
 #   define snprintf _snprintf
 #endif
+*/
 
 #if SYNCTEX_DEBUG
 #   ifdef WIN32
@@ -125,6 +127,9 @@ int synctex_test(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int arg_index = 1;
+#ifdef WIN32
+    kpse_set_program_name(argv[0], "synctex");
+#endif
     printf("This is SyncTeX command line utility, version " SYNCTEX_CLI_VERSION_STRING "\n");
     if(arg_index<argc) {
         if(0==strcmp("help",argv[arg_index])) {
@@ -896,7 +901,7 @@ int synctex_test_file (int argc, char *argv[])
     char * output = NULL;
     char * directory = NULL;
     char * synctex_name = NULL;
-    synctex_compress_mode_t mode = synctex_compress_mode_none;
+    synctex_io_mode_t mode = 0;
     if(arg_index>=argc) {
         _synctex_error("!  usage: synctex test file -o output [-d directory]\n");
         return -1;
@@ -924,11 +929,11 @@ int synctex_test_file (int argc, char *argv[])
         printf("output:%s\n"
              "directory:%s\n"
              "file name:%s\n"
-             "compression mode:%s\n",
+             "io mode:%s\n",
              output,
              directory,
              synctex_name,
-             (mode?"gz":"none"));
+             _synctex_get_io_mode_name(mode));
     }
     return 0;
 }

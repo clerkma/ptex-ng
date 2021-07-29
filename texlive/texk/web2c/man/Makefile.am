@@ -1,4 +1,4 @@
-## $Id: Makefile.am 59927 2021-07-14 13:34:36Z hironobu $
+## $Id: Makefile.am 60033 2021-07-24 01:16:00Z hironobu $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
 ## Copyright 2015-2019 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
@@ -57,8 +57,10 @@ man_sources += ptex.man
 man1_links += ptex:eptex ptex:euptex ptex:uptex
 man_sources += ppltotf.man ptftopl.man
 man1_links += ppltotf:uppltotf ptftopl:uptftopl
+man_sources += pbibtex.man
+man1_links += pbibtex:upbibtex
 endif PTEX
-EXTRA_DIST += ptex.man ppltotf.man ptftopl.man
+EXTRA_DIST += ptex.man ppltotf.man ptftopl.man pbibtex.man
 
 if LUATEX
 man_sources += luatex.man
