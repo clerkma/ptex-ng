@@ -1,14 +1,8 @@
 #! /bin/sh -vx
-# $Id: bibtexu-yannis.test 59901 2021-07-11 21:13:26Z karl $
+# $Id: bibtexu-yannis.test 60293 2021-08-21 13:42:52Z takuji $
 # Copyright 2019-2021 Karl Berry <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 # Some actual sorting needed.
-
-# Disable, since it fails on (at least) FreeBSD, OpenBSD, sparc-solaris.
-# https://tug.org/pipermail/tlbuild/2021q2/004918.html
-# 
-# Looking for someone interested in debugging ...
-exit 77
 
 test -d tests || mkdir -p tests
 
