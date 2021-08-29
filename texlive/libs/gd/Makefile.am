@@ -1,4 +1,4 @@
-## $Id: Makefile.am 43567 2017-03-21 17:43:10Z karl $
+## $Id: Makefile.am 60353 2021-08-29 02:09:43Z kakuto $
 ## Proxy Makefile.am to build libgd for TeX Live.
 ##
 ##   Copyright 2017 Karl Berry <tex-live@tug.org>
@@ -33,6 +33,7 @@ noinst_LIBRARIES=libgd.a
 
 libgd_a_SOURCES = \
 	@GD_TREE@/src/gd.c \
+	@GD_TREE@/src/gd_avif.c \
 	@GD_TREE@/src/gd_bmp.c \
 	@GD_TREE@/src/gd_color.c \
 	@GD_TREE@/src/gd_color_map.c \
@@ -44,6 +45,7 @@ libgd_a_SOURCES = \
 	@GD_TREE@/src/gd_gd2.c \
 	@GD_TREE@/src/gd_gif_in.c \
 	@GD_TREE@/src/gd_gif_out.c \
+	@GD_TREE@/src/gd_heif.c \
 	@GD_TREE@/src/gd_interpolation.c \
 	@GD_TREE@/src/gd_io.c \
 	@GD_TREE@/src/gd_io_dp.c \
