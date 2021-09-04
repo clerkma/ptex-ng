@@ -93,7 +93,7 @@ static void fprint_uchar(FILE *fp, const UChar *a, const int mode, const int len
 	} else
 		olen=wclen;
 	if (olen>INITIALLENGTH) {
-		warn_printf(efp, "\nWarning, Too long (%d) header.\n", olen);
+		warn_printf(efp, "\nWarning: Too long (%d) header.\n", olen);
 		wclen=INITIALLENGTH;
 	} else
 		wclen=olen;
@@ -174,6 +174,23 @@ void indwrite(char *filename, struct index *ind, int pagenum)
 	}
 	perr=U_ZERO_ERROR;
 	unormalizer_NFD=unorm2_getInstance(NULL, "nfc", UNORM2_DECOMPOSE, &perr);
+
+	if (strlen(symhead)==0) {
+		if (lethead_flag>0) {
+			strcpy(symhead, symhead_positive);
+		}
+		else if (lethead_flag<0) {
+			strcpy(symhead, symhead_negative);
+		}
+	}
+	{
+		if (lethead_flag>0) {
+			strcpy(numhead, numhead_positive);
+		}
+		else if (lethead_flag<0) {
+			strcpy(numhead, numhead_negative);
+		}
+	}
 
 	for (i=line_length=0;i<lines;i++) {
 		index_normalize(ind[i].dic[0], initial, &chset);
@@ -280,16 +297,11 @@ void indwrite(char *filename, struct index *ind, int pagenum)
 				}
 			}
 			else {
-				if (lethead_flag!=0 && symbol_flag) {
-					if (strlen(symbol)) {
-						fprintf(fp,"%s%s%s",lethead_prefix,symbol,lethead_suffix);
-					}
-					else if (lethead_flag>0) {
-						fprintf(fp,"%s%s%s",lethead_prefix,symhead_positive,lethead_suffix);
-					}
-					else if (lethead_flag<0) {
-						fprintf(fp,"%s%s%s",lethead_prefix,symhead_negative,lethead_suffix);
-					}
+				if (lethead_flag!=0 && symbol_flag==2 && chset==CH_NUMERIC) {
+					fprintf(fp,"%s%s%s",lethead_prefix,numhead,lethead_suffix);
+				}
+				if (lethead_flag!=0 && (symbol_flag==1 || (symbol_flag==2 && chset!=CH_NUMERIC))) {
+					fprintf(fp,"%s%s%s",lethead_prefix,symhead,lethead_suffix);
 				}
 				widechar_to_multibyte(obuff,BUFFERLEN,ind[i].idx[0]);
 				SPRINTF(lbuff,"%s%s",item_0,obuff);
@@ -398,18 +410,15 @@ void indwrite(char *filename, struct index *ind, int pagenum)
 				}
 			}
 			else {
-				if (CH_LATIN<=chset_prev&&chset_prev<=CH_THAI){
-					fputs(group_skip,fp);
-					if (lethead_flag!=0 && symbol_flag) {
-						if (strlen(symbol)) {
-							fprintf(fp,"%s%s%s",lethead_prefix,symbol,lethead_suffix);
-						}
-						else if (lethead_flag>0) {
-							fprintf(fp,"%s%s%s",lethead_prefix,symhead_positive,lethead_suffix);
-						}
-						else if (lethead_flag<0) {
-							fprintf(fp,"%s%s%s",lethead_prefix,symhead_negative,lethead_suffix);
-						}
+				if (chset_prev!=chset) {
+					if ((CH_LATIN<=chset_prev&&chset_prev<=CH_THAI) || symbol_flag==2)
+						fputs(group_skip,fp);
+					if (lethead_flag!=0 && symbol_flag==2 && chset==CH_NUMERIC) {
+						fprintf(fp,"%s%s%s",lethead_prefix,numhead,lethead_suffix);
+					}
+					if (lethead_flag!=0 && (symbol_flag==1 && (CH_LATIN<=chset_prev&&chset_prev<=CH_THAI) ||
+								symbol_flag==2 && chset!=CH_NUMERIC) ) {
+						fprintf(fp,"%s%s%s",lethead_prefix,symhead,lethead_suffix);
 					}
 				}
 			}
@@ -1033,7 +1042,7 @@ static int init_hanzi_header(void)
 			len=u_strlen(pch0);
 		}
 		if (len>=INITIALLENGTH) {
-			warn_printf(efp, "\nWarning, Too long (%d) hanzi header.\n", len);
+			warn_printf(efp, "\nWarning: Too long (%d) hanzi header.\n", len);
 			len=INITIALLENGTH-1;
 		}
 		u_strncpy(hz_index[k].idx,pch0,len);
