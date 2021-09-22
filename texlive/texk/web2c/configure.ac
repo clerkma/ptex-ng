@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 55138 2020-05-14 17:47:47Z karl $
+dnl $Id: configure.ac 60569 2021-09-21 16:46:46Z karl $
 dnl Process this file with Autoconf to produce a configure script for Web2c.
 dnl
 dnl   Copyright 2018-2019 Karl Berry <tex-live@tug.org>
@@ -326,7 +326,7 @@ AC_CONFIG_HEADERS([w2c/c-auto.h:c-auto.in],
 
 AH_TOP([/* w2c/c-auto.h: defines for web2c, as determined by configure.
 
-   Copyright 1994-97, 2008-2012 Karl Berry.
+   Copyright 1994-97, 2008-2021 Karl Berry.
    Copyright 1997-99, 2002, 2005 Olaf Weber.
 
    This program is free software: you can redistribute it and/or modify
