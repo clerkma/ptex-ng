@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Clerk Ma
+# Copyright (c) 2020, 2021 Clerk Ma
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -269,7 +269,7 @@ class GTabParser
     offset += 2 * lookahead_list.size + 2
     seq_lookup_count = u16(offset)
     seq_lookup_list = unpack(offset + 2, 4 * seq_lookup_count, "S>*")
-    {backtrack: backtrack_list, input: input_list, lookahead_list: lookahead_list, seq_lookup_list: seq_lookup_list}
+    {backtrack: backtrack_list, input: input_list, lookahead: lookahead_list, seq_lookup_list: seq_lookup_list}
   end
 
   def parse_lookup_sub(base_offset, type)
