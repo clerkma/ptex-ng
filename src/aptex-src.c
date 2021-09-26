@@ -36841,7 +36841,7 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
         goto done;
       }
 
-      if (kinsoku_type(p) = kinsoku_unused_code)
+      if (kinsoku_type(p) == kinsoku_unused_code)
       {
         if (pp == no_entry)
           pp = p; // { save the nearest unused hash }
