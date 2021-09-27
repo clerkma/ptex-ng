@@ -21327,7 +21327,7 @@ static void ship_out (pointer p)
       aptex_pdf_setting.annot_grow_amount.x = 0.0;
       aptex_pdf_setting.annot_grow_amount.y = 0.0;
       aptex_pdf_setting.outline_open_depth = 0;
-      aptex_pdf_setting.check_gotos = !(1 << 4);
+      aptex_pdf_setting.check_gotos = 0; // !(1 << 4);
       aptex_pdf_setting.enable_manual_thumb = 0;
       aptex_pdf_setting.enable_encrypt = 0;
       aptex_pdf_setting.object.enable_objstm = 1;

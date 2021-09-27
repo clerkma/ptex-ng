@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma
+# Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #
 
 CC = gcc
 CDEBUG =
-CFLAGS = $(CDEBUG) -c -O2
+CFLAGS = $(CDEBUG) -Werror -c -O2
 INCLUDES = \
 	-I ../texlive/texk/ptexenc/ \
 	-I ../texlive/texk/ \
@@ -19,7 +19,7 @@ INCLUDES = \
 	-I libotf/src \
 	-I mruby/include
 LDLIBS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a libmd5.a libmruby.a libyaml.a -lm
-LDFLAGS = -s -o
+LDFLAGS = -o
 
 objects = \
 	aptex.o \

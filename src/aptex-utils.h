@@ -33,4 +33,4 @@ struct native_info {
 
 int read_native_yaml(unsigned char* spec, size_t spec_len, struct native_info* spec_native);
 
-char native_buffer[1024];
+/* char native_buffer[1024]; */

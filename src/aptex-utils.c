@@ -33,6 +33,8 @@
 #include <unistd.h>
 #endif
 
+#include "aptex-utils.h"
+
 #include "md5.h"
 #include "yaml.h"
 
@@ -293,12 +295,6 @@ char * aptex_utils_get_file_dump (char * file_name, uint32_t s, uint32_t l)
   return NULL;
 }
 
-struct native_info {
-  char * src;
-  uint16_t idx;
-  char * act;
-};
-
 int read_native_yaml (unsigned char* spec, size_t spec_len, struct native_info* spec_native)
 {
   yaml_parser_t parser;
@@ -307,7 +303,7 @@ int read_native_yaml (unsigned char* spec, size_t spec_len, struct native_info* 
   int result = 0;
 
   yaml_parser_initialize(&parser);
-  yaml_parser_set_input_string(&parser, spec, strlen(spec));
+  yaml_parser_set_input_string(&parser, spec, strlen((const char *) spec));
   yaml_parser_load(&parser, &document);
 
   if (parser.error != YAML_NO_ERROR)
@@ -335,15 +331,17 @@ int read_native_yaml (unsigned char* spec, size_t spec_len, struct native_info* 
 
       if (key->type == YAML_SCALAR_NODE && val->type == YAML_SCALAR_NODE)
       {
-        if (strcmp(key->data.scalar.value, "src") == 0)
-          spec_native->src = strdup(val->data.scalar.value);
-        else if (strcmp(key->data.scalar.value, "act") == 0)
-          spec_native->act = strdup(val->data.scalar.value);
-        else if (strcmp(key->data.scalar.value, "idx") == 0)
+        const char * key_value = (const char *) key->data.scalar.value;
+        const char * val_value = (const char *) val->data.scalar.value;
+        if (strcmp(key_value, "src") == 0)
+          spec_native->src = strdup(val_value);
+        else if (strcmp(key_value, "act") == 0)
+          spec_native->act = strdup(val_value);
+        else if (strcmp(key_value, "idx") == 0)
         {
           int idx;
           char* endp;
-          idx = strtol(val->data.scalar.value, &endp, 10);
+          idx = strtol(val_value, &endp, 10);
           spec_native->idx = idx;
         }
       }
