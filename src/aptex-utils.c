@@ -36,7 +36,7 @@
 #include "md5.h"
 #include "yaml.h"
 
-void aptex_utils_get_seconds_and_micros (uint64_t * s, uint64_t * m)
+void aptex_utils_get_seconds_and_micros (int64_t * s, int64_t * m)
 {
 #ifdef _WIN32
   uint64_t intervals;

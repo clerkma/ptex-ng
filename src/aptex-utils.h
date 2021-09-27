@@ -17,7 +17,7 @@
    02110-1301 USA.
 */
 
-void aptex_utils_get_seconds_and_micros (uint64_t * s, uint64_t * m);
+void aptex_utils_get_seconds_and_micros (int64_t * s, int64_t * m);
 void aptex_utils_init_start_time (void);
 char * aptex_utils_get_creation_date(void);
 char * aptex_utils_get_file_mod_date (char * file_name);
