@@ -6,6 +6,8 @@ compiler:
 git:
   depth: 5
 
+dist: focal
+
 matrix:
   include:
     - os: linux
