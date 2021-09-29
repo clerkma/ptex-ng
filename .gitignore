@@ -7,6 +7,8 @@ GPATH
 GRTAGS
 GSYMS
 GTAGS
+build-gcc/macOS-arm64.rb.lock
+build-gcc/macOS-x86_64.rb.lock
 build-msvc/*.lib
 build-msvc/*.exe
 build-msvc/*.obj
