@@ -44,7 +44,7 @@ set_flags
 cd $NG_SRC_DIR/texlive/libs/zlib && ./configure && make -j || exit 1
 cp libz.a $NG_SRC_DIR/src
 # disable neon support of libpng
-if [ x$MACHINE == xarm64 ]; then
+if [ x$UNIVERSAL == xm1 ] || [ x$MACHINE == xarm64 ]; then
   cd $NG_SRC_DIR/texlive/libs/libpng && ./configure --disable-arm-neon && make -j || exit 1
   cp libpng.a $NG_SRC_DIR/src
 else
