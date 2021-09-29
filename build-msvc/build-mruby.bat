@@ -1,10 +1,10 @@
-if exist mruby (
-  rd /s /q mruby
+if exist build\mruby (
+  rd /s /q build\mruby
 )
-xcopy ..\src\mruby mruby\ /e/h
+xcopy ..\src\mruby build\mruby\ /e/h
 set MRUBY_CONFIG=ci/msvc
 set CFLAGS=-nologo -c -O2 -Oy
-cd mruby
+cd build\mruby
 ruby .\minirake all
-copy build\host\lib\libmruby.lib ..\libmruby.lib
-cd ..
+copy build\host\lib\libmruby.lib ..\..\libmruby.lib
+cd ..\..

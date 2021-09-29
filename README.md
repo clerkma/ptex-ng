@@ -17,7 +17,7 @@ Run the shell script:
 
     cd build-msvc
     build-mruby.bat
-    build-aptex-nmake.bat
+    build-aptex.bat
 
 #### Compile with jom
 
@@ -25,7 +25,7 @@ Run the shell script:
 
     cd build-msvc
     build-mruby.bat
-    build-aptex-jom.bat
+    build-aptex.bat jom
 
 ## Source
 

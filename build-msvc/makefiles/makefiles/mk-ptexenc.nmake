@@ -1,0 +1,17 @@
+CC = cl
+AR = lib
+CFLAGS = -nologo -c -O2 -Oy -DWIN32 -DNO_PTENC_DLL -Ibuild -I../texlive/texk -I../texlive/texk/ptexenc
+ROOT = ../texlive/texk/ptexenc
+OBJS = kanjicnv.obj ptexenc.obj unicode.obj unicode-jp.obj
+
+all: $(OBJS)
+	$(AR) -nologo -out:ptexenc.lib $(OBJS)
+
+kanjicnv.obj: $(ROOT)/kanjicnv.c
+	$(CC) $(CFLAGS) $(ROOT)/kanjicnv.c
+ptexenc.obj: $(ROOT)/ptexenc.c
+	$(CC) $(CFLAGS) $(ROOT)/ptexenc.c
+unicode.obj: $(ROOT)/unicode.c
+	$(CC) $(CFLAGS) $(ROOT)/unicode.c
+unicode-jp.obj: $(ROOT)/unicode-jp.c
+	$(CC) $(CFLAGS) $(ROOT)/unicode-jp.c

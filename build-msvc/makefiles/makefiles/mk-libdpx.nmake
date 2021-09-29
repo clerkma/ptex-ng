@@ -1,0 +1,167 @@
+CC = cl
+AR = lib
+CFLAGS = -nologo -c -O2 -Oy -D_CRT_DECLARE_NONSTDC_NAMES=0 -DHAVE_CONFIG_H -DWIN32 -DNO_KPSE_DLL -Ibuild/libdpx \
+	-Ibuild -Ibuild/zlib -I../texlive/libs/zlib/zlib-src -I../texlive/libs/libpng/libpng-src -I../texlive/texk/ \
+	-I../texlive/texk/dvipdfm-x -I../src/libdpx/ng
+ROOT = ../texlive/texk/dvipdfm-x
+OBJS = libdpx-agl.obj libdpx-bmpimage.obj libdpx-cff.obj libdpx-cff_dict.obj libdpx-cid.obj libdpx-cidtype0.obj \
+	libdpx-cidtype2.obj libdpx-cmap.obj libdpx-cmap_read.obj libdpx-cmap_write.obj libdpx-cs_type2.obj \
+	libdpx-dpxconf.obj libdpx-dpxcrypt.obj libdpx-dpxfile.obj libdpx-dpxutil.obj libdpx-dvi.obj libdpx-dvipdfmx.obj \
+	libdpx-epdf.obj libdpx-error.obj libdpx-fontmap.obj libdpx-jp2image.obj libdpx-jpegimage.obj libdpx-mem.obj \
+	libdpx-mfileio.obj libdpx-mpost.obj libdpx-mt19937ar.obj libdpx-numbers.obj libdpx-otl_opt.obj libdpx-pdfcolor.obj \
+	libdpx-pdfdev.obj libdpx-pdfdoc.obj libdpx-pdfdraw.obj libdpx-pdfencoding.obj libdpx-pdfencrypt.obj \
+	libdpx-pdffont.obj libdpx-pdfnames.obj libdpx-pdfobj.obj libdpx-pdfparse.obj libdpx-pdfresource.obj \
+	libdpx-pdfximage.obj libdpx-pkfont.obj libdpx-pngimage.obj libdpx-pst.obj libdpx-pst_obj.obj libdpx-sfnt.obj \
+	libdpx-spc_color.obj libdpx-spc_dvipdfmx.obj libdpx-spc_dvips.obj libdpx-spc_html.obj libdpx-spc_misc.obj \
+	libdpx-spc_pdfm.obj libdpx-spc_tpic.obj libdpx-spc_util.obj libdpx-spc_xtx.obj libdpx-specials.obj \
+	libdpx-subfont.obj libdpx-t1_char.obj libdpx-t1_load.obj libdpx-tfm.obj libdpx-truetype.obj \
+	libdpx-tt_aux.obj libdpx-tt_cmap.obj libdpx-tt_glyf.obj libdpx-tt_gsub.obj libdpx-tt_post.obj libdpx-tt_table.obj \
+	libdpx-type0.obj libdpx-type1.obj libdpx-type1c.obj libdpx-unicode.obj libdpx-vf.obj libdpx-xbb.obj
+
+all: $(OBJS)
+	$(AR) -nologo -out:libdpx.lib $(OBJS)
+
+libdpx-agl.obj: $(ROOT)/agl.c
+	$(CC) $(CFLAGS) -Folibdpx-agl.obj $(ROOT)/agl.c
+libdpx-bmpimage.obj: $(ROOT)/bmpimage.c
+	$(CC) $(CFLAGS) -Folibdpx-bmpimage.obj $(ROOT)/bmpimage.c
+libdpx-cff.obj: $(ROOT)/cff.c
+	$(CC) $(CFLAGS) -Folibdpx-cff.obj $(ROOT)/cff.c
+libdpx-cff_dict.obj: $(ROOT)/cff_dict.c
+	$(CC) $(CFLAGS) -Folibdpx-cff_dict.obj $(ROOT)/cff_dict.c
+libdpx-cid.obj: $(ROOT)/cid.c
+	$(CC) $(CFLAGS) -Folibdpx-cid.obj $(ROOT)/cid.c
+libdpx-cidtype0.obj: $(ROOT)/cidtype0.c
+	$(CC) $(CFLAGS) -Folibdpx-cidtype0.obj $(ROOT)/cidtype0.c
+libdpx-cidtype2.obj: $(ROOT)/cidtype2.c
+	$(CC) $(CFLAGS) -Folibdpx-cidtype2.obj $(ROOT)/cidtype2.c
+libdpx-cmap.obj: $(ROOT)/cmap.c
+	$(CC) $(CFLAGS) -Folibdpx-cmap.obj $(ROOT)/cmap.c
+libdpx-cmap_read.obj: $(ROOT)/cmap_read.c
+	$(CC) $(CFLAGS) -Folibdpx-cmap_read.obj $(ROOT)/cmap_read.c
+libdpx-cmap_write.obj: $(ROOT)/cmap_write.c
+	$(CC) $(CFLAGS) -Folibdpx-cmap_write.obj $(ROOT)/cmap_write.c
+libdpx-cs_type2.obj: $(ROOT)/cs_type2.c
+	$(CC) $(CFLAGS) -Folibdpx-cs_type2.obj $(ROOT)/cs_type2.c
+libdpx-dpxconf.obj: $(ROOT)/dpxconf.c
+	$(CC) $(CFLAGS) -Folibdpx-dpxconf.obj $(ROOT)/dpxconf.c
+libdpx-dpxcrypt.obj: $(ROOT)/dpxcrypt.c
+	$(CC) $(CFLAGS) -Folibdpx-dpxcrypt.obj $(ROOT)/dpxcrypt.c
+libdpx-dpxfile.obj: $(ROOT)/dpxfile.c
+	$(CC) $(CFLAGS) -Folibdpx-dpxfile.obj $(ROOT)/dpxfile.c
+libdpx-dpxutil.obj: $(ROOT)/dpxutil.c
+	$(CC) $(CFLAGS) -Folibdpx-dpxutil.obj $(ROOT)/dpxutil.c
+libdpx-dvi.obj: $(ROOT)/dvi.c
+	$(CC) $(CFLAGS) -Folibdpx-dvi.obj -DLIBDPX $(ROOT)/dvi.c
+libdpx-dvipdfmx.obj: $(ROOT)/dvipdfmx.c
+	$(CC) $(CFLAGS) -Folibdpx-dvipdfmx.obj -DLIBDPX $(ROOT)/dvipdfmx.c
+libdpx-epdf.obj: $(ROOT)/epdf.c
+	$(CC) $(CFLAGS) -Folibdpx-epdf.obj $(ROOT)/epdf.c
+libdpx-error.obj: $(ROOT)/error.c
+	$(CC) $(CFLAGS) -Folibdpx-error.obj $(ROOT)/error.c
+libdpx-fontmap.obj: $(ROOT)/fontmap.c
+	$(CC) $(CFLAGS) -Folibdpx-fontmap.obj $(ROOT)/fontmap.c
+libdpx-jp2image.obj: $(ROOT)/jp2image.c
+	$(CC) $(CFLAGS) -Folibdpx-jp2image.obj $(ROOT)/jp2image.c
+libdpx-jpegimage.obj: $(ROOT)/jpegimage.c
+	$(CC) $(CFLAGS) -Folibdpx-jpegimage.obj $(ROOT)/jpegimage.c
+libdpx-mem.obj: $(ROOT)/mem.c
+	$(CC) $(CFLAGS) -Folibdpx-mem.obj $(ROOT)/mem.c
+libdpx-mfileio.obj: $(ROOT)/mfileio.c
+	$(CC) $(CFLAGS) -Folibdpx-mfileio.obj $(ROOT)/mfileio.c
+libdpx-mpost.obj: $(ROOT)/mpost.c
+	$(CC) $(CFLAGS) -Folibdpx-mpost.obj $(ROOT)/mpost.c
+libdpx-mt19937ar.obj: $(ROOT)/mt19937ar.c
+	$(CC) $(CFLAGS) -Folibdpx-mt19937ar.obj $(ROOT)/mt19937ar.c
+libdpx-numbers.obj: $(ROOT)/numbers.c
+	$(CC) $(CFLAGS) -Folibdpx-numbers.obj $(ROOT)/numbers.c
+libdpx-otl_opt.obj: $(ROOT)/otl_opt.c
+	$(CC) $(CFLAGS) -Folibdpx-otl_opt.obj $(ROOT)/otl_opt.c
+libdpx-pdfcolor.obj: $(ROOT)/pdfcolor.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfcolor.obj $(ROOT)/pdfcolor.c
+libdpx-pdfdev.obj: $(ROOT)/pdfdev.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfdev.obj $(ROOT)/pdfdev.c
+libdpx-pdfdoc.obj: $(ROOT)/pdfdoc.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfdoc.obj $(ROOT)/pdfdoc.c
+libdpx-pdfdraw.obj: $(ROOT)/pdfdraw.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfdraw.obj $(ROOT)/pdfdraw.c
+libdpx-pdfencoding.obj: $(ROOT)/pdfencoding.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfencoding.obj $(ROOT)/pdfencoding.c
+libdpx-pdfencrypt.obj: $(ROOT)/pdfencrypt.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfencrypt.obj $(ROOT)/pdfencrypt.c
+libdpx-pdffont.obj: $(ROOT)/pdffont.c
+	$(CC) $(CFLAGS) -Folibdpx-pdffont.obj $(ROOT)/pdffont.c
+libdpx-pdfnames.obj: $(ROOT)/pdfnames.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfnames.obj $(ROOT)/pdfnames.c
+libdpx-pdfobj.obj: $(ROOT)/pdfobj.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfobj.obj -DLIBDPX $(ROOT)/pdfobj.c
+libdpx-pdfparse.obj: $(ROOT)/pdfparse.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfparse.obj $(ROOT)/pdfparse.c
+libdpx-pdfresource.obj: $(ROOT)/pdfresource.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfresource.obj $(ROOT)/pdfresource.c
+libdpx-pdfximage.obj: $(ROOT)/pdfximage.c
+	$(CC) $(CFLAGS) -Folibdpx-pdfximage.obj $(ROOT)/pdfximage.c
+libdpx-pkfont.obj: $(ROOT)/pkfont.c
+	$(CC) $(CFLAGS) -Folibdpx-pkfont.obj $(ROOT)/pkfont.c
+libdpx-pngimage.obj: $(ROOT)/pngimage.c
+	$(CC) $(CFLAGS) -Folibdpx-pngimage.obj $(ROOT)/pngimage.c
+libdpx-pst.obj: $(ROOT)/pst.c
+	$(CC) $(CFLAGS) -Folibdpx-pst.obj $(ROOT)/pst.c
+libdpx-pst_obj.obj: $(ROOT)/pst_obj.c
+	$(CC) $(CFLAGS) -Folibdpx-pst_obj.obj $(ROOT)/pst_obj.c
+libdpx-sfnt.obj: $(ROOT)/sfnt.c
+	$(CC) $(CFLAGS) -Folibdpx-sfnt.obj $(ROOT)/sfnt.c
+libdpx-spc_color.obj: $(ROOT)/spc_color.c
+	$(CC) $(CFLAGS) -Folibdpx-spc_color.obj $(ROOT)/spc_color.c
+libdpx-spc_dvipdfmx.obj: $(ROOT)/spc_dvipdfmx.c
+	$(CC) $(CFLAGS) -Folibdpx-spc_dvipdfmx.obj $(ROOT)/spc_dvipdfmx.c
+libdpx-spc_dvips.obj: $(ROOT)/spc_dvips.c
+	$(CC) $(CFLAGS) -Folibdpx-spc_dvips.obj $(ROOT)/spc_dvips.c
+libdpx-spc_html.obj: $(ROOT)/spc_html.c
+	$(CC) $(CFLAGS) -Folibdpx-spc_html.obj $(ROOT)/spc_html.c
+libdpx-spc_misc.obj: $(ROOT)/spc_misc.c
+	$(CC) $(CFLAGS) -Folibdpx-spc_misc.obj $(ROOT)/spc_misc.c
+libdpx-spc_pdfm.obj: $(ROOT)/spc_pdfm.c
+	$(CC) $(CFLAGS) -Folibdpx-spc_pdfm.obj $(ROOT)/spc_pdfm.c
+libdpx-spc_tpic.obj: $(ROOT)/spc_tpic.c
+	$(CC) $(CFLAGS) -Folibdpx-spc_tpic.obj $(ROOT)/spc_tpic.c
+libdpx-spc_util.obj: $(ROOT)/spc_util.c
+	$(CC) $(CFLAGS) -Folibdpx-spc_util.obj $(ROOT)/spc_util.c
+libdpx-spc_xtx.obj: $(ROOT)/spc_xtx.c
+	$(CC) $(CFLAGS) -Folibdpx-spc_xtx.obj $(ROOT)/spc_xtx.c
+libdpx-specials.obj: $(ROOT)/specials.c
+	$(CC) $(CFLAGS) -Folibdpx-specials.obj $(ROOT)/specials.c
+libdpx-subfont.obj: $(ROOT)/subfont.c
+	$(CC) $(CFLAGS) -Folibdpx-subfont.obj $(ROOT)/subfont.c
+libdpx-t1_char.obj: $(ROOT)/t1_char.c
+	$(CC) $(CFLAGS) -Folibdpx-t1_char.obj $(ROOT)/t1_char.c
+libdpx-t1_load.obj: $(ROOT)/t1_load.c
+	$(CC) $(CFLAGS) -Folibdpx-t1_load.obj $(ROOT)/t1_load.c
+libdpx-tfm.obj: $(ROOT)/tfm.c
+	$(CC) $(CFLAGS) -Folibdpx-tfm.obj $(ROOT)/tfm.c
+libdpx-truetype.obj: $(ROOT)/truetype.c
+	$(CC) $(CFLAGS) -Folibdpx-truetype.obj $(ROOT)/truetype.c
+libdpx-tt_aux.obj: $(ROOT)/tt_aux.c
+	$(CC) $(CFLAGS) -Folibdpx-tt_aux.obj $(ROOT)/tt_aux.c
+libdpx-tt_cmap.obj: $(ROOT)/tt_cmap.c
+	$(CC) $(CFLAGS) -Folibdpx-tt_cmap.obj -DLIBDPX $(ROOT)/tt_cmap.c
+libdpx-tt_glyf.obj: $(ROOT)/tt_glyf.c
+	$(CC) $(CFLAGS) -Folibdpx-tt_glyf.obj $(ROOT)/tt_glyf.c
+libdpx-tt_gsub.obj: $(ROOT)/tt_gsub.c
+	$(CC) $(CFLAGS) -Folibdpx-tt_gsub.obj $(ROOT)/tt_gsub.c
+libdpx-tt_post.obj: $(ROOT)/tt_post.c
+	$(CC) $(CFLAGS) -Folibdpx-tt_post.obj $(ROOT)/tt_post.c
+libdpx-tt_table.obj: $(ROOT)/tt_table.c
+	$(CC) $(CFLAGS) -Folibdpx-tt_table.obj $(ROOT)/tt_table.c
+libdpx-type0.obj: $(ROOT)/type0.c
+	$(CC) $(CFLAGS) -Folibdpx-type0.obj -DLIBDPX $(ROOT)/type0.c
+libdpx-type1.obj: $(ROOT)/type1.c
+	$(CC) $(CFLAGS) -Folibdpx-type1.obj -DLIBDPX $(ROOT)/type1.c
+libdpx-type1c.obj: $(ROOT)/type1c.c
+	$(CC) $(CFLAGS) -Folibdpx-type1c.obj $(ROOT)/type1c.c
+libdpx-unicode.obj: $(ROOT)/unicode.c
+	$(CC) $(CFLAGS) -Folibdpx-unicode.obj $(ROOT)/unicode.c
+libdpx-vf.obj: $(ROOT)/vf.c
+	$(CC) $(CFLAGS) -Folibdpx-vf.obj -DLIBDPX $(ROOT)/vf.c
+libdpx-xbb.obj: $(ROOT)/xbb.c
+	$(CC) $(CFLAGS) -Folibdpx-xbb.obj $(ROOT)/xbb.c
