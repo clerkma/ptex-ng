@@ -1,6 +1,6 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -c -O2 -Oy -DHAVE_CONFIG_H -DYAML_DECLARE_STATIC -I./libyaml/include -I../src/libyaml/include
+CFLAGS = -nologo -c -O2 -Oy -DHAVE_CONFIG_H -DYAML_DECLARE_STATIC -Ibuild/libyaml/include -I../src/libyaml/include
 ROOT = ../src/libyaml
 OBJS = api.obj dumper.obj emitter.obj loader.obj parser.obj reader.obj scanner.obj writer.obj
 

@@ -13,4 +13,3 @@ libotf-otferror.obj: $(ROOT)/src/otferror.c
 	$(CC) $(CFLAGS) -Folibotf-otferror.obj $(ROOT)/src/otferror.c
 libotf-otfopen.obj: $(ROOT)/src/otfopen.c
 	$(CC) $(CFLAGS) -Folibotf-otfopen.obj $(ROOT)/src/otfopen.c
-

@@ -1,8 +1,18 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -c -O2 -Oy -DWIN32=1 -DNO_KPSE_DLL=1 -DMAKE_KPSE_DLL=1 -I. -I../texlive/texk
+CFLAGS = -nologo -c -O2 -Oy -DWIN32=1 -DNO_KPSE_DLL=1 -DMAKE_KPSE_DLL=1 -Ibuild/ -I../texlive/texk
 ROOT = ../texlive/texk/kpathsea
-OBJS = kpathsea-tex-file.obj kpathsea-absolute.obj kpathsea-atou.obj kpathsea-cnf.obj kpathsea-concat.obj kpathsea-concat3.obj kpathsea-concatn.obj kpathsea-db.obj kpathsea-debug.obj kpathsea-dir.obj kpathsea-dirent.obj kpathsea-elt-dirs.obj kpathsea-expand.obj kpathsea-extend-fname.obj kpathsea-file-p.obj kpathsea-find-suffix.obj kpathsea-fn.obj kpathsea-fontmap.obj kpathsea-getopt.obj kpathsea-getopt1.obj kpathsea-hash.obj kpathsea-kdefault.obj kpathsea-kpathsea.obj kpathsea-line.obj kpathsea-magstep.obj kpathsea-make-suffix.obj kpathsea-path-elt.obj kpathsea-pathsearch.obj kpathsea-proginit.obj kpathsea-progname.obj kpathsea-readable.obj kpathsea-rm-suffix.obj kpathsea-str-list.obj kpathsea-str-llist.obj kpathsea-tex-glyph.obj kpathsea-tex-hush.obj kpathsea-tex-make.obj kpathsea-tilde.obj kpathsea-uppercasify.obj kpathsea-variable.obj kpathsea-version.obj kpathsea-xbasename.obj kpathsea-xcalloc.obj kpathsea-xdirname.obj kpathsea-xfopen.obj kpathsea-xfseek.obj kpathsea-xftell.obj kpathsea-xgetcwd.obj kpathsea-xmalloc.obj kpathsea-xopendir.obj kpathsea-xputenv.obj kpathsea-xrealloc.obj kpathsea-xstat.obj kpathsea-xstrdup.obj kpathsea-win32lib.obj kpathsea-knj.obj
+OBJS = kpathsea-tex-file.obj kpathsea-absolute.obj kpathsea-atou.obj kpathsea-cnf.obj kpathsea-concat.obj \
+	kpathsea-concat3.obj kpathsea-concatn.obj kpathsea-db.obj kpathsea-debug.obj kpathsea-dir.obj kpathsea-dirent.obj \
+	kpathsea-elt-dirs.obj kpathsea-expand.obj kpathsea-extend-fname.obj kpathsea-file-p.obj kpathsea-find-suffix.obj \
+	kpathsea-fn.obj kpathsea-fontmap.obj kpathsea-getopt.obj kpathsea-getopt1.obj kpathsea-hash.obj \
+	kpathsea-kdefault.obj kpathsea-kpathsea.obj kpathsea-line.obj kpathsea-magstep.obj kpathsea-make-suffix.obj \
+	kpathsea-path-elt.obj kpathsea-pathsearch.obj kpathsea-proginit.obj kpathsea-progname.obj kpathsea-readable.obj \
+	kpathsea-rm-suffix.obj kpathsea-str-list.obj kpathsea-str-llist.obj kpathsea-tex-glyph.obj kpathsea-tex-hush.obj \
+	kpathsea-tex-make.obj kpathsea-tilde.obj kpathsea-uppercasify.obj kpathsea-variable.obj kpathsea-version.obj \
+	kpathsea-xbasename.obj kpathsea-xcalloc.obj kpathsea-xdirname.obj kpathsea-xfopen.obj kpathsea-xfseek.obj \
+	kpathsea-xftell.obj kpathsea-xgetcwd.obj kpathsea-xmalloc.obj kpathsea-xopendir.obj kpathsea-xputenv.obj \
+	kpathsea-xrealloc.obj kpathsea-xstat.obj kpathsea-xstrdup.obj kpathsea-win32lib.obj kpathsea-knj.obj
 
 all: $(OBJS)
 	$(AR) -nologo -out:kpathsea.lib $(OBJS)
@@ -27,8 +37,8 @@ kpathsea-debug.obj: $(ROOT)/debug.c
 	$(CC) $(CFLAGS) -Fokpathsea-debug.obj $(ROOT)/debug.c
 kpathsea-dir.obj: $(ROOT)/dir.c
 	$(CC) $(CFLAGS) -Fokpathsea-dir.obj $(ROOT)/dir.c
-kpathsea-dirent.obj: ./kpathsea/dirent.c
-	$(CC) $(CFLAGS) -Fokpathsea-dirent.obj ./kpathsea/dirent.c
+kpathsea-dirent.obj: build/kpathsea/dirent.c
+	$(CC) $(CFLAGS) -Fokpathsea-dirent.obj build/kpathsea/dirent.c
 kpathsea-elt-dirs.obj: $(ROOT)/elt-dirs.c
 	$(CC) $(CFLAGS) -Fokpathsea-elt-dirs.obj $(ROOT)/elt-dirs.c
 kpathsea-expand.obj: $(ROOT)/expand.c
