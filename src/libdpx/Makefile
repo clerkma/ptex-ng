@@ -1,7 +1,7 @@
 # makefile for libdpx
 CC := gcc
 ROOT := ../../texlive/texk/dvipdfm-x
-CFLAGS := -c -I. -I./ng \
+CFLAGS += -c -I. -I./ng \
 	-I../../texlive/texk \
 	-I../../texlive/libs/libpaper/include \
 	-I../../texlive/libs/libpng/include \
@@ -11,6 +11,7 @@ objects := agl.o bmpimage.o cff.o cff_dict.o cid.o cidtype0.o cidtype2.o cmap.o 
 
 libdpx.a: $(objects)
 	ar cru libdpx.a $(objects)
+	ranlib libdpx.a
 
 agl.o: $(ROOT)/agl.c
 	$(CC) $(CFLAGS) $(ROOT)/agl.c

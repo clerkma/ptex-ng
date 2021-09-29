@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, 2017, 2018 Clerk Ma
+# Copyright (c) 2016, 2017, 2018, 2021 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #
@@ -8,7 +8,7 @@
 
 CC = gcc
 AR = ar
-CFLAGS = -c -O2 -I. -I../../texlive/libs/freetype2/freetype2 -Isrc
+CFLAGS += -c -O2 -I. -I../../texlive/libs/freetype2/freetype2 -Isrc
 
 objects = \
 	otfdrive.o\
@@ -17,6 +17,7 @@ objects = \
 
 libotf.a: $(objects)
 	$(AR) cru libotf.a $(objects)
+	ranlib libotf.a
 
 otfdrive.o: src/otfdrive.c
 	$(CC) $(CFLAGS) src/otfdrive.c
