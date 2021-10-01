@@ -13178,7 +13178,7 @@ static void show_eqtb (pointer n)
         switch (eq_type(n))
         {
           case 0:
-            print("no");
+            prints("no");
             break;
           case 1:
             prints("pre");    // { |pre_break_penalty_code| }
@@ -13259,7 +13259,7 @@ static void show_eqtb (pointer n)
   {
     prints("kinsoku table ");
     print_int(n - kinsoku_penalty_base);
-    print(", penalty=");
+    prints(", penalty=");
     print_int(eqtb[n].cint);
   }
   else
