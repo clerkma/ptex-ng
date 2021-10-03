@@ -12,7 +12,7 @@ build-gcc/macOS-x86_64.rb.lock
 build-msvc/*.lib
 build-msvc/*.exe
 build-msvc/*.obj
-build-msvc/mruby
+build-msvc/build/mruby/*
 src/libotf/CVS
 src/libotf/src/CVS
 src/libotf/example/CVS
