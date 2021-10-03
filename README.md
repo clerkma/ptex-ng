@@ -35,27 +35,33 @@ Run the shell script:
 
 ## How to Install
 
+### Repository `tltexjp`
+
 [TeX Wiki/pTeX-ng](https://texwiki.texjp.org/?pTeX-ng)
 
-### Fetch `tltexjp-key.asc`
+#### Fetch `tltexjp-key.asc`
 
 * Windows, `Invoke-WebRequest -Uri 'https://texlive.texjp.org/tltexjp-key.asc' -OutFile 'tltexjp-key.asc'`
 * Linux/macOS, `curl -O https://texlive.texjp.org/tltexjp-key.asc` or `wget https://texlive.texjp.org/tltexjp-key.asc`
 
-### Windows (PowerShell/CMD)
+#### Installation on Windows/Linux/macOS
 
     tlmgr update --self --all
     tlmgr key add tltexjp-key.asc
-    tlmgr repository add http://texlive.texjp.org/current/tltexjp tltexjp
+    tlmgr repository add http://texlive.texjp.org/2020/tltexjp tltexjp
     tlmgr pinning add tltexjp "*"
     tlmgr install ptex-ng
+    tlmgr path add
 
-### Linux/macOS
+### Repository `ptexngdist`
+
+Author's testing repository.
+
+#### Installation on Windows/Linux/macOS
 
     tlmgr update --self --all
-    tlmgr key add tltexjp-key.asc
-    tlmgr repository add http://texlive.texjp.org/current/tltexjp tltexjp
-    tlmgr pinning add tltexjp '*'
+    tlmgr repository add https://www.hemibit.com/2021 ptexngdist
+    tlmgr pinning add ptexngdist "*"
     tlmgr install ptex-ng
     tlmgr path add
 
