@@ -267,6 +267,7 @@ static void mrb_mruby_kpathsea_gem_init (mrb_state * mrb)
   mrb_define_class_method(mrb, klass, "find_file", mrb_kpse_find_file, MRB_ARGS_REQ(3));
   mrb_define_class_method(mrb, klass, "reset_program_name", mrb_kpse_reset_program_name, MRB_ARGS_REQ(1));
   /* tex-make.h */
+  mrb_define_class_method(mrb, klass, "tex_hush", mrb_kpse_tex_hush, MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb, klass, "make_tex", mrb_kpse_make_tex, MRB_ARGS_REQ(2));
   /* variable.h */
   mrb_define_class_method(mrb, klass, "var_value", mrb_kpse_var_value, MRB_ARGS_REQ(1));

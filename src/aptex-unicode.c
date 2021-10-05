@@ -167,12 +167,12 @@
 
 const char * aptex_unicode_version (void)
 {
-  return "10.0";
+  return "14.0";
 }
 
 uint32_t aptex_get_jis4051_class (uint32_t codepoint)
 {
-  uint32_t jis4051_class;
+  uint32_t jis4051_class = -1;
 
   switch (codepoint)
   {
@@ -244,3 +244,4 @@ uint32_t aptex_get_jis4051_class (uint32_t codepoint)
 
   return jis4051_class;
 }
+
