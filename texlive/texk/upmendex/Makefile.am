@@ -1,4 +1,4 @@
-## $Id: Makefile.am 58576 2021-03-21 08:56:17Z takuji $
+## $Id: Makefile.am 60856 2021-10-24 05:44:35Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/upmendex/
 ##
 ## Copyright 2015-2019 Karl Berry <tex-live@tug.org>
@@ -19,7 +19,6 @@ upmendex_SOURCES = \
 	kana.h \
 	kp.c \
 	kp.h \
-	ktable.h \
 	main.c \
 	mendex.h \
 	version.h \
