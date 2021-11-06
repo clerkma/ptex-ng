@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 51270 2019-05-30 03:43:42Z kakuto $
+dnl $Id: configure.ac 60944 2021-11-04 05:48:12Z kakuto $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -28,8 +28,7 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PROG_LN_S
 
-# Theoretically harfbuzz does not require C++11?
-AX_CXX_COMPILE_STDCXX([11],,[optional])
+AX_CXX_COMPILE_STDCXX([11])
 
 KPSE_COMPILER_VISIBILITY
 
