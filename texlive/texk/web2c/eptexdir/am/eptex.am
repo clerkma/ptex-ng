@@ -1,4 +1,4 @@
-## $Id: eptex.am 60054 2021-07-25 16:07:35Z karl $
+## $Id: eptex.am 60992 2021-11-07 22:51:07Z karl $
 ## texk/web2c/eptexdir/am/eptex.am: Makefile fragment for e-pTeX.
 ##
 ## Copyright 2015-2021 Karl Berry <tex-live@tug.org>
@@ -56,6 +56,7 @@ eptex_web_srcs = \
 	tex.ch \
 	tracingstacklevels.ch \
 	partoken.ch \
+	showstream.ch \
 	zlib-fmt.ch \
 	etexdir/tex.ech
 

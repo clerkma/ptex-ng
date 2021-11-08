@@ -1,4 +1,4 @@
-## $Id: euptex.am 60054 2021-07-25 16:07:35Z karl $
+## $Id: euptex.am 60992 2021-11-07 22:51:07Z karl $
 ## texk/web2c/euptexdir/am/euptex.am: Makefile fragment for e-upTeX.
 ##
 ## Copyright 2015-2021 Karl Berry <tex-live@tug.org>
@@ -52,6 +52,7 @@ euptex_web_srcs = \
 	tex.ch \
 	tracingstacklevels.ch \
 	partoken.ch \
+	showstream.ch \
 	zlib-fmt.ch \
 	etexdir/tex.ech
 

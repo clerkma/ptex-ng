@@ -1,4 +1,4 @@
-## $Id: pdftex.am 60054 2021-07-25 16:07:35Z karl $
+## $Id: pdftex.am 60992 2021-11-07 22:51:07Z karl $
 ## texk/web2c/pdftexdir/am/pdftex.am: Makefile fragment for pdfTeX.
 ##
 ## Copyright 2016-2021 Karl Berry <tex-live@tug.org>
@@ -73,6 +73,7 @@ pdftex_ch_srcs = \
 	tracingstacklevels.ch \
 	partoken-102.ch \
 	partoken.ch \
+	showstream.ch \
 	zlib-fmt.ch \
 	enctexdir/enctex1.ch \
 	enctexdir/enctex-pdftex.ch \
