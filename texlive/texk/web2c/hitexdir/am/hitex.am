@@ -1,4 +1,4 @@
-## $Id: hitex.am 61034 2021-11-12 15:42:51Z mruckert $
+## $Id: hitex.am 61083 2021-11-17 02:55:42Z karl $
 ## texk/web2c/hitexdir/am/hitex.am: Makefile fragment for HiTeX
 ##
 ## Copyright 2021 Martin Ruckert <ruckert@cs.hm.edu>
@@ -71,18 +71,16 @@ nodist_hitex_SOURCES = hitables.c hiput.c $(hitex_c)
 nodist_histretch_SOURCES = hitables.c histretch.c
 
 # The actual sources for the lexer and parser are in hiformat.w.
-# However, to simplify life with Automake (a little), we include the
-# generated [.ch] files as if they were the sources here, and don't try
-# to have Automake support the derivation from .w.
+# However, to simplify life with Automake (a little), we specify the
+# generated .[ch] files here as if they were the sources, and don't try
+# to have Automake support the derivation from .w, or even from the .[ly].
 #
-# The $(srcdir) is not necessary if everything is up to date,
-# but can help with the remake if the [.ch] or [.ly] are not present.
 nodist_hishrink_SOURCES = hitables.c \
   hitexdir/hilexer.c \
   hitexdir/hiparser.c hitexdir/hiparser.h \
   hishrink.c
 
-# This is our attempt to ensure that bison got run before anything else,
+# This is our attempt to ensure that bison gets run before anything else,
 # when needed.
 #
 $(hishrink_OBJECTS): $(srcdir)/hitexdir/hiparser.h
@@ -100,10 +98,11 @@ DISTCLEANFILES += hiformat-tangle hitex-tangle
 
 ## HiTeX tests
 #
-hitex_tests = hitexdir/tests/rule.test
+hitex_tests = hitexdir/tests/hello.test \
+  hitexdir/tests/rule.test
 
+hitexdir/tests/hello.log: hitex$(EXEEXT) histretch$(EXEEXT)
 hitexdir/tests/rule.log: hitex$(EXEEXT) histretch$(EXEEXT) hishrink$(EXEEXT)
-
 
 EXTRA_DIST += $(hitex_tests)
 
@@ -111,6 +110,12 @@ if HITEX
 TESTS += $(hitex_tests)
 endif HITEX
 
+## hello.test
+EXTRA_DIST += hitexdir/tests/hello.tex 
+DISTCLEANFILES += hello.log
+
 ## rule.test
-EXTRA_DIST += tests/rule.tex
+EXTRA_DIST += hitexdir/tests/rule.tex 
 DISTCLEANFILES += rule.log
+
+# (end of hitex.am)
