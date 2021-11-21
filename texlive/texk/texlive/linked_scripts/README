@@ -1,5 +1,5 @@
-$Id: README 25340 2012-02-09 08:05:12Z peter $
-Copyright (C) 2012 Norbert Preining <tex-live@tug.org>
+$Id: README 61101 2021-11-20 23:01:11Z karl $
+Copyright 2012-2021 Norbert Preining <tex-live@tug.org>
 You may freely use, modify and/or distribute this file.
 
 source/texk/texlive/linked_scripts
@@ -27,5 +27,5 @@ Steps to add a new script (take your time, do it right):
   yourself -- don't use versions from distro packages.
 
 * make -C BLD/texk/texlive/linked_scripts scripts-list
-  where BLD is the build tree, to update the file scripts.lst in the
+  where BLD is the build tree, to update the file ./scripts.lst in the
   source tree (or manually update that file).
