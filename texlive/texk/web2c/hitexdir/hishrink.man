@@ -1,0 +1,201 @@
+.TH HISHRINK 1 "11 November 2021" "Version 1.3"
+.\"=====================================================================
+.if n .ds MF Metafont
+.if t .ds MF Metafont
+.if t .ds TX \fRT\\h'-0.1667m'\\v'0.20v'E\\v'-0.20v'\\h'-0.125m'X\fP
+.if n .ds TX TeX
+.ie t .ds OX \fIT\v'+0.25m'E\v'-0.25m'X\fP
+.el .ds OX TeX
+.\" BX definition must follow TX so BX can use TX
+.if t .ds BX \fRB\s-2IB\s0\fP\*(TX
+.if n .ds BX BibTeX
+.\" LX definition must follow TX so LX can use TX
+.if t .ds LX \fRL\\h'-0.36m'\\v'-0.15v'\s-2A\s0\\h'-0.15m'\\v'0.15v'\fP\*(TX
+.if n .ds LX LaTeX
+.if t .ds AX \fRA\\h'-0.1667m'\\v'0.20v'M\\v'-0.20v'\\h'-0.125m'S\fP\*(TX
+.if n .ds AX AmSTeX
+.if t .ds AY \fRA\\h'-0.1667m'\\v'0.20v'M\\v'-0.20v'\\h'-0.125m'S\fP\*(LX
+.if n .ds AY AmSLaTeX
+.if n .ds WB Web
+.if t .ds WB W\s-2EB\s0
+.\"=====================================================================
+.SH NAME
+hishrink\- translating ASCII HINT files to binary files
+.SH SYNOPSIS
+.B hishrink
+.RI [ options ]
+.RI [ file ]
+.\"=====================================================================
+.SH DESCRIPTION
+Shrinking converts an ASCII HINT file, usually with the extension 
+.BR .hint ,
+into a binary HINT file, with the extension
+.BR .hnt .
+.PP
+The ASCII based HINT file format - also called `long' format - is optimized
+for readability. It can be edited using a text editor. Hence it allows
+simple modifications that would be difficult to achieve when using the binary
+format. It is also convenient when debugging.
+.PP
+The binary HINT file format - also called `short' format - is optimized
+for displaying HINT files. It can be parsed equally well in forward
+and backward direction to enable fast forward or backward navigation in the file.
+.PP
+The binary HINT file format is designed for on-screen reading of documents. 
+Using a HINT viewer to display a HINT file, its content will dynamically
+adapt to the available display area. For complete information on the
+HINT file format and programs to view HINT files, see
+.BR  https://hint.userweb.mwn.de .
+.\"=====================================================================
+.SH OPTIONS
+This version of 
+.B hishrink
+understands the following command line options:
+.TP
+.B -a
+Use only the localized names for auxiliary files as explained in the
+.B FILES
+section below.
+
+If you know that the auxiliary files can be found using the localized names,
+for example after creating them with 
+.B histretch
+using the 
+.B -a
+option, you can use 
+.B hishrink
+with the 
+.B -a
+option to limit the search for the auxiliar files.
+If you are unsure, you should use neither the 
+.B -a
+nor the
+.B -g
+option.
+.B hishrink
+will then search for auxiliar files first using the localized path names 
+and then using the path names as given.
+.TP
+.B -c
+Enable the use of compression for the HINT file. Compressed files are
+smaller but require decompression when viewing. Use only for large
+files if the file size matters.
+.TP
+.BI -d \ bitmask
+Sets HINT file debugging flags according to the 
+.IR bitmask .
+Use the
+.B --help
+option for details.
+.TP
+.B -g
+Do not use the localized names for auxiliary files as explained in the
+.B FILES
+section below.
+
+You may use this option if you know that all auxiliar files
+are at the locations described by the path names stored in the HINT file.
+If you are unsure, you should use neither the 
+.B -g
+nor the
+.B -a
+option.
+.B hishrink
+will then search for auxiliar files first using the localized path names 
+and then using the path names as given.
+.TP
+.B --help
+Print help message and exit.
+.TP
+.B -l
+Redirect standard error to a log file. The name of the log file is derived from
+the name of the input file replacing the extension
+.B .hint
+by the extension
+.BR .log .
+.TP
+.BI -o \ name
+Use
+.I name
+for the output file instead of deriving it from the name of the input file.
+Append the extension
+.B .hnt
+if the
+.I name
+does not already has that extension.
+.TP
+.B --version
+Print version information and exit.
+.\"=====================================================================
+.SH FILES
+Binary HINT files must contain all resources necessary to display the file,
+for example font and image files.  These files are called auxiliary files.
+ASCII HINT files contain only the path names of these files.
+
+When creating a binary HINT file from an ASCII HINT file, it is
+necessary to find these files, read them, and include them in the binary output file.
+When creating an ASCII HINT file from a binary HINT file, it is
+convenient if these files can be extracted and written to the file system.
+To avoid clobbering arbitrary directories with files when extracting auxiliary 
+files, it is possible to map the path names as stored in the HINT file
+to 
+.B localized
+path names before writing or reading auxiliar files.
+
+When computing a localized path name from a given path name,
+a distinction is made between global resources,
+like fonts, that are referenced by an absolute path name, and local
+resources, for example an image, that are referenced by a relative
+path name. The directory that starts the localized path name of the former 
+has the extension
+.B .abs
+and for the latter the extension
+.BR .rel 
+is used.
+To keep auxiliary files in these subdirectories even if their path
+contains links to a parent directory, parent links
+.RB ` .. ' 
+are replaced by
+.RB ` __ '
+links to subdirectories.
+
+For example,
+given an input file 
+.BR paper.hint,
+the global resources are stored in the
+.B paper.abs
+directory and local resources are stored in 
+.BR paper.rel .
+An absolute path like
+.B /usr/share/fonts/
+will then map to the localized path
+.BR paper.abs/usr/share/fonts/ 
+and a relative path like
+.B ../image/img1.jpg
+will then map to the localized path
+.BR paper.rel/__/image/img1.jpg .
+.\"=====================================================================
+.SH NOTES
+This manual page is not meant to be exhaustive.  The complete
+documentation can be found in the 
+.IR "HINT: The file format" .
+This document is available as a book or in electronic form from the 
+HINT project home page at 
+.BR https://hint.userweb.mwn.de .
+There you find additional software, most importantly viewers for HINT files,
+and further information.
+.\"=====================================================================
+.SH AVAILABILITY
+.B hishrink
+should compile on a large variety of machine architectures
+and operating systems.
+It is part of the \*(TX Live distribution.
+.PP
+.\"=====================================================================
+.SH "SEE ALSO"
+.BR histretch (1),
+.BR hitex (1),
+.\"=====================================================================
+.SH AUTHORS
+Martin Ruckert
+.\" vim: syntax=nroff
