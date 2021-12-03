@@ -1,4 +1,4 @@
-## $Id: Makefile.am 61122 2021-11-22 21:34:12Z karl $
+## $Id: Makefile.am 61207 2021-12-02 21:56:38Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2021 Karl Berry <tex-live@tug.org>
@@ -167,6 +167,7 @@ texmf_other_scripts = \
 	lilyglyphs/lily-image-commands.py \
 	lilyglyphs/lily-rebuild-pdfs.py \
 	ltximg/ltximg.pl \
+	luafindfont/luafindfont.lua \
 	luaotfload/luaotfload-tool.lua \
 	lwarp/lwarpmk.lua \
 	m-tx/m-tx.lua \

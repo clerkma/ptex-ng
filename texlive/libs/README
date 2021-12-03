@@ -1,5 +1,5 @@
 
-$Id: README 61161 2021-11-26 22:33:08Z kakuto $
+$Id: README 61211 2021-12-03 04:03:12Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -13,7 +13,7 @@ See also comments in ../texk/README.
 cairo 1.16.0 - checked 20oct18
   http://cairographics.org/releases/
 
-freetype2 2.11.0 - checked 01sep21
+freetype2 2.11.1 - checked 03dec21
   http://download.savannah.gnu.org/releases/freetype/
 
 gd 2.3.3 - checked 13sep21
