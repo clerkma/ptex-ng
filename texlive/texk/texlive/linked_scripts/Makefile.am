@@ -1,4 +1,4 @@
-## $Id: Makefile.am 61207 2021-12-02 21:56:38Z karl $
+## $Id: Makefile.am 61328 2021-12-16 21:25:06Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2021 Karl Berry <tex-live@tug.org>
@@ -232,6 +232,7 @@ texmf_other_scripts = \
 	texlive-extra/e2pall.pl \
 	texliveonfly/texliveonfly.py \
 	texloganalyser/texloganalyser \
+	texlogsieve/texlogsieve \
 	texplate/texplate.sh \
 	thumbpdf/thumbpdf.pl \
 	tlcockpit/tlcockpit.sh \
