@@ -1,4 +1,4 @@
-## $Id: Makefile.am 60940 2021-11-03 22:47:27Z karl $
+## $Id: Makefile.am 61335 2021-12-17 16:42:00Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/omegafonts/
 ##
 ## Copyright 2015-2021 Karl Berry <tex-live@tug.org>
@@ -86,7 +86,7 @@ install-exec-hook: install-bin-links
 if WIN32
 # same install happens in dvipdfmx.
 	for f in $(linked_programs); do \
-	  $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_omfonts$(EXEEXT) "$(DESTDIR)$(bindir)/$$f$(EXEEXT)"
+	  $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_omfonts$(EXEEXT) "$(DESTDIR)$(bindir)/$$f$(EXEEXT)"; \
 	done
 endif WIN32
 uninstall-hook: uninstall-bin-links
