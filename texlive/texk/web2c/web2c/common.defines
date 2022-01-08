@@ -1,4 +1,4 @@
-{$Id: common.defines 53078 2019-12-10 18:39:13Z karl $
+{$Id: common.defines 61509 2022-01-06 11:08:43Z ascherer $
  common.defines.  Public domain.
 
  This file is concatenated by ./convert to the beginning of the Pascal
@@ -94,6 +94,7 @@
 @define const VFTOVPHELP;
 @define const VPTOVFHELP;
 @define const WEAVEHELP;
+@define const TWILLHELP;
 
 @define function abs ();
 @define function addressof ();

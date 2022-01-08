@@ -204,13 +204,13 @@ const_string GFTYPEHELP[] = {
 
 #ifdef MFT
 const_string MFTHELP[] = {
-    "Usage: mft [OPTION]... NAME[.mf|.mp]",
-    "  Translate MFNAME to TeX for printing, using the mftmac.tex (or",
-    "  mptmac.tex) macros.  Output goes to basename of NAME extended",
-    "  with `.tex'.",
+    "Usage: mft [OPTION]... FILENAME[.mf|.mp]",
+    "  Translate FILENAME to TeX for printing, using the mftmac.tex",
+    "  (for mf) or mptmac.tex (for mpost) TeX macro file.",
+    "  Output goes to basename of FILENAME extended with `.tex'.",
     "",
     "-change=CHFILE  apply the change file CHFILE as with tangle and weave",
-    "-metapost       assume NAME is a METAPOST source file",
+    "-metapost       assume FILENAME is a MetaPost source file",
     "-style=MFTNAME  use MFTNAME instead of plain.mft (or mplain.mft)",
     "                 (this option can be given more than once)",
     "-help           display this help and exit",
@@ -638,5 +638,19 @@ const_string WEAVEHELP[] = {
     NULL
 };
 #endif /* WEAVE */
+
+#ifdef TWILL
+const_string TWILLHELP[] = {
+    "Usage: twill [OPTION]... WEBFILE[.web] [CHANGEFILE[.ch]]",
+    "  Weave WEBFILE with CHANGEFILE into a TeX document.",
+    "  Default CHANGEFILE is " DEV_NULL ";",
+    "  TeX output goes to the basename of WEBFILE extended with `.tex'.",
+    "",
+    "-x          omit cross-reference information",
+    "-help       display this help and exit",
+    "-version    output version information and exit",
+    NULL
+};
+#endif /* TWILL */
 
 #endif /* not HELP_H */
