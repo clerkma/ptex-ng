@@ -1,4 +1,4 @@
-.TH WEAVE 1 "16 June 2015" "Web2C @VERSION@"
+.TH WEAVE 1 "09 January 2022" "Web2C @VERSION@"
 .\"=====================================================================
 .if n .ds MF Metafont
 .if t .ds MF Metafont
@@ -68,7 +68,7 @@ for the details of the searching.
 .\"=====================================================================
 .SH FILES
 .TP \w'@@'u+2n
-.I $TEXMFMAIN/tex/plain/base/webmac.tex
+.I $TEXMFMAIN/tex/plain/knuth-lib/webmac.tex
 \*(TX macros used by
 .B weave
 output.
