@@ -1,6 +1,7 @@
-## $Id: Makefile.am 60033 2021-07-24 01:16:00Z hironobu $
+## $Id: Makefile.am 61575 2022-01-11 22:47:10Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
-## Copyright 2015-2019 Karl Berry <tex-live@tug.org>
+##
+## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##

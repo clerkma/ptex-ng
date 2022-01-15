@@ -1,7 +1,7 @@
-## $Id: etex.am 57769 2021-02-17 03:03:54Z karl $
+## $Id: etex.am 61575 2022-01-11 22:47:10Z karl $
 ## texk/web2c/etexdir/am/etex.am: Makefile fragment for e-TeX.
 ##
-## Copyright 2015-2021 Karl Berry <tex-live@tug.org>
+## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 
@@ -38,9 +38,9 @@ etex-pool.c: etex.pool etexd.h $(makecpool_stamp)
 
 # Tangling e-TeX
 etex.p etex.pool: etex-tangle
-	@$(texmf_tangle) etex etex
+	$(texmf_tangle) etex etex
 etex-tangle: tangle$(EXEEXT) etex.web etex.ch tangle-sh
-	@$(texmf_tangle) etex etex
+	$(texmf_tangle) etex etex
 
 # Extract etex version
 $(srcdir)/etexdir/etex_version.h: @MAINTAINER_MODE_TRUE@ etexdir/etex.ch
@@ -121,3 +121,4 @@ EXTRA_DIST += \
 	etexdir/etrip/texmf.cnf \
 	etexdir/etrip/trip2.in
 
+# (end of etex.am)

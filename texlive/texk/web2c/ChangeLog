@@ -1,3 +1,46 @@
+2022-01-15  Andreas Scherer  <https://ascherer.github.io>
+
+	* tangle.ch,
+	* tangleboot.pin,
+	* weave.ch: Adapt WEB to general conventions.
+
+2022-01-12  Marcel Kr\"uger  <tex@2krueger.de>
+
+	* showstream.ch: if (selector<no_print), rather than <log_only.
+
+2022-01-11  Marcel Kr\"uger  <tex@2krueger.de>
+
+	* showstream.ch: adjust selector for show_stream.
+	Bug report from Hironobu Yamashita, 8 Dec 2021:
+\newwrite\IO
+\immediate\openout\IO=io.tex
+\showstream=\IO
+\showtokens A \end
+
+This should throw an error "! Missing { inserted." but for now
+it just stops silently and if I press [Enter] it crashes.
+
+2022-01-10  Karl Berry  <karl@freefriends.org>
+
+	* tangle-sh.in,
+	* ctangleboot-sh.in: be more verbose if AM_V_P.
+	https://tug.org/pipermail/tlbuild/2022q1/005001.html
+	Mention the Automake manual section which is the source for
+	the approach taken:
+	https://gnu.org/s/automake/manual/html_node/Multiple-Outputs.html
+	
+	* am/bootstrap.am: do not silence {,c}tangle{,boot}.
+	(common_ctangle): change to variable from common-ctangle target,
+	to avoid endless remakes due to (I think) conflict with
+	common-ctangle stamp file created by ctangleboot-sh[.in].
+	(tangle.web): replace ancient message about web.tar.gz.
+	
+	* am/texmf.am: do not silence tangle-sh.
+
+	* Makefile.am,
+	* help.h,
+	* am/web.am: copyright 2022.
+
 2022-01-09  Andreas Scherer  <https://ascherer.github.io>
 
 	* help.h,
@@ -5,7 +48,7 @@
 
 2022-01-07  Karl Berry  <karl@freefriends.org>
 
-	* (MFTHELP): consistent argument names. Report from
+	* help.h (MFTHELP): consistent argument names. Report from
 	Laurence Finston, tex-k 22 Dec 2021 12:38:36.
 
 2022-01-06  Andreas Scherer  <https://ascherer.github.io>
