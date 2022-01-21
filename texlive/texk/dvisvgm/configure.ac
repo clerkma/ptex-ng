@@ -1,8 +1,8 @@
-dnl $Id: configure.ac 57804 2021-02-19 23:14:47Z karl $
+dnl $Id: configure.ac 61679 2022-01-21 17:25:16Z karl $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
-dnl   Copyright 2015-2021 Karl Berry <tex-live@tug.org>
+dnl   Copyright 2015-2022 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2009-2014 Peter Breitenlohner <tex-live@tug.org>
 dnl
 dnl   This file is free software; the copyright holder
@@ -10,12 +10,12 @@ dnl   gives unlimited permission to copy and/or distribute it,
 dnl   with or without modifications, as long as this notice is preserved.
 dnl
 dnl  Adapted for TeX Live from original dvisvgm configure.ac
-dnl  Copyright 2005-2020 Martin Gieseking
+dnl  Copyright 2005-2022 Martin Gieseking
 dnl
 AC_PREREQ([2.65])
 m4_include([version.ac])[] dnl define dvisvgm_version
 AC_INIT([dvisvgm (TeX Live)], dvisvgm_version, [tex-k@tug.org])
-DATE="January 2021"
+DATE="January 2022"
 AC_CONFIG_SRCDIR([dvisvgm-src/src/dvisvgm.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIRS([../../m4])dnl not just _DIR
