@@ -1,13 +1,13 @@
+2022-01-18  Karl Berry  <karl@freefriends.org>
+
+	* doc/web2c.texi (TeX extensions): mention pdftex manual and
+	ltnews31.pdf as primary documentation for the cross-engine
+	functionality.
+	(Introduction): mention TeX Live and teTeX.	
+
 2022-01-16  Andreas Scherer  <https://ascherer.github.io>
 
 	* weave.ch: Add a third layer to 'byte_mem'.
-
-2022-01-15  Karl Berry  <karl@freefriends.org>
-
-	* web2c/Makefile.am (web2c_LDADD): set to libweb2c.a
-	instead of -L. -lweb2c, for compatibility with slibtool,
-	and clarity. Report from Michael Orlitzky,
-	tex-k 15 Jan 2022 13:28:41.
 
 2022-01-15  Andreas Scherer  <https://ascherer.github.io>
 

@@ -1,5 +1,7 @@
-$Id: NEWS 57769 2021-02-17 03:03:54Z karl $
+$Id: NEWS 61654 2022-01-18 22:17:46Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+dvips 2022.1 (TeX Live 2022):
 
 dvips 2021.1 (TeX Live 2021):
   Default title is now the basename of the input file instead of the

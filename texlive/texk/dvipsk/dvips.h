@@ -1,5 +1,5 @@
-/*   $Id: dvips.h 58827 2021-04-11 04:11:47Z takuji $
- *   Copyright 1986-2021 Tomas Rokicki.
+/*   $Id: dvips.h 61654 2022-01-18 22:17:46Z karl $
+ *   Copyright 1986-2022 Tomas Rokicki.
  *   This is dvips, a freely redistributable PostScript driver
  *   for dvi files. You may freely use, modify and/or distribute this
  *   program or any portion thereof.
@@ -15,7 +15,7 @@
 #define CD_IDX(i)  ((i>=MAX_2BYTES_CODE ? MAX_2BYTES_CODE : i))
 
 #define BANNER \
-"This is dvips(k) " VERSION " (" TL_VERSION ")  Copyright 2021 Radical Eye Software"
+"This is dvips(k) " VERSION " (" TL_VERSION ")  Copyright 2022 Radical Eye Software"
 #define BANNER2 "(www.radicaleye.com)"
 #ifdef KPATHSEA
 #include "config.h"

@@ -1,6 +1,7 @@
-$Id: NEWS 60982 2021-11-07 00:26:08Z karl $
+$Id: NEWS 61654 2022-01-18 22:17:46Z karl $
 This file records noteworthy changes.  (Public domain.)
 
+6.3.4 (for TeX Live 2022)
 * First return path from kpsewhich -all is now the same as non-all.
   (Internally, str_list_uniqify retains ordering.)
 
