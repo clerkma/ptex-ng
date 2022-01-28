@@ -1,7 +1,12 @@
-$Id: NEWS 61654 2022-01-18 22:17:46Z karl $
+$Id: NEWS 61701 2022-01-22 23:22:05Z karl $
 This file records noteworthy changes.  (Public domain.)
 
 dvips 2022.1 (TeX Live 2022):
+  New option (and config file directive) -landscaperotate: try to
+  automatically match rotated page content and paper sizes; in the past,
+  this was done by default, but it is generally unnecessary nowadays,
+  and can be troublesome when converting to PDF, so now the default is
+  not to do this. This option re-enables the rotated matching.
 
 dvips 2021.1 (TeX Live 2021):
   Default title is now the basename of the input file instead of the

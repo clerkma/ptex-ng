@@ -22,7 +22,7 @@
 @y
 #ifdef UPMP
 #define P_UP "up"
-#define metapost_version "2.02-0.04-u1.27"
+#define metapost_version "2.02-0.04-u1.28"
 #else
 #define P_UP "p"
 #define metapost_version "2.02-0.04"
@@ -100,7 +100,7 @@ static boolean mp_input_ln (MP mp, void *f) {
 @y
 static boolean mp_input_ln (MP mp, void *f ) {
   int i = EOF;
-  mp->last = input_line2((FILE *)f, mp->buffer, mp->first, mp->buf_size, &i);
+  mp->last = input_line2((FILE *)f, mp->buffer, NULL, mp->first, mp->buf_size, &i);
   if (i == EOF && errno != EINTR && mp->last == mp->first)
     return false;
   if (i != EOF && i != '\n' && i != '\r') {
