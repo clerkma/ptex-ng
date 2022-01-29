@@ -1,4 +1,4 @@
-## $Id: uptex.am 61575 2022-01-11 22:47:10Z karl $
+## $Id: uptex.am 61784 2022-01-29 10:40:22Z hironobu $
 ## texk/web2c/uptexdir/am/uptex.am: Makefile fragment for upTeX.
 ##
 ## Copyright 2016-2022 Karl Berry <tex-live@tug.org>
@@ -172,7 +172,8 @@ upweb_tests = \
 	uptexdir/yokotate.test \
 	uptexdir/newjfm.test \
 	uptexdir/uparse.test \
-	uptexdir/gkhuge.test
+	uptexdir/gkhuge.test \
+	uptexdir/upkcat.test
 uptexdir/upbibtex.log: upbibtex$(EXEEXT)
 uptexdir/updvitype.log: updvitype$(EXEEXT)
 uptexdir/uppltotf.log: uppltotf$(EXEEXT)
