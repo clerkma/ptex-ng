@@ -2,7 +2,7 @@
 
 \def\tangref{3} % where the main explanation of CTANGLing is given
 \input cwebmac
-\acrofalse\pdffalse\pdftexfalse
+\acrofalse\pdffalse\pdftexfalse\HINTfalse\acroHINTfalse
 \def\page{\box255 } \normalbottom
 \parskip 0pt plus 1pt
 \def\RA{\char'31 } % right arrow
@@ -1165,6 +1165,11 @@ and Andreas Scherer, you can generate \.{cob.pdf} in one step by simply
 saying `\.{pdftex}~\.{cob}'.
 And a third way to create PDF output from \.{CWEB} input is to say
 `\.{xetex}~\.{cob}'.
+
+Similar output for ``smart'' devices can be created with Martin Ruckert's
+Hi\TeX\ and its dynamic \.{HINT} format; just say `\.{hitex}~\.{cob}'.
+\.{HINT} files can be viewed with the \.{hintview} program, which is available
+for {\mc GNU}/Linux, {\mc MS}~Windows, and Android.
 
 A more elaborate system called \.{CTWILL}, which extends the usual cross
 references of \.{CWEAVE} by preparing links from the uses of identifiers

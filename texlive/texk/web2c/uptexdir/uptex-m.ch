@@ -1,4 +1,4 @@
-% $Id: uptex-m.ch 61706 2022-01-23 09:48:03Z takuji $
+% $Id: uptex-m.ch 61804 2022-01-30 01:51:22Z hironobu $
 % This is a change file for upTeX u1.27
 % By Takuji Tanaka.
 %
@@ -955,10 +955,10 @@ else if cur_cmd=kchar_num then
 
 @x
 letter,other_char,char_given:
-  if (is_char_ascii(cur_chr) or (cur_chr=256)) then begin
+  if is_char_ascii(cur_chr) then begin
 @y
 letter,other_char,char_given:
-  if (cur_chr>=0)and(cur_chr<=256) then begin
+  if check_echar_range(cur_chr) then begin
 @z
 
 @x
@@ -982,31 +982,27 @@ kanji,kana,other_kchar,hangul: cx:=cur_chr;
 @x
 mmode+letter,mmode+other_char,mmode+char_given:
   if is_char_ascii(cur_chr) then
-    if cur_chr<128 then set_math_char(ho(math_code(cur_chr)))
-    else set_math_char(cur_chr)
+    set_math_char(ho(math_code(cur_chr)))
   else set_math_kchar(cur_chr);
 mmode+kanji,mmode+kana,mmode+other_kchar: begin
     cx:=cur_chr; set_math_kchar(KANJI(cx));
   end;
 mmode+char_num: begin scan_char_num; cur_chr:=cur_val;
   if is_char_ascii(cur_chr) then
-    if cur_chr<128 then set_math_char(ho(math_code(cur_chr)))
-    else set_math_char(cur_chr)
+    set_math_char(ho(math_code(cur_chr)))
   else set_math_kchar(cur_chr);
   end;
 @y
 mmode+letter,mmode+other_char,mmode+char_given:
   if check_echar_range(cur_chr) then
-    if cur_chr<128 then set_math_char(ho(math_code(cur_chr)))
-    else set_math_char(cur_chr)
+    set_math_char(ho(math_code(cur_chr)))
   else set_math_kchar(cur_chr);
 mmode+kanji,mmode+kana,mmode+other_kchar,mmode+hangul: begin
     cx:=cur_chr; set_math_kchar(KANJI(cx));
   end;
 mmode+char_num: begin scan_char_num; cur_chr:=cur_val;
   if check_echar_range(cur_chr) then
-    if cur_chr<128 then set_math_char(ho(math_code(cur_chr)))
-    else set_math_char(cur_chr)
+    set_math_char(ho(math_code(cur_chr)))
   else set_math_kchar(cur_chr);
   end;
 mmode+kchar_given:

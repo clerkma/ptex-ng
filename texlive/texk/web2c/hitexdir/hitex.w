@@ -5462,13 +5462,13 @@ defined by |SOURCE_DATE_EPOCH|.
 @^creation date@>
 @^reference time@>
 @^system dependencies@>
-k\TeX\ calls |tl_now| to obtain the current time (UTC) as a |tm| structure.
+k\TeX\ calls |tl_now| to obtain the current time as a |tm| structure.
 @p static void fix_date_and_time(void)
-{@+ struct tm *gmt=tl_now();
-  time=sys_time= gmt->tm_hour*60+gmt->tm_min;/*minutes since midnight*/
-  day=sys_day= gmt->tm_mday;/*day of the month*/
-  month=sys_month=gmt->tm_mon+1;/*month of the year*/
-  year=sys_year=gmt->tm_year+1900;/*Anno Domini*/
+{@+ struct tm *t=tl_now();
+  time=sys_time= t->tm_hour*60+t->tm_min;/*minutes since midnight*/
+  day=sys_day= t->tm_mday;/*day of the month*/
+  month=sys_month=t->tm_mon+1;/*month of the year*/
+  year=sys_year=t->tm_year+1900;/*Anno Domini*/
 }
 
 @ @<Show equivalent |n|, in region 5@>=
@@ -16206,7 +16206,12 @@ subtype(tail)=tab_skip_code+1
 {@+if (mode==-hmode)
   {@+adjust_tail=cur_tail;u=hpack(link(head), natural);
   if (type(u)==hlist_node) w=width(u);
-  else w=max_dimen+1;
+  else
+#if 0
+    w=max_dimen+1;
+#else
+    w = width(u);
+#endif
   cur_tail=adjust_tail;adjust_tail=null;
   }
 else{@+u=vpackage(link(head), natural, 0);
@@ -16368,8 +16373,11 @@ if (info(q)!=end_span)
 the span nodes of |q|@>;
 type(q)=unset_node;span_count(q)=min_quarterword;height(q)=0;
 depth(q)=0;glue_order(q)=normal;glue_sign(q)=normal;
-glue_stretch(q)=0;glue_shrink(q)=0;q=p;
- if (width(q)>max_dimen) x=true;
+glue_stretch(q)=0;glue_shrink(q)=0;
+#if 0 /* Table nodes are not implemented in the 1.2 viewer */
+if (width(q)>max_dimen) x=true;
+#endif
+q=p;
 }@+ while (!(q==null))
 
 @ @<Nullify |width(q)| and the tabskip glue following this column@>=
@@ -22423,8 +22431,12 @@ display. Then we can set the proper values of |display_width| and
    }
   tail_append(new_param_glue(par_fill_skip_code));
   }
+@<Calculate the length, |l|, and the shift amount, |s|, of the display lines@>;
 push_math(math_shift_group);mode=mmode;
 eq_word_define(int_base+cur_fam_code,-1);@/
+eq_word_define(dimen_base+display_width_code, l); cur_hfactor=0;
+eq_word_define(dimen_base+pre_display_size_code, w);
+eq_word_define(dimen_base+display_indent_code, s);
 if (every_display!=null) begin_token_list(every_display, every_display_text);
 }
 
@@ -22490,15 +22502,15 @@ if (par_shape_ptr==null)
   if ((hang_indent!=0)&&@|
    (((hang_after >= 0)&&(prev_graf+2 > hang_after))||@|
     (prev_graf+1 < -hang_after)))
-    {@+l=hsize-abs(hang_indent);
+    {@+l=-abs(hang_indent); cur_hfactor=unity;
     if (hang_indent > 0) s=hang_indent;@+else s=0;
     }
-  else{@+l=hsize;s=0;
+  else{@+l=0;s=0; cur_hfactor=unity;
     }
 else{@+n=info(par_shape_ptr);
   if (prev_graf+2 >= n) p=par_shape_ptr+2*n;
   else p=par_shape_ptr+2*(prev_graf+2);
-  s=mem[p-1].sc;l=mem[p].sc;
+  s=mem[p-1].sc;l=mem[p].sc;cur_hfactor=0;
   }
 
 @ Subformulas of math formulas cause a new level of math mode to be entered,
@@ -23287,13 +23299,22 @@ resulting list, and with |aux_save| holding the |prev_depth| value.
 if (cur_cmd!=math_shift) @<Pontificate about improper alignment in display@>@;
 else@<Check that another \.\$ follows@>;
 pop_nest();
-tail_append(new_penalty(pre_display_penalty));
-tail_append(new_param_glue(above_display_skip_code));
-link(tail)=p;
-if (p!=null) tail=q;
-tail_append(new_penalty(post_display_penalty));
-tail_append(new_param_glue(below_display_skip_code));
-prev_depth=aux_save.sc;resume_after_display();
+prev_depth=aux_save.sc;
+tail_append(new_disp_node());
+display_formula(tail)=vpack(p, natural);
+/* adding parameter nodes */
+link(temp_head)=null;
+if (hang_indent!=0)
+{ new_param_node(dimen_type,hang_indent_code,hang_indent);
+  if (hang_after!=1)
+    new_param_node(int_type,hang_after_code,hang_after);
+}
+new_param_node(dimen_type,line_skip_limit_code,line_skip_limit);
+new_param_node(glue_type,line_skip_code,line_skip);
+new_param_node(glue_type,baseline_skip_code,baseline_skip);
+display_params(tail)=link(temp_head); link(temp_head)=null;
+display_no_bs(tail)= prev_depth <= ignore_depth;
+resume_after_display();
 }
 
 @ @<Pontificate...@>=
@@ -25554,8 +25575,11 @@ primitive("immediate", extension, immediate_code);@/
 primitive("setlanguage", extension, set_language_code);@/
 @!@:set\_language\_}{\.{\\setlanguage} primitive@>
 
-primitive("@@HINT", relax, 256); /*cf.\ |relax|*/
-@!@:@@HINT\_}{\.{\\@@HINT} primitive@>
+primitive("HINTversion", last_item, HINT_version_code);
+@!@:HINT\_version\_}{\.{\\HINTversion} primitive@>
+
+primitive("HINTsubversion", last_item, HINT_subversion_code);
+@!@:HINT\_subversion\_}{\.{\\HINTsubversion} primitive@>
 
 primitive("HINTdest", extension, label_node);@/
 @!@:HINTdest\_}{\.{\\HINTdest} primitive@>
@@ -30027,12 +30051,6 @@ format that this program will generate.
 @d HINT_version_code (eTeX_last_last_item_cmd_mod+7) /* \.{\\HINTversion} */
 @d HINT_subversion_code (eTeX_last_last_item_cmd_mod+8) /* \.{\\HINTsubversion} */
 
-@<Generate all \Prote\ primitives@>=
-primitive("HINTversion", last_item, HINT_version_code);
-@!@:HINT\_version\_}{\.{\\HINTversion} primitive@>
-primitive("HINTsubversion", last_item, HINT_subversion_code);
-@!@:HINT\_subversion\_}{\.{\\HINTsubversion} primitive@>
-
 @ Now this new primitive needs its implementation
 
 @<Cases of |last_item| for |print_cmd_chr|@>=
@@ -30042,7 +30060,6 @@ case HINT_subversion_code: print_esc("HINTsubversion");@+break;
 @ @<Cases for fetching a \Prote\ int value@>=
 case HINT_version_code: cur_val=HINT_VERSION;@+break;
 case HINT_subversion_code: cur_val=HINT_SUB_VERSION;@+break;
-
 
 
 @ The implementation reuses code that has been written as part of
@@ -30329,11 +30346,11 @@ static void hline_break(int final_widow_penalty)
   }
   auto_breaking=true;
   if (option_hyphen_first && is_char_node(link(temp_head)))
-  { cur_p = new_glue(zero_glue);
-    link(cur_p)=link(temp_head);
+  { pointer p = new_glue(zero_glue);
+    link(p)=link(temp_head);
+    link(temp_head) =p;
   }
-  else
-    cur_p=link(temp_head);
+  cur_p=link(temp_head);
   while (cur_p!=null)
   { /*Call |try_break| if |cur_p| is a legal breakpoint...*/
     if (is_char_node(cur_p))
@@ -31395,6 +31412,8 @@ static pointer vpackage(pointer p, scaled h, scaled hf, scaled vf, small_number 
 		      else s= shift_amount(p);
               if (width(p)+s> w) w= width(p)+s;
               break;
+          case unset_set_node: case unset_pack_node:
+              goto repack;
           case whatsit_node:
             if (subtype(p)==graf_node)
 			  goto repack;
@@ -34721,16 +34740,23 @@ static void main_init(int ac, char *av[]);
 @ We conclude this chapter using \.{time.h} to provide a function
 that is used to initialize
 \TeX's date and time information. Because |time| is one of \TeX's
-macros, we add the function |tl_now| that wraps the call to |time|
-(and |gmtime|) for later use in |fix_date_and_time|.
+macros, we add the function |tl_now| before including \TeX's macros
+to wrap the call to the |time| function.
+It sets the variable |start_time| and returns a pointer to a |tm| structure
+to be used later in |fix_date_and_time|.
 
-To support \LaTeX, two environment variables need to be checked:
-If |SOURCE_DATE_EPOCH| is set, it is used as the current time in
-seconds since January 1, 1970 (UTC).
-If |FORCE_SOURCE_DATE| is set to $1$ also \TeX's primitives
-\.{\\year}, \.{\\month}, \.{\\day}, and \.{\\time} use this value
-as the current time. This feature is usefull to make reproducible
-builds of documents.
+To support reproducible output, the environment variable |SOURCE_DATE_EPOCH|
+needs to be checked. If it is set, it is an \ASCII\ representation of
+a \UNIX\ timestamp, defined as the number
+of seconds, excluding leap seconds, since 01 Jan 1970 00:00:00 UTC.
+Its value is then used to initialize the |start_time| variable.
+
+The \TeX\ Live conventions further require that setting the
+|FORCE_SOURCE_DATE| environment variable to $1$ will cause also \TeX's primitives
+\.{\\year}, \.{\\month}, \.{\\day}, and \.{\\time}  to use this value
+as the current time. Looking at the \TeX\ Live code also reveals that
+these primitives use the local time instead of the GMT if this variable is
+not set to~1.
 
 @<Header files and function declarations@>=
 #include <time.h>
@@ -34742,22 +34768,28 @@ static char *source_date_epoch,*force_source_date;
 #endif
 
 static struct tm *tl_now(void)
-{@+struct tm *gmt;
+{@+struct tm *tp;
    time_t t;
    source_date_epoch= getenv("SOURCE_DATE_EPOCH");
+   force_source_date= getenv("FORCE_SOURCE_DATE");
+   if (force_source_date!=NULL &&
+       (force_source_date[0]!='1' || force_source_date[1]!=0))
+       force_source_date=NULL;
+
    if (source_date_epoch!=NULL)
-   { start_time= (time_t)strtoull(source_date_epoch, NULL, 10);
-     force_source_date= getenv ("FORCE_SOURCE_DATE");
-     if (force_source_date!=NULL &&
-         force_source_date[0]=='1' && force_source_date[1]==0)
+   {  start_time= (time_t)strtoull(source_date_epoch, NULL, 10);
+      if (force_source_date!=NULL)
          t=start_time;
-       else
+      else
          t=time(NULL);
    }
    else
      t=start_time=time(NULL);
-  gmt=gmtime(&t);
-  return gmt;
+   if (force_source_date)
+     tp=gmtime(&t);
+   else
+     tp=localtime(&t);
+  return tp;
 }
 
 @ To support \LaTeX, a few more time related functions are needed.
