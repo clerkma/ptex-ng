@@ -2,7 +2,7 @@
 % This program by Silvio Levy and Donald E. Knuth
 % is based on a program by Knuth.
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 4.6 --- December 2021
+% Version 4.7 --- February 2022
 
 % Copyright (C) 1987,1990,1993,2000 Silvio Levy and Donald E. Knuth
 
@@ -27,11 +27,11 @@
 \mathchardef\RA="3221 % right arrow
 \mathchardef\BA="3224 % double arrow
 
-\def\title{CTANGLE (Version 4.6)}
+\def\title{CTANGLE (Version 4.7)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont CTANGLE} processor}
   \vskip 15pt
-  \centerline{(Version 4.6)}
+  \centerline{(Version 4.7)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -61,7 +61,7 @@ Joachim Schrod, Lee Wittenberg, and others who have contributed improvements.
 The ``banner line'' defined here should be changed whenever \.{CTANGLE}
 is modified.
 
-@d banner "This is CTANGLE (Version 4.6)"
+@d banner "This is CTANGLE (Version 4.7)"
 
 @c
 @<Include files@>@/
@@ -157,7 +157,7 @@ boolean names_match(
 name_pointer p, /* points to the proposed match */
 const char *first, /* position of first character of string */
 size_t l, /* length of identifier */
-eight_bits t) /* not used by \.{TANGLE} */
+eight_bits t) /* not used by \.{CTANGLE} */
 {@+(void)t;@/
   return length(p)==l && strncmp(first,p->byte_start,l)==0;
 }
