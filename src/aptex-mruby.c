@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Clerk Ma
+   Copyright 2017, 2018, 2022 Clerk Ma
  
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,7 +17,14 @@
    02110-1301 USA.
 */
 
+#define USE_KPATHSEA
+#define USE_MRUBY
+
+#ifdef USE_MRUBY
 #include "mruby.h"
+#endif
+
+#ifdef USE_KPATHSEA
 #include <kpathsea/expand.h>
 #include <kpathsea/progname.h>
 #include <kpathsea/proginit.h>
@@ -27,9 +34,12 @@
 #include <kpathsea/tex-make.h>
 #include <kpathsea/lib.h>
 #include <kpathsea/variable.h>
+#endif
 
 #include <ptexenc/ptexenc.h>
 #include <ptexenc/unicode.h>
+
+#ifdef USE_MRUBY
 
 static mrb_value mrb_kpse_brace_expand (mrb_state * mrb, mrb_value self)
 {
@@ -400,3 +410,5 @@ void mrb_mruby_aptex_gem_final (mrb_state * mrb)
   mrb_mruby_kpathsea_gem_final(mrb);
   mrb_mruby_ptexenc_gem_final(mrb);
 }
+
+#endif /* USE_MRUBY */

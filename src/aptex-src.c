@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,6 +19,13 @@
 */
 
 #include "aptex.h"
+
+#ifndef USE_KPATHSEA
+  #define xmalloc malloc
+  #define xrealloc realloc
+  #define xfopen fopen
+  #define xfclose(a, b) fclose(a)
+#endif
 
 static int mem_initex;
 static int new_hyphen_prime;
@@ -85,13 +92,17 @@ static void print_aptex_usage (void)
       "   enable \\write18\n"
       " --merge-kanji-baseline\n"
       "   shift baseline of OpenType's ascender/descender to JFM's height/depth\n"
+#ifdef USE_VISUAL_DEBUG
       " --visual-debug\n"
       "   when ship out DVI, show ApTeX's internal node to PNG/PDF via Cairo\n"
+#endif /* USE_VISUAL_DEBUG */
+#ifdef USE_MRUBY
       "\n"
       " --mrb-load-file\n"
       "   execute file of mruby\n"
       " --mrb-load-string\n"
       "   execute string of mruby\n"
+#endif /* USE_MRUBY */
       "\n"
       " --jobname=str\n"
       "   set the job name to str, e.g.: '--jobname=book2016'\n"
@@ -122,16 +133,27 @@ static void print_aptex_version (void)
   printf("Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma.\n"
     "banner: \"%s\"\n"
     "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n"
+#ifdef USE_KPATHSEA
     "Compiled with %s\n"
+#endif
     "Compiled with %s\n"
     "Compiled with libotf version %s\n"
     "Compiled with zlib version %s\n"
+#ifdef USE_MRUBY
     "Compiled with mruby version %s\n"
+#endif
     "Compiled with synctex (build-in edition)\n"
     "Compiled with libdpx (build-in dvipdfmx)\n",
     banner, pTeX_version_string, upTeX_version_string,
-    kpathsea_version_string, ptexenc_version_string,
-    LIBOTF_VERSION, zlib_version, MRUBY_VERSION);
+#ifdef USE_KPATHSEA
+    kpathsea_version_string,
+#endif
+    ptexenc_version_string,
+    LIBOTF_VERSION, zlib_version
+#ifdef USE_MRUBY
+    , MRUBY_VERSION
+#endif /* USE_MRUBY */
+  );
   aptex_utils_exit(EXIT_SUCCESS);
 }
 
@@ -1302,6 +1324,16 @@ do {                  \
   safe_free(TEX_format_default);
 }
 
+static char * make_format_name(char * format_name)
+{
+#ifdef USE_KPATHSEA
+  return remove_suffix(xbasename(format_name));
+#else
+  return format_name;
+#endif
+}
+
+
 static void aptex_commands_init (int ac, char **av)
 {
   aptex_env.aptex_fmt             = NULL;
@@ -1384,15 +1416,19 @@ static void aptex_commands_init (int ac, char **av)
     while ((c = getopt_long_only(ac, av, "", long_options, &option_idx)) != EOF)
     {
       if (ARGUMENT_IS("progname"))
-        kpse_reset_program_name(xstrdup(optarg));
+#ifdef USE_KPATHSEA
+        kpse_reset_program_name(strdup(optarg));
+#else
+        ;
+#endif
       else if (ARGUMENT_IS("jobname"))
-        aptex_env.aptex_job = xstrdup(optarg);
+        aptex_env.aptex_job = strdup(optarg);
       else if (ARGUMENT_IS("fontmap"))
-        aptex_env.aptex_map = xstrdup(optarg);
+        aptex_env.aptex_map = strdup(optarg);
       else if (ARGUMENT_IS("synctex"))
         synctex_option = strtoll(optarg, NULL, 0);
       else if (ARGUMENT_IS("format"))
-        aptex_env.aptex_fmt = xstrdup(optarg);
+        aptex_env.aptex_fmt = strdup(optarg);
       else if (ARGUMENT_IS("ini"))
         aptex_env.flag_initex = true;
       else if (ARGUMENT_IS("suppressfligs"))
@@ -1419,6 +1455,7 @@ static void aptex_commands_init (int ac, char **av)
         print_aptex_info(), print_aptex_usage();
       else if (ARGUMENT_IS("version"))
         print_aptex_info(), print_aptex_version();
+#ifdef USE_MRUBY
       else if (ARGUMENT_IS("mrb-load-file"))
       {
         mrb_state * mrb_cmd = mrb_open();
@@ -1455,6 +1492,7 @@ static void aptex_commands_init (int ac, char **av)
 
         aptex_utils_exit(EXIT_SUCCESS);
       }
+#endif /* USE_MRUBY */
     }
 #pragma pop_macro("name")
 
@@ -1465,7 +1503,7 @@ static void aptex_commands_init (int ac, char **av)
         if (aptex_env.aptex_fmt != NULL)
           free(aptex_env.aptex_fmt);
 
-        aptex_env.aptex_fmt = xstrdup(av[optind] + 1);
+        aptex_env.aptex_fmt = strdup(av[optind] + 1);
       }
       else
       {
@@ -1481,12 +1519,12 @@ static void aptex_commands_init (int ac, char **av)
   }
 
   if (aptex_env.aptex_src == NULL)
-    aptex_env.aptex_src = xstrdup(" ");
+    aptex_env.aptex_src = strdup(" ");
 
   if (aptex_env.aptex_fmt == NULL)
-    format_name = remove_suffix(xbasename(av[0]));
+    format_name = make_format_name(av[0]);
   else
-    format_name = xstrdup(aptex_env.aptex_fmt);
+    format_name = strdup(aptex_env.aptex_fmt);
 
   TEX_format_default = (char *) malloc(strlen(format_name) + 6);
 
@@ -1558,13 +1596,15 @@ void aptex_run (int argc, char ** argv)
   synctex_option = INT_MAX;
   stop_at_space = true;
   is_in_csname = false;
+#ifdef USE_KPATHSEA
   // for kpathsea init
   kpse_set_program_name(aptex_env.argv[0], NULL);
   kpse_set_program_enabled(kpse_fontmap_format, true, kpse_src_texmf_cnf);
-  // for ptexenc init: encoding
-  init_default_kanji("utf8", "uptex");
   // for engine name
   xputenv("engine", "ptex-ng");
+#endif
+  // for ptexenc init: encoding
+  init_default_kanji("utf8", "uptex");
 
   aptex_set_signal();
   aptex_commands_init(aptex_env.argc, aptex_env.argv);
@@ -2176,7 +2216,7 @@ static char * mbcs_utf8 (const char * mbcs_str)
     return utf8_str;
   }
 #else
-  return xstrdup(mbcs_str);
+  return strdup(mbcs_str);
 #endif
 }
 
@@ -2220,7 +2260,7 @@ static char * utf8_mbcs (const char * utf8_str)
     return mbcs_str;
   }
 #else
-  return xstrdup(utf8_str);
+  return strdup(utf8_str);
 #endif
 }
 
@@ -2324,7 +2364,11 @@ static boolean a_open_input (alpha_file * f)
   }
   else
   {
+#ifdef USE_KPATHSEA
     file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tex_format, false);
+#else
+    file_name_kpse = file_name_mbcs;
+#endif /* USE_KPATHSEA */
 
     if (file_name_kpse != NULL)
     {
@@ -2360,7 +2404,11 @@ static boolean b_open_input (byte_file * f)
   else
     file_name_mbcs = utf8_mbcs(file_name_utf8);
 
+#ifdef USE_KPATHSEA
   file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tfm_format, true);
+#else
+  file_name_kpse = file_name_mbcs;
+#endif
 
   if (file_name_kpse != NULL)
   {
@@ -2394,7 +2442,11 @@ static boolean w_open_input (word_file * f)
 
   strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
   file_name_mbcs = utf8_mbcs(file_name_utf8);
+#ifdef USE_KPATHSEA
   file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_fmt_format, false);
+#else
+  file_name_kpse = file_name_mbcs;
+#endif
 
   if (file_name_kpse != NULL)
   {
@@ -17723,7 +17775,11 @@ static char * aptex_find_file (str_number s)
 
     if (file_name_mbcs != NULL)
     {
+#ifdef USE_KPATHSEA
       file_name_kpse = kpse_find_tex((const_string) file_name_mbcs);
+#else
+      file_name_kpse = file_name_mbcs;
+#endif
       free(file_name_mbcs);
     }
 
@@ -20761,7 +20817,12 @@ static char * area_split_name (char * s)
   {
     ret = calloc(sizeof(char), delim - s - 3 + 1);
     strncpy(ret, s + 3, delim - s - 3);
+#ifdef USE_KPATHSEA
     fname = kpse_find_file(ret, kpse_truetype_format, false);
+#else
+    fname = ret;
+#endif
+
     free(ret);
     return fname;
   }
@@ -21295,6 +21356,7 @@ static void ship_out (pointer p)
       pdf_init_fontmaps();
 
       /* TeX Live */
+#ifdef USE_KPATHSEA
       if (kpse_find_file("pdftex.map", kpse_fontmap_format, false) != NULL)
         pdf_load_fontmap_file("pdftex.map", '+');
       if (kpse_find_file("kanjix.map", kpse_fontmap_format, false) != NULL)
@@ -21321,6 +21383,7 @@ static void ship_out (pointer p)
             break;
         }
       }
+#endif /* USE_KPATHSEA */
 
       aptex_pdf_setting.media_width = 595.0;
       aptex_pdf_setting.media_height = 842.0;
@@ -21341,16 +21404,19 @@ static void ship_out (pointer p)
       FT_Init_FreeType(&font_ftlib);
     }
 #endif
+#ifdef USE_VISUAL_DEBUG
     if (aptex_env.flag_visual_debug)
       aptex_vdbg_ship_open("aptex-visual-debug.pdf");
+#endif
   }
 
 #ifndef APTEX_DVI_ONLY
   aptex_dpx_bop(total_pages + 1, pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
 #endif
+#ifdef USE_VISUAL_DEBUG
   if (aptex_env.flag_visual_debug)
     aptex_vdbg_bop(pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
-
+#endif
   page_loc = dvi_offset + dvi_ptr;
   dvi_out(bop);
 
@@ -21380,8 +21446,10 @@ static void ship_out (pointer p)
 #ifndef APTEX_DVI_ONLY
   aptex_dpx_eop();
 #endif
+#ifdef USE_VISUAL_DEBUG
   if (aptex_env.flag_visual_debug)
     aptex_vdbg_eop();
+#endif
   dvi_out(eop);
 
   incr(total_pages);
@@ -21695,11 +21763,13 @@ reswitch:
 #ifndef APTEX_DVI_ONLY
         pdf_char_out(dvi_f, c);
 #endif
+#ifdef USE_VISUAL_DEBUG
         if (aptex_env.flag_visual_debug)
           aptex_vdbg_node_char(0, cur_h, cur_v,
             char_width(f, char_info(f, c)),
             char_height(f, height_depth(char_info(f, c))),
             char_depth(f, height_depth(char_info(f, c))));
+#endif
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
       else
@@ -21747,11 +21817,13 @@ reswitch:
 #ifndef APTEX_DVI_ONLY
         pdf_kanji_out(dvi_f, jc);
 #endif
+#ifdef USE_VISUAL_DEBUG
         if (aptex_env.flag_visual_debug)
           aptex_vdbg_node_char(0, cur_h, cur_v,
             char_width(f, char_info(f, c)),
             char_height(f, height_depth(char_info(f, c))),
             char_depth(f, height_depth(char_info(f, c))));
+#endif
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
 
@@ -22059,8 +22131,10 @@ reswitch:
 #ifndef APTEX_DVI_ONLY
       pdf_rule_out(rule_wd, rule_ht);
 #endif
+#ifdef USE_VISUAL_DEBUG
       if (aptex_env.flag_visual_debug)
         aptex_vdbg_node_rule(0, cur_h, cur_v, rule_wd, rule_ht);
+#endif
       cur_v = base_line;
       dvi_h = dvi_h + rule_wd;
     }
@@ -22394,8 +22468,10 @@ fin_rule:
 #ifndef APTEX_DVI_ONLY
         pdf_rule_out(rule_wd, rule_ht);
 #endif
+#ifdef USE_VISUAL_DEBUG
         if (aptex_env.flag_visual_debug)
           aptex_vdbg_node_rule(0, cur_h, cur_v, rule_wd, rule_ht);
+#endif
         cur_h = left_edge;
       }
 
@@ -36461,8 +36537,10 @@ void close_files_and_terminate (void)
         prints(" bytes).");
       }
 #endif
+#ifdef USE_VISUAL_DEBUG
       if (aptex_env.flag_visual_debug)
         aptex_vdbg_ship_close();
+#endif
     }
   }
 
@@ -39867,7 +39945,11 @@ void synctex_start_input (void)
   if (synctex_tag_counter == 1)
   {
     char * name_mbcs = utf8_mbcs(take_str_string(name));
+#ifdef USE_KPATHSEA
     synctex_root_name = kpse_find_file(name_mbcs, kpse_tex_format, false);
+#else
+    synctex_root_name = name_mbcs;
+#endif
     free(name_mbcs);
 
     if (!strlen(synctex_root_name))

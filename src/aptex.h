@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2022 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -68,12 +68,14 @@
 // standard C headers
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdarg.h>
 #include <time.h>
 #include <math.h>
 #include <signal.h>
 #include <assert.h>
 #include <ctype.h>
+#include <sys/errno.h>
 
 // TeX Live's kpathsea
 #include <kpathsea/config.h>
@@ -82,6 +84,7 @@
 #include <kpathsea/tex-file.h> // kpse_find_file
 #include <kpathsea/types.h>    // RPId64
 #include <kpathsea/version.h>  // kpathsea_version_string
+#define USE_KPATHSEA
 
 // ptexenc for kanji processing
 #include <ptexenc/ptexenc.h>
@@ -94,9 +97,12 @@
 #include "mruby.h"
 #include "mruby/compile.h"
 #include "aptex-mruby.h"
+#define USE_MRUBY
 
 // internal headers
 #include "aptex-cairo-visual-debug.h"
+#define USE_VISUAL_DEBUG
+
 #include "aptex-opentype.h"
 #include "aptex-unicode.h"
 #include "aptex-utils.h"
