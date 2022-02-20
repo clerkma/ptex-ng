@@ -13,28 +13,6 @@ This document is collecting these limitations.
 This document does not contain a complete list of limitations.
 Please help to improve it by submitting your findings.
 
-## `Array` passed to `puts`
-
-Passing an Array to `puts` results in different output.
-
-```ruby
-puts [1,2,3]
-```
-
-#### Ruby [ruby 2.0.0p645 (2015-04-13 revision 50299)]
-
-```
-1
-2
-3
-```
-
-#### mruby [3.0.0 (2021-03-05)]
-
-```
-[1, 2, 3]
-```
-
 ## `Kernel.raise` in rescue clause
 
 `Kernel.raise` without arguments does not raise the current exception within
@@ -54,7 +32,7 @@ end
 
 #### mruby [3.0.0 (2021-03-05)]
 
-No exception is raised. Instead you have to do:
+`RuntimeError` is raised instead of `ZeroDivisionError`. To re-raise the exception, you have to do:
 
 ```ruby
 begin
@@ -66,7 +44,7 @@ end
 
 ## Fiber execution can't cross C function boundary
 
-mruby's `Fiber` is implemented in a similar way to Lua's co-routine. This
+mruby's `Fiber` is implemented similarly to Lua's co-routine. This
 results in the consequence that you can't switch context within C functions.
 Only exception is `mrb_fiber_yield` at return.
 
@@ -77,7 +55,7 @@ To reduce memory consumption `Array` does not support instance variables.
 ```ruby
 class Liste < Array
   def initialize(str = nil)
-    @feld = str
+    @field = str
   end
 end
 
@@ -95,7 +73,7 @@ p Liste.new "foobar"
 ## Method visibility
 
 For simplicity reasons no method visibility (public/private/protected) is
-supported. Those methods are defined but they are dummy methods.
+supported. Those methods are defined, but they are dummy methods.
 
 ```ruby
 class VisibleTest
@@ -239,27 +217,6 @@ $ ./bin/mruby -e 'puts Proc.new {}.binding'
 trace (most recent call last):
         [0] -e:1
 -e:1: undefined method 'binding' (NoMethodError)
-```
-
-## Keyword arguments
-
-mruby keyword arguments behave slightly different from CRuby 2.5
-to make the behavior simpler and less confusing.
-
-#### Ruby [ruby 2.5.1p57 (2018-03-29 revision 63029)]
-
-```
-$ ruby -e 'def m(*r,**k) p [r,k] end; m("a"=>1,:b=>2)'
-[[{"a"=>1}], {:b=>2}]
-```
-
-#### mruby [3.0.0 (2021-03-05)]
-
-```
-$ ./bin/mruby -e 'def m(*r,**k) p [r,k] end; m("a"=>1,:b=>2)'
-trace (most recent call last):
-	[0] -e:1
--e:1: keyword argument hash with non symbol keys (ArgumentError)
 ```
 
 ## `nil?` redefinition in conditional expressions
