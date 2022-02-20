@@ -75,7 +75,6 @@
 #include <signal.h>
 #include <assert.h>
 #include <ctype.h>
-#include <sys/errno.h>
 
 // TeX Live's kpathsea
 #include <kpathsea/config.h>
