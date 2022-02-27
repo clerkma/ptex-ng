@@ -1,4 +1,4 @@
-dnl $Id: version.ac 61755 2022-01-26 23:21:49Z karl $
+dnl $Id: version.ac 62156 2022-02-23 22:20:08Z karl $
 dnl   Copyright 2015-2022 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
@@ -9,4 +9,4 @@ dnl
 dnl --------------------------------------------------------
 dnl
 dnl  m4-include this file to define the current dvisvgm version
-m4_define([dvisvgm_version], [2.13.1])
+m4_define([dvisvgm_version], [2.13.2])

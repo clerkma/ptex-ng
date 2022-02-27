@@ -1,4 +1,4 @@
-## $Id: Makefile.am 61575 2022-01-11 22:47:10Z karl $
+## $Id: Makefile.am 62186 2022-02-26 17:51:21Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
 ##
 ## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
@@ -19,7 +19,8 @@ endif WEB
 EXTRA_DIST += $(web_man_sources)
 web_man_sources = bibtex.man dvicopy.man dvitomp.man dvitype.man gftodvi.man \
 	gftopk.man gftype.man mft.man patgen.man pktogf.man pktype.man \
-	pltotf.man pooltype.man tftopl.man vftovp.man vptovf.man weave.man
+	pltotf.man pooltype.man tftopl.man twill.man \
+	vftovp.man vptovf.man weave.man
 
 if TEX
 man_sources += tex.man

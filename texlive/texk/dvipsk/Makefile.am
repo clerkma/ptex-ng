@@ -1,4 +1,4 @@
-## $Id: Makefile.am 57697 2021-02-10 02:02:05Z karl $
+## $Id: Makefile.am 62162 2022-02-24 14:41:53Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/dvipsk/
 ##
 ## Copyright 2017-2021 Karl Berry <tex-live@tug.org>
@@ -189,8 +189,10 @@ DISTCLEANFILES += overflow-color-push.ps overflow-epsfile.ps overflow-psbox.ps
 EXTRA_DIST += testdata/Makefile_upjf testdata/upjf.tex testdata/upjf.dvi testdata/upjf.map \
               testdata/upjf.tfm testdata/upjf-g.tfm testdata/upjf-r.tfm \
               testdata/upjf_full.vf testdata/upjf_omit.vf \
+              testdata/upjv.tfm testdata/upjv-g.tfm testdata/upjv-r.tfm \
+              testdata/upjv_full.vf testdata/upjv_omit.vf \
               testdata/upjf_full.cnf testdata/upjf_omit.cnf
-DISTCLEANFILES += upjf.vf upjf_full.ps upjf_omit.ps
+DISTCLEANFILES += upjf.vf upjv.vf upjf_full.ps upjf_omit.ps
 
 EXTRA_DIST += \
 	NEWS \
