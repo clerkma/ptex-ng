@@ -1824,7 +1824,9 @@ amounts of user interaction:
 @<Glob...@>=
 static int @!interaction; /*current level of interaction*/
 
-@ @<Set init...@>=interaction=error_stop_mode;
+@ @<Set init...@>=
+if (interaction_option<0) interaction=error_stop_mode;
+else interaction=interaction_option;
 
 @ \TeX\ is careful not to call |error| when the print |selector| setting
 might be unusual. The only possible values of |selector| at the time of
@@ -21150,13 +21152,16 @@ static bool its_all_over(void) /*do this when \.{\\end} or \.{\\dump} occurs*/
 {@+
 if (privileged())
   {@+if ((page_head==page_tail)&&(dead_cycles==0))
-    {@+pointer p=head;
-       if (option_no_empty_page)
-         while (p!=tail)
+    {
+       if (head==tail) return true;
+       else if (option_no_empty_page)
+       { pointer p=link(head);
+         while (p!=null)
          { if (is_visible(p)) break;
            else p=link(p);
          }
-       if (p==tail) return true;
+         if (p==null) return true;
+       }
     }
   back_input(); /*we will try to end again after ejecting residual material*/
   tail_append(new_set_node());
@@ -25026,6 +25031,7 @@ tracing_stats=0
 
 @ @<Undump a couple more things and the closing check word@>=
 undump(batch_mode, error_stop_mode, interaction);
+if (interaction_option>=0) interaction=interaction_option;
 undump(0, str_ptr, format_ident);
 undump_int(x);
 if ((x!=69069)||eof(fmt_file)) goto bad_fmt
@@ -25654,25 +25660,27 @@ case extension: switch (chr_code) {
   case write_node: print_esc("write");@+break;
   case close_node: print_esc("closeout");@+break;
   case special_node: print_esc("special");@+break;
-  case param_node: print("parameter");@+break;
-  case par_node: print("paragraf");@+break;
-  case disp_node: print("display");@+break;
-  case baseline_node: print("baselineskip");@+break;
-  case hpack_node: print("hpack");@+break;
-  case vpack_node: print("vpack");@+break;
-  case hset_node: print("hset");@+break;
-  case vset_node: print("vset");@+break;
-  case image_node: print("HINTimage");@+break;
-  case start_link_node: print("HINTstartlink");@+break;
-  case end_link_node: print("HINTendlink");@+break;
-  case label_node: print("HINTdest");@+break;
-  case outline_node: print("HINToutline");@+break;
-  case align_node: print("align");@+break;
-  case setpage_node: print("HINTsetpage");@+break;
-  case setstream_node: print("HINTsetstream");@+break;
-  case stream_node: print("HINTstream");@+break;
-  case xdimen_node: print("xdimen");@+break;
-  case ignore_node: print("ignore");@+break;
+  case image_node: print_esc("HINTimage");@+break;
+  case start_link_node: print_esc("HINTstartlink");@+break;
+  case end_link_node: print_esc("HINTendlink");@+break;
+  case label_node: print_esc("HINTdest");@+break;
+  case outline_node: print_esc("HINToutline");@+break;
+  case setpage_node: print_esc("HINTsetpage");@+break;
+  case stream_before_node: print_esc("HINTbefore");@+break;
+  case stream_after_node: print_esc("HINTafter");@+break;
+  case setstream_node: print_esc("HINTsetstream");@+break;
+  case stream_node: print_esc("HINTstream");@+break;
+  case param_node: print("[HINT internal: parameter list]");@+break;
+  case par_node: print("[HINT internal: paragraf]");@+break;
+  case disp_node: print("[HINT internal: display]");@+break;
+  case baseline_node: print("[HINT internal: baselineskip]");@+break;
+  case hpack_node: print("[HINT internal: hpack]");@+break;
+  case vpack_node: print("[HINT internal: vpacky");@+break;
+  case hset_node: print("[HINT internal: hset]");@+break;
+  case vset_node: print("[HINT internal: vset]");@+break;
+  case align_node: print("[HINT internal: align]");@+break;
+  case xdimen_node: print("[HINT internal: xdimen]");@+break;
+  case ignore_node: print("[HINT internal: ignore]");@+break;
   case immediate_code: print_esc("immediate");@+break;
   case set_language_code: print_esc("setlanguage");@+break;
   @/@<Cases of |extension| for |print_cmd_chr|@>@/
@@ -30791,7 +30799,7 @@ static void build_page(void)
   do
   { pointer p= link(contrib_head);
     pointer q=null; /* for output nodes */
-    pointer *t; /*the tail of the output nodes*/
+    pointer *t=NULL; /*the tail of the output nodes*/
     bool eject=(type(p)==penalty_node && penalty(p)<=eject_penalty);
     @<Record the bottom mark@>@;
     @<Suppress empty pages if requested@>@;
@@ -30860,6 +30868,11 @@ an eject penalty until either something gets printed on the page or
 another eject penalty comes along. To override the delayed output,
 a penalty less or equal to a double |eject_penalty| can be used.
 The function |its_all_over| is an example for such a use.
+It seems that the eliminated nodes do not contain anything of value
+for the output routine, but the output routine might have other
+resources, like the first column of a two column page, which it might
+put back on the contribution list. So it is wise to call the output routine
+and give it a chance.
 
 @<Suppress empty pages if requested@>=
 if (option_no_empty_page &&
@@ -31049,7 +31062,7 @@ if (!is_char_node(*p))
 @ @<Fire up the output routine for |q|@>=
 { pointer r=new_null_box();type(r)=vlist_node;
   subtype(r)=0;shift_amount(r)=0;height(r)=hvsize;
-  if (t==NULL) list_ptr(r)=new_glue(ss_glue);
+  if (t==NULL) list_ptr(r)=null;
   else { list_ptr(r)=q;  *t=new_glue(ss_glue); }
   flush_node_list(box(255)); /* just in case \dots */
   box(255)=r;
@@ -33975,9 +33988,8 @@ by this option, and finally the value to store in the flag variable.
 
 Besides the flag variables that occur in the table,
 a few string variables may be set using the options.
-The following is a complete list of these variables---except
-for the the |interaction| variable of \TeX.
-Flag variables are initialized with |-1| to indicate an undefined value;
+The following is a complete list of these variables.
+Variables are initialized with |-1| to indicate an undefined value;
 string variables are initialized with |NULL|.
 
 @<Global...@>=
@@ -33986,6 +33998,7 @@ static int etexp=0;
 static int ltxp=0;
 static int parsefirstlinep=-1;
 static int filelineerrorstylep=-1;
+static int interaction_option=-1;
 static const char *user_progname=NULL, *output_directory=NULL, *c_job_name=NULL;
 static char *dump_name=NULL;@#
 int option_no_empty_page=true, option_hyphen_first=true;
@@ -34077,15 +34090,17 @@ else if (ARGUMENT_IS("version")){@+
 }
 
 
-@ The ``interaction'' option sets \TeX's |interaction| variable
+@ The ``interaction'' option sets the |interaction_option| variable
 based on its string argument contained in the |optarg| variable.
+If defined, the |interaction_option| will be used to set \TeX's
+|interaction| variable in the |initialize| and the |undump| functions.
 
 @<handle the option at |option_index|@>=
 else @+if (ARGUMENT_IS ("interaction"))@t\2@> {
-      if (STREQ (optarg, "batchmode"))        interaction = batch_mode;
-      else if (STREQ (optarg, "nonstopmode")) interaction = nonstop_mode;
-      else if (STREQ (optarg, "scrollmode"))  interaction = scroll_mode;
-      else if (STREQ (optarg, "errorstopmode")) interaction = error_stop_mode;
+      if (STREQ (optarg, "batchmode"))        interaction_option = batch_mode;
+      else if (STREQ (optarg, "nonstopmode")) interaction_option = nonstop_mode;
+      else if (STREQ (optarg, "scrollmode"))  interaction_option = scroll_mode;
+      else if (STREQ (optarg, "errorstopmode")) interaction_option = error_stop_mode;
       else WARNING1 ("Ignoring unknown argument `%s' to --interaction", optarg);
     }
 

@@ -1,4 +1,4 @@
-{$Id: common.defines 61509 2022-01-06 11:08:43Z ascherer $
+{$Id: common.defines 62367 2022-03-03 16:21:45Z ascherer $
  common.defines.  Public domain.
 
  This file is concatenated by ./convert to the beginning of the Pascal
@@ -141,6 +141,7 @@
 @define function makesuffix ();
 @define function odd ();
 @define function ord ();
+@define function removesuffix ();
 @define function round ();
 @define function strcmp ();
 @define function stringcast ();
