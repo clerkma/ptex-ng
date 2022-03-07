@@ -1,3 +1,23 @@
+2021-12-10  Harshula Jayasuriya  <harshula@hj.id.au>
+
+	* libotf.pc.in (Libs): Delete @FREETYPE_LIBS@.
+	(Cflags): Delete @FREETYPE_CFLAGS@.
+
+2021-12-10  K. handa  <handa@gnu.org>
+
+	* configure.ac (AM_INIT_AUTOMAKE): Fix the deprecated style.
+
+2019-06-18  Werner LEMBERG  <wl@gnu.org>
+
+	* libotf-config.in: Use FREETYPE_LIBS instead of
+	FREETYPE_LD_FLAGS.
+
+	* libotf.pc.in: Use FREETYPE_CFLAGS instead FREETYPE_INC.
+
+2019-05-01  Hilko Bengen  <bengen@debian.org>
+
+	* configure.ac: Use PKG_CHECK_MODULES to check freetype2 usability.
+
 2018-02-08  handa  <handa@gnu.org>
 
 	Version 0.9.16 released.

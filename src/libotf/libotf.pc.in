@@ -7,5 +7,5 @@ Name: libotf
 Description: OpenType font library
 Version: @PACKAGE_VERSION@
 Requires: freetype2
-Libs: @FREETYPE_LD_FLAGS@ -L${libdir} -lotf
-Cflags: @FREETYPE_INC@ -I${includedir}
+Libs: -L${libdir} -lotf
+Cflags: -I${includedir}

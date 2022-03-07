@@ -24,16 +24,16 @@ case $1 in
 
 --libs)
   if test "@libdir@" != "/usr/lib"; then
-    echo "@FREETYPE_LD_FLAGS@ -L@libdir@ -lotf"
+    echo "@FREETYPE_LIBS@ -L@libdir@ -lotf"
   else
-    echo "@FREETYPE_LD_FLAGS@ -lotf"
+    echo "@FREETYPE_LIBS@ -lotf"
   fi;;
 
 --cflags)
   if test "@includedir@" != "/usr/include"; then
-    echo "@FREETYPE_INC@ -I@includedir@"
+    echo "@FREETYPE_CFLAGS@ -I@includedir@"
   else
-    echo "@FREETYPE_INC@"
+    echo "@FREETYPE_CFLAGS@"
   fi;;
 
 *)
