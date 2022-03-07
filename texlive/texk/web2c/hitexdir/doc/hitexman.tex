@@ -1,5 +1,5 @@
 % This file is part of HINT
-% Copyright 2017-2021 Martin Ruckert, Hochschule Muenchen, Lothstrasse 64, 80336 Muenchen
+% Copyright 2017-2022 Martin Ruckert, Hochschule Muenchen, Lothstrasse 64, 80336 Muenchen
 %
 % Permission is hereby granted, free of charge, to any person obtaining a copy
 % of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,13 @@
 
 \input cwebmac
 \input btxmac.tex
-\input hint.sty
+\input hintmac.tex
 
 \makeindex
 \maketoc
 
 \titletrue
-%\pageno=-2
+
 
 \def\setrevision$#1: #2 ${\gdef\lastrevision{#2}}
 \setrevision$Revision: 2705 $
@@ -193,7 +193,7 @@ contains the following code:
 
 \verbatim/
 \newif\ifhint
-\expandafter\ifx\ctlname HINTversion\endcsname\relax
+\expandafter\ifx\csname HINTversion\endcsname\relax
   \hintfalse\else\hinttrue\fi/
 
 
