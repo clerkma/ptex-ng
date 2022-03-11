@@ -1,3 +1,8 @@
+2022-03-10  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctangleboot.cin,
+	* cwebboot.cin: Make 'fall thru' comments active.
+
 2022-03-03  Andreas Scherer  <https://ascherer.github.io>
 
 	* cpascal.h,

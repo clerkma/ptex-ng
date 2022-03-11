@@ -48,9 +48,9 @@
 
 
 \def\setrevision$#1: #2 ${\gdef\lastrevision{#2}}
-\setrevision$Revision: 2699 $
+\setrevision$Revision: 62544 $
 \def\setdate$#1(#2) ${\gdef\lastdate{#2}}
-\setdate$Date: 2022-02-25 10:21:04 +0100 (Fri, 25 Feb 2022) $
+\setdate$Date: 2022-03-09 21:00:00 +0800 (三, 2022-03-09) $
 
 \null
 
@@ -6802,9 +6802,9 @@ The big picture is captured by the |put_hint| function:
 @<put functions@>=
 static size_t hput_root(void);
 static size_t hput_section(uint16_t n);
-static void hput_optional_sections(void);
+static size_t hput_optional_sections(void);
 
-void hput_hint(char * str)
+size_t hput_hint(char * str)
 { size_t s;
   DBG(DBGBASIC,"Writing hint output %s\n",str); 
   s=hput_banner("hint",str);
@@ -6817,7 +6817,9 @@ void hput_hint(char * str)
   DBG(DBGDIR,@["Content section at " SIZE_F "\n"@],s);
   s+=hput_section(2);
   DBG(DBGDIR,@["Auxiliary sections at " SIZE_F "\n"@],s);
-  hput_optional_sections();
+  s+=hput_optional_sections();
+  DBG(DBGDIR,@["Total number of bytes written " SIZE_F "\n"@],s);
+  return s;
 }
 @
 
@@ -7629,19 +7631,24 @@ void hput_directory(void)
 
 @
 
-Now let us look at the optional sections described in the directory entries 3 and above
-Where these files are found depends on the {\tt -g} and {\tt -a} options.
+Now let us look at the optional sections described in the directory
+entries 3 and above. Where these files are found depends on the {\tt
+-g} and {\tt -a} options.
 
-With the {\tt -g} option given, only the file names as given in the directory entries are used.
-With the {\tt -a} option given, the file names are translated to filenames in the {|hin_name|\tt .abs} and  {|hin_name|\tt .rel} directories, as described in section~\secref{absrel}.
-If neither the {\tt -a} nor the {\tt -g} option is given, {\tt shrink} first trys the translated
-filename and then the global filename before it gives up.
+With the {\tt -g} option given, only the file names as given in the
+directory entries are used.  With the {\tt -a} option given, the file
+names are translated to filenames in the {|hin_name|\tt .abs} and
+{|hin_name|\tt .rel} directories, as described in
+section~\secref{absrel}.  If neither the {\tt -a} nor the {\tt -g}
+option is given, {\tt shrink} first tries the translated filename and
+then the global filename before it gives up.
 
-When the \.{shrink} program writes the directory section in the short format,
-it needs to know the sizes of all the  sections---including the optional sections.
-These sizes are not provided in the long format because it is safer and more 
-convenient to let the machine figure out the file sizes\index{file size}.
-But before we can determine the size, we need to determine the file.
+When the \.{shrink} program writes the directory section in the short
+format, it needs to know the sizes of all the sections---including the
+optional sections.  These sizes are not provided in the long format
+because it is safer and more convenient to let the machine figure out
+the file sizes\index{file size}.  But before we can determine the
+size, we need to determine the file.
 
 @<update the file sizes of optional sections@>=
 { int i;
@@ -7692,8 +7699,9 @@ are described in the directory entries 3 and above to a \HINT\ file in short for
 
 \putcode
 @<put functions@>=
-static void hput_optional_sections(void)
+static size_t hput_optional_sections(void)
 { int i;
+  size_t s=0;
   DBG(DBGDIR,"Optional Sections\n");
   for (i=3; i<=max_section_no; i++)@/
    { FILE *f;
@@ -7717,7 +7725,9 @@ static void hput_optional_sections(void)
      fclose(f);
      if (fsize!=dir[i].size) 
        QUIT(@["File size " SIZE_F " does not match section[0] size %u"@],@|fsize,dir[i].size);
+     s=s+fsize;
    }
+   return s;
 }
 @
 
@@ -9298,8 +9308,11 @@ To print messages\index{message} or indicate errors, I define the following macr
 #include <stdio.h>
 extern FILE *hlog;
 extern uint8_t *hpos, *hstart;
-#define @[LOG(...)@] @[(fprintf(hlog,__VA_ARGS__),fflush(hlog))@]
-#define @[MESSAGE(...)@] @[(fprintf(hlog,__VA_ARGS__),fflush(hlog))@]
+#ifndef LOG_PREFIX
+#define LOG_PREFIX "HINT "
+#endif
+#define @[LOG(...)@] @[(fprintf(hlog,LOG_PREFIX __VA_ARGS__),fflush(hlog))@]
+#define @[MESSAGE(...)@] @[(fprintf(hlog,LOG_PREFIX __VA_ARGS__),fflush(hlog))@]
 #define @[QUIT(...)@]   (MESSAGE("ERROR: " __VA_ARGS__),fprintf(hlog,"\n"),exit(1))
 
 #endif
@@ -10689,7 +10702,7 @@ extern uint8_t hput_font_head(uint8_t f,  char *n, Dimen s,@| uint16_t m, uint16
 extern void hput_range_defs(void);
 extern void hput_xdimen_node(Xdimen *x);
 extern void hput_directory(void);
-extern void hput_hint(char * str);
+extern size_t hput_hint(char * str);
 extern void hput_list_size(uint32_t n, int i);
 extern int hcompress_depth(int n, int c);
 @

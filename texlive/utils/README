@@ -1,10 +1,10 @@
-$Id: README 61904 2022-02-05 22:26:16Z karl $
+$Id: README 62528 2022-03-08 22:40:22Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
 See comments in ../texk/README.
 
-asymptote 2.78 - checked 5feb22
+asymptote 2.79 - checked 8mar22
   update to TL from CTAN, to include prebuilt doc.
   see https://tug.org/texlive/build.html#asymptote
   and tlpkg/bin/tl-update-asy
@@ -23,7 +23,7 @@ lacheck - maintained here, by us
 m-tx 0.63a - checked 29apr18
   https://ctan.org/pkg/m-tx/
 
-pmx 2.9.4a - checked 30jan21
+pmx 2.9.8a - checked 08mar22
   https://ctan.org/pkg/pmx/
 
 ps2eps 1.70 - checked 03jul21
