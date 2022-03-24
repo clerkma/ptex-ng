@@ -1,4 +1,4 @@
-# $Id: Makefile 62487 2022-03-06 23:15:07Z karl $
+# $Id: Makefile 62855 2022-03-21 15:11:58Z karl $
 # Standalone Makefile for hitex/doc. Public domain.
 # This is not run as part of the build, just a convenience used by hand
 # from the Build/source/... directory.
@@ -6,7 +6,7 @@
 INSTALL_DATA = cp -pfv
 
 texmf_dist = ../../../../../../Master/texmf-dist
-hitex_makeindex_dir = $(texmf_dist)/makeindex/hitex/hint.ist
+hitex_makeindex_dir = $(texmf_dist)/makeindex/hitex
 hitex_doc_dir = $(texmf_dist)/doc/hitex/base
 #
 install:
