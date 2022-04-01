@@ -839,7 +839,7 @@ gen_muldiv(codegen_scope *s, uint8_t op, uint16_t dst)
     }
     else { /* OP_DIV */
       if (n0 == MRB_INT_MIN && n == -1) goto normal;
-      n = n0 / n;
+      n = mrb_div_int(s->mrb, n0, n);
     }
     s->pc = addr_pc(s, data0.addr);
     gen_int(s, dst, n);
@@ -2851,7 +2851,7 @@ codegen(codegen_scope *s, node *tree, int val)
           }
         }
         /* keyword arguments */
-        if (s2 && (s2->ainfo & 0x1) && tree->cdr->car) {
+        if (tree->cdr->car) {
           nk = gen_hash(s, tree->cdr->car->cdr, VAL, 14);
           if (nk < 0) {st++; nk = 15;}
           else st += nk*2;
