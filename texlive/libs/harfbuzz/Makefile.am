@@ -1,4 +1,4 @@
-## $Id: Makefile.am 61999 2022-02-13 03:14:24Z kakuto $
+## $Id: Makefile.am 62894 2022-04-03 22:28:02Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -133,6 +133,7 @@ libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-subset-cff2.cc \
 	@HARFBUZZ_TREE@/src/hb-subset-cff2.hh \
 	@HARFBUZZ_TREE@/src/hb-subset-input.hh \
+	@HARFBUZZ_TREE@/src/hb-subset-repacker.cc \
 	@HARFBUZZ_TREE@/src/hb-subset.hh \
 	@HARFBUZZ_TREE@/src/hb-ucd-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ucd.cc \
@@ -227,6 +228,30 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-khmer-machine.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-myanmar-machine.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-shape-complex-use-machine.hh
+##
+libharfbuzz_a_SOURCES += \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/Common.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/Sequence.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/SingleSubstFormat1.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/SingleSubstFormat2.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/SingleSubst.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/MultipleSubstFormat1.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/MultipleSubst.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/AlternateSubstFormat1.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/AlternateSubst.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/AlternateSet.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/LigatureSubstFormat1.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/LigatureSubst.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/LigatureSet.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/Ligature.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/ReverseChainSingleSubst.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/ReverseChainSingleSubstFormat1.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/ContextSubst.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/ChainContextSubst.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/ExtensionSubst.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/SubstLookupSubTable.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/SubstLookup.hh \
+	@HARFBUZZ_TREE@/src/OT/Layout/GSUB/GSUB.hh
 
 ## Graphite library
 AM_CPPFLAGS += $(GRAPHITE2_INCLUDES)

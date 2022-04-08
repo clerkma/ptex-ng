@@ -1,4 +1,4 @@
-dnl $Id: version.ac 61692 2022-01-22 17:03:22Z hironobu $
+dnl $Id: version.ac 62887 2022-04-03 17:27:53Z karl $
 dnl   Copyright 2016-2022 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
@@ -10,4 +10,4 @@ dnl Keep package and shared library versions the same;
 dnl see kpathsea/version.ac.
 dnl
 dnl This file is m4-included from configure.ac.
-m4_define([ptexenc_version], [1.4.0])
+m4_define([ptexenc_version], [1.4.1/dev])
