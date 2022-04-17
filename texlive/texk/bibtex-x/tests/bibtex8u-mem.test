@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: bibtex8-mem.test 45809 2017-11-15 00:36:56Z karl $
+# $Id$
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2010 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -65,6 +65,13 @@ for t in 1 2 3; do
     BSTINPUTS=$srcdir/../web2c/tests:$srcdir/csf \
     BIBINPUTS=./tests \
     ./bibtex8 tests/memtest$t || exit 1
+
+  cp -p tests/memtest$t.aux tests/memtestu$t.aux
+  eval $env \
+    TEXMFCNF=$srcdir/../kpathsea \
+    BSTINPUTS=$srcdir/../web2c/tests:$srcdir/csf \
+    BIBINPUTS=./tests \
+    ./bibtexu tests/memtestu$t || exit 2
 
 done
 

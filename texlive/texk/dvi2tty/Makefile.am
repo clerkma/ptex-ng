@@ -1,4 +1,4 @@
-## $Id: Makefile.am 43617 2017-03-27 18:00:45Z karl $
+## $Id: Makefile.am 62985 2022-04-09 06:30:28Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/dvi2tty/
 ##
 ## Copyright 2017 Karl Berry <tex-live@tug.org>
@@ -61,6 +61,7 @@ EXTRA_DIST += ligtest.dis
 DISTCLEANFILES = ligtest.dout
 ## dvi2tty.test
 EXTRA_DIST += ligtest.tty test.tty testc.tty tests.tty testu.tty
+EXTRA_DIST += fntdef0.tty
 DISTCLEANFILES += ligtest.out test.out testc.out tests.out testu.out
 DISTCLEANFILES += table.out tablec.out tables.out tableu.out tableuC.out
 DISTCLEANFILES += tableEu.out tableEu1.out tableEuC.out tableEua.out

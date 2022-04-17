@@ -50,7 +50,7 @@
 \def\setrevision$#1: #2 ${\gdef\lastrevision{#2}}
 \setrevision$Revision: 62544 $
 \def\setdate$#1(#2) ${\gdef\lastdate{#2}}
-\setdate$Date: 2022-03-09 21:00:00 +0800 (三, 2022-03-09) $
+\setdate$Date: 2022-03-09 21:00:00 +0800 (Wed, 09 Mar 2022) $
 
 \null
 
