@@ -1,4 +1,4 @@
-$Id: README 62463 2022-03-06 01:07:46Z hironobu $
+$Id: README 63194 2022-05-01 00:52:20Z takuji $
 Copyright 2006-2022 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -41,7 +41,7 @@ detex 2.8.9 - checked 4mar21
 
 dtl - maintained here, by Takuji
 
-dvi2tty 6.0.0 - checked 15mar20
+dvi2tty 6.0.2 - checked 1may22
   https://github.com/t-tk/dvi2tty/releases
 
 dvidvi - maintained here

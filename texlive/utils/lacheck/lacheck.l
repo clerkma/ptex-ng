@@ -1,10 +1,10 @@
-/* $Id: lacheck.l 51590 2019-07-09 15:26:51Z karl $
+/* $Id: lacheck.l 63198 2022-05-01 15:18:17Z karl $
  * 
  * lacheck.lex - A consistency checker checker for LaTeX documents
  *	
  * Copyright (C) 1991, 1992 Kresten Krab Thorup.
  * Copyright (C) 1993 --- 1998 Per Abrahamsen.
- * Copyright (C) 2019 Karl Berry.
+ * Copyright (C) 2019 --- 2022 Karl Berry.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,11 @@
  * Created On      : Sun May 26 18:11:58 1991
  * 
  * HISTORY
+ * 02-May-2022          Karl Berry
+ *    Count initial { of definitions, and support \newcommand* (etc.).
+ *    Report from Michael Clark,
+ *    https://tug.org/pipermail/tex-live/2022-April/048096.html.
+ *    Version number now 1.30.
  * 08-Jul-2019          Karl Berry
  *    Separate patterns for \def vs. \newcommand. Report from Zayd Hammoudeh,
  *    https://tug.org/pipermail/tex-live/2019-January/043083.html.
@@ -373,24 +378,31 @@ symbol ("$"("\\"{atoz}+|.)"$"|"\\#"|"\\$"|"\\%"|"\\ref")
     BEGIN(INITIAL); 
   }}
 
-  /* \def can be followed by whitespace, then the \ to start the control
-     sequence, then more or less anything up to the { starting the
-     replacement text, which we assume is on the same line. (All this
-     could be changed in TeX, with catcodes etc., but we can't try to
-     handle that.) */
-"\\"[exg]?def[ \t\n]*"\\"[^\n{]+\{	BEGIN(DEF);
+  /* \def (or \edef etc.) can be followed by whitespace, then the \ to
+     start the control sequence, then more or less anything up to the {
+     starting the replacement text, which we assume is on the same line.
+     (All this could be changed in TeX, with catcodes etc., but we can't
+     try to handle that.) */
+"\\"[exg]?def[ \t\n]*"\\"[^\n{]+\{	{ ++def_count; BEGIN(DEF); }
 
   /* \newcommand{\foo}{...} or \newcommand\foo{...}
-       (or \renewcommand or \providecommand).
+       or \renewcommand or \providecommand;
+       and/or with \...command*;
+       and/or with \...command[N] argument count;
      To allow for arbitrary control sequence names, we match
        the braced name as anything not containing a }.
-     To handle optional argument specifications, we assume the { is on
-       the same line as the csname.
-     We don't do anything with the definitions; the only purpose is to
+     We assume the control sequence name is either a single character or
+       one or more English letters, a-zA-Z, as usual with TeX.
+     To handle the [N] argument count and [dflt] optional argument
+       default specifications, we just match anything after the control
+       sequence up to the next {, which we assume starts the definition.
+     We don't do anything with the definition; the only purpose is to
        count braces. */
-"\\"(provide|(re)?newcommand)[ \t\n]*(\{\\[^}]+\}|\\)[^{]*\{	BEGIN(DEF);
+"\\"(provide|(re)?newcommand)[ \t\n]*(\*[ \t\n]*)?(\{\\[^}]+\}|\\([a-zA-Z]+|.))[^{]*\{	{ ++def_count; BEGIN(DEF); }
 
-  /* Pre-2019 rule was (see test-def.tex):
+  /*                          ws     optional*    ({\cs}      |\cs)            .*?      {defn}
+
+     Pre-2019 rule was (see test-def.tex):
      "\\"[exg]?(def|newcommand)[^\n\{]+ 	BEGIN(DEF);
   */
 
@@ -760,6 +772,14 @@ symbol ("$"("\\"{atoz}+|.)"$"|"\\#"|"\\$"|"\\%"|"\\ref")
 
 \\endinput/[^A-Za-z] |
 <<EOF>> { 
+	  if (def_count != 0)
+	  {
+	  	printf("\"%s\", line %d: %d missing right brace(s).\n",  
+			file_name,
+			line_count,
+			def_count);
+	  }
+
 	  if (--istackp < 0)
 		  yyterminate(); 
 
@@ -782,8 +802,8 @@ symbol ("$"("\\"{atoz}+|.)"$"|"\\#"|"\\$"|"\\%"|"\\ref")
 %%
 static void print_version (void)
 {
-	printf("%s (TeX Live) %s\n", PROGNAME, "1.29");
-	puts("$Id: lacheck.l 51590 2019-07-09 15:26:51Z karl $");
+	printf("%s (TeX Live) %s\n", PROGNAME, "1.30");
+	puts("$Id: lacheck.l 63198 2022-05-01 15:18:17Z karl $");
 	printf("License GPLv1+: GNU GPL version 1 or later");
 	puts(" <https://gnu.org/licenses/gpl.html>.");
 	puts("This is free software: you are free to change and redistribute it.");

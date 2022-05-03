@@ -2644,7 +2644,7 @@ to be performed.
 
 @<Cases for |exp|@>=
 if (cat1==lbrace || cat1==int_like || cat1==decl) {
-  make_underlined(pp); big_app1(pp); big_app(dindent);
+  make_underlined(pp); big_app(dindent); big_app1(pp);
   reduce(pp,1,fn_decl,0,1);
 }
 else if (cat1==unop) squash(pp,2,exp,-2,2);
@@ -2714,7 +2714,7 @@ if (cat1==binop) {
 @ @<Cases for |cast|@>=
 if (cat1==lpar) squash(pp,2,lpar,-1,21);
 else if (cat1==exp) {
-  big_app1_insert(pp,' '); reduce(pp,2,exp,-2,21);
+  big_app1(pp); app_str("\\,"); big_app1(pp+1); reduce(pp,2,exp,-2,21);
 }
 else if (cat1==semi) reduce(pp,0,exp,-2,22);
 

@@ -3,7 +3,9 @@
 /*   disdvi  ---  disassembles TeX dvi files.                                */
 /*                                                                           */
 /*                                                                           */
-/*   2.26 23oct2010  TexLivel    support pTex and XeTex                      */
+/*   2.27 30apr2022  TexLive     support multibyte output for SET[23]        */
+/*                               in pTeX dvi with PTEXENC library            */
+/*   2.26 23oct2010  TexLive     support pTeX and XeTeX                      */
 /*   2.25 23jan2003  M.J.E. Mol  fixed bug in copying font name (name[i])    */
 /*   2.24 27may96 M.J.E. Mol     A few typecasts added                       */
 /*   2.23 23jul95 M.J.E. Mol     Cleanups from duz@roxi.ez.fht-mannheim.de   */
@@ -39,7 +41,7 @@
  *
  */
 
-const char *disdvi = "@(#) disdvi.c  2.26 20101027 M.J.E. Mol (c) 1989-2010, marcel@mesa.nl";
+const char *disdvi = "@(#) disdvi.c  2.27 20220501 M.J.E. Mol (c) 1989-2010, marcel@mesa.nl";
 
 /*
  * Include files
@@ -56,24 +58,31 @@ const char *disdvi = "@(#) disdvi.c  2.26 20101027 M.J.E. Mol (c) 1989-2010, mar
 
 #include <stdio.h>
 #include <stdlib.h>
-#if defined(MSDOS) || defined(WIN32)
+#if defined(WIN32)
 # include <fcntl.h>
 #else
-# if !defined(THINK_C)          /* Macintosh */
 # include <unistd.h>
-# endif
 #endif
 #include <ctype.h>
 #include <string.h>
 #include "commands.h"
-#if defined(THINK_C)
-# include "macintosh.h"
-#endif
 #if defined(WIN32) && defined(KPATHSEA)
 #undef fopen
 #define fopen fsyscp_fopen
 #endif
 
+#if defined(PTEXENC)
+#include <kpathsea/config.h>
+#include <kpathsea/readable.h>
+#include <ptexenc/ptexenc.h>
+#include <ptexenc/unicode.h>
+
+/* internal encoding for ASCII pTeX : "euc" or "sjis" */
+#define PTEX_INTERNAL_ENC  "euc"
+
+/* internal encoding for upTeX : "uptex" */
+#define UPTEX_INTERNAL_ENC  "uptex"
+#endif
 
 /*
  * Constant definitions
@@ -116,6 +125,10 @@ long   pc = 0;
 char * progname;
 
 int is_ptex = 0;
+#if defined(PTEXENC)
+int is_uptex = 0;
+int with_ptexenc = 0;
+#endif
 int is_xetex = 0;
 const char * dvi_ext = ".dvi";
 
@@ -123,9 +136,6 @@ const char * dvi_ext = ".dvi";
  * Function declarations
  */
 
-#if defined(VMS)
-                main            (int argc, char ** argv);
-#endif
 void            bop             (void);
 void            preamble        (void);
 void            postamble       (void);
@@ -143,22 +153,42 @@ void            glyphs          (int opcode);
 void            dvidir          (int opcode);
 void            invalid         (int opcode);
 
-
+#if defined(PTEXENC)
+int printch(int code, unsigned long ch0)
+{
+    int ch1;
+    if (with_ptexenc) {
+        printf("\"%lX", ch0);
+        if (code>1) {
+            ch1 = toBUFF(fromDVI(ch0));
+            printf("  ");
+            putc2('(', stdout);
+            if (BYTE1(ch1) != 0) putc2(BYTE1(ch1), stdout);
+            if (BYTE2(ch1) != 0) putc2(BYTE2(ch1), stdout);
+            if (BYTE3(ch1) != 0) putc2(BYTE3(ch1), stdout);
+            /* always */         putc2(BYTE4(ch1), stdout);
+            putc2(')', stdout);
+        }
+    } else {
+        printf("%ld", ch0);
+    }
+    return ch0;
+} /* main */
+#endif
 
 
 /*
  * MAIN --
  */
 
-#if defined(VMS)
-     main(int argc, char **argv)
-#else
 int main(int argc, char **argv)
-#endif
 {
     register int opcode;                /* dvi opcode */
     register int i;
     unsigned long fontnum;
+#if defined(PTEXENC)
+    int code;
+#endif
 
 #if defined(WIN32) && defined(KPATHSEA)
     char **av, *enc;
@@ -172,19 +202,38 @@ int main(int argc, char **argv)
     _setmode (fileno(stdout), _O_BINARY);
 #endif
 
-#if defined(THINK_C)
-    argc = process_disdvi_command_line(&argv);
-#endif
-
     progname = *argv++;
 
+#if defined(PTEXENC)
+    while ((argc > 1) && (*argv[0] == '-')) {
+#else
     if ((argc > 1) && (*argv[0] == '-')) {
+#endif
         if (!strcmp(*argv, "-h")) {
             usage();
             exit(0);
         }
-        if (!strcmp(*argv, "-p"))
+        if (!strcmp(*argv, "-p")) {
             is_ptex = 1;
+#if defined(PTEXENC)
+            set_enc_string (NULL, PTEX_INTERNAL_ENC);
+#endif
+        }
+#if defined(PTEXENC)
+        else if (!strcmp(*argv, "-u")) {
+            is_uptex = 1;
+            enable_UPTEX(true);
+            set_enc_string (NULL, UPTEX_INTERNAL_ENC);
+        }
+        else if (!strncmp(*argv, "-E", 2)) {
+            with_ptexenc = 1;
+            set_prior_file_enc();
+            if (!strcmp(*argv, "-Ee")) set_enc_string ("euc", NULL);
+            if (!strcmp(*argv, "-Es")) set_enc_string ("sjis", NULL);
+            if (!strcmp(*argv, "-Ej")) set_enc_string ("jis", NULL);
+            if (!strcmp(*argv, "-Eu")) set_enc_string ("utf8", NULL);
+        }
+#endif
         else if (!strcmp(*argv, "-x")) {
             is_xetex = 1;
             dvi_ext = ".xdv";
@@ -198,7 +247,7 @@ int main(int argc, char **argv)
     }
 
     if (argc > 2) {
-        fprintf(stderr, "To many arguments\n");
+        fprintf(stderr, "Too many arguments\n");
         usage();
         exit(1);
     }
@@ -227,7 +276,7 @@ int main(int argc, char **argv)
     else
         dvifp = stdin;
 
-#if defined(MSDOS) || defined(WIN32)
+#if defined(WIN32)
     setmode(fileno(dvifp), _O_BINARY);
 #endif
 
@@ -243,18 +292,26 @@ int main(int argc, char **argv)
             printf("%06ld: ", pc - 1);
         }
 
-        if (opcode <= LASTCHAR) 
+        if (opcode <= LASTCHAR)
             printnonprint(opcode);              /* it must be a non-printable */
-        else if ((opcode >= FONT_00) && (opcode <= FONT_63)) 
+        else if ((opcode >= FONT_00) && (opcode <= FONT_63))
             printf("FONT_%02d              /* %s */\n", opcode - FONT_00,
                                     fontname((unsigned long) opcode - FONT_00));
         else
             switch (opcode) {
                 case SET1     :
-                case SET2     : 
+                case SET2     :
                 case SET3     :
-                case SET4     : printf("SET%d:    %ld\n", opcode - SET1 + 1,
+                case SET4     :
+#if defined(PTEXENC)
+                                code = opcode - SET1 + 1;
+                                printf("SET%d:     ", code);
+                                printch(code, num(code));
+                                printf("\n");
+#else
+                                printf("SET%d:     %ld\n", opcode - SET1 + 1,
                                                        num(opcode - SET1 + 1));
+#endif
                                 break;
                 case SET_RULE : printf("SET_RULE: height: %ld\n", sget4());
                                 printf("%06ld: ", pc);
@@ -263,8 +320,16 @@ int main(int argc, char **argv)
                 case PUT1     :
                 case PUT2     :
                 case PUT3     :
-                case PUT4     : printf("PUT%d:     %ld\n", opcode - PUT1 + 1,
+                case PUT4     :
+#if defined(PTEXENC)
+                                code = opcode - PUT1 + 1;
+                                printf("PUT%d:     ", code);
+                                printch(code, num(code));
+                                printf("\n");
+#else
+                                printf("PUT%d:     %ld\n", opcode - PUT1 + 1,
                                                        num(opcode - PUT1 + 1));
+#endif
                                 break;
                 case PUT_RULE : printf("PUT_RULE: height: %ld\n", sget4());
                                 printf("%06ld: ", pc);
@@ -276,13 +341,13 @@ int main(int argc, char **argv)
                 case PUSH     : printf("PUSH\n"); break;
                 case POP      : printf("POP\n");  break;
                 case RIGHT1   :
-                case RIGHT2   : 
-                case RIGHT3   : 
+                case RIGHT2   :
+                case RIGHT3   :
                 case RIGHT4   : printf("RIGHT%d:   %ld\n", opcode - RIGHT1 + 1,
                                                      snum(opcode - RIGHT1 + 1));
                                 break;
                 case W0       : printf("W0\n");   break;
-                case W1       : 
+                case W1       :
                 case W2       :
                 case W3       :
                 case W4       : printf("W%d:       %ld\n", opcode - W0,
@@ -295,8 +360,8 @@ int main(int argc, char **argv)
                 case X4       : printf("X%d:       %ld\n", opcode - X0,
                                                       snum(opcode - X0));
                                 break;
-                case DOWN1    : 
-                case DOWN2    : 
+                case DOWN1    :
+                case DOWN2    :
                 case DOWN3    :
                 case DOWN4    : printf("DOWN%d:    %ld\n", opcode - DOWN1 + 1,
                                                       snum(opcode - DOWN1 + 1));
@@ -311,7 +376,7 @@ int main(int argc, char **argv)
                 case Z0       : printf("Z0\n");   break;
                 case Z1       :
                 case Z2       :
-                case Z3       : 
+                case Z3       :
                 case Z4       : printf("Z%d:       %ld\n", opcode - Z0,
                                                       snum(opcode - Z0));
                                 break;
@@ -323,8 +388,8 @@ int main(int argc, char **argv)
                                        opcode - FNT1 + 1, fontnum,
                                        fontname(fontnum));
                                 break;
-                case XXX1     : 
-                case XXX2     : 
+                case XXX1     :
+                case XXX2     :
                 case XXX3     :
                 case XXX4     : special(opcode - XXX1 + 1);     break;
                 case FNT_DEF1 :
@@ -361,10 +426,10 @@ void bop(void)
     for (i=9; i > 0; i--) {
         if (i % 3 == 0)
             printf("\n%06ld:         ", pc);
-        printf("  %6ld", sget4()); 
+        printf("  %6ld", sget4());
     }
     printf("\n%06ld: ", pc);
-    printf("          prev page offset : %06ld\n", sget4()); 
+    printf("          prev page offset : %06ld\n", sget4());
 
     return;
 
@@ -376,20 +441,20 @@ void bop(void)
  * POSTAMBLE -- Process post amble.
  */
 
-void postamble(void) 
+void postamble(void)
 {
 
     printf("POST      last page offset : %06ld\n", sget4());
     printf("%06ld: ", pc);
-    printf("          numerator        : %ld\n", get4());
+    printf("          numerator        : %lu\n", get4());
     printf("%06ld: ", pc);
-    printf("          denominator      : %ld\n", get4());
+    printf("          denominator      : %lu\n", get4());
     printf("%06ld: ", pc);
-    printf("          magnification    : %ld\n", get4());
+    printf("          magnification    : %lu\n", get4());
     printf("%06ld: ", pc);
-    printf("          max page height  : %ld\n", get4());
+    printf("          max page height  : %lu\n", get4());
     printf("%06ld: ", pc);
-    printf("          max page width   : %ld\n", get4());
+    printf("          max page width   : %lu\n", get4());
     printf("%06ld: ", pc);
     printf("          stack size needed: %d\n", (int) get2());
     printf("%06ld: ", pc);
@@ -411,11 +476,11 @@ void preamble(void)
 
     printf("PRE       version          : %d\n", (int) get1());
     printf("%06ld: ", pc);
-    printf("          numerator        : %ld\n", get4());
+    printf("          numerator        : %lu\n", get4());
     printf("%06ld: ", pc);
-    printf("          denominator      : %ld\n", get4());
+    printf("          denominator      : %lu\n", get4());
     printf("%06ld: ", pc);
-    printf("          magnification    : %ld\n", get4());
+    printf("          magnification    : %lu\n", get4());
     printf("%06ld: ", pc);
     i = (int) get1();
     printf("          job name (%3d)   :", i);
@@ -437,7 +502,7 @@ void postpostamble(void)
 {
     register int i;
  
-    printf("POSTPOST  postamble offset : %06ld\n", get4());
+    printf("POSTPOST  postamble offset : %06lu\n", get4());
     printf("%06ld: ", pc);
     printf("          version          : %d\n", (int) get1());
     while ((i = (int) get1()) == TRAILER) {
@@ -493,11 +558,11 @@ void fontdef(int x)
     fntnum = num(x);
     printf("FNT_DEF%d: %ld\n", x, fntnum);
     printf("%06ld: ", pc);           /* avoid side-effect on pc in get4() */
-    printf("          checksum         : %ld\n", get4());
+    printf("          checksum         : %lu\n", get4());
     printf("%06ld: ", pc);
-    printf("          scale            : %ld\n", get4());
+    printf("          scale            : %lu\n", get4());
     printf("%06ld: ", pc);
-    printf("          design           : %ld\n", get4());
+    printf("          design           : %lu\n", get4());
     printf("%06ld: ", pc);
     printf("          name             : ");
     namelen = (int) get1() + (int) get1();
@@ -518,7 +583,7 @@ void fontdef(int x)
         perror("fontdef");
         exit(1);
     }
-    
+
     for (i = 0; i < namelen; i++)
         name[i] = get1();
     name[i] = '\0';
@@ -551,7 +616,7 @@ const char * fontname(unsigned long fntnum)
         return fnt->name;
 
     return "unknown fontname";
-   
+
 } /* fontname */
 
 
@@ -664,8 +729,23 @@ void usage(void)
 
     fprintf(stderr, "\n%s\n\n", disdvi);
     fprintf(stderr, "    disassembles (p)TeX dvi and XeTeX xdv files\n");
+#if defined(PTEXENC)
+    fprintf(stderr, "Usage: %s [-h | [-p] [-u] [-Eenc] [dvi_file[.dvi]]\n", progname);
+#else
     fprintf(stderr, "Usage: %s [-h | [-p] [dvi_file[.dvi]]\n", progname);
+#endif
     fprintf(stderr, "              | -x [xdv_file[.xdv]]]\n");
+    fprintf(stderr, "Options:\n");
+#if defined(PTEXENC)
+    fprintf(stderr, "   -p     Support ASCII pTeX dvi\n");
+    fprintf(stderr, "   -u     Support upTeX dvi\n");
+    fprintf(stderr, "   -x     Support XeTeX xdv\n");
+    fprintf(stderr, "   -Eenc  Output multibyte encoding. The enc argument denotes u:UTF8 e:EUC-JP s:Shift_JIS j:JIS\n");
+#else
+    fprintf(stderr, "   -p     Support ASCII pTeX dvi\n");
+    fprintf(stderr, "   -x     Support XeTeX xdv\n");
+#endif
+    fprintf(stderr, "   -h     This help message.\n");
     fprintf(stderr, "\n If you like this code and want to support is feel free\n to donate at Paypal marcel@mesa.nl. Thanks.\n\n");
 
 
@@ -717,7 +797,7 @@ void natfontdef(int opcode)
     fntnum = num(4);
     printf("NAT_FNT:  %ld\n", fntnum);
     printf("%06ld: ", pc);
-    printf("          scale            : %ld\n", get4());
+    printf("          scale            : %lu\n", get4());
     printf("%06ld: ", pc);
     flags = get2();
     printf("          flags            : %d\n", flags);
@@ -743,7 +823,7 @@ void natfontdef(int opcode)
         perror("fontdef");
         exit(1);
     }
-    
+
     for (i = 0; i < namelen; i++)
         name[i] = get1();
     name[namelen] = '\0';
@@ -805,7 +885,11 @@ void glyphs(int opcode)
 
 void dvidir(int opcode)
 {
+#if defined(PTEXENC)
+    if (!is_ptex && !is_uptex) {
+#else
     if (!is_ptex) {
+#endif
         invalid(opcode);
         return;
     }
