@@ -20,5 +20,7 @@
 #define HAVE_SYS_PARAM_H 1
 #define SIZEOF_LONG 8
 #define STDC_HEADERS 1
+#define HAVE_UINTPTR_T 1
+#define YY_NO_UNISTD_H 1
 
 #endif /* !KPATHSEA_C_AUTO_H */
