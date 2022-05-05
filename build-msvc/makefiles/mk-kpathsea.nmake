@@ -1,6 +1,6 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -c -O2 -Oy -DWIN32=1 -DNO_KPSE_DLL=1 -DMAKE_KPSE_DLL=1 -Ibuild/ -I../texlive/texk
+CFLAGS = -nologo -c -O2 -Oy -DWIN32 -DNO_KPSE_DLL -DMAKE_KPSE_DLL -Ibuild/ -I../texlive/texk
 ROOT = ../texlive/texk/kpathsea
 OBJS = kpathsea-tex-file.obj kpathsea-absolute.obj kpathsea-atou.obj kpathsea-cnf.obj kpathsea-concat.obj \
 	kpathsea-concat3.obj kpathsea-concatn.obj kpathsea-db.obj kpathsea-debug.obj kpathsea-dir.obj kpathsea-dirent.obj \
