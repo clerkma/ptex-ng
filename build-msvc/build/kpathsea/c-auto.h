@@ -18,6 +18,7 @@
 #define HAVE_STRING_H 1
 #define HAVE_STRRCHR 1
 #define HAVE_SYS_PARAM_H 1
+#define HAVE_FLOAT_H 1
 #define SIZEOF_LONG 8
 #define STDC_HEADERS 1
 #define HAVE_UINTPTR_T 1
