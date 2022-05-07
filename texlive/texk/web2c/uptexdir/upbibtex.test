@@ -1,10 +1,11 @@
 #! /bin/sh -vx
-# $Id: upbibtex.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: upbibtex.test 63238 2022-05-06 07:23:56Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2011-2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
 test -d uptests || mkdir -p uptests
+rm -f uptests/xexampl.*
 
 cp $srcdir/tests/exampl.aux uptests/xexampl.aux
 
@@ -12,4 +13,5 @@ TEXMFCNF=$srcdir/../kpathsea \
   BSTINPUTS=$srcdir/tests \
   BIBINPUTS=$srcdir/tests \
   ./upbibtex uptests/xexampl || exit 1
+diff $srcdir/tests/exampl.bbl uptests/xexampl.bbl || exit 2
 
