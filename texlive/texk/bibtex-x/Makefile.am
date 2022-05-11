@@ -1,4 +1,4 @@
-## $Id: Makefile.am 63173 2022-04-29 03:14:26Z takuji $
+## $Id: Makefile.am 63257 2022-05-08 13:25:05Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/bibtex-x/
 ##
 ## Copyright 2017-2021 Karl Berry <tex-live@tug.org>
@@ -95,6 +95,7 @@ tests/bibtexu.log tests/bibtexu-basic.log tests/bibtexu-range.log \
 EXTRA_DIST = $(bibtex8_tests) $(bibtexu_tests)
 DISTCLEANFILES =
 ## tests/bibtex8.test
+EXTRA_DIST += tests/exampl.bbl
 DISTCLEANFILES += tests/xexampl.aux tests/xexampl.bbl tests/xexampl.blg
 ## tests/bibtexu.test
 ##
