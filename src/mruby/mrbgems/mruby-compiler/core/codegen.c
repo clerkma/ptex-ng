@@ -1603,7 +1603,7 @@ gen_hash(codegen_scope *s, node *tree, int val, int limit)
 
   while (tree) {
     if (nint(tree->car->car->car) == NODE_KW_REST_ARGS) {
-      if (len > 0) {
+      if (val && len > 0) {
         pop_n(len*2);
         if (!update) {
           genop_2(s, OP_HASH, cursp(), len);
@@ -1615,7 +1615,7 @@ gen_hash(codegen_scope *s, node *tree, int val, int limit)
         push();
       }
       codegen(s, tree->car->cdr, val);
-      if (len > 0 || update) {
+      if (val && (len > 0 || update)) {
         pop(); pop();
         genop_1(s, OP_HASHCAT, cursp());
         push();
@@ -1644,14 +1644,13 @@ gen_hash(codegen_scope *s, node *tree, int val, int limit)
     }
   }
   if (update) {
-    if (len > 0) {
+    if (val && len > 0) {
       pop_n(len*2+1);
       genop_2(s, OP_HASHADD, cursp(), len);
       push();
     }
     return -1;                  /* variable length */
   }
-  if (update) return -1;
   return len;
 }
 
@@ -2861,19 +2860,20 @@ codegen(codegen_scope *s, node *tree, int val)
         if (tree->cdr->cdr) {
           codegen(s, tree->cdr->cdr, VAL);
         }
-        else if (!s2) {/* super at top-level */
-          push();      /* no need to push block */
-        }
+        else if (s2) gen_blkmove(s, s2->ainfo, lv);
         else {
-          gen_blkmove(s, s2->ainfo, lv);
+          genop_1(s, OP_LOADNIL, cursp());
+          push();
         }
-        st++;
       }
       else {
-        if (!s2) push();
-        else gen_blkmove(s, s2->ainfo, lv);
-        st++;
+        if (s2) gen_blkmove(s, s2->ainfo, lv);
+        else {
+          genop_1(s, OP_LOADNIL, cursp());
+          push();
+        }
       }
+      st++;
       pop_n(st+1);
       genop_2(s, OP_SUPER, cursp(), n);
       if (val) push();
@@ -3125,6 +3125,7 @@ codegen(codegen_scope *s, node *tree, int val)
         codegen_error(s, "no anonymous block argument");
       }
       gen_move(s, cursp(), idx, val);
+      if (val) push();
     }
     else {
       codegen(s, tree, val);
