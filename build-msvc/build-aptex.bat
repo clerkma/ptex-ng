@@ -6,30 +6,34 @@ if "%1" == "jom" goto set_jom
 
 :set_nmake
 set MAKE=nmake
-goto end
+goto start_build
 
 :set_jom
 set MAKE=jom
-:end
+:start_build
+
+set TL_ROOT=../texlive
+set APTEX_ROOT=../src
+set APTEX_CFLAGS=-nologo -c -O2 -Oy
 echo on
 
 echo Building zlib ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-zlib.nmake
 echo Building libpng ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libpng.nmake
 echo Building freetype ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-freetype.nmake
 echo Building libotf ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libotf.nmake
 echo Building libpixman ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libpixman.nmake
 echo Building libcairo ...
-del *.obj
+if exist *.obj (del *.obj)
 md build\cairo\src
 copy ..\texlive\libs\cairo\cairo-src\src\*.c build\cairo\src\
 copy ..\texlive\libs\cairo\cairo-src\src\*.h build\cairo\src\
@@ -38,29 +42,30 @@ del build\cairo\src\cairoint.h
 %MAKE% -s -nologo -f makefiles\mk-libcairo.nmake
 rd /s /q build\cairo\src
 echo Building lsotfea ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-lsotfea.nmake
 echo Building kpathsea ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-kpathsea.nmake
 echo Building ptexenc ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-ptexenc.nmake
 echo Building libdpx ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libdpx.nmake
 echo Building libyaml ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libyaml.nmake
 echo Building libmd5 ...
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libmd5.nmake
 echo Building aptex/ptex-ng
 copy ..\texlive\libs\cairo\cairo-src\src\cairo.h build\cairo\cairo.h
 copy ..\texlive\libs\cairo\cairo-src\src\cairo-deprecated.h build\cairo\cairo-deprecated.h
-del *.obj
+if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-aptex.nmake
-del *.obj *.lib
+if exist *.obj (del *.obj)
+if exist *.lib (del *.lib)
 del build\cairo\cairo-version.h
 del build\cairo\cairo.h
 del build\cairo\cairo-deprecated.h

@@ -1,8 +1,8 @@
 CC = cl
 AR = lib
 LINK = link
-CFLAGS = -nologo -utf-8 -c -O2 -Oy -I../src/libotf -I../src/libotf/src -I../texlive/libs/freetype2/freetype-src/include
-ROOT = ../src/lsotfea-src
+CFLAGS = $(APTEX_CFLAGS) -utf-8 -I$(APTEX_ROOT)/libotf -I$(APTEX_ROOT)/libotf/src -I$(TL_ROOT)/libs/freetype2/freetype-src/include
+ROOT = $(APTEX_ROOT)/lsotfea-src
 OBJS = lsotfea.obj lsotfea-stag.obj lsotfea-ltag.obj lsotfea-ftag.obj
 
 all: $(OBJS)

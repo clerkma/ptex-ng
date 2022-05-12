@@ -1,7 +1,7 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -c -O2 -Oy -DWIN32 -DNO_PTENC_DLL -Ibuild -I../texlive/texk -I../texlive/texk/ptexenc
-ROOT = ../texlive/texk/ptexenc
+CFLAGS = $(APTEX_CFLAGS) -DWIN32 -DNO_PTENC_DLL -Ibuild -I$(TL_ROOT)/texk -I$(TL_ROOT)/texk/ptexenc
+ROOT = $(TL_ROOT)/texk/ptexenc
 OBJS = kanjicnv.obj ptexenc.obj unicode.obj unicode-jp.obj
 
 all: $(OBJS)

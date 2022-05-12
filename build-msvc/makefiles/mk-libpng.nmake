@@ -1,7 +1,7 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -c -O2 -Oy -Ibuild/zlib -Ibuild/libpng -I../texlive/libs/libpng/libpng-src -I../texlive/libs/zlib/zlib-src
-ROOT = ../texlive/libs/libpng/libpng-src
+CFLAGS = $(APTEX_CFLAGS) -Ibuild/zlib -Ibuild/libpng -I$(TL_ROOT)/libs/libpng/libpng-src -I$(TL_ROOT)/libs/zlib/zlib-src
+ROOT = $(TL_ROOT)/libs/libpng/libpng-src
 DEPS = $(ROOT)/png.h $(ROOT)/pngconf.h build/libpng/pnglibconf.h $(ROOT)/pngpriv.h $(ROOT)/pngstruct.h \
 	$(ROOT)/pnginfo.h $(ROOT)/pngdebug.h
 OBJS = png.obj pngerror.obj pngget.obj pngmem.obj pngpread.obj pngread.obj pngrio.obj pngrtran.obj pngrutil.obj \

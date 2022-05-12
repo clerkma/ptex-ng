@@ -1,7 +1,7 @@
 CC = cl
 AR = lib
-CFLAGS = -nologo -utf-8 -c -O2 -Oy -DFT2_BUILD_LIBRARY -I../texlive/libs/freetype2/freetype-src/include
-ROOT = ../texlive/libs/freetype2/freetype-src
+CFLAGS = $(APTEX_CFLAGS) -utf-8 -DFT2_BUILD_LIBRARY -I$(TL_ROOT)/libs/freetype2/freetype-src/include
+ROOT = $(TL_ROOT)/libs/freetype2/freetype-src
 OBJS = freetype-ftbase.obj freetype-ftbbox.obj freetype-ftbdf.obj freetype-ftbitmap.obj freetype-ftcid.obj freetype-ftdebug.obj freetype-ftfstype.obj freetype-ftgasp.obj freetype-ftglyph.obj freetype-ftgxval.obj freetype-ftinit.obj freetype-ftmm.obj freetype-ftotval.obj freetype-ftpatent.obj freetype-ftpfr.obj freetype-ftstroke.obj freetype-ftsynth.obj freetype-ftsystem.obj freetype-fttype1.obj freetype-ftwinfnt.obj freetype-autofit.obj freetype-bdf.obj freetype-ftcache.obj freetype-cff.obj freetype-type1cid.obj freetype-gxvalid.obj freetype-ftgzip.obj freetype-ftlzw.obj freetype-otvalid.obj freetype-pcf.obj freetype-pfr.obj freetype-psaux.obj freetype-pshinter.obj freetype-psnames.obj freetype-raster.obj freetype-sdf.obj freetype-smooth.obj freetype-sfnt.obj freetype-svg.obj freetype-truetype.obj freetype-type1.obj freetype-type42.obj freetype-winfnt.obj
 
 all: $(OBJS)
