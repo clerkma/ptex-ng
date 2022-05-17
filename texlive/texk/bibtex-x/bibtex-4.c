@@ -2266,7 +2266,7 @@ BEGIN
 /*
 The length of character of UTF-8 is different. 23/sep/2009
 */
-              DO_UTF8(str_pool[sp_ptr], , sp_ptr++, sp_ptr += 2, sp_ptr += 3);
+              DO_UTF8(str_pool[sp_ptr-1], , sp_ptr++, sp_ptr += 2, sp_ptr += 3);
 #endif
               INCR (num_text_chars);
             END
@@ -2387,7 +2387,7 @@ BEGIN
 /*
 The same for the length of character UTF-8. 23/sep/2009
 */
-              DO_UTF8(str_pool[sp_xptr1], , sp_xptr1++, sp_xptr1 += 2, sp_xptr1 += 3);
+              DO_UTF8(str_pool[sp_xptr1-1], , sp_xptr1++, sp_xptr1 += 2, sp_xptr1 += 3);
 #endif
               INCR (num_text_chars);
             END
