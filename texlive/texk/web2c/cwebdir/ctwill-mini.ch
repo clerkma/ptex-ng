@@ -878,9 +878,9 @@ Section 123.
 Section 124.
 
 @x l.291
-\+& |exp| |attr| & |attr| \hfill $E\.\ A$ & \&{enum} $\{x\ [[\ldots]]\}$ \cr
+\+& |exp| |attr| & |exp| \hfill $E\.\ A$ & \&{enum} $\{x\ [[\ldots]]\}$ \cr
 @y
-\+& |exp| |attr| & |attr| \hfill $E\.\ A$ & \&{enum} $\{x\ [[\ldots]]\}$ \cr
+\+& |exp| |attr| & |exp| \hfill $E\.\ A$ & \&{enum} $\{x\ [[\ldots]]\}$ \cr
 \endgroup
 
 @ Cont.
@@ -1287,9 +1287,9 @@ Section 170.
 Section 173.
 
 @x
-if (cat1==else_like || cat1==if_like || cat1==define_like)
+if (cat1==if_like || cat1==else_like || cat1==define_like)
 @y
-if (cat1==else_like || cat1==if_like || cat1==define_like) @/
+if (cat1==if_like || cat1==else_like || cat1==define_like) @/
 @z
 
 @x
@@ -1566,9 +1566,9 @@ Section 233--234.
           if ((a<indent && !(b==big_cancel&&a==' ')) @|
             || (a>big_force && a!=dindent)) break;
           switch (a) {
+          case dindent: c++; @=/* fall through */@>@;
           case indent: c++; break;
           case outdent: c--; break;
-          case dindent: c+=2; break;
           case opt: a=get_output();
           }
         }
@@ -1608,9 +1608,9 @@ Section 233--234.
           if ((a<indent && !(b==big_cancel&&a==' ')) @|
             || (a>big_force && a!=dindent)) break;
           switch (a) {
+          case dindent: c++; @=/* fall through */@>@;
           case indent: c++; break;
           case outdent: c--; break;
-          case dindent: c+=2; break;
           case opt: a=get_output();
           }
         }
