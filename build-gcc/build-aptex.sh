@@ -73,7 +73,7 @@ cd $NG_SRC_DIR/src/libotf && make -j || exit 1
 cp libotf.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/src/libmd5 && make -j || exit 1
 cp libmd5.a $NG_SRC_DIR/src
-cd $NG_SRC_DIR/src/libyaml && ./configure && make -j || exit 1
-cp src/.libs/libyaml.a $NG_SRC_DIR/src
+cd $NG_SRC_DIR/src/libyaml && make -j || exit 1
+cp libyaml.a $NG_SRC_DIR/src
 #
 cd $NG_SRC_DIR/src && make -j
