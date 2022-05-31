@@ -1,4 +1,4 @@
-dnl   $Id: version.ac 61625 2022-01-16 23:21:19Z karl $
+dnl   $Id: version.ac 63452 2022-05-31 01:17:15Z karl $
 dnl   Copyright 2016-2022 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
@@ -7,4 +7,4 @@ dnl   gives unlimited permission to copy and/or distribute it,
 dnl   with or without modifications, as long as this notice is preserved.
 dnl
 dnl  m4-include this file to define the current ICU version as icu_version.
-m4_define([icu_version], [70.1])
+m4_define([icu_version], [71.1])
