@@ -2,7 +2,7 @@
 % This program by Silvio Levy and Donald E. Knuth
 % is based on a program by Knuth.
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 4.7 --- February 2022
+% Version 4.8 --- June 2022
 
 % Copyright (C) 1987,1990,1993,2000 Silvio Levy and Donald E. Knuth
 
@@ -32,11 +32,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{CWEAVE (Version 4.7)}
+\def\title{CWEAVE (Version 4.8)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont CWEAVE} processor}
   \vskip 15pt
-  \centerline{(Version 4.7)}
+  \centerline{(Version 4.8)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -67,7 +67,7 @@ Crusius, and others who have contributed improvements.
 The ``banner line'' defined here should be changed whenever \.{CWEAVE}
 is modified.
 
-@d banner "This is CWEAVE (Version 4.7)"
+@d banner "This is CWEAVE (Version 4.8)"
 
 @c
 @<Include files@>@/
@@ -3602,7 +3602,7 @@ section, it will be made into a scrap when |finish_C| is called.
 There's a known bug here, in cases where an adjacent scrap is
 |prelangle| or |prerangle|. Then the \TEX/ string can disappear
 when the \.{\\langle} or \.{\\rangle} becomes \.{<} or \.{>}.
-For example, if the user writes \.{\v x<@@ty@@>\v}, the \TEX/ string
+For example, if the user writes \.{\v x<@@ty@@><42\v}, the \TEX/ string
 \.{\\hbox\{y\}} eventually becomes part of an |insert| scrap, which is combined
 with a |prelangle| scrap and eventually lost. The best way to work around
 this bug is probably to enclose the \.{@@t...@@>} in \.{@@[...@@]} so that
