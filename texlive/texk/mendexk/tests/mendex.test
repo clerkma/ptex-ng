@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: mendex.test 63362 2022-05-22 12:54:25Z takuji $
+# $Id: mendex.test 63558 2022-06-12 08:18:31Z takuji $
 # Copyright 2017-2022 Karl Berry <tex-live@tug.org>
 # Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -7,7 +7,7 @@
 TEXMFCNF=$srcdir/../kpathsea
 export TEXMFCNF
 
-rm -f foo.* uni.* range*.* pprec*.* romalp*.*
+rm -f foo.* uni.* range*.* pprec*.* romalp*.* sjis.* euc.*
 rc=0
 
 ./mendex $srcdir/tests/foo.idx -o foo.ind1 -t foo.ilg1 \
@@ -28,6 +28,16 @@ cat $srcdir/tests/uni.idx | \
 ./mendex -U -d $srcdir/tests/uni.dict -s $srcdir/tests/uni1.ist -s $srcdir/tests/uni2.ist \
 	$srcdir/tests/uni.idx -o uni.ind3 -t uni.ilg3 \
 	&& diff $srcdir/tests/uni.ind uni.ind3 || rc=5
+
+cat $srcdir/tests/uni.idx | \
+	guess_input_kanji_encoding=1 ./mendex -U -d $srcdir/tests/uni.dict -s $srcdir/tests/sjis.ist \
+	>sjis.ind1 2>sjis.ilg1 \
+	&& diff $srcdir/tests/uni.ind sjis.ind1 || rc=20
+
+cat $srcdir/tests/uni.idx | \
+	./mendex -U -d $srcdir/tests/uni.dict -s $srcdir/tests/euc.ist --guess-input-enc \
+	>euc.ind1 2>euc.ilg1 \
+	&& diff $srcdir/tests/uni.ind euc.ind1 || rc=21
 
 
 # test for range suffix_2p, suffix_3p, suffix_mp

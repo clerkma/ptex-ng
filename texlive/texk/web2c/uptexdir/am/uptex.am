@@ -1,4 +1,4 @@
-## $Id: uptex.am 61784 2022-01-29 10:40:22Z hironobu $
+## $Id: uptex.am 63557 2022-06-12 08:18:23Z takuji $
 ## texk/web2c/uptexdir/am/uptex.am: Makefile fragment for upTeX.
 ##
 ## Copyright 2016-2022 Karl Berry <tex-live@tug.org>
@@ -199,7 +199,9 @@ endif UPWEB
 ## Test data and results
 ##
 ## uptexdir/upbibtex.test
-DISTCLEANFILES += uptests/xexampl.aux uptests/xexampl.bbl uptests/xexampl.blg
+EXTRA_DIST += tests/enc-u.bbl tests/enc-eu.bbl tests/enc-su.bbl
+DISTCLEANFILES += uptests/xexampl.aux uptests/xexampl.bbl uptests/xexampl.blg \
+	uptests/xenc*.*
 ## uptexdir/updvitype.test
 DISTCLEANFILES += uptests/xstory.dvityp uptests/xpagenum.typ
 ## uptexdir/uppltotf.test
