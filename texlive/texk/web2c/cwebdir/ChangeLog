@@ -1,3 +1,8 @@
+2022-06-17  Andreas Scherer  <https://ascherer.github.io>
+
+	* Makefile: New target for CTAN packaging.
+	* cwebmac.tex: Fix two bugs from 2002 and 2000.
+
 2022-06-05  Andreas Scherer  <https://ascherer.github.io>
 
 	* Makefile,
