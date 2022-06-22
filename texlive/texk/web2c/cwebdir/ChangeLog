@@ -1,3 +1,25 @@
+2022-06-20  Andreas Scherer  <https://ascherer.github.io>
+
+	* texinputs/dcwebmac.tex,
+	* texinputs,dcwebstrings.tex,
+	* texinputs/fcwebman.tex,
+	* texinputs/icwebmac.tex: Update translated macros.
+
+2022-06-19  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch,
+	* ctwill-mini.ch,
+	* cwebmac.tex,
+	* cwebman-w2c.ch,
+	* cwebman.tex,
+	* texinputs/dctproofmac.tex,
+	* texinputs/dctwimac.tex,
+	* texinputs/pdfctwimac.tex: Use 'iftex.sty' for TeX engine tests.
+
+2022-06-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebmac.tex: Fix \pdfURL for 'valid' output.
+
 2022-06-17  Andreas Scherer  <https://ascherer.github.io>
 
 	* Makefile: New target for CTAN packaging.
