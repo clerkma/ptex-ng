@@ -14904,7 +14904,7 @@ reswitch:
           t = cur_tok;
           back_input();
 
-          if (t >= cs_token_flag)
+          if ((t >= cs_token_flag) && (t != end_write_token))
           {
             p = get_avail();
             info(p) = cs_token_flag + frozen_dont_expand;
