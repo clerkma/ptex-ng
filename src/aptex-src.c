@@ -1796,6 +1796,7 @@ static long ucs_range[] =
   0x1C00, /* Lepcha                                              */
   0x1C50, /* Ol Chiki                                            */
   0x1C80, /* Cyrillic Extended-C                                 */
+  0x1C90, /* Georgian Extended                                   */ /* 0x40 */
   0x1CC0, /* Sundanese Supplement                                */
   0x1CD0, /* Vedic Extensions                                    */
   0x1D00, /* Phonetic Extensions                                 */
