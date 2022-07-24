@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Clerk Ma
+   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,8 +26,8 @@
 #define pTeX_version_string "-p3.10.0"
 
 #define upTeX_version 1
-#define upTeX_revision ".26"
-#define upTeX_version_string "-u1.26"
+#define upTeX_revision ".29"
+#define upTeX_version_string "-u1.29"
 
 #define eTeX_version        2         // { \.{\\eTeXversion} }
 #define eTeX_revision       ".6"      // { \.{\\eTeXrevision} }
