@@ -1,4 +1,4 @@
-## $Id: Makefile.am 63966 2022-07-23 21:54:27Z kakuto $
+## $Id: Makefile.am 64027 2022-08-01 21:59:41Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -134,7 +134,6 @@ libharfbuzz_a_SOURCES =  \
 	@HARFBUZZ_TREE@/src/hb-subset-cff2.cc \
 	@HARFBUZZ_TREE@/src/hb-subset-cff2.hh \
 	@HARFBUZZ_TREE@/src/hb-subset-input.hh \
-	@HARFBUZZ_TREE@/src/hb-subset-repacker.cc \
 	@HARFBUZZ_TREE@/src/hb-subset.hh \
 	@HARFBUZZ_TREE@/src/hb-ucd-table.hh \
 	@HARFBUZZ_TREE@/src/hb-ucd.cc \
