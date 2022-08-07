@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Clerk Ma
+# Copyright (c) 2020, 2022 Clerk Ma
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,9 +22,9 @@
 # ruby test.py
 # mruby -r tag.rb -r otf.rb test.rb
 # 
-if Kernel.respond_to? :require
-  require "./otf"
-  require './tag'
+if Kernel.respond_to? :require_relative
+  require_relative "otf"
+  require_relative 'tag'
 end
 
 if ARGV.length == 1
