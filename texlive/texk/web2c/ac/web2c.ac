@@ -1,4 +1,4 @@
-dnl $Id: web2c.ac 61680 2022-01-21 17:38:44Z karl $
+dnl $Id: web2c.ac 64168 2022-08-22 21:33:05Z lscarso $
 # texk/web2c/ac/web2c.ac: configure.ac fragment for TL subdir
 dnl
 dnl Copyright 2015-2021 Karl Berry <tex-live@tug.org>
@@ -54,8 +54,8 @@ m4_foreach([Kpse_Prog], [kpse_tex_progs],
 dnl [PROG, BUILD-OR-NO, NOWIN-OR-NO, TEXT, REQUIRED-LIBS]
 m4_define([kpse_mf_progs], [dnl
 [[mf],       [yes], [yes], [METAFONT], []],
-[[mflua],    [yes], [no],  [MFLua],    [lua53]],
-[[mfluajit], [yes], [no],  [MFLuaJIT], [luajit]],
+[[mflua],    [yes], [no],  [MFLua],    [lua53 potrace]],
+[[mfluajit], [yes], [no],  [MFLuaJIT], [luajit potrace]],
 ])[]dnl
 m4_foreach([Kpse_Prog], [kpse_mf_progs],
            [m4_ifset([Kpse_Prog],

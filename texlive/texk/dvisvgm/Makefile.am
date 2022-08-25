@@ -1,4 +1,4 @@
-## $Id: Makefile.am 55466 2020-06-07 18:00:56Z karl $
+## $Id: Makefile.am 64168 2022-08-22 21:33:05Z lscarso $
 # Makefile.am for the TeX Live subdirectory texk/dvisvgm/
 #
 # Copyright 2015-2020 Karl Berry <tex-live@tug.org>
@@ -26,7 +26,7 @@ man_MANS = $(dvisvgm_srcdir)/doc/dvisvgm.1
 include $(srcdir)/../../am/dist_hook.am
 NEVER_NAMES += $(NEVER_NAMES_SUB)
 
-dvisvgm_dependencies = $(KPATHSEA_DEPEND) $(ZLIB_DEPEND) $(FREETYPE2_DEPEND)
+dvisvgm_dependencies = $(KPATHSEA_DEPEND) $(ZLIB_DEPEND) $(FREETYPE2_DEPEND) $(POTRACE_DEPEND)
 #
 config.force: $(dvisvgm_dependencies)
 	echo timestamp >config.force

@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 62156 2022-02-23 22:20:08Z karl $
+dnl $Id: configure.ac 64168 2022-08-22 21:33:05Z lscarso $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
@@ -48,6 +48,7 @@ KPSE_COND_WIN32
 KPSE_KPATHSEA_FLAGS
 KPSE_FREETYPE2_FLAGS
 KPSE_ZLIB_FLAGS
+KPSE_POTRACE_FLAGS
 
 KPSE_SAVE_FLAGS
 
@@ -229,7 +230,6 @@ AC_CONFIG_FILES([Makefile
 	dvisvgm-src/libs/clipper/Makefile
 	dvisvgm-src/libs/ff-woff/Makefile
 	dvisvgm-src/libs/md5/Makefile
-	dvisvgm-src/libs/potrace/Makefile
 	dvisvgm-src/libs/variant/Makefile
 	dvisvgm-src/libs/woff2/Makefile
 	dvisvgm-src/libs/xxHash/Makefile

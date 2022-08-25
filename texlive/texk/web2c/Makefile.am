@@ -1,4 +1,4 @@
-## $Id: Makefile.am 61986 2022-02-12 18:02:57Z lscarso $
+## $Id: Makefile.am 64168 2022-08-22 21:33:05Z lscarso $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/.
 ##
 ## Copyright 2017-2022 Karl Berry <tex-live@tug.org>
@@ -125,6 +125,8 @@ $(proglib): $(proglib_sources)
 @PIXMAN_RULE@
 ## Rebuild libcairo
 @CAIRO_RULE@
+## Rebuild libpotrace
+@POTRACE_RULE@
 ## Rebuild libgmp
 @GMP_RULE@
 ## Rebuild libmpfr
