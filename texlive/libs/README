@@ -1,4 +1,4 @@
-$Id: README 64027 2022-08-01 21:59:41Z kakuto $
+$Id: README 64225 2022-08-29 14:18:36Z hironobu $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -51,6 +51,9 @@ mpfr 4.1.0 - checked 12jul20
 
 pixman 0.40.0 - checked 21apr20
   http://cairographics.org/releases/
+
+potrace 1.16 - checked 29aug22
+  http://potrace.sourceforge.net
 
 pplib 2.05.0 - checked 21apr20
   https://github.com/contextgarden/pplib
