@@ -1,11 +1,13 @@
 #! /bin/sh -vx
-# $Id: bibtex.test 63238 2022-05-06 07:23:56Z takuji $
+# $Id: bibtex.test 64276 2022-09-03 05:43:53Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2009 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
 test -d tests || mkdir -p tests
 rm -f tests/xexampl.*
+
+./bibtex -version || exit 100
 
 cp $srcdir/tests/exampl.aux tests/xexampl.aux
 

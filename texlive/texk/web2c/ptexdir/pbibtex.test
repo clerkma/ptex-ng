@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: pbibtex.test 63557 2022-06-12 08:18:23Z takuji $
+# $Id: pbibtex.test 64276 2022-09-03 05:43:53Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2010-2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -8,6 +8,8 @@ test -d ptests || mkdir -p ptests
 rm -f ptests/xexampl.* ptests/xenc*.*
 
 rc=0
+
+./pbibtex -version || rc=100
 
 TEXMFCNF=$srcdir/../kpathsea
 BSTINPUTS=$srcdir/tests
@@ -36,6 +38,14 @@ cp $srcdir/tests/enc-s.aux ptests/xenc-s.aux
 
 ./pbibtex -guess-input-enc -kanji=sjis ptests/xenc-s || rc=7
 diff $srcdir/tests/enc-sp.bbl ptests/xenc-s.bbl || rc=8
+
+
+cp $srcdir/tests/enc-u.aux ptests/xenc-u0.aux
+
+./pbibtex -no-guess-input-enc ptests/xenc-u0 || rc=9
+diff $srcdir/tests/enc-up.bbl ptests/xenc-u0.bbl || rc=10
+./pbibtex -guess-input-enc ptests/xenc-u0 || rc=11
+diff $srcdir/tests/enc-up.bbl ptests/xenc-u0.bbl || rc=12
 
 
 exit $rc

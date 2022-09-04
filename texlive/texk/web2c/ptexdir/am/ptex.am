@@ -1,4 +1,4 @@
-## $Id: ptex.am 63557 2022-06-12 08:18:23Z takuji $
+## $Id: ptex.am 64277 2022-09-03 06:01:50Z takuji $
 ## texk/web2c/ptexdir/am/ptex.am: Makefile fragment for pTeX.
 ##
 ## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
@@ -214,8 +214,8 @@ DISTCLEANFILES += ptests/nissya_bib.*
 EXTRA_DIST += tests/testfield.bst tests/enc-asc.bib tests/enc-jis.bib tests/enc-sjis.bib \
 	tests/enc-euc.bib tests/enc-utf8.bib tests/enc-utf8a.bib tests/enc-utf8b.bib \
 	tests/enc-amb0.bib tests/enc-amb1.bib tests/enc-amb2.bib \
-	tests/enc.aux tests/enc-e.aux tests/enc-s.aux \
-	tests/enc-p.bbl tests/enc-ep.bbl tests/enc-sp.bbl
+	tests/enc.aux tests/enc-e.aux tests/enc-s.aux tests/enc-u.aux \
+	tests/enc-p.bbl tests/enc-ep.bbl tests/enc-sp.bbl tests/enc-up.bbl
 DISTCLEANFILES += ptests/xexampl.aux ptests/xexampl.bbl ptests/xexampl.blg \
 	ptests/xenc*.*
 ## ptexdir/pbibtex-mem.test
