@@ -1,4 +1,4 @@
-## $Id: Makefile.am 64150 2022-08-19 20:12:07Z karl $
+## $Id: Makefile.am 64352 2022-09-11 21:07:56Z reinhardk $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2022 Karl Berry <tex-live@tug.org>
@@ -228,7 +228,7 @@ texmf_other_scripts = \
 	texlive/mktexmf \
 	texlive/mktexpk \
 	texlive/mktextfm \
-	texlive/rungs.tlu \
+	texlive/rungs.lua \
 	texlive/tlmgr.pl \
 	texlive/updmap-sys.sh \
 	texlive/updmap-user.sh \

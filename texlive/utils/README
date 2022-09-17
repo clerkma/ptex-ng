@@ -1,4 +1,4 @@
-$Id: README 62528 2022-03-08 22:40:22Z karl $
+$Id: README 64381 2022-09-14 13:18:47Z hironobu $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
@@ -20,7 +20,7 @@ devnag - from devanagari package installed in texmf-dist.
 
 lacheck - maintained here, by us
 
-m-tx 0.63a - checked 29apr18
+m-tx 0.63d - checked 14sep22
   https://ctan.org/pkg/m-tx/
 
 pmx 2.9.8a - checked 08mar22

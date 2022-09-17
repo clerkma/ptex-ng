@@ -1,4 +1,4 @@
-$Id: README 64327 2022-09-10 10:38:07Z hironobu $
+$Id: README 64407 2022-09-15 21:11:56Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -34,7 +34,7 @@ icu 70.1 - checked 16jan22
 libpaper 1.1.28 - checked 10sep22
   http://ftp.debian.org/debian/pool/main/libp/libpaper/
 
-libpng 1.6.37 - checked 03may19
+libpng 1.6.38 - checked 16sep22
   https://sourceforge.net/projects/libpng/files/ - used by many
 
 lua 5.2.4 - checked 11mar15
@@ -68,5 +68,5 @@ xpdf 4.04 - checked 24apr22
 zlib 1.2.12 - checked 05apr22
   http://www.zlib.net/ - used by many
 
-zziplib 0.13.71 - checked 23apr20
+zziplib 0.13.72 - checked 10sep22
   https://github.com/gdraheim/zziplib/releases
