@@ -1,4 +1,4 @@
-## $Id: Makefile.am 64352 2022-09-11 21:07:56Z reinhardk $
+## $Id: Makefile.am 64447 2022-09-19 22:37:09Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2022 Karl Berry <tex-live@tug.org>
@@ -75,6 +75,7 @@ texmf_shell_scripts = \
 	pdfxup/pdfxup \
 	pst-pdf/ps4pdf \
 	simpdftex/simpdftex \
+	texaccents/texaccents.sno \
 	texlive-extra/allcm.sh \
 	texlive-extra/allneeded.sh \
 	texlive-extra/dvi2fax.sh \
