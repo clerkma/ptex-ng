@@ -17,6 +17,7 @@
 #define SIZEOF_LONG 8
 #define STDC_HEADERS 1
 #define HAVE_FLOAT_H 1
+#define HAVE_UINTPTR_T 1
 #define MAKE_TEX_MF_BY_DEFAULT 1
 
 #define MAKE_OMEGA_OCP_BY_DEFAULT 1
