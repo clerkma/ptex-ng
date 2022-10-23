@@ -1,4 +1,4 @@
-% $Id: ptex-base.ch 62032 2022-02-15 13:56:05Z hironobu $
+% $Id: ptex-base.ch 64786 2022-10-23 00:23:12Z hironobu $
 % This is a change file for pTeX
 % By Sadayuki Tanaka and ASCII MEDIA WORKS.
 %
@@ -7660,6 +7660,7 @@ if s<>null then
 end;
 
 @ @<Seek list and make |t| pointing widow penalty position@>=
+k:=0;
 while(p<>null) do
 begin if is_char_node(p) then
   begin if font_dir[font(p)]<>dir_default then
