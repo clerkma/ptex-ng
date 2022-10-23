@@ -2639,6 +2639,7 @@ do {                                                          \
 // @<Seek list and make |t| pointing widow penalty position@>
 #define seek_list_and_make()                              \
 do {                                                      \
+  k = 0;                                                  \
   while (p != null)                                       \
   {                                                       \
     if (is_char_node(p))                                  \
