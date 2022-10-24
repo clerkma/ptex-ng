@@ -20,10 +20,10 @@
 #ifndef APTEX_MACROS_H
 #define APTEX_MACROS_H
 
-#define pTeX_version 3
-#define pTeX_minor_version 10
+#define pTeX_version 4
+#define pTeX_minor_version 1
 #define pTeX_revision ".0"
-#define pTeX_version_string "-p3.10.0"
+#define pTeX_version_string "-p4.1.0"
 
 #define upTeX_version 1
 #define upTeX_revision ".29"
@@ -42,7 +42,7 @@
 #define eTeX_ex             (eTeX_mode == true)
 
 // predefined macro
-#define abs(x)   ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
+#define abs(x)      ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
 #define chr(x)      (x)
 #define odd(x)      ((x) % 2)
 #define round(x)    aptex_utils_round((real) (x))
@@ -756,23 +756,25 @@ enum
 #define text_baseline_shift_factor_code 57
 #define script_baseline_shift_factor_code 58
 #define scriptscript_baseline_shift_factor_code 59
-#define tracing_assigns_code          60  // {show assignments}
-#define tracing_groups_code           61  // {show save/restore groups}
-#define tracing_ifs_code              62  // {show conditionals}
-#define tracing_scan_tokens_code      63  // {show pseudo file open and close}
-#define tracing_nesting_code          64  // {show incomplete groups and ifs within files}
-#define pre_display_direction_code    65  // {text direction preceding a display}
-#define last_line_fit_code            66  // {adjustment for last line of paragraph}
-#define saving_vdiscards_code         67  // {save items discarded from vlists}
-#define saving_hyph_codes_code        68  // {save hyphenation codes for languages}
-#define eTeX_state_code               69  // {\eTeX\ state variables}
-#define tracing_fontloaders_code      70
-#define pdf_compress_level_code       71
-#define pdf_major_version_code        72
-#define pdf_minor_version_code        73
-#define synctex_code                  74
-#define tracing_stack_levels_code     75
-#define int_pars                      76
+#define ptex_lineend_code 60
+#define ptex_tracing_fonts_code 61
+#define tracing_assigns_code          62  // {show assignments}
+#define tracing_groups_code           63  // {show save/restore groups}
+#define tracing_ifs_code              64  // {show conditionals}
+#define tracing_scan_tokens_code      65  // {show pseudo file open and close}
+#define tracing_nesting_code          66  // {show incomplete groups and ifs within files}
+#define pre_display_direction_code    67  // {text direction preceding a display}
+#define last_line_fit_code            68  // {adjustment for last line of paragraph}
+#define saving_vdiscards_code         69  // {save items discarded from vlists}
+#define saving_hyph_codes_code        70  // {save hyphenation codes for languages}
+#define eTeX_state_code               71  // {\eTeX\ state variables}
+#define tracing_fontloaders_code      72
+#define pdf_compress_level_code       73
+#define pdf_major_version_code        74
+#define pdf_minor_version_code        75
+#define synctex_code                  76
+#define tracing_stack_levels_code     77
+#define int_pars                      78
 #define count_base                    (int_base + int_pars) // {256 user \.{\\count} registers}
 #define del_code_base                 (count_base + 256)    // {256 delimiter code mappings}
 #define dimen_base                    (del_code_base + 256) // {beginning of region 6}
@@ -843,6 +845,8 @@ enum
 #define text_baseline_shift_factor    int_par(text_baseline_shift_factor_code)
 #define script_baseline_shift_factor  int_par(script_baseline_shift_factor_code)
 #define scriptscript_baseline_shift_factor  int_par(scriptscript_baseline_shift_factor_code)
+#define ptex_lineend int_par(ptex_lineend_code)
+#define ptex_tracing_fonts int_par(ptex_tracing_fonts_code)
 #define tracing_assigns               int_par(tracing_assigns_code)
 #define tracing_groups                int_par(tracing_groups_code)
 #define tracing_ifs                   int_par(tracing_ifs_code)
@@ -939,6 +943,20 @@ enum
 #define prim_equiv(a) prim_equiv_field(eqtb[prim_eqtb_base+a]) // {equivalent value}
 #define undefined_primitive 0
 #define biggest_char 255 // { 65535 in XeTeX }
+#define print_the_font_identifier_for_font_p()  \
+do {                                            \
+  sprint_esc(font_id_text(font(p)));            \
+  if (ptex_tracing_fonts > 0)                   \
+  {                                             \
+    prints(" (");                               \
+    print_font_name_and_size(font(p));          \
+    if (ptex_tracing_fonts > 1)                 \
+    {                                           \
+      print_font_dir_and_enc(font(p));          \
+    }                                           \
+    prints(")");                                \
+  }                                             \
+} while (0)
 /* sec 0268 */
 #define save_type(a)      save_stack[a].hh.b0 // {classifies a |save_stack| entry}
 #define save_level(a)     save_stack[a].hh.b1 // {saved level for regions 5 and 6, or group code}
@@ -1003,7 +1021,8 @@ do {                \
 #define mid_line    1 // {|state| code when scanning a line of characters}
 #define mid_kanji   (2 + max_char_code) // {|state| code when scanning a line of characters}
 #define skip_blanks (3 + max_char_code + max_char_code) // {|state| code when ignoring blanks}
-#define new_line    (4 + max_char_code + max_char_code + max_char_code) // {|state| code at start of line}
+#define skip_blanks_kanji (4 + max_char_code + max_char_code + max_char_code) // {|state| code when ignoring blanks}
+#define new_line    (5 + max_char_code + max_char_code + max_char_code + max_char_code) // {|state| code at start of line}
 /* sec 0304 */
 #define terminal_input (name == 0)  // {are we reading from the terminal?}
 #define cur_file input_file[index]  // {the current |alpha_file| variable}
@@ -1064,10 +1083,11 @@ do {                                                            \
 #define back_list(a) begin_token_list(a, backed_up) // {backs up a simple token list}
 #define ins_list(a)  begin_token_list(a, inserted)  // {inserts a simple token list}
 /* sec 0344 */
-#define any_state_plus(a) \
-  mid_line + (a):         \
-  case mid_kanji + (a):   \
-  case skip_blanks + (a): \
+#define any_state_plus(a)       \
+  mid_line + (a):               \
+  case mid_kanji + (a):         \
+  case skip_blanks + (a):       \
+  case skip_blanks_kanji + (a): \
   case new_line + (a)
 /* sec 0347 */
 #define add_delims_to(a) \
@@ -1212,35 +1232,37 @@ do {                          \
   denom = b;                  \
 } while (0)
 /* sec 0468 */
-#define number_code         0  // {command code for \.{\\number}}
-#define roman_numeral_code  1  // {command code for \.{\\romannumeral}}
-#define kansuji_code        2  // {command code for \.{\\kansuji}}
-#define string_code         3  // {command code for \.{\\string}}
-#define meaning_code        4  // {command code for \.{\\meaning}}
-#define font_name_code      5  // {command code for \.{\\fontname}}
-#define euc_code            6  // {command code for \.{\\euc}}
-#define sjis_code           7  // {command code for \.{\\sjis}}
-#define jis_code            8  // {command code for \.{\\jis}}
-#define kuten_code          9  // {command code for \.{\\kuten}}
-#define ucs_code            10 // {command code for \.{\\ucs}}
-#define toucs_code          11 // {command code for \.{\\toucs}}
-#define eTeX_revision_code  12 // {base for \eTeX's command codes}
-#define ng_strcmp_code      13 // {command code for \.{\\pdfstrcmp}}
-#define ng_banner_code      14 // {command code for \.{\\ngbanner}}
-#define ng_os_type_code     15 // {command code for \.{\\ngostype}}
-#define ptex_revision_code  16 // {command code for \.{\\ptexrevision}}
-#define uptex_revision_code 17 // {command code for \.{\\uptexrevision}}
-#define pdf_creation_date_code   18 // {command code for \.{\\pdfcreationdate}}
-#define pdf_file_mod_date_code   19 // {command code for \.{\\pdffilemodedate}}
-#define pdf_file_size_code       20 // {command code for \.{\\pdffilesize}}
-#define pdf_mdfive_sum_code      21 // {command code for \.{\\pdfmdfivesum}}
-#define pdf_file_dump_code       22 // {command code for \.{\\pdffiledump}}
-#define pdf_uniform_deviate_code 23 // {command code for \.{\\pdfuniformdeviate}}
-#define pdf_normal_deviate_code  24 // {command code for \.{\\pdfnormaldeviate}}
-#define expanded_code            25 // {command code for \.{\\expanded}}
-#define Uchar_convert_code       26 // {command code for \.{\\Uchar}}
-#define Ucharcat_convert_code    27 // {command code for \.{\\Ucharcat}}
-#define job_name_code            28 // {command code for \.{\\jobname}}
+#define number_code              0  // {command code for \.{\\number}}
+#define roman_numeral_code       1  // {command code for \.{\\romannumeral}}
+#define kansuji_code             2  // {command code for \.{\\kansuji}}
+#define string_code              3  // {command code for \.{\\string}}
+#define meaning_code             4  // {command code for \.{\\meaning}}
+#define font_name_code           5  // {command code for \.{\\fontname}}
+#define euc_code                 6  // {command code for \.{\\euc}}
+#define sjis_code                7  // {command code for \.{\\sjis}}
+#define jis_code                 8  // {command code for \.{\\jis}}
+#define kuten_code               9  // {command code for \.{\\kuten}}
+#define ucs_code                 10 // {command code for \.{\\ucs}}
+#define toucs_code               11 // {command code for \.{\\toucs}}
+#define tojis_code               12 // {command code for \.{\\tojis}}
+#define ptex_font_name_code      13 // {command code for \.{\\ptexfontname}}
+#define eTeX_revision_code       14 // {base for \eTeX's command codes}
+#define ng_strcmp_code           15 // {command code for \.{\\pdfstrcmp}}
+#define ng_banner_code           16 // {command code for \.{\\ngbanner}}
+#define ng_os_type_code          17 // {command code for \.{\\ngostype}}
+#define ptex_revision_code       18 // {command code for \.{\\ptexrevision}}
+#define uptex_revision_code      19 // {command code for \.{\\uptexrevision}}
+#define pdf_creation_date_code   20 // {command code for \.{\\pdfcreationdate}}
+#define pdf_file_mod_date_code   21 // {command code for \.{\\pdffilemodedate}}
+#define pdf_file_size_code       22 // {command code for \.{\\pdffilesize}}
+#define pdf_mdfive_sum_code      23 // {command code for \.{\\pdfmdfivesum}}
+#define pdf_file_dump_code       24 // {command code for \.{\\pdffiledump}}
+#define pdf_uniform_deviate_code 25 // {command code for \.{\\pdfuniformdeviate}}
+#define pdf_normal_deviate_code  26 // {command code for \.{\\pdfnormaldeviate}}
+#define expanded_code            27 // {command code for \.{\\expanded}}
+#define Uchar_convert_code       28 // {command code for \.{\\Uchar}}
+#define Ucharcat_convert_code    29 // {command code for \.{\\Ucharcat}}
+#define job_name_code            30 // {command code for \.{\\jobname}}
 /* sec 0480 */
 #define closed    2
 #define just_open 1

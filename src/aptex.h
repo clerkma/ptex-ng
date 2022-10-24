@@ -490,7 +490,9 @@ EXTERN byte_file tfm_file;
 def_array(font_info, memory_word, font_mem_size + 1); // {pTeX: use halfword for |char_type| table.}
 
 EXTERN eight_bits font_dir[font_max + 1];     // {pTeX: direction of fonts, 0 is default, 1 is Yoko, 2 is Tate}
+EXTERN eight_bits font_enc[font_max + 1];     // {pTeX: encoding of fonts, 0 is default, 1 is JIS, 2 is Unicode}
 EXTERN integer font_num_ext[font_max + 1];    // {pTeX: number of the |char_type| table.}
+EXTERN eight_bits jfm_enc;                    // {pTeX: holds scanned result of encoding}
 EXTERN font_index fmem_ptr;                   // {first unused word of |font_info|}
 EXTERN internal_font_number font_ptr;         // {largest internal font number in use}
 EXTERN four_quarters font_check[font_max + 1];// {check sum}

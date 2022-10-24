@@ -1333,7 +1333,6 @@ static char * make_format_name(char * format_name)
 #endif
 }
 
-
 static void aptex_commands_init (int ac, char **av)
 {
   aptex_env.aptex_fmt             = NULL;
@@ -2111,7 +2110,6 @@ static int binary_search (long x, long *a, int left, int right)
   return left - 1;
 }
 
-
 #define FEMININE_ORDINAL_INDICATOR             0x00AA
 #define MASCULINE_ORDINAL_INDICATOR            0x00BA
 #define LATIN_CAPITAL_LETTER_A_WITH_GRAVE      0x00C0
@@ -2327,11 +2325,7 @@ static boolean input_ln (alpha_file f, boolean bypass_eoln)
     }
   }
 
-  /*
-    LF    Unix
-    CRLF  Windows
-  */
-
+  /* LF: Unix. CRLF: Windows */
   if (i == '\r')
   {
     i = fgetc(f.file_data);
@@ -4000,9 +3994,11 @@ static void do_initex (void)
   eq_level(frozen_primitive) = level_one;
   text(frozen_primitive) = make_str_string("pdfprimitive");
 
+  jfm_enc = 0;
   font_ptr                    = null_font;
   fmem_ptr                    = 7;
   font_dir[null_font]         = dir_default;
+  font_enc[null_font]         = 0;
   font_num_ext[null_font]     = 0;
   font_name[null_font]        = 795; /* nullfont */
   font_area[null_font]        = 335; /* "" */
@@ -4029,7 +4025,7 @@ static void do_initex (void)
   param_base[null_font]       = -1;
 
   for (k = 0; k <= 6; k++)
-    font_info[k].cint = 0;
+    font_info[k].sc = 0;
 
   text_baseline_shift_factor = 1000;
   script_baseline_shift_factor = 700;
@@ -4586,6 +4582,7 @@ static boolean load_fmt_file (void)
 
   {
     undump_things(font_dir[null_font], font_ptr + 1);
+    undump_things(font_enc[null_font], font_ptr + 1);
     undump_things(font_num_ext[null_font], font_ptr + 1);
     undump_things(font_check[null_font], font_ptr + 1);
     undump_things(font_size[null_font], font_ptr + 1);
@@ -6224,6 +6221,7 @@ done2:
 
   {
     dump_things(font_dir[null_font], font_ptr + 1);
+    dump_things(font_enc[null_font], font_ptr + 1);
     dump_things(font_num_ext[null_font], font_ptr + 1);
     dump_things(font_check[null_font], font_ptr + 1);
     dump_things(font_size[null_font], font_ptr + 1);
@@ -6438,6 +6436,8 @@ static void init_prim (void)
   primitive("textbaselineshiftfactor", assign_int, int_base + text_baseline_shift_factor_code);
   primitive("scriptbaselineshiftfactor", assign_int, int_base + script_baseline_shift_factor_code);
   primitive("scriptscriptbaselineshiftfactor", assign_int, int_base + scriptscript_baseline_shift_factor_code);
+  primitive("ptexlineendmode", assign_int, int_base + ptex_lineend_code);
+  primitive("ptextracingfonts", assign_int, int_base + ptex_tracing_fonts_code);
   primitive("pdfcompresslevel", assign_int, int_base + pdf_compress_level_code);
   primitive("pdfmajorversion", assign_int, int_base + pdf_major_version_code);
   primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
@@ -6573,6 +6573,8 @@ static void init_prim (void)
   primitive("uptexrevision", convert, uptex_revision_code);
   primitive("ucs", convert, ucs_code);
   primitive("toucs", convert, toucs_code);
+  primitive("tojis", convert, tojis_code);
+  primitive("ptexfontname", convert, ptex_font_name_code);
   primitive("pdfstrcmp", convert, ng_strcmp_code);
   primitive("ngbanner", convert, ng_banner_code);
   primitive("ngostype", convert, ng_os_type_code);
@@ -9354,6 +9356,29 @@ void search_mem (pointer p)
 }
 #endif
 
+static void print_font_name_and_size (internal_font_number f)
+{
+  print(font_name[f]);
+  if (font_size[f] != font_dsize[f])
+  {
+    prints("@@");
+    print_scaled(font_size[f]);
+    prints("pt");
+  }
+}
+
+static void print_font_dir_and_enc (internal_font_number f)
+{
+  if (font_dir[f] == dir_tate)
+    prints("/TATE");
+  else if (font_dir[f] == dir_yoko)
+    prints("/YOKO");
+  if (font_enc[f] == 2)
+    prints("+Unicode");
+  else if (font_enc[f] == 1)
+    prints("+JIS");
+}
+
 // prints highlights of list |p|
 static void short_display (integer p)
 {
@@ -9370,7 +9395,7 @@ static void short_display (integer p)
           if (font(p) > font_max)
             print_char('*');
           else
-            sprint_esc(font_id_text(font(p)));
+            print_the_font_identifier_for_font_p();
 
           print_char(' ');
           font_in_short_display = font(p);
@@ -9453,7 +9478,7 @@ static void print_font_and_char (integer p)
     if (font(p) > font_max)
       print_char('*');
     else
-      sprint_esc(font_id_text(font(p)));
+      print_the_font_identifier_for_font_p();
 
     print_char(' ');
 
@@ -11245,6 +11270,14 @@ static void print_param (integer n)
       print_esc("scriptscriptbaselineshiftfactor");
       break;
 
+    case ptex_lineend_code:
+      print_esc("ptexlineendmode");
+      break;
+
+    case ptex_tracing_fonts_code:
+      print_esc("ptextracingfonts");
+      break;
+
     case tracing_assigns_code:
       print_esc("tracingassigns");
       break;
@@ -12171,6 +12204,14 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
         case toucs_code:
           print_esc("toucs");
+          break;
+
+        case tojis_code:
+          print_esc("tojis");
+          break;
+
+        case ptex_font_name_code:
+          print_esc("ptexfontname");
           break;
 
         case eTeX_revision_code:
@@ -16415,6 +16456,7 @@ reswitch:
       {
         case any_state_plus(ignore):
         case skip_blanks + spacer:
+        case skip_blanks_kanji + spacer:
         case new_line + spacer:
           goto lab_switch;
           break;
@@ -16444,12 +16486,24 @@ reswitch:
               };
 
 start_cs:
-              if ((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul))
+              if ((cat == letter) || (cat == hangul))
                 state = skip_blanks;
+              else if ((cat == kanji) || (cat == kana))
+              {
+                if (ptex_lineend % 2 == 0)
+                  state = skip_blanks_kanji;
+                else
+                  state = skip_blanks;
+              }
               else if (cat == spacer)
                 state = skip_blanks;
               else if (cat == other_kchar)
-                state = mid_kanji;
+              {
+                if ((ptex_lineend / 2) % 2 == 0)
+                  state = mid_kanji;
+                else
+                  state = mid_line;
+              }
               else
                 state = mid_line;
 
@@ -16471,6 +16525,16 @@ start_cs:
                       cat = other_kchar;
 
                     k = k + multistrlen(buffer, limit + 1, k);
+
+                    if ((cat == kanji) || (cat == kana))
+                    {
+                      if (ptex_lineend % 2 == 0)
+                        state = skip_blanks_kanji;
+                      else
+                        state = skip_blanks;
+                    }
+                    else if (cat == hangul)
+                      state = skip_blanks;
                   }
                   else
                   {
@@ -16524,6 +16588,8 @@ start_cs:
                       }
                     }
                   }
+                  if (cat == letter)
+                    state = skip_blanks;
                 } while (!(!((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)) || (k > limit)));
 
                 if (!((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)))
@@ -16711,6 +16777,7 @@ found:
           break;
 
         case skip_blanks + car_ret:
+        case skip_blanks_kanji + car_ret:
         case any_state_plus(comment):
           {
             loc = limit + 1;
@@ -16731,8 +16798,15 @@ found:
           break;
 
         case mid_line + left_brace:
-        case mid_kanji + left_brace:
           incr(align_state);
+          break;
+
+        case mid_kanji + left_brace:
+          {
+            incr(align_state);
+            if ((ptex_lineend / 4) % 2 == 1)
+              state = mid_line;
+          }
           break;
 
         case skip_blanks + left_brace:
@@ -16743,9 +16817,23 @@ found:
           }
           break;
 
+        case skip_blanks_kanji + left_brace:
+          {
+            state = mid_kanji;
+            incr(align_state);
+          }
+          break;
+
         case mid_line + right_brace:
-        case mid_kanji + right_brace:
           decr(align_state);
+          break;
+
+        case mid_kanji + right_brace:
+          {
+            decr(align_state);
+            if ((ptex_lineend / 4) % 2 == 1)
+              state = mid_line;
+          }
           break;
 
         case skip_blanks + right_brace:
@@ -16756,19 +16844,29 @@ found:
           }
           break;
 
+        case skip_blanks_kanji + right_brace:
+          {
+            state = mid_kanji;
+            decr(align_state);
+          }
+          break;
+
         case add_delims_to(skip_blanks):
+        case add_delims_to(skip_blanks_kanji):
         case add_delims_to(new_line):
         case add_delims_to(mid_kanji):
           state = mid_line;
           break;
 
         case all_jcode(skip_blanks):
+        case all_jcode(skip_blanks_kanji):
         case all_jcode(new_line):
         case all_jcode(mid_line):
           state = mid_kanji;
           break;
 
         case hangul_code(skip_blanks):
+        case hangul_code(skip_blanks_kanji):
         case hangul_code(new_line):
         case hangul_code(mid_kanji):
           state = mid_line;
@@ -17953,7 +18051,12 @@ void conv_toks (void)
     case kuten_code:
     case ucs_code:
     case toucs_code:
+    case tojis_code:
       scan_int();
+      break;
+
+    case ptex_font_name_code:
+      scan_font_ident();
       break;
 
     case ptex_revision_code:
@@ -18333,6 +18436,23 @@ void conv_toks (void)
 
     case kansuji_code:
       print_kansuji(cur_val);
+      break;
+
+    case tojis_code:
+      {
+        cur_val = toJIS(cur_val);
+        if (cur_val == 0)
+          print_int(-1);
+        else
+          print_int(cur_val);
+      }
+      break;
+
+    case ptex_font_name_code:
+      {
+        print_font_name_and_size(cur_val);
+        print_font_dir_and_enc(cur_val);
+      }
       break;
 
     case string_code:
@@ -19980,7 +20100,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
 
 #ifdef APTEX_EXTENSION
   if ((fmem_ptr + lf > current_font_mem_size))
-    font_info = realloc_font_info (increment_font_mem_size + lf);
+    font_info = realloc_font_info(increment_font_mem_size + lf);
 
   if ((font_ptr == font_max) || (fmem_ptr + lf > current_font_mem_size))
 #else
@@ -19999,6 +20119,9 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
 
   f = font_ptr + 1;
   font_dir[f] = jfm_flag;
+  font_enc[f] = jfm_enc;
+  if (jfm_flag == dir_default)
+    font_enc[f] = 0;
   font_num_ext[f] = nt;
   ctype_base[f] = fmem_ptr;
   char_base[f] = ctype_base[f] + nt - bc;
@@ -20054,7 +20177,12 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
     {
       fget();
       read_twentyfourx(cx);
-      font_info[k].hh.rh = tokanji(cx); // {|kchar_code|}
+      if (jfm_enc == 2) // {Unicode TFM}
+        font_info[k].hh.rh = toDVI(fromUCS(cx));
+      else if (jfm_enc == 1) // {JIS-encoded TFM}
+        font_info[k].hh.rh = toDVI(fromJIS(cx));
+      else
+        font_info[k].hh.rh = tokanji(cx); // {|kchar_code|}
       fget();
       cx = fbyte;
       font_info[k].hh.lh = tonum(cx); // {|kchar_type|}
@@ -20396,6 +20524,23 @@ static void char_warning (internal_font_number f, eight_bits c)
     }
     else
       end_diagnostic(false);
+  }
+}
+
+static void char_warning_jis(internal_font_number f, KANJI_code jc)
+{
+  if (tracing_lost_chars > 0)
+  {
+    begin_diagnostic();
+    print_nl("Character ");
+    print_kanji(jc);
+    prints(" (");
+    print_hex(jc);
+    prints(") cannot be typeset in JIS-encoded JFM ");
+    slow_print(font_name[f]);
+    print_char(',');
+    print_nl("so I use .notdef glyph instead.");
+    end_diagnostic(false);
   }
 }
 
@@ -21818,7 +21963,18 @@ reswitch:
 
         prev_p = link(prev_p);  // {N.B.: not |prev_p:=p|, |p| might be |lig_trick|}
         p = link(p);
-        jc = toDVI(KANJI(info(p)) % max_cjk_val);
+        jc = KANJI(info(p)) % max_cjk_val;
+
+        if (font_enc[f] == 2)
+          jc = toUCS(jc);
+        else if (font_enc[f] == 1)
+        {
+          if (toJIS(jc) == 0)
+            char_warning_jis(f, jc);
+          jc = toJIS(jc);
+        }
+        else
+          jc = toDVI(jc);
 
         if (jc < 0x10000)
         {
@@ -34286,6 +34442,36 @@ void alter_box_dimen (void)
   }
 }
 
+static boolean scan_keyword_noexpand(const char * s)
+{
+  pointer p; // {tail of the backup list}
+  pointer q; // {new node being added to the token list via |store_new_token|}
+  const char * k; // {index into |str_pool|}
+
+  p = backup_head;
+  link(p) = null;
+  k = s;
+
+  while (*k)
+  {
+    get_token();
+    if ((cur_cs == 0) && ((cur_chr == (*k)) || (cur_chr == (*k) - 'a' + 'A')))
+    {
+      store_new_token(cur_tok);
+      incr(k);
+    }
+    else if ((cur_cmd != spacer) || (p != backup_head))
+    {
+      back_input();
+      if (p != backup_head)
+        back_list(link(backup_head));
+      return false;
+    }
+  }
+  flush_list(link(backup_head));
+  return true;
+}
+
 void new_font (small_number a)
 {
   pointer u;  // {user's font identifier}
@@ -34298,6 +34484,23 @@ void new_font (small_number a)
   if (job_name == 0)
     open_log_file();  // {avoid confusing \.{texput} with the font name}
 
+  // Scan the font encoding specification
+  {
+    jfm_enc = 0;
+    if (scan_keyword_noexpand("in"))
+    {
+      if (scan_keyword_noexpand("jis"))
+        jfm_enc = 1;
+      else if (scan_keyword_noexpand("ucs"))
+        jfm_enc = 2;
+      else 
+      {
+        print_err("Unknown TFM encoding");
+        help1("TFM encoding specification is ignored.");
+        error();
+      }
+    }
+  }
   get_r_token();
   u = cur_cs;
 
@@ -36825,20 +37028,33 @@ eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f)
   sp = 1; // { start position }
   ep = font_num_ext[f] - 1; // { end position }
 
-  if ((ep >= 1) && (kchar_code(f, sp) <= jc) && (jc <= kchar_code(f, ep)))
+  if ((ep >= 1)) if (font_enc[f] == 0)
+  {
+    if ((kchar_code(f, sp) <= jc) && (jc <= kchar_code(f, ep)))
+    {
+      while (sp <= ep)
+      {
+        mp = sp + ((ep - sp) / 2);
+
+        if (jc < kchar_code(f, mp))
+          ep = mp - 1;
+        else if (jc > kchar_code(f, mp))
+          sp = mp + 1;
+        else
+        {
+          return kchar_type(f, mp);
+        }
+      }
+    }
+  }
+  else
   {
     while (sp <= ep)
     {
-      mp = sp + ((ep - sp) / 2);
-
-      if (jc < kchar_code(f, mp))
-        ep = mp - 1;
-      else if (jc > kchar_code(f, mp))
-        sp = mp + 1;
+      if (jc == kchar_code(f, sp))
+        return kchar_type(f, sp);
       else
-      {
-        return kchar_type(f, mp);
-      }
+        incr(sp);
     }
   }
 
