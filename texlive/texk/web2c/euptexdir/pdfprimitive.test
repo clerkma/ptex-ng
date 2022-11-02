@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: pdfprimitive.test 48633 2018-09-09 17:56:55Z karl $
+# $Id: pdfprimitive.test 64840 2022-10-28 13:58:15Z hironobu $
 # Copyright 2017-2018 Karl Berry <tex-live@tug.org>#
 # Copyright 2015 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -7,7 +7,7 @@
 LC_ALL=C; export LC_ALL;  LANGUAGE=C; export LANGUAGE
 
 TEXMFCNF=$srcdir/../kpathsea; export TEXMFCNF
-TEXINPUTS=.; exoprt TEXINPUTS
+TEXINPUTS=.; export TEXINPUTS
 
 FILE=pdfprimitive-euptex
 
