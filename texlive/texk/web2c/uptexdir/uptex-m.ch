@@ -1,4 +1,4 @@
-% $Id: uptex-m.ch 64800 2022-10-24 10:57:00Z hironobu $
+% $Id: uptex-m.ch 64914 2022-11-03 10:50:32Z hironobu $
 % This is a change file for upTeX u1.29
 % By Takuji Tanaka.
 %
@@ -146,7 +146,7 @@ else if (kcode_pos=1)or((kcode_pos>=@'11)and(kcode_pos<=@'12))
 
 @x
 @d min_quarterword=0 {smallest allowable value in a |quarterword|}
-@d max_quarterword=255 {largest allowable value in a |quarterword|}
+@d max_quarterword=@"FFFF {largest allowable value in a |quarterword|}
 @d min_halfword==-@"FFFFFFF {smallest allowable value in a |halfword|}
 @d max_halfword==@"FFFFFFF {largest allowable value in a |halfword|}
 @d max_cjk_val=@"10000
