@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 64224 2022-08-29 13:52:14Z hironobu $
+dnl $Id: configure.ac 64941 2022-11-05 15:43:53Z karl $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
@@ -94,6 +94,7 @@ else
 	# query Ghostscript version
 	AC_MSG_CHECKING([Ghostscript version])
 	AC_RUN_IFELSE([AC_LANG_SOURCE([#include <stdio.h>
+		#include <stdlib.h>
 		#include <ghostscript/iapi.h>
 		int main () {
 			gsapi_revision_t r;
