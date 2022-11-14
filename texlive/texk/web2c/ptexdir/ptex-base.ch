@@ -1,4 +1,4 @@
-% $Id: ptex-base.ch 64914 2022-11-03 10:50:32Z hironobu $
+% $Id: ptex-base.ch 64996 2022-11-12 13:30:26Z hironobu $
 % This is a change file for pTeX
 % By Sadayuki Tanaka and ASCII MEDIA WORKS.
 %
@@ -737,7 +737,7 @@ of larger type codes will also be defined, for use in math mode only.
 @x [12.???] pTeX: \ptexfontname, \ptextracingfonts
 @p procedure short_display(@!p:integer); {prints highlights of list |p|}
 @y
-@p@t\4@>@<Declare the pTeX-specific |print_font_...| procedures|@>@;@/
+@p@t\4@>@<Declare the pTeX-specific |print_font_...| procedures@>@;@/
 procedure short_display(@!p:integer); {prints highlights of list |p|}
 @z
 
@@ -1665,7 +1665,7 @@ begin
   end;
 end;
 
-@ @<Declare the pTeX-specific |print_font_...| procedures|@>=
+@ @<Declare the pTeX-specific |print_font_...| procedures@>=
 procedure print_font_name_and_size(f:internal_font_number);
 begin
   print(font_name[f]);
