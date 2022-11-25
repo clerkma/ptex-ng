@@ -1,4 +1,4 @@
-$Id: README 65028 2022-11-16 13:38:17Z takuji $
+$Id: README 65092 2022-11-23 21:23:29Z karl $
 Copyright 2006-2022 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -108,7 +108,7 @@ ttf2pk2 - maintained here, by us
 
 ttfdump - maintained here, by us, since Taiwan upstream apparently gone.
 
-upmendex 1.06 - by Takuji Tanaka
+upmendex 1.07 - by Takuji Tanaka
   https://ctan.org/pkg/upmendex
   https://github.com/t-tk/upmendex-package
 
@@ -127,8 +127,7 @@ web2c - maintained here, by us - core web2c, plain tex, etc.
        hitex - https://hint.userweb.mwn.de/hint/hitex.html
   mflua[jit] - https://serveur-svn.lri.fr/svn/modhel/mflua
                also: http://www.luatex.org/download.html
-    mplibdir - http://tug.org/metapost/
-               also: http://www.luatex.org/download.html
+    mplibdir - https://tug.org/metapost/
       luatex - http://luatex.org/
       pdftex - http://pdftex.org/
    [u]pmpost - nothing current, see README for old info
