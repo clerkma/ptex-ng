@@ -1,10 +1,13 @@
 #! /bin/sh -vx
-# $Id: yokotate.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: yokotate.test 65117 2022-11-27 13:55:45Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2010-2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
 test -d ptests || mkdir -p ptests
+
+TEXMFCNF=$srcdir/../kpathsea
+export TEXMFCNF
 
 # Test inputs
 testdir=$srcdir/ptexdir/tests
@@ -15,9 +18,35 @@ for font in min10 tmin10; do
   ./ppltotf -verbose $testdir/$font.pl ptests/x$font.tfm && \
     cmp $testdir/$font.tfm ptests/x$font.tfm && echo || exit 1
 
-  TEXMFCNF=$srcdir/../kpathsea \
-    ./ptftopl -charcode-format octal -verbose $testdir/$font.tfm ptests/x$font.pl && \
-    diff $testdir/$font.pl ptests/x$font.pl && echo || exit 1
+  ./ptftopl -charcode-format octal -verbose $testdir/$font.tfm ptests/x$font.pl && \
+    diff $testdir/$font.pl ptests/x$font.pl && echo || exit 2
 
 done
 
+
+# Testing pPLtoTF/pTFtoPL for character range & encoding.
+for font in chcode; do
+
+  ./ppltotf $testdir/$font.pl ptests/x$font.tfm && \
+    cmp $testdir/$font.tfm ptests/x$font.tfm && echo || exit 3
+
+  ./ptftopl -charcode-format octal $testdir/$font.tfm ptests/x$font.pl && \
+    diff $testdir/$font.pl ptests/x$font.pl && echo || exit 4
+
+for enc in utf8 euc sjis jis; do
+
+  ./ppltotf -kanji=$enc $testdir/$font-$enc.pl ptests/x$font-$enc.tfm && \
+    cmp $testdir/$font.tfm ptests/x$font-$enc.tfm && echo || exit 5
+
+  ./ptftopl -kanji=$enc $testdir/$font.tfm ptests/x$font-$enc.pl && \
+    if [ $enc = utf8 ]; then \
+      perl -i".orig" -CD -pe "use utf8; tr/―～∥－￠￡￢/—〜‖−¢£¬/" ptests/x$font-$enc.pl; fi && \
+    diff $testdir/$font-$enc.pl ptests/x$font-$enc.pl && echo || exit 6
+
+  if [ $enc = utf8 ]; then
+    ./ppltotf -kanji=$enc ptests/x$font-$enc.pl.orig ptests/x$font-$enc.tfm && \
+      cmp $testdir/$font.tfm ptests/x$font-$enc.tfm && echo || exit 7
+  fi
+
+done
+done
