@@ -1,4 +1,4 @@
-## $Id: hitex.am 64607 2022-10-04 17:47:53Z lscarso $
+## $Id: hitex.am 65165 2022-12-02 15:51:09Z mruckert $
 ## texk/web2c/hitexdir/am/hitex.am: Makefile fragment for HiTeX
 ##
 ## Copyright 2021-2022 Martin Ruckert <ruckert@cs.hm.edu>
@@ -24,7 +24,7 @@ endif HITEX
 
 hitex_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_INCLUDES) 
 hitex_CPPFLAGS += -I$(srcdir)/libmd5
-hitex_CPPFLAGS += -DINIT -DSTAT
+hitex_CPPFLAGS += -DINIT -DSTAT -DWEB2CVERSION="\"${WEB2CVERSION}\""
 # -DDEBUG drops into an interactive debugging session.
 hitex_LDADD = $(KPATHSEA_LIBS) $(ZLIB_LIBS) libmd5.a
 hitex_LDADD += libmd5.a

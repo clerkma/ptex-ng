@@ -1,5 +1,6 @@
 #! /bin/sh -vx
-# $Id: updvitype.test 65115 2022-11-27 06:52:11Z takuji $
+# $Id: updvitype.test 65177 2022-12-03 12:53:58Z takuji $
+# Copyright 2022 Japanese TeX Development Community <issue@texjp.org>
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2011-2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.

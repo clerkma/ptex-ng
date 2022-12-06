@@ -1,3 +1,12 @@
+2022-12-05  Luigi Scarso <luigi.scarso@gmail.com> 
+    * complementaty patch for revision 7551 (lua end compatibility) (H.Hagen)
+
+2022-12-03  Luigi Scarso <luigi.scarso@gmail.com> 
+    * Track last node in ligature handling (M.Krüger)
+
+2022-12-03  Luigi Scarso <luigi.scarso@gmail.com> 
+    * Make disc node prev. pointers more uniform (M.Krüger)
+
 2022-11-20  Luigi Scarso <luigi.scarso@gmail.com> 
     * set \variablefam = -1 as initial value (H.Hagen).
 
