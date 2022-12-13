@@ -1,4 +1,4 @@
-% $Id: uptex-m.ch 64914 2022-11-03 10:50:32Z hironobu $
+% $Id: uptex-m.ch 65248 2022-12-12 13:06:25Z takuji $
 % This is a change file for upTeX u1.29
 % By Takuji Tanaka.
 %
@@ -46,6 +46,14 @@
 % (2020-10-25) TTK  upTeX u1.27
 % (2022-01-23) TTK  upTeX u1.28
 % (2022-07-23) TTK  upTeX u1.29
+% (2022-12-09) HK   Hironori Kitagawa fixed a bug in \char, \kchar.
+
+@x
+\def\pTeX{p\kern-.15em\TeX}
+@y
+\def\pTeX{p\kern-.15em\TeX}
+\def\upTeX{u\pTeX}
+@z
 
 @x upTeX: banner
   {printed when \pTeX\ starts}
@@ -54,11 +62,11 @@
 @#
 @d upTeX_version=1
 @d upTeX_revision==".29"
-@d upTeX_version_string=='-u1.29' {current u\pTeX\ version}
+@d upTeX_version_string=='-u1.29' {current \upTeX\ version}
 @#
 @d upTeX_banner=='This is upTeX, Version 3.141592653',pTeX_version_string,upTeX_version_string
 @d upTeX_banner_k==upTeX_banner
-  {printed when u\pTeX\ starts}
+  {printed when \upTeX\ starts}
 @z
 
 @x upTeX: banner
@@ -173,10 +181,12 @@ else if (kcode_pos=1)or((kcode_pos>=@'11)and(kcode_pos<=@'12))
 @z
 
 @x
-@d math_comp=left_right+1 {component of formula ( \.{\\mathbin}, etc.~)}
+@d char_num=max_char_code+1 {character specified numerically ( \.{\\char} )}
+@d math_char_num=char_num+1 {explicit math code ( \.{\\mathchar} )}
 @y
-@d kchar_num=left_right+1 {cjk character specified numerically ( \.{\\kchar} )}
-@d math_comp=kchar_num+1 {component of formula ( \.{\\mathbin}, etc.~)}
+@d char_num=max_char_code+1 {character specified numerically ( \.{\\char} )}
+@d kchar_num=char_num+1 {cjk character specified numerically ( \.{\\kchar} )}
+@d math_char_num=kchar_num+1 {explicit math code ( \.{\\mathchar} )}
 @z
 
 @x
@@ -187,10 +197,11 @@ else if (kcode_pos=1)or((kcode_pos>=@'11)and(kcode_pos<=@'12))
 @z
 
 @x
-@d max_command=partoken_name {the largest command code seen at |big_switch|}
+@d partoken_name=set_auto_spacing+1 {set |par_token| name}
 @y
-@d set_enable_cjk_token=partoken_name+1 {set cjk mode ( \.{\\enablecjktoken}, \.{\\disablecjktoken}, \.{\\forcecjktoken} )}
-@d max_command=set_enable_cjk_token {the largest command code seen at |big_switch|}
+@d set_enable_cjk_token=set_auto_spacing+1 {set cjk mode
+  ( \.{\\enablecjktoken}, \.{\\disablecjktoken}, \.{\\forcecjktoken} )}
+@d partoken_name=set_enable_cjk_token+1 {set |par_token| name}
 @z
 
 @x
@@ -220,8 +231,7 @@ eqtb[auto_xspacing_code]:=eqtb[cat_code_base];
 for k:=0 to 255 do
   begin cat_code(k):=other_char; kcat_code(k):=other_kchar;
   math_code(k):=hi(k); sf_code(k):=1000;
-  auto_xsp_code(k):=0; inhibit_xsp_code(k):=0; inhibit_xsp_type(k):=0;
-  kinsoku_code(k):=0; kinsoku_type(k):=0;
+  auto_xsp_code(k):=0;
   end;
 @y
 eqtb[auto_xspacing_code]:=eqtb[cat_code_base];
@@ -229,8 +239,7 @@ eqtb[enable_cjk_token_code]:=eqtb[cat_code_base];
 for k:=0 to 255 do
   begin cat_code(k):=other_char;
   math_code(k):=hi(k); sf_code(k):=1000;
-  auto_xsp_code(k):=0; inhibit_xsp_code(k):=0; inhibit_xsp_type(k):=0;
-  kinsoku_code(k):=0; kinsoku_type(k):=0;
+  auto_xsp_code(k):=0;
   end;
 for k:=0 to 511 do
   begin kcat_code(k):=other_kchar;
@@ -291,9 +300,9 @@ primitive("kchar",kchar_num,0);@/
 @z
 
 @x
-ital_corr: print_esc("/");
+char_num: print_esc("char");
 @y
-ital_corr: print_esc("/");
+char_num: print_esc("char");
 kchar_num: print_esc("kchar");
 @z
 
@@ -593,8 +602,8 @@ char_given,math_given: scanned_result(cur_chr)(int_val);
 @x
 @d ptex_minor_version_code=ptex_version_code+1 {code for \.{\\ptexminorversion}}
 @y
-@d ptex_minor_version_code=ptex_version_code+1 {code for \.{\\ptexminorversion}}
-@d uptex_version_code=ptex_minor_version_code+1 {code for \.{\\uptexversion}}
+@d uptex_version_code=ptex_version_code+1 {code for \.{\\uptexversion}}
+@d ptex_minor_version_code=uptex_version_code+1 {code for \.{\\ptexminorversion}}
 @z
 
 @x
@@ -801,13 +810,18 @@ hmode+no_boundary: begin get_x_token;
    (cur_cmd=kanji)or(cur_cmd=kana)or(cur_cmd=other_kchar)or
    (cur_cmd=char_given)or(cur_cmd=char_num) then cancel_boundary:=true;
 @y
-hmode+kanji,hmode+kana,hmode+other_kchar,hmode+hangul,hmode+kchar_given: goto main_loop_j;
+hmode+kanji,hmode+kana,hmode+other_kchar,hmode+hangul: goto main_loop_j;
+hmode+kchar_given:
+  begin cur_cmd:=kcat_code(kcatcodekey(cur_chr)); goto main_loop_j; end;
 hmode+char_given:
-  if check_echar_range(cur_chr) then goto main_loop else goto main_loop_j;
+  if check_echar_range(cur_chr) then goto main_loop
+  else begin cur_cmd:=kcat_code(kcatcodekey(cur_chr)); goto main_loop_j; end;
 hmode+char_num: begin scan_char_num; cur_chr:=cur_val;
-  if check_echar_range(cur_chr) then goto main_loop else goto main_loop_j;
+  if check_echar_range(cur_chr) then goto main_loop
+  else begin cur_cmd:=kcat_code(kcatcodekey(cur_chr)); goto main_loop_j; end;
   end;
 hmode+kchar_num: begin scan_char_num; cur_chr:=cur_val;
+  cur_cmd:=kcat_code(kcatcodekey(cur_chr));
   goto main_loop_j;
   end;
 hmode+no_boundary: begin get_x_token;
@@ -847,10 +861,10 @@ if (cur_cmd>=kanji)and(cur_cmd<=hangul) then
 if cur_cmd=other_char then goto main_loop_lookahead+1;
 if cur_cmd=char_given then
   begin if check_echar_range(cur_chr) then goto main_loop_lookahead+1
-  else @<goto |main_lig_loop|@>;
+  else begin cur_cmd:=kcat_code(kcatcodekey(cur_chr)); @<goto |main_lig_loop|@>; end;
   end;
 if cur_cmd=kchar_given then
-  @<goto |main_lig_loop|@>;
+  begin cur_cmd:=kcat_code(kcatcodekey(cur_chr)); @<goto |main_lig_loop|@>; end;
 x_token; {now expand and set |cur_cmd|, |cur_chr|, |cur_tok|}
 if cur_cmd=letter then goto main_loop_lookahead+1;
 if (cur_cmd>=kanji)and(cur_cmd<=hangul) then
@@ -858,15 +872,16 @@ if (cur_cmd>=kanji)and(cur_cmd<=hangul) then
 if cur_cmd=other_char then goto main_loop_lookahead+1;
 if cur_cmd=char_given then
   begin if check_echar_range(cur_chr) then goto main_loop_lookahead+1
-  else @<goto |main_lig_loop|@>;
+  else begin cur_cmd:=kcat_code(kcatcodekey(cur_chr)); @<goto |main_lig_loop|@>; end;
   end;
 if cur_cmd=char_num then
   begin scan_char_num; cur_chr:=cur_val;
   if check_echar_range(cur_chr) then goto main_loop_lookahead+1
-  else @<goto |main_lig_loop|@>;
+  else begin cur_cmd:=kcat_code(kcatcodekey(cur_chr)); @<goto |main_lig_loop|@>; end;
   end;
 if cur_cmd=kchar_num then
   begin scan_char_num; cur_chr:=cur_val;
+  cur_cmd:=kcat_code(kcatcodekey(cur_chr));
   @<goto |main_lig_loop|@>;
   end;
 @z
@@ -937,25 +952,25 @@ else if cur_cmd=char_given then
   if check_echar_range(cur_chr) then q:=new_character(f,cur_chr)
   else begin
     if direction=dir_tate then f:=cur_tfont else f:=cur_jfont;
-    KANJI(cx):=cur_chr
+    KANJI(cx):=cur_chr; cur_cmd:=kcat_code(kcatcodekey(cx));
     end
 else if cur_cmd=char_num then
   begin scan_char_num;
   if check_echar_range(cur_val) then q:=new_character(f,cur_val)
   else  begin
     if direction=dir_tate then f:=cur_tfont else f:=cur_jfont;
-    KANJI(cx):=cur_val
+    KANJI(cx):=cur_val; cur_cmd:=kcat_code(kcatcodekey(cx));
     end
   end
 else if cur_cmd=kchar_given then
   begin
     if direction=dir_tate then f:=cur_tfont else f:=cur_jfont;
-    KANJI(cx):=cur_chr
+    KANJI(cx):=cur_chr; cur_cmd:=kcat_code(kcatcodekey(cx));
   end
 else if cur_cmd=kchar_num then
   begin scan_char_num;
     if direction=dir_tate then f:=cur_tfont else f:=cur_jfont;
-    KANJI(cx):=cur_val
+    KANJI(cx):=cur_val; cur_cmd:=kcat_code(kcatcodekey(cx));
   end
 @z
 
@@ -1171,6 +1186,15 @@ else if font_dir[font(first_char)]<>dir_default then
 @z
 
 @x
+else if font_dir[font(last_char)]<>dir_default then
+  begin insert_skip:=after_wchar; KANJI(cx):=info(link(last_char));
+@y
+else if font_dir[font(last_char)]<>dir_default then
+  begin insert_skip:=after_wchar;
+  KANJI(cx):=info(link(last_char)) mod max_cjk_val;
+@z
+
+@x
 begin if is_char_node(link(p)) then
   begin q:=p; p:=link(p);
   if font_dir[font(p)]<>dir_default then
@@ -1194,7 +1218,13 @@ begin if is_char_node(link(p)) then
 @x
     fast_get_avail(main_p); info(main_p):=KANJI(cur_chr);
 @y
-    fast_get_avail(main_p); info(main_p):=KANJI(cur_chr)+cur_cmd*max_cjk_val;
+    fast_get_avail(main_p);
+    if (cur_cmd>=kanji)and(cur_cmd<=hangul) then
+      info(main_p):=KANJI(cur_chr)+cur_cmd*max_cjk_val
+    else if cur_cmd=not_cjk then
+      info(main_p):=KANJI(cur_chr)+other_kchar*max_cjk_val
+    else { Does this case occur? }
+      info(main_p):=KANJI(cur_chr)+kcat_code(kcatcodekey(KANJI(cur_chr)))*max_cjk_val;
 @z
 
 @x
@@ -1230,18 +1260,22 @@ begin if is_char_node(link(p)) then
         begin ins_kp:=true; cur_l:=qi(0);
         end
       else cur_l:=qi(get_jfm_pos(KANJI(cur_chr),main_f));
+      cur_cmd:=kcat_code(kcatcodekey(cur_chr));
       end;
     char_num: begin scan_char_num; cur_chr:=cur_val;
       if check_echar_range(cur_chr) then
         begin ins_kp:=true; cur_l:=qi(0);
         end
       else cur_l:=qi(get_jfm_pos(KANJI(cur_chr),main_f));
+      cur_cmd:=kcat_code(kcatcodekey(cur_chr));
       end;
     kchar_given: begin
       cur_l:=qi(get_jfm_pos(KANJI(cur_chr),main_f));
+      cur_cmd:=kcat_code(kcatcodekey(cur_chr));
       end;
     kchar_num: begin scan_char_num; cur_chr:=cur_val;
       cur_l:=qi(get_jfm_pos(KANJI(cur_chr),main_f));
+      cur_cmd:=kcat_code(kcatcodekey(cur_chr));
       end;
 @z
 

@@ -1,4 +1,4 @@
-% $Id: ptex-base.ch 64996 2022-11-12 13:30:26Z hironobu $
+% $Id: ptex-base.ch 65248 2022-12-12 13:06:25Z takuji $
 % This is a change file for pTeX
 % By Sadayuki Tanaka and ASCII MEDIA WORKS.
 %
@@ -1280,8 +1280,8 @@ primitive("xkanjiskip",assign_glue,glue_base+xkanji_skip_code);@/
   {table of 256 command codes for the wchar's catcodes }
 @d auto_xsp_code_base=kcat_code_base+256 {table of 256 auto spacer flag}
 @d inhibit_xsp_code_base=auto_xsp_code_base+256
-@d kinsoku_base=inhibit_xsp_code_base+256 {table of 256 kinsoku mappings}
-@d kansuji_base=kinsoku_base+256 {table of 10 kansuji mappings}
+@d kinsoku_base=inhibit_xsp_code_base+1024 {table of 1024 kinsoku mappings}
+@d kansuji_base=kinsoku_base+1024 {table of 10 kansuji mappings}
 @d lc_code_base=kansuji_base+10 {table of 256 lowercase mappings}
 @z
 
@@ -1327,7 +1327,10 @@ eqtb[auto_xspacing_code]:=eqtb[cat_code_base];
 for k:=0 to 255 do
   begin cat_code(k):=other_char; kcat_code(k):=other_kchar;
   math_code(k):=hi(k); sf_code(k):=1000;
-  auto_xsp_code(k):=0; inhibit_xsp_code(k):=0; inhibit_xsp_type(k):=0;
+  auto_xsp_code(k):=0;
+  end;
+for k:=0 to 1023 do
+  begin inhibit_xsp_code(k):=0; inhibit_xsp_type(k):=0;
   kinsoku_code(k):=0; kinsoku_type(k):=0;
   end;
 @z
@@ -2373,18 +2376,16 @@ procedure scan_something_internal(@!level:small_number;@!negative:boolean);
 var m:halfword; {|chr_code| part of the operand token}
 @y
 var m:halfword; {|chr_code| part of the operand token}
+@!q,@!r:pointer; {general purpose indices}
 @!tx:pointer; {effective tail node}
 @!qx:halfword; {general purpose index}
 @z
 @x [26.413] l.8345 - pTeX: scan_something_internal
-begin m:=cur_chr;
 case cur_cmd of
 def_code: @<Fetch a character code from some table@>;
 toks_register,assign_toks,def_family,set_font,def_font: @<Fetch a token list or
   font identifier, provided that |level=tok_val|@>;
 @y
-@!q,@!r:pointer;
-begin m:=cur_chr;
 case cur_cmd of
 assign_kinsoku: @<Fetch breaking penalty from some table@>;
 assign_inhibit_xsp_code: @<Fetch inhibit type from some table@>;
@@ -2884,8 +2885,8 @@ if_tdir_code: b:=(abs(direction)=dir_tate);
 if_ydir_code: b:=(abs(direction)=dir_yoko);
 if_ddir_code: b:=(abs(direction)=dir_dtou);
 if_mdir_code: b:=(direction<0);
-if_void_code, if_hbox_code, if_vbox_code, if_tbox_code, if_ybox_code, if_dbox_code, if_mbox_code:
-  @<Test box register status@>;
+if_tbox_code, if_ybox_code, if_dbox_code, if_mbox_code,
+if_void_code, if_hbox_code, if_vbox_code: @<Test box register status@>;
 if_jfont_code, if_tfont_code:
   begin scan_font_ident;
   if this_if=if_jfont_code then b:=(font_dir[cur_val]=dir_yoko)
@@ -7228,7 +7229,7 @@ inserting a space between 2byte-char and 1byte-char.
 @d inhibit_after=2    {disable to insert space after 2byte-char}
 @d inhibit_none=3     {enable to insert space before/after 2byte-char}
 @d inhibit_unused=4   {unused entry}
-@d no_entry=1000
+@d no_entry=10000
 @d new_pos=0
 @d cur_pos=1
 
@@ -7260,7 +7261,7 @@ if n=new_pos then
     begin if pp<>no_entry then p:=pp; goto done; end;
   if inhibit_xsp_type(p)=inhibit_unused then
     if pp=no_entry then pp:=p; { save the nearest unused hash }
-  incr(p); if p>255 then p:=0;
+  incr(p); if p>1023 then p:=0;
   until s=p;
   p:=pp;
   end
@@ -7268,7 +7269,7 @@ else
   begin repeat
   if inhibit_xsp_code(p)=0 then goto done1;
   if inhibit_xsp_code(p)=c then goto done;
-  incr(p); if p>255 then p:=0;
+  incr(p); if p>1023 then p:=0;
   until s=p;
 done1: p:=no_entry;
   end;
@@ -7343,7 +7344,7 @@ if n=new_pos then
     begin if pp<>no_entry then p:=pp; goto done; end;
   if kinsoku_type(p)=kinsoku_unused_code then
     if pp=no_entry then pp:=p; { save the nearest unused hash }
-  incr(p); if p>255 then p:=0;
+  incr(p); if p>1023 then p:=0;
   until s=p;
   p:=pp;
   end
@@ -7351,7 +7352,7 @@ else
   begin repeat
   if kinsoku_type(p)=0 then goto done1;
   if kinsoku_code(p)=c then goto done;
-  incr(p); if p>255 then p:=0;
+  incr(p); if p>1023 then p:=0;
   until s=p;
 done1: p:=no_entry;
   end;
