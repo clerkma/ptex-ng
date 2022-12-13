@@ -3847,6 +3847,9 @@ static void do_initex (void)
     math_code(k) = k;
     sf_code(k) = 1000;
     auto_xsp_code(k) = 0;
+  }
+  for (k = 0; k <= 1023; k++)
+  {
     inhibit_xsp_code(k) = 0;
     inhibit_xsp_type(k) = 0;
     kinsoku_code(k) = 0;
@@ -11661,6 +11664,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       print_esc("char");
       break;
 
+    case kchar_num:
+      print_esc("kchar");
+      break;
+
     case cs_name:
       print_esc("csname");
       break;
@@ -11725,10 +11732,6 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
     case ital_corr:
       print_esc("/");
-      break;
-
-    case kchar_num:
-      print_esc("kchar");
       break;
 
     case mark:
@@ -15539,6 +15542,7 @@ void find_font_dimen (boolean writing)
 static void scan_something_internal (small_number level, boolean negative)
 {
   halfword m;
+  pointer q, r;
   pointer tx;
   halfword qx;
   four_quarters i;
@@ -19096,13 +19100,13 @@ void conditional (void)
       b = (direction < 0);
       break;
 
-    case if_void_code:
-    case if_hbox_code:
-    case if_vbox_code:
     case if_tbox_code:
     case if_ybox_code:
     case if_dbox_code:
     case if_mbox_code:
+    case if_void_code:
+    case if_hbox_code:
+    case if_vbox_code:
       {
         scan_register_num();
         fetch_box(p);
@@ -31787,6 +31791,7 @@ static void make_accent (void)
           f = cur_jfont;
 
         KANJI(cx) = cur_chr;
+        cur_cmd = kcat_code(kcatcodekey(cx));
       }
     }
     else if (cur_cmd == char_num)
@@ -31803,6 +31808,7 @@ static void make_accent (void)
           f = cur_jfont;
 
         KANJI(cx) = cur_chr;
+        cur_cmd = kcat_code(kcatcodekey(cx));
       }
     }
     else if (cur_cmd == kchar_given)
@@ -31813,6 +31819,7 @@ static void make_accent (void)
         f = cur_jfont;
 
       KANJI(cx) = cur_chr;
+      cur_cmd = kcat_code(kcatcodekey(cx));
     }
     else if (cur_cmd == kchar_num)
     {
@@ -31824,6 +31831,7 @@ static void make_accent (void)
         f = cur_jfont;
 
       KANJI(cx) = cur_val;
+      cur_cmd = kcat_code(kcatcodekey(cx));
     }
     else
       back_input();
@@ -35433,15 +35441,24 @@ reswitch:
     case hmode + kana:
     case hmode + other_kchar:
     case hmode + hangul:
-    case hmode + kchar_given:
       goto main_loop_j;
+      break;
+
+    case hmode + kchar_given:
+      {
+        cur_cmd = kcat_code(kcatcodekey(cur_chr));
+        goto main_loop_j;
+      }
       break;
 
     case hmode + char_given:
       if (check_echar_range(cur_chr))
         goto main_loop;
       else
+      {
+        cur_cmd = kcat_code(kcatcodekey(cur_chr));
         goto main_loop_j;
+      }
       break;
 
     case hmode + char_num:
@@ -35452,7 +35469,10 @@ reswitch:
         if (check_echar_range(cur_chr))
           goto main_loop;
         else
+        {
+          cur_cmd = kcat_code(kcatcodekey(cur_chr));
           goto main_loop_j;
+        }
       }
       break;
 
@@ -35460,6 +35480,7 @@ reswitch:
       {
         scan_char_num();
         cur_chr = cur_val;
+        cur_cmd = kcat_code(kcatcodekey(cur_chr));
         goto main_loop_j;
       }
       break;
@@ -36179,11 +36200,15 @@ main_loop_lookahead:
     if (check_echar_range(cur_chr))
       goto main_loop_lookahead_1;
     else
+    {
+      cur_cmd = kcat_code(kcatcodekey(cur_chr));
       goto_main_lig_loop();
+    }
   }
 
   if (cur_cmd == kchar_given)
   {
+    cur_cmd = kcat_code(kcatcodekey(cur_chr));
     goto_main_lig_loop();
   }
 
@@ -36205,7 +36230,10 @@ main_loop_lookahead:
     if (check_echar_range(cur_chr))
       goto main_loop_lookahead_1;
     else
+    {
+      cur_cmd = kcat_code(kcatcodekey(cur_chr));
       goto_main_lig_loop();
+    }
   }
 
   if (cur_cmd == char_num)
@@ -36216,13 +36244,17 @@ main_loop_lookahead:
     if (check_echar_range(cur_chr))
       goto main_loop_lookahead_1;
     else
+    {
+      cur_cmd = kcat_code(kcatcodekey(cur_chr));
       goto_main_lig_loop();
+    }
   }
 
   if (cur_cmd == kchar_num)
   {
     scan_char_num();
     cur_chr = cur_val;
+    cur_cmd = kcat_code(kcatcodekey(cur_chr));
     goto_main_lig_loop();
   }
 
@@ -37090,7 +37122,7 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
 
       incr(p);
       
-      if (p > 255)
+      if (p > 1023)
         p = 0;
     } while (!(s == p));
 
@@ -37107,7 +37139,7 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
 
       incr(p);
 
-      if (p > 255)
+      if (p > 1023)
         p = 0;
     } while (!(s == p));
 
@@ -37162,7 +37194,7 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
 
       incr(p);
 
-      if (p > 255)
+      if (p > 1023)
         p = 0;
     } while (!(s == p));
 
@@ -37179,7 +37211,7 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
 
       incr(p);
 
-      if (p > 255)
+      if (p > 1023)
         p = 0;
     } while (!(s == p));
 

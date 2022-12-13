@@ -370,7 +370,8 @@ enum
 #define max_char_code 19  // {largest catcode for individual characters}
 /* sec 0208 */
 #define char_num          (max_char_code + 1) // {character specified numerically ( \.{\\char} )}
-#define math_char_num     (char_num + 1)      // {explicit math code ( \.{\\mathchar} )}
+#define kchar_num         (char_num + 1)      // {cjk character specified numerically ( \.{\\kchar} )}
+#define math_char_num     (kchar_num + 1)      // {explicit math code ( \.{\\mathchar} )}
 #define mark              (math_char_num + 1) // {mark definition ( \.{\\mark} )}
 #define xray              (mark + 1)          // {peek inside of \TeX\ ( \.{\\show}, \.{\\showbox}, etc.~)}
 #define make_box          (xray + 1)          // {make a box ( \.{\\box}, \.{\\copy}, \.{\\hbox}, etc.~)}
@@ -406,8 +407,7 @@ enum
 #define eq_no             (discretionary + 1) // {equation number ( \.{\\eqno}, \.{\\leqno} )}
 #define left_right        (eq_no + 1)         // {variable delimiter ( \.{\\left}, \.{\\right} )}
                                               // {( or \.{\\middle})}
-#define kchar_num         (left_right + 1)    // {cjk character specified numerically ( \.{\\kchar} )}
-#define math_comp         (kchar_num + 1)     // {component of formula ( \.{\\mathbin}, etc.~)}
+#define math_comp         (left_right + 1)    // {component of formula ( \.{\\mathbin}, etc.~)}
 #define limit_switch      (math_comp + 1)     // {diddle limit conventions ( \.{\\displaylimits}, etc.~)}
 #define above             (limit_switch + 1)  // {generalized fraction ( \.{\\above}, \.{\\atop}, etc.~)}
 #define math_style        (above + 1)         // {style specification ( \.{\\displaystyle}, etc.~)}
@@ -648,13 +648,13 @@ enum
 #define kcat_code_base                (cat_code_base + 256)         // {table of 512 command codes for the wchar's catcodes }
 #define auto_xsp_code_base            (kcat_code_base + 512)        // {table of 256 auto spacer flag}
 #define inhibit_xsp_code_base         (auto_xsp_code_base + 256)
-#define kinsoku_base                  (inhibit_xsp_code_base + 256) // {table of 256 kinsoku mappings}
-#define kansuji_base                  (kinsoku_base + 256)          // {table of 10 kansuji mappings}
-#define lc_code_base                  (kansuji_base + 10)           // {table of 256 lowercase mappings}
-#define uc_code_base                  (lc_code_base + 256)          // {table of 256 uppercase mappings}
-#define sf_code_base                  (uc_code_base + 256)          // {table of 256 spacefactor mappings}
-#define math_code_base                (sf_code_base + 256)          // {table of 256 math mode mappings}
-#define int_base                      (math_code_base + 256)        // {table of character substitutions}
+#define kinsoku_base                  (inhibit_xsp_code_base + 1024) // {table of 1024 kinsoku mappings}
+#define kansuji_base                  (kinsoku_base + 1024)          // {table of 10 kansuji mappings}
+#define lc_code_base                  (kansuji_base + 10)            // {table of 256 lowercase mappings}
+#define uc_code_base                  (lc_code_base + 256)           // {table of 256 uppercase mappings}
+#define sf_code_base                  (uc_code_base + 256)           // {table of 256 spacefactor mappings}
+#define math_code_base                (sf_code_base + 256)           // {table of 256 math mode mappings}
+#define int_base                      (math_code_base + 256)         // {table of character substitutions}
 // #
 #define par_shape_ptr                 equiv(par_shape_loc)
 #define output_routine                equiv(output_routine_loc)
@@ -2332,7 +2332,7 @@ while (0)
 #define inhibit_after     2 // {disable to insert space after 2byte-char}
 #define inhibit_none      3 // {enable to insert space before/after 2byte-char}
 #define inhibit_unused    4 // {unused entry}
-#define no_entry          1000
+#define no_entry          10000
 #define new_pos           0
 #define cur_pos           1
 
@@ -2441,7 +2441,7 @@ do {                                                  \
   else if (font_dir[font(last_char)] != dir_default)  \
   {                                                   \
     insert_skip = after_wchar;                        \
-    KANJI(cx) = info(link(last_char));                \
+    KANJI(cx) = info(link(last_char)) % max_cjk_val;  \
                                                       \
     if (is_char_node(link(p)) &&                      \
       (font_dir[font(link(p))] != dir_default))       \
@@ -2849,8 +2849,15 @@ main_loop_j_1:                                          \
     tail = main_p;                                      \
     last_jchr = tail;                                   \
     fast_get_avail(main_p);                             \
-    info(main_p) =                                      \
-      KANJI(cur_chr) + cur_cmd * max_cjk_val;           \
+    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))      \
+      info(main_p) =                                    \
+          KANJI(cur_chr) + cur_cmd * max_cjk_val;       \
+    else if (cur_cmd == not_cjk)                        \
+      info(main_p) =                                    \
+          KANJI(cur_chr) + other_kchar * max_cjk_val;   \
+    else                                                \
+       info(main_p) = KANJI(cur_chr) +                      \
+       kcat_code(kcatcodekey(KANJI(cur_chr))) * max_cjk_val;\
     link(tail) = main_p;                                \
     tail = main_p;                                      \
     cx = cur_chr;                                       \
@@ -2913,6 +2920,7 @@ again_2:                                                \
         }                                               \
         else                                            \
           cur_l = get_jfm_pos(KANJI(cur_chr), main_f);  \
+        cur_cmd = kcat_code(kcatcodekey(cur_chr));      \
       }                                                 \
       break;                                            \
                                                         \
@@ -2928,12 +2936,14 @@ again_2:                                                \
         }                                               \
         else                                            \
           cur_l = get_jfm_pos(KANJI(cur_chr), main_f);  \
+        cur_cmd = kcat_code(kcatcodekey(cur_chr));      \
       }                                                 \
       break;                                            \
                                                         \
     case kchar_given:                                   \
       {                                                 \
         cur_l = (get_jfm_pos(KANJI(cur_chr), main_f));  \
+        cur_cmd = kcat_code(kcatcodekey(cur_chr));      \
       }                                                 \
       break;                                            \
                                                         \
@@ -2942,6 +2952,7 @@ again_2:                                                \
         scan_char_num();                                \
         cur_chr = cur_val;                              \
         cur_l = (get_jfm_pos(KANJI(cur_chr), main_f));  \
+        cur_cmd = kcat_code(kcatcodekey(cur_chr));      \
       }                                                 \
       break;                                            \
                                                         \
