@@ -135,12 +135,12 @@ enum
     {                     \
       a = avail;          \
                           \
-      if (a == 0)         \
+      if (a == null)      \
         a = get_avail();  \
       else                \
       {                   \
         avail = link(a);  \
-        link(a) = 0;      \
+        link(a) = null;   \
         incr(dyn_used);   \
       }                   \
     }                     \
@@ -151,12 +151,12 @@ enum
     {                     \
       a = avail;          \
                           \
-      if (a == 0)         \
+      if (a == null)      \
         a = get_avail();  \
       else                \
       {                   \
         avail = link(a);  \
-        link(a) = 0;      \
+        link(a) = null;   \
       }                   \
     }                     \
   while (0)
@@ -301,7 +301,7 @@ enum
 #define widow_pena    1                         // {|subtype| of penalty nodes from \.{\\jcharwidowpenalty}}
 #define kinsoku_pena  2                         // {|subtype| of penalty nodes from kinsoku}
 #define inf_penalty   inf_bad                   // {``infinite'' penalty value}
-#define eject_penalty -inf_bad                  // {``negatively infinite'' penalty value}
+#define eject_penalty -inf_penalty              // {``negatively infinite'' penalty value}
 #define penalty(a)    mem[a + 1].cint           // {the added cost of breaking a list here}
 /* sec 0159 */
 #define unset_node      15                      // {|type| for an unset node}
@@ -845,8 +845,8 @@ enum
 #define text_baseline_shift_factor    int_par(text_baseline_shift_factor_code)
 #define script_baseline_shift_factor  int_par(script_baseline_shift_factor_code)
 #define scriptscript_baseline_shift_factor  int_par(scriptscript_baseline_shift_factor_code)
-#define ptex_lineend int_par(ptex_lineend_code)
-#define ptex_tracing_fonts int_par(ptex_tracing_fonts_code)
+#define ptex_lineend                  int_par(ptex_lineend_code)
+#define ptex_tracing_fonts            int_par(ptex_tracing_fonts_code)
 #define tracing_assigns               int_par(tracing_assigns_code)
 #define tracing_groups                int_par(tracing_groups_code)
 #define tracing_ifs                   int_par(tracing_ifs_code)
@@ -1184,7 +1184,7 @@ do {                            \
 #define random_seed_code          (elapsed_time_code + 1)       // {code for \.{\\randomseed}}
 //
 #define eTeX_int                   (badness_code + 10)        // {first of \eTeX\ codes for integers}
-#define eTeX_version_code          eTeX_int                  // 
+#define eTeX_version_code          eTeX_int
 #define current_group_level_code   (eTeX_int + 1)
 #define current_group_type_code    (eTeX_int + 2)
 #define current_if_level_code      (eTeX_int + 3)
@@ -1302,12 +1302,12 @@ do {                          \
 #define if_jfont_code         (if_mbox_code + 1)
 #define if_tfont_code         (if_jfont_code + 1)
 /* sec 0489 */
-#define if_node_size     2
+#define if_node_size     2                  // {number of words in stack entry for conditionals}
 #define if_line_field(a) mem[(a) + 1].cint
-#define if_code          1
-#define fi_code          2
-#define else_code        3
-#define or_code          4
+#define if_code          1  // {code for \.{\\if...} being evaluated}
+#define fi_code          2  // {code for \.{\\fi}}
+#define else_code        3  // {code for \.{\\else}}
+#define or_code          4  // {code for \.{\\or}}
 /* sec 0506 */
 #define get_x_token_or_active_char()                    \
 do {                                                    \
@@ -1336,23 +1336,23 @@ do {                            \
 #define yoko_jfm_id 11
 #define tate_jfm_id 9
 //#
-#define no_tag   0
-#define lig_tag  1
+#define no_tag   0 // {vanilla character}
+#define lig_tag  1 // {character has a ligature/kerning program}
 #define gk_tag   1
-#define list_tag 2
-#define ext_tag  3
+#define list_tag 2 // {character has a successor in a charlist}
+#define ext_tag  3 // {character is extensible}
 /* sec 0545 */
-#define stop_flag    128
-#define kern_flag    128
+#define stop_flag    128  // {value indicating `\.{STOP}' in a lig/kern program}
+#define kern_flag    128  // {op code for a kern step}
 #define skip_byte(a) a.b0
 #define next_char(a) a.b1
 #define op_byte(a)   a.b2
 #define rem_byte(a)  a.b3
 /* sec 0546 */
-#define ext_top(a) a.b0
-#define ext_mid(a) a.b1
-#define ext_bot(a) a.b2
-#define ext_rep(a) a.b3
+#define ext_top(a) a.b0 // {|top| piece in a recipe}
+#define ext_mid(a) a.b1 // {|mid| piece in a recipe}
+#define ext_bot(a) a.b2 // {|bot| piece in a recipe}
+#define ext_rep(a) a.b3 // {|rep| piece in a recipe}
 /* sec 0547 */
 #define slant_code         1
 #define space_code         2
@@ -1370,20 +1370,20 @@ do {                            \
 #define kchar_type(a, b)  font_info[ctype_base[a] + b].hh.lh
 #define char_width(a, b)  font_info[width_base[a] + b.b0].cint
 #define char_exists(a)    (a.b0 > min_quarterword)
-#define char_italic(a, b) font_info[italic_base[a] + (b.b2) / 4].cint
+#define char_italic(a, b) font_info[italic_base[a] + (b.b2) / 4].sc
 #define height_depth(a)   (a.b1)
-#define char_height(a, b) font_info[height_base[a] + (b) / 16].cint
-#define char_depth(a, b)  font_info[depth_base[a] + (b) % 16].cint
+#define char_height(a, b) font_info[height_base[a] + (b) / 16].sc
+#define char_depth(a, b)  font_info[depth_base[a] + (b) % 16].sc
 #define char_tag(a)       (a.b2 % 4)
 /* sec 0557 */
-#define char_kern(a, b)         font_info[kern_base[a] + 256 * op_byte(b) + rem_byte(b)].cint
+#define char_kern(a, b)         font_info[kern_base[a] + 256 * op_byte(b) + rem_byte(b)].sc
 #define kern_base_offset        (256 * (128 + min_quarterword))
 #define lig_kern_start(a, b)    lig_kern_base[a] + rem_byte(b)
 #define glue_kern_start(a, b)   lig_kern_base[a] + rem_byte(b)
 #define glue_kern_restart(a, b) lig_kern_base[a] + 256 * op_byte(b) + rem_byte(b) + 32768 - kern_base_offset
 #define lig_kern_restart(a, b)  lig_kern_base[a] + 256 * op_byte(b) + rem_byte(b) + 32768 - kern_base_offset
 /* sec 0558 */
-#define param(a, b)      font_info[a + param_base[b]].cint
+#define param(a, b)      font_info[a + param_base[b]].sc
 #define slant(f)         param(slant_code, f)
 #define space(f)         param(space_code, f)
 #define space_stretch(f) param(space_stretch_code, f)
@@ -1472,83 +1472,54 @@ do {                        \
 /* sec 0576 */
 #define adjust(a) a[f] = a[f]
 /* sec 0585 */
-#define set1      128 // c[1]
-#define set2      129 // c[2]
-#define set3      130 // c[3]
-#define set4      131 // c[4]
-#define set_rule  132 // a[4] b[4]
-#define put1      133 // c[1]
-#define put2      134 // c[2]
-#define put3      135 // c[3]
-#define put4      136 // c[4]
-#define put_rule  137 // a[4] b[4]
-#define nop       138 // NULL
-#define bop       139 // c0[4] c1[4] ... c9[4] p[4]
-#define eop       140 // NULL
-#define push      141 // NULL
-#define pop       142 // NULL
-#define right1    143 // b[1]
-#define right2    144 // b[2]
-#define right3    145 // b[3]
-#define right4    146 // b[4]
-#define w0        147 // NULL
-#define w1        148 // b[1]
-#define w2        149 // b[2]
-#define w3        150 // b[3]
-#define w4        151 // b[4]
-#define x0        152 // NULL
-#define x1        153 // b[1]
-#define x2        154 // b[2]
-#define x3        155 // b[3]
-#define x4        156 // b[4]
-#define down1     157 // a[1]
-#define down2     158 // a[2]
-#define down3     159 // a[3]
-#define down4     160 // a[4]
-#define y0        161 //
-#define y1        162 // a[1]
-#define y2        163 // a[2]
-#define y3        164 // a[3]
-#define y4        165 // a[4]
-#define z0        166 //
-#define z1        167 // a[1]
-#define z2        168 // a[2]
-#define z3        169 // a[3]
-#define z4        170 // a[4]
-#define fnt_num_0 171 //
-#define fnt1      235 // k[1]
-#define fnt2      236 // k[2]
-#define fnt3      237 // k[3]
-#define fnt4      238 // k[4]
-#define xxx1      239 // k[1] x[k]
-#define xxx2      240 // k[2] x[k]
-#define xxx3      241 // k[3] x[k]
-#define xxx4      242 // k[4] x[k]
-#define fnt_def1  243 // k[1] c[4] s[4] d[4] a[1] l[1] n[a + l]
-#define fnt_def2  244 // k[2] c[4] s[4] d[4] a[1] l[1] n[a + l]
-#define fnt_def3  245 // k[3] c[4] s[4] d[4] a[1] l[1] n[a + l]
-#define fnt_def4  246 // k[4] c[4] s[4] d[4] a[1] l[1] n[a + l]
-#define pre       247 // i[1] num[4] den[4] mag[4] k[1] x[k]
-#define post      248 //
-#define post_post 249 //
+#define set1      128 // {typeset a character and move right}
+#define set2      129 //
+#define set3      130 //
+#define set_rule  132 // {typeset a rule and move right}
+#define put_rule  137 // {typeset a rule}
+#define nop       138 // {no operation}
+#define bop       139 // {beginning of page}
+#define eop       140 // {ending of page}
+#define push      141 // {save the current positions}
+#define pop       142 // {restore previous positions}
+#define right1    143 // {move right}
+#define w0        147 // {move right by |w|}
+#define w1        148 // {move right and set |w|}
+#define x0        152 // {move right by |x|}
+#define x1        153 // {move right and set |x|}
+#define down1     157 // {move down}
+#define y0        161 // {move down by |y|}
+#define y1        162 // {move down and set |y|}
+#define z0        166 // {move down by |z|}
+#define z1        167 // {move down and set |z|}
+#define fnt_num_0 171 // {set current font to 0}
+#define fnt1      235 // {set current font}
+#define fnt2      236 // 
+#define xxx1      239 // {extension to \.{DVI} primitives}
+#define xxx4      242 // {potentially long extension to \.{DVI} primitives}
+#define fnt_def1  243 // {define the meaning of a font number}
+#define fnt_def2  244 //
+#define pre       247 // {preamble}
+#define post      248 // {postamble beginning}
+#define post_post 249 // {postamble ending}
 #define dirchg    255
 /* sec 0587 */
 #define id_byte    2
 #define ex_id_byte 3
 /* sec 0605 */
-#define movement_node_size  3
-#define location(a)         mem[a + 2].cint
+#define movement_node_size  3 // {number of words per entry in the down and right stacks} 
+#define location(a)         mem[a + 2].cint // {\.{DVI} byte number for a movement command}
 /* sec 0608 */
-#define y_here  1
-#define z_here  2
-#define yz_OK   3
-#define y_OK    4
-#define z_OK    5
-#define d_fixed 6
+#define y_here  1 // {|info| when the movement entry points to a |y| command}
+#define z_here  2 // {|info| when the movement entry points to a |z| command}
+#define yz_OK   3 // {|info| corresponding to an unconstrained \\{down} command}
+#define y_OK    4 // {|info| corresponding to a \\{down} that can't become a |z|}
+#define z_OK    5 // {|info| corresponding to a \\{down} that can't become a |y|}
+#define d_fixed 6 // {|info| corresponding to a \\{down} that can't change}
 /* sec 0611 */
-#define none_seen 0
-#define y_seen    6
-#define z_seen    12
+#define none_seen 0   // {no |y_here| or |z_here| nodes have been encountered yet}
+#define y_seen    6   // {we have seen |y_here| but not |z_here|}
+#define z_seen    12  // {we have seen |z_here| but not |y_here|}
 /* sec 0625 */
 #define billion 1000000000.0
 #define vet_glue(a)             \
@@ -1561,13 +1532,13 @@ do {                            \
     glue_temp = -billion;       \
 } while (0)
 /* sec 0644 */
-#define exactly     0
-#define additional  1
-#define natural     0, additional
+#define exactly     0 // {a box dimension is pre-specified}
+#define additional  1 // {a box dimension is increased from the natural one}
+#define natural     0, additional // {shorthand for parameters to |hpack| and |vpack|}
 /* sec 0769 */
-#define u_part(a)     mem[(a) + height_offset].cint
-#define v_part(a)     mem[(a) + depth_offset].cint
-#define extra_info(a) info((a) + list_offset)
+#define u_part(a)     mem[(a) + height_offset].cint // {pointer to \<u_j> token list}
+#define v_part(a)     mem[(a) + depth_offset].cint  // {pointer to \<v_j> token list}
+#define extra_info(a) info((a) + list_offset) // {info to remember during template}
 /* sec 0681 */
 #define noad_size             5             // {number of words in a normal noad}
 #define nucleus(a)            ((a) + 1)     // {the |nucleus| field of a noad}
@@ -1716,13 +1687,13 @@ do {                    \
 #define hyphenated                1
 #define last_active               active
 /* sec 0821 */
-#define passive_node_size 2
-#define cur_break         rlink
-#define prev_break        llink
-#define serial            info
+#define passive_node_size 2     // {number of words in passive nodes}
+#define cur_break         rlink // {in passive node, points to position of this breakpoint}
+#define prev_break        llink // {points to passive node that should precede this one}
+#define serial            info  // {serial number for symbolic identification}
 /* sec 0822 */
-#define delta_node_size 7
-#define delta_node      2
+#define delta_node_size 7 // {number of words in a delta node}
+#define delta_node      2 // {|type| field in a delta node}
 /* sec 0823 */
 #define do_all_six(a) \
 do {                  \

@@ -3848,6 +3848,7 @@ static void do_initex (void)
     sf_code(k) = 1000;
     auto_xsp_code(k) = 0;
   }
+
   for (k = 0; k <= 1023; k++)
   {
     inhibit_xsp_code(k) = 0;
@@ -15547,7 +15548,6 @@ static void scan_something_internal (small_number level, boolean negative)
   halfword qx;
   four_quarters i;
   integer p;
-  pointer q, r;
 
 restart:
   m = cur_chr;
