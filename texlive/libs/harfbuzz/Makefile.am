@@ -1,4 +1,4 @@
-## $Id: Makefile.am 64756 2022-10-19 21:15:26Z kakuto $
+## $Id: Makefile.am 65304 2022-12-18 01:06:39Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -165,6 +165,7 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/hb-aat-map.cc \
 	@HARFBUZZ_TREE@/src/hb-aat-map.hh \
 	@HARFBUZZ_TREE@/src/hb-array.hh \
+	@HARFBUZZ_TREE@/src/hb-multimap.hh \
 	@HARFBUZZ_TREE@/src/hb-ot-font.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-layout.cc \
 	@HARFBUZZ_TREE@/src/hb-ot-layout-base-table.hh \
@@ -239,6 +240,9 @@ libharfbuzz_a_SOURCES += \
 	@HARFBUZZ_TREE@/src/OT/glyf/SimpleGlyph.hh \
 	@HARFBUZZ_TREE@/src/OT/glyf/CompositeGlyph.hh \
 	@HARFBUZZ_TREE@/src/OT/glyf/SubsetGlyph.hh \
+	@HARFBUZZ_TREE@/src/OT/glyf/VarCompositeGlyph.hh \
+	@HARFBUZZ_TREE@/src/OT/glyf/composite-iter.hh \
+	@HARFBUZZ_TREE@/src/OT/glyf/coord-setter.hh \
 	@HARFBUZZ_TREE@/src/OT/Layout/Common/Coverage.hh \
 	@HARFBUZZ_TREE@/src/OT/Layout/Common/CoverageFormat1.hh \
 	@HARFBUZZ_TREE@/src/OT/Layout/Common/CoverageFormat2.hh \
