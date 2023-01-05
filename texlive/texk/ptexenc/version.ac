@@ -1,5 +1,5 @@
-dnl $Id: version.ac 65330 2022-12-22 12:28:48Z takuji $
-dnl   Copyright 2022 Japanese TeX Development Community <issue@texjp.org>
+dnl $Id: version.ac 65423 2023-01-01 05:42:55Z takuji $
+dnl   Copyright 2022-2023 Japanese TeX Development Community <issue@texjp.org>
 dnl   Copyright 2016-2022 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl

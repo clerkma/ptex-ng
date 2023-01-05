@@ -1,4 +1,4 @@
-## $Id: Makefile.am 65325 2022-12-21 20:56:12Z karl $
+## $Id: Makefile.am 65465 2023-01-04 23:22:48Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2022 Karl Berry <tex-live@tug.org>
@@ -99,6 +99,7 @@ texmf_shell_scripts = \
 	tikztosvg/tikztosvg \
 	typeoutfileinfo/typeoutfileinfo.sh \
 	wordcount/wordcount.sh \
+	xput/xput \
 	xput/xputserver
 
 texmf_other_scripts = \
