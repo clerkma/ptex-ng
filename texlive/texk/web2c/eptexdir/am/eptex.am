@@ -1,4 +1,4 @@
-## $Id: eptex.am 61575 2022-01-11 22:47:10Z karl $
+## $Id: eptex.am 65543 2023-01-15 05:09:14Z takuji $
 ## texk/web2c/eptexdir/am/eptex.am: Makefile fragment for e-pTeX.
 ##
 ## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
@@ -9,6 +9,7 @@
 ##
 if EPTEX
 bin_PROGRAMS += eptex
+bin_links += eptex$(EXEEXT):ptex
 endif EPTEX
 EXTRA_PROGRAMS += eptex
 
@@ -89,10 +90,10 @@ EXTRA_DIST += \
 
 # e-pTeX Tests
 #
-eptex_tests = eptexdir/eptriptest.test eptexdir/pdfprimitive.test eptexdir/epver.test
+eptex_tests = eptexdir/eptriptest.test eptexdir/pdfprimitive.test eptexdir/epver.test eptexdir/wcfname.test
 eptexdir/eptriptest.log: eptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
 eptexdir/pdfprimitive.log: eptex$(EXEEXT)
-eptexdir/epver.log: eptex$(EXEEXT)
+eptexdir/epver.log eptexdir/wcfname.log: eptex$(EXEEXT)
 
 EXTRA_DIST += $(eptex_tests)
 
