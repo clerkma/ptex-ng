@@ -1,4 +1,4 @@
-## $Id: eptex.am 65543 2023-01-15 05:09:14Z takuji $
+## $Id: eptex.am 65655 2023-01-28 05:27:55Z takuji $
 ## texk/web2c/eptexdir/am/eptex.am: Makefile fragment for e-pTeX.
 ##
 ## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
@@ -9,7 +9,9 @@
 ##
 if EPTEX
 bin_PROGRAMS += eptex
+if !PTEX
 bin_links += eptex$(EXEEXT):ptex
+endif !PTEX
 endif EPTEX
 EXTRA_PROGRAMS += eptex
 
