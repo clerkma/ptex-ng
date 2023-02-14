@@ -20,7 +20,7 @@ triple coons3(path3 external) {
 
 struct patch {
   triple[][] P;
-  pen[] colors;     // Optionally specify 4 corner colors.
+  pen[] colors;     // Optionally specify corner colors.
   bool straight;    // Patch is based on a piecewise straight external path.
   bool3 planar;     // Patch is planar.
   bool triangular;  // Patch is a Bezier triangle.
@@ -485,16 +485,21 @@ patch reverse(patch s)
   return S;
 }
 
+triple[][] degenerate(triple[][] P)
+{
+  return new triple[][] {{P[0][0],P[0][0],P[0][0],P[0][0]},
+      {P[1][0],P[1][0]*2/3+P[1][1]/3,P[1][0]/3+P[1][1]*2/3,P[1][1]},
+        {P[2][0],P[2][0]/3+P[2][1]*2/3,P[2][1]*2/3+P[2][2]/3,P[2][2]},
+          {P[3][0],P[3][1],P[3][2],P[3][3]}};
+}
+
 // Return a degenerate tensor patch representation of a Bezier triangle.
 patch tensor(patch s) {
-  if(!s.triangular) return patch(s);
-  triple[][] P=s.P;
-  return patch(new triple[][] {{P[0][0],P[0][0],P[0][0],P[0][0]},
-        {P[1][0],P[1][0]*2/3+P[1][1]/3,P[1][0]/3+P[1][1]*2/3,P[1][1]},
-          {P[2][0],P[2][0]/3+P[2][1]*2/3,P[2][1]*2/3+P[2][2]/3,P[2][2]},
-            {P[3][0],P[3][1],P[3][2],P[3][3]}},
-    s.colors.length > 0 ? new pen[] {s.colors[0],s.colors[1],s.colors[2],s.colors[0]} : new pen[],
-    s.straight,s.planar,false,false);
+  if(!s.triangular) return s;
+  return patch(degenerate(s.P),
+               s.colors.length > 0 ? new pen[] {
+                 s.colors[0],s.colors[1],s.colors[2],s.colors[0]} : new pen[],
+               s.straight,s.planar,false,false);
 }
 
 // Return the tensor product patch control points corresponding to path p
@@ -1268,15 +1273,11 @@ patch subpatch(patch s, pair a, pair b)
   return patch(subpatch(s.P,a,b),s.straight,s.planar);
 }
 
-private string triangular=
-  "Intersection of path3 with Bezier triangle is not yet implemented";
-
 // return an array containing the times for one intersection of path p and
 // patch s.
 real[] intersect(path3 p, patch s, real fuzz=-1)
 {
-  if(s.triangular) abort(triangular);
-  return intersect(p,s.P,fuzz);
+  return intersect(p,s.triangular ? degenerate(s.P) : s.P,fuzz);
 }
 
 // return an array containing the times for one intersection of path p and
@@ -1293,8 +1294,7 @@ real[] intersect(path3 p, surface s, real fuzz=-1)
 // return an array containing all intersection times of path p and patch s.
 real[][] intersections(path3 p, patch s, real fuzz=-1)
 {
-  if(s.triangular) abort(triangular);
-  return sort(intersections(p,s.P,fuzz));
+  return sort(intersections(p,s.triangular ? degenerate(s.P) : s.P,fuzz));
 }
 
 // return an array containing all intersection times of path p and surface s.
@@ -1384,7 +1384,8 @@ void draw3D(frame f, patch s, material m,
     if(prc() && light.on())
         straight=false; // PRC vertex colors (for quads only) ignore lighting
     m=material(m);
-    m.diffuse(mean(s.colors));
+    if(prc())
+      m.diffuse(mean(s.colors));
   }
   m=material(m,light,s.colors.length > 0);
 
@@ -1423,7 +1424,7 @@ void draw(frame f, triple[] v, int[][] vi,
           triple[] n={}, int[][] ni={}, material m=currentpen, pen[] p={},
           int[][] pi={}, light light=currentlight, render render=defaultrender)
 {
-  bool normals=n.length > 0;
+  bool normals=ni.length > 0;
   if(!normals) {
     ni=new int[vi.length][3];
     normals=computeNormals(v,vi,n,ni) > 0;
@@ -1431,6 +1432,35 @@ void draw(frame f, triple[] v, int[][] vi,
   if(p.length > 0)
     m=mean(p);
   m=material(m,light);
+
+  if(prc()) {
+    int[] vertexNormal=new int[ni.length];
+    int[] vertexPen=new int[pi.length];
+
+    bool pens=pi.length > 0;
+
+    for(int i=0; i < vi.length; ++i) {
+      int[] vii=vi[i];
+      int[] nii=ni[i];
+      for(int j=0; j < 3; ++j) {
+        int V=vii[j];
+        vertexNormal[V]=nii[j];
+        if(pens)
+          vertexPen[V]=pi[i][j];
+      }
+    }
+
+    for(int i=0; i < vi.length; ++i) {
+      int[] vii=vi[i];
+      for(int j=0; j < 3; ++j) {
+        int V=vii[j];
+        ni[i][j]=vertexNormal[V];
+        if(pens)
+          pi[i][j]=vertexPen[V];
+      }
+    }
+  }
+
   draw(f,v,vi,render.interaction.center,n,ni,
        m.p,m.opacity,m.shininess,m.metallic,m.fresnel0,p,pi,
        render.interaction.type);
@@ -1441,8 +1471,7 @@ void draw(picture pic=currentpicture, triple[] v, int[][] vi,
           triple[] n={}, int[][] ni={}, material m=currentpen, pen[] p={},
           int[][] pi={}, light light=currentlight, render render=defaultrender)
 {
-  bool prc=prc();
-  bool normals=n.length > 0;
+  bool normals=ni.length > 0;
   if(!normals) {
     ni=new int[vi.length][3];
     normals=computeNormals(v,vi,n,ni) > 0;

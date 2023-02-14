@@ -1,5 +1,8 @@
-$Id: NEWS 62589 2022-03-10 15:54:52Z karl $
+$Id: NEWS 65770 2023-02-09 21:26:50Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+dvips 2023.1 (TeX Live 2023):
+  Check --help and --version early to avoid looking for texmf.cnf.
 
 dvips 2022.1 (TeX Live 2022):
   New option (and config file directive) -landscaperotate: try to

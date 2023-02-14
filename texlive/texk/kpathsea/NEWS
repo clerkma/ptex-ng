@@ -1,5 +1,9 @@
-$Id: NEWS 61654 2022-01-18 22:17:46Z karl $
+$Id: NEWS 65770 2023-02-09 21:26:50Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+6.3.5 (for TeX Live 2023)
+* Support guessing input file encodings for Unix-ish platforms, as on
+  Windows; enabled for (e)p(la)tex, pbibtex, mendex.
 
 6.3.4 (for TeX Live 2022)
 * First return path from kpsewhich -all is now the same as non-all.

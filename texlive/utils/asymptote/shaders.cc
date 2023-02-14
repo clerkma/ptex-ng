@@ -11,6 +11,8 @@
 #include <string>
 #include <iostream>
 
+#include "settings.h"
+#include "fpu.h"
 #include "shaders.h"
 
 int GLSLversion;
@@ -37,7 +39,9 @@ GLuint compileAndLinkShader(std::vector<ShaderfileModePair> const& shaders,
   glBindAttribLocation(shader,colorAttrib,"color");
   glBindAttribLocation(shader,widthAttrib,"width");
 
+  fpu_trap(false); // Work around FE_INVALID
   glLinkProgram(shader);
+  fpu_trap(settings::trap());
 
   for(size_t i=0; i < n; ++i) {
     glDetachShader(shader,compiledShaders[i]);
@@ -98,6 +102,7 @@ GLuint createShaderFile(std::string file, int shaderType,
 #ifdef HAVE_SSBO
   if(ssbo) {
     shaderSrc << "#extension GL_ARB_shader_storage_buffer_object : enable" << "\n";
+    shaderSrc << "#extension GL_ARB_shader_atomic_counters : enable" << "\n";
     if(interlock)
       shaderSrc << "#extension GL_ARB_fragment_shader_interlock : enable"
                 << "\n";
