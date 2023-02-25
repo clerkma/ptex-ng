@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: Build 59855 2021-07-06 17:52:36Z karl $
+# $Id: Build 66136 2023-02-24 23:44:26Z karl $
 # Public domain.  Originally written many years ago by Sebastian Rahtz.
 # The basic idea is to run configure && make, but with a multitude of
 # environment variables to allow overriding everything.
@@ -117,7 +117,7 @@ cd $TL_WORKDIR || exit 1
   echo "starting TeX Live build at `date`"
   printf 'CMDLINE\t"%s"\n' "$0 $*"
   printf 'PWD\t"%s"\n'     "`pwd`"
-  printf 'UNAME\t"%s"\n'   "`uname`"
+  printf 'UNAME\t"%s"\n'   "`uname -a`"
   env | sort >buildenv.log
   echo "See also buildenv.log and buildinfo.log in `pwd`"
   echo

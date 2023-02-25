@@ -25,12 +25,13 @@ that document).
 
 
 Build information for some of the platforms.
-See also Master/tlpkg/bin/tl-update-bindir
+See also Master/tlpkg/bin/tl-update-bindir.
 
 aarch64-linux:
+  Built on contextgarden, see below, except for asy:
   aarch64 Debian GNU/Linux 10 (buster)
   gcc (Debian 8.3.0-6) 8.3.0
-  ./Build --enable-arm-neon=check
+  ./Build --enable-arm-neon=on
 
 armhf-linux:
   Built on contextgarden, see below.
@@ -42,7 +43,7 @@ armhf-linux:
   they run on RPi, as well as ARMv7 CPUs, but are untested on non-RPi
   ARMv6 machines.
 
-i386-cygwin, x86_64-cygwin: gcc-10.2.0, cygwin-3.1.7
+x86_64-cygwin: gcc-10.2.0, cygwin-3.1.7
   TL_CONFIGURE_ARGS="--enable-xindy --enable-shared CLISP=/path/to/clisp.exe
     LDFLAGS='-Wl,--no-insert-timestamp -Wl,--stack,0x800000'" \
   ./Build
@@ -68,8 +69,8 @@ i386-solaris, x86_64-solaris:
 
 universal-darwin: See Master/source/mactexdoc.tar.xz.
 
-win32:
-  Makefiles written by hand, see Master/source/w32tex-src.tar.xz.
+windows:
+  Makefiles written by hand, see Master/source/windows-src.tar.xz.
   Visual Studio 2010 and Visual Studio 2015.
 
 x86_64-darwinlegacy:

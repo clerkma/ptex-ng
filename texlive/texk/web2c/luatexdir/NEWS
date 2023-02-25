@@ -1,3 +1,21 @@
+==============================================================
+LuaTeX 1.16.0 2023-02-19
+==============================================================
+
+- new "late special" feature by Phelype Oleinik,  adapted and
+  extended  by H.Hagen.
+- new primitive \variablefam:  use a family number as signal 
+  for using the current family. This permits classifying 
+  characters with a class and still let the family adapt.
+    \variablefam"24
+    \Umathchardef\foo "3 "24 123
+    \foo \fam9
+  results in a curly left brace taken from family 9 with class 
+  ‘relation’ and spacing around it will be accordingly.
+- improved r2l annotation areas
+
+Several bug fixes (see ChangeLog).
+
 
 
 ==============================================================
