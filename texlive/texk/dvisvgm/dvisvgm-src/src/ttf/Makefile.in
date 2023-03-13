@@ -256,6 +256,7 @@ EGREP = @EGREP@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FILECMD = @FILECMD@
 FREETYPE2_DEPEND = @FREETYPE2_DEPEND@
 FREETYPE2_INCLUDES = @FREETYPE2_INCLUDES@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
@@ -404,6 +405,7 @@ libttf_la_SOURCES = \
 AM_CXXFLAGS = \
 	-I$(dvisvgm_srcdir)/libs/boost \
 	-I$(dvisvgm_srcdir)/libs/variant/include \
+        $(ZLIB_INCLUDES) \
 	$(BROTLI_CFLAGS) $(WOFF2_CFLAGS)
 
 all: all-am

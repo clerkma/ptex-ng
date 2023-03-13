@@ -7,7 +7,7 @@ use strict; use warnings;
 
 package TeXLive::TLUtils;
 
-my $svnrev = '$Revision: 65994 $';
+my $svnrev = '$Revision: 66236 $';
 my $_modulerevision = ($svnrev =~ m/: ([0-9]+) /) ? $1 : "unknown";
 sub module_revision { return $_modulerevision; }
 
@@ -105,12 +105,6 @@ C<TeXLive::TLUtils> - TeX Live infrastructure miscellany
   TeXLive::TLUtils::member($item, @list);
   TeXLive::TLUtils::merge_into(\%to, \%from);
   TeXLive::TLUtils::texdir_check($texdir);
-  TeXLive::TLUtils::quotify_path_with_spaces($path);
-  TeXLive::TLUtils::conv_to_w32_path($path);
-  TeXLive::TLUtils::native_slashify($internal_path);
-  TeXLive::TLUtils::forward_slashify($path_from_user);
-  TeXLive::TLUtils::give_ctan_mirror();
-  TeXLive::TLUtils::give_ctan_mirror_base();
   TeXLive::TLUtils::compare_tlpobjs($tlpA, $tlpB);
   TeXLive::TLUtils::compare_tlpdbs($tlpdbA, $tlpdbB);
   TeXLive::TLUtils::report_tlpdb_differences(\%ret);
@@ -119,6 +113,18 @@ C<TeXLive::TLUtils> - TeX Live infrastructure miscellany
   TeXLive::TLUtils::setup_sys_user_mode($prg,$optsref,$tmfc,$tmfsc,$tmfv,$tmfsv);
   TeXLive::TLUtils::prepend_own_path();
   TeXLive::TLUtils::repository_to_array($str);
+
+=head2 Windows and paths
+
+  TeXLive::TLUtils::quotify_path_with_spaces($path);
+  TeXLive::TLUtils::conv_to_w32_path($path);
+  TeXLive::TLUtils::native_slashify($internal_path);
+  TeXLive::TLUtils::forward_slashify($path_from_user);
+
+=head2 CTAN
+
+  TeXLive::TLUtils::give_ctan_mirror();
+  TeXLive::TLUtils::give_ctan_mirror_base();
 
 =head2 JSON
 
@@ -231,6 +237,7 @@ BEGIN {
     &give_ctan_mirror_base
     &create_mirror_list
     &extract_mirror_entry
+    &system_ok
     &wsystem
     &xsystem
     &run_cmd
@@ -304,7 +311,7 @@ shell-finding code anyway to defend against future mistakes of the same ilk.
 sub platform {
   if (! defined $::_platform_) {
     if ($^O =~ /^MSWin/i) {
-      print STDERR "\$^O is $^O\n";
+      # print STDERR "\$^O is $^O\n";
       $::_platform_ = "windows";
     } else {
       my $config_guess = "$::installerdir/tlpkg/installer/config.guess";
@@ -703,6 +710,18 @@ sub xchdir {
   ddebug("xchdir($dir) ok\n");
 }
 
+=item C<system_ok($cmdline)>
+
+Run C<system($cmdline)> and return true if return status was zero, false
+if status was nonzero. Throw away stdout and stderr.
+
+=cut
+
+sub system_ok {
+  my ($cmdline) = @_;
+  `$cmdline >/dev/null 2>&1`;
+  return $? == 0;
+}
 
 =item C<wsystem($msg, @args)>
 
@@ -878,19 +897,23 @@ sub diskfree {
   $td .= "/" if ($td !~ m!/$!);
   return (-1) if (! -e $td);
   debug("checking diskfree() in $td\n");
-  ($output, $retval) = run_cmd("df -P \"$td\"", POSIXLY_CORRECT => 1);
+  ($output, $retval) = run_cmd("df -Pk \"$td\"");
+    # With -k (mandated by POSIX), we should always get 1024-blocks.
+    # Otherwise, the POSIXLY_CORRECT envvar for GNU df would need to
+    # be set, to force 512-blocks; and the BLOCKSIZE envvar would need
+    # to be unset to avoid overriding.
   if ($retval == 0) {
     # Output format should be this:
-    # Filesystem      512-blocks       Used  Available Capacity Mounted on
-    # /dev/sdb3       6099908248 3590818104 2406881416      60% /home
+    # Filesystem      1024-blocks     Used Available Capacity Mounted on
+    # /dev/sdb3       209611780 67718736 141893044      33% /
     my ($h,$l) = split(/\n/, $output);
     my ($fs, $nrb, $used, $avail, @rest) = split(' ', $l);
-    debug("diskfree: used=$used (512-block), avail=$avail (512-block)\n");
-    # $avail is in 512-byte blocks, so we need to divide by 2*1024 to
-    # obtain Mb. Require that at least 100M remain free.
-    return (int($avail / 2048));
+    debug("diskfree: df -Pk output: $output");
+    debug("diskfree: used=$used (1024-block), avail=$avail (1024-block)\n");
+    # $avail is in 1024-byte blocks, so we divide by 1024 to obtain Mb.
+    return (int($avail / 1024));
   } else {
-    # error in running df -P for whatever reason
+    # error in running df -P for whatever reason, just skip the check.
     return (-1);
   }
 }

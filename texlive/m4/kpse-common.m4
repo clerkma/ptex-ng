@@ -1,4 +1,4 @@
-# $Id: kpse-common.m4 49495 2018-12-24 23:17:30Z karl $
+# $Id: kpse-common.m4 66289 2023-03-01 22:59:32Z karl $
 # Public macros for the TeX Live (TL) tree.
 # Copyright 1995-2009, 2018 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
@@ -35,18 +35,23 @@ AC_DEFUN([KPSE_INIT],
 # _KPSE_USE_LIBTOOL()
 # -------------------
 AC_DEFUN([_KPSE_USE_LIBTOOL],
-[##tldbg $0: Generate a libtool script for use in configure tests.
+[echo 'tldbg:[$0] called, libtool package version: LT_PACKAGE_VERSION' >&AS_MESSAGE_LOG_FD
 AC_PROVIDE_IFELSE([LT_INIT], ,
                   [m4_fatal([$0: requires libtool])])[]dnl
 LT_OUTPUT
+#
 m4_append([AC_LANG(C)],
 [ac_link="./libtool --mode=link --tag=CC $ac_link"
 ])[]dnl
+#
 AC_PROVIDE_IFELSE([AC_PROG_CXX],
 [m4_append([AC_LANG(C++)],
 [ac_link="./libtool --mode=link --tag=CXX $ac_link"
 ])])[]dnl
 AC_LANG(_AC_LANG)[]dnl
+#
+# am_prog_ar needed for dvisvgm, at least.
+AM_PROG_AR
 ]) # _KPSE_USE_LIBTOOL
 
 # _KPSE_LIB_FLAGS(LIBDIR, LIBNAME, OPTIONS,

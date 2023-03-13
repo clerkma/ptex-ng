@@ -1,4 +1,4 @@
-## $Id: Makefile.am 54277 2020-03-13 17:12:03Z karl $
+## $Id: Makefile.am 66203 2023-02-26 21:56:36Z karl $
 ## Makefile.am for the TeX Live subdirectory ./doc/
 ##
 ## Copyright 2015-2020 Karl Berry <tex-live@tug.org>
@@ -16,6 +16,7 @@ EXTRA_DIST = \
 
 # no reasonable way to avoid it with the pod doc.
 MAKEINFOFLAGS = --set INFO_SPECIAL_CHARS_WARNING=0
+MAKEINFOFLAGS += --disable-encoding
 
 #  autogenerate the top-level README files.
 readme-files: tlbuild.info
