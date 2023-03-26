@@ -1,4 +1,4 @@
-dnl $Id: version.ac 65770 2023-02-09 21:26:50Z karl $
+dnl $Id: version.ac 66596 2023-03-19 22:16:03Z karl $
 dnl   Copyright 2016-2023 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
@@ -16,8 +16,9 @@ dnl   Modifying or revoking interfaces (not backwards compatible)
 dnl     a.b.c => a+1.0.0
 dnl
 dnl   After a release:
-dnl     append "dev", to distinguish binaries built between releases.
+dnl   increment and append "dev", to distinguish binaries built between
+dnl   releases.
 dnl --------------------------------------------------------
 dnl
 dnl This file is m4-included from configure.ac.
-m4_define([kpse_version], [6.3.5])
+m4_define([kpse_version], [6.3.6/dev])
