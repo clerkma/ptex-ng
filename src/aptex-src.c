@@ -31478,7 +31478,11 @@ done:
     tail = link(tail);
 
     if (is_char_node(tail))
+    {
       inhibit_glue_flag = false;
+      if (font_dir[font(tail)] != dir_default)
+        last_jchr = link(tail);
+    }
     else
     {
       switch (type(tail))
