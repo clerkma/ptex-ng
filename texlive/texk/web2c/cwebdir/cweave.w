@@ -2,7 +2,7 @@
 % This program by Silvio Levy and Donald E. Knuth
 % is based on a program by Knuth.
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 4.8 --- June 2022
+% Version 4.9 --- May 2023
 
 % Copyright (C) 1987,1990,1993,2000 Silvio Levy and Donald E. Knuth
 
@@ -32,11 +32,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{CWEAVE (Version 4.8)}
+\def\title{CWEAVE (Version 4.9)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont CWEAVE} processor}
   \vskip 15pt
-  \centerline{(Version 4.8)}
+  \centerline{(Version 4.9)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -67,7 +67,7 @@ Crusius, and others who have contributed improvements.
 The ``banner line'' defined here should be changed whenever \.{CWEAVE}
 is modified.
 
-@d banner "This is CWEAVE (Version 4.8)"
+@d banner "This is CWEAVE (Version 4.9)"
 
 @c
 @<Include files@>@/
@@ -2124,7 +2124,8 @@ identifier&|exp|: \.{\\\\\{}identifier with underlines and
  \.{\\X}$n$\.:translated section name\.{\\X}&maybe\cr
 \.{@@(@q)@>}\thinspace section name\thinspace\.{@@>}&|section_scrap|:
  \.{\\X}$n$\.{:\\.\{}section name with special characters
-      quoted\.{\ \}\\X}&maybe\cr
+      quoted\.{\\,\}\\X}\footnote*{The \.{\\,} (thin space) is omitted
+      in ``inner \TeX\ mode.''}&maybe\cr
 \.{/*}\thinspace comment\thinspace\.{*/}&|insert|: |cancel|
       \.{\\C\{}translated comment\.\} |force|&no\cr
 \.{//}\thinspace comment&|insert|: |cancel|
@@ -4093,7 +4094,7 @@ out(':');
 if (an_output) out_str("\\.{"@q}@>);
 @.\\.@>
 @<Output the text of the section name@>@;
-if (an_output) out_str(@q{@>" }");
+if (an_output) cur_mode==inner?out_str(@q{@>"}"):out_str(@q{@>"\\,}");
 out_str("\\X");
 
 @ @<Output the text...@>=

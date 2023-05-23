@@ -259,6 +259,20 @@ replacement part of a change file, or in an incomplete check if the
    if (c!=@' ' && c!=tab_mark && c!=@'\r')
 @z
 
+Section 29
+
+@x l.688
+@ There may be incomplete lines of the editor used does
+@y
+@ There may be incomplete lines if the editor used does
+@z
+
+@x l.691
+final line. Of the current line is empty, we just can \&{return}.
+@y
+final line. If the current line is empty, we just can \&{return}.
+@z
+
 Section 31
 
 @x l.742 -- print errors on 'stderr'
@@ -394,6 +408,24 @@ if (prod_chf==chf)
     @<Test for post, |break| when done@>@;
   }
 else
+@z
+
+Section 53.
+
+@x l.1133
+if (out_mode==post) { /* last line has been changed */
+   fputc(map_xchr(@'@@'),out_file); fputc(map_xchr(@'z'),out_file);
+   new_line(out_file);
+   }
+@y
+if (out_mode==pre) { /* last line has been deleted */
+   fputc(map_xchr(@'@@'),out_file); fputc(map_xchr(@'y'),out_file);
+   new_line(out_file); out_mode=post;
+   }
+if (out_mode==post) { /* last line has been changed */
+   fputc(map_xchr(@'@@'),out_file); fputc(map_xchr(@'z'),out_file);
+   new_line(out_file);
+   }
 @z
 
 Section 55

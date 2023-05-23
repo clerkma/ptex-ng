@@ -35,9 +35,9 @@
 @z
 
 @x
-\def\title{CWEAVE (Version 4.8)}
+\def\title{CWEAVE (Version 4.9)}
 @y
-\def\title{CTWILL (Version 4.8 [\TeX~Live])}
+\def\title{CTWILL (Version 4.9 [\TeX~Live])}
 @z
 
 @x
@@ -47,9 +47,9 @@
 @z
 
 @x
-  \centerline{(Version 4.8)}
+  \centerline{(Version 4.9)}
 @y
-  \centerline{(Version 4.8 [\TeX~Live])}
+  \centerline{(Version 4.9 [\TeX~Live])}
 @z
 
 @x
@@ -76,7 +76,7 @@ Crusius, and others who have contributed improvements.
 The ``banner line'' defined here should be changed whenever \.{CWEAVE}
 is modified.
 
-@d banner "This is CWEAVE (Version 4.8)"
+@d banner "This is CWEAVE (Version 4.9)"
 @y
 This is the \.{CTWILL} program by D. E. Knuth, based
 on \.{CWEAVE} by Silvio Levy and D.~E. Knuth. It is also based on
@@ -100,7 +100,7 @@ Until then, \.{CWEAVE}'s sequence of sections will be preserved.
 The ``banner line'' defined here should be changed whenever \.{CTWILL} is
 modified. The version number parallels the corresponding version of \.{CWEAVE}.
 
-@d banner "This is CTWILL, Version 4.8"
+@d banner "This is CTWILL, Version 4.9"
   /* will be extended by the \TeX~Live |versionstring| */
 @z
 
@@ -276,12 +276,6 @@ part of all meanings.
       loc=buffer+10;
       title_lookup(); /* this program's title will be code zero */
     }
-@z
-
-@x
-skip_TeX(void) /* skip past pure \TEX/ code */
-@y
-skip_TeX(void)
 @z
 
 @x
@@ -1462,7 +1456,7 @@ things you don't like.
 The meaning specified by \.{@@\$...@@>} generally has four components:
 an identifier (followed by space), a program name (enclosed in braces),
 a section number (followed by space), and a \TeX\ part. The \TeX\ part
-must have fewer than 50 characters. If the \TeX\ part starts
+must have fewer than 80 characters. If the \TeX\ part starts
 with `\.=', the mini-index entry will contain an equals sign instead
 of a colon; for example,
 $$\.{@@\$buf\_size \{PROG\}10 =\\T\{200\}@@>}$$
@@ -1504,7 +1498,7 @@ which are quite different from the change files you set up for tangling.
 
 (End of user manual.)
 
-@d max_tex_chars 50 /* limit on the \TeX\ part of a meaning */
+@d max_tex_chars 80 /* limit on the \TeX\ part of a meaning */
 
 @q Section 25->273. @>
 @* Temporary and permanent meanings.
@@ -1586,7 +1580,7 @@ new_meaning(
 { char *first=id_first;
   while (xisspace(*first)) first++;
   loc=first;
-  while (xisalpha(*loc)||xisdigit(*loc)||*loc=='_') loc++;
+  while (xisalpha(*loc)||xisdigit(*loc)||isxalpha(*loc)) loc++;
   if (*loc++!=' ')
     err_print(_("! Identifier in meaning should be followed by space"));
   else {@+ int n=0;
