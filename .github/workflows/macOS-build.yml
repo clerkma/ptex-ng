@@ -1,0 +1,30 @@
+name: Build macOS binary
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  release:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: macOS-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+      #- name: install deps
+      #run: brew install automake autoconf libtool texinfo texi2html gcc ruby make
+
+    - name: build macOS binaries
+      run: ./build-gcc/build-aptex.sh
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: aptex-macOS-lastest.tar
+        path: |
+          ./src/ptex-ng
+          ./src/lsotfea
