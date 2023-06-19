@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 66047 2023-02-22 01:49:14Z karl $
+dnl $Id: configure.ac 67404 2023-06-18 22:03:59Z karl $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
@@ -25,8 +25,6 @@ AC_CONFIG_AUX_DIR([../../build-aux])
 AM_CONDITIONAL([TEXLIVE_BUILD], [test "x$enable_texlive_build" = xyes])
 
 # Common code for all programs using libkpathsea.
-# PROG_AR must be run before KPSE_COMMON, since the latter calls LT_INIT.
-AM_PROG_AR
 KPSE_COMMON([dvisvgm])
 
 AH_TEMPLATE([HOST_SYSTEM], [The machine triplet of the host system])
@@ -36,7 +34,6 @@ AC_DEFINE_UNQUOTED([HOST_SYSTEM], ["$host"])
 AC_PROG_CC
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX([11])
-dnl AM_PROG_AR is above.
 LT_INIT
 KPSE_CXX_HACK
 

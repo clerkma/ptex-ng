@@ -1,3 +1,36 @@
+2023-06-18  Karl Berry  <karl@freefriends.org>
+
+	* ctwill-proofsort: die if getopt fails;
+	standardize version() output;
+	move COPYRIGHT to end of help, include github repo.
+	* ctwill.test: for now, exit before running TeX,
+	since building plain.fmt is too intensive.
+	Consistently use ./ctie instead of ctie since we want
+	the binary in the build directory.
+	
+2023-06-17  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-{mini,hint}.ch: Make ctwill.w plain-TeX-able again.
+	* ctwill.test: Make script executable and fix ./ctwill calls.
+
+2023-06-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-proofsort: Rename from 'proofsort'.
+	* ctwill.test: Comprehensive test of the CTWILL system.
+
+2023-06-14  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctproofmac.tex,
+	* cttwinxmac.tex,
+	* ctwimac.tex,
+	* texinputs/pdfctwimac.tex: Touch up for CWEB 4.9.
+	* ctwill-hint.ch: Revert two changes for HiTeX.
+	* texinputs/pdfctproofmac.tex: New macros for HiTeX.
+
+2023-06-12  Andreas Scherer  <https://ascherer.github.io>
+
+	* proofsort: Sort mini-indexes in CTWILL output.
+
 2023-05-26  Andreas Scherer  <https://ascherer.github.io>
 
 	* examples/wordtest.w: Fix page number for Aragon and Seidel.
