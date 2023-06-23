@@ -207,7 +207,7 @@ extern FILE*change_file;
 extern char file_name[][max_file_name_length];
 
 extern char change_file_name[];
-extern char check_file_name[];
+extern char*found_filename;
 extern int line[];
 extern int change_line;
 extern int change_depth;
@@ -262,11 +262,12 @@ extern char C_file_name[];
 extern char tex_file_name[];
 extern char idx_file_name[];
 extern char scn_file_name[];
+extern char check_file_name[];
 extern boolean flags[];
 extern const char*use_language;
 
 /*:14*//*15:*/
-#line 240 "cwebdir/comm-w2c.h"
+#line 241 "cwebdir/comm-w2c.h"
 
 extern FILE*C_file;
 extern FILE*tex_file;
@@ -415,7 +416,7 @@ extern void fatal(const char*,const char*);
 extern void overflow(const char*);
 
 /*:13*//*16:*/
-#line 249 "cwebdir/comm-w2c.h"
+#line 250 "cwebdir/comm-w2c.h"
 
 extern void common_init(void);
 extern void print_stats(void);

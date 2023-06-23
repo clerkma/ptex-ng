@@ -1,4 +1,4 @@
-## $Id: cweb.am 67398 2023-06-18 16:46:20Z karl $
+## $Id: cweb.am 67419 2023-06-20 21:23:39Z ascherer $
 ## texk/web2c/am/cweb.am: Makefile fragment for cweb programs (except ctangle).
 ##
 ## Copyright 2015-2023 Karl Berry <tex-live@tug.org>
@@ -52,8 +52,7 @@ DISTCLEANFILES += ctie.outc ctie.outm
 ctiedir/ctie.log: ctie$(EXEEXT)
 
 TESTS += cwebdir/ctwill.test
-DISTCLEANFILES += ctwill.w ctwill.tex ctwill.aux ctwill.idx ctwill.scn
-DISTCLEANFILES += ctwill.ref ctwill.sref ctwill.dvi ctwill-sorted.tex
+DISTCLEANFILES += ham.aux ham.idx ham.scn ham.sref ham.tex ham-sorted.tex
 cwebdir/ctwill.log: ctwill$(EXEEXT)
 
 TESTS += cwebdir/cweave.test
