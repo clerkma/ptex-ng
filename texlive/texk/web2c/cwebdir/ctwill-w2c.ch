@@ -125,10 +125,8 @@ modified. The version number parallels the corresponding version of \.{CWEAVE}.
 
 @x
 @d max_refs 30000 /* number of cross-references; must be less than 65536 */
-@d max_scraps 5000 /* number of tokens in \CEE/ texts being parsed */
 @y
 @d max_refs 65535 /* number of cross-references; must be less than 65536 */
-@d max_scraps 5000 /* number of tokens in \CEE/ texts being parsed */
 @z
 
 @x
@@ -2064,14 +2062,10 @@ The directories to be searched for come from three sources:
     i.e., \.{\$TEXMFDOTDIR:\$TEXMF/texmf/cweb//}.\par}
 @.CWEBINPUTS@>
 
-@s const_string int
-@s string int
-
 @d kpse_find_cweb(name) kpse_find_file(name,kpse_cweb_format,true)
 
 @<Include files@>=
-#include <kpathsea/kpathsea.h> /* include every \Kpathsea/ header;
-  for |@!kpse_find_file| */
+#include <kpathsea/tex-file.h> /* |@!kpse_find_file| */
 
 @ @<Set up |cur_file_name|...@>=
 if (strlen(found_filename) < max_file_name_length) {

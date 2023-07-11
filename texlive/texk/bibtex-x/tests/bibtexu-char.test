@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: bibtexu-char.test 65675 2023-01-29 22:21:52Z karl $
+# $Id: bibtexu-char.test 67590 2023-07-09 15:28:53Z karl $
 # Copyright 2022-2023 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
 # You may freely use, modify and/or distribute this file.
 
@@ -47,8 +47,8 @@ max_print_line=119 ./bibtexu tests/xnameu || rc=13
 diff $srcdir/tests/nameu.bbl tests/xnameu.bbl || rc=14
 
 ## test for is.knj.str$
-cp $srcdir/tests/iscjku.aux tests/xiscjku.aux
-./bibtexu tests/xiscjku || rc=15
-diff $srcdir/tests/iscjku.bbl tests/xiscjku.bbl || rc=16
+#cp $srcdir/tests/iscjku.aux tests/xiscjku.aux
+#./bibtexu tests/xiscjku || rc=15
+#diff $srcdir/tests/iscjku.bbl tests/xiscjku.bbl || rc=16
 
 exit $rc
