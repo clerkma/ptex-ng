@@ -93,9 +93,9 @@ cweb program; /* \.{CTANGLE} or \.{CWEAVE} or \.{CTWILL}? */
 @z
 
 @x
-      ungetc(c,fp); loc=buffer; err_print("! Input line too long");
+    loc=buffer; err_print("! Input line too long");
 @y
-      ungetc(c,fp); loc=buffer; err_print(_("! Input line too long"));
+    loc=buffer; err_print(_("! Input line too long"));
 @z
 
 @x
@@ -141,41 +141,6 @@ char *found_filename; /* filename found by |kpse_find_file| */
 @z
 
 @x
-if ((web_file=fopen(web_file_name,"r"))==NULL) {
-  strcpy(web_file_name,alt_web_file_name);
-  if ((web_file=fopen(web_file_name,"r"))==NULL)
-       fatal("! Cannot open input file ", web_file_name);
-}
-@y
-if ((found_filename=kpse_find_cweb(web_file_name))==NULL @|
-    || (web_file=fopen(found_filename,"r"))==NULL)
-  fatal(_("! Cannot open input file "), web_file_name);
-else if (strlen(found_filename) < max_file_name_length) {
-  /* Copy name for \#\&{line} directives. */
-  if (strcmp(web_file_name, found_filename))
-    strcpy(web_file_name, found_filename +
-      ((strncmp(found_filename,"./",2)==0) ? 2 : 0));
-  free(found_filename);
-} else fatal(_("! Filename too long\n"), found_filename);
-@z
-
-@x
-if ((change_file=fopen(change_file_name,"r"))==NULL)
-       fatal("! Cannot open change file ", change_file_name);
-@y
-if ((found_filename=kpse_find_cweb(change_file_name))==NULL @|
-    || (change_file=fopen(found_filename,"r"))==NULL)
-  fatal(_("! Cannot open change file "), change_file_name);
-else if (strlen(found_filename) < max_file_name_length) {
-  /* Copy name for \#\&{line} directives. */
-  if (strcmp(change_file_name, found_filename))
-    strcpy(change_file_name, found_filename +
-      ((strncmp(found_filename,"./",2)==0) ? 2 : 0));
-  free(found_filename);
-} else fatal(_("! Filename too long\n"), found_filename);
-@z
-
-@x
       err_print("! Include file name not given");
 @y
       err_print(_("! Include file name not given"));
@@ -206,7 +171,7 @@ double quotes.
 The actual file lookup is done with the help of the \Kpathsea/ library;
 see section~\X93:File lookup with \Kpathsea/\X~for details. % FIXME
 The remainder of the \.{@@i} line after the file name is ignored.
-@^system dependencies@> @.CWEBINPUTS@>
+@^system dependencies@>
 @z
 
 @x
@@ -241,7 +206,7 @@ The remainder of the \.{@@i} line after the file name is ignored.
 
 @x
   if ((kk=getenv("CWEBINPUTS"))!=NULL) {
-@.CWEBINPUTS@>
+@qCWEBINPUTS@>
     if ((l=strlen(kk))>max_file_name_length-2) too_long();
     strcpy(temp_file_name,kk);
   }
@@ -288,6 +253,41 @@ The remainder of the \.{@@i} line after the file name is ignored.
 @z
 
 @x
+if ((web_file=fopen(web_file_name,"r"))==NULL) {
+  strcpy(web_file_name,alt_web_file_name);
+  if ((web_file=fopen(web_file_name,"r"))==NULL)
+       fatal("! Cannot open input file ", web_file_name);
+}
+@y
+if ((found_filename=kpse_find_cweb(web_file_name))==NULL @|
+    || (web_file=fopen(found_filename,"r"))==NULL)
+  fatal(_("! Cannot open input file "), web_file_name);
+else if (strlen(found_filename) < max_file_name_length) {
+  /* Copy name for \#\&{line} directives. */
+  if (strcmp(web_file_name, found_filename))
+    strcpy(web_file_name, found_filename +
+      ((strncmp(found_filename,"./",2)==0) ? 2 : 0));
+  free(found_filename);
+} else fatal(_("! Filename too long\n"), found_filename);
+@z
+
+@x
+if ((change_file=fopen(change_file_name,"r"))==NULL)
+       fatal("! Cannot open change file ", change_file_name);
+@y
+if ((found_filename=kpse_find_cweb(change_file_name))==NULL @|
+    || (change_file=fopen(found_filename,"r"))==NULL)
+  fatal(_("! Cannot open change file "), change_file_name);
+else if (strlen(found_filename) < max_file_name_length) {
+  /* Copy name for \#\&{line} directives. */
+  if (strcmp(change_file_name, found_filename))
+    strcpy(change_file_name, found_filename +
+      ((strncmp(found_filename,"./",2)==0) ? 2 : 0));
+  free(found_filename);
+} else fatal(_("! Filename too long\n"), found_filename);
+@z
+
+@x
 @d hash_size 353 /* should be prime */
 @y
 @d hash_size 8501 /* should be prime */
@@ -299,6 +299,12 @@ The remainder of the \.{@@i} line after the file name is ignored.
 @y
   if (byte_ptr+l>byte_mem_end) overflow(_("byte memory"));
   if (name_ptr>=name_dir_end) overflow(_("name"));
+@z
+
+@x
+  if (program==cweave) {
+@y
+  if (program!=ctangle) {
 @z
 
 @x
@@ -608,7 +614,7 @@ else {
 @z
 
 @x
-@** Index.
+@* Index.
 @y
 @** Extensions to {\tentex CWEB}.  The following sections introduce new or
 improved features that have been created by numerous contributors over the

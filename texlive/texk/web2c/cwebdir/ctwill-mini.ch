@@ -60,6 +60,13 @@ faithful overall rendering of {\itt CTWILL}'s code, though. \hfill
 The ``banner line'' defined here should be changed whenever \.{CTWILL} is
 @-banner@>
 @$banner {CTWILL}1 =\.{"This\ is\ CTWILL"}@>
+
+@$ctangle {CTWILL}3 \&{enum} \&{cweb}@>
+@$ctwill {CTWILL}3 \&{enum} \&{cweb}@>
+@$cweave {CTWILL}3 \&{enum} \&{cweb}@>
+
+@$inner {CTWILL}223 \&{enum} \&{mode}@>
+@$outer {CTWILL}223 \&{enum} \&{mode}@>
 @z
 
 Section 2.
@@ -69,11 +76,11 @@ Section 2.
 @y
 @r @ \.{CWEAVE} has a fairly straightforward outline.  It operates in
 @%
-@$show_banner {CTWILL}14 =\\{flags}[\.{'b'}]@>
-@$show_progress {CTWILL}14 =\\{flags}[\.{'p'}]@>
+@$show_banner {CTWILL}15 =\\{flags}[\.{'b'}]@>
+@$show_progress {CTWILL}15 =\\{flags}[\.{'p'}]@>
 @z
 
-Section 4.
+Section 5.
 
 @x
 For backward compatibility with pre-{\mc ANSI} compilers, we replace the
@@ -90,25 +97,25 @@ And we replace the
 @-HAVE_GETTEXT@>
 @z
 
-Section 5.
-
-@x
-@d compress(c) if (loc++<=limit) return c
-@y
-@d compress(c) if (loc++<=limit) return c
-@-c@>
-@z
-
 Section 6.
 
 @x
-@ Code related to input routines:
+@d compress(c) if (loc++<=limit) return c
 @y
-@ Code related to input routines:
+@d compress(c) if (loc++<=limit) return c
 @-c@>
 @z
 
 Section 7.
+
+@x
+@ Code related to input routines:
+@y
+@ Code related to input routines:
+@-c@>
+@z
+
+Section 8.
 
 @x
 @d cur_line line[include_depth] /* number of current line in current file */
@@ -117,12 +124,12 @@ Section 7.
 @-cur_file@>
 @-cur_file_name@>
 @-cur_line@>
-@$cur_file {CTWILL}7 =\\{file}[\\{include\_depth}]@>
-@$cur_file_name {CTWILL}7 =\hfil\break\\{file\_name}[\\{include\_depth}]@>
-@$cur_line {CTWILL}7 =\\{line}[\\{include\_depth}]@>
+@$cur_file {CTWILL}8 =\\{file}[\\{include\_depth}]@>
+@$cur_file_name {CTWILL}8 =\hfil\break\\{file\_name}[\\{include\_depth}]@>
+@$cur_line {CTWILL}8 =\\{line}[\\{include\_depth}]@>
 @z
 
-Section 10.
+Section 11.
 
 @x
 @ Code related to identifier and section name storage:
@@ -132,12 +139,12 @@ Section 10.
 @-llink@>
 @-rlink@>
 @-root@>
-@$llink {CTWILL}10 =\\{link}@>
-@$rlink {CTWILL}10 =\\{dummy}.\\{Rlink}@>
-@$root {CTWILL}10 =\\{name\_dir}$\MG$\\{rlink}@>
+@$llink {CTWILL}11 =\\{link}@>
+@$rlink {CTWILL}11 =\\{dummy}.\\{Rlink}@>
+@$root {CTWILL}11 =\\{name\_dir}$\MG$\\{rlink}@>
 @z
 
-Section 12.
+Section 13.
 
 @x
 @ Code related to error handling:
@@ -158,15 +165,15 @@ extern const char *use_language; /* prefix to \.{ctwimac.tex} in \TEX/ output */
 @-show_stats@>
 @-make_xrefs@>
 @-check_for_change@>
-@$show_banner {CTWILL}14 =\\{flags}[\.{'b'}]@>
-@$show_progress {CTWILL}14 =\\{flags}[\.{'p'}]@>
-@$show_happiness {CTWILL}14 =\\{flags}[\.{'h'}]@>
-@$show_stats {CTWILL}14 =\\{flags}[\.{'s'}]@>
-@$make_xrefs {CTWILL}14 =\\{flags}[\.{'x'}]@>
-@$check_for_change {CTWILL}14 =\\{flags}[\.{'c'}]@>
+@$show_banner {CTWILL}15 =\\{flags}[\.{'b'}]@>
+@$show_progress {CTWILL}15 =\\{flags}[\.{'p'}]@>
+@$show_happiness {CTWILL}15 =\\{flags}[\.{'h'}]@>
+@$show_stats {CTWILL}15 =\\{flags}[\.{'s'}]@>
+@$make_xrefs {CTWILL}15 =\\{flags}[\.{'x'}]@>
+@$check_for_change {CTWILL}15 =\\{flags}[\.{'c'}]@>
 @z
 
-Section 15.
+Section 16.
 
 @x
 @ Code related to output:
@@ -177,19 +184,17 @@ Section 15.
 @-c@>
 @-update_terminal@>
 @-new_line@>
-@$update_terminal {CTWILL}15 =\\{fflush}(\\{stdout})@>
-@$new_line {CTWILL}15 =\\{putchar}(\.{'\\n'})@>
-@z
-
-Section 16.
-
-@x
-@ The procedure that gets everything rolling:
-@y
-@r @ The procedure that gets everything rolling:
+@$update_terminal {CTWILL}16 =\\{fflush}(\\{stdout})@>
+@$new_line {CTWILL}16 =\\{putchar}(\.{'\\n'})@>
 @z
 
 Section 17.
+
+@x
+@ The following parameters are sufficient to handle \TEX/ (converted to
+@y
+@r @ The following parameters are sufficient to handle \TEX/ (converted to
+@z
 
 @x
 @d long_buf_size (buf_size+longest_name) /* for \.{CWEAVE} */
@@ -686,7 +691,7 @@ The raw input is converted into scraps according to the following table,
 \.{\\hbox\{}\thinspace stuff\/\thinspace\.\} to the following scrap.
 
 \smallskip
-*The \.{\\,} (thin space) is omitted in ``inner \TeX\ mode.''
+*The \.{\\,} (thin space) is omitted in ``|inner| \TeX\ mode.''
 @z
 
 Sections 117--125.
@@ -1285,6 +1290,14 @@ scrap_pointer p)
     return; /* this happens, for example, in \&{case} \\{found}: */
 @z
 
+Section 141.
+
+@x
+  while (q != xmem) {
+@y
+  while (q != xmem) { @+
+@z
+
 Section 143.
 
 @x
@@ -1584,12 +1597,18 @@ Section 224.
 @-cur_end@>
 @-cur_tok@>
 @-cur_mode@>
-@$cur_end {CTWILL}224 =\\{cur\_state}.\\{end\_field}]@>
-@$cur_tok {CTWILL}224 =\\{cur\_state}.\\{tok\_field}]@>
-@$cur_mode {CTWILL}224 =\\{cur\_state}.\\{mode\_field}]@>
+@$cur_end {CTWILL}224 =\\{cur\_state}.\\{end\_field}@>
+@$cur_tok {CTWILL}224 =\\{cur\_state}.\\{tok\_field}@>
+@$cur_mode {CTWILL}224 =\\{cur\_state}.\\{mode\_field}@>
 @z
 
 Section 227.
+
+@x
+@ To insert token-list |p| into the output, the |push_level| subroutine
+@y
+@r @ To insert token-list |p| into the output, the |push_level| subroutine
+@z
 
 @x
 push_level( /* suspends the current level */
@@ -1605,11 +1624,10 @@ Section 228.
 
 @x
 force when the current level was begun. This subroutine will never be
-called when |stack_ptr==1|.
+called when |stack_ptr==1|. It is so simple, we declare it as a macro:
 @y
-force when the current level was begun.
-
-This subroutine will never be called when |stack_ptr==1|.
+force when the current level was begun.  It is so simple, we declare it as a
+macro.  This subroutine will never be called when |stack_ptr==1|.
 @z
 
 Section 233--234.
@@ -1935,7 +1953,15 @@ Section 279.
 @x
   cur_name=sort_ptr->head;
 @y
-  @+cur_name=sort_ptr->head;@/
+  cur_name=sort_ptr->head;@/
+@z
+
+Section 281.
+
+@x
+  else {out_str("\\["); out_section(cur_val-def_flag); out(']');}
+@y
+  else {@+out_str("\\["); out_section(cur_val-def_flag); out(']');@+}
 @z
 
 Section 285.
@@ -2145,16 +2171,6 @@ Section 315.
 @y
 @ @<Predec...@>=@+static void out_mini(meaning_struct *);
 @-out_mini@>
-@z
-
-Section 316.
-
-@x
-@ Compare this code with section |@<Output the name...@>|.
-
-@<Mini-output...@>=
-@y
-@ @<Mini-output...@>=
 @z
 
 Section 318.

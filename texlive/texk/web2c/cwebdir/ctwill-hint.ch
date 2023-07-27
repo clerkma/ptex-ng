@@ -22,6 +22,13 @@ The ``banner line'' defined here should be changed whenever \.{CTWILL} is
 The ``banner line'' defined here should be changed whenever \.{CTWILL} is
 @-banner@>
 @$banner {CTWILL}1 =\.{"This\ is\ CTWILL"}@>
+
+@$ctangle {CTWILL}3 \&{enum} \&{cweb}@>
+@$ctwill {CTWILL}3 \&{enum} \&{cweb}@>
+@$cweave {CTWILL}3 \&{enum} \&{cweb}@>
+
+@$inner {CTWILL}207 \&{enum} \&{mode}@>
+@$outer {CTWILL}207 \&{enum} \&{mode}@>
 @z
 
 Section 2.
@@ -31,11 +38,11 @@ Section 2.
 @y
 @ \.{CWEAVE} has a fairly straightforward outline.  It operates in
 @%
-@$show_banner {CTWILL}14 =\\{flags}[\.{'b'}]@>
-@$show_progress {CTWILL}14 =\\{flags}[\.{'p'}]@>
+@$show_banner {CTWILL}15 =\\{flags}[\.{'b'}]@>
+@$show_progress {CTWILL}15 =\\{flags}[\.{'p'}]@>
 @z
 
-Section 4.
+Section 5.
 
 @x
 @d _(s) gettext(s)
@@ -46,25 +53,25 @@ Section 4.
 @-HAVE_GETTEXT@>
 @z
 
-Section 5.
-
-@x
-@d compress(c) if (loc++<=limit) return c
-@y
-@d compress(c) if (loc++<=limit) return c
-@-c@>
-@z
-
 Section 6.
 
 @x
-@ Code related to input routines:
+@d compress(c) if (loc++<=limit) return c
 @y
-@ Code related to input routines:
+@d compress(c) if (loc++<=limit) return c
 @-c@>
 @z
 
 Section 7.
+
+@x
+@ Code related to input routines:
+@y
+@ Code related to input routines:
+@-c@>
+@z
+
+Section 8.
 
 @x
 @d cur_line line[include_depth] /* number of current line in current file */
@@ -73,12 +80,12 @@ Section 7.
 @-cur_file@>
 @-cur_file_name@>
 @-cur_line@>
-@$cur_file {CTWILL}7 =\\{file}[\\{include\_depth}]@>
-@$cur_file_name {CTWILL}7 =\hfil\break\\{file\_name}[\\{include\_depth}]@>
-@$cur_line {CTWILL}7 =\\{line}[\\{include\_depth}]@>
+@$cur_file {CTWILL}8 =\\{file}[\\{include\_depth}]@>
+@$cur_file_name {CTWILL}8 =\hfil\break\\{file\_name}[\\{include\_depth}]@>
+@$cur_line {CTWILL}8 =\\{line}[\\{include\_depth}]@>
 @z
 
-Section 10.
+Section 11.
 
 @x
 @ Code related to identifier and section name storage:
@@ -88,12 +95,12 @@ Section 10.
 @-llink@>
 @-rlink@>
 @-root@>
-@$llink {CTWILL}10 =\\{link}@>
-@$rlink {CTWILL}10 =\\{dummy}.\\{Rlink}@>
-@$root {CTWILL}10 =\\{name\_dir}$\MG$\\{rlink}@>
+@$llink {CTWILL}11 =\\{link}@>
+@$rlink {CTWILL}11 =\\{dummy}.\\{Rlink}@>
+@$root {CTWILL}11 =\\{name\_dir}$\MG$\\{rlink}@>
 @z
 
-Section 12.
+Section 13.
 
 @x
 @ Code related to error handling:
@@ -102,7 +109,7 @@ Section 12.
 @-s@>
 @z
 
-Section 14.
+Section 15.
 
 @x
 extern const char *use_language; /* prefix to \.{cwebmac.tex} in \TEX/ output */
@@ -114,15 +121,15 @@ extern const char *use_language; /* prefix to \.{ctwimac.tex} in \TEX/ output */
 @-show_stats@>
 @-make_xrefs@>
 @-check_for_change@>
-@$show_banner {CTWILL}14 =\\{flags}[\.{'b'}]@>
-@$show_progress {CTWILL}14 =\\{flags}[\.{'p'}]@>
-@$show_happiness {CTWILL}14 =\\{flags}[\.{'h'}]@>
-@$show_stats {CTWILL}14 =\\{flags}[\.{'s'}]@>
-@$make_xrefs {CTWILL}14 =\\{flags}[\.{'x'}]@>
-@$check_for_change {CTWILL}14 =\\{flags}[\.{'c'}]@>
+@$show_banner {CTWILL}15 =\\{flags}[\.{'b'}]@>
+@$show_progress {CTWILL}15 =\\{flags}[\.{'p'}]@>
+@$show_happiness {CTWILL}15 =\\{flags}[\.{'h'}]@>
+@$show_stats {CTWILL}15 =\\{flags}[\.{'s'}]@>
+@$make_xrefs {CTWILL}15 =\\{flags}[\.{'x'}]@>
+@$check_for_change {CTWILL}15 =\\{flags}[\.{'c'}]@>
 @z
 
-Section 15.
+Section 16.
 
 @x
 @ Code related to output:
@@ -133,8 +140,8 @@ Section 15.
 @-c@>
 @-update_terminal@>
 @-new_line@>
-@$update_terminal {CTWILL}15 =\\{fflush}(\\{stdout})@>
-@$new_line {CTWILL}15 =\\{putchar}(\.{'\\n'})@>
+@$update_terminal {CTWILL}16 =\\{fflush}(\\{stdout})@>
+@$new_line {CTWILL}16 =\\{putchar}(\.{'\\n'})@>
 @z
 
 Section 17.
@@ -600,9 +607,9 @@ Section 208.
 @-cur_end@>
 @-cur_tok@>
 @-cur_mode@>
-@$cur_end {CTWILL}208 =\\{cur\_state}.\\{end\_field}]@>
-@$cur_tok {CTWILL}208 =\\{cur\_state}.\\{tok\_field}]@>
-@$cur_mode {CTWILL}208 =\\{cur\_state}.\\{mode\_field}]@>
+@$cur_end {CTWILL}208 =\\{cur\_state}.\\{end\_field}@>
+@$cur_tok {CTWILL}208 =\\{cur\_state}.\\{tok\_field}@>
+@$cur_mode {CTWILL}208 =\\{cur\_state}.\\{mode\_field}@>
 @z
 
 Section 211.

@@ -11,7 +11,7 @@ No changes to CTANGLE or CWEAVE are needed.
 
 @x section 23: Make input_ln accept \n, \r, \n\r, or \r\n as line endings
 @ In the unlikely event that your standard I/O library does not
-support |feof|, |getc|, and |ungetc| you may have to change things here.
+support |feof| and |getc| you may have to change things here.
 @^system dependencies@>
 
 @c
@@ -24,9 +24,9 @@ FILE *fp) /* what file to read from */
   limit = k = buffer; /* beginning of buffer */
   while (k<=buffer_end && (c=getc(fp)) != EOF && c!='\n')
     if ((*(k++) = c) != ' ') limit = k;
-  if (k>buffer_end)
-    if ((c=getc(fp))!=EOF && c!='\n') {
-      ungetc(c,fp); loc=buffer; err_print("! Input line too long");
+  if (k>buffer_end) {
+    while ((c=getc(fp))!=EOF && c!='\n'); /* discard rest of line */
+    loc=buffer; err_print("! Input line too long");
 @.Input line too long@>
     }
   if (c==EOF && limit==buffer) return false; /* there was nothing after
@@ -61,7 +61,7 @@ FILE *fp) /* what file to read from */
       return true;
     }
     else if (k>buffer_end) {
-      ungetc(c,fp); loc=buffer; err_print("! Input line too long");
+      while ((c=getc(fp))!=EOF && c!='\n' && c!='\r'); /* discard rest of line */
       return true;
 @.Input line too long@>
     }
@@ -81,16 +81,6 @@ FILE *fp) /* what file to read from */
   @<Skip over comment lines in the change file; |return| if end of file@>@;
 @z
 
-@x section 36, don't try to open a change file if none was specified
-if ((change_file=fopen(change_file_name,"r"))==NULL)
-       fatal("! Cannot open change file ", change_file_name);
-@y
-if (change_file_name[0] == '\0')  /* no change file specified */
-        change_file = NULL; /* reset at least the |change_file| */
-else if ((change_file=fopen(change_file_name,"r"))==NULL)
-       fatal("! Cannot open change file ", change_file_name);
-@z
-
 @x section 39, declare colon as Mac's path separator
 (Colon-separated paths are not supported.)
 The remainder of the \.{@@i} line after the file name is ignored.
@@ -108,6 +98,16 @@ The remainder of the \.{@@i} line after the file name is ignored.
     cur_file_name[l]='/'; /* \UNIX/ pathname separator */
 @y
     cur_file_name[l]=PATH_SEP; /* pathname separator */
+@z
+
+@x section 41, don't try to open a change file if none was specified
+if ((change_file=fopen(change_file_name,"r"))==NULL)
+       fatal("! Cannot open change file ", change_file_name);
+@y
+if (change_file_name[0] == '\0')  /* no change file specified */
+        change_file = NULL; /* reset at least the |change_file| */
+else if ((change_file=fopen(change_file_name,"r"))==NULL)
+       fatal("! Cannot open change file ", change_file_name);
 @z
 
 @x section 75, explain the convention for omitted change files
@@ -134,7 +134,7 @@ An omitted change file argument means that no change file should be used,
 @z
 
 @x section 85, insert an extra module before the index
-@** Index.
+@* Index.
 @y by putting the new module here, we preserve all the previous section numbers
 @ We assume an interface to \CEE/ command-line emulation as supplied by
 the |ccommand| function of Metrowerks CodeWarrior, as defined in
@@ -144,5 +144,5 @@ the header file \.{console.h}.
 #include <console.h>
 @^system dependencies@>
 
-@** Index.
+@* Index.
 @z

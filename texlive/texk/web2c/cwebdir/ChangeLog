@@ -1,3 +1,59 @@
+2023-07-26  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-bs.ch,
+	* comm-w2c.ch,
+	* comm-w2c.h,
+	* comm-w32.ch,
+	* common.bux,
+	* common.c,
+	* common.h,
+	* common.w,
+	* ctang-w32.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-w32.ch,
+	* cweave.w: Purge 'init_p'.
+
+2023-07-21  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-{mac,mini,vms,w2c}.ch,
+	* comm-w2c.h,
+	* common.bux,
+	* common.{c,h,w},
+	* ctangle.{c,w},
+	* ctwill-mini.ch,
+	* ctwill.bux: Match common.w with common.h.
+
+2023-07-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebdir/comm-mac.ch,
+	* cwebdir/comm-w2c.ch,
+	* cwebdir/common.c,
+	* cwebdir/common.w: Discard rest of overfull input line.
+
+2023-07-17  Andreas Scherer  <https://ascherer.github.io>
+
+	* cweave.w: Deal with malign user input.
+
+2023-07-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-mini.ch,
+	* cweave.w: 'pop_level' is a macro (again).
+
+2023-07-14  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.bux,
+	* cweave.w: Finally make use of type 'mode' -- C-style.
+
+2023-07-13  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctang-{bs,w2c}.ch,
+	* ctangle.c,
+	+ ctangle.w,
+	* cweave.w: Merge 'cur_state' into 'stack'.
+
 2023-07-09  Andreas Scherer  <https://ascherer.github.io>
 
 	* comm-ql.ch,

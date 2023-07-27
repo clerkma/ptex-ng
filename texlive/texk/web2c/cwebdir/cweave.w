@@ -147,7 +147,6 @@ identifiers are \CEE/ or \CPLUSPLUS/ reserved words whose |ilk|
 explains how they are to be treated when \CEE/ code is being
 formatted.
 
-@d ilk dummy.Ilk
 @d normal 0 /* ordinary identifiers have |normal| ilk */
 @d roman 1 /* normal index entries have |roman| ilk */
 @d wildcard 2 /* user-formatted index entries have |wildcard| ilk */
@@ -355,7 +354,7 @@ tok_ptr=max_tok_ptr=tok_mem+1;@/
 tok_start[0]=tok_start[1]=tok_mem+1;@/
 text_ptr=max_text_ptr=tok_start+1;
 
-@ Here are the three procedures needed to complete |id_lookup|:
+@ Here are the two procedures needed to complete |id_lookup|:
 @c
 boolean names_match(
 name_pointer p, /* points to the proposed match */
@@ -366,14 +365,6 @@ eight_bits t) /* desired |ilk| */
   if (length(p)!=l) return false;
   if (p->ilk!=t && !(t==normal && abnormal(p))) return false;
   return !strncmp(first,p->byte_start,l);
-}
-
-void
-init_p(
-name_pointer p,
-eight_bits t)
-{
-  p->ilk=t; init_node(p);
 }
 
 void
@@ -1443,8 +1434,8 @@ to overflow. To make this routine a little faster, we initialize position
 out_buf[0]='\\';
 
 @ A long line is broken at a blank space or just before a backslash that isn't
-preceded by another backslash. In the latter case, a |'%'| is output at
-the break.
+preceded by another backslash or a \TeX\ comment marker. In the latter case, a
+|'%'| is output at the break.
 
 @c
 static void
@@ -1456,7 +1447,7 @@ break_out(void) /* finds a way to break the output line */
     if (*k==' ') {
       flush_buffer(k,false,true); return;
     }
-    if (*(k--)=='\\' && *k!='\\') { /* we've decreased |k| */
+    if (*(k--)=='\\' && *k!='\\' && *k!='%') { /* we've decreased |k| */
       flush_buffer(k,true,true); return;
     }
   }
@@ -2125,7 +2116,7 @@ identifier&|exp|: \.{\\\\\{}identifier with underlines and
 \.{@@(@q)@>}\thinspace section name\thinspace\.{@@>}&|section_scrap|:
  \.{\\X}$n$\.{:\\.\{}section name with special characters
       quoted\.{\\,\}\\X}\footnote*{The \.{\\,} (thin space) is omitted
-      in ``inner \TeX\ mode.''}&maybe\cr
+      in ``|inner| \TeX\ mode.''}&maybe\cr
 \.{/*}\thinspace comment\thinspace\.{*/}&|insert|: |cancel|
       \.{\\C\{}translated comment\.\} |force|&no\cr
 \.{//}\thinspace comment&|insert|: |cancel|
@@ -3754,8 +3745,8 @@ on a particular level will be read;
 \yskip\hang |mode_field| is the current mode, either |inner| or |outer|.
 
 \yskip\noindent The current values of these quantities are referred to
-quite frequently, so they are stored in a separate place instead of in the
-|stack| array. We call the current values |cur_end|, |cur_tok|, and
+quite frequently, so they are stored in an extra slot at the very end of
+the |stack| array.  We call the current values |cur_end|, |cur_tok|, and
 |cur_mode|.
 
 The global variable |stack_ptr| tells how many levels of output are
@@ -3763,26 +3754,28 @@ currently in progress. The end of output occurs when an |end_translation|
 token is found, so the stack is never empty except when we first begin the
 output process.
 
-@d inner false /* value of |mode| for \CEE/ texts within \TEX/ texts */
-@d outer true /* value of |mode| for \CEE/ texts in sections */
-
-@<Typed...@>= typedef int mode;
+@s mode int
+@<Typed...@>=
+typedef enum {
+  @!inner, /* value of |mode| for \CEE/ texts within \TEX/ texts */
+  @!outer /* value of |mode| for \CEE/ texts in sections */
+} mode;
 typedef struct {
   token_pointer end_field; /* ending location of token list */
   token_pointer tok_field; /* present location within token list */
-  boolean mode_field; /* interpretation of control tokens */
+  mode mode_field; /* interpretation of control tokens */
 } output_state;
 typedef output_state *stack_pointer;
 
 @ @d stack_size 2000 /* number of simultaneous output levels */
+@d cur_state stack[stack_size] /* |cur_end|, |cur_tok|, |cur_mode| */
 @d cur_end cur_state.end_field /* current ending location in |tok_mem| */
 @d cur_tok cur_state.tok_field /* location of next output token in |tok_mem| */
 @d cur_mode cur_state.mode_field /* current mode of interpretation */
 @d init_stack stack_ptr=stack;cur_mode=outer /* initialize the stack */
 
 @<Private...@>=
-static output_state cur_state; /* |cur_end|, |cur_tok|, |cur_mode| */
-static output_state stack[stack_size]; /* info for non-current levels */
+static output_state stack[stack_size+1]; /* info for non-current levels */
 static stack_pointer stack_end=stack+stack_size-1; /* end of |stack| */
 static stack_pointer stack_ptr; /* first unused location in the output state stack */
 static stack_pointer max_stack_ptr; /* largest value assumed by |stack_ptr| */
@@ -3790,25 +3783,21 @@ static stack_pointer max_stack_ptr; /* largest value assumed by |stack_ptr| */
 @ @<Set init...@>=
 max_stack_ptr=stack;
 
+@ @<Predecl...@>=
+static void push_level(text_pointer);@/
+
 @ To insert token-list |p| into the output, the |push_level| subroutine
 is called; it saves the old level of output and gets a new one going.
 The value of |cur_mode| is not changed.
 
-@<Predecl...@>=
-static void push_level(text_pointer);@/
-static void pop_level(void);
-
-@ @c
+@c
 static void
 push_level( /* suspends the current level */
 text_pointer p)
 {
   if (stack_ptr==stack_end) overflow("stack");
-  if (stack_ptr>stack) { /* save current state */
-    stack_ptr->end_field=cur_end;
-    stack_ptr->tok_field=cur_tok;
-    stack_ptr->mode_field=cur_mode;
-  }
+  if (stack_ptr>stack) /* save current state */
+    *stack_ptr = cur_state;
   stack_ptr++;
   if (stack_ptr>max_stack_ptr) max_stack_ptr=stack_ptr;
   cur_tok=*p; cur_end=*(p+1);
@@ -3816,15 +3805,9 @@ text_pointer p)
 
 @ Conversely, the |pop_level| routine restores the conditions that were in
 force when the current level was begun. This subroutine will never be
-called when |stack_ptr==1|.
+called when |stack_ptr==1|. It is so simple, we declare it as a macro:
 
-@c
-static void
-pop_level(void)
-{
-  cur_end=(--stack_ptr)->end_field;
-  cur_tok=stack_ptr->tok_field; cur_mode=stack_ptr->mode_field;
-}
+@d pop_level cur_state = *(--stack_ptr)
 
 @ The |get_output| function returns the next byte of output that is not a
 reference to a token list. It returns the values |identifier| or |res_word|
@@ -3850,7 +3833,7 @@ static eight_bits
 get_output(void) /* returns the next token of output */
 {
   sixteen_bits a; /* current item read from |tok_mem| */
-  restart: while (cur_tok==cur_end) pop_level();
+  restart: while (cur_tok==cur_end) pop_level;
   a=*(cur_tok++);
   if (a>=0400) {
     cur_name=a % id_flag + name_dir;
@@ -4780,11 +4763,10 @@ while (sort_ptr>scrap_info) {
 switch (cur_name->ilk) {@+char *j;@+@t}\6{\4@>
   case normal: case func_template:
     if (is_tiny(cur_name)) out_str("\\|");
-    else {
+    else {@+boolean all_caps=true;@+@t}\6{@>
       for (j=cur_name->byte_start;j<(cur_name+1)->byte_start;j++)
-        if (xislower(*j)) goto lowcase;
-      out_str("\\."); break;
-lowcase: out_str("\\\\");
+        if (xislower(*j)) all_caps=false;
+      out_str(all_caps ? "\\." : "\\\\");
     }
     break;
 @.\\|@>
@@ -4792,8 +4774,7 @@ lowcase: out_str("\\\\");
 @.\\\\@>
   case wildcard: out_str("\\9");@+ goto not_an_identifier;
 @.\\9@>
-  case typewriter: out_str("\\.");
-  @=/* fall through */@>@;
+  case typewriter: out_str("\\.");@+ goto not_an_identifier;
 @.\\.@>
   case roman: not_an_identifier: out_name(cur_name,false); goto name_done;
   case custom:

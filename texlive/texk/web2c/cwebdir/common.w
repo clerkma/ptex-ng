@@ -47,7 +47,7 @@ under the terms of a permission notice identical to this one.
 \pageno=\contentspagenumber \advance\pageno by 1
 \let\maybe=\iftrue
 
-@** Introduction.  This file contains code common
+@* Introduction.  This file contains code common
 to both \.{CTANGLE} and \.{CWEAVE}, which roughly concerns the following
 problems: character uniformity, input routines, error handling and
 parsing of command line.  We have tried to concentrate in this file
@@ -129,7 +129,7 @@ char *section_text_end = section_text+longest_name; /* end of |section_text| */
 char *id_first; /* where the current identifier begins in the buffer */
 char *id_loc; /* just after the current identifier in the buffer */
 
-@** Input routines.  The lowest level of input to the \.{CWEB} programs
+@* Input routines.  The lowest level of input to the \.{CWEB} programs
 is performed by |input_ln|, which must be told which file to read from.
 The return value of |input_ln| is |true| if the read is successful and
 |false| if not (generally this means the file has ended). The conventions
@@ -150,7 +150,7 @@ char *loc=buffer; /* points to the next character to be read from the buffer */
 char *limit=buffer; /* points to the last character in the buffer */
 
 @ In the unlikely event that your standard I/O library does not
-support |feof|, |getc|, and |ungetc| you may have to change things here.
+support |feof| and |getc| you may have to change things here.
 @^system dependencies@>
 
 @c
@@ -163,9 +163,9 @@ FILE *fp) /* what file to read from */
   limit = k = buffer; /* beginning of buffer */
   while (k<=buffer_end && (c=getc(fp)) != EOF && c!='\n')
     if ((*(k++) = c) != ' ') limit = k;
-  if (k>buffer_end)
-    if ((c=getc(fp))!=EOF && c!='\n') {
-      ungetc(c,fp); loc=buffer; err_print("! Input line too long");
+  if (k>buffer_end) {
+    while ((c=getc(fp))!=EOF && c!='\n'); /* discard rest of line */
+    loc=buffer; err_print("! Input line too long");
 @.Input line too long@>
     }
   if (c==EOF && limit==buffer) return false; /* there was nothing after
@@ -175,8 +175,8 @@ FILE *fp) /* what file to read from */
 
 @ @<Predecl...@>=@+static boolean input_ln(FILE *);
 
-@ Now comes the problem of deciding which file to read from next.
-Recall that the actual text that \.{CWEB} should process comes from two
+@* File handling. Now comes the problem of deciding which file to read from
+next.  Recall that the actual text that \.{CWEB} should process comes from two
 streams: a |web_file|, which can contain possibly nested include
 commands~\.{@@i}, and a |change_file|, which might also contain
 includes.  The |web_file| together with the currently open include
@@ -349,37 +349,6 @@ else if (xyz_code=='y') {
   return;
 }
 
-@ The |reset_input| procedure, which gets \.{CWEB} ready to read the
-user's \.{CWEB} input, is used at the beginning of phase one of \.{CTANGLE},
-phases one and two of \.{CWEAVE}.
-
-@c
-void
-reset_input(void)
-{
-  limit=buffer; loc=buffer+1; buffer[0]=' ';
-  @<Open input files@>@;
-  include_depth=cur_line=change_line=0;
-  change_depth=include_depth;
-  changing=true; prime_the_change_buffer(); changing=!changing;
-  limit=buffer; loc=buffer+1; buffer[0]=' '; input_has_ended=false;
-}
-
-@ The following code opens the input files.
-@^system dependencies@>
-
-@<Open input files@>=
-if ((web_file=fopen(web_file_name,"r"))==NULL) {
-  strcpy(web_file_name,alt_web_file_name);
-  if ((web_file=fopen(web_file_name,"r"))==NULL)
-       fatal("! Cannot open input file ", web_file_name);
-}
-@.Cannot open input file@>
-@.Cannot open change file@>
-web_file_open=true;
-if ((change_file=fopen(change_file_name,"r"))==NULL)
-       fatal("! Cannot open change file ", change_file_name);
-
 @ The |get_line| procedure is called when |loc>limit|; it puts the next
 line of merged input into the buffer and updates the other variables
 appropriately. A space is placed at the right end of the line.
@@ -390,14 +359,7 @@ If we've just changed from the |cur_file| to the |change_file|, or if
 the |cur_file| has changed, we tell \.{CTANGLE} to print this
 information in the \CEE/ file by means of the |print_where| flag.
 
-@<Global var...@>=
-sixteen_bits section_count; /* the current section number */
-boolean changed_section[max_sections]; /* is the section changed? */
-boolean change_pending; /* if the current change is not yet recorded in
-  |changed_section[section_count]| */
-boolean print_where=false; /* should \.{CTANGLE} print line and file info? */
-
-@ @c
+@c
 boolean get_line(void) /* inputs the next line */
 {
   restart:
@@ -462,7 +424,7 @@ The remainder of the \.{@@i} line after the file name is ignored.
     goto restart; /* success */
   }
   if ((kk=getenv("CWEBINPUTS"))!=NULL) {
-@.CWEBINPUTS@>
+@qCWEBINPUTS@>
     if ((l=strlen(kk))>max_file_name_length-2) too_long();
     strcpy(temp_file_name,kk);
   }
@@ -549,7 +511,45 @@ check_complete(void) {
   }
 }
 
-@** Storage of names and strings.
+@ The |reset_input| procedure, which gets \.{CWEB} ready to read the
+user's \.{CWEB} input, is used at the beginning of phase one of \.{CTANGLE},
+phases one and two of \.{CWEAVE}.
+
+@c
+void
+reset_input(void)
+{
+  limit=buffer; loc=buffer+1; buffer[0]=' ';
+  @<Open input files@>@;
+  include_depth=cur_line=change_line=0;
+  change_depth=include_depth;
+  changing=true; prime_the_change_buffer(); changing=!changing;
+  limit=buffer; loc=buffer+1; buffer[0]=' '; input_has_ended=false;
+}
+
+@ The following code opens the input files.
+@^system dependencies@>
+
+@<Open input files@>=
+if ((web_file=fopen(web_file_name,"r"))==NULL) {
+  strcpy(web_file_name,alt_web_file_name);
+  if ((web_file=fopen(web_file_name,"r"))==NULL)
+       fatal("! Cannot open input file ", web_file_name);
+}
+@.Cannot open input file@>
+@.Cannot open change file@>
+web_file_open=true;
+if ((change_file=fopen(change_file_name,"r"))==NULL)
+       fatal("! Cannot open change file ", change_file_name);
+
+@ @<Global var...@>=
+sixteen_bits section_count; /* the current section number */
+boolean changed_section[max_sections]; /* is the section changed? */
+boolean change_pending; /* if the current change is not yet recorded in
+  |changed_section[section_count]| */
+boolean print_where=false; /* should \.{CTANGLE} print line and file info? */
+
+@* Storage of names and strings.
 Both \.{CWEAVE} and \.{CTANGLE} store identifiers, section names and
 other strings in a large array of |char|s, called |byte_mem|.
 Information about the names is kept in the array |name_dir|, whose
@@ -670,15 +670,16 @@ if (p==NULL) {
 }
 
 @ The information associated with a new identifier must be initialized
-in a slightly different way in \.{CWEAVE} than in \.{CTANGLE}; hence the
-|init_p| procedure.
+in a slightly different way in \.{CWEAVE} than in \.{CTANGLE}.
 
 @<Enter a new name...@>= {
   if (byte_ptr+l>byte_mem_end) overflow("byte memory");
   if (name_ptr>=name_dir_end) overflow("name");
   strncpy(byte_ptr,first,l);
   (++name_ptr)->byte_start=byte_ptr+=l;
-  init_p(p,t);
+  if (program==cweave) {
+    p->ilk=t; init_node(p);
+  }
 }
 
 @ If |p| is a |name_pointer| variable, as we have seen,
@@ -990,7 +991,7 @@ name_pointer r) /* section name being compared */
 
 @ @<Predec...@>=@+static int section_name_cmp(char **,size_t,name_pointer);
 
-@** Reporting errors to the user.
+@* Reporting errors to the user.
 A global variable called |history| will contain one of four values
 at the end of every run: |spotless| means that no unusual messages were
 printed; |harmless_message| means that a message of possible interest
@@ -1114,7 +1115,7 @@ and \.{CWEB} prints an error message that is really for the \.{CWEB}
 maintenance person, not the user. In such cases the program says
 |confusion("indication of where we are")|.
 
-@** Command line arguments.
+@* Command line arguments.
 The user calls \.{CWEAVE} and \.{CTANGLE} with arguments on the command line.
 These are either file names or flags to be turned off (beginning with |"-"|)
 or flags to be turned on (beginning with |"+"|).
@@ -1261,7 +1262,7 @@ else fatal(
 @ @<Complain about arg...@>= fatal("! Filename too long\n", *argv);
 @.Filename too long@>
 
-@** Output. Here is the code that opens the output file:
+@* Output. Here is the code that opens the output file:
 @^system dependencies@>
 
 @<Global var...@>=
@@ -1283,4 +1284,4 @@ else {
     fatal("! Cannot open output file ", tex_file_name);
 }
 
-@** Index.
+@* Index.
