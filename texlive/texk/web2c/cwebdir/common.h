@@ -153,7 +153,7 @@ typedef struct name_info {
   union {
     struct name_info *Rlink; /* right link in binary search tree for section
       names */
-    char Ilk; /* used by identifiers in \.{CWEAVE} only */
+    eight_bits Ilk; /* used by identifiers in \.{CWEAVE} only */
   } dummy;
   void *equiv_or_xref; /* info corresponding to names */
 } name_info; /* contains information about an identifier or section name */
@@ -177,17 +177,17 @@ extern void print_prefix_name(name_pointer);@/
 extern void print_section_name(name_pointer);@/
 extern void sprint_section_name(char *,name_pointer);
 @#
-extern boolean names_match(name_pointer,const char *,size_t,eight_bits);@/
+extern boolean names_match(name_pointer,const char *,size_t,eight_bits);
 /* two routines defined in \.{ctangle.w} and \.{cweave.w} */
-extern void init_node(name_pointer);@/
+extern void init_node(name_pointer);
 
 @ Code related to error handling:
 @d spotless 0 /* |history| value for normal jobs */
 @d harmless_message 1 /* |history| value when non-serious info was printed */
 @d error_message 2 /* |history| value when an error was noted */
 @d fatal_message 3 /* |history| value when we had to stop prematurely */
-@d mark_harmless if (history==spotless) history=harmless_message
-@d mark_error history=error_message
+@d mark_harmless() if (history==spotless) history=harmless_message
+@d mark_error() history=error_message
 @d confusion(s) fatal("! This can't happen: ",s)
 @.This can't happen@>
 
@@ -217,8 +217,8 @@ extern char scn_file_name[]; /* name of |scn_file| */
 extern boolean flags[]; /* an option for each 7-bit code */
 
 @ Code related to output:
-@d update_terminal fflush(stdout) /* empty the terminal output buffer */
-@d new_line putchar('\n')
+@d update_terminal() fflush(stdout) /* empty the terminal output buffer */
+@d new_line() putchar('\n')
 @d term_write(a,b) fflush(stdout),fwrite(a,sizeof(char),b,stdout)
 
 @<Common code...@>=

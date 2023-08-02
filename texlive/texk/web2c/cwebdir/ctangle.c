@@ -70,8 +70,8 @@
 #define harmless_message 1
 #define error_message 2
 #define fatal_message 3
-#define mark_harmless if(history==spotless) history= harmless_message
-#define mark_error history= error_message
+#define mark_harmless() if(history==spotless) history= harmless_message
+#define mark_error() history= error_message
 #define confusion(s) fatal("! This can't happen: ",s)  \
  \
 
@@ -81,8 +81,8 @@
 #define show_stats flags['s']
 #define make_xrefs flags['x'] \
 
-#define update_terminal fflush(stdout) 
-#define new_line putchar('\n') 
+#define update_terminal() fflush(stdout) 
+#define new_line() putchar('\n') 
 #define term_write(a,b) fflush(stdout) ,fwrite(a,sizeof(char) ,b,stdout)  \
 
 #define buf_size 200
@@ -126,10 +126,10 @@
 #define verbatim 4 \
 
 #define max_files 256
+#define macro_end (cur_text+1) ->tok_start \
+
 #define C_printf(c,a) fprintf(C_file,c,a) 
 #define C_putc(c) putc((int) (c) ,C_file)  \
-
-#define macro_end (cur_text+1) ->tok_start \
 
 #define translit_length 10 \
 
@@ -216,7 +216,7 @@ struct name_info*link;
 union{
 struct name_info*Rlink;
 
-char Ilk;
+eight_bits Ilk;
 }dummy;
 void*equiv_or_xref;
 }name_info;
@@ -647,7 +647,7 @@ C_putc('\n');
 if(cur_line%100==0&&show_progress){
 putchar('.');
 if(cur_line%500==0)printf("%d",cur_line);
-update_terminal;
+update_terminal();
 }
 cur_line++;
 }
@@ -679,14 +679,14 @@ output_defs();
 #line 516 "ctangle.w"
 
 if(text_info->text_link==macro&&cur_out_file==end_output_files){
-fputs("\n! No program text was specified.",stdout);mark_harmless;
+fputs("\n! No program text was specified.",stdout);mark_harmless();
 
 }
 else{
 if(cur_out_file==end_output_files){
 if(show_progress){
 printf("\nWriting the output file (%s):",C_file_name);
-update_terminal;
+update_terminal();
 }
 }
 else{
@@ -694,7 +694,7 @@ if(show_progress){
 fputs("\nWriting the output files:",stdout);
 
 printf(" (%s)",C_file_name);
-update_terminal;
+update_terminal();
 }
 if(text_info->text_link==macro)goto writeloop;
 }
@@ -710,7 +710,7 @@ fclose(C_file);
 if((C_file= fopen(output_file_name,"wb"))==NULL)
 fatal("! Cannot open output file ",output_file_name);
 
-if(show_progress){printf("\n(%s)",output_file_name);update_terminal;}
+if(show_progress){printf("\n(%s)",output_file_name);update_terminal();}
 cur_line= 1;
 stack_ptr= stack+1;
 cur_name= *an_output_file;
@@ -724,7 +724,7 @@ flush_buffer();
 #line 539 "ctangle.w"
 
 if(show_happiness){
-if(show_progress)new_line;
+if(show_progress)new_line();
 fputs("Done.",stdout);
 }
 }
@@ -777,7 +777,7 @@ static void
 out_char(
 eight_bits cur_char)
 {
-char*j,*k;
+char*j;
 restart:
 switch(cur_char){
 case'\n':if(protect&&out_state!=verbatim)C_putc(' ');
@@ -788,8 +788,8 @@ flush_buffer();if(out_state!=verbatim)out_state= normal;break;
 
 case identifier:
 if(out_state==num_or_id)C_putc(' ');
-for(j= (cur_val+name_dir)->byte_start,k= (cur_val+name_dir+1)->byte_start;
-j<k;j++)
+for(j= (cur_val+name_dir)->byte_start;
+j<(cur_val+name_dir+1)->byte_start;j++)
 if((eight_bits)(*j)<0200)C_putc(*j);
 
 else C_printf("%s",translit[(eight_bits)(*j)-0200]);
@@ -816,8 +816,8 @@ C_printf("\n#line %d \"",(int)a);
 
 cur_val= (int)(*cur_byte++-0200)*0400;
 cur_val+= *cur_byte++;
-for(j= (cur_val+name_dir)->byte_start,k= (cur_val+name_dir+1)->byte_start;
-j<k;j++){
+for(j= (cur_val+name_dir)->byte_start;
+j<(cur_val+name_dir+1)->byte_start;j++){
 if(*j=='\\'||*j=='"')C_putc('\\');
 C_putc(*j);
 }
@@ -1127,7 +1127,7 @@ if(k>=section_text_end){
 fputs("\n! Section name too long: ",stdout);
 
 term_write(section_text+1,25);
-printf("...");mark_harmless;
+printf("...");mark_harmless();
 }
 if(*k==' '&&k> section_text)k--;
 
@@ -1465,7 +1465,7 @@ text_pointer q;
 sixteen_bits a;
 section_count++;no_where= true;
 if(*(loc-1)=='*'&&show_progress){
-printf("*%d",(int)section_count);update_terminal;
+printf("*%d",(int)section_count);update_terminal();
 }
 next_control= ignore;
 while(true){

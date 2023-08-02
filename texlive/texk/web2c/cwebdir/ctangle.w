@@ -462,7 +462,7 @@ flush_buffer(void) /* writes one line to output file */
   if (cur_line % 100 == 0 && show_progress) {
     putchar('.');
     if (cur_line % 500 == 0) printf("%d",cur_line);
-    update_terminal; /* progress report */
+    update_terminal(); /* progress report */
   }
   cur_line++;
 }
@@ -515,14 +515,14 @@ phase_two (void) {
   @<Initialize the output stacks@>@;
   @<Output macro definitions if appropriate@>@;
   if (text_info->text_link==macro && cur_out_file==end_output_files) {
-    fputs("\n! No program text was specified.",stdout); mark_harmless;
+    fputs("\n! No program text was specified.",stdout); mark_harmless();
 @.No program text...@>
   }
   else {
     if (cur_out_file==end_output_files) {
       if (show_progress) {
         printf("\nWriting the output file (%s):",C_file_name);
-        update_terminal;
+        update_terminal();
       }
     }
     else {
@@ -530,7 +530,7 @@ phase_two (void) {
         fputs("\nWriting the output files:",stdout);
 @.Writing the output...@>
         printf(" (%s)",C_file_name);
-        update_terminal;
+        update_terminal();
       }
       if (text_info->text_link==macro) goto writeloop;
     }
@@ -538,7 +538,7 @@ phase_two (void) {
     flush_buffer();
 writeloop:   @<Write all the named output files@>@;
     if (show_happiness) {
-      if (show_progress) new_line;
+      if (show_progress) new_line();
       fputs("Done.",stdout);
     }
   }
@@ -558,7 +558,7 @@ for (an_output_file=end_output_files; an_output_file>cur_out_file;) {
     if ((C_file=fopen(output_file_name,"wb"))==NULL)
       fatal("! Cannot open output file ",output_file_name);
 @.Cannot open output file@>
-    if (show_progress) { printf("\n(%s)",output_file_name); update_terminal; }
+    if (show_progress) { printf("\n(%s)",output_file_name); update_terminal(); }
     cur_line=1;
     stack_ptr=stack+1;
     cur_name=*an_output_file;
@@ -583,10 +583,10 @@ static boolean output_defs_seen=false;
 static void output_defs(void);@/
 static void out_char(eight_bits);
 
-@ @d C_printf(c,a) fprintf(C_file,c,a)
-@d C_putc(c) putc((int)(c),C_file) /* isn't \CEE/ wonderfully consistent? */
+@ @d macro_end (cur_text+1)->tok_start /* end of |macro| replacement text */
 @#
-@d macro_end (cur_text+1)->tok_start /* end of |macro| replacement text */
+@d C_printf(c,a) fprintf(C_file,c,a)
+@d C_putc(c) putc((int)(c),C_file) /* isn't \CEE/ wonderfully consistent? */
 
 @c
 static void
@@ -636,7 +636,7 @@ static void
 out_char(
 eight_bits cur_char)
 {
-  char *j, *k; /* pointer into |byte_mem| */
+  char *j; /* pointer into |byte_mem| */
 restart:
     switch (cur_char) {
       case '\n': if (protect && out_state!=verbatim) C_putc(' ');
@@ -702,8 +702,8 @@ static char translit[0200][translit_length];
 @ @<Case of an identifier@>=@t\1\quad@>
 case identifier:
   if (out_state==num_or_id) C_putc(' ');
-  for (j=(cur_val+name_dir)->byte_start, k=(cur_val+name_dir+1)->byte_start;
-       j<k; j++)
+  for (j=(cur_val+name_dir)->byte_start;
+       j<(cur_val+name_dir+1)->byte_start; j++)
     if ((eight_bits)(*j)<0200) C_putc(*j);
 @^high-bit character handling@>
     else C_printf("%s",translit[(eight_bits)(*j)-0200]);
@@ -725,8 +725,8 @@ case section_number:
 @:line}{\.{\#line}@>
     cur_val=(int)(*cur_byte++-0200)*0400;
     cur_val+=*cur_byte++; /* points to the file name */
-    for (j=(cur_val+name_dir)->byte_start, k=(cur_val+name_dir+1)->byte_start;
-         j<k; j++) {
+    for (j=(cur_val+name_dir)->byte_start;
+         j<(cur_val+name_dir+1)->byte_start; j++) {
       if (*j=='\\' || *j=='"') C_putc('\\');
       C_putc(*j);
     }
@@ -1122,7 +1122,7 @@ if (k>=section_text_end) {
   fputs("\n! Section name too long: ",stdout);
 @.Section name too long@>
   term_write(section_text+1,25);
-  printf("..."); mark_harmless;
+  printf("..."); mark_harmless();
 }
 if (*k==' ' && k>section_text) k--;
 
@@ -1374,7 +1374,7 @@ scan_section(void)
   sixteen_bits a; /* token for left-hand side of definition */
   section_count++; @+ no_where=true;
   if (*(loc-1)=='*' && show_progress) { /* starred section */
-    printf("*%d",(int)section_count); update_terminal;
+    printf("*%d",(int)section_count); update_terminal();
   }
   next_control=ignore;
   while (true) {

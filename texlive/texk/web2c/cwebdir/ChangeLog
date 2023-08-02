@@ -1,3 +1,43 @@
+2023-08-01  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch,
+	* common.c,
+	* common.w: Squeeze section 51 to preserve page count.
+
+2023-07-29  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-bs.ch,
+	* comm-w2c.h,
+	* common.c,
+	* common.h,
+	* common.w,
+	* ctang-bs.ch,
+	* ctang-w2c.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-w2c.ch,
+	* cweav-bs.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Syntactic sugar.
+
+2023-07-28  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.h,
+	* common.c,
+	* common.h,
+	* ctangle.c: Ilk is of type eight_bits.
+
+2023-07-28  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-mini.ch,
+	* comm-w2c.ch,
+	* common.bux,
+	* common.c,
+	* common.w,
+	* ctangle.c,
+	* ctangle.w,
+	* system.bux: Format 'common' with 'ctwill'.
+
 2023-07-26  Andreas Scherer  <https://ascherer.github.io>
 
 	* comm-bs.ch,
