@@ -155,7 +155,7 @@ Section 13.
 @-s@>
 @z
 
-Section 14.
+Section 15.
 
 @x
 extern const char *use_language; /* prefix to \.{cwebmac.tex} in \TEX/ output */
@@ -1006,14 +1006,12 @@ the category codes |pp->cat,@,@,(pp+1)->cat|$,\,\,\ldots\,$
 the category codes |pp->cat|, |(pp+1)->cat|, $\,\ldots\,$
 @z
 
-Section 127.
-
 @x
-@ @d trans trans_plus.Trans /* translation texts of scraps */
+@d trans trans_plus.Trans /* translation texts of scraps */
 @y
-@ @d trans trans_plus.Trans /* translation texts of scraps */
+@d trans trans_plus.Trans /* translation texts of scraps */
 @-trans@>
-@$trans {CTWILL}127 =\\{trans\_plus}.\\{Trans}@>
+@$trans {CTWILL}126 =\\{trans\_plus}.\\{Trans}@>
 @z
 
 Section 128.
@@ -1032,6 +1030,7 @@ Section 129.
 @ Token lists in |@!tok_mem| are composed of the following kinds of
 @y
 @ Token lists in |@!tok_mem| are composed of the following kinds of
+@-DEBUG@>
 @-p@>
 @-res_flag@>
 @-section_flag@>
@@ -1041,6 +1040,15 @@ Section 129.
 @$section_flag {CTWILL}129 =$\T{3}*\\{id\_flag}$@>
 @$tok_flag {CTWILL}129 =$\T{3}*\\{id\_flag}$@>
 @$inner_tok_flag {CTWILL}129 =$\T{4}*\\{id\_flag}$@>
+@z
+
+Section 130.
+
+@x l.2221
+@c
+@y
+@c
+@-DEBUG@>
 @z
 
 Section 132.
@@ -1866,6 +1874,14 @@ Section 261.
 @-footnote@>
 @z
 
+Section 264.
+
+@x
+@** Phase three processing.
+@y
+@r @** Phase three processing.
+@z
+
 Section 265.
 
 @x
@@ -1944,15 +1960,17 @@ Section 278.
   next_name=sort_ptr->head;
 @y
 @ @<Split the list...@>= {@+
-  int c;
+  int c; @+
   next_name=sort_ptr->head;@/
 @z
 
 Section 279.
 
 @x
+@ @<Output index...@>= {
   cur_name=sort_ptr->head;
 @y
+@ @<Output index...@>= { @+
   cur_name=sort_ptr->head;@/
 @z
 
@@ -1978,7 +1996,7 @@ Section 287.
 @x
   puts(_("\nMemory usage statistics:"));
 @.Memory usage statistics:@>
-  printf(_("%td names (out of %ld)\n"),
+  printf(_("%td names (out of %ld)\n"),@^system dependencies@>
             (ptrdiff_t)(name_ptr-name_dir),(long)max_names);
   printf(_("%td cross-references (out of %ld)\n"),
             (ptrdiff_t)(xref_ptr-xmem),(long)max_refs);
@@ -2004,7 +2022,7 @@ Section 287.
 @y
   puts(_("\nMemory usage statistics:"));@/
 @.Memory usage statistics:@>
-  printf(_("%td names (out of %ld)\n"),
+  printf(_("%td names (out of %ld)\n"),@^system dependencies@>
             (ptrdiff_t)(name_ptr-name_dir),@/
             @t\5\5\5\5@>(long)max_names);@/
   printf(_("%td cross-references (out of %ld)\n"),

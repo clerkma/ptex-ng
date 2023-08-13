@@ -1,3 +1,61 @@
+2023-08-11  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Refurbish 'phase_three'.
+
+2023-08-08  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch,
+	* comm-w2c.h,
+	* common.h,
+	* ctang-w2c.ch,
+	* ctangle.w,
+	* ctwill-hint.ch,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Mark a few 'system dependencies' for the index.
+
+2023-08-07  Andreas Scherer  <https://ascherer.github.io>
+
+	* common.c,
+	* common.w,
+	* ctang-w2c.ch,
+	* ctangle.c,
+	* ctangle.w: Code cleanup.
+
+2023-08-06  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-hint.ch,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Hide 'print_text' analytics.
+
+2023-08-04  Andreas Scherer  <https://ascherer.github.io>
+
+	* common.bux,
+	* ctwill-hint.ch,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-bs.ch,
+	* cweav-pc.ch,
+	* cweav-vms.ch,
+	* cweav-w2c.ch,
+	* cweav-w32.ch,
+	* cweave.w: Desove section with internal array sizes.
+
+2023-08-02  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctang-bs.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-w2c.ch,
+	* cweave.w,
+	* system.bux: Replace 'sprintf' with 'snprintf'.
+
 2023-08-01  Andreas Scherer  <https://ascherer.github.io>
 
 	* comm-w2c.ch,

@@ -2,11 +2,15 @@
 @$cweave {COMMON}2 \&{cweb}@>
 @$ctwill {COMMON}2 \&{cweb}@>
 
+@$text_info {CTANGLE.W}20 \&{text} [\,]@>
+
+@$equiv {CTANGLE.W}22 \\{equiv\_or\_xref}@>
+
 @$ac {CWEAVE.W}2 \&{int}@>
 @$av {CWEAVE.W}2 \&{char} ${*}{*}$@>
 @$main {CWEAVE.W}2 \&{int} (\,)@>
 
-@$ilk {CWEAVE.W}20 \\{dummy.Ilk}@>
+@$ilk {CWEAVE.W}11 \\{dummy.Ilk}@>
 
 @$xmem {CWEAVE.W}23 \&{xref\_info} [\,]@>
 
@@ -16,10 +20,6 @@
 @$names_match {CWEAVE.W}32 \&{boolean} (\,)@>
 
 @$print_stats {CWEAVE.W}270 \&{void} (\,)@>
-
-@$text_info {CTANGLE.W}20 \&{text} [\,]@>
-
-@$equiv {CTANGLE.W}22 \\{equiv\_or\_xref}@>
 
 @$kpse_set_program_name "<kpathsea/progname.h>" \zip@>
 @$kpse_find_file "<kpathsea/tex-file.h>" \zip@>

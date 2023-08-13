@@ -385,13 +385,6 @@ Section 109.
 @-n@>
 @z
 
-@x
-\yskip\noindent All of these tokens are removed from the \TEX/ output that
-@y
-\yskip\noindent All of these tokens are removed from the \TEX/ output that
-@-n@>
-@z
-
 Section 110.
 
 @x
@@ -420,14 +413,14 @@ Sections 111.
 @-s@>
 @z
 
-Section 113.
+Section 112.
 
 @x
-@ @d trans trans_plus.Trans /* translation texts of scraps */
+@d trans trans_plus.Trans /* translation texts of scraps */
 @y
-@ @d trans trans_plus.Trans /* translation texts of scraps */
+@d trans trans_plus.Trans /* translation texts of scraps */
 @-trans@>
-@$trans {CTWILL}113 =\\{trans\_plus}.\\{Trans}@>
+@$trans {CTWILL}112 =\\{trans\_plus}.\\{Trans}@>
 @z
 
 Section 115.
@@ -436,6 +429,7 @@ Section 115.
 @ Token lists in |@!tok_mem| are composed of the following kinds of
 @y
 @ Token lists in |@!tok_mem| are composed of the following kinds of
+@-DEBUG@>
 @-p@>
 @-res_flag@>
 @-section_flag@>
@@ -445,6 +439,15 @@ Section 115.
 @$section_flag {CTWILL}115 =$\T{3}*\\{id\_flag}$@>
 @$tok_flag {CTWILL}115 =$\T{3}*\\{id\_flag}$@>
 @$inner_tok_flag {CTWILL}115 =$\T{4}*\\{id\_flag}$@>
+@z
+
+Section 116.
+
+@x l.2221
+@c
+@y
+@c
+@-DEBUG@>
 @z
 
 Section 118.
@@ -777,7 +780,7 @@ Section 270.
 @x
   puts(_("\nMemory usage statistics:"));
 @.Memory usage statistics:@>
-  printf(_("%td names (out of %ld)\n"),
+  printf(_("%td names (out of %ld)\n"),@^system dependencies@>
             (ptrdiff_t)(name_ptr-name_dir),(long)max_names);
   printf(_("%td cross-references (out of %ld)\n"),
             (ptrdiff_t)(xref_ptr-xmem),(long)max_refs);
@@ -803,7 +806,7 @@ Section 270.
 @y
   puts(_("\nMemory usage statistics:"));@/
 @.Memory usage statistics:@>
-  printf(_("%td names (out of %ld)\n"),
+  printf(_("%td names (out of %ld)\n"),@^system dependencies@>
             (ptrdiff_t)(name_ptr-name_dir),@/
             @t\5\5\5\5@>(long)max_names);@/
   printf(_("%td cross-references (out of %ld)\n"),

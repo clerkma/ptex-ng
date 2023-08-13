@@ -29,7 +29,7 @@ is modified.
 @z
 
 
-@x Section 10.
+@x Section 11.
 @d ilk dummy.Ilk /* used by \.{CWEAVE} only */
 
 @<Common code...@>=
@@ -146,6 +146,7 @@ static text_pointer tok_start_end; /* end of |tok_start| */
 static text_pointer text_ptr; /* first unused position in |tok_start| */
 @z
 
+
 @x Section 31. (goes with the previous change)
 tok_ptr=max_tok_ptr=tok_mem+1;@/
 tok_start[0]=tok_start[1]=tok_mem+1;@/
@@ -215,7 +216,7 @@ static char huge* cur_byte; /* index into |byte_mem| */
 
 
 @x Section 264.
-switch (cur_name->ilk) {@+char *j;@+@t}\6{\4@>
+switch (cur_name->ilk) {@+char *p; /* index into |byte_mem| */@+@t}\6{\4@>
 @y
-switch (cur_name->ilk) {@+char huge* j;@+@t}\6{\4@>
+switch (cur_name->ilk) {@+char huge* p; /* index into |byte_mem| */@+@t}\6{\4@>
 @z

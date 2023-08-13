@@ -1,11 +1,15 @@
 #! /bin/sh -vx
-# $Id: beginfontk1.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: beginfontk1.test 67885 2023-08-11 14:25:18Z takuji $
 # Public domain.
 # ensure -K1 does not remove newline after %%BeginFont line.
 # Report from T S, 1 Jan 2010 16:32:16.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_dvips=$BinDir/dvips$ExeExt
+
 tst=beginfontk1
-./dvips -K1 $srcdir/testdata/$tst.dvi -o || exit 1
+$_dvips -K1 $srcdir/testdata/$tst.dvi -o || exit 1
 grep '^%%BeginFont: /MC1_ArialBold$' $tst.ps || exit 1
 
 exit 0

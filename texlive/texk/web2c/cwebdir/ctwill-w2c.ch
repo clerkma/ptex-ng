@@ -124,18 +124,18 @@ modified. The version number parallels the corresponding version of \.{CWEAVE}.
 @z
 
 @x
-@d max_refs 30000 /* number of cross-references; must be less than 65536 */
-@y
-@d max_refs 65535 /* number of cross-references; must be less than 65536 */
-@z
-
-@x
 turned on during the first phase.
 
 @<Private...@>=
 static boolean change_exists; /* has any section changed? */
 @y
 turned on during the first phase---NOT!
+@z
+
+@x
+@ @d max_refs 30000 /* number of cross-references; must be less than 65536 */
+@y
+@ @d max_refs 65535 /* number of cross-references; must be less than 65536 */
 @z
 
 @x
@@ -598,41 +598,9 @@ null_scrap.trans=&tok_start[0];
 @z
 
 @x
-@d inner_tok_flag (5*id_flag) /* signifies a token list in `\pb' */
-
-@c
-static void
-print_text( /* prints a token list for debugging; not used in |main| */
-@y
-@d inner_tok_flag (5*id_flag) /* signifies a token list in `\pb' */
-
-@<Predecl...@>=
-#if 0
-static void print_text(text_pointer p);
-#endif
-
-@ @c
-#if 0
-static void
-print_text( /* prints a token list for debugging; not used in |main| */
-@z
-
-@x
   update_terminal();
 @y
   puts("|"); update_terminal();
-@z
-
-@x
-}
-@y
-}
-#endif
-@z
-
-@x
-@ @<Predecl...@>=@+static void print_text(text_pointer p);
-@y
 @z
 
 @x
@@ -843,7 +811,7 @@ else if (cat1==ubinop && (cat2==ubinop || cat2==cast)) {
 version 3.6, because those productions bypass |decl_head| (thereby
 confusing |make_ministring|, which depends on the |decl_head| productions
 to deduce the type). We revert to an older syntax that was
-less friendly to \CPLUSPLUS/ but good enough for me.
+less friendly to \CPLUSPLUS/ but good enough for me.@^system dependencies@>
 
 @<Cases for |typedef_like|@>=
 if (cat1==decl_head) {
@@ -999,6 +967,11 @@ static boolean temp_switch; /* has `\.{@@\%}' occurred recently? */
 @z
 
 @x
+If the section has changed, we put \.{\\*} just after the section number.
+@y
+@z
+
+@x
 if (*(loc-1)!='*') out_str("\\M");
 @y
 if (*(loc-1)!='*') {
@@ -1130,41 +1103,18 @@ flush_buffer(out_ptr,false,false);
 @x
 out_str("\\fi"); finish_line();
 @.\\fi@>
-flush_buffer(out_buf,false,false); /* insert a blank line, it looks nice */
 @y
 finish_line(); out_str("\\mini"); finish_line();
 @.\\mini@>
 @<Output information about usage of id's defined in other sections@>@;
 out_str("}\\FI"); finish_line();
 @.\\FI@>
-flush_buffer(out_buf,false,false); /* insert a blank line, it looks nice */
 @z
 
 @x
-if (no_xref) {
-  finish_line();
-  out_str("\\end");
-@.\\end@>
-  finish_line();
-}
+  if (show_progress) fputs("\nWriting the index...",stdout);
 @y
-if (no_xref) {
-  finish_line();
-  out_str("\\end");
-@.\\end@>
-}
-@z
-
-@x
-  phase=3; if (show_progress) fputs("\nWriting the index...",stdout);
-@y
-  phase=3; if (show_progress) fputs(_("\nWriting the index..."),stdout);
-@z
-
-@x
-    fatal("! Cannot open index file ",idx_file_name);
-@y
-    fatal(_("! Cannot open index file "),idx_file_name);
+  if (show_progress) fputs(_("\nWriting the index..."),stdout);
 @z
 
 @x
@@ -1175,20 +1125,21 @@ if (no_xref) {
 @z
 
 @x
+    fatal("! Cannot open index file ",idx_file_name);
+@y
+    fatal(_("! Cannot open index file "),idx_file_name);
+@z
+
+@x
     fatal("! Cannot open section file ",scn_file_name);
 @y
     fatal(_("! Cannot open section file "),scn_file_name);
 @z
 
 @x
-@.\\end@>
-  finish_line();
-  fclose(active_file);
-}
+fclose(active_file);
 @y
-@.\\end@>
-}
-finish_line(); fclose(active_file); active_file=tex_file=NULL;
+fclose(active_file); active_file=tex_file=NULL;
 if (check_for_change) @<Update the result when it has changed@>@;
 @z
 
@@ -1232,7 +1183,7 @@ out('.');
 
 @x
 @ @<Output the name...@>=
-switch (cur_name->ilk) {@+char *j;@+@t}\6{\4@>
+switch (cur_name->ilk) {@+char *p; /* index into |byte_mem| */@+@t}\6{\4@>
 @y
 @ We don't format the index completely; the \.{twinx} program does the
 rest of the job.  Compare this code with section |@<Mini-output...@>|.
@@ -1250,15 +1201,16 @@ switch (cur_name->ilk) {
 @x
     else {@+boolean all_caps=true;@+@t}\6{@>
 @y
-    else {@+boolean all_caps=true;@+char *j;@+@t}\6{@>
+    else {@+boolean all_caps=true;@+char *p;
+      /* index into |byte_mem| */ @+@t}\6{@>
 @z
 
 @x
   case roman: not_an_identifier: out_name(cur_name,false); goto name_done;
   case custom:
     out_str("$\\");
-    for (j=cur_name->byte_start;j<(cur_name+1)->byte_start;j++)
-      out(*j=='_'? 'x': *j=='$'? 'X': *j);
+    for (p=cur_name->byte_start;p<(cur_name+1)->byte_start;p++)
+      out(*p=='_'? 'x': *p=='$'? 'X': *p);
     out('$');
     goto name_done;
 @y
@@ -1277,7 +1229,7 @@ out_name(cur_name,proofing);
 @x
   puts("\nMemory usage statistics:");
 @.Memory usage statistics:@>
-  printf("%td names (out of %ld)\n",
+  printf("%td names (out of %ld)\n",@^system dependencies@>
             (ptrdiff_t)(name_ptr-name_dir),(long)max_names);
   printf("%td cross-references (out of %ld)\n",
             (ptrdiff_t)(xref_ptr-xmem),(long)max_refs);
@@ -1298,7 +1250,7 @@ out_name(cur_name,proofing);
 @y
   puts(_("\nMemory usage statistics:"));
 @.Memory usage statistics:@>
-  printf(_("%td names (out of %ld)\n"),
+  printf(_("%td names (out of %ld)\n"),@^system dependencies@>
             (ptrdiff_t)(name_ptr-name_dir),(long)max_names);
   printf(_("%td cross-references (out of %ld)\n"),
             (ptrdiff_t)(xref_ptr-xmem),(long)max_refs);
@@ -1556,7 +1508,6 @@ new_meaning(
   name_pointer p)
 {
   struct perm_meaning *q=get_meaning(p);
-  ms_mode=false;
   if (q->stamp!=section_count) {
     if (*(ministring_ptr-1)==' ') ministring_ptr--;
     if (ministring_ptr>=ministring_buf_end)
@@ -1582,7 +1533,8 @@ new_meaning(
     name_pointer p=id_lookup(first,loc-1,normal);
     sixteen_bits t=title_lookup();
     if (*(loc-1)=='}')
-      while (xisdigit(*loc)) n=10*n+(*loc++)-'0';
+      for (;xisdigit(*loc);loc++)@^system dependencies@>
+        if (n < INT_MAX / 10) n=10*n+(*loc)-'0';
     if (*loc++!=' ')
       err_print(_("! Location in meaning should be followed by space"));
     else @<Digest the meaning of |p|, |t|, |n|@>@;
@@ -1808,6 +1760,7 @@ if ((aux_file=fopen(aux_file_name,"wb"))==NULL)
 @q Section 31->293. @>
 @ @<Write the new meaning to the \.{.aux} file@>=
 {@+int n=q->perm.prog_no;
+  ms_mode=false;@/
   fprintf(aux_file,"@@$%.*s %.*s",@|
     (int)length(p),p->byte_start,@|
     (int)length(title_code[n]),title_code[n]->byte_start);
@@ -1854,15 +1807,15 @@ placed on the list, unless they are reserved and their current
 @ @c static void
 out_mini(
   meaning_struct *m)
-{ char s[60];
+{ char s[max_tex_chars+10];
   name_pointer cur_name=m->id;
   if (m->prog_no==0) { /* reference within current program */
     if (m->sec_no==section_count) return; /* defined in current section */
-    sprintf(s,"\\[%d",m->sec_no);
+    snprintf(s,max_tex_chars+10,"\\[%d",m->sec_no);
   } else { name_pointer n=title_code[m->prog_no];
     if (*(n->byte_start)=='{')
-      sprintf(s,"\\]%.*s%d",(int)length(n),n->byte_start,m->sec_no);
-    else sprintf(s,"\\]%.*s",(int)length(n),n->byte_start);
+      snprintf(s,max_tex_chars+10,"\\]%.*s%d",(int)length(n),n->byte_start,m->sec_no);
+    else snprintf(s,max_tex_chars+10,"\\]%.*s",(int)length(n),n->byte_start);
   }
   out_str(s); out(' ');
   @<Mini-output the name at |cur_name|@>@;
@@ -1876,12 +1829,14 @@ out_mini(
 @ Compare this code with section |@<Output the name...@>|.
 
 @<Mini-output...@>=
-switch (cur_name->ilk) {@+char *j;@+@t}\6{\4@>
+switch (cur_name->ilk) {@+char *p; /* index into |byte_mem| */@+@t}\6{\4@>
   case normal: case func_template:
     if (is_tiny(cur_name)) out_str("\\|");
     else {@+boolean all_caps=true;@+@t}\6{@>
-      for (j=cur_name->byte_start;j<(cur_name+1)->byte_start;j++)
-        if (xislower(*j)) all_caps=false;
+      for (p=cur_name->byte_start;p<(cur_name+1)->byte_start;p++)
+        if (xislower(*p)) { /* not entirely uppercase */
+          all_caps=false; break;
+        }
       out_str(all_caps ? "\\." : "\\\\");
     }
   break;
@@ -1895,8 +1850,8 @@ switch (cur_name->ilk) {@+char *j;@+@t}\6{\4@>
   case roman: break;
   case custom:
     out_str("$\\");
-    for (j=cur_name->byte_start;j<(cur_name+1)->byte_start;j++)
-      out(*j=='_'? 'x': *j=='$'? 'X': *j);
+    for (p=cur_name->byte_start;p<(cur_name+1)->byte_start;p++)
+      out(*p=='_'? 'x': *p=='$'? 'X': *p);
     out('$');
     goto name_done;
   default: out_str("\\&");
@@ -2016,7 +1971,7 @@ do {
 } while(comparison && !feof(tex_file) && !feof(check_file));
 
 @ Note the superfluous call to |remove| before |rename|.  We're using it to
-get around a bug in some implementations of |rename|.
+get around a bug in some implementations of |rename|.@^system dependencies@>
 
 @<Take appropriate action...@>=
 if(comparison)

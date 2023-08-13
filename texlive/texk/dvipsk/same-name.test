@@ -1,11 +1,15 @@
 #! /bin/sh -vx
-# $Id: same-name.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: same-name.test 67885 2023-08-11 14:25:18Z takuji $
 # Public domain.
 # Test oname == iname.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_dvips=$BinDir/dvips$ExeExt
+
 rm -f same-name.dvi same-name.out
 
-./dvips same-name.dvi -o same-name.dvi 2>same-name.out \
+$_dvips same-name.dvi -o same-name.dvi 2>same-name.out \
 	&& exit 1
 
 grep 'Output name should be different from input name' \

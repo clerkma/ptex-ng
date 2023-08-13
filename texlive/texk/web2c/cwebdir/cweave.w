@@ -111,13 +111,11 @@ possible changes from this \.{COMMON} interface consistently.
 
 @i common.h
 
-@ The following parameters are sufficient to handle \TEX/ (converted to
-\.{CWEB}), so they should be sufficient for most applications of \.{CWEAVE}.
+@ \.{CWEAVE} will use the |INT_MAX| limit in section
+|@<Output the code for the beginning...@>| below.
 
-@d line_length 80 /* lines of \TEX/ output have at most this many characters;
-  should be less than 256 */
-@d max_refs 30000 /* number of cross-references; must be less than 65536 */
-@d max_scraps 5000 /* number of tokens in \CEE/ texts being parsed */
+@<Incl...@>=
+#include <limits.h>
 
 @* Data structures exclusive to {\tt CWEAVE}.
 As explained in \.{common.w}, the field of a |name_info| structure
@@ -216,7 +214,9 @@ typedef struct xref_info {
 } xref_info;
 typedef xref_info *xref_pointer;
 
-@ @<Private...@>=
+@ @d max_refs 30000 /* number of cross-references; must be less than 65536 */
+
+@<Private...@>=
 static xref_info xmem[max_refs]; /* contains cross-reference information */
 static xref_pointer xmem_end = xmem+max_refs-1;
 static xref_pointer xref_ptr; /* the largest occupied position in |xmem| */
@@ -241,7 +241,7 @@ to one-letter identifiers or \CEE/'s reserved words.
 If the user has sent the |no_xref| flag (the \.{-x} option of the command line),
 it is unnecessary to keep track of cross-references for identifiers.
 If one were careful, one could probably make more changes around section
-115 to avoid a lot of identifier looking up.
+|@<Match a prod...@>| to avoid a lot of identifier looking up.
 
 @d append_xref(c) if (xref_ptr==xmem_end) overflow("cross-reference");
   else (++xref_ptr)->num=c
@@ -1326,6 +1326,9 @@ characters long, so we place it into an output buffer. During the output
 process, |out_line| will hold the current line number of the line about to
 be output.
 
+@d line_length 80 /* lines of \TEX/ output have at most this many characters;
+  should be less than 256 */
+
 @<Private...@>=
 static char out_buf[line_length+1]; /* assembled characters */
 static char *out_buf_end = out_buf+line_length; /* end of |out_buf| */
@@ -1344,9 +1347,8 @@ carried over to the next line (so that \TEX/ will ignore the completion
 of commented-out text).
 
 @d c_line_write(c) fflush(active_file),fwrite(out_buf+1,sizeof(char),c,active_file)
-@d tex_putc(c) putc(c,active_file)
-@d tex_new_line() putc('\n',active_file)
 @d tex_printf(c) fprintf(active_file,"%s",c)
+@d tex_putc(c) fputc(c,active_file)
 @d tex_puts(c) fputs(c,active_file)
 
 @<Predecl...@>=
@@ -1364,7 +1366,7 @@ boolean per_cent,boolean carryover)
     while (j>out_buf && *j==' ') j--;
   c_line_write(j-out_buf);
   if (per_cent) tex_putc('%');
-  tex_new_line(); out_line++;
+  tex_putc('\n'); out_line++;
   if (carryover)
     while (j>out_buf)
       if (*j--=='%' && (j==out_buf || *j!='\\')) {
@@ -1482,7 +1484,7 @@ out_section(
 sixteen_bits n)
 {
   char s[6];
-  sprintf(s,"%d",(int)n); out_str(s);
+  snprintf(s,6,"%d",(int)n); out_str(s);
   if (changed_section[n]) out_str("\\*");
 @.\\*@>
 }
@@ -2161,6 +2163,8 @@ blanks that will not match in any productions. Parsing stops when
 Since the |scrap| structure will later be used for other purposes, we
 declare its second element as a union.
 
+@d trans trans_plus.Trans /* translation texts of scraps */
+
 @<Type...@>=
 typedef struct {
   eight_bits cat;
@@ -2172,7 +2176,7 @@ typedef struct {
 } scrap;
 typedef scrap *scrap_pointer;
 
-@ @d trans trans_plus.Trans /* translation texts of scraps */
+@ @d max_scraps 5000 /* number of tokens in \CEE/ texts being parsed */
 
 @<Private...@>=
 static scrap scrap_info[max_scraps]; /* memory array for scraps */
@@ -2211,9 +2215,18 @@ translated without line-break controls.
 @d tok_flag (4*id_flag) /* signifies a token list */
 @d inner_tok_flag (5*id_flag) /* signifies a token list in `\pb' */
 
+@<Predecl...@>=
+#ifdef DEBUG
+static void print_text(text_pointer p);
+#endif
+
+@ This function prints a token list for debugging;
+it is not used in |main| at this time.
+
 @c
+#ifdef DEBUG
 static void
-print_text( /* prints a token list for debugging; not used in |main| */
+print_text(
 text_pointer p)
 {
   token_pointer j; /* index into |tok_mem| */
@@ -2238,8 +2251,7 @@ text_pointer p)
   }
   update_terminal();
 }
-
-@ @<Predecl...@>=@+static void print_text(text_pointer p);
+#endif /* |DEBUG| */
 
 @ @<Print token |r|...@>=
 switch (r) {
@@ -3797,7 +3809,7 @@ text_pointer p)
 {
   if (stack_ptr==stack_end) overflow("stack");
   if (stack_ptr>stack) /* save current state */
-    *stack_ptr = cur_state;
+    *stack_ptr = cur_state;@^system dependencies@>
   stack_ptr++;
   if (stack_ptr>max_stack_ptr) max_stack_ptr=stack_ptr;
   cur_tok=*p; cur_end=*(p+1);
@@ -3807,7 +3819,7 @@ text_pointer p)
 force when the current level was begun. This subroutine will never be
 called when |stack_ptr==1|. It is so simple, we declare it as a macro:
 
-@d pop_level() cur_state = *(--stack_ptr)
+@d pop_level() cur_state = *(--stack_ptr)@^system dependencies@>
 
 @ The |get_output| function returns the next byte of output that is not a
 reference to a token list. It returns the values |identifier| or |res_word|
@@ -3875,10 +3887,10 @@ output_C(void) /* outputs the current token list */
   text_pointer p; /* translation of the \CEE/ text */
   next_control=ignore; p=C_translate();
   app(inner_tok_flag+(int)(p-tok_start));
-  if (make_pb) {
-    out_str("\\PB{"); make_output(); out('}');
+  if (make_pb) out_str("\\PB{");
 @.\\PB@>
-  }@+else make_output(); /* output the list */
+  make_output(); /* output the list */
+  if (make_pb) out('}');
   if (text_ptr>max_text_ptr) max_text_ptr=text_ptr;
   if (tok_ptr>max_tok_ptr) max_tok_ptr=tok_ptr;
   text_ptr=save_text_ptr; tok_ptr=save_tok_ptr; /* forget the tokens */
@@ -4229,14 +4241,14 @@ else {
     loc++;
   }
   else {
-    for (sec_depth=0; xisdigit(*loc);loc++)
-      sec_depth = sec_depth*10 + (*loc) -'0';
+    for (sec_depth=0; xisdigit(*loc);loc++)@^system dependencies@>
+      if (sec_depth < INT_MAX / 10) sec_depth = sec_depth*10 + (*loc) -'0';
   }
   while (*loc == ' ') loc++; /* remove spaces before group title */
   group_found=true;
   out_str("\\N");
 @.\\N@>
-  {@+ char s[32];@+sprintf(s,"{%d}",sec_depth+1);@+out_str(s);@+}
+  {@+ char s[32];@+snprintf(s,32,"{%d}",sec_depth+1);@+out_str(s);@+}
   if (show_progress)
   printf("*%d",(int)section_count); update_terminal(); /* print a progress report */
 }
@@ -4513,44 +4525,46 @@ contents.
 @c
 static void
 phase_three(void) {
-if (no_xref) {
-  finish_line();
+phase=3;
+finish_line(); /* the bulk of |tex_file| has been written */
+if (no_xref)
   out_str("\\end");
 @.\\end@>
-  finish_line();
-}
 else {
-  phase=3; if (show_progress) fputs("\nWriting the index...",stdout);
+  if (show_progress) fputs("\nWriting the index...",stdout);
 @.Writing the index...@>
-  finish_line();
-  if ((idx_file=fopen(idx_file_name,"wb"))==NULL)
-    fatal("! Cannot open index file ",idx_file_name);
-@.Cannot open index file@>
   if (change_exists) {
     @<Tell about changed sections@>@; finish_line(); finish_line();
   }
   out_str("\\inx"); finish_line();
 @.\\inx@>
+@#
+  if ((idx_file=fopen(idx_file_name,"wb"))==NULL)
+    fatal("! Cannot open index file ",idx_file_name);
+@.Cannot open index file@>
   active_file=idx_file; /* change active file to the index file */
   @<Do the first pass of sorting@>@;
   @<Sort and output the index@>@;
   finish_line(); fclose(active_file); /* finished with |idx_file| */
+@#
   active_file=tex_file; /* switch back to |tex_file| for a tic */
   out_str("\\fin"); finish_line();
 @.\\fin@>
+@#
   if ((scn_file=fopen(scn_file_name,"wb"))==NULL)
     fatal("! Cannot open section file ",scn_file_name);
 @.Cannot open section file@>
   active_file=scn_file; /* change active file to section listing file */
   @<Output all the section names@>@;
   finish_line(); fclose(active_file); /* finished with |scn_file| */
-  active_file=tex_file;
+@#
+  active_file=tex_file; /* switch back to |tex_file| for the last time */
   if (group_found) out_str("\\con");@+else out_str("\\end");
 @.\\con@>
 @.\\end@>
-  finish_line();
-  fclose(active_file);
 }
+finish_line();
+fclose(active_file);
 if (show_happiness) {
   if (show_progress) new_line();
   fputs("Done.",stdout);
@@ -4653,7 +4667,7 @@ needs to be changed if ASCII code is not being used.
 @^high-bit character handling@>
 
 We initialize |collate| by copying a few characters at a time, because
-some \CEE/ compilers choke on long strings.
+some \CEE/ compilers choke on long strings.@^system dependencies@>
 
 @<Set init...@>=
 collate[0]=0;
@@ -4760,12 +4774,14 @@ while (sort_ptr>scrap_info) {
 }
 
 @ @<Output the name...@>=
-switch (cur_name->ilk) {@+char *j;@+@t}\6{\4@>
+switch (cur_name->ilk) {@+char *p; /* index into |byte_mem| */@+@t}\6{\4@>
   case normal: case func_template:
     if (is_tiny(cur_name)) out_str("\\|");
     else {@+boolean all_caps=true;@+@t}\6{@>
-      for (j=cur_name->byte_start;j<(cur_name+1)->byte_start;j++)
-        if (xislower(*j)) all_caps=false;
+      for (p=cur_name->byte_start;p<(cur_name+1)->byte_start;p++)
+        if (xislower(*p)) { /* not entirely uppercase */
+          all_caps=false; break;
+        }
       out_str(all_caps ? "\\." : "\\\\");
     }
     break;
@@ -4779,8 +4795,8 @@ switch (cur_name->ilk) {@+char *j;@+@t}\6{\4@>
   case roman: not_an_identifier: out_name(cur_name,false); goto name_done;
   case custom:
     out_str("$\\");
-    for (j=cur_name->byte_start;j<(cur_name+1)->byte_start;j++)
-      out(*j=='_'? 'x': *j=='$'? 'X': *j);
+    for (p=cur_name->byte_start;p<(cur_name+1)->byte_start;p++)
+      out(*p=='_'? 'x': *p=='$'? 'X': *p);
     out('$');
     goto name_done;
   default: out_str("\\&");
@@ -4851,7 +4867,7 @@ void
 print_stats(void) {
   puts("\nMemory usage statistics:");
 @.Memory usage statistics:@>
-  printf("%td names (out of %ld)\n",
+  printf("%td names (out of %ld)\n",@^system dependencies@>
             (ptrdiff_t)(name_ptr-name_dir),(long)max_names);
   printf("%td cross-references (out of %ld)\n",
             (ptrdiff_t)(xref_ptr-xmem),(long)max_refs);
