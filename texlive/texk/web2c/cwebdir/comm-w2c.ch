@@ -17,16 +17,16 @@
 @q Please send comments, suggestions, etc. to tex-k@@tug.org.            @>
 
 @x
-\def\title{Common code for CTANGLE and CWEAVE (Version 4.9)}
+\def\title{Common code for CTANGLE and CWEAVE (Version 4.10)}
 @y
 \def\Kpathsea/{{\mc KPATHSEA\spacefactor1000}} \ifacro\sanitizecommand\Kpathsea{KPATHSEA}\fi
-\def\title{Common code for CTANGLE and CWEAVE (4.9 [\TeX~Live])}
+\def\title{Common code for CTANGLE and CWEAVE (4.10 [\TeX~Live])}
 @z
 
 @x
-  \centerline{(Version 4.9)}
+  \centerline{(Version 4.10)}
 @y
-  \centerline{(Version 4.9 [\TeX~Live])}
+  \centerline{(Version 4.10 [\TeX~Live])}
 @z
 
 @x
@@ -223,6 +223,7 @@ The remainder of the \.{@@i} line after the file name is ignored.
     for (; k>=cur_file_name; k--) *(k+l+1)=*k;
     strcpy(cur_file_name,temp_file_name);
     cur_file_name[l]='/'; /* \UNIX/ pathname separator */
+@^system dependencies@>
     if ((cur_file=fopen(cur_file_name,"r"))!=NULL) {
       cur_line=0; print_where=true;
       goto restart; /* success */
@@ -492,12 +493,10 @@ systems the contents of the compile-time variable |DEV_NULL| (\TeX~Live) or
 @z
 
 @x
-      while (*s)
         if (*s=='.') dot_pos=s++;
         else if (*s=='/') dot_pos=NULL,name_pos=++s;
         else s++;
 @y
-      while (*s)
         if (*s=='.') dot_pos=s++;
         else if (*s==DIR_SEPARATOR || *s==DEVICE_SEPARATOR || *s=='/')
           dot_pos=NULL,name_pos=++s;

@@ -1,4 +1,4 @@
-## $Id: uptex.am 65655 2023-01-28 05:27:55Z takuji $
+## $Id: uptex.am 67990 2023-08-20 14:26:56Z takuji $
 ## texk/web2c/uptexdir/am/uptex.am: Makefile fragment for upTeX.
 ##
 ## Copyright 2016-2022 Karl Berry <tex-live@tug.org>
@@ -165,9 +165,9 @@ EXTRA_DIST += \
 	uptexdir/ChangeLog
 
 # upTeX Tests
-uptex_tests = uptexdir/uptriptest.test uptexdir/ptriptest.test uptexdir/upver.test uptexdir/upkcat.test uptexdir/wcfname.test
+uptex_tests = uptexdir/uptriptest.test uptexdir/ptriptest.test uptexdir/upver.test uptexdir/upkcat.test uptexdir/wcfname.test uptexdir/wcfname0.test
 uptexdir/uptriptest.log uptexdir/ptriptest.log: uptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
-uptexdir/upver.log uptexdir/upkcat.log uptexdir/wcfname.log: uptex$(EXEEXT)
+uptexdir/upver.log uptexdir/upkcat.log uptexdir/wcfname.log uptexdir/wcfname0.log: uptex$(EXEEXT)
 upweb_tests = \
 	uptexdir/upbibtex.test \
 	uptexdir/updvitype.test \

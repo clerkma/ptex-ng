@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: dvidvi.test 67877 2023-08-11 11:46:10Z takuji $
+# $Id: dvidvi.test 68031 2023-08-23 14:53:12Z takuji $
 # Copyright 2017-2021 Karl Berry <tex-live@tug.org>
 # Copyright 2011 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -16,6 +16,7 @@ DIFF="diff"
 $DIFF --strip-trailing-cr $0 $0 \
   && DIFF="diff --strip-trailing-cr" || echo
 
+TEXMFCNF=$srcdir/../kpathsea; export TEXMFCNF
 
 rm -rf play*
 cp $srcdir/tests/play.dvi .

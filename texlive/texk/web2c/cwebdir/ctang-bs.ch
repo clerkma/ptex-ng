@@ -17,16 +17,16 @@ by using "huge" pointers.
 The ``banner line'' defined here should be changed whenever \.{CTANGLE}
 is modified.
 
-@d banner "This is CTANGLE (Version 4.9)"
+@d banner "This is CTANGLE (Version 4.10)"
 @y
 The ``banner line'' defined here should be changed whenever \.{CTANGLE}
 is modified.
 
-@d banner "This is CTANGLE (Version 4.9pc/big)"
+@d banner "This is CTANGLE (Version 4.10pc/big)"
 @z
 
 
-@x Section 10.
+@x Section 11.
 @d ilk dummy.Ilk /* used by \.{CWEAVE} only */
 
 @<Common code...@>=

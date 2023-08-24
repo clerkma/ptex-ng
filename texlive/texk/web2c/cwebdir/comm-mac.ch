@@ -4,9 +4,9 @@ No changes to CTANGLE or CWEAVE are needed.
 (Contributed 13 Oct 2000 by AndPio@aol.com; slightly edited by Don Knuth)
 
 @x in limbo, change the title page document to specify Mac version
-  \centerline{(Version 4.9)}
+  \centerline{(Version 4.10)}
 @y
-  \centerline{(Version 4.9 for MacOS)}
+  \centerline{(Version 4.10 for MacOS)}
 @z
 
 @x section 23: Make input_ln accept \n, \r, \n\r, or \r\n as line endings
@@ -81,7 +81,7 @@ FILE *fp) /* what file to read from */
   @<Skip over comment lines in the change file; |return| if end of file@>@;
 @z
 
-@x section 39, declare colon as Mac's path separator
+@x section 36, declare colon as Mac's path separator
 (Colon-separated paths are not supported.)
 The remainder of the \.{@@i} line after the file name is ignored.
 
@@ -94,7 +94,7 @@ The remainder of the \.{@@i} line after the file name is ignored.
 @d PATH_SEP ':'   /* MacOS pathname separator */
 @^system dependencies@>
 @z
-@x section 39, use the path separator constant
+@x section 36, use the path separator constant
     cur_file_name[l]='/'; /* \UNIX/ pathname separator */
 @y
     cur_file_name[l]=PATH_SEP; /* pathname separator */

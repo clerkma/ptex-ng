@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: triptest.test 57558 2021-01-30 01:42:07Z karl $
+# $Id: triptest.test 67980 2023-08-19 15:10:16Z takuji $
 # Copyright 2017-2021 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2014 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -21,6 +21,7 @@ cat >filter <<-\_EOF
 	s,^\*\*(\./trip\.tex ##,** \&trip  trip \
 	(trip.tex ##,
 	s/ (TeX Live 20[^)]*)//
+	s/ (Web2C 202[3-9])//
 	s/(preloaded format=tex)/(INITEX)/
 	s/format=trip [^)][^)]*)/format=trip)/
 	s/)  [0-9A-Z: ]*$/)/
@@ -90,8 +91,8 @@ eval ../dvitype $dvitype_args trip.dvi >trip.typ || exit 1
 $DIFF $DIFFFLAGS $testdir/trip.typ trip.typ
 
 for f in tripin.log trip.fot trip.log trip.typ; do
-  sed $testdir/$f -f filter >a/$f
-  sed $f -f filter >b/$f
+  sed -f filter $testdir/$f >a/$f
+  sed -f filter $f >b/$f
   diff a/$f b/$f || is_OK=false
 done
 

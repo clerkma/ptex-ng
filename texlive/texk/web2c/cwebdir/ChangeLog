@@ -1,3 +1,56 @@
+2023-08-19  Andreas Scherer  <https://ascherer.github.io>
+
+	* Makefile,
+	* comm-{mac,mini,ql,w2c}.ch,
+	* comm-w2c.h,
+	* common.h,
+	* common.w,
+	* ctang-{bs,pc,ql,vms,w2c,w32}.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-w2c.ch,
+	* cweav-{bs,pc,ql,vms,w2c,w32}.ch,
+	* cweave.w,
+	* cwebmac.tex,
+	* cwebman-w2c.ch,
+	* cwebman.tex,
+	* po/cweb-tl.pot,
+	* po/cweb.pot,
+	* po/de/cweb-tl.po,
+	* po/de/cweb.po,
+	* po/it/cweb.po,
+	* prod-{cweave,twill}.w,
+	* prod.w: CWEB 4.10 release.
+
+2023-08-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-bs.ch,
+	* comm-mac.ch,
+	* comm-mini.ch,
+	* comm-w2c.ch,
+	* comm-w32.ch,
+	* ctang-bs.ch,
+	* ctang-vms.ch,
+	* ctang-w32.ch,
+	* ctwill-hint.ch,
+	* ctwill-mini.ch,
+	* cweav-bs.ch: Update section/line references.
+
+2023-08-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch,
+	* common.c,
+	* common.w: Section 36 of COMMON is system-dependent.
+
+2023-08-13  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.h,
+	* common.c,
+	* common.h,
+	* ctangle.c: Move 'print_stats' prototype in common.h.
+	* ctwill-w2c.ch
+	* cweave.w: Insert blank line after '\ch'.
+
 2023-08-11  Andreas Scherer  <https://ascherer.github.io>
 
 	* ctwill-mini.ch,

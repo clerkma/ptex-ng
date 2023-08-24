@@ -1,12 +1,16 @@
 #! /bin/sh -vx
-# $Id: afm2pl.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: afm2pl.test 68029 2023-08-23 14:53:00Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2009, 2011 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_afm2pl=$BinDir/afm2pl$ExeExt
+
 rm -f logo10.*
 TEXMFCNF=$srcdir/../kpathsea \
-	./afm2pl -l 0 $srcdir/tests/logo10 ./logo10.pl \
+	$_afm2pl -l 0 $srcdir/tests/logo10 ./logo10.pl \
 	&& diff $srcdir/tests/logo10.pl logo10.pl \
 	&& diff $srcdir/tests/logo10.map logo10.map \
 	|| exit 1

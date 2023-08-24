@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: bibtexu-char.test 67881 2023-08-11 11:46:28Z takuji $
+# $Id: bibtexu-char.test 67915 2023-08-13 13:51:40Z takuji $
 # Copyright 2022-2023 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
 # You may freely use, modify and/or distribute this file.
 
@@ -20,8 +20,8 @@ BIBINPUTS=$srcdir/tests; export BIBINPUTS
 rc=0
 
 if [ "$(expr substr $(uname -s) 1 5)" == "MINGW" ]; then
-  echo "*** skip test $0 on MINGW"
-  exit $rc
+  echo "*** skip test $0 on MinGW"
+  exit 77
 fi
 
 ## test for add.period$

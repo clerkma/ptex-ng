@@ -10,12 +10,12 @@ created:
 (these changes not necessary for initial bootstrapping)
 
 @x section 1 (01-FEB-1992 ST)
-@d banner "This is CTANGLE (Version 4.9)"
+@d banner "This is CTANGLE (Version 4.10)"
 @y
-@d banner "This is CTANGLE (VAX/VMS Version 4.9)"
+@d banner "This is CTANGLE (VAX/VMS Version 4.10)"
 @z
 
-@x section 4 (01-FEB-1992 ST)
+@x section 5 (01-FEB-1992 ST)
 #include <ctype.h> /* definition of |@!isalpha|, |@!isdigit| and so on */
 #include <stdbool.h> /* definition of |@!bool|, |@!true| and |@!false| */
 #include <stddef.h> /* definition of |@!ptrdiff_t| */
