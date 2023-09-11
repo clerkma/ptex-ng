@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: detex.test 67908 2023-08-13 13:50:56Z takuji $
+# $Id: detex.test 68156 2023-09-03 11:26:27Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2009 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -18,15 +18,20 @@ $DIFF --strip-trailing-cr $0 $0 \
 
 echo '#' >texmf.cnf
 
+rc=0
+
+$_detex -v
+
 $_detex $srcdir/test.tex >test.out \
 	&& $DIFF test.out $srcdir/test.lout \
-	|| exit 1
+	|| rc=1
 
 $_detex -l $srcdir/test.tex >test.out \
 	&& $DIFF test.out $srcdir/test.lout \
-	|| exit 2
+	|| rc=2
 
 $_detex -t $srcdir/test.tex >test.out \
 	&& $DIFF test.out $srcdir/test.tout \
-	|| exit 3
+	|| rc=3
 
+exit $rc

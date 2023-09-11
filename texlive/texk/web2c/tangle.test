@@ -1,11 +1,15 @@
 #! /bin/sh -vx
-# $Id: tangle.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: tangle.test 68157 2023-09-03 11:26:37Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2009 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
-TEXMFCNF=$srcdir/../kpathsea WEBINPUTS=$srcdir/cftests \
-  ./tangle  cftest cftest || exit 1
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_tangle=$BinDir/tangle$ExeExt
 
-diff cftest.p $srcdir/cftests/cftest.p || exit 1
+TEXMFCNF=$srcdir/../kpathsea WEBINPUTS=$srcdir/cftests \
+  $_tangle  cftest cftest || exit 1
+
+diff cftest.p $srcdir/cftests/cftest.p || exit 2
 

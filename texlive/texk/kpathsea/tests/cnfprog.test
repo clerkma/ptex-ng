@@ -1,5 +1,5 @@
 #!/bin/sh -vx
-# $Id: cnfprog.test 67880 2023-08-11 11:46:24Z takuji $
+# $Id: cnfprog.test 68082 2023-08-27 14:18:10Z takuji $
 # Copyright 2019 Karl Berry <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 # Test strange program name qualifiers which should give warnings.
@@ -16,7 +16,7 @@ TEXMFCNF=$cnf_dir; export TEXMFCNF
 # Make sure we get expected values from the test texmf.cnf.
 errfile=cnfprog.err
 val=`$_kpsewhich "--cnf-line=TEXMFCNF=$cnf_dir" --var-value=noequals 2>$errfile`
-if [ $ExeExt = ".exe" ]; then val=`echo $val | sed -e 's/\\r//'`; fi
+if [ "$ExeExt" = ".exe" ]; then val=`echo $val | sed -e 's/\\r//'`; fi
 
 # the vaiable should not have any value.
 test -z "$val" || exit 1

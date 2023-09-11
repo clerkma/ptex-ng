@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: repeat.test 67982 2023-08-19 15:10:25Z takuji $
+# $Id: repeat.test 68158 2023-09-03 11:26:45Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2009, 2011 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -13,10 +13,10 @@ tests=tests
 test -d $tests || mkdir -p $tests
 
 TEXMFCNF=$srcdir/../../kpathsea \
-  ./omfonts -opl2ofm -verbose $srcdir/$tests/repeat $tests/xrepeated || exit 1
+  $_omfonts -opl2ofm -verbose $srcdir/$tests/repeat $tests/xrepeated || exit 1
 
 TEXMFCNF=$srcdir/../../kpathsea \
-  ./omfonts -ofm2opl -verbose $tests/xrepeated $tests/xrepeated || exit 2
+  $_omfonts -ofm2opl -verbose $tests/xrepeated $tests/xrepeated || exit 2
 
 diff $srcdir/$tests/repeated.opl $tests/xrepeated.opl || exit 3
 

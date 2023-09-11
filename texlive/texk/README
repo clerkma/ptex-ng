@@ -1,4 +1,4 @@
-$Id: README 66203 2023-02-26 21:56:36Z karl $
+$Id: README 68131 2023-08-31 23:02:37Z kakuto $
 Copyright 2006-2023 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -75,7 +75,7 @@ gsftopk - from Paul Vojta's xdvi.
 
 kpathsea - maintained here, by us
 
-lcdf-typetools 2.108 - checked 31may22
+lcdf-typetools 2.110 - checked 01sep23
   https://www.lcdf.org/type/
 
 makeindexk - maintained here, by us

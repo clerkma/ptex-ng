@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: check.test 67982 2023-08-19 15:10:25Z takuji $
+# $Id: check.test 68158 2023-09-03 11:26:45Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2014, 2015 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -7,6 +7,14 @@
 BinDir=${BinDir:-.}
 ExeExt=${ExeExt:-}
 _omfonts=$BinDir/omfonts$ExeExt
+
+# pre-generated test results in the repository are stored in LF
+# but the output might be written in CRLF on some platform.
+# if 'diff --strip-trailing-cr' is available, exploit it.
+# (useful for tests on win32 binaries run on MSYS shell)
+DIFF="diff"
+$DIFF --strip-trailing-cr $0 $0 \
+  && DIFF="diff --strip-trailing-cr" || echo
 
 tests=tests
 
@@ -30,6 +38,6 @@ echo && echo "*** ofm2opl xchecked stdout (xchecked.opl)"
 $_omfonts -ofm2opl $tests/xchecked >$tests/xchecked.opl || rc=4
 
 echo && echo "*** diff checked.opl xchecked.opl"
-diff $srcdir/$tests/checked.opl $tests/xchecked.opl || rc=5
+$DIFF $srcdir/$tests/checked.opl $tests/xchecked.opl || rc=5
 
 exit $rc

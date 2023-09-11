@@ -1,9 +1,13 @@
 #! /bin/sh -vx
-# $Id: cweave.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: cweave.test 68157 2023-09-03 11:26:37Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2009 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_cweave=$BinDir/cweave$ExeExt
+
 TEXMFCNF=$srcdir/../kpathsea \
-  CWEBINPUTS=$srcdir/cwebdir ./cweave common.w || exit 1
+  CWEBINPUTS=$srcdir/cwebdir $_cweave common.w || exit 1
 

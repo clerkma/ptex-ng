@@ -1,16 +1,16 @@
 #! /bin/sh -vx
-# $Id: eptriptest.test 67990 2023-08-20 14:26:56Z takuji $
+# $Id: eptriptest.test 68159 2023-09-03 11:26:54Z takuji $
 # Copyright 2017-2018 Karl Berry <tex-live@tug.org>
 # Copyright 2011-2014 Peter Breitenlohner <tex-live@tug.org>
 # Copyright 2010 Hironori Kitagawa <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
-BinDir=${BinDir:-..}
+W2CDir=${W2CDir:-..}
 ExeExt=${ExeExt:-}
-_eptex=$BinDir/eptex$ExeExt
-_pltotf=$BinDir/pltotf$ExeExt
-_tftopl=$BinDir/tftopl$ExeExt
-_dvitype=$BinDir/dvitype$ExeExt
+_eptex=$W2CDir/eptex$ExeExt
+_pltotf=$W2CDir/pltotf$ExeExt
+_tftopl=$W2CDir/tftopl$ExeExt
+_dvitype=$W2CDir/dvitype$ExeExt
 
 LC_ALL=C; export LC_ALL;  LANGUAGE=C; export LANGUAGE
 

@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: bibtexu-char.test 67915 2023-08-13 13:51:40Z takuji $
+# $Id: bibtexu-char.test 68115 2023-08-30 11:16:53Z takuji $
 # Copyright 2022-2023 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
 # You may freely use, modify and/or distribute this file.
 
@@ -19,7 +19,7 @@ BIBINPUTS=$srcdir/tests; export BIBINPUTS
 
 rc=0
 
-if [ "$(expr substr $(uname -s) 1 5)" == "MINGW" ]; then
+if [ "$(expr substr $(uname -s) 1 5)" = "MINGW" ]; then
   echo "*** skip test $0 on MinGW"
   exit 77
 fi

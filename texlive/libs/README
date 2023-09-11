@@ -1,4 +1,4 @@
-$Id: README 67801 2023-08-03 02:50:52Z kakuto $
+$Id: README 68217 2023-09-09 09:06:21Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -12,7 +12,7 @@ See also comments in ../texk/README.
 cairo 1.16.0 - checked 20oct18
   http://cairographics.org/releases/
 
-freetype2 2.13.1 - checked 25jun23
+freetype2 2.13.2 - checked 26aug23
   http://download.savannah.gnu.org/releases/freetype/
 
 gd 2.3.3 - checked 13sep21
@@ -25,8 +25,8 @@ graphite2 1.3.14 - checked 10apr20
   http://sourceforge.net/projects/silgraphite/files/graphite2/
   (requires C++11)
 
-harfbuzz 8.1.1 - checked 03aug23
-  https://github.com/harfbuzz/harfbuzz/releases/tag/8.1.1
+harfbuzz 8.2.0 - checked 09sep23
+  https://github.com/harfbuzz/harfbuzz/releases/tag/8.2.0
 
 icu 72.1 - checked 07jan23
   https://github.com/unicode-org/icu/releases/
@@ -46,7 +46,7 @@ lua 5.3.6 - checked 04oct20
 luajit 2.1.0-beta3 - checked 20jun17
   http://luajit.org/download/LuaJIT-2.1.0-beta3.tar.gz
 
-mpfr 4.2.0 - checked 12jan23
+mpfr 4.2.1 - checked 26aug23
   http://ftp.gnu.org/gnu/mpfr/
 
 pixman 0.42.2 - checked 03nov22
@@ -58,14 +58,14 @@ potrace 1.16 - checked 29aug22
 pplib 2.05.0 - checked 21apr20
   https://github.com/contextgarden/pplib
 
-teckit 2.5.11 - checked 09nov21
-  https://github.com/silnrsi/teckit/archive/2.5.11.tar.gz
+teckit 2.5.12 - checked 26aug23
+  https://github.com/silnrsi/teckit/archive/2.5.12.tar.gz
 
 xpdf 4.04 - checked 24apr22
   http://www.xpdfreader.com/download.html
   with modifications for pdftex
 
-zlib 1.2.13 - checked 15oct22
+zlib 1.3.0 - checked 26aug23
   http://www.zlib.net/ - used by many
 
 zziplib 0.13.72 - checked 10sep22
