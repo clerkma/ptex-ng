@@ -80,9 +80,9 @@
 @z
 
 @x
-    fputs("\n! Not present: <",stdout);
+    printf("%s","\n! Not present: <");
 @y
-    fputs(_("\n! Not present: <"),stdout);
+    printf("%s",_("\n! Not present: <"));
 @z
 
 @x
@@ -92,9 +92,9 @@
 @z
 
 @x
-    fputs("\n! No program text was specified.",stdout); mark_harmless();
+    printf("%s","\n! No program text was specified."); mark_harmless();
 @y
-    fputs(_("\n! No program text was specified."),stdout); mark_harmless();
+    printf("%s",_("\n! No program text was specified.")); mark_harmless();
 @z
 
 @x
@@ -106,9 +106,9 @@
 @z
 
 @x
-      fputs("Done.",stdout);
+      printf("%s","Done.");
 @y
-      fputs(_("Done."),stdout);
+      printf("%s",_("Done."));
 @z
 
 @x
@@ -122,12 +122,8 @@ for (an_output_file=end_output_files; an_output_file>cur_out_file;) {
 @.Cannot open output file@>
     if (show_progress) { printf("\n(%s)",output_file_name); update_terminal(); }
     cur_line=1;
-    stack_ptr=stack+1;
-    cur_name=*an_output_file;
-    cur_repl=(text_pointer)cur_name->equiv;
-    cur_byte=cur_repl->tok_start;
-    while (stack_ptr > stack) get_output();
-    flush_buffer();
+    @<Initialize the secondary output@>@;
+    @<Output material...@>@;
 }
 @y
 @<Write all the named output files@>=
@@ -147,12 +143,8 @@ for (an_output_file=end_output_files; an_output_file>cur_out_file;) {
   }
   if (show_progress) { printf("\n(%s)",output_file_name); update_terminal(); }
   cur_line=1;
-  stack_ptr=stack+1;
-  cur_name=*an_output_file;
-  cur_repl=(text_pointer)cur_name->equiv;
-  cur_byte=cur_repl->tok_start;
-  while (stack_ptr > stack) get_output();
-  flush_buffer();
+  @<Initialize the secondary output@>@;
+  @<Output material...@>@;
   if (check_for_change) {
     fclose(C_file); C_file=NULL;
     @<Update the secondary results when they have changed@>@;
@@ -242,9 +234,9 @@ quarter) with its two-byte encoding \.{c2 bc}.
 @z
 
 @x
-    fputs("\n! String too long: ",stdout);
+    printf("%s","\n! String too long: ");
 @y
-    fputs(_("\n! String too long: "),stdout);
+    printf("%s",_("\n! String too long: "));
 @z
 
 @x
@@ -278,9 +270,9 @@ quarter) with its two-byte encoding \.{c2 bc}.
 @z
 
 @x
-  fputs("\n! Section name too long: ",stdout);
+  printf("%s","\n! Section name too long: ");
 @y
-  fputs(_("\n! Section name too long: "),stdout);
+  printf("%s",_("\n! Section name too long: "));
 @z
 
 @x

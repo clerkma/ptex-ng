@@ -621,12 +621,12 @@ it is inserted into the table.
 @<Global var...@>=
 name_pointer hash[hash_size]; /* heads of hash lists */
 hash_pointer hash_end = hash+hash_size-1; /* end of |hash| */
-hash_pointer h; /* index into hash-head array */
+hash_pointer hash_ptr; /* index into hash-head array */
 
 @ Initially all the hash lists are empty.
 
 @<Init...@>=
-for (h=hash; h<=hash_end; *h++=NULL) ;
+for (hash_ptr=hash; hash_ptr<=hash_end; *hash_ptr++=NULL) ;
 
 @ Here is the main procedure for finding identifiers:
 
@@ -638,7 +638,7 @@ const char *last, /* last character of string plus one */
 eight_bits t) /* the |ilk|; used by \.{CWEAVE} only */
 {
   const char *i=first; /* position in |buffer| */
-  int h; /* hash code; shadows |hash_pointer h| */
+  int h; /* hash code */
   size_t l; /* length of the given identifier */
   name_pointer p; /* where the identifier is being sought */
   if (last==NULL) for (last=first; *last!='\0'; last++);
@@ -883,10 +883,10 @@ while (p) { /* compare shortest prefix of |p| with new name */
     p=(c==less?p->llink:p->rlink);
   } else { /* new name matches |p| */
     if (r!=NULL) { /* and also |r|: illegal */
-      fputs("\n! Ambiguous prefix: matches <",stdout);
+      printf("%s","\n! Ambiguous prefix: matches <");
 @.Ambiguous prefix ... @>
       print_prefix_name(p);
-      fputs(">\n and <",stdout);
+      printf("%s",">\n and <");
       print_prefix_name(r);
       err_print(">");
       return name_dir; /* the unsection */
@@ -912,7 +912,7 @@ switch(section_name_cmp(&first,name_len,r)) {
               /* compare all of |r| with new name */
   case prefix:
     if (!ispref) {
-      fputs("\n! New name is a prefix of <",stdout);
+      printf("%s","\n! New name is a prefix of <");
 @.New name is a prefix...@>
       print_section_name(r);
       err_print(">");
@@ -924,16 +924,16 @@ switch(section_name_cmp(&first,name_len,r)) {
         extend_section_name(r,first,last+1,ispref);
       break;
   case bad_extension:
-      fputs("\n! New name extends <",stdout);
+      printf("%s","\n! New name extends <");
 @.New name extends...@>
       print_section_name(r);
       err_print(">");
     break;
   default: /* no match: illegal */
-    fputs("\n! Section name incompatible with <",stdout);
+    printf("%s","\n! Section name incompatible with <");
 @.Section name incompatible...@>
     print_prefix_name(r);
-    fputs(">,\n which abbreviates <",stdout);
+    printf("%s",">,\n which abbreviates <");
     print_section_name(r);
     err_print(">");
 }
@@ -1014,7 +1014,7 @@ void
 err_print( /* prints `\..' and location of error message */
 const char *s)
 {
-  *s=='!'? printf("\n%s",s) : printf("%s",s);
+  printf(*s=='!' ? "\n%s" : "%s",s);
   if (web_file_open) @<Print error location based on input buffer@>@;
   update_terminal(); mark_error();
 }
@@ -1030,10 +1030,12 @@ has special line-numbering conventions.
 
 @<Print error location based on input buffer@>=
 {char *k,*l; /* pointers into |buffer| */
-if (changing && include_depth==change_depth)
+if (changing && include_depth==change_depth && change_line>0)
   printf(". (l. %d of change file)\n", change_line);
-else if (include_depth==0) printf(". (l. %d)\n", cur_line);
+else if (cur_line>0) {
+  if (include_depth==0) printf(". (l. %d)\n", cur_line);
   else printf(". (l. %d of include file %s)\n", cur_line, cur_file_name);
+}
 l= (loc>=limit? limit: loc);
 if (l>buffer) {
   for (k=buffer; k<l; k++)
@@ -1063,7 +1065,7 @@ a status of |EXIT_SUCCESS| if and only if only harmless messages were printed.
 
 @c
 int wrap_up(void) {
-  if (show_progress) new_line();
+  if (show_progress || show_happiness || history != spotless) new_line();
   if (show_stats)
     print_stats(); /* print statistics about memory usage */
   @<Print the job |history|@>@;
@@ -1093,7 +1095,7 @@ concatenated to print the final error message.
 fatal(
   const char *s,const char *t)
 {
-  if (*s) err_print(s);
+  if (*s) printf("%s",s);
   err_print(t);
   history=fatal_message; exit(wrap_up());
 }
@@ -1203,8 +1205,10 @@ after the dot.  We must check that there is enough room in
   }
   sprintf(alt_web_file_name,"%s.web",*argv);
   sprintf(tex_file_name,"%s.tex",name_pos); /* strip off directory name */
-  sprintf(idx_file_name,"%s.idx",name_pos);
-  sprintf(scn_file_name,"%s.scn",name_pos);
+  if (make_xrefs) { /* indexes will be generated */
+    sprintf(idx_file_name,"%s.idx",name_pos);
+    sprintf(scn_file_name,"%s.scn",name_pos);
+  }
   sprintf(C_file_name,"%s.c",name_pos);
   found_web=true;
 }

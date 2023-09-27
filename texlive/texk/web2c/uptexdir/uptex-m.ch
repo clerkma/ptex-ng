@@ -1,5 +1,5 @@
-% $Id: uptex-m.ch 68155 2023-09-03 10:47:53Z hironobu $
-% This is a change file for upTeX u1.29
+% $Id: uptex-m.ch 68332 2023-09-21 11:12:26Z hironobu $
+% This is a change file for upTeX u1.30
 % By Takuji Tanaka.
 %
 % (02/26/2007) TTK  upTeX u0.01
@@ -47,6 +47,7 @@
 % (2022-01-23) TTK  upTeX u1.28
 % (2022-07-23) TTK  upTeX u1.29
 % (2022-12-09) HK   Hironori Kitagawa fixed a bug in \char, \kchar.
+% (2023-09-16) TTK  upTeX u1.30
 
 @x
 \def\pTeX{p\kern-.15em\TeX}
@@ -61,8 +62,8 @@
   {printed when \pTeX\ starts}
 @#
 @d upTeX_version=1
-@d upTeX_revision==".29"
-@d upTeX_version_string=='-u1.29' {current \upTeX\ version}
+@d upTeX_revision==".30"
+@d upTeX_version_string=='-u1.30' {current \upTeX\ version}
 @#
 @d upTeX_banner=='This is upTeX, Version 3.141592653',pTeX_version_string,upTeX_version_string
 @d upTeX_banner_k==upTeX_banner
@@ -274,7 +275,7 @@ if (isinternalUPTEX) then begin
   @t\hskip10pt@>kcat_code(@"99):=kanji; { CJK Compatibility Ideographs }
   { \hskip10pt|kcat_code(@"A2):=other_kchar;| Halfwidth and Fullwidth Forms }
   @+@t\1@>for k:=@"10D to @"110 do kcat_code(k):=kana; { Kana Extended-B .. Small Kana Extension }
-  @+@t\1@>for k:=@"13B to @"142 do kcat_code(k):=kanji; { CJK Unified Ideographs Extension B .. H }
+  @+@t\1@>for k:=@"13B to @"143 do kcat_code(k):=kanji; { CJK Unified Ideographs Extension B .. H }
   @t\hskip10pt@>kcat_code(@"1FD):=not_cjk; { Latin-1 Letters }
   @t\hskip10pt@>kcat_code(@"1FE):=kana; { Fullwidth digit and latin alphabet }
   @t\hskip10pt@>kcat_code(@"1FF):=kana; { Halfwidth katakana }
@@ -858,8 +859,7 @@ if cur_cmd=char_given then
   else begin cur_cmd:=kcat_code(kcatcodekey(cur_chr)); @<goto |main_lig_loop|@>; end;
   end;
 if cur_cmd=kchar_given then
-  begin cur_chr:=cur_chr mod max_cjk_val;
-  cur_cmd:=kcat_code(kcatcodekey(cur_chr)); @<goto |main_lig_loop|@>; end;
+  begin cur_cmd:=kcat_code(kcatcodekey(cur_chr)); @<goto |main_lig_loop|@>; end;
 if cur_cmd=char_num then
   begin scan_char_num; cur_chr:=cur_val;
   if check_echar_range(cur_chr) then goto main_loop_lookahead+1

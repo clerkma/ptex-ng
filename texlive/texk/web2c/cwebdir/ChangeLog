@@ -1,3 +1,47 @@
+2023-09-26  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebman-w2c.ch,
+	* cwebman.tex: HINT: The Viewer.
+
+2023-09-25  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.h,
+	* common.c,
+	* common.w: Check for available input.
+
+2023-09-24  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.h,
+	* common.c,
+	* common.h,
+	* common.w,
+	* ctang-bs.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill.bux,
+	* cweav-bs.ch,
+	* cweave.w: Avoid shadow variables.
+
+2023-09-24  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-{hint,mini}.ch,
+	* cweave.w: Disentangle 'reduce' and 'translate'.
+
+2023-09-23  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-mini.ch,
+	* cweave.w: Copy structures via pointers.
+
+2023-09-22  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctang-w2c.ch,
+	* ctangle.c,
+	* ctangle.w: Reuse code for secondary output.
+
+2023-09-22  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebacromac.tex: Factor out PDF/HINT macros.
+
 2023-09-03  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* {ctwill,cweave}.test: Make easier to test on Windows.

@@ -1,4 +1,4 @@
-## $Id: euptex.am 67990 2023-08-20 14:26:56Z takuji $
+## $Id: euptex.am 68332 2023-09-21 11:12:26Z hironobu $
 ## texk/web2c/euptexdir/am/euptex.am: Makefile fragment for e-upTeX.
 ##
 ## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
@@ -93,10 +93,17 @@ EXTRA_DIST += \
 
 # e-upTeX Tests
 #
-euptex_tests = euptexdir/euptriptest.test euptexdir/eptriptest.test euptexdir/pdfprimitive.test euptexdir/eupver.test euptexdir/wcfname.test euptexdir/wcfname0.test
-euptexdir/euptriptest.log euptexdir/eptriptest.log: euptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
+euptex_tests = \
+	euptexdir/euptriptest.test euptexdir/eptriptest.test \
+	euptexdir/pdfprimitive.test \
+	euptexdir/eupver.test \
+	euptexdir/upkcat.test \
+	euptexdir/wcfname.test euptexdir/wcfname0.test
+euptexdir/euptriptest.log euptexdir/eptriptest.log: \
+	euptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
 euptexdir/pdfprimitive.log: euptex$(EXEEXT)
-euptexdir/eupver.log euptexdir/wcfname.log euptexdir/wcfname0.log: euptex$(EXEEXT)
+euptexdir/eupver.log euptexdir/upkcat.log \
+	euptexdir/wcfname.log euptexdir/wcfname0.log: euptex$(EXEEXT)
 
 EXTRA_DIST += $(euptex_tests)
 

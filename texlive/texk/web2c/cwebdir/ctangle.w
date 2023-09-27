@@ -294,8 +294,16 @@ code; if there are no such sections, there is nothing to output, and an
 error message will have been generated before we do any of the initialization.
 
 @<Initialize the output stacks@>=
-stack_ptr=stack+1; cur_name=name_dir; cur_repl=text_info->text_link+text_info;
+stack_ptr=stack+1; cur_name=name_dir;
+cur_repl=text_info->text_link+text_info;
 cur_byte=cur_repl->tok_start; cur_section=0;
+
+@ Similar settings are used for secondary output files.
+
+@<Initialize the secondary output@>=
+stack_ptr=stack+1; cur_name=*an_output_file;
+cur_repl=(text_pointer)cur_name->equiv;
+cur_byte=cur_repl->tok_start;
 
 @ When the replacement text for name |p| is to be inserted into the output,
 the following subroutine is called to save the old level of output and get
@@ -318,9 +326,6 @@ name_pointer p)
   }
 }
 
-@ @<Predecl...@>=
-static void push_level(name_pointer);@/
-static void pop_level(boolean);
 
 @ When we come to the end of a replacement text, the |pop_level| subroutine
 does the right thing: It either moves to the continuation of this replacement
@@ -338,6 +343,11 @@ boolean flag) /* |flag==false| means we are in |output_defs| */
   stack_ptr--; /* go down to the previous level */
   if (stack_ptr>stack) cur_state=*stack_ptr;@^system dependencies@>
 }
+
+@ @<Predecl...@>=
+static void push_level(name_pointer);@/
+static void pop_level(boolean);@/
+static void get_output(void);
 
 @ The heart of the output procedure is the function |get_output|,
 which produces the next token of output and sends it on to the lower-level
@@ -391,8 +401,6 @@ get_output(void) /* sends next token to |out_char| */
   }
 }
 
-@ @<Predecl...@>=@+static void get_output(void);
-
 @ The user may have forgotten to give any \CEE/ text for a section name,
 or the \CEE/ text may have been associated with a different name by mistake.
 
@@ -401,7 +409,7 @@ or the \CEE/ text may have been associated with a different name by mistake.
   a-=024000;
   if ((a+name_dir)->equiv!=(void *)text_info) push_level(a+name_dir);
   else if (a!=0) {
-    fputs("\n! Not present: <",stdout);
+    printf("%s","\n! Not present: <");
     print_section_name(a+name_dir); err_print(">");
 @.Not present: <section name>@>
   }
@@ -515,7 +523,7 @@ phase_two (void) {
   @<Initialize the output stacks@>@;
   @<Output macro definitions if appropriate@>@;
   if (text_info->text_link==macro && cur_out_file==end_output_files) {
-    fputs("\n! No program text was specified.",stdout); mark_harmless();
+    printf("%s","\n! No program text was specified."); mark_harmless();
 @.No program text...@>
   }
   else {
@@ -526,19 +534,20 @@ phase_two (void) {
 @.Writing the output...@>
       update_terminal();
     }
-    if (text_info->text_link!=macro) {
-      while (stack_ptr>stack) get_output();
-      flush_buffer();
-    }
+    if (text_info->text_link!=macro)
+      @<Output material...@>@;
     @<Write all the named output files@>@;
     if (show_happiness) {
       if (show_progress) new_line();
-      fputs("Done.",stdout);
+      printf("%s","Done.");
     }
   }
 }
 
-@ @<Predecl...@>=@+static void phase_two(void);
+@ @<Predecl...@>=
+static void phase_two(void);@/
+static void output_defs(void);@/
+static void out_char(eight_bits);
 
 @ To write the named output files, we proceed as for the unnamed
 section.
@@ -554,12 +563,14 @@ for (an_output_file=end_output_files; an_output_file>cur_out_file;) {
 @.Cannot open output file@>
     if (show_progress) { printf("\n(%s)",output_file_name); update_terminal(); }
     cur_line=1;
-    stack_ptr=stack+1;
-    cur_name=*an_output_file;
-    cur_repl=(text_pointer)cur_name->equiv;
-    cur_byte=cur_repl->tok_start;
-    while (stack_ptr > stack) get_output();
-    flush_buffer();
+    @<Initialize the secondary output@>@;
+    @<Output material...@>@;
+}
+
+@ @<Output material from |stack|@>=
+{
+  while (stack_ptr>stack) get_output();
+  flush_buffer();
 }
 
 @ If a \.{@@h} was not encountered in the input,
@@ -572,10 +583,6 @@ that refer to macros, preceded by the \.{\#define} preprocessor command.
 
 @ @<Private...@>=
 static boolean output_defs_seen=false;
-
-@ @<Predecl...@>=
-static void output_defs(void);@/
-static void out_char(eight_bits);
 
 @ @d macro_end (cur_text+1)->tok_start /* end of |macro| replacement text */
 @#
@@ -875,6 +882,7 @@ get_next(void) /* produces the next input token */
       if (preprocessing && *(limit-1)!='\\') preprocessing=false;
       if (get_line()==false) return new_section;
       else if (print_where && !no_where) {
+          sixteen_bits a;
           print_where=false;
           @<Insert the line number into |tok_mem|@>@;
         }
@@ -1018,7 +1026,7 @@ convention, but do not allow the string to be longer than |longest_name|.
     if (++id_loc<=section_text_end) *id_loc=(char)c;
   }
   if (id_loc>=section_text_end) {
-    fputs("\n! String too long: ",stdout);
+    printf("%s","\n! String too long: ");
 @.String too long@>
     term_write(section_text+1,25);
     err_print("...");
@@ -1113,7 +1121,7 @@ while (true) {
 *k=(char)c;
 }
 if (k>=section_text_end) {
-  fputs("\n! Section name too long: ",stdout);
+  printf("%s","\n! Section name too long: ");
 @.Section name too long@>
   term_write(section_text+1,25);
   printf("..."); mark_harmless();
@@ -1212,7 +1220,6 @@ file name.
 
 @<Insert the line...@>=
 {
-  eight_bits a; /* shadow variable |a| */
   store_two_bytes(0150000);
   if (changing && include_depth==change_depth) { /* correction made Feb 2017 */
     id_first=change_file_name;

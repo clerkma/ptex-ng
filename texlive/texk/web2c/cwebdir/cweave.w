@@ -646,7 +646,7 @@ skip_TeX(void) /* skip past pure \TEX/ code */
   }
 }
 
-@*1 Inputting the next token.
+@* Inputting the next token.
 As stated above, \.{CWEAVE}'s most interesting lexical scanning routine is the
 |get_next| function that inputs the next token of \CEE/ input. However,
 |get_next| is not especially complicated.
@@ -911,7 +911,7 @@ convention, but do not allow the string to be longer than |longest_name|.
     if (++id_loc<=section_text_end) *id_loc=c;
   }
   if (id_loc>=section_text_end) {
-    fputs("\n! String too long: ",stdout);
+    printf("%s","\n! String too long: ");
 @.String too long@>
     term_write(section_text+1,25);
     printf("..."); mark_error();
@@ -981,7 +981,7 @@ while (true) {
 *k=c;
 }
 if (k>=section_text_end) {
-  fputs("\n! Section name too long: ",stdout);
+  printf("%s","\n! Section name too long: ");
 @.Section name too long@>
   term_write(section_text+1,25);
   printf("..."); mark_harmless();
@@ -1302,13 +1302,13 @@ name_pointer p) /* print anomalies in subtree |p| */
     cur_xref=(xref_pointer)p->xref;
     if ((an_output=(cur_xref->num==file_flag))==true) cur_xref=cur_xref->xlink;
     if (cur_xref->num <def_flag) {
-      fputs("\n! Never defined: <",stdout);
+      printf("%s","\n! Never defined: <");
       print_section_name(p); putchar('>'); mark_harmless();
 @.Never defined: <section name>@>
     }
     while (cur_xref->num >=cite_flag) cur_xref=cur_xref->xlink;
     if (cur_xref==xmem && !an_output) {
-      fputs("\n! Never used: <",stdout);
+      printf("%s","\n! Never used: <");
       print_section_name(p); putchar('>'); mark_harmless();
 @.Never used: <section name>@>
     }
@@ -3195,7 +3195,8 @@ static void reduce(scrap_pointer,short,eight_bits,short,short);@/
 static void squash(scrap_pointer,short,eight_bits,short,short);
 
 @ Now here's the |reduce| procedure used in our code for productions,
-which takes advantage of the simplification that occurs when |k==0|.
+which takes advantage of the simplifications that occur when |k==0|
+or |k==1|.
 
 @c
 static void
@@ -3204,7 +3205,7 @@ scrap_pointer j, short k,
 eight_bits c,
 short d, short n)
 {
-  scrap_pointer i, i1; /* pointers into scrap memory */
+  scrap_pointer i; /* pointer into scrap memory */
   j->cat=c;
   if (k>0) {
     j->trans=text_ptr;
@@ -3212,10 +3213,8 @@ short d, short n)
     freeze_text();
   }
   if (k>1) {
-    for (i=j+k, i1=j+1; i<=lo_ptr; i++, i1++) {
-      i1->cat=i->cat; i1->trans=i->trans;
-      i1->mathness=i->mathness;
-    }
+    for (i=j+k; i<=lo_ptr; i++)
+      *(i-k+1)=*i;@^system dependencies@>
     lo_ptr=lo_ptr-k+1;
   }
   pp=(pp+d<scrap_base? scrap_base: pp+d);
@@ -3241,6 +3240,32 @@ short d, short n)
   default: confusion("squash");
   }
   reduce(j,k,c,d,n);
+}
+
+@ If \.{CWEAVE} is being run in debugging mode, the production numbers and
+current stack categories will be printed out when |tracing| is set to |fully|;
+a sequence of two or more irreducible scraps will be printed out when
+|tracing| is set to |partly|.
+
+@d off 0
+@d partly 1
+@d fully 2
+
+@<Private...@>=
+static int tracing=off; /* can be used to show parsing details */
+
+@ @<Print a snapsh...@>=
+if (tracing==fully) {
+  printf("\n%d:",n);
+  for (i=scrap_base; i<=lo_ptr; i++) {
+    putchar(i==pp?'*':' ');
+    if (i->mathness %4 == yes_math) putchar('+');
+    else if (i->mathness %4 == no_math) putchar('-');
+    print_cat(i->cat);
+    if (i->mathness /4 == yes_math) putchar('+');
+    else if (i->mathness /4 == no_math) putchar('-');
+  }
+  if (hi_ptr<=scrap_ptr) printf("..."); /* indicate that more is coming */
 }
 
 @ And here now is the code that applies productions as long as possible.
@@ -3277,38 +3302,9 @@ stored, since zero does not match anything in a production.
 
 @<Make sure the entries...@>=
 if (lo_ptr<pp+3) {
-  while (hi_ptr<=scrap_ptr && lo_ptr!=pp+3) {
-    (++lo_ptr)->cat=hi_ptr->cat; lo_ptr->mathness=hi_ptr->mathness;
-    lo_ptr->trans=(hi_ptr++)->trans;
-  }
-  for (i=lo_ptr+1;i<=pp+3;i++) i->cat=0;
-}
-
-@ If \.{CWEAVE} is being run in debugging mode, the production numbers and
-current stack categories will be printed out when |tracing| is set to |fully|;
-a sequence of two or more irreducible scraps will be printed out when
-|tracing| is set to |partly|.
-
-@d off 0
-@d partly 1
-@d fully 2
-
-@<Private...@>=
-static int tracing=off; /* can be used to show parsing details */
-
-@ @<Print a snapsh...@>=
-if (tracing==fully) {
-  scrap_pointer k; /* pointer into |scrap_info|; shadows |short k| */
-  printf("\n%d:",n);
-  for (k=scrap_base; k<=lo_ptr; k++) {
-    if (k==pp) putchar('*'); else putchar(' ');
-    if (k->mathness %4 == yes_math) putchar('+');
-    else if (k->mathness %4 == no_math) putchar('-');
-    print_cat(k->cat);
-    if (k->mathness /4 == yes_math) putchar('+');
-    else if (k->mathness /4 == no_math) putchar('-');
-  }
-  if (hi_ptr<=scrap_ptr) printf("..."); /* indicate that more is coming */
+  while (hi_ptr<=scrap_ptr && lo_ptr!=pp+3)
+    *(++lo_ptr)=*(hi_ptr++);@^system dependencies@>
+  for (j=lo_ptr+1;j<=pp+3;j++) j->cat=0;
 }
 
 @ The |translate| function assumes that scraps have been stored in
@@ -3328,7 +3324,6 @@ for overflow.
 static text_pointer
 translate(void) /* converts a sequence of scraps */
 {
-  scrap_pointer i; /* index into |cat| */
   scrap_pointer j; /* runs through final scraps */
   pp=scrap_base; lo_ptr=pp-1; hi_ptr=pp;
   @<If tracing, print an indication of where we are@>@;
@@ -4130,7 +4125,7 @@ while (k<k_limit) {
 
 @ @<Skip next char...@>=
 if (*k++!='@@') {
-  fputs("\n! Illegal control code in section name: <",stdout);
+  printf("%s","\n! Illegal control code in section name: <");
 @.Illegal control code...@>
   print_section_name(cur_section_name); printf("> "); mark_error();
 }
@@ -4145,7 +4140,7 @@ equals the delimiter that began the string being copied.
 j=limit+1; *j='|'; delim=0;
 while (true) {
   if (k>=k_limit) {
-    fputs("\n! C text in section name didn't end: <",stdout);
+    printf("%s","\n! C text in section name didn't end: <");
 @.C text...didn't end@>
     print_section_name(cur_section_name); printf("> "); mark_error(); break;
   }
@@ -4180,7 +4175,7 @@ actually output the \TEX/ material instead of merely looking at the
 static void
 phase_two(void) {
 phase=2; reset_input();
-if (show_progress) fputs("\nWriting the output file...",stdout);
+if (show_progress) printf("%s","\nWriting the output file...");
 @.Writing the output file...@>
 section_count=0; format_visible=true; copy_limbo();
 finish_line(); flush_buffer(out_buf,false,false);
@@ -4249,8 +4244,10 @@ else {
   out_str("\\N");
 @.\\N@>
   {@+ char s[32];@+snprintf(s,32,"{%d}",sec_depth+1);@+out_str(s);@+}
-  if (show_progress)
-  printf("*%d",(int)section_count); update_terminal(); /* print a progress report */
+  if (show_progress) {
+    printf("*%d",(int)section_count);
+    update_terminal(); /* print a progress report */
+  }
 }
 out('{'); out_section(section_count); out('}');
 
@@ -4531,7 +4528,7 @@ if (no_xref)
   out_str("\\end");
 @.\\end@>
 else {
-  if (show_progress) fputs("\nWriting the index...",stdout);
+  if (show_progress) printf("%s","\nWriting the index...");
 @.Writing the index...@>
   if (change_exists) {
     @<Tell about changed sections@>@;
@@ -4569,7 +4566,7 @@ finish_line();
 fclose(active_file);
 if (show_happiness) {
   if (show_progress) new_line();
-  fputs("Done.",stdout);
+  printf("%s","Done.");
 }
 check_complete(); /* was all of the change file used? */
 }
@@ -4615,8 +4612,8 @@ having a nonempty cross-reference list into the proper bucket.
 @<Do the first pass...@>= {
 int c;
 for (c=0; c<256; c++) bucket[c]=NULL;
-for (h=hash; h<=hash_end; h++) {
-  next_name=*h;
+for (hash_ptr=hash; hash_ptr<=hash_end; hash_ptr++) {
+  next_name=*hash_ptr;
   while (next_name) {
     cur_name=next_name; next_name=cur_name->link;
     if (cur_name->xref!=(void *)xmem) {

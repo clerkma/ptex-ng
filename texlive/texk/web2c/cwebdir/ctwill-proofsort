@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# $Id: ctwill-proofsort 68114 2023-08-30 07:28:08Z ascherer $
+# $Id: ctwill-proofsort 68327 2023-09-20 10:24:51Z ascherer $
 # Public domain.  Originally written by Andreas Scherer, 2023.
 
 use strict;
@@ -16,11 +16,10 @@ BEGIN {
   $progname = basename $0;
   # Unicode::Collate has been around a long time,
   # but it's not part of core Perl.
-  my $rc = eval {
+  eval {
     require Unicode::Collate;
     $collator = Unicode::Collate->new();
   };
-  die "$progname: the Unicode::Collate module is required\n" unless $rc;
 }
 
 # We expect a TeX file as the single command-line parameter.
@@ -48,7 +47,7 @@ sub help_handler {
 }
 ## version()
 sub version {
-  return $progname.' $Revision: 68114 $ $Date: 2023-08-30 15:28:08 +0800 (Wed, 30 Aug 2023) $'."\n";
+  return $progname.' $Revision: 68327 $ $Date: 2023-09-20 18:24:51 +0800 (Wed, 20 Sep 2023) $'."\n";
 }
 
 my $tex = $ARGV[0];
