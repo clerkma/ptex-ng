@@ -11,3 +11,4 @@ set BUILD_CMD=ruby %MRUBY_SOURCE%\minirake -f %MRUBY_SOURCE%\Rakefile
 %BUILD_CMD% all
 %BUILD_CMD% install
 %BUILD_CMD% clean
+copy build\mruby\lib\libmruby.lib .
