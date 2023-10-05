@@ -3,6 +3,7 @@
 *.un~
 *~
 *.exe
+*.pdb
 GPATH
 GRTAGS
 GSYMS

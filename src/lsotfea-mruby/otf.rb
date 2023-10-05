@@ -1,4 +1,4 @@
-# Copyright (c) 2020, 2021, 2022 Clerk Ma
+# Copyright (c) 2020, 2021, 2022, 2023 Clerk Ma
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -562,7 +562,7 @@ class GTabParser
       feature = @feature_list[feature_index]
       tag = feature[:tag]
       lookup_index_list = feature[:lookup_index_list]
-      puts("     #{tag} -> #{lookup_index_list}")
+      puts("      #{tag} -> #{lookup_index_list.join(', ')}")
       lookup_index_list.each do |lookup_index|
         if lookup_map.has_key?(lookup_index)
           lookup_map[lookup_index].push(tag)
@@ -572,8 +572,9 @@ class GTabParser
       end
     end
     puts("\n    LookupIndex -> Feature")
+    idx_len = lookup_map.keys.max.to_s.length + 1
     lookup_map.keys.sort.each do |m|
-      puts("     #{m} #{lookup_map[m]}")
+      puts("      #{m.to_s.rjust(idx_len)} #{lookup_map[m].join(', ')}")
     end
   end
 
