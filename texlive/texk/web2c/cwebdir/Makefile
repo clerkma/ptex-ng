@@ -1,6 +1,6 @@
 # This file is part of CWEB.
 # It is distributed WITHOUT ANY WARRANTY, express or implied.
-# Version 4.10 --- August 2023
+# Version 4.11 --- September 2023
 
 # Copyright (C) 1987,1990,1993,2000 Silvio Levy and Donald E. Knuth
 
@@ -69,6 +69,7 @@ PDFTEX = dvipdfm
 #PDFTEX = pdftex
 #PDFTEX = xetex
 #PDFTEX = hitex
+#PDFTEX = luatex
 
 ##########  You shouldn't have to change anything after this point #######
 
@@ -87,7 +88,7 @@ ALL =  common.w ctangle.w cweave.w prod.w \
 	comm-w32.ch ctang-w32.ch cweav-w32.ch \
 	comm-os2.ch comm-mac.ch
 
-.SUFFIXES: .dvi .tex .w .pdf
+.SUFFIXES: .dvi .tex .w .pdf .hnt
 
 .w.tex:
 	$(CWEAVE) $*
@@ -112,6 +113,12 @@ ALL =  common.w ctangle.w cweave.w prod.w \
 	 dvipdfm ) tex "\let\pdf+ \input $*"; dvipdfm $* ;; \
 	 pdftex ) pdftex $* ;; \
 	 xetex ) xetex $* ;; \
+	 luatex ) luatex $* ;; \
+	esac
+
+.w.hnt:
+	make $*.tex
+	case "$(PDFTEX)" in \
 	 hitex ) hitex $* ;; \
 	esac
 
