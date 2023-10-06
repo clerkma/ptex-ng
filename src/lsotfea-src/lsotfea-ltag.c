@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.1 */
-/* Command-line: gperf -DClt -L ANSI-C -Nlookup_ltag -I -Kdict --output-file=lsotfea-ltag.c lsotfea-ltag.gperf  */
+/* Command-line: gperf -D --output-file=lsotfea-ltag.c lsotfea-ltag.gperf  */
 /* Computed positions: -k'1-4' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -29,7 +29,7 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gperf@gnu.org>."
 #endif
 
-#line 1 "lsotfea-ltag.gperf"
+#line 8 "lsotfea-ltag.gperf"
 struct otlex { char * dict; char * mean; };
 #include <string.h>
 
@@ -139,1211 +139,1211 @@ lookup_ltag (register const char *str, register size_t len)
     };
   static const struct otlex wordlist[] =
     {
-#line 272 "lsotfea-ltag.gperf"
-      {"KON0", "Kongo"},
-#line 204 "lsotfea-ltag.gperf"
-      {"HYE0", "Armenian East"},
-#line 31 "lsotfea-ltag.gperf"
-      {"BAD0", "Banda"},
-#line 371 "lsotfea-ltag.gperf"
-      {"MOS ", "Mossi"},
-#line 233 "lsotfea-ltag.gperf"
-      {"KAB0", "Kabyle"},
-#line 370 "lsotfea-ltag.gperf"
-      {"MOR ", "Moroccan"},
-#line 275 "lsotfea-ltag.gperf"
-      {"KOS ", "Kosraean"},
-#line 339 "lsotfea-ltag.gperf"
-      {"MAR ", "Marathi"},
-#line 274 "lsotfea-ltag.gperf"
-      {"KOR ", "Korean"},
-#line 344 "lsotfea-ltag.gperf"
-      {"MCR ", "Moose Cree"},
-#line 237 "lsotfea-ltag.gperf"
-      {"KAR ", "Karachay"},
-#line 369 "lsotfea-ltag.gperf"
-      {"MON ", "Mon"},
-#line 366 "lsotfea-ltag.gperf"
-      {"MOH ", "Mohawk"},
-#line 337 "lsotfea-ltag.gperf"
-      {"MAN ", "Mansi"},
-#line 332 "lsotfea-ltag.gperf"
-      {"MAH ", "Marshallese"},
-#line 264 "lsotfea-ltag.gperf"
-      {"KMS ", "Komso"},
-#line 270 "lsotfea-ltag.gperf"
-      {"KON ", "Kikongo"},
-#line 268 "lsotfea-ltag.gperf"
-      {"KOH ", "Korean Old Hangul"},
-#line 343 "lsotfea-ltag.gperf"
-      {"MCH ", "Manchu"},
-#line 236 "lsotfea-ltag.gperf"
-      {"KAN ", "Kannada"},
-#line 376 "lsotfea-ltag.gperf"
-      {"MUS ", "Muscogee"},
-#line 367 "lsotfea-ltag.gperf"
-      {"MOK ", "Moksha"},
-#line 334 "lsotfea-ltag.gperf"
-      {"MAK ", "Makhuwa"},
-#line 61 "lsotfea-ltag.gperf"
-      {"BOS ", "Bosnian"},
-#line 269 "lsotfea-ltag.gperf"
-      {"KOK ", "Konkani"},
-#line 293 "lsotfea-ltag.gperf"
-      {"KUR ", "Kurdish"},
-#line 262 "lsotfea-ltag.gperf"
-      {"KMN ", "Kumaoni"},
-#line 35 "lsotfea-ltag.gperf"
-      {"BAR ", "Bavarian"},
-#line 593 "lsotfea-ltag.gperf"
-      {"YCR ", "Y-Cree"},
-#line 375 "lsotfea-ltag.gperf"
-      {"MUN ", "Mundari"},
-#line 40 "lsotfea-ltag.gperf"
-      {"BCR ", "Bible Cree"},
-#line 385 "lsotfea-ltag.gperf"
-      {"NAS ", "Naskapi"},
-#line 405 "lsotfea-ltag.gperf"
-      {"NOR ", "Norwegian"},
-#line 263 "lsotfea-ltag.gperf"
-      {"KMO ", "Komo"},
-#line 379 "lsotfea-ltag.gperf"
-      {"MYN ", "Mayan"},
-#line 34 "lsotfea-ltag.gperf"
-      {"BAN ", "Balinese"},
-#line 388 "lsotfea-ltag.gperf"
-      {"NCR ", "N-Cree"},
-#line 368 "lsotfea-ltag.gperf"
-      {"MOL ", "Moldavian"},
-#line 39 "lsotfea-ltag.gperf"
-      {"BCH ", "Bench"},
-#line 335 "lsotfea-ltag.gperf"
-      {"MAL ", "Malayalam"},
-#line 590 "lsotfea-ltag.gperf"
-      {"YAO ", "Yao"},
-#line 589 "lsotfea-ltag.gperf"
-      {"YAK ", "Sakha"},
-#line 383 "lsotfea-ltag.gperf"
-      {"NAN ", "Nanai"},
-#line 382 "lsotfea-ltag.gperf"
-      {"NAH ", "Nahuatl"},
-#line 235 "lsotfea-ltag.gperf"
-      {"KAL ", "Kalenjin"},
-#line 186 "lsotfea-ltag.gperf"
-      {"HAR ", "Harauti"},
-#line 296 "lsotfea-ltag.gperf"
-      {"KYK ", "Koryak"},
-#line 472 "lsotfea-ltag.gperf"
-      {"SAS ", "Sasak"},
-#line 489 "lsotfea-ltag.gperf"
-      {"SCS ", "North Slavey"},
-#line 573 "lsotfea-ltag.gperf"
-      {"VOL ", "Volapük"},
-#line 377 "lsotfea-ltag.gperf"
-      {"MWL ", "Mirandese"},
-#line 471 "lsotfea-ltag.gperf"
-      {"SAN ", "Sanskrit"},
-#line 291 "lsotfea-ltag.gperf"
-      {"KUL ", "Kulvi"},
-#line 475 "lsotfea-ltag.gperf"
-      {"SCN ", "Sicilian"},
-#line 196 "lsotfea-ltag.gperf"
-      {"HMN ", "Hmong"},
-#line 33 "lsotfea-ltag.gperf"
-      {"BAL ", "Balkar"},
-#line 412 "lsotfea-ltag.gperf"
-      {"NYN ", "Norwegian Nynorsk (Nynorsk, Norwegian)"},
-#line 512 "lsotfea-ltag.gperf"
-      {"SUR ", "Suri"},
-#line 476 "lsotfea-ltag.gperf"
-      {"SCO ", "Scots"},
-#line 197 "lsotfea-ltag.gperf"
-      {"HMO ", "Hiri Motu"},
-#line 202 "lsotfea-ltag.gperf"
-      {"HUN ", "Hungarian"},
-#line 521 "lsotfea-ltag.gperf"
-      {"SYR ", "Syriac"},
-#line 60 "lsotfea-ltag.gperf"
-      {"BML ", "Bamileke"},
-#line 522 "lsotfea-ltag.gperf"
-      {"SYRE", "Syriac, Estrangela script-variant (equivalent to ISO 15924 'Syre')"},
-#line 403 "lsotfea-ltag.gperf"
-      {"NOE ", "Nimadi"},
-#line 493 "lsotfea-ltag.gperf"
-      {"SMO ", "Samoan"},
-#line 511 "lsotfea-ltag.gperf"
-      {"SUN ", "Sundanese"},
-#line 549 "lsotfea-ltag.gperf"
-      {"TOD0", "Toma"},
-#line 185 "lsotfea-ltag.gperf"
-      {"HAL ", "Halam (Falam Chin)"},
-#line 510 "lsotfea-ltag.gperf"
-      {"SUK ", "Sukuma"},
-#line 516 "lsotfea-ltag.gperf"
-      {"SWK ", "Swahili"},
-#line 330 "lsotfea-ltag.gperf"
-      {"MAD ", "Madura"},
-#line 267 "lsotfea-ltag.gperf"
-      {"KOD ", "Kodagu"},
-#line 452 "lsotfea-ltag.gperf"
-      {"RAR ", "Rarotongan"},
-#line 254 "lsotfea-ltag.gperf"
-      {"KIS ", "Kisii"},
-#line 282 "lsotfea-ltag.gperf"
-      {"KRN ", "Karen"},
-#line 454 "lsotfea-ltag.gperf"
-      {"RCR ", "R-Cree"},
-#line 253 "lsotfea-ltag.gperf"
-      {"KIR ", "Kirghiz (Kyrgyz)"},
-#line 492 "lsotfea-ltag.gperf"
-      {"SML ", "Somali"},
-#line 460 "lsotfea-ltag.gperf"
-      {"RMS ", "Romansh"},
-#line 604 "lsotfea-ltag.gperf"
-      {"ZUL ", "Zulu"},
-#line 351 "lsotfea-ltag.gperf"
-      {"MIN ", "Minangkabau"},
 #line 279 "lsotfea-ltag.gperf"
-      {"KRK ", "Karakalpak"},
-#line 97 "lsotfea-ltag.gperf"
-      {"COS ", "Corsican"},
-#line 469 "lsotfea-ltag.gperf"
-      {"RUS ", "Russian"},
-#line 96 "lsotfea-ltag.gperf"
-      {"COR ", "Cornish"},
-#line 47 "lsotfea-ltag.gperf"
-      {"BGR ", "Bulgarian"},
-#line 520 "lsotfea-ltag.gperf"
-      {"SYL ", "Sylheti"},
-#line 203 "lsotfea-ltag.gperf"
-      {"HYE ", "Armenian"},
-#line 574 "lsotfea-ltag.gperf"
-      {"VRO ", "Võro"},
-#line 30 "lsotfea-ltag.gperf"
-      {"BAD ", "Badaga"},
-#line 52 "lsotfea-ltag.gperf"
-      {"BIS ", "Bislama"},
-#line 252 "lsotfea-ltag.gperf"
-      {"KIK ", "Kikuyu (Gikuyu)"},
-#line 64 "lsotfea-ltag.gperf"
-      {"BRH ", "Brahui"},
-#line 396 "lsotfea-ltag.gperf"
-      {"NGR ", "Nagari"},
-#line 380 "lsotfea-ltag.gperf"
-      {"MZN ", "Mazanderani"},
-#line 467 "lsotfea-ltag.gperf"
-      {"RUN ", "Rundi"},
-#line 94 "lsotfea-ltag.gperf"
-      {"CMR ", "Comorian"},
-#line 398 "lsotfea-ltag.gperf"
-      {"NIS ", "Nisi"},
-#line 280 "lsotfea-ltag.gperf"
-      {"KRL ", "Karelian"},
-#line 74 "lsotfea-ltag.gperf"
-      {"CAK ", "Kaqchikel"},
-#line 427 "lsotfea-ltag.gperf"
-      {"PAS ", "Pashto"},
-#line 481 "lsotfea-ltag.gperf"
-      {"SGS ", "Samogitian"},
-#line 506 "lsotfea-ltag.gperf"
-      {"SRR ", "Serer"},
-#line 530 "lsotfea-ltag.gperf"
-      {"TCR ", "TH-Cree"},
-#line 232 "lsotfea-ltag.gperf"
-      {"KAB ", "Kabardian"},
-#line 244 "lsotfea-ltag.gperf"
-      {"KGE ", "Khutsuri Georgian"},
-#line 50 "lsotfea-ltag.gperf"
-      {"BIK ", "Bikol"},
-#line 523 "lsotfea-ltag.gperf"
-      {"SYRJ", "Syriac, Western script-variant (equivalent to ISO 15924 'Syrj')"},
-#line 597 "lsotfea-ltag.gperf"
-      {"ZGH ", "Standard Moroccan Tamazight"},
-#line 470 "lsotfea-ltag.gperf"
-      {"SAD ", "Sadri"},
-#line 438 "lsotfea-ltag.gperf"
-      {"PMS ", "Piemontese"},
-#line 441 "lsotfea-ltag.gperf"
-      {"PON ", "Pohnpeian"},
-#line 440 "lsotfea-ltag.gperf"
-      {"POH ", "Pocomchi"},
-#line 424 "lsotfea-ltag.gperf"
-      {"PAN ", "Punjabi"},
-#line 261 "lsotfea-ltag.gperf"
-      {"KMB ", "Kamba"},
-#line 348 "lsotfea-ltag.gperf"
-      {"MER ", "Meru"},
-#line 194 "lsotfea-ltag.gperf"
-      {"HIN ", "Hindi"},
-#line 170 "lsotfea-ltag.gperf"
-      {"GIL0", "Kiribati (Gilbertese)"},
-#line 106 "lsotfea-ltag.gperf"
-      {"CUK ", "San Blas Kuna"},
-#line 544 "lsotfea-ltag.gperf"
-      {"TMN ", "Temne"},
-#line 543 "lsotfea-ltag.gperf"
-      {"TMH ", "Tamashek"},
-#line 505 "lsotfea-ltag.gperf"
-      {"SRK ", "Saraiki"},
-#line 480 "lsotfea-ltag.gperf"
-      {"SGO ", "Sango"},
-#line 63 "lsotfea-ltag.gperf"
-      {"BRE ", "Breton"},
-#line 165 "lsotfea-ltag.gperf"
-      {"GAR ", "Garshuni"},
-#line 347 "lsotfea-ltag.gperf"
-      {"MEN ", "Me’en"},
-#line 51 "lsotfea-ltag.gperf"
-      {"BIL ", "Bilen"},
-#line 176 "lsotfea-ltag.gperf"
-      {"GON ", "Gondi"},
-#line 336 "lsotfea-ltag.gperf"
-      {"MAM ", "Mam"},
-#line 346 "lsotfea-ltag.gperf"
-      {"MDR ", "Mandar"},
-#line 271 "lsotfea-ltag.gperf"
-      {"KOM ", "Komi"},
-#line 59 "lsotfea-ltag.gperf"
-      {"BMB ", "Bambara (Bamanankan)"},
-#line 243 "lsotfea-ltag.gperf"
-      {"KEK ", "Kekchi"},
-#line 571 "lsotfea-ltag.gperf"
-      {"VEN ", "Venda"},
-#line 444 "lsotfea-ltag.gperf"
-      {"PWO ", "Western Pwo Karen"},
-#line 422 "lsotfea-ltag.gperf"
-      {"PAL ", "Pali"},
-#line 193 "lsotfea-ltag.gperf"
-      {"HIL ", "Hiligaynon"},
-#line 44 "lsotfea-ltag.gperf"
-      {"BEN ", "Bengali"},
-#line 415 "lsotfea-ltag.gperf"
-      {"OCR ", "Oji-Cree"},
-#line 292 "lsotfea-ltag.gperf"
-      {"KUM ", "Kumyk"},
-#line 199 "lsotfea-ltag.gperf"
-      {"HO  ", "Ho"},
-#line 556 "lsotfea-ltag.gperf"
-      {"TUL ", "Tumbuka"},
-#line 46 "lsotfea-ltag.gperf"
-      {"BGQ ", "Bagri"},
-#line 192 "lsotfea-ltag.gperf"
-      {"HER ", "Herero"},
-#line 392 "lsotfea-ltag.gperf"
-      {"NDS ", "Low Saxon"},
-#line 164 "lsotfea-ltag.gperf"
-      {"GAL ", "Galician"},
-#line 143 "lsotfea-ltag.gperf"
-      {"FAN0", "Fang"},
-#line 100 "lsotfea-ltag.gperf"
-      {"CRR ", "Carrier"},
-#line 289 "lsotfea-ltag.gperf"
-      {"KUA ", "Kuanyama"},
-#line 340 "lsotfea-ltag.gperf"
-      {"MAW ", "Marwari"},
-#line 525 "lsotfea-ltag.gperf"
-      {"SZL ", "Silesian"},
-#line 162 "lsotfea-ltag.gperf"
-      {"GAE ", "Scottish Gaelic (Gaelic)"},
-#line 345 "lsotfea-ltag.gperf"
-      {"MDE ", "Mende"},
-#line 42 "lsotfea-ltag.gperf"
-      {"BEL ", "Belarussian"},
-#line 240 "lsotfea-ltag.gperf"
-      {"KDE ", "Makonde"},
-#line 477 "lsotfea-ltag.gperf"
-      {"SEK ", "Sekota"},
-#line 536 "lsotfea-ltag.gperf"
-      {"TGR ", "Tigre"},
-#line 378 "lsotfea-ltag.gperf"
-      {"MWW ", "Hmong Daw"},
-#line 548 "lsotfea-ltag.gperf"
-      {"TOD ", "Todo"},
-#line 411 "lsotfea-ltag.gperf"
-      {"NYM ", "Nyamwezi"},
-#line 432 "lsotfea-ltag.gperf"
-      {"PGR ", "Polytonic Greek"},
-#line 84 "lsotfea-ltag.gperf"
-      {"CHK0", "Chuukese"},
-#line 504 "lsotfea-ltag.gperf"
-      {"SRD ", "Sardinian"},
-#line 108 "lsotfea-ltag.gperf"
-      {"DAR ", "Dargwa"},
-#line 67 "lsotfea-ltag.gperf"
-      {"BRX ", "Bodo"},
-#line 535 "lsotfea-ltag.gperf"
-      {"TGN ", "Tongan"},
-#line 110 "lsotfea-ltag.gperf"
-      {"DCR ", "Woods Cree"},
-#line 430 "lsotfea-ltag.gperf"
-      {"PCD ", "Picard"},
-#line 195 "lsotfea-ltag.gperf"
-      {"HMA ", "High Mari"},
-#line 248 "lsotfea-ltag.gperf"
-      {"KHS ", "Khanty-Shurishkar"},
-#line 285 "lsotfea-ltag.gperf"
-      {"KSH0", "Ripuarian"},
-#line 551 "lsotfea-ltag.gperf"
-      {"TRK ", "Turkish"},
-#line 107 "lsotfea-ltag.gperf"
-      {"DAN ", "Danish"},
-#line 485 "lsotfea-ltag.gperf"
-      {"SID ", "Sidamo"},
-#line 442 "lsotfea-ltag.gperf"
-      {"PRO ", "Provençal / Old Provençal"},
-#line 478 "lsotfea-ltag.gperf"
-      {"SEL ", "Selkup"},
-#line 434 "lsotfea-ltag.gperf"
-      {"PIH ", "Norfolk"},
-#line 99 "lsotfea-ltag.gperf"
-      {"CRE ", "Cree"},
-#line 188 "lsotfea-ltag.gperf"
-      {"HAW ", "Hawaiian"},
-#line 161 "lsotfea-ltag.gperf"
-      {"GAD ", "Ga"},
-#line 515 "lsotfea-ltag.gperf"
-      {"SWA ", "Swadaya Aramaic"},
-#line 177 "lsotfea-ltag.gperf"
-      {"GRN ", "Greenlandic"},
-#line 374 "lsotfea-ltag.gperf"
-      {"MTS ", "Maltese"},
-#line 281 "lsotfea-ltag.gperf"
-      {"KRM ", "Karaim"},
-#line 125 "lsotfea-ltag.gperf"
-      {"DUN ", "Dungan"},
-#line 246 "lsotfea-ltag.gperf"
-      {"KHK ", "Khanty-Kazim"},
-#line 295 "lsotfea-ltag.gperf"
-      {"KUY ", "Kuy"},
-#line 178 "lsotfea-ltag.gperf"
-      {"GRO ", "Garo"},
-#line 462 "lsotfea-ltag.gperf"
-      {"ROM ", "Romanian"},
-#line 534 "lsotfea-ltag.gperf"
-      {"TGL ", "Tagalog"},
-#line 223 "lsotfea-ltag.gperf"
-      {"IWR ", "Hebrew"},
-#line 562 "lsotfea-ltag.gperf"
-      {"TZO ", "Tzotzil"},
-#line 168 "lsotfea-ltag.gperf"
-      {"GIH ", "Githabul"},
-#line 526 "lsotfea-ltag.gperf"
-      {"TAB ", "Tabasaran"},
-#line 373 "lsotfea-ltag.gperf"
-      {"MTH ", "Maithili"},
-#line 503 "lsotfea-ltag.gperf"
-      {"SRB ", "Serbian"},
-#line 333 "lsotfea-ltag.gperf"
-      {"MAJ ", "Majang"},
-#line 435 "lsotfea-ltag.gperf"
-      {"PIL ", "Filipino"},
-#line 601 "lsotfea-ltag.gperf"
-      {"ZHS ", "Chinese Simplified"},
-#line 66 "lsotfea-ltag.gperf"
-      {"BRM ", "Burmese"},
-#line 49 "lsotfea-ltag.gperf"
-      {"BHO ", "Bhojpuri"},
-#line 71 "lsotfea-ltag.gperf"
-      {"BTS ", "Batak Simalungun"},
-#line 189 "lsotfea-ltag.gperf"
-      {"HAY ", "Haya"},
-#line 484 "lsotfea-ltag.gperf"
-      {"SIB ", "Sibe"},
-#line 128 "lsotfea-ltag.gperf"
-      {"ECR ", "Eastern Cree"},
-#line 524 "lsotfea-ltag.gperf"
-      {"SYRN", "Syriac, Eastern script-variant (equivalent to ISO 15924 'Syrn')"},
-#line 418 "lsotfea-ltag.gperf"
-      {"ORO ", "Oromo"},
-#line 595 "lsotfea-ltag.gperf"
-      {"YIM ", "Yi Modern"},
-#line 474 "lsotfea-ltag.gperf"
-      {"SAY ", "Sayisi"},
-#line 242 "lsotfea-ltag.gperf"
-      {"KEB ", "Kebena"},
-#line 599 "lsotfea-ltag.gperf"
-      {"ZHH ", "Chinese, Hong Kong SAR"},
-#line 426 "lsotfea-ltag.gperf"
-      {"PAP0", "Papiamentu"},
-#line 466 "lsotfea-ltag.gperf"
-      {"RUA ", "Kinyarwanda"},
-#line 169 "lsotfea-ltag.gperf"
-      {"GIL ", "Gilyak"},
-#line 483 "lsotfea-ltag.gperf"
-      {"SHN ", "Shan"},
-#line 338 "lsotfea-ltag.gperf"
-      {"MAP ", "Mapudungun"},
-#line 273 "lsotfea-ltag.gperf"
-      {"KOP ", "Komi-Permyak"},
-#line 395 "lsotfea-ltag.gperf"
-      {"NGA ", "Ngbaka"},
-#line 119 "lsotfea-ltag.gperf"
-      {"DJR0", "Djambarrpuyngu"},
-#line 528 "lsotfea-ltag.gperf"
-      {"TAM ", "Tamil"},
-#line 331 "lsotfea-ltag.gperf"
-      {"MAG ", "Magahi"},
-#line 423 "lsotfea-ltag.gperf"
-      {"PAM ", "Pampangan"},
-#line 181 "lsotfea-ltag.gperf"
-      {"GUF ", "Gupapuyngu"},
-#line 132 "lsotfea-ltag.gperf"
-      {"EMK ", "Eastern Maninkakan"},
-#line 410 "lsotfea-ltag.gperf"
-      {"NTO ", "Esperanto"},
-#line 276 "lsotfea-ltag.gperf"
-      {"KOZ ", "Komi-Zyrian"},
-#line 256 "lsotfea-ltag.gperf"
-      {"KJD ", "Southern Kiwai"},
-#line 239 "lsotfea-ltag.gperf"
-      {"KAZ ", "Kazakh"},
-#line 113 "lsotfea-ltag.gperf"
-      {"DGR ", "Dogri"},
-#line 420 "lsotfea-ltag.gperf"
-      {"PAA ", "Palestinian Aramaic"},
-#line 479 "lsotfea-ltag.gperf"
-      {"SGA ", "Old Irish"},
-#line 555 "lsotfea-ltag.gperf"
-      {"TUM ", "Tulu"},
-#line 591 "lsotfea-ltag.gperf"
-      {"YAP ", "Yapese"},
-#line 457 "lsotfea-ltag.gperf"
-      {"RIF ", "Tarifit"},
-#line 265 "lsotfea-ltag.gperf"
-      {"KMZ ", "Khorasani Turkic"},
-#line 532 "lsotfea-ltag.gperf"
-      {"TEL ", "Telugu"},
-#line 413 "lsotfea-ltag.gperf"
-      {"NZA ", "Mbembe Tigon"},
-#line 152 "lsotfea-ltag.gperf"
-      {"FOS ", "Faroese"},
-#line 32 "lsotfea-ltag.gperf"
-      {"BAG ", "Baghelkhandi"},
-#line 463 "lsotfea-ltag.gperf"
-      {"ROY ", "Romany"},
-#line 384 "lsotfea-ltag.gperf"
-      {"NAP ", "Neapolitan"},
-#line 554 "lsotfea-ltag.gperf"
-      {"TUA ", "Turoyo Aramaic"},
-#line 144 "lsotfea-ltag.gperf"
-      {"FAR ", "Persian"},
-#line 112 "lsotfea-ltag.gperf"
-      {"DGO ", "Dogri"},
-#line 241 "lsotfea-ltag.gperf"
-      {"KEA ", "Kabuverdianu (Crioulo)"},
-#line 404 "lsotfea-ltag.gperf"
-      {"NOG ", "Nogai"},
-#line 389 "lsotfea-ltag.gperf"
-      {"NDB ", "Ndebele"},
-#line 605 "lsotfea-ltag.gperf"
-      {"ZZA ", "Zazaki"},
-#line 381 "lsotfea-ltag.gperf"
-      {"NAG ", "Naga-Assamese"},
-#line 77 "lsotfea-ltag.gperf"
-      {"CCHN", "Chinantec"},
-#line 151 "lsotfea-ltag.gperf"
-      {"FON ", "Fon"},
-#line 577 "lsotfea-ltag.gperf"
-      {"WAR ", "Waray-Waray"},
-#line 142 "lsotfea-ltag.gperf"
-      {"FAN ", "French Antillean"},
-#line 461 "lsotfea-ltag.gperf"
-      {"RMY ", "Vlax Romani"},
-#line 43 "lsotfea-ltag.gperf"
-      {"BEM ", "Bemba"},
-#line 578 "lsotfea-ltag.gperf"
-      {"WCR ", "West-Cree"},
-#line 500 "lsotfea-ltag.gperf"
-      {"SOP ", "Songe"},
-#line 141 "lsotfea-ltag.gperf"
-      {"EWE ", "Ewe"},
-#line 72 "lsotfea-ltag.gperf"
-      {"BUG ", "Bugis"},
-#line 109 "lsotfea-ltag.gperf"
-      {"DAX ", "Dayi"},
-#line 87 "lsotfea-ltag.gperf"
-      {"CHR ", "Cherokee"},
-#line 126 "lsotfea-ltag.gperf"
-      {"DZN ", "Dzongkha"},
-#line 499 "lsotfea-ltag.gperf"
-      {"SOG ", "Sodo Gurage"},
-#line 190 "lsotfea-ltag.gperf"
-      {"HAZ ", "Hazaragi"},
-#line 350 "lsotfea-ltag.gperf"
-      {"MFE ", "Morisyen"},
-#line 179 "lsotfea-ltag.gperf"
-      {"GUA ", "Guarani"},
-#line 354 "lsotfea-ltag.gperf"
-      {"MKR ", "Makasar"},
-#line 290 "lsotfea-ltag.gperf"
-      {"KUI ", "Kui"},
-#line 81 "lsotfea-ltag.gperf"
-      {"CHH ", "Chattisgarhi"},
-#line 166 "lsotfea-ltag.gperf"
-      {"GAW ", "Garhwali"},
-#line 266 "lsotfea-ltag.gperf"
-      {"KNR ", "Kanuri"},
-#line 540 "lsotfea-ltag.gperf"
-      {"TIB ", "Tibetan"},
-#line 85 "lsotfea-ltag.gperf"
-      {"CHO ", "Choctaw"},
-#line 83 "lsotfea-ltag.gperf"
-      {"CHK ", "Chukchi"},
-#line 451 "lsotfea-ltag.gperf"
-      {"RAJ ", "Rajasthani"},
-#line 456 "lsotfea-ltag.gperf"
-      {"RIA ", "Riang"},
-#line 259 "lsotfea-ltag.gperf"
-      {"KKN ", "Kokni"},
-#line 596 "lsotfea-ltag.gperf"
-      {"ZEA ", "Zealandic"},
-#line 364 "lsotfea-ltag.gperf"
-      {"MNK ", "Maninka"},
-#line 138 "lsotfea-ltag.gperf"
-      {"EUQ ", "Basque"},
-#line 284 "lsotfea-ltag.gperf"
-      {"KSH ", "Kashmiri"},
-#line 517 "lsotfea-ltag.gperf"
-      {"SWZ ", "Swati"},
-#line 184 "lsotfea-ltag.gperf"
-      {"HAI ", "Haitian (Haitian Creole)"},
-#line 502 "lsotfea-ltag.gperf"
-      {"SQI ", "Albanian"},
-#line 394 "lsotfea-ltag.gperf"
-      {"NEW ", "Newari"},
-#line 509 "lsotfea-ltag.gperf"
-      {"STQ ", "Saterland Frisian"},
-#line 159 "lsotfea-ltag.gperf"
-      {"FUL ", "Fulah"},
-#line 433 "lsotfea-ltag.gperf"
-      {"PHK ", "Phake"},
-#line 531 "lsotfea-ltag.gperf"
-      {"TDD ", "Dehong Dai"},
-#line 79 "lsotfea-ltag.gperf"
-      {"CHE ", "Chechen"},
-#line 78 "lsotfea-ltag.gperf"
-      {"CEB ", "Cebuano"},
-#line 68 "lsotfea-ltag.gperf"
-      {"BSH ", "Bashkir"},
-#line 352 "lsotfea-ltag.gperf"
-      {"MIZ ", "Mizo"},
-#line 116 "lsotfea-ltag.gperf"
-      {"DIQ ", "Dimli"},
-#line 487 "lsotfea-ltag.gperf"
-      {"SKS ", "Skolt Sami"},
-#line 247 "lsotfea-ltag.gperf"
-      {"KHM ", "Khmer"},
-#line 527 "lsotfea-ltag.gperf"
-      {"TAJ ", "Tajiki"},
-#line 401 "lsotfea-ltag.gperf"
-      {"NKO ", "N’Ko"},
-#line 69 "lsotfea-ltag.gperf"
-      {"BSK ", "Burushaski"},
-#line 95 "lsotfea-ltag.gperf"
-      {"COP ", "Coptic"},
-#line 277 "lsotfea-ltag.gperf"
-      {"KPL ", "Kpelle"},
-#line 468 "lsotfea-ltag.gperf"
-      {"RUP ", "Aromanian"},
-#line 561 "lsotfea-ltag.gperf"
-      {"TZM ", "Tamazight"},
-#line 305 "lsotfea-ltag.gperf"
-      {"LCR ", "L-Cree"},
-#line 408 "lsotfea-ltag.gperf"
-      {"NSO ", "Sotho, Northern"},
-#line 341 "lsotfea-ltag.gperf"
-      {"MBN ", "Mbundu"},
-#line 245 "lsotfea-ltag.gperf"
-      {"KHA ", "Khakass"},
-#line 497 "lsotfea-ltag.gperf"
-      {"SNH ", "Sinhala (Sinhalese)"},
-#line 372 "lsotfea-ltag.gperf"
-      {"MRI ", "Maori"},
-#line 299 "lsotfea-ltag.gperf"
-      {"LAH ", "Lahuli"},
-#line 6 "lsotfea-ltag.gperf"
-      {"ACR ", "Achi"},
-#line 342 "lsotfea-ltag.gperf"
-      {"MBO ", "Mbo"},
-#line 278 "lsotfea-ltag.gperf"
-      {"KRI ", "Krio"},
-#line 209 "lsotfea-ltag.gperf"
-      {"IDO ", "Ido"},
-#line 498 "lsotfea-ltag.gperf"
-      {"SNK ", "Soninke"},
-#line 302 "lsotfea-ltag.gperf"
-      {"LAO ", "Lao"},
-#line 41 "lsotfea-ltag.gperf"
-      {"BDY ", "Bandjalang"},
-#line 300 "lsotfea-ltag.gperf"
-      {"LAK ", "Lak"},
-#line 400 "lsotfea-ltag.gperf"
-      {"NKL ", "Nyankole"},
-#line 38 "lsotfea-ltag.gperf"
-      {"BBR ", "Berber"},
-#line 5 "lsotfea-ltag.gperf"
-      {"ACH ", "Acholi"},
-#line 359 "lsotfea-ltag.gperf"
-      {"MLR ", "Malayalam Reformed"},
-#line 425 "lsotfea-ltag.gperf"
-      {"PAP ", "Palpa"},
-#line 146 "lsotfea-ltag.gperf"
-      {"FIN ", "Finnish"},
-#line 316 "lsotfea-ltag.gperf"
-      {"LMO ", "Lombard"},
-#line 327 "lsotfea-ltag.gperf"
-      {"LUH ", "Luyia"},
-#line 15 "lsotfea-ltag.gperf"
-      {"AMH ", "Amharic"},
-#line 421 "lsotfea-ltag.gperf"
-      {"PAG ", "Pangasinan"},
-#line 251 "lsotfea-ltag.gperf"
-      {"KHW ", "Khowar"},
-#line 118 "lsotfea-ltag.gperf"
-      {"DJR ", "Zarma"},
-#line 358 "lsotfea-ltag.gperf"
-      {"MLN ", "Malinke"},
-#line 495 "lsotfea-ltag.gperf"
-      {"SNA0", "Shona"},
-#line 65 "lsotfea-ltag.gperf"
-      {"BRI ", "Braj Bhasha"},
-#line 328 "lsotfea-ltag.gperf"
-      {"LUO ", "Luo"},
-#line 361 "lsotfea-ltag.gperf"
-      {"MND ", "Mandinka"},
-#line 353 "lsotfea-ltag.gperf"
-      {"MKD ", "Macedonian"},
-#line 182 "lsotfea-ltag.gperf"
-      {"GUJ ", "Gujarati"},
-#line 486 "lsotfea-ltag.gperf"
-      {"SIG ", "Silte Gurage"},
-#line 565 "lsotfea-ltag.gperf"
-      {"UMB ", "Umbundu"},
-#line 234 "lsotfea-ltag.gperf"
-      {"KAC ", "Kachchi"},
-#line 507 "lsotfea-ltag.gperf"
-      {"SSL ", "South Slavey"},
-#line 156 "lsotfea-ltag.gperf"
-      {"FRL ", "Friulian"},
-#line 537 "lsotfea-ltag.gperf"
-      {"TGY ", "Tigrinya"},
-#line 598 "lsotfea-ltag.gperf"
-      {"ZHA ", "Zhuang"},
-#line 175 "lsotfea-ltag.gperf"
-      {"GOG ", "Gogo"},
-#line 238 "lsotfea-ltag.gperf"
-      {"KAT ", "Georgian"},
-#line 163 "lsotfea-ltag.gperf"
-      {"GAG ", "Gagauz"},
-#line 191 "lsotfea-ltag.gperf"
-      {"HBN ", "Hammer-Banna"},
-#line 129 "lsotfea-ltag.gperf"
-      {"EDO ", "Edo"},
-#line 560 "lsotfea-ltag.gperf"
-      {"TYZ ", "Tày"},
-#line 200 "lsotfea-ltag.gperf"
-      {"HRI ", "Harari"},
-#line 57 "lsotfea-ltag.gperf"
-      {"BLN ", "Balante"},
-#line 409 "lsotfea-ltag.gperf"
-      {"NTA ", "Northern Tai"},
-#line 294 "lsotfea-ltag.gperf"
-      {"KUU ", "Kurukh"},
-#line 208 "lsotfea-ltag.gperf"
-      {"IJO ", "Ijo languages"},
-#line 36 "lsotfea-ltag.gperf"
-      {"BAU ", "Baulé"},
-#line 173 "lsotfea-ltag.gperf"
-      {"GMZ ", "Gumuz"},
-#line 365 "lsotfea-ltag.gperf"
-      {"MNX ", "Manx"},
-#line 297 "lsotfea-ltag.gperf"
-      {"KYU ", "Western Kayah"},
-#line 56 "lsotfea-ltag.gperf"
-      {"BLK ", "Pa’o Karen"},
-#line 225 "lsotfea-ltag.gperf"
-      {"JAN ", "Japanese"},
-#line 393 "lsotfea-ltag.gperf"
-      {"NEP ", "Nepali"},
-#line 356 "lsotfea-ltag.gperf"
-      {"MLE ", "Male"},
-#line 447 "lsotfea-ltag.gperf"
-      {"QUH ", "Quechua (Bolivia)"},
-#line 386 "lsotfea-ltag.gperf"
-      {"NAU ", "Nauruan"},
-#line 450 "lsotfea-ltag.gperf"
-      {"QWH ", "Quechua (Peru)"},
-#line 566 "lsotfea-ltag.gperf"
-      {"URD ", "Urdu"},
-#line 183 "lsotfea-ltag.gperf"
-      {"GUZ ", "Gusii"},
-#line 349 "lsotfea-ltag.gperf"
-      {"MFA ", "Pattani Malay"},
-#line 575 "lsotfea-ltag.gperf"
-      {"WA  ", "Wa"},
-#line 559 "lsotfea-ltag.gperf"
-      {"TWI ", "Twi"},
-#line 603 "lsotfea-ltag.gperf"
-      {"ZND ", "Zande"},
-#line 198 "lsotfea-ltag.gperf"
-      {"HND ", "Hindko"},
-#line 187 "lsotfea-ltag.gperf"
-      {"HAU ", "Hausa"},
-#line 93 "lsotfea-ltag.gperf"
-      {"CJM ", "Eastern Cham"},
-#line 406 "lsotfea-ltag.gperf"
-      {"NOV ", "Novial"},
-#line 496 "lsotfea-ltag.gperf"
-      {"SND ", "Sindhi"},
-#line 387 "lsotfea-ltag.gperf"
-      {"NAV ", "Navajo"},
-#line 298 "lsotfea-ltag.gperf"
-      {"LAD ", "Ladin"},
-#line 311 "lsotfea-ltag.gperf"
-      {"LIS ", "Lisu"},
-#line 391 "lsotfea-ltag.gperf"
-      {"NDG ", "Ndonga"},
-#line 501 "lsotfea-ltag.gperf"
-      {"SOT ", "Sotho, Southern"},
-#line 91 "lsotfea-ltag.gperf"
-      {"CGG ", "Chiga"},
-#line 473 "lsotfea-ltag.gperf"
-      {"SAT ", "Santali"},
-#line 92 "lsotfea-ltag.gperf"
-      {"CJA ", "Western Cham"},
-#line 585 "lsotfea-ltag.gperf"
-      {"XHS ", "Xhosa"},
-#line 54 "lsotfea-ltag.gperf"
-      {"BKF ", "Blackfoot"},
-#line 53 "lsotfea-ltag.gperf"
-      {"BJJ ", "Kanauji"},
-#line 257 "lsotfea-ltag.gperf"
-      {"KJP ", "Eastern Pwo Karen"},
-#line 310 "lsotfea-ltag.gperf"
-      {"LIN ", "Lingala"},
-#line 73 "lsotfea-ltag.gperf"
-      {"BYV ", "Medumba"},
-#line 103 "lsotfea-ltag.gperf"
-      {"CSL ", "Church Slavonic"},
-#line 455 "lsotfea-ltag.gperf"
-      {"REJ ", "Rejang"},
-#line 124 "lsotfea-ltag.gperf"
-      {"DUJ ", "Dhuwal"},
-#line 465 "lsotfea-ltag.gperf"
-      {"RTM ", "Rotuman"},
-#line 414 "lsotfea-ltag.gperf"
-      {"OCI ", "Occitan"},
-#line 21 "lsotfea-ltag.gperf"
-      {"ARK ", "Rakhine"},
-#line 174 "lsotfea-ltag.gperf"
-      {"GNN ", "Gumatj"},
-#line 514 "lsotfea-ltag.gperf"
-      {"SVE ", "Swedish"},
-#line 258 "lsotfea-ltag.gperf"
-      {"KJZ ", "Bumthangkha"},
-#line 88 "lsotfea-ltag.gperf"
-      {"CHA ", "Chamorro"},
-#line 231 "lsotfea-ltag.gperf"
-      {"JUL ", "Jula"},
-#line 579 "lsotfea-ltag.gperf"
-      {"WEL ", "Welsh"},
-#line 416 "lsotfea-ltag.gperf"
-      {"OJB ", "Ojibway"},
-#line 11 "lsotfea-ltag.gperf"
-      {"AIO ", "Aiton"},
-#line 287 "lsotfea-ltag.gperf"
-      {"KSM ", "Kildin Sami"},
-#line 546 "lsotfea-ltag.gperf"
-      {"TNE ", "Tundra Nenets"},
-#line 76 "lsotfea-ltag.gperf"
-      {"CBK ", "Zamboanga Chavacano"},
-#line 419 "lsotfea-ltag.gperf"
-      {"OSS ", "Ossetian"},
-#line 283 "lsotfea-ltag.gperf"
-      {"KRT ", "Koorete"},
-#line 538 "lsotfea-ltag.gperf"
-      {"THA ", "Thai"},
-#line 255 "lsotfea-ltag.gperf"
-      {"KIU ", "Kirmanjki"},
-#line 569 "lsotfea-ltag.gperf"
-      {"UZB ", "Uzbek"},
-#line 315 "lsotfea-ltag.gperf"
-      {"LMB ", "Limbu"},
-#line 445 "lsotfea-ltag.gperf"
-      {"QIN ", "Chin"},
-#line 402 "lsotfea-ltag.gperf"
-      {"NLD ", "Dutch"},
-#line 355 "lsotfea-ltag.gperf"
-      {"MKW ", "Kituba"},
-#line 45 "lsotfea-ltag.gperf"
-      {"BGC ", "Haryanvi"},
-#line 325 "lsotfea-ltag.gperf"
-      {"LUB ", "Luba-Katanga"},
-#line 407 "lsotfea-ltag.gperf"
-      {"NSM ", "Northern Sami"},
-#line 572 "lsotfea-ltag.gperf"
-      {"VIT ", "Vietnamese"},
-#line 594 "lsotfea-ltag.gperf"
-      {"YIC ", "Yi Classic"},
-#line 75 "lsotfea-ltag.gperf"
-      {"CAT ", "Catalan"},
-#line 288 "lsotfea-ltag.gperf"
-      {"KSW ", "S’gaw Karen"},
-#line 318 "lsotfea-ltag.gperf"
-      {"LOM ", "Loma"},
-#line 600 "lsotfea-ltag.gperf"
-      {"ZHP ", "Chinese Phonetic"},
-#line 301 "lsotfea-ltag.gperf"
-      {"LAM ", "Lambani"},
-#line 587 "lsotfea-ltag.gperf"
-      {"XOG ", "Soga"},
-#line 399 "lsotfea-ltag.gperf"
-      {"NIU ", "Niuean"},
-#line 29 "lsotfea-ltag.gperf"
-      {"AZE ", "Azerbaijani"},
-#line 230 "lsotfea-ltag.gperf"
-      {"JUD ", "Ladino"},
-#line 508 "lsotfea-ltag.gperf"
-      {"SSM ", "Southern Sami"},
-#line 90 "lsotfea-ltag.gperf"
-      {"CHY ", "Cheyenne"},
-#line 494 "lsotfea-ltag.gperf"
-      {"SNA ", "Sena"},
-#line 428 "lsotfea-ltag.gperf"
-      {"PAU ", "Palauan"},
-#line 529 "lsotfea-ltag.gperf"
-      {"TAT ", "Tatar"},
-#line 429 "lsotfea-ltag.gperf"
-      {"PCC ", "Bouyei"},
-#line 437 "lsotfea-ltag.gperf"
-      {"PLK ", "Polish"},
-#line 153 "lsotfea-ltag.gperf"
-      {"FRA ", "French"},
-#line 48 "lsotfea-ltag.gperf"
-      {"BHI ", "Bhili"},
-#line 306 "lsotfea-ltag.gperf"
-      {"LDK ", "Ladakhi"},
-#line 201 "lsotfea-ltag.gperf"
-      {"HRV ", "Croatian"},
-#line 314 "lsotfea-ltag.gperf"
-      {"LMA ", "Low Mari"},
-#line 558 "lsotfea-ltag.gperf"
-      {"TVL ", "Tuvalu"},
-#line 417 "lsotfea-ltag.gperf"
-      {"ORI ", "Odia (formerly Oriya)"},
-#line 122 "lsotfea-ltag.gperf"
-      {"DNK ", "Dinka"},
-#line 260 "lsotfea-ltag.gperf"
-      {"KLM ", "Kalmyk"},
-#line 324 "lsotfea-ltag.gperf"
-      {"LUA ", "Luba-Lulua"},
-#line 592 "lsotfea-ltag.gperf"
-      {"YBA ", "Yoruba"},
-#line 27 "lsotfea-ltag.gperf"
-      {"AYM ", "Aymara"},
-#line 172 "lsotfea-ltag.gperf"
-      {"GLK ", "Gilaki"},
-#line 102 "lsotfea-ltag.gperf"
-      {"CSB ", "Kashubian"},
-#line 570 "lsotfea-ltag.gperf"
-      {"VEC ", "Venetian"},
-#line 167 "lsotfea-ltag.gperf"
-      {"GEZ ", "Geez"},
-#line 26 "lsotfea-ltag.gperf"
-      {"AWA ", "Awadhi"},
-#line 70 "lsotfea-ltag.gperf"
-      {"BTI ", "Beti"},
-#line 557 "lsotfea-ltag.gperf"
-      {"TUV ", "Tuvin"},
-#line 482 "lsotfea-ltag.gperf"
-      {"SHI ", "Tachelhit"},
-#line 317 "lsotfea-ltag.gperf"
-      {"LMW ", "Lomwe"},
-#line 180 "lsotfea-ltag.gperf"
-      {"GUC ", "Wayuu"},
-#line 586 "lsotfea-ltag.gperf"
-      {"XJB ", "Minjangbal"},
-#line 216 "lsotfea-ltag.gperf"
-      {"IPK ", "Inupiat"},
-#line 62 "lsotfea-ltag.gperf"
-      {"BPY ", "Bishnupriya Manipuri"},
-#line 439 "lsotfea-ltag.gperf"
-      {"PNB ", "Western Panjabi"},
-#line 568 "lsotfea-ltag.gperf"
-      {"UYG ", "Uyghur"},
-#line 224 "lsotfea-ltag.gperf"
-      {"JAM ", "Jamaican Creole"},
-#line 149 "lsotfea-ltag.gperf"
-      {"FMP ", "Fe’fe’"},
-#line 563 "lsotfea-ltag.gperf"
-      {"UDM ", "Udmurt"},
-#line 576 "lsotfea-ltag.gperf"
-      {"WAG ", "Wagdi"},
-#line 488 "lsotfea-ltag.gperf"
-      {"SKY ", "Slovak"},
-#line 220 "lsotfea-ltag.gperf"
-      {"ISL ", "Icelandic"},
-#line 86 "lsotfea-ltag.gperf"
-      {"CHP ", "Chipewyan"},
-#line 458 "lsotfea-ltag.gperf"
-      {"RIT ", "Ritarungo"},
-#line 123 "lsotfea-ltag.gperf"
-      {"DRI ", "Dari"},
-#line 390 "lsotfea-ltag.gperf"
-      {"NDC ", "Ndau"},
-#line 80 "lsotfea-ltag.gperf"
-      {"CHG ", "Chaha Gurage"},
-#line 101 "lsotfea-ltag.gperf"
-      {"CRT ", "Crimean Tatar"},
-#line 459 "lsotfea-ltag.gperf"
-      {"RKW ", "Arakwal"},
-#line 513 "lsotfea-ltag.gperf"
-      {"SVA ", "Svan"},
-#line 542 "lsotfea-ltag.gperf"
-      {"TKM ", "Turkmen"},
-#line 362 "lsotfea-ltag.gperf"
-      {"MNG ", "Mongolian"},
-#line 218 "lsotfea-ltag.gperf"
-      {"IRI ", "Irish"},
-#line 490 "lsotfea-ltag.gperf"
-      {"SLA ", "Slavey"},
-#line 564 "lsotfea-ltag.gperf"
-      {"UKR ", "Ukrainian"},
-#line 207 "lsotfea-ltag.gperf"
-      {"IBO ", "Igbo"},
-#line 28 "lsotfea-ltag.gperf"
-      {"AZB ", "Torki"},
-#line 545 "lsotfea-ltag.gperf"
-      {"TNA ", "Tswana"},
-#line 360 "lsotfea-ltag.gperf"
-      {"MLY ", "Malay"},
-#line 134 "lsotfea-ltag.gperf"
-      {"ERZ ", "Erzya"},
-#line 309 "lsotfea-ltag.gperf"
-      {"LIM ", "Limburgish"},
-#line 105 "lsotfea-ltag.gperf"
-      {"CTG ", "Chittagonian"},
-#line 222 "lsotfea-ltag.gperf"
-      {"ITA ", "Italian"},
-#line 322 "lsotfea-ltag.gperf"
-      {"LTH ", "Lithuanian"},
-#line 18 "lsotfea-ltag.gperf"
-      {"ARA ", "Arabic"},
-#line 82 "lsotfea-ltag.gperf"
-      {"CHI ", "Chichewa (Chewa, Nyanja)"},
-#line 24 "lsotfea-ltag.gperf"
-      {"ATH ", "Athapaskan"},
-#line 213 "lsotfea-ltag.gperf"
-      {"IND ", "Indonesian"},
-#line 588 "lsotfea-ltag.gperf"
-      {"XPE ", "Kpelle (Liberia)"},
-#line 363 "lsotfea-ltag.gperf"
-      {"MNI ", "Manipuri"},
+      {"KON0", "Kongo"},
 #line 211 "lsotfea-ltag.gperf"
-      {"ILO ", "Ilokano"},
-#line 249 "lsotfea-ltag.gperf"
-      {"KHT ", "Khamti Shan"},
-#line 464 "lsotfea-ltag.gperf"
-      {"RSY ", "Rusyn"},
-#line 541 "lsotfea-ltag.gperf"
-      {"TIV ", "Tiv"},
-#line 443 "lsotfea-ltag.gperf"
-      {"PTG ", "Portuguese"},
-#line 286 "lsotfea-ltag.gperf"
-      {"KSI ", "Khasi"},
-#line 250 "lsotfea-ltag.gperf"
-      {"KHV ", "Khanty-Vakhi"},
-#line 10 "lsotfea-ltag.gperf"
-      {"AGW ", "Agaw"},
-#line 157 "lsotfea-ltag.gperf"
-      {"FRP ", "Arpitan"},
-#line 104 "lsotfea-ltag.gperf"
-      {"CSY ", "Czech"},
-#line 140 "lsotfea-ltag.gperf"
-      {"EVN ", "Even"},
-#line 397 "lsotfea-ltag.gperf"
-      {"NHC ", "Norway House Cree"},
-#line 304 "lsotfea-ltag.gperf"
-      {"LAZ ", "Laz"},
-#line 210 "lsotfea-ltag.gperf"
-      {"ILE ", "Interlingue"},
-#line 139 "lsotfea-ltag.gperf"
-      {"EVK ", "Evenki"},
-#line 9 "lsotfea-ltag.gperf"
-      {"AFR ", "Afar"},
-#line 326 "lsotfea-ltag.gperf"
-      {"LUG ", "Ganda"},
-#line 602 "lsotfea-ltag.gperf"
-      {"ZHT ", "Chinese Traditional"},
-#line 150 "lsotfea-ltag.gperf"
-      {"FNE ", "Forest Nenets"},
-#line 357 "lsotfea-ltag.gperf"
-      {"MLG ", "Malagasy"},
-#line 533 "lsotfea-ltag.gperf"
-      {"TET ", "Tetum"},
-#line 8 "lsotfea-ltag.gperf"
-      {"AFK ", "Afrikaans"},
-#line 155 "lsotfea-ltag.gperf"
-      {"FRI ", "Frisian"},
-#line 131 "lsotfea-ltag.gperf"
-      {"ELL ", "Greek"},
-#line 431 "lsotfea-ltag.gperf"
-      {"PDC ", "Pennsylvania German"},
-#line 584 "lsotfea-ltag.gperf"
-      {"XKF ", "Khengkha"},
-#line 582 "lsotfea-ltag.gperf"
-      {"WTM ", "Mewati"},
-#line 114 "lsotfea-ltag.gperf"
-      {"DHG ", "Dhangu"},
-#line 158 "lsotfea-ltag.gperf"
-      {"FTA ", "Futa"},
-#line 553 "lsotfea-ltag.gperf"
-      {"TSJ ", "Tshangla"},
-#line 221 "lsotfea-ltag.gperf"
-      {"ISM ", "Inari Sami"},
-#line 583 "lsotfea-ltag.gperf"
-      {"XBD ", "Lü"},
-#line 212 "lsotfea-ltag.gperf"
-      {"INA ", "Interlingua"},
-#line 98 "lsotfea-ltag.gperf"
-      {"CPP ", "Creoles"},
-#line 448 "lsotfea-ltag.gperf"
-      {"QUZ ", "Quechua"},
-#line 308 "lsotfea-ltag.gperf"
-      {"LIJ ", "Ligurian"},
-#line 219 "lsotfea-ltag.gperf"
-      {"IRT ", "Irish Traditional"},
-#line 206 "lsotfea-ltag.gperf"
-      {"IBB ", "Ibibio"},
-#line 580 "lsotfea-ltag.gperf"
-      {"WLN ", "Walloon"},
-#line 145 "lsotfea-ltag.gperf"
-      {"FAT ", "Fanti"},
-#line 117 "lsotfea-ltag.gperf"
-      {"DIV ", "Divehi (Dhivehi, Maldivian)"},
-#line 547 "lsotfea-ltag.gperf"
-      {"TNG ", "Tonga"},
-#line 55 "lsotfea-ltag.gperf"
-      {"BLI ", "Baluchi"},
-#line 89 "lsotfea-ltag.gperf"
-      {"CHU ", "Chuvash"},
-#line 552 "lsotfea-ltag.gperf"
-      {"TSG ", "Tsonga"},
-#line 567 "lsotfea-ltag.gperf"
-      {"USB ", "Upper Sorbian"},
-#line 19 "lsotfea-ltag.gperf"
-      {"ARG ", "Aragonese"},
-#line 171 "lsotfea-ltag.gperf"
-      {"GKP ", "Kpelle (Guinea)"},
-#line 148 "lsotfea-ltag.gperf"
-      {"FLE ", "Dutch (Flemish)"},
-#line 160 "lsotfea-ltag.gperf"
-      {"FUV ", "Nigerian Fulfulde"},
-#line 7 "lsotfea-ltag.gperf"
-      {"ADY ", "Adyghe"},
-#line 539 "lsotfea-ltag.gperf"
-      {"THT ", "Tahitian"},
-#line 205 "lsotfea-ltag.gperf"
-      {"IBA ", "Iban"},
-#line 111 "lsotfea-ltag.gperf"
-      {"DEU ", "German"},
-#line 550 "lsotfea-ltag.gperf"
-      {"TPI ", "Tok Pisin"},
-#line 20 "lsotfea-ltag.gperf"
-      {"ARI ", "Aari"},
-#line 4 "lsotfea-ltag.gperf"
-      {"ABK ", "Abkhazian"},
-#line 25 "lsotfea-ltag.gperf"
-      {"AVR ", "Avar"},
-#line 13 "lsotfea-ltag.gperf"
-      {"ALS ", "Alsatian"},
-#line 121 "lsotfea-ltag.gperf"
-      {"DNJ ", "Dan"},
-#line 154 "lsotfea-ltag.gperf"
-      {"FRC ", "Cajun French"},
+      {"HYE0", "Armenian East"},
+#line 38 "lsotfea-ltag.gperf"
+      {"BAD0", "Banda"},
+#line 378 "lsotfea-ltag.gperf"
+      {"MOS ", "Mossi"},
+#line 240 "lsotfea-ltag.gperf"
+      {"KAB0", "Kabyle"},
+#line 377 "lsotfea-ltag.gperf"
+      {"MOR ", "Moroccan"},
+#line 282 "lsotfea-ltag.gperf"
+      {"KOS ", "Kosraean"},
+#line 346 "lsotfea-ltag.gperf"
+      {"MAR ", "Marathi"},
+#line 281 "lsotfea-ltag.gperf"
+      {"KOR ", "Korean"},
+#line 351 "lsotfea-ltag.gperf"
+      {"MCR ", "Moose Cree"},
+#line 244 "lsotfea-ltag.gperf"
+      {"KAR ", "Karachay"},
+#line 376 "lsotfea-ltag.gperf"
+      {"MON ", "Mon"},
+#line 373 "lsotfea-ltag.gperf"
+      {"MOH ", "Mohawk"},
+#line 344 "lsotfea-ltag.gperf"
+      {"MAN ", "Mansi"},
+#line 339 "lsotfea-ltag.gperf"
+      {"MAH ", "Marshallese"},
+#line 271 "lsotfea-ltag.gperf"
+      {"KMS ", "Komso"},
+#line 277 "lsotfea-ltag.gperf"
+      {"KON ", "Kikongo"},
+#line 275 "lsotfea-ltag.gperf"
+      {"KOH ", "Korean Old Hangul"},
+#line 350 "lsotfea-ltag.gperf"
+      {"MCH ", "Manchu"},
+#line 243 "lsotfea-ltag.gperf"
+      {"KAN ", "Kannada"},
+#line 383 "lsotfea-ltag.gperf"
+      {"MUS ", "Muscogee"},
+#line 374 "lsotfea-ltag.gperf"
+      {"MOK ", "Moksha"},
+#line 341 "lsotfea-ltag.gperf"
+      {"MAK ", "Makhuwa"},
+#line 68 "lsotfea-ltag.gperf"
+      {"BOS ", "Bosnian"},
+#line 276 "lsotfea-ltag.gperf"
+      {"KOK ", "Konkani"},
+#line 300 "lsotfea-ltag.gperf"
+      {"KUR ", "Kurdish"},
+#line 269 "lsotfea-ltag.gperf"
+      {"KMN ", "Kumaoni"},
+#line 42 "lsotfea-ltag.gperf"
+      {"BAR ", "Bavarian"},
+#line 600 "lsotfea-ltag.gperf"
+      {"YCR ", "Y-Cree"},
+#line 382 "lsotfea-ltag.gperf"
+      {"MUN ", "Mundari"},
+#line 47 "lsotfea-ltag.gperf"
+      {"BCR ", "Bible Cree"},
+#line 392 "lsotfea-ltag.gperf"
+      {"NAS ", "Naskapi"},
+#line 412 "lsotfea-ltag.gperf"
+      {"NOR ", "Norwegian"},
+#line 270 "lsotfea-ltag.gperf"
+      {"KMO ", "Komo"},
+#line 386 "lsotfea-ltag.gperf"
+      {"MYN ", "Mayan"},
+#line 41 "lsotfea-ltag.gperf"
+      {"BAN ", "Balinese"},
+#line 395 "lsotfea-ltag.gperf"
+      {"NCR ", "N-Cree"},
+#line 375 "lsotfea-ltag.gperf"
+      {"MOL ", "Moldavian"},
+#line 46 "lsotfea-ltag.gperf"
+      {"BCH ", "Bench"},
+#line 342 "lsotfea-ltag.gperf"
+      {"MAL ", "Malayalam"},
+#line 597 "lsotfea-ltag.gperf"
+      {"YAO ", "Yao"},
+#line 596 "lsotfea-ltag.gperf"
+      {"YAK ", "Sakha"},
+#line 390 "lsotfea-ltag.gperf"
+      {"NAN ", "Nanai"},
+#line 389 "lsotfea-ltag.gperf"
+      {"NAH ", "Nahuatl"},
+#line 242 "lsotfea-ltag.gperf"
+      {"KAL ", "Kalenjin"},
+#line 193 "lsotfea-ltag.gperf"
+      {"HAR ", "Harauti"},
 #line 303 "lsotfea-ltag.gperf"
-      {"LAT ", "Latin"},
-#line 307 "lsotfea-ltag.gperf"
-      {"LEZ ", "Lezgi"},
-#line 137 "lsotfea-ltag.gperf"
-      {"ETI ", "Estonian"},
-#line 436 "lsotfea-ltag.gperf"
-      {"PLG ", "Palaung"},
-#line 37 "lsotfea-ltag.gperf"
-      {"BBC ", "Batak Toba"},
-#line 147 "lsotfea-ltag.gperf"
-      {"FJI ", "Fijian"},
-#line 120 "lsotfea-ltag.gperf"
-      {"DNG ", "Dangme"},
-#line 227 "lsotfea-ltag.gperf"
-      {"JBO ", "Lojban"},
-#line 214 "lsotfea-ltag.gperf"
-      {"ING ", "Ingush"},
-#line 229 "lsotfea-ltag.gperf"
-      {"JII ", "Yiddish"},
-#line 581 "lsotfea-ltag.gperf"
-      {"WLF ", "Wolof"},
-#line 320 "lsotfea-ltag.gperf"
-      {"LSB ", "Lower Sorbian"},
-#line 58 "lsotfea-ltag.gperf"
-      {"BLT ", "Balti"},
+      {"KYK ", "Koryak"},
+#line 479 "lsotfea-ltag.gperf"
+      {"SAS ", "Sasak"},
+#line 496 "lsotfea-ltag.gperf"
+      {"SCS ", "North Slavey"},
+#line 580 "lsotfea-ltag.gperf"
+      {"VOL ", "Volapük"},
+#line 384 "lsotfea-ltag.gperf"
+      {"MWL ", "Mirandese"},
+#line 478 "lsotfea-ltag.gperf"
+      {"SAN ", "Sanskrit"},
+#line 298 "lsotfea-ltag.gperf"
+      {"KUL ", "Kulvi"},
+#line 482 "lsotfea-ltag.gperf"
+      {"SCN ", "Sicilian"},
+#line 203 "lsotfea-ltag.gperf"
+      {"HMN ", "Hmong"},
+#line 40 "lsotfea-ltag.gperf"
+      {"BAL ", "Balkar"},
+#line 419 "lsotfea-ltag.gperf"
+      {"NYN ", "Norwegian Nynorsk (Nynorsk, Norwegian)"},
 #line 519 "lsotfea-ltag.gperf"
-      {"SXU ", "Upper Saxon"},
-#line 446 "lsotfea-ltag.gperf"
-      {"QUC ", "K’iche’"},
-#line 312 "lsotfea-ltag.gperf"
-      {"LJP ", "Lampung"},
-#line 130 "lsotfea-ltag.gperf"
-      {"EFI ", "Efik"},
+      {"SUR ", "Suri"},
+#line 483 "lsotfea-ltag.gperf"
+      {"SCO ", "Scots"},
+#line 204 "lsotfea-ltag.gperf"
+      {"HMO ", "Hiri Motu"},
+#line 209 "lsotfea-ltag.gperf"
+      {"HUN ", "Hungarian"},
+#line 528 "lsotfea-ltag.gperf"
+      {"SYR ", "Syriac"},
+#line 67 "lsotfea-ltag.gperf"
+      {"BML ", "Bamileke"},
+#line 529 "lsotfea-ltag.gperf"
+      {"SYRE", "Syriac, Estrangela script-variant (equivalent to ISO 15924 'Syre')"},
+#line 410 "lsotfea-ltag.gperf"
+      {"NOE ", "Nimadi"},
+#line 500 "lsotfea-ltag.gperf"
+      {"SMO ", "Samoan"},
 #line 518 "lsotfea-ltag.gperf"
-      {"SXT ", "Sutu"},
-#line 228 "lsotfea-ltag.gperf"
-      {"JCT ", "Krymchak"},
+      {"SUN ", "Sundanese"},
+#line 556 "lsotfea-ltag.gperf"
+      {"TOD0", "Toma"},
+#line 192 "lsotfea-ltag.gperf"
+      {"HAL ", "Halam (Falam Chin)"},
+#line 517 "lsotfea-ltag.gperf"
+      {"SUK ", "Sukuma"},
+#line 523 "lsotfea-ltag.gperf"
+      {"SWK ", "Swahili"},
+#line 337 "lsotfea-ltag.gperf"
+      {"MAD ", "Madura"},
+#line 274 "lsotfea-ltag.gperf"
+      {"KOD ", "Kodagu"},
+#line 459 "lsotfea-ltag.gperf"
+      {"RAR ", "Rarotongan"},
+#line 261 "lsotfea-ltag.gperf"
+      {"KIS ", "Kisii"},
+#line 289 "lsotfea-ltag.gperf"
+      {"KRN ", "Karen"},
+#line 461 "lsotfea-ltag.gperf"
+      {"RCR ", "R-Cree"},
+#line 260 "lsotfea-ltag.gperf"
+      {"KIR ", "Kirghiz (Kyrgyz)"},
+#line 499 "lsotfea-ltag.gperf"
+      {"SML ", "Somali"},
+#line 467 "lsotfea-ltag.gperf"
+      {"RMS ", "Romansh"},
+#line 611 "lsotfea-ltag.gperf"
+      {"ZUL ", "Zulu"},
+#line 358 "lsotfea-ltag.gperf"
+      {"MIN ", "Minangkabau"},
+#line 286 "lsotfea-ltag.gperf"
+      {"KRK ", "Karakalpak"},
+#line 104 "lsotfea-ltag.gperf"
+      {"COS ", "Corsican"},
+#line 476 "lsotfea-ltag.gperf"
+      {"RUS ", "Russian"},
+#line 103 "lsotfea-ltag.gperf"
+      {"COR ", "Cornish"},
+#line 54 "lsotfea-ltag.gperf"
+      {"BGR ", "Bulgarian"},
+#line 527 "lsotfea-ltag.gperf"
+      {"SYL ", "Sylheti"},
+#line 210 "lsotfea-ltag.gperf"
+      {"HYE ", "Armenian"},
+#line 581 "lsotfea-ltag.gperf"
+      {"VRO ", "Võro"},
+#line 37 "lsotfea-ltag.gperf"
+      {"BAD ", "Badaga"},
+#line 59 "lsotfea-ltag.gperf"
+      {"BIS ", "Bislama"},
+#line 259 "lsotfea-ltag.gperf"
+      {"KIK ", "Kikuyu (Gikuyu)"},
+#line 71 "lsotfea-ltag.gperf"
+      {"BRH ", "Brahui"},
+#line 403 "lsotfea-ltag.gperf"
+      {"NGR ", "Nagari"},
+#line 387 "lsotfea-ltag.gperf"
+      {"MZN ", "Mazanderani"},
+#line 474 "lsotfea-ltag.gperf"
+      {"RUN ", "Rundi"},
+#line 101 "lsotfea-ltag.gperf"
+      {"CMR ", "Comorian"},
+#line 405 "lsotfea-ltag.gperf"
+      {"NIS ", "Nisi"},
+#line 287 "lsotfea-ltag.gperf"
+      {"KRL ", "Karelian"},
+#line 81 "lsotfea-ltag.gperf"
+      {"CAK ", "Kaqchikel"},
+#line 434 "lsotfea-ltag.gperf"
+      {"PAS ", "Pashto"},
+#line 488 "lsotfea-ltag.gperf"
+      {"SGS ", "Samogitian"},
+#line 513 "lsotfea-ltag.gperf"
+      {"SRR ", "Serer"},
+#line 537 "lsotfea-ltag.gperf"
+      {"TCR ", "TH-Cree"},
+#line 239 "lsotfea-ltag.gperf"
+      {"KAB ", "Kabardian"},
+#line 251 "lsotfea-ltag.gperf"
+      {"KGE ", "Khutsuri Georgian"},
+#line 57 "lsotfea-ltag.gperf"
+      {"BIK ", "Bikol"},
+#line 530 "lsotfea-ltag.gperf"
+      {"SYRJ", "Syriac, Western script-variant (equivalent to ISO 15924 'Syrj')"},
+#line 604 "lsotfea-ltag.gperf"
+      {"ZGH ", "Standard Moroccan Tamazight"},
+#line 477 "lsotfea-ltag.gperf"
+      {"SAD ", "Sadri"},
+#line 445 "lsotfea-ltag.gperf"
+      {"PMS ", "Piemontese"},
+#line 448 "lsotfea-ltag.gperf"
+      {"PON ", "Pohnpeian"},
+#line 447 "lsotfea-ltag.gperf"
+      {"POH ", "Pocomchi"},
+#line 431 "lsotfea-ltag.gperf"
+      {"PAN ", "Punjabi"},
+#line 268 "lsotfea-ltag.gperf"
+      {"KMB ", "Kamba"},
+#line 355 "lsotfea-ltag.gperf"
+      {"MER ", "Meru"},
+#line 201 "lsotfea-ltag.gperf"
+      {"HIN ", "Hindi"},
+#line 177 "lsotfea-ltag.gperf"
+      {"GIL0", "Kiribati (Gilbertese)"},
+#line 113 "lsotfea-ltag.gperf"
+      {"CUK ", "San Blas Kuna"},
+#line 551 "lsotfea-ltag.gperf"
+      {"TMN ", "Temne"},
+#line 550 "lsotfea-ltag.gperf"
+      {"TMH ", "Tamashek"},
+#line 512 "lsotfea-ltag.gperf"
+      {"SRK ", "Saraiki"},
+#line 487 "lsotfea-ltag.gperf"
+      {"SGO ", "Sango"},
+#line 70 "lsotfea-ltag.gperf"
+      {"BRE ", "Breton"},
+#line 172 "lsotfea-ltag.gperf"
+      {"GAR ", "Garshuni"},
+#line 354 "lsotfea-ltag.gperf"
+      {"MEN ", "Me’en"},
+#line 58 "lsotfea-ltag.gperf"
+      {"BIL ", "Bilen"},
+#line 183 "lsotfea-ltag.gperf"
+      {"GON ", "Gondi"},
+#line 343 "lsotfea-ltag.gperf"
+      {"MAM ", "Mam"},
+#line 353 "lsotfea-ltag.gperf"
+      {"MDR ", "Mandar"},
+#line 278 "lsotfea-ltag.gperf"
+      {"KOM ", "Komi"},
+#line 66 "lsotfea-ltag.gperf"
+      {"BMB ", "Bambara (Bamanankan)"},
+#line 250 "lsotfea-ltag.gperf"
+      {"KEK ", "Kekchi"},
+#line 578 "lsotfea-ltag.gperf"
+      {"VEN ", "Venda"},
+#line 451 "lsotfea-ltag.gperf"
+      {"PWO ", "Western Pwo Karen"},
+#line 429 "lsotfea-ltag.gperf"
+      {"PAL ", "Pali"},
+#line 200 "lsotfea-ltag.gperf"
+      {"HIL ", "Hiligaynon"},
+#line 51 "lsotfea-ltag.gperf"
+      {"BEN ", "Bengali"},
+#line 422 "lsotfea-ltag.gperf"
+      {"OCR ", "Oji-Cree"},
+#line 299 "lsotfea-ltag.gperf"
+      {"KUM ", "Kumyk"},
+#line 206 "lsotfea-ltag.gperf"
+      {"HO  ", "Ho"},
+#line 563 "lsotfea-ltag.gperf"
+      {"TUL ", "Tumbuka"},
+#line 53 "lsotfea-ltag.gperf"
+      {"BGQ ", "Bagri"},
+#line 199 "lsotfea-ltag.gperf"
+      {"HER ", "Herero"},
+#line 399 "lsotfea-ltag.gperf"
+      {"NDS ", "Low Saxon"},
+#line 171 "lsotfea-ltag.gperf"
+      {"GAL ", "Galician"},
+#line 150 "lsotfea-ltag.gperf"
+      {"FAN0", "Fang"},
+#line 107 "lsotfea-ltag.gperf"
+      {"CRR ", "Carrier"},
+#line 296 "lsotfea-ltag.gperf"
+      {"KUA ", "Kuanyama"},
+#line 347 "lsotfea-ltag.gperf"
+      {"MAW ", "Marwari"},
+#line 532 "lsotfea-ltag.gperf"
+      {"SZL ", "Silesian"},
+#line 169 "lsotfea-ltag.gperf"
+      {"GAE ", "Scottish Gaelic (Gaelic)"},
+#line 352 "lsotfea-ltag.gperf"
+      {"MDE ", "Mende"},
+#line 49 "lsotfea-ltag.gperf"
+      {"BEL ", "Belarussian"},
+#line 247 "lsotfea-ltag.gperf"
+      {"KDE ", "Makonde"},
+#line 484 "lsotfea-ltag.gperf"
+      {"SEK ", "Sekota"},
+#line 543 "lsotfea-ltag.gperf"
+      {"TGR ", "Tigre"},
+#line 385 "lsotfea-ltag.gperf"
+      {"MWW ", "Hmong Daw"},
+#line 555 "lsotfea-ltag.gperf"
+      {"TOD ", "Todo"},
+#line 418 "lsotfea-ltag.gperf"
+      {"NYM ", "Nyamwezi"},
+#line 439 "lsotfea-ltag.gperf"
+      {"PGR ", "Polytonic Greek"},
+#line 91 "lsotfea-ltag.gperf"
+      {"CHK0", "Chuukese"},
+#line 511 "lsotfea-ltag.gperf"
+      {"SRD ", "Sardinian"},
 #line 115 "lsotfea-ltag.gperf"
-      {"DHV ", "Divehi (Dhivehi, Maldivian), (deprecated)"},
-#line 226 "lsotfea-ltag.gperf"
-      {"JAV ", "Javanese"},
-#line 133 "lsotfea-ltag.gperf"
-      {"ENG ", "English"},
-#line 135 "lsotfea-ltag.gperf"
-      {"ESP ", "Spanish"},
-#line 321 "lsotfea-ltag.gperf"
-      {"LSM ", "Lule Sami"},
-#line 319 "lsotfea-ltag.gperf"
-      {"LRC ", "Luri"},
-#line 22 "lsotfea-ltag.gperf"
-      {"ASM ", "Assamese"},
-#line 453 "lsotfea-ltag.gperf"
-      {"RBU ", "Russian Buriat"},
-#line 491 "lsotfea-ltag.gperf"
-      {"SLV ", "Slovenian"},
-#line 12 "lsotfea-ltag.gperf"
-      {"AKA ", "Akan"},
-#line 323 "lsotfea-ltag.gperf"
-      {"LTZ ", "Luxembourgish"},
-#line 217 "lsotfea-ltag.gperf"
-      {"IPPH", "Phonetic transcription—IPA conventions"},
-#line 3 "lsotfea-ltag.gperf"
-      {"ABA ", "Abaza"},
-#line 127 "lsotfea-ltag.gperf"
-      {"EBI ", "Ebira"},
-#line 215 "lsotfea-ltag.gperf"
-      {"INU ", "Inuktitut"},
-#line 16 "lsotfea-ltag.gperf"
-      {"ANG ", "Anglo-Saxon"},
-#line 136 "lsotfea-ltag.gperf"
-      {"ESU ", "Central Yupik"},
-#line 313 "lsotfea-ltag.gperf"
-      {"LKI ", "Laki"},
-#line 17 "lsotfea-ltag.gperf"
-      {"APPH", "Phonetic transcription—Americanist conventions"},
-#line 329 "lsotfea-ltag.gperf"
-      {"LVI ", "Latvian"},
+      {"DAR ", "Dargwa"},
+#line 74 "lsotfea-ltag.gperf"
+      {"BRX ", "Bodo"},
+#line 542 "lsotfea-ltag.gperf"
+      {"TGN ", "Tongan"},
+#line 117 "lsotfea-ltag.gperf"
+      {"DCR ", "Woods Cree"},
+#line 437 "lsotfea-ltag.gperf"
+      {"PCD ", "Picard"},
+#line 202 "lsotfea-ltag.gperf"
+      {"HMA ", "High Mari"},
+#line 255 "lsotfea-ltag.gperf"
+      {"KHS ", "Khanty-Shurishkar"},
+#line 292 "lsotfea-ltag.gperf"
+      {"KSH0", "Ripuarian"},
+#line 558 "lsotfea-ltag.gperf"
+      {"TRK ", "Turkish"},
+#line 114 "lsotfea-ltag.gperf"
+      {"DAN ", "Danish"},
+#line 492 "lsotfea-ltag.gperf"
+      {"SID ", "Sidamo"},
 #line 449 "lsotfea-ltag.gperf"
-      {"QVI ", "Quechua (Ecuador)"},
-#line 23 "lsotfea-ltag.gperf"
-      {"AST ", "Asturian"},
+      {"PRO ", "Provençal / Old Provençal"},
+#line 485 "lsotfea-ltag.gperf"
+      {"SEL ", "Selkup"},
+#line 441 "lsotfea-ltag.gperf"
+      {"PIH ", "Norfolk"},
+#line 106 "lsotfea-ltag.gperf"
+      {"CRE ", "Cree"},
+#line 195 "lsotfea-ltag.gperf"
+      {"HAW ", "Hawaiian"},
+#line 168 "lsotfea-ltag.gperf"
+      {"GAD ", "Ga"},
+#line 522 "lsotfea-ltag.gperf"
+      {"SWA ", "Swadaya Aramaic"},
+#line 184 "lsotfea-ltag.gperf"
+      {"GRN ", "Greenlandic"},
+#line 381 "lsotfea-ltag.gperf"
+      {"MTS ", "Maltese"},
+#line 288 "lsotfea-ltag.gperf"
+      {"KRM ", "Karaim"},
+#line 132 "lsotfea-ltag.gperf"
+      {"DUN ", "Dungan"},
+#line 253 "lsotfea-ltag.gperf"
+      {"KHK ", "Khanty-Kazim"},
+#line 302 "lsotfea-ltag.gperf"
+      {"KUY ", "Kuy"},
+#line 185 "lsotfea-ltag.gperf"
+      {"GRO ", "Garo"},
+#line 469 "lsotfea-ltag.gperf"
+      {"ROM ", "Romanian"},
+#line 541 "lsotfea-ltag.gperf"
+      {"TGL ", "Tagalog"},
+#line 230 "lsotfea-ltag.gperf"
+      {"IWR ", "Hebrew"},
+#line 569 "lsotfea-ltag.gperf"
+      {"TZO ", "Tzotzil"},
+#line 175 "lsotfea-ltag.gperf"
+      {"GIH ", "Githabul"},
+#line 533 "lsotfea-ltag.gperf"
+      {"TAB ", "Tabasaran"},
+#line 380 "lsotfea-ltag.gperf"
+      {"MTH ", "Maithili"},
+#line 510 "lsotfea-ltag.gperf"
+      {"SRB ", "Serbian"},
+#line 340 "lsotfea-ltag.gperf"
+      {"MAJ ", "Majang"},
+#line 442 "lsotfea-ltag.gperf"
+      {"PIL ", "Filipino"},
+#line 608 "lsotfea-ltag.gperf"
+      {"ZHS ", "Chinese Simplified"},
+#line 73 "lsotfea-ltag.gperf"
+      {"BRM ", "Burmese"},
+#line 56 "lsotfea-ltag.gperf"
+      {"BHO ", "Bhojpuri"},
+#line 78 "lsotfea-ltag.gperf"
+      {"BTS ", "Batak Simalungun"},
+#line 196 "lsotfea-ltag.gperf"
+      {"HAY ", "Haya"},
+#line 491 "lsotfea-ltag.gperf"
+      {"SIB ", "Sibe"},
+#line 135 "lsotfea-ltag.gperf"
+      {"ECR ", "Eastern Cree"},
+#line 531 "lsotfea-ltag.gperf"
+      {"SYRN", "Syriac, Eastern script-variant (equivalent to ISO 15924 'Syrn')"},
+#line 425 "lsotfea-ltag.gperf"
+      {"ORO ", "Oromo"},
+#line 602 "lsotfea-ltag.gperf"
+      {"YIM ", "Yi Modern"},
+#line 481 "lsotfea-ltag.gperf"
+      {"SAY ", "Sayisi"},
+#line 249 "lsotfea-ltag.gperf"
+      {"KEB ", "Kebena"},
+#line 606 "lsotfea-ltag.gperf"
+      {"ZHH ", "Chinese, Hong Kong SAR"},
+#line 433 "lsotfea-ltag.gperf"
+      {"PAP0", "Papiamentu"},
+#line 473 "lsotfea-ltag.gperf"
+      {"RUA ", "Kinyarwanda"},
+#line 176 "lsotfea-ltag.gperf"
+      {"GIL ", "Gilyak"},
+#line 490 "lsotfea-ltag.gperf"
+      {"SHN ", "Shan"},
+#line 345 "lsotfea-ltag.gperf"
+      {"MAP ", "Mapudungun"},
+#line 280 "lsotfea-ltag.gperf"
+      {"KOP ", "Komi-Permyak"},
+#line 402 "lsotfea-ltag.gperf"
+      {"NGA ", "Ngbaka"},
+#line 126 "lsotfea-ltag.gperf"
+      {"DJR0", "Djambarrpuyngu"},
+#line 535 "lsotfea-ltag.gperf"
+      {"TAM ", "Tamil"},
+#line 338 "lsotfea-ltag.gperf"
+      {"MAG ", "Magahi"},
+#line 430 "lsotfea-ltag.gperf"
+      {"PAM ", "Pampangan"},
+#line 188 "lsotfea-ltag.gperf"
+      {"GUF ", "Gupapuyngu"},
+#line 139 "lsotfea-ltag.gperf"
+      {"EMK ", "Eastern Maninkakan"},
+#line 417 "lsotfea-ltag.gperf"
+      {"NTO ", "Esperanto"},
+#line 283 "lsotfea-ltag.gperf"
+      {"KOZ ", "Komi-Zyrian"},
+#line 263 "lsotfea-ltag.gperf"
+      {"KJD ", "Southern Kiwai"},
+#line 246 "lsotfea-ltag.gperf"
+      {"KAZ ", "Kazakh"},
+#line 120 "lsotfea-ltag.gperf"
+      {"DGR ", "Dogri"},
+#line 427 "lsotfea-ltag.gperf"
+      {"PAA ", "Palestinian Aramaic"},
+#line 486 "lsotfea-ltag.gperf"
+      {"SGA ", "Old Irish"},
+#line 562 "lsotfea-ltag.gperf"
+      {"TUM ", "Tulu"},
+#line 598 "lsotfea-ltag.gperf"
+      {"YAP ", "Yapese"},
+#line 464 "lsotfea-ltag.gperf"
+      {"RIF ", "Tarifit"},
+#line 272 "lsotfea-ltag.gperf"
+      {"KMZ ", "Khorasani Turkic"},
+#line 539 "lsotfea-ltag.gperf"
+      {"TEL ", "Telugu"},
+#line 420 "lsotfea-ltag.gperf"
+      {"NZA ", "Mbembe Tigon"},
+#line 159 "lsotfea-ltag.gperf"
+      {"FOS ", "Faroese"},
+#line 39 "lsotfea-ltag.gperf"
+      {"BAG ", "Baghelkhandi"},
+#line 470 "lsotfea-ltag.gperf"
+      {"ROY ", "Romany"},
+#line 391 "lsotfea-ltag.gperf"
+      {"NAP ", "Neapolitan"},
+#line 561 "lsotfea-ltag.gperf"
+      {"TUA ", "Turoyo Aramaic"},
+#line 151 "lsotfea-ltag.gperf"
+      {"FAR ", "Persian"},
+#line 119 "lsotfea-ltag.gperf"
+      {"DGO ", "Dogri"},
+#line 248 "lsotfea-ltag.gperf"
+      {"KEA ", "Kabuverdianu (Crioulo)"},
+#line 411 "lsotfea-ltag.gperf"
+      {"NOG ", "Nogai"},
+#line 396 "lsotfea-ltag.gperf"
+      {"NDB ", "Ndebele"},
+#line 612 "lsotfea-ltag.gperf"
+      {"ZZA ", "Zazaki"},
+#line 388 "lsotfea-ltag.gperf"
+      {"NAG ", "Naga-Assamese"},
+#line 84 "lsotfea-ltag.gperf"
+      {"CCHN", "Chinantec"},
+#line 158 "lsotfea-ltag.gperf"
+      {"FON ", "Fon"},
+#line 584 "lsotfea-ltag.gperf"
+      {"WAR ", "Waray-Waray"},
+#line 149 "lsotfea-ltag.gperf"
+      {"FAN ", "French Antillean"},
+#line 468 "lsotfea-ltag.gperf"
+      {"RMY ", "Vlax Romani"},
+#line 50 "lsotfea-ltag.gperf"
+      {"BEM ", "Bemba"},
+#line 585 "lsotfea-ltag.gperf"
+      {"WCR ", "West-Cree"},
+#line 507 "lsotfea-ltag.gperf"
+      {"SOP ", "Songe"},
+#line 148 "lsotfea-ltag.gperf"
+      {"EWE ", "Ewe"},
+#line 79 "lsotfea-ltag.gperf"
+      {"BUG ", "Bugis"},
+#line 116 "lsotfea-ltag.gperf"
+      {"DAX ", "Dayi"},
+#line 94 "lsotfea-ltag.gperf"
+      {"CHR ", "Cherokee"},
+#line 133 "lsotfea-ltag.gperf"
+      {"DZN ", "Dzongkha"},
+#line 506 "lsotfea-ltag.gperf"
+      {"SOG ", "Sodo Gurage"},
+#line 197 "lsotfea-ltag.gperf"
+      {"HAZ ", "Hazaragi"},
+#line 357 "lsotfea-ltag.gperf"
+      {"MFE ", "Morisyen"},
+#line 186 "lsotfea-ltag.gperf"
+      {"GUA ", "Guarani"},
+#line 361 "lsotfea-ltag.gperf"
+      {"MKR ", "Makasar"},
+#line 297 "lsotfea-ltag.gperf"
+      {"KUI ", "Kui"},
+#line 88 "lsotfea-ltag.gperf"
+      {"CHH ", "Chattisgarhi"},
+#line 173 "lsotfea-ltag.gperf"
+      {"GAW ", "Garhwali"},
+#line 273 "lsotfea-ltag.gperf"
+      {"KNR ", "Kanuri"},
+#line 547 "lsotfea-ltag.gperf"
+      {"TIB ", "Tibetan"},
+#line 92 "lsotfea-ltag.gperf"
+      {"CHO ", "Choctaw"},
+#line 90 "lsotfea-ltag.gperf"
+      {"CHK ", "Chukchi"},
+#line 458 "lsotfea-ltag.gperf"
+      {"RAJ ", "Rajasthani"},
+#line 463 "lsotfea-ltag.gperf"
+      {"RIA ", "Riang"},
+#line 266 "lsotfea-ltag.gperf"
+      {"KKN ", "Kokni"},
+#line 603 "lsotfea-ltag.gperf"
+      {"ZEA ", "Zealandic"},
+#line 371 "lsotfea-ltag.gperf"
+      {"MNK ", "Maninka"},
+#line 145 "lsotfea-ltag.gperf"
+      {"EUQ ", "Basque"},
+#line 291 "lsotfea-ltag.gperf"
+      {"KSH ", "Kashmiri"},
+#line 524 "lsotfea-ltag.gperf"
+      {"SWZ ", "Swati"},
+#line 191 "lsotfea-ltag.gperf"
+      {"HAI ", "Haitian (Haitian Creole)"},
+#line 509 "lsotfea-ltag.gperf"
+      {"SQI ", "Albanian"},
+#line 401 "lsotfea-ltag.gperf"
+      {"NEW ", "Newari"},
+#line 516 "lsotfea-ltag.gperf"
+      {"STQ ", "Saterland Frisian"},
+#line 166 "lsotfea-ltag.gperf"
+      {"FUL ", "Fulah"},
+#line 440 "lsotfea-ltag.gperf"
+      {"PHK ", "Phake"},
+#line 538 "lsotfea-ltag.gperf"
+      {"TDD ", "Dehong Dai"},
+#line 86 "lsotfea-ltag.gperf"
+      {"CHE ", "Chechen"},
+#line 85 "lsotfea-ltag.gperf"
+      {"CEB ", "Cebuano"},
+#line 75 "lsotfea-ltag.gperf"
+      {"BSH ", "Bashkir"},
+#line 359 "lsotfea-ltag.gperf"
+      {"MIZ ", "Mizo"},
+#line 123 "lsotfea-ltag.gperf"
+      {"DIQ ", "Dimli"},
+#line 494 "lsotfea-ltag.gperf"
+      {"SKS ", "Skolt Sami"},
+#line 254 "lsotfea-ltag.gperf"
+      {"KHM ", "Khmer"},
+#line 534 "lsotfea-ltag.gperf"
+      {"TAJ ", "Tajiki"},
+#line 408 "lsotfea-ltag.gperf"
+      {"NKO ", "N’Ko"},
+#line 76 "lsotfea-ltag.gperf"
+      {"BSK ", "Burushaski"},
+#line 102 "lsotfea-ltag.gperf"
+      {"COP ", "Coptic"},
+#line 284 "lsotfea-ltag.gperf"
+      {"KPL ", "Kpelle"},
+#line 475 "lsotfea-ltag.gperf"
+      {"RUP ", "Aromanian"},
+#line 568 "lsotfea-ltag.gperf"
+      {"TZM ", "Tamazight"},
+#line 312 "lsotfea-ltag.gperf"
+      {"LCR ", "L-Cree"},
+#line 415 "lsotfea-ltag.gperf"
+      {"NSO ", "Sotho, Northern"},
+#line 348 "lsotfea-ltag.gperf"
+      {"MBN ", "Mbundu"},
+#line 252 "lsotfea-ltag.gperf"
+      {"KHA ", "Khakass"},
+#line 504 "lsotfea-ltag.gperf"
+      {"SNH ", "Sinhala (Sinhalese)"},
+#line 379 "lsotfea-ltag.gperf"
+      {"MRI ", "Maori"},
+#line 306 "lsotfea-ltag.gperf"
+      {"LAH ", "Lahuli"},
+#line 13 "lsotfea-ltag.gperf"
+      {"ACR ", "Achi"},
+#line 349 "lsotfea-ltag.gperf"
+      {"MBO ", "Mbo"},
+#line 285 "lsotfea-ltag.gperf"
+      {"KRI ", "Krio"},
+#line 216 "lsotfea-ltag.gperf"
+      {"IDO ", "Ido"},
+#line 505 "lsotfea-ltag.gperf"
+      {"SNK ", "Soninke"},
+#line 309 "lsotfea-ltag.gperf"
+      {"LAO ", "Lao"},
+#line 48 "lsotfea-ltag.gperf"
+      {"BDY ", "Bandjalang"},
+#line 307 "lsotfea-ltag.gperf"
+      {"LAK ", "Lak"},
+#line 407 "lsotfea-ltag.gperf"
+      {"NKL ", "Nyankole"},
+#line 45 "lsotfea-ltag.gperf"
+      {"BBR ", "Berber"},
+#line 12 "lsotfea-ltag.gperf"
+      {"ACH ", "Acholi"},
+#line 366 "lsotfea-ltag.gperf"
+      {"MLR ", "Malayalam Reformed"},
+#line 432 "lsotfea-ltag.gperf"
+      {"PAP ", "Palpa"},
+#line 153 "lsotfea-ltag.gperf"
+      {"FIN ", "Finnish"},
+#line 323 "lsotfea-ltag.gperf"
+      {"LMO ", "Lombard"},
+#line 334 "lsotfea-ltag.gperf"
+      {"LUH ", "Luyia"},
+#line 22 "lsotfea-ltag.gperf"
+      {"AMH ", "Amharic"},
+#line 428 "lsotfea-ltag.gperf"
+      {"PAG ", "Pangasinan"},
+#line 258 "lsotfea-ltag.gperf"
+      {"KHW ", "Khowar"},
+#line 125 "lsotfea-ltag.gperf"
+      {"DJR ", "Zarma"},
+#line 365 "lsotfea-ltag.gperf"
+      {"MLN ", "Malinke"},
+#line 502 "lsotfea-ltag.gperf"
+      {"SNA0", "Shona"},
+#line 72 "lsotfea-ltag.gperf"
+      {"BRI ", "Braj Bhasha"},
+#line 335 "lsotfea-ltag.gperf"
+      {"LUO ", "Luo"},
+#line 368 "lsotfea-ltag.gperf"
+      {"MND ", "Mandinka"},
+#line 360 "lsotfea-ltag.gperf"
+      {"MKD ", "Macedonian"},
+#line 189 "lsotfea-ltag.gperf"
+      {"GUJ ", "Gujarati"},
+#line 493 "lsotfea-ltag.gperf"
+      {"SIG ", "Silte Gurage"},
+#line 572 "lsotfea-ltag.gperf"
+      {"UMB ", "Umbundu"},
+#line 241 "lsotfea-ltag.gperf"
+      {"KAC ", "Kachchi"},
+#line 514 "lsotfea-ltag.gperf"
+      {"SSL ", "South Slavey"},
+#line 163 "lsotfea-ltag.gperf"
+      {"FRL ", "Friulian"},
+#line 544 "lsotfea-ltag.gperf"
+      {"TGY ", "Tigrinya"},
+#line 605 "lsotfea-ltag.gperf"
+      {"ZHA ", "Zhuang"},
+#line 182 "lsotfea-ltag.gperf"
+      {"GOG ", "Gogo"},
+#line 245 "lsotfea-ltag.gperf"
+      {"KAT ", "Georgian"},
+#line 170 "lsotfea-ltag.gperf"
+      {"GAG ", "Gagauz"},
+#line 198 "lsotfea-ltag.gperf"
+      {"HBN ", "Hammer-Banna"},
+#line 136 "lsotfea-ltag.gperf"
+      {"EDO ", "Edo"},
+#line 567 "lsotfea-ltag.gperf"
+      {"TYZ ", "Tày"},
+#line 207 "lsotfea-ltag.gperf"
+      {"HRI ", "Harari"},
+#line 64 "lsotfea-ltag.gperf"
+      {"BLN ", "Balante"},
+#line 416 "lsotfea-ltag.gperf"
+      {"NTA ", "Northern Tai"},
+#line 301 "lsotfea-ltag.gperf"
+      {"KUU ", "Kurukh"},
+#line 215 "lsotfea-ltag.gperf"
+      {"IJO ", "Ijo languages"},
+#line 43 "lsotfea-ltag.gperf"
+      {"BAU ", "Baulé"},
+#line 180 "lsotfea-ltag.gperf"
+      {"GMZ ", "Gumuz"},
+#line 372 "lsotfea-ltag.gperf"
+      {"MNX ", "Manx"},
+#line 304 "lsotfea-ltag.gperf"
+      {"KYU ", "Western Kayah"},
+#line 63 "lsotfea-ltag.gperf"
+      {"BLK ", "Pa’o Karen"},
+#line 232 "lsotfea-ltag.gperf"
+      {"JAN ", "Japanese"},
+#line 400 "lsotfea-ltag.gperf"
+      {"NEP ", "Nepali"},
+#line 363 "lsotfea-ltag.gperf"
+      {"MLE ", "Male"},
+#line 454 "lsotfea-ltag.gperf"
+      {"QUH ", "Quechua (Bolivia)"},
+#line 393 "lsotfea-ltag.gperf"
+      {"NAU ", "Nauruan"},
+#line 457 "lsotfea-ltag.gperf"
+      {"QWH ", "Quechua (Peru)"},
+#line 573 "lsotfea-ltag.gperf"
+      {"URD ", "Urdu"},
+#line 190 "lsotfea-ltag.gperf"
+      {"GUZ ", "Gusii"},
+#line 356 "lsotfea-ltag.gperf"
+      {"MFA ", "Pattani Malay"},
+#line 582 "lsotfea-ltag.gperf"
+      {"WA  ", "Wa"},
+#line 566 "lsotfea-ltag.gperf"
+      {"TWI ", "Twi"},
+#line 610 "lsotfea-ltag.gperf"
+      {"ZND ", "Zande"},
+#line 205 "lsotfea-ltag.gperf"
+      {"HND ", "Hindko"},
+#line 194 "lsotfea-ltag.gperf"
+      {"HAU ", "Hausa"},
+#line 100 "lsotfea-ltag.gperf"
+      {"CJM ", "Eastern Cham"},
+#line 413 "lsotfea-ltag.gperf"
+      {"NOV ", "Novial"},
+#line 503 "lsotfea-ltag.gperf"
+      {"SND ", "Sindhi"},
+#line 394 "lsotfea-ltag.gperf"
+      {"NAV ", "Navajo"},
+#line 305 "lsotfea-ltag.gperf"
+      {"LAD ", "Ladin"},
+#line 318 "lsotfea-ltag.gperf"
+      {"LIS ", "Lisu"},
+#line 398 "lsotfea-ltag.gperf"
+      {"NDG ", "Ndonga"},
+#line 508 "lsotfea-ltag.gperf"
+      {"SOT ", "Sotho, Southern"},
+#line 98 "lsotfea-ltag.gperf"
+      {"CGG ", "Chiga"},
+#line 480 "lsotfea-ltag.gperf"
+      {"SAT ", "Santali"},
+#line 99 "lsotfea-ltag.gperf"
+      {"CJA ", "Western Cham"},
+#line 592 "lsotfea-ltag.gperf"
+      {"XHS ", "Xhosa"},
+#line 61 "lsotfea-ltag.gperf"
+      {"BKF ", "Blackfoot"},
+#line 60 "lsotfea-ltag.gperf"
+      {"BJJ ", "Kanauji"},
+#line 264 "lsotfea-ltag.gperf"
+      {"KJP ", "Eastern Pwo Karen"},
+#line 317 "lsotfea-ltag.gperf"
+      {"LIN ", "Lingala"},
+#line 80 "lsotfea-ltag.gperf"
+      {"BYV ", "Medumba"},
+#line 110 "lsotfea-ltag.gperf"
+      {"CSL ", "Church Slavonic"},
+#line 462 "lsotfea-ltag.gperf"
+      {"REJ ", "Rejang"},
+#line 131 "lsotfea-ltag.gperf"
+      {"DUJ ", "Dhuwal"},
+#line 472 "lsotfea-ltag.gperf"
+      {"RTM ", "Rotuman"},
+#line 421 "lsotfea-ltag.gperf"
+      {"OCI ", "Occitan"},
+#line 28 "lsotfea-ltag.gperf"
+      {"ARK ", "Rakhine"},
+#line 181 "lsotfea-ltag.gperf"
+      {"GNN ", "Gumatj"},
+#line 521 "lsotfea-ltag.gperf"
+      {"SVE ", "Swedish"},
+#line 265 "lsotfea-ltag.gperf"
+      {"KJZ ", "Bumthangkha"},
+#line 95 "lsotfea-ltag.gperf"
+      {"CHA ", "Chamorro"},
+#line 238 "lsotfea-ltag.gperf"
+      {"JUL ", "Jula"},
+#line 586 "lsotfea-ltag.gperf"
+      {"WEL ", "Welsh"},
+#line 423 "lsotfea-ltag.gperf"
+      {"OJB ", "Ojibway"},
+#line 18 "lsotfea-ltag.gperf"
+      {"AIO ", "Aiton"},
+#line 294 "lsotfea-ltag.gperf"
+      {"KSM ", "Kildin Sami"},
+#line 553 "lsotfea-ltag.gperf"
+      {"TNE ", "Tundra Nenets"},
+#line 83 "lsotfea-ltag.gperf"
+      {"CBK ", "Zamboanga Chavacano"},
+#line 426 "lsotfea-ltag.gperf"
+      {"OSS ", "Ossetian"},
+#line 290 "lsotfea-ltag.gperf"
+      {"KRT ", "Koorete"},
+#line 545 "lsotfea-ltag.gperf"
+      {"THA ", "Thai"},
+#line 262 "lsotfea-ltag.gperf"
+      {"KIU ", "Kirmanjki"},
+#line 576 "lsotfea-ltag.gperf"
+      {"UZB ", "Uzbek"},
+#line 322 "lsotfea-ltag.gperf"
+      {"LMB ", "Limbu"},
+#line 452 "lsotfea-ltag.gperf"
+      {"QIN ", "Chin"},
+#line 409 "lsotfea-ltag.gperf"
+      {"NLD ", "Dutch"},
+#line 362 "lsotfea-ltag.gperf"
+      {"MKW ", "Kituba"},
+#line 52 "lsotfea-ltag.gperf"
+      {"BGC ", "Haryanvi"},
+#line 332 "lsotfea-ltag.gperf"
+      {"LUB ", "Luba-Katanga"},
+#line 414 "lsotfea-ltag.gperf"
+      {"NSM ", "Northern Sami"},
+#line 579 "lsotfea-ltag.gperf"
+      {"VIT ", "Vietnamese"},
+#line 601 "lsotfea-ltag.gperf"
+      {"YIC ", "Yi Classic"},
+#line 82 "lsotfea-ltag.gperf"
+      {"CAT ", "Catalan"},
+#line 295 "lsotfea-ltag.gperf"
+      {"KSW ", "S’gaw Karen"},
+#line 325 "lsotfea-ltag.gperf"
+      {"LOM ", "Loma"},
+#line 607 "lsotfea-ltag.gperf"
+      {"ZHP ", "Chinese Phonetic"},
+#line 308 "lsotfea-ltag.gperf"
+      {"LAM ", "Lambani"},
+#line 594 "lsotfea-ltag.gperf"
+      {"XOG ", "Soga"},
+#line 406 "lsotfea-ltag.gperf"
+      {"NIU ", "Niuean"},
+#line 36 "lsotfea-ltag.gperf"
+      {"AZE ", "Azerbaijani"},
+#line 237 "lsotfea-ltag.gperf"
+      {"JUD ", "Ladino"},
+#line 515 "lsotfea-ltag.gperf"
+      {"SSM ", "Southern Sami"},
+#line 97 "lsotfea-ltag.gperf"
+      {"CHY ", "Cheyenne"},
+#line 501 "lsotfea-ltag.gperf"
+      {"SNA ", "Sena"},
+#line 435 "lsotfea-ltag.gperf"
+      {"PAU ", "Palauan"},
+#line 536 "lsotfea-ltag.gperf"
+      {"TAT ", "Tatar"},
+#line 436 "lsotfea-ltag.gperf"
+      {"PCC ", "Bouyei"},
+#line 444 "lsotfea-ltag.gperf"
+      {"PLK ", "Polish"},
+#line 160 "lsotfea-ltag.gperf"
+      {"FRA ", "French"},
+#line 55 "lsotfea-ltag.gperf"
+      {"BHI ", "Bhili"},
+#line 313 "lsotfea-ltag.gperf"
+      {"LDK ", "Ladakhi"},
+#line 208 "lsotfea-ltag.gperf"
+      {"HRV ", "Croatian"},
+#line 321 "lsotfea-ltag.gperf"
+      {"LMA ", "Low Mari"},
+#line 565 "lsotfea-ltag.gperf"
+      {"TVL ", "Tuvalu"},
+#line 424 "lsotfea-ltag.gperf"
+      {"ORI ", "Odia (formerly Oriya)"},
+#line 129 "lsotfea-ltag.gperf"
+      {"DNK ", "Dinka"},
+#line 267 "lsotfea-ltag.gperf"
+      {"KLM ", "Kalmyk"},
+#line 331 "lsotfea-ltag.gperf"
+      {"LUA ", "Luba-Lulua"},
+#line 599 "lsotfea-ltag.gperf"
+      {"YBA ", "Yoruba"},
+#line 34 "lsotfea-ltag.gperf"
+      {"AYM ", "Aymara"},
+#line 179 "lsotfea-ltag.gperf"
+      {"GLK ", "Gilaki"},
+#line 109 "lsotfea-ltag.gperf"
+      {"CSB ", "Kashubian"},
+#line 577 "lsotfea-ltag.gperf"
+      {"VEC ", "Venetian"},
+#line 174 "lsotfea-ltag.gperf"
+      {"GEZ ", "Geez"},
+#line 33 "lsotfea-ltag.gperf"
+      {"AWA ", "Awadhi"},
+#line 77 "lsotfea-ltag.gperf"
+      {"BTI ", "Beti"},
+#line 564 "lsotfea-ltag.gperf"
+      {"TUV ", "Tuvin"},
+#line 489 "lsotfea-ltag.gperf"
+      {"SHI ", "Tachelhit"},
+#line 324 "lsotfea-ltag.gperf"
+      {"LMW ", "Lomwe"},
+#line 187 "lsotfea-ltag.gperf"
+      {"GUC ", "Wayuu"},
+#line 593 "lsotfea-ltag.gperf"
+      {"XJB ", "Minjangbal"},
+#line 223 "lsotfea-ltag.gperf"
+      {"IPK ", "Inupiat"},
+#line 69 "lsotfea-ltag.gperf"
+      {"BPY ", "Bishnupriya Manipuri"},
+#line 446 "lsotfea-ltag.gperf"
+      {"PNB ", "Western Panjabi"},
+#line 575 "lsotfea-ltag.gperf"
+      {"UYG ", "Uyghur"},
+#line 231 "lsotfea-ltag.gperf"
+      {"JAM ", "Jamaican Creole"},
+#line 156 "lsotfea-ltag.gperf"
+      {"FMP ", "Fe’fe’"},
+#line 570 "lsotfea-ltag.gperf"
+      {"UDM ", "Udmurt"},
+#line 583 "lsotfea-ltag.gperf"
+      {"WAG ", "Wagdi"},
+#line 495 "lsotfea-ltag.gperf"
+      {"SKY ", "Slovak"},
+#line 227 "lsotfea-ltag.gperf"
+      {"ISL ", "Icelandic"},
+#line 93 "lsotfea-ltag.gperf"
+      {"CHP ", "Chipewyan"},
+#line 465 "lsotfea-ltag.gperf"
+      {"RIT ", "Ritarungo"},
+#line 130 "lsotfea-ltag.gperf"
+      {"DRI ", "Dari"},
+#line 397 "lsotfea-ltag.gperf"
+      {"NDC ", "Ndau"},
+#line 87 "lsotfea-ltag.gperf"
+      {"CHG ", "Chaha Gurage"},
+#line 108 "lsotfea-ltag.gperf"
+      {"CRT ", "Crimean Tatar"},
+#line 466 "lsotfea-ltag.gperf"
+      {"RKW ", "Arakwal"},
+#line 520 "lsotfea-ltag.gperf"
+      {"SVA ", "Svan"},
+#line 549 "lsotfea-ltag.gperf"
+      {"TKM ", "Turkmen"},
+#line 369 "lsotfea-ltag.gperf"
+      {"MNG ", "Mongolian"},
+#line 225 "lsotfea-ltag.gperf"
+      {"IRI ", "Irish"},
+#line 497 "lsotfea-ltag.gperf"
+      {"SLA ", "Slavey"},
+#line 571 "lsotfea-ltag.gperf"
+      {"UKR ", "Ukrainian"},
+#line 214 "lsotfea-ltag.gperf"
+      {"IBO ", "Igbo"},
+#line 35 "lsotfea-ltag.gperf"
+      {"AZB ", "Torki"},
+#line 552 "lsotfea-ltag.gperf"
+      {"TNA ", "Tswana"},
+#line 367 "lsotfea-ltag.gperf"
+      {"MLY ", "Malay"},
+#line 141 "lsotfea-ltag.gperf"
+      {"ERZ ", "Erzya"},
+#line 316 "lsotfea-ltag.gperf"
+      {"LIM ", "Limburgish"},
+#line 112 "lsotfea-ltag.gperf"
+      {"CTG ", "Chittagonian"},
+#line 229 "lsotfea-ltag.gperf"
+      {"ITA ", "Italian"},
+#line 329 "lsotfea-ltag.gperf"
+      {"LTH ", "Lithuanian"},
+#line 25 "lsotfea-ltag.gperf"
+      {"ARA ", "Arabic"},
+#line 89 "lsotfea-ltag.gperf"
+      {"CHI ", "Chichewa (Chewa, Nyanja)"},
+#line 31 "lsotfea-ltag.gperf"
+      {"ATH ", "Athapaskan"},
+#line 220 "lsotfea-ltag.gperf"
+      {"IND ", "Indonesian"},
+#line 595 "lsotfea-ltag.gperf"
+      {"XPE ", "Kpelle (Liberia)"},
+#line 370 "lsotfea-ltag.gperf"
+      {"MNI ", "Manipuri"},
+#line 218 "lsotfea-ltag.gperf"
+      {"ILO ", "Ilokano"},
+#line 256 "lsotfea-ltag.gperf"
+      {"KHT ", "Khamti Shan"},
+#line 471 "lsotfea-ltag.gperf"
+      {"RSY ", "Rusyn"},
+#line 548 "lsotfea-ltag.gperf"
+      {"TIV ", "Tiv"},
+#line 450 "lsotfea-ltag.gperf"
+      {"PTG ", "Portuguese"},
+#line 293 "lsotfea-ltag.gperf"
+      {"KSI ", "Khasi"},
+#line 257 "lsotfea-ltag.gperf"
+      {"KHV ", "Khanty-Vakhi"},
+#line 17 "lsotfea-ltag.gperf"
+      {"AGW ", "Agaw"},
+#line 164 "lsotfea-ltag.gperf"
+      {"FRP ", "Arpitan"},
+#line 111 "lsotfea-ltag.gperf"
+      {"CSY ", "Czech"},
+#line 147 "lsotfea-ltag.gperf"
+      {"EVN ", "Even"},
+#line 404 "lsotfea-ltag.gperf"
+      {"NHC ", "Norway House Cree"},
+#line 311 "lsotfea-ltag.gperf"
+      {"LAZ ", "Laz"},
+#line 217 "lsotfea-ltag.gperf"
+      {"ILE ", "Interlingue"},
+#line 146 "lsotfea-ltag.gperf"
+      {"EVK ", "Evenki"},
+#line 16 "lsotfea-ltag.gperf"
+      {"AFR ", "Afar"},
+#line 333 "lsotfea-ltag.gperf"
+      {"LUG ", "Ganda"},
+#line 609 "lsotfea-ltag.gperf"
+      {"ZHT ", "Chinese Traditional"},
+#line 157 "lsotfea-ltag.gperf"
+      {"FNE ", "Forest Nenets"},
+#line 364 "lsotfea-ltag.gperf"
+      {"MLG ", "Malagasy"},
+#line 540 "lsotfea-ltag.gperf"
+      {"TET ", "Tetum"},
+#line 15 "lsotfea-ltag.gperf"
+      {"AFK ", "Afrikaans"},
+#line 162 "lsotfea-ltag.gperf"
+      {"FRI ", "Frisian"},
+#line 138 "lsotfea-ltag.gperf"
+      {"ELL ", "Greek"},
+#line 438 "lsotfea-ltag.gperf"
+      {"PDC ", "Pennsylvania German"},
+#line 591 "lsotfea-ltag.gperf"
+      {"XKF ", "Khengkha"},
+#line 589 "lsotfea-ltag.gperf"
+      {"WTM ", "Mewati"},
+#line 121 "lsotfea-ltag.gperf"
+      {"DHG ", "Dhangu"},
+#line 165 "lsotfea-ltag.gperf"
+      {"FTA ", "Futa"},
+#line 560 "lsotfea-ltag.gperf"
+      {"TSJ ", "Tshangla"},
+#line 228 "lsotfea-ltag.gperf"
+      {"ISM ", "Inari Sami"},
+#line 590 "lsotfea-ltag.gperf"
+      {"XBD ", "Lü"},
+#line 219 "lsotfea-ltag.gperf"
+      {"INA ", "Interlingua"},
+#line 105 "lsotfea-ltag.gperf"
+      {"CPP ", "Creoles"},
+#line 455 "lsotfea-ltag.gperf"
+      {"QUZ ", "Quechua"},
+#line 315 "lsotfea-ltag.gperf"
+      {"LIJ ", "Ligurian"},
+#line 226 "lsotfea-ltag.gperf"
+      {"IRT ", "Irish Traditional"},
+#line 213 "lsotfea-ltag.gperf"
+      {"IBB ", "Ibibio"},
+#line 587 "lsotfea-ltag.gperf"
+      {"WLN ", "Walloon"},
+#line 152 "lsotfea-ltag.gperf"
+      {"FAT ", "Fanti"},
+#line 124 "lsotfea-ltag.gperf"
+      {"DIV ", "Divehi (Dhivehi, Maldivian)"},
+#line 554 "lsotfea-ltag.gperf"
+      {"TNG ", "Tonga"},
+#line 62 "lsotfea-ltag.gperf"
+      {"BLI ", "Baluchi"},
+#line 96 "lsotfea-ltag.gperf"
+      {"CHU ", "Chuvash"},
+#line 559 "lsotfea-ltag.gperf"
+      {"TSG ", "Tsonga"},
+#line 574 "lsotfea-ltag.gperf"
+      {"USB ", "Upper Sorbian"},
+#line 26 "lsotfea-ltag.gperf"
+      {"ARG ", "Aragonese"},
+#line 178 "lsotfea-ltag.gperf"
+      {"GKP ", "Kpelle (Guinea)"},
+#line 155 "lsotfea-ltag.gperf"
+      {"FLE ", "Dutch (Flemish)"},
+#line 167 "lsotfea-ltag.gperf"
+      {"FUV ", "Nigerian Fulfulde"},
 #line 14 "lsotfea-ltag.gperf"
+      {"ADY ", "Adyghe"},
+#line 546 "lsotfea-ltag.gperf"
+      {"THT ", "Tahitian"},
+#line 212 "lsotfea-ltag.gperf"
+      {"IBA ", "Iban"},
+#line 118 "lsotfea-ltag.gperf"
+      {"DEU ", "German"},
+#line 557 "lsotfea-ltag.gperf"
+      {"TPI ", "Tok Pisin"},
+#line 27 "lsotfea-ltag.gperf"
+      {"ARI ", "Aari"},
+#line 11 "lsotfea-ltag.gperf"
+      {"ABK ", "Abkhazian"},
+#line 32 "lsotfea-ltag.gperf"
+      {"AVR ", "Avar"},
+#line 20 "lsotfea-ltag.gperf"
+      {"ALS ", "Alsatian"},
+#line 128 "lsotfea-ltag.gperf"
+      {"DNJ ", "Dan"},
+#line 161 "lsotfea-ltag.gperf"
+      {"FRC ", "Cajun French"},
+#line 310 "lsotfea-ltag.gperf"
+      {"LAT ", "Latin"},
+#line 314 "lsotfea-ltag.gperf"
+      {"LEZ ", "Lezgi"},
+#line 144 "lsotfea-ltag.gperf"
+      {"ETI ", "Estonian"},
+#line 443 "lsotfea-ltag.gperf"
+      {"PLG ", "Palaung"},
+#line 44 "lsotfea-ltag.gperf"
+      {"BBC ", "Batak Toba"},
+#line 154 "lsotfea-ltag.gperf"
+      {"FJI ", "Fijian"},
+#line 127 "lsotfea-ltag.gperf"
+      {"DNG ", "Dangme"},
+#line 234 "lsotfea-ltag.gperf"
+      {"JBO ", "Lojban"},
+#line 221 "lsotfea-ltag.gperf"
+      {"ING ", "Ingush"},
+#line 236 "lsotfea-ltag.gperf"
+      {"JII ", "Yiddish"},
+#line 588 "lsotfea-ltag.gperf"
+      {"WLF ", "Wolof"},
+#line 327 "lsotfea-ltag.gperf"
+      {"LSB ", "Lower Sorbian"},
+#line 65 "lsotfea-ltag.gperf"
+      {"BLT ", "Balti"},
+#line 526 "lsotfea-ltag.gperf"
+      {"SXU ", "Upper Saxon"},
+#line 453 "lsotfea-ltag.gperf"
+      {"QUC ", "K’iche’"},
+#line 319 "lsotfea-ltag.gperf"
+      {"LJP ", "Lampung"},
+#line 137 "lsotfea-ltag.gperf"
+      {"EFI ", "Efik"},
+#line 525 "lsotfea-ltag.gperf"
+      {"SXT ", "Sutu"},
+#line 235 "lsotfea-ltag.gperf"
+      {"JCT ", "Krymchak"},
+#line 122 "lsotfea-ltag.gperf"
+      {"DHV ", "Divehi (Dhivehi, Maldivian), (deprecated)"},
+#line 233 "lsotfea-ltag.gperf"
+      {"JAV ", "Javanese"},
+#line 140 "lsotfea-ltag.gperf"
+      {"ENG ", "English"},
+#line 142 "lsotfea-ltag.gperf"
+      {"ESP ", "Spanish"},
+#line 328 "lsotfea-ltag.gperf"
+      {"LSM ", "Lule Sami"},
+#line 326 "lsotfea-ltag.gperf"
+      {"LRC ", "Luri"},
+#line 29 "lsotfea-ltag.gperf"
+      {"ASM ", "Assamese"},
+#line 460 "lsotfea-ltag.gperf"
+      {"RBU ", "Russian Buriat"},
+#line 498 "lsotfea-ltag.gperf"
+      {"SLV ", "Slovenian"},
+#line 19 "lsotfea-ltag.gperf"
+      {"AKA ", "Akan"},
+#line 330 "lsotfea-ltag.gperf"
+      {"LTZ ", "Luxembourgish"},
+#line 224 "lsotfea-ltag.gperf"
+      {"IPPH", "Phonetic transcription—IPA conventions"},
+#line 10 "lsotfea-ltag.gperf"
+      {"ABA ", "Abaza"},
+#line 134 "lsotfea-ltag.gperf"
+      {"EBI ", "Ebira"},
+#line 222 "lsotfea-ltag.gperf"
+      {"INU ", "Inuktitut"},
+#line 23 "lsotfea-ltag.gperf"
+      {"ANG ", "Anglo-Saxon"},
+#line 143 "lsotfea-ltag.gperf"
+      {"ESU ", "Central Yupik"},
+#line 320 "lsotfea-ltag.gperf"
+      {"LKI ", "Laki"},
+#line 24 "lsotfea-ltag.gperf"
+      {"APPH", "Phonetic transcription—Americanist conventions"},
+#line 336 "lsotfea-ltag.gperf"
+      {"LVI ", "Latvian"},
+#line 456 "lsotfea-ltag.gperf"
+      {"QVI ", "Quechua (Ecuador)"},
+#line 30 "lsotfea-ltag.gperf"
+      {"AST ", "Asturian"},
+#line 21 "lsotfea-ltag.gperf"
       {"ALT ", "Altai"}
     };
 

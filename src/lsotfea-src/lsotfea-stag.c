@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.1 */
-/* Command-line: gperf -DClt -L ANSI-C -Nlookup_stag -I -Kdict --output-file=lsotfea-stag.c lsotfea-stag.gperf  */
+/* Command-line: gperf -D --output-file=lsotfea-stag.c lsotfea-stag.gperf  */
 /* Computed positions: -k'1-4' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -29,7 +29,7 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gperf@gnu.org>."
 #endif
 
-#line 1 "lsotfea-stag.gperf"
+#line 8 "lsotfea-stag.gperf"
 struct otlex { char * dict; char * mean; };
 #include <string.h>
 
@@ -102,303 +102,303 @@ lookup_stag (register const char *str, register size_t len)
     };
   static const struct otlex wordlist[] =
     {
-#line 32 "lsotfea-stag.gperf"
-      {"DFLT", "Default"},
-#line 71 "lsotfea-stag.gperf"
-      {"lina", "Linear A"},
-#line 135 "lsotfea-stag.gperf"
-      {"lana", "Tai Tham (Lanna)"},
-#line 103 "lsotfea-stag.gperf"
-      {"ital", "Old Italic"},
-#line 62 "lsotfea-stag.gperf"
-      {"kali", "Kayah Li"},
-#line 68 "lsotfea-stag.gperf"
-      {"latn", "Latin"},
-#line 9 "lsotfea-stag.gperf"
-      {"bali", "Balinese"},
-#line 11 "lsotfea-stag.gperf"
-      {"bass", "Bassa Vah"},
-#line 54 "lsotfea-stag.gperf"
-      {"kana", "Hiragana/Katakana"},
-#line 72 "lsotfea-stag.gperf"
-      {"linb", "Linear B"},
-#line 57 "lsotfea-stag.gperf"
-      {"prti", "Inscriptional Parthian"},
-#line 18 "lsotfea-stag.gperf"
-      {"brai", "Braille"},
-#line 108 "lsotfea-stag.gperf"
-      {"sarb", "Old South Arabian"},
-#line 6 "lsotfea-stag.gperf"
-      {"arab", "Arabic"},
-#line 105 "lsotfea-stag.gperf"
-      {"narb", "Old North Arabian"},
-#line 137 "lsotfea-stag.gperf"
-      {"takr", "Takri"},
-#line 95 "lsotfea-stag.gperf"
-      {"nbat", "Nabataean"},
-#line 126 "lsotfea-stag.gperf"
-      {"sinh", "Sinhala"},
-#line 28 "lsotfea-stag.gperf"
-      {"hani", "CJK Ideographic"},
-#line 145 "lsotfea-stag.gperf"
-      {"tibt", "Tibetan"},
-#line 56 "lsotfea-stag.gperf"
-      {"phli", "Inscriptional Pahlavi"},
-#line 144 "lsotfea-stag.gperf"
-      {"thai", "Thai"},
-#line 12 "lsotfea-stag.gperf"
-      {"batk", "Batak"},
-#line 143 "lsotfea-stag.gperf"
-      {"thaa", "Thaana"},
-#line 66 "lsotfea-stag.gperf"
-      {"sind", "Khudawadi"},
-#line 147 "lsotfea-stag.gperf"
-      {"tirh", "Tirhuta"},
-#line 117 "lsotfea-stag.gperf"
-      {"phlp", "Psalter Pahlavi"},
-#line 52 "lsotfea-stag.gperf"
-      {"hatr", "Hatran"},
-#line 63 "lsotfea-stag.gperf"
-      {"khar", "Kharosthi"},
-#line 43 "lsotfea-stag.gperf"
-      {"gran", "Grantha"},
-#line 59 "lsotfea-stag.gperf"
-      {"kthi", "Kaithi"},
-#line 17 "lsotfea-stag.gperf"
-      {"brah", "Brahmi"},
-#line 87 "lsotfea-stag.gperf"
-      {"plrd", "Miao"},
-#line 140 "lsotfea-stag.gperf"
-      {"tang", "Tangut"},
-#line 33 "lsotfea-stag.gperf"
-      {"dsrt", "Deseret"},
-#line 81 "lsotfea-stag.gperf"
-      {"mani", "Manichaean"},
-#line 60 "lsotfea-stag.gperf"
-      {"knda", "Kannada"},
-#line 55 "lsotfea-stag.gperf"
-      {"armi", "Imperial Aramaic"},
-#line 15 "lsotfea-stag.gperf"
-      {"bhks", "Bhaiksuki"},
-#line 120 "lsotfea-stag.gperf"
-      {"samr", "Samaritan"},
-#line 146 "lsotfea-stag.gperf"
-      {"tfng", "Tifinagh"},
-#line 113 "lsotfea-stag.gperf"
-      {"palm", "Palmyrene"},
-#line 7 "lsotfea-stag.gperf"
-      {"armn", "Armenian"},
-#line 73 "lsotfea-stag.gperf"
-      {"lisu", "Lisu (Fraser)"},
-#line 138 "lsotfea-stag.gperf"
-      {"taml", "Tamil"},
-#line 133 "lsotfea-stag.gperf"
-      {"tagb", "Tagbanwa"},
-#line 116 "lsotfea-stag.gperf"
-      {"phnx", "Phoenician"},
-#line 70 "lsotfea-stag.gperf"
-      {"limb", "Limbu"},
-#line 121 "lsotfea-stag.gperf"
-      {"saur", "Saurashtra"},
-#line 49 "lsotfea-stag.gperf"
-      {"hang", "Hangul"},
-#line 122 "lsotfea-stag.gperf"
-      {"shrd", "Sharada"},
-#line 97 "lsotfea-stag.gperf"
-      {"talu", "New Tai Lue"},
-#line 115 "lsotfea-stag.gperf"
-      {"phag", "Phags-pa"},
-#line 119 "lsotfea-stag.gperf"
-      {"runr", "Runic"},
-#line 124 "lsotfea-stag.gperf"
-      {"sidd", "Siddham"},
-#line 41 "lsotfea-stag.gperf"
-      {"glag", "Glagolitic"},
-#line 118 "lsotfea-stag.gperf"
-      {"rjng", "Rejang"},
-#line 24 "lsotfea-stag.gperf"
-      {"aghb", "Caucasian Albanian"},
-#line 127 "lsotfea-stag.gperf"
-      {"sora", "Sora Sompeng"},
-#line 132 "lsotfea-stag.gperf"
-      {"tglg", "Tagalog"},
-#line 82 "lsotfea-stag.gperf"
-      {"math", "Mathematical Alphanumeric Symbols"},
-#line 150 "lsotfea-stag.gperf"
-      {"wara", "Warang Citi"},
-#line 3 "lsotfea-stag.gperf"
-      {"adlm", "Adlam"},
-#line 80 "lsotfea-stag.gperf"
-      {"mand", "Mandaic, Mandaean"},
-#line 64 "lsotfea-stag.gperf"
-      {"khmr", "Khmer"},
-#line 22 "lsotfea-stag.gperf"
-      {"cans", "Canadian Syllabics"},
-#line 23 "lsotfea-stag.gperf"
-      {"cari", "Carian"},
-#line 134 "lsotfea-stag.gperf"
-      {"tale", "Tai Le"},
-#line 129 "lsotfea-stag.gperf"
-      {"sund", "Sundanese"},
-#line 148 "lsotfea-stag.gperf"
-      {"ugar", "Ugaritic Cuneiform"},
-#line 36 "lsotfea-stag.gperf"
-      {"dupl", "Duployan"},
-#line 38 "lsotfea-stag.gperf"
-      {"elba", "Elbasan"},
-#line 8 "lsotfea-stag.gperf"
-      {"avst", "Avestan"},
-#line 51 "lsotfea-stag.gperf"
-      {"hano", "Hanunoo"},
-#line 123 "lsotfea-stag.gperf"
-      {"shaw", "Shavian"},
-#line 76 "lsotfea-stag.gperf"
-      {"mahj", "Mahajani"},
-#line 19 "lsotfea-stag.gperf"
-      {"bugi", "Buginese"},
-#line 30 "lsotfea-stag.gperf"
-      {"cprt", "Cypriot Syllabary"},
-#line 128 "lsotfea-stag.gperf"
-      {"xsux", "Sumero-Akkadian Cuneiform"},
-#line 136 "lsotfea-stag.gperf"
-      {"tavt", "Tai Viet"},
-#line 112 "lsotfea-stag.gperf"
-      {"hmng", "Pahawh Hmong"},
-#line 61 "lsotfea-stag.gperf"
-      {"knd2", "Kannada v.2"},
-#line 91 "lsotfea-stag.gperf"
-      {"mult", "Multani"},
-#line 14 "lsotfea-stag.gperf"
-      {"bng2", "Bengali v.2"},
-#line 125 "lsotfea-stag.gperf"
-      {"sgnw", "Sign Writing"},
-#line 109 "lsotfea-stag.gperf"
-      {"orkh", "Old Turkic, Orkhon Runic"},
 #line 39 "lsotfea-stag.gperf"
-      {"ethi", "Ethiopic"},
-#line 139 "lsotfea-stag.gperf"
-      {"tml2", "Tamil v.2"},
-#line 10 "lsotfea-stag.gperf"
-      {"bamu", "Bamum"},
-#line 104 "lsotfea-stag.gperf"
-      {"hung", "Old Hungarian"},
-#line 111 "lsotfea-stag.gperf"
-      {"osma", "Osmanya"},
-#line 75 "lsotfea-stag.gperf"
-      {"lydi", "Lydian"},
-#line 58 "lsotfea-stag.gperf"
-      {"java", "Javanese"},
-#line 67 "lsotfea-stag.gperf"
-      {"lao ", "Lao"},
-#line 45 "lsotfea-stag.gperf"
-      {"gujr", "Gujarati"},
-#line 53 "lsotfea-stag.gperf"
-      {"hebr", "Hebrew"},
-#line 20 "lsotfea-stag.gperf"
-      {"buhd", "Buhid"},
-#line 46 "lsotfea-stag.gperf"
-      {"gjr2", "Gujarati v.2"},
-#line 44 "lsotfea-stag.gperf"
-      {"grek", "Greek"},
-#line 13 "lsotfea-stag.gperf"
-      {"beng", "Bengali"},
-#line 83 "lsotfea-stag.gperf"
-      {"mtei", "Meitei Mayek (Meithei, Meetei)"},
-#line 98 "lsotfea-stag.gperf"
-      {"nko ", "N'Ko"},
-#line 77 "lsotfea-stag.gperf"
-      {"marc", "Marchen"},
-#line 106 "lsotfea-stag.gperf"
-      {"perm", "Old Permic"},
-#line 149 "lsotfea-stag.gperf"
-      {"vai ", "Vai"},
-#line 65 "lsotfea-stag.gperf"
-      {"khoj", "Khojki"},
-#line 42 "lsotfea-stag.gperf"
-      {"goth", "Gothic"},
-#line 25 "lsotfea-stag.gperf"
-      {"cakm", "Chakma"},
-#line 4 "lsotfea-stag.gperf"
-      {"ahom", "Ahom"},
-#line 141 "lsotfea-stag.gperf"
-      {"telu", "Telugu"},
-#line 114 "lsotfea-stag.gperf"
-      {"pauc", "Pau Cin Hau"},
-#line 21 "lsotfea-stag.gperf"
-      {"byzm", "Byzantine Music"},
-#line 50 "lsotfea-stag.gperf"
-      {"jamo", "Hangul Jamo"},
-#line 47 "lsotfea-stag.gperf"
-      {"guru", "Gurmukhi"},
-#line 142 "lsotfea-stag.gperf"
-      {"tel2", "Telugu v.2"},
-#line 88 "lsotfea-stag.gperf"
-      {"modi", "Modi"},
-#line 79 "lsotfea-stag.gperf"
-      {"mlm2", "Malayalam v.2"},
-#line 101 "lsotfea-stag.gperf"
-      {"ogam", "Ogham"},
-#line 48 "lsotfea-stag.gperf"
-      {"gur2", "Gurmukhi v.2"},
-#line 89 "lsotfea-stag.gperf"
-      {"mong", "Mongolian"},
-#line 5 "lsotfea-stag.gperf"
-      {"hluw", "Anatolian Hieroglyphs"},
-#line 26 "lsotfea-stag.gperf"
-      {"cham", "Cham"},
-#line 130 "lsotfea-stag.gperf"
-      {"sylo", "Syloti Nagri"},
-#line 96 "lsotfea-stag.gperf"
-      {"newa", "Newa"},
-#line 99 "lsotfea-stag.gperf"
-      {"orya", "Odia (formerly Oriya)"},
-#line 16 "lsotfea-stag.gperf"
-      {"bopo", "Bopomofo"},
-#line 84 "lsotfea-stag.gperf"
-      {"mend", "Mende Kikakui"},
-#line 102 "lsotfea-stag.gperf"
-      {"olck", "Ol Chiki"},
-#line 74 "lsotfea-stag.gperf"
-      {"lyci", "Lycian"},
-#line 29 "lsotfea-stag.gperf"
-      {"copt", "Coptic"},
-#line 69 "lsotfea-stag.gperf"
-      {"lepc", "Lepcha"},
-#line 131 "lsotfea-stag.gperf"
-      {"syrc", "Syriac"},
-#line 31 "lsotfea-stag.gperf"
-      {"cyrl", "Cyrillic"},
+      {"DFLT", "Default"},
 #line 78 "lsotfea-stag.gperf"
-      {"mlym", "Malayalam"},
-#line 93 "lsotfea-stag.gperf"
-      {"mymr", "Myanmar"},
-#line 151 "lsotfea-stag.gperf"
-      {"yi  ", "Yi"},
-#line 107 "lsotfea-stag.gperf"
-      {"xpeo", "Old Persian Cuneiform"},
-#line 92 "lsotfea-stag.gperf"
-      {"musc", "Musical Symbols"},
+      {"lina", "Linear A"},
+#line 142 "lsotfea-stag.gperf"
+      {"lana", "Tai Tham (Lanna)"},
 #line 110 "lsotfea-stag.gperf"
-      {"osge", "Osage"},
-#line 40 "lsotfea-stag.gperf"
-      {"geor", "Georgian"},
-#line 90 "lsotfea-stag.gperf"
-      {"mroo", "Mro"},
-#line 27 "lsotfea-stag.gperf"
-      {"cher", "Cherokee"},
-#line 86 "lsotfea-stag.gperf"
-      {"mero", "Meroitic Hieroglyphs"},
-#line 34 "lsotfea-stag.gperf"
-      {"deva", "Devanagari"},
-#line 37 "lsotfea-stag.gperf"
-      {"egyp", "Egyptian Hieroglyphs"},
-#line 85 "lsotfea-stag.gperf"
-      {"merc", "Meroitic Cursive"},
-#line 100 "lsotfea-stag.gperf"
-      {"ory2", "Odia v.2 (formerly Oriya v.2)"},
-#line 94 "lsotfea-stag.gperf"
-      {"mym2", "Myanmar v.2"},
+      {"ital", "Old Italic"},
+#line 69 "lsotfea-stag.gperf"
+      {"kali", "Kayah Li"},
+#line 75 "lsotfea-stag.gperf"
+      {"latn", "Latin"},
+#line 16 "lsotfea-stag.gperf"
+      {"bali", "Balinese"},
+#line 18 "lsotfea-stag.gperf"
+      {"bass", "Bassa Vah"},
+#line 61 "lsotfea-stag.gperf"
+      {"kana", "Hiragana/Katakana"},
+#line 79 "lsotfea-stag.gperf"
+      {"linb", "Linear B"},
+#line 64 "lsotfea-stag.gperf"
+      {"prti", "Inscriptional Parthian"},
+#line 25 "lsotfea-stag.gperf"
+      {"brai", "Braille"},
+#line 115 "lsotfea-stag.gperf"
+      {"sarb", "Old South Arabian"},
+#line 13 "lsotfea-stag.gperf"
+      {"arab", "Arabic"},
+#line 112 "lsotfea-stag.gperf"
+      {"narb", "Old North Arabian"},
+#line 144 "lsotfea-stag.gperf"
+      {"takr", "Takri"},
+#line 102 "lsotfea-stag.gperf"
+      {"nbat", "Nabataean"},
+#line 133 "lsotfea-stag.gperf"
+      {"sinh", "Sinhala"},
 #line 35 "lsotfea-stag.gperf"
+      {"hani", "CJK Ideographic"},
+#line 152 "lsotfea-stag.gperf"
+      {"tibt", "Tibetan"},
+#line 63 "lsotfea-stag.gperf"
+      {"phli", "Inscriptional Pahlavi"},
+#line 151 "lsotfea-stag.gperf"
+      {"thai", "Thai"},
+#line 19 "lsotfea-stag.gperf"
+      {"batk", "Batak"},
+#line 150 "lsotfea-stag.gperf"
+      {"thaa", "Thaana"},
+#line 73 "lsotfea-stag.gperf"
+      {"sind", "Khudawadi"},
+#line 154 "lsotfea-stag.gperf"
+      {"tirh", "Tirhuta"},
+#line 124 "lsotfea-stag.gperf"
+      {"phlp", "Psalter Pahlavi"},
+#line 59 "lsotfea-stag.gperf"
+      {"hatr", "Hatran"},
+#line 70 "lsotfea-stag.gperf"
+      {"khar", "Kharosthi"},
+#line 50 "lsotfea-stag.gperf"
+      {"gran", "Grantha"},
+#line 66 "lsotfea-stag.gperf"
+      {"kthi", "Kaithi"},
+#line 24 "lsotfea-stag.gperf"
+      {"brah", "Brahmi"},
+#line 94 "lsotfea-stag.gperf"
+      {"plrd", "Miao"},
+#line 147 "lsotfea-stag.gperf"
+      {"tang", "Tangut"},
+#line 40 "lsotfea-stag.gperf"
+      {"dsrt", "Deseret"},
+#line 88 "lsotfea-stag.gperf"
+      {"mani", "Manichaean"},
+#line 67 "lsotfea-stag.gperf"
+      {"knda", "Kannada"},
+#line 62 "lsotfea-stag.gperf"
+      {"armi", "Imperial Aramaic"},
+#line 22 "lsotfea-stag.gperf"
+      {"bhks", "Bhaiksuki"},
+#line 127 "lsotfea-stag.gperf"
+      {"samr", "Samaritan"},
+#line 153 "lsotfea-stag.gperf"
+      {"tfng", "Tifinagh"},
+#line 120 "lsotfea-stag.gperf"
+      {"palm", "Palmyrene"},
+#line 14 "lsotfea-stag.gperf"
+      {"armn", "Armenian"},
+#line 80 "lsotfea-stag.gperf"
+      {"lisu", "Lisu (Fraser)"},
+#line 145 "lsotfea-stag.gperf"
+      {"taml", "Tamil"},
+#line 140 "lsotfea-stag.gperf"
+      {"tagb", "Tagbanwa"},
+#line 123 "lsotfea-stag.gperf"
+      {"phnx", "Phoenician"},
+#line 77 "lsotfea-stag.gperf"
+      {"limb", "Limbu"},
+#line 128 "lsotfea-stag.gperf"
+      {"saur", "Saurashtra"},
+#line 56 "lsotfea-stag.gperf"
+      {"hang", "Hangul"},
+#line 129 "lsotfea-stag.gperf"
+      {"shrd", "Sharada"},
+#line 104 "lsotfea-stag.gperf"
+      {"talu", "New Tai Lue"},
+#line 122 "lsotfea-stag.gperf"
+      {"phag", "Phags-pa"},
+#line 126 "lsotfea-stag.gperf"
+      {"runr", "Runic"},
+#line 131 "lsotfea-stag.gperf"
+      {"sidd", "Siddham"},
+#line 48 "lsotfea-stag.gperf"
+      {"glag", "Glagolitic"},
+#line 125 "lsotfea-stag.gperf"
+      {"rjng", "Rejang"},
+#line 31 "lsotfea-stag.gperf"
+      {"aghb", "Caucasian Albanian"},
+#line 134 "lsotfea-stag.gperf"
+      {"sora", "Sora Sompeng"},
+#line 139 "lsotfea-stag.gperf"
+      {"tglg", "Tagalog"},
+#line 89 "lsotfea-stag.gperf"
+      {"math", "Mathematical Alphanumeric Symbols"},
+#line 157 "lsotfea-stag.gperf"
+      {"wara", "Warang Citi"},
+#line 10 "lsotfea-stag.gperf"
+      {"adlm", "Adlam"},
+#line 87 "lsotfea-stag.gperf"
+      {"mand", "Mandaic, Mandaean"},
+#line 71 "lsotfea-stag.gperf"
+      {"khmr", "Khmer"},
+#line 29 "lsotfea-stag.gperf"
+      {"cans", "Canadian Syllabics"},
+#line 30 "lsotfea-stag.gperf"
+      {"cari", "Carian"},
+#line 141 "lsotfea-stag.gperf"
+      {"tale", "Tai Le"},
+#line 136 "lsotfea-stag.gperf"
+      {"sund", "Sundanese"},
+#line 155 "lsotfea-stag.gperf"
+      {"ugar", "Ugaritic Cuneiform"},
+#line 43 "lsotfea-stag.gperf"
+      {"dupl", "Duployan"},
+#line 45 "lsotfea-stag.gperf"
+      {"elba", "Elbasan"},
+#line 15 "lsotfea-stag.gperf"
+      {"avst", "Avestan"},
+#line 58 "lsotfea-stag.gperf"
+      {"hano", "Hanunoo"},
+#line 130 "lsotfea-stag.gperf"
+      {"shaw", "Shavian"},
+#line 83 "lsotfea-stag.gperf"
+      {"mahj", "Mahajani"},
+#line 26 "lsotfea-stag.gperf"
+      {"bugi", "Buginese"},
+#line 37 "lsotfea-stag.gperf"
+      {"cprt", "Cypriot Syllabary"},
+#line 135 "lsotfea-stag.gperf"
+      {"xsux", "Sumero-Akkadian Cuneiform"},
+#line 143 "lsotfea-stag.gperf"
+      {"tavt", "Tai Viet"},
+#line 119 "lsotfea-stag.gperf"
+      {"hmng", "Pahawh Hmong"},
+#line 68 "lsotfea-stag.gperf"
+      {"knd2", "Kannada v.2"},
+#line 98 "lsotfea-stag.gperf"
+      {"mult", "Multani"},
+#line 21 "lsotfea-stag.gperf"
+      {"bng2", "Bengali v.2"},
+#line 132 "lsotfea-stag.gperf"
+      {"sgnw", "Sign Writing"},
+#line 116 "lsotfea-stag.gperf"
+      {"orkh", "Old Turkic, Orkhon Runic"},
+#line 46 "lsotfea-stag.gperf"
+      {"ethi", "Ethiopic"},
+#line 146 "lsotfea-stag.gperf"
+      {"tml2", "Tamil v.2"},
+#line 17 "lsotfea-stag.gperf"
+      {"bamu", "Bamum"},
+#line 111 "lsotfea-stag.gperf"
+      {"hung", "Old Hungarian"},
+#line 118 "lsotfea-stag.gperf"
+      {"osma", "Osmanya"},
+#line 82 "lsotfea-stag.gperf"
+      {"lydi", "Lydian"},
+#line 65 "lsotfea-stag.gperf"
+      {"java", "Javanese"},
+#line 74 "lsotfea-stag.gperf"
+      {"lao ", "Lao"},
+#line 52 "lsotfea-stag.gperf"
+      {"gujr", "Gujarati"},
+#line 60 "lsotfea-stag.gperf"
+      {"hebr", "Hebrew"},
+#line 27 "lsotfea-stag.gperf"
+      {"buhd", "Buhid"},
+#line 53 "lsotfea-stag.gperf"
+      {"gjr2", "Gujarati v.2"},
+#line 51 "lsotfea-stag.gperf"
+      {"grek", "Greek"},
+#line 20 "lsotfea-stag.gperf"
+      {"beng", "Bengali"},
+#line 90 "lsotfea-stag.gperf"
+      {"mtei", "Meitei Mayek (Meithei, Meetei)"},
+#line 105 "lsotfea-stag.gperf"
+      {"nko ", "N'Ko"},
+#line 84 "lsotfea-stag.gperf"
+      {"marc", "Marchen"},
+#line 113 "lsotfea-stag.gperf"
+      {"perm", "Old Permic"},
+#line 156 "lsotfea-stag.gperf"
+      {"vai ", "Vai"},
+#line 72 "lsotfea-stag.gperf"
+      {"khoj", "Khojki"},
+#line 49 "lsotfea-stag.gperf"
+      {"goth", "Gothic"},
+#line 32 "lsotfea-stag.gperf"
+      {"cakm", "Chakma"},
+#line 11 "lsotfea-stag.gperf"
+      {"ahom", "Ahom"},
+#line 148 "lsotfea-stag.gperf"
+      {"telu", "Telugu"},
+#line 121 "lsotfea-stag.gperf"
+      {"pauc", "Pau Cin Hau"},
+#line 28 "lsotfea-stag.gperf"
+      {"byzm", "Byzantine Music"},
+#line 57 "lsotfea-stag.gperf"
+      {"jamo", "Hangul Jamo"},
+#line 54 "lsotfea-stag.gperf"
+      {"guru", "Gurmukhi"},
+#line 149 "lsotfea-stag.gperf"
+      {"tel2", "Telugu v.2"},
+#line 95 "lsotfea-stag.gperf"
+      {"modi", "Modi"},
+#line 86 "lsotfea-stag.gperf"
+      {"mlm2", "Malayalam v.2"},
+#line 108 "lsotfea-stag.gperf"
+      {"ogam", "Ogham"},
+#line 55 "lsotfea-stag.gperf"
+      {"gur2", "Gurmukhi v.2"},
+#line 96 "lsotfea-stag.gperf"
+      {"mong", "Mongolian"},
+#line 12 "lsotfea-stag.gperf"
+      {"hluw", "Anatolian Hieroglyphs"},
+#line 33 "lsotfea-stag.gperf"
+      {"cham", "Cham"},
+#line 137 "lsotfea-stag.gperf"
+      {"sylo", "Syloti Nagri"},
+#line 103 "lsotfea-stag.gperf"
+      {"newa", "Newa"},
+#line 106 "lsotfea-stag.gperf"
+      {"orya", "Odia (formerly Oriya)"},
+#line 23 "lsotfea-stag.gperf"
+      {"bopo", "Bopomofo"},
+#line 91 "lsotfea-stag.gperf"
+      {"mend", "Mende Kikakui"},
+#line 109 "lsotfea-stag.gperf"
+      {"olck", "Ol Chiki"},
+#line 81 "lsotfea-stag.gperf"
+      {"lyci", "Lycian"},
+#line 36 "lsotfea-stag.gperf"
+      {"copt", "Coptic"},
+#line 76 "lsotfea-stag.gperf"
+      {"lepc", "Lepcha"},
+#line 138 "lsotfea-stag.gperf"
+      {"syrc", "Syriac"},
+#line 38 "lsotfea-stag.gperf"
+      {"cyrl", "Cyrillic"},
+#line 85 "lsotfea-stag.gperf"
+      {"mlym", "Malayalam"},
+#line 100 "lsotfea-stag.gperf"
+      {"mymr", "Myanmar"},
+#line 158 "lsotfea-stag.gperf"
+      {"yi  ", "Yi"},
+#line 114 "lsotfea-stag.gperf"
+      {"xpeo", "Old Persian Cuneiform"},
+#line 99 "lsotfea-stag.gperf"
+      {"musc", "Musical Symbols"},
+#line 117 "lsotfea-stag.gperf"
+      {"osge", "Osage"},
+#line 47 "lsotfea-stag.gperf"
+      {"geor", "Georgian"},
+#line 97 "lsotfea-stag.gperf"
+      {"mroo", "Mro"},
+#line 34 "lsotfea-stag.gperf"
+      {"cher", "Cherokee"},
+#line 93 "lsotfea-stag.gperf"
+      {"mero", "Meroitic Hieroglyphs"},
+#line 41 "lsotfea-stag.gperf"
+      {"deva", "Devanagari"},
+#line 44 "lsotfea-stag.gperf"
+      {"egyp", "Egyptian Hieroglyphs"},
+#line 92 "lsotfea-stag.gperf"
+      {"merc", "Meroitic Cursive"},
+#line 107 "lsotfea-stag.gperf"
+      {"ory2", "Odia v.2 (formerly Oriya v.2)"},
+#line 101 "lsotfea-stag.gperf"
+      {"mym2", "Myanmar v.2"},
+#line 42 "lsotfea-stag.gperf"
       {"dev2", "Devanagari v.2"}
     };
 

@@ -1,3 +1,10 @@
+%language=ANSI-C
+%define lookup-function-name lookup_ltag
+%compare-lengths
+%readonly-tables
+%includes
+%struct-type
+%define slot-name dict
 struct otlex { char * dict; char * mean; };
 %%
 "ABA ", "Abaza"

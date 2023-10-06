@@ -1,3 +1,10 @@
+%language=ANSI-C
+%define lookup-function-name lookup_ftag
+%compare-lengths
+%readonly-tables
+%includes
+%struct-type
+%define slot-name dict
 struct otlex { char * dict; char * mean; };
 %%
 "aalt", "Access All Alternates"
