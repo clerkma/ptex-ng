@@ -34,13 +34,17 @@ module OpenTypeDataParser
     unpack(base_offset, 2, "S>")[0]
   end
 
+  def i16(base_offset)
+    unpack(base_offset, 2, "s>")[0]
+  end
+
   def parse_coverage(base_offset)
-    format, count = unpack(base_offset, 4, "S>2")
+    format, count = u16_list(base_offset, 2)
     if format == 1
-      {format: format, data: unpack(base_offset + 4, count * 2, "S>*")}
+      {format: format, data: u16_list(base_offset + 4, count)}
     elsif format == 2
       data = count.times.map do |i|
-        unpack(base_offset + 4 + i * 6, 6, "S>*")
+        u16_list(base_offset + 4 + i * 6, 3)
       end
       {format: format, data: data}
     end
@@ -56,13 +60,12 @@ module OpenTypeDataParser
   def parse_class(base_offset)
     format = u16(base_offset)
     if format == 1
-      start_glyph_id, count = unpack(base_offset + 2, 4, "S>2")
-      class_value = unpack(base_offset + 6, count * 2, "S>*")
+      start_glyph_id = u16(base_offset + 2)
+      class_value = unpack_u16_list(base_offset + 4)
       {format: format, start_glyph_id: start_glyph_id, class_value: class_value}
     elsif format == 2
-      count = u16(base_offset + 2)
-      data = count.times.map do |i|
-        unpack(base_offset + 4 + i * 6, 6, "S>*")
+      data = u16(base_offset + 2).times.map do |i|
+        u16_list(base_offset + 4 + i * 6, 3)
       end
       {format: format, data: data}
     end
@@ -73,6 +76,10 @@ module OpenTypeDataParser
     if offset != 0
       parse_class(base_offset + offset)
     end
+  end
+
+  def u16_list(base_offset, count)
+    unpack(base_offset, count * 2, "S>*")
   end
 
   def unpack_u16_list(base_offset)
@@ -113,7 +120,7 @@ module OpenTypeDataParser
     offset = base_offset + u16(base_offset + delta)
     mark_count = u16(offset)
     mark_count.times.map do |i|
-      mark_class, anchor_offset = unpack(offset + 2 + 4 * i, 4, "S>S>")
+      mark_class, anchor_offset = u16_list(offset + 2 + 4 * i, 2)
       anchor = parse_anchor(offset, anchor_offset)
       {mark_class: mark_class, anchor: anchor}
     end
@@ -133,8 +140,8 @@ class GTabParser
   end
 
   def parse_lang_sys(base_offset)
-    lookup_order, required_feature_index, feature_index_count = unpack(base_offset, 6, "S>*")
-    feature_index_list = unpack(base_offset + 6, 2 * feature_index_count, "S>*")
+    lookup_order, required_feature_index = u16_list(base_offset, 2)
+    feature_index_list = unpack_u16_list(base_offset + 4)
     {lookup_order: lookup_order, required: required_feature_index, feature_index_list: feature_index_list}
   end
 
@@ -143,7 +150,7 @@ class GTabParser
       script_one_offset = base_offset + 2 + 6 * script_index
       script_tag, script_offset = unpack(script_one_offset, 6, "a4S>")
       script_offset += base_offset
-      default_lang_sys_offset, lang_sys_count = unpack(script_offset, 4, "S>*")
+      default_lang_sys_offset, lang_sys_count = u16_list(script_offset, 2)
       if default_lang_sys_offset != 0
         offset = script_offset + default_lang_sys_offset
         default_lang_sys = parse_lang_sys(offset)
@@ -164,8 +171,8 @@ class GTabParser
     u16(base_offset).times.map do |feature_index|
       tag, offset = unpack(base_offset + 2 + 6 * feature_index, 6, "a4S>")
       offset += base_offset
-      params, lookup_index_count = unpack(offset, 4, "S>2")
-      lookup_index_list = unpack(offset + 4, 2 * lookup_index_count, "S>*")
+      params = u16(offset)
+      lookup_index_list = unpack_u16_list(offset + 2)
       {tag: tag, params: params, lookup_index_list: lookup_index_list}
     end
   end
@@ -177,9 +184,9 @@ class GTabParser
         unpack_u16_list(i).map do |j|
           if j != 0
             j += i
-            glyph_count, seq_lookup_count = unpack(j, 4, "S>S>")
-            input = unpack(j + 4, (glyph_count - 1) * 2, "S>*")
-            seq_lookup_list = unpack(j + 4 + (glyph_count - 1) * 2, seq_lookup_count * 4,"S>*")
+            glyph_count, seq_lookup_count = u16_list(j, 2)
+            input = u16_list(j + 4, glyph_count - 1)
+            seq_lookup_list = u16_list(j + 4 + (glyph_count - 1) * 2, seq_lookup_count * 2)
             {input: input, seq_lookup_list: seq_lookup_list}
           end
         end
@@ -216,21 +223,16 @@ class GTabParser
         unpack_u16_list(i).map do |j|
           if j != 0
             j += i
-            backtrack_count = u16(j)
-            j += 2
-            backtrack = unpack(j, backtrack_count * 2, "S>*")
-            j += 2 * backtrack_count
+            backtrack = unpack_u16_list(j)
+            j += 2 * backtrack.size + 2
             input_count = u16(j)
             j += 2
-            input = unpack(j, (input_count - 1) * 2, "S>*")
+            input = u16_list(j, input_count - 1)
             j += (input_count - 1) * 2
-            lookahead_count = u16(j)
-            j += 2
-            lookahead = unpack(j, lookahead_count * 2, "S>*")
-            j += lookahead_count * 2
+            lookahead = unpack_u16_list(j)
+            j += lookahead.size * 2 + 2
             seq_lookup_count = u16(j)
-            j += 2
-            seq_lookup_list = unpack(j, seq_lookup_count * 4, "S>*")
+            seq_lookup_list = u16_list(j + 2, seq_lookup_count * 2)
             {backtrack: backtrack, input: input, lookahead: lookahead, seq_lookup_list: seq_lookup_list}
           end
         end
@@ -269,7 +271,7 @@ class GTabParser
     end
     offset += 2 * lookahead_list.size + 2
     seq_lookup_count = u16(offset)
-    seq_lookup_list = unpack(offset + 2, 4 * seq_lookup_count, "S>*")
+    seq_lookup_list = u16_list(offset + 2, seq_lookup_count * 2)
     {backtrack: backtrack_list, input: input_list, lookahead: lookahead_list, seq_lookup_list: seq_lookup_list}
   end
 
@@ -283,31 +285,27 @@ class GTabParser
     case sig
     when 11
       coverage = unpack_coverage(base_offset, 2)
-      delta_glyph_id = u16(base_offset + 4)
+      delta_glyph_id = i16(base_offset + 4)
       {sig: sig, coverage: coverage, delta_glyph_id: delta_glyph_id}
     when 12
       coverage = unpack_coverage(base_offset, 2)
-      count = u16(base_offset + 4)
-      substitute_glyph_list = unpack(base_offset + 6, count * 2, "S>*")
+      substitute_glyph_list = unpack_u16_list(base_offset + 4)
       {sig: 12, coverage: coverage, substitute_glyph_list: substitute_glyph_list}
     when 21, 31
       coverage = unpack_coverage(base_offset, 2)
       sequence_list = unpack_u16_list(base_offset + 4).map do |sequence_offset|
-        count = u16(base_offset + sequence_offset)
-        unpack(base_offset + sequence_offset + 2, count * 2, "S>*")
+        unpack_u16_list(base_offset + sequence_offset)
       end
       {sig: sig, coverage: coverage, sequence_list: sequence_list}
     when 41
       coverage = unpack_coverage(base_offset, 2)
       ligature_set = unpack_u16_list(base_offset + 4).map do |i|
-        if i != 0
-          i += base_offset
-          unpack_u16_list(i).map do |j|
-            j += i
-            ligature_glyph, component_count = unpack(j, 4, "S>S>")
-            component = unpack(j + 4, component_count * 2, "S>*")
-            {ligature_glyph: ligature_glyph, component: component}
-          end
+        i += base_offset
+        unpack_u16_list(i).map do |j|
+          j += i
+          ligature_glyph, component_count = u16_list(j, 2)
+          component = u16_list(j + 4, component_count - 1)
+          {ligature_glyph: ligature_glyph, component: component}
         end
       end
       {sig: sig, coverage: coverage, ligature_set: ligature_set}
@@ -326,21 +324,15 @@ class GTabParser
     when 81
       coverage = unpack_coverage(base_offset, 2)
       offset = base_offset + 4
-      backtrack_count = u16(offset)
-      offset += 2
-      backtrack_list = unpack(offset, backtrack_count * 2, "S>*").map do |i|
+      backtrack_list = unpack_u16_list(offset).map do |i|
         parse_coverage(base_offset + i)
       end
-      offset += 2 * backtrack_list.size
-      lookahead_count = u16(offset)
-      offset += 2
-      lookahead_list = unpack(offset, lookahead_count * 2, "S>*").map do |i|
+      offset += 2 * backtrack_list.size + 2
+      lookahead_list = unpack_u16_list(offset).map do |i|
         parse_coverage(base_offset + i)
       end
-      offset += lookahead_count * 2
-      glyph_count = u16(offset)
-      offset += 2
-      substitute_glyph_list = unpack(offset, glyph_count * 2, "S>*")
+      offset += 2 * lookahead_count + 2
+      substitute_glyph_list = unpack_u16_list(offset)
       {sig: sig, coverage: coverage, backtrack: backtrack_list, lookahead: lookahead_list,
        substitute_glyph_list: substitute_glyph_list}
     else
@@ -363,7 +355,7 @@ class GTabParser
       {sig: sig, coverage: coverage, value: value}
     when 12
       coverage = unpack_coverage(base_offset, 2)
-      value_format, value_count = unpack(base_offset + 4, 4, "S>S>")
+      value_format, value_count = u16_list(base_offset + 4, 2)
       size = value_size(value_format)
       value_list = value_count.times.map do |i|
         parse_value(base_offset + 8 + size * i, value_format)
@@ -371,7 +363,7 @@ class GTabParser
       {sig: sig, coverage: coverage, value_list: value_list}
     when 21
       coverage = unpack_coverage(base_offset, 2)
-      value_format1, value_format2 = unpack(base_offset + 4, 4, "S>S>")
+      value_format1, value_format2 = u16_list(base_offset + 4, 2)
       size1 = value_size(value_format1)
       size2 = value_size(value_format2)
       pair_size = 2 + size1 + size2
@@ -390,12 +382,12 @@ class GTabParser
       {sig: sig, coverage: coverage, pair_set_list: pair_set_list}
     when 22
       coverage = unpack_coverage(base_offset, 2)
-      value_format1, value_format2 = unpack(base_offset + 4, 4, "S>S>")
+      value_format1, value_format2 = u16_list(base_offset + 4, 2)
       size1 = value_size(value_format1)
       size2 = value_size(value_format2)
       class_def1 = unpack_class(base_offset, 8)
       class_def2 = unpack_class(base_offset, 10)
-      class1_count, class2_count = unpack(base_offset + 12, 4, "S>S>")
+      class1_count, class2_count = u16_list(base_offset + 12, 2)
       offset = base_offset + 16
       class_set_list = class1_count.times.map do
         class2_count.times.map do
@@ -413,7 +405,7 @@ class GTabParser
       count = u16(base_offset + 4)
       offset = base_offset + 6
       entry_exit_list = count.times.map do
-        entry_offset, exit_offset = unpack(offset, 4, "S>S>")
+        entry_offset, exit_offset = u16_list(offset, 2)
         entry_anchor = parse_anchor(base_offset, entry_offset)
         exit_anchor = parse_anchor(base_offset, exit_offset)
         {entry: entry_anchor, exit: exit_anchor}
@@ -425,13 +417,10 @@ class GTabParser
       mark_class_count = u16(base_offset + 6)
       mark_array = parse_mark_array(base_offset, 8)
       base_array_offset = u16(base_offset + 10) + base_offset
-      base_count = u16(base_array_offset)
-      base_array = base_count.times.map do |i|
+      base_array = u16(base_array_offset).times.map do |i|
         offset = base_array_offset + 2 + 2 * mark_class_count * i
-        unpack(offset, 2 * mark_class_count, "S>*").map do |j|
-          if j != 0
-            parse_anchor(base_array_offset, j)
-          end
+        u16_list(offset, mark_class_count).map do |j|
+          parse_anchor(base_array_offset, j)
         end
       end
       {sig: sig, mark_coverage: mark_coverage, base_coverage: base_coverage,
@@ -443,11 +432,12 @@ class GTabParser
       mark_array = parse_mark_array(base_offset, 8)
       ligature_array_offset = u16(base_offset + 10) + base_offset
       ligature_array = unpack_u16_list(ligature_array_offset).map do |i|
-        component_count = u16(ligature_array_offset + i)
+        ligature_offset = ligature_array_offset + i
+        component_count = u16(ligature_offset)
         component_count.times.map do |j|
-          offset = ligature_array_offset + i + 2 + 2 * mark_class_count * j
-          unpack(offset, 2 * mark_class_count, "S>*").map do |k|
-            parse_anchor(ligature_array_offset + i, k)
+          offset = ligature_offset + 2 + 2 * mark_class_count * j
+          u16_list(offset, mark_class_count).map do |k|
+            parse_anchor(ligature_offset, k)
           end
         end
       end
@@ -462,10 +452,8 @@ class GTabParser
       mark2_count = u16(mark2_array_offset)
       mark2_array = mark2_count.times.map do |i|
         offset = mark2_array_offset + 2 + i * 2 * mark_class_count
-        unpack(offset, 2 * mark_class_count, "S>*").map do |j|
-          if j != 0
-            parse_anchor(mark2_array_offset, j)
-          end
+        u16_list(offset, mark_class_count).map do |j|
+          parse_anchor(mark2_array_offset, j)
         end
       end
       {sig: sig, mark1_coverage: mark1_coverage, mark2_coverage: mark2_coverage,
@@ -510,19 +498,24 @@ class GTabParser
     end
   end
 
+  def inspect
+    "OpenTypeParser"
+  end
+
   def initialize(data, tag)
     @data = data
     @tag = tag
     @length = data.length
     @script_list = nil
-    version = data[0, 4].unpack("S>2")
+    version = u16_list(0, 2)
     if version == [1, 0]
-      script_list_offset, feature_list_offset, lookup_list_offset = data[4, 6].unpack("S>*")
+      script_list_offset, feature_list_offset, lookup_list_offset = u16_list(4, 3)
       @script_list = parse_script_list(script_list_offset)
       @feature_list = parse_feature_list(feature_list_offset)
       @lookup_list = parse_lookup_list(lookup_list_offset)
     end
-  rescue
+  rescue => error
+    puts error
     nil
   end
 
