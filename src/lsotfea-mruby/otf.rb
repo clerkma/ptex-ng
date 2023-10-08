@@ -125,6 +125,7 @@ class GTabParser
 
   def unpack(start, length, format)
     if start + length > @length
+      puts("Exceed Buffer: #{@length} < #{start} + #{length}.")
       raise "Exceed Buffer."
     else
       @data[start, length].unpack(format)
@@ -373,19 +374,17 @@ class GTabParser
       value_format1, value_format2 = unpack(base_offset + 4, 4, "S>S>")
       size1 = value_size(value_format1)
       size2 = value_size(value_format2)
-
+      pair_size = 2 + size1 + size2
       pair_set_list = unpack_u16_list(base_offset + 8).map do |i|
-        if i != 0
-          i += base_offset
-          unpack_u16_list(i).map do |j|
-            if j != 0
-              j += i
-              second_glyph = u16(j)
-              value1 = parse_value(j + 2, value_format1)
-              value2 = parse_value(j + 2 + size1, value_format2)
-              {second: second_glyph, value1: value1, value2: value2}
-            end
-          end
+        i += base_offset
+        pair_count = u16(i)
+        i += 2
+        pair_count.times do
+          second_glyph = u16(i)
+          value1 = parse_value(i + 2, value_format1)
+          value2 = parse_value(i + 2 + size1, value_format2)
+          i += pair_size
+          {second: second_glyph, value1: value1, value2: value2}
         end
       end
       {sig: sig, coverage: coverage, pair_set_list: pair_set_list}
@@ -497,6 +496,11 @@ class GTabParser
         parse_lookup_pos(base_offset + i, type)
       end
     end
+    if @tag == "GSUB" and type == 7
+      type = table[0][:sig] / 10
+    elsif @tag == "GPOS" and type == 9
+      type = table[0][:sig] / 10
+    end
     {type: type, flag: flag, table: table}
   end
 
@@ -517,17 +521,6 @@ class GTabParser
       @script_list = parse_script_list(script_list_offset)
       @feature_list = parse_feature_list(feature_list_offset)
       @lookup_list = parse_lookup_list(lookup_list_offset)
-      # if tag == "GSUB"
-      #   @lookup_list.each_with_index do |lookup, i|
-      #     puts "lookup idx=#{i}"
-      #     list_lookup_sub(lookup)
-      #   end
-      # else
-      #   @lookup_list.each_with_index do |lookup, i|
-      #     puts "lookup idx=#{i}"
-      #     puts lookup
-      #   end
-      # end
     end
   rescue
     nil
@@ -572,9 +565,10 @@ class GTabParser
       end
     end
     puts("\n    LookupIndex -> Feature")
-    idx_len = lookup_map.keys.max.to_s.length + 1
+    idx_len = lookup_map.keys.max.to_s.length
     lookup_map.keys.sort.each do |m|
-      puts("      #{m.to_s.rjust(idx_len)} #{lookup_map[m].join(', ')}")
+      lookup = @lookup_list[m]
+      puts("      #{m.to_s.rjust(idx_len)} (#{lookup[:type]}) #{lookup_map[m].join(', ')}")
     end
   end
 
