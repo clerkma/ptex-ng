@@ -182,13 +182,11 @@ class GTabParser
       if i != 0
         i += base_offset
         unpack_u16_list(i).map do |j|
-          if j != 0
-            j += i
-            glyph_count, seq_lookup_count = u16_list(j, 2)
-            input = u16_list(j + 4, glyph_count - 1)
-            seq_lookup_list = u16_list(j + 4 + (glyph_count - 1) * 2, seq_lookup_count * 2)
-            {input: input, seq_lookup_list: seq_lookup_list}
-          end
+          j += i
+          glyph_count, seq_lookup_count = u16_list(j, 2)
+          input = u16_list(j + 4, glyph_count - 1)
+          seq_lookup_list = u16_list(j + 4 + (glyph_count - 1) * 2, seq_lookup_count * 2)
+          {input: input, seq_lookup_list: seq_lookup_list}
         end
       end
     end
@@ -208,7 +206,7 @@ class GTabParser
   end
 
   def parse_lookup_context3(base_offset)
-    glyph_count, seq_lookup_count = unpack(base_offset + 2, 4, "S>S>")
+    glyph_count, seq_lookup_count = u16_list(base_offset + 2, 2)
     coverage_list = glyph_count.times.map do |i|
        unpack_coverage(base_offset, 6 + 2 * i)
     end
@@ -221,20 +219,18 @@ class GTabParser
       if i != 0
         i += base_offset
         unpack_u16_list(i).map do |j|
-          if j != 0
-            j += i
-            backtrack = unpack_u16_list(j)
-            j += 2 * backtrack.size + 2
-            input_count = u16(j)
-            j += 2
-            input = u16_list(j, input_count - 1)
-            j += (input_count - 1) * 2
-            lookahead = unpack_u16_list(j)
-            j += lookahead.size * 2 + 2
-            seq_lookup_count = u16(j)
-            seq_lookup_list = u16_list(j + 2, seq_lookup_count * 2)
-            {backtrack: backtrack, input: input, lookahead: lookahead, seq_lookup_list: seq_lookup_list}
-          end
+          j += i
+          backtrack = unpack_u16_list(j)
+          j += 2 * backtrack.size + 2
+          input_count = u16(j)
+          j += 2
+          input = u16_list(j, input_count - 1)
+          j += (input_count - 1) * 2
+          lookahead = unpack_u16_list(j)
+          j += lookahead.size * 2 + 2
+          seq_lookup_count = u16(j)
+          seq_lookup_list = u16_list(j + 2, seq_lookup_count * 2)
+          {backtrack: backtrack, input: input, lookahead: lookahead, seq_lookup_list: seq_lookup_list}
         end
       end
     end
@@ -666,6 +662,23 @@ class GTabParser
 end
 
 class ParseBinary
+  def block(src, offset, length)
+    if src.class == String
+      src[offset, length]
+    elsif src.class == File
+      src.seek offset
+      src.read length
+    end
+  end
+
+  def unpack(src, offset, length, format)
+    if src.class == String
+      src[offset, length].unpack(format)
+    elsif src.class == File
+      src.seek offset
+      src.read(length).unpack(format)
+    end
+  end
   def calc_check_sum(src, offset, length)
     sum = 0
     padding_count = (4 - length & 3) & 3
@@ -677,16 +690,16 @@ class ParseBinary
   end
 
   def parse_one(src, one_offset)
-    offset_table = src[one_offset, 12].unpack("L>S>4")
+    offset_table = unpack(src, one_offset, 12, "L>S>4")
     offset_table[1].times do |tableIndex|
-      tag, check_sum, offset, length = src[one_offset + 12 + 16 * tableIndex, 16].unpack("a4L>3")
+      tag, check_sum, offset, length = unpack(src, one_offset + 12 + 16 * tableIndex, 16, "a4L>3")
       if tag == "GSUB"
-        @gsub = GTabParser.new(src[offset, length], tag)
+        @gsub = GTabParser.new(block(src, offset, length), tag)
         if @gsub != nil
           @gsub.list_info("Table 'GSUB'")
         end
       elsif tag == "GPOS"
-        @gpos = GTabParser.new(src[offset, length], tag)
+        @gpos = GTabParser.new(block(src, offset, length), tag)
         if @gpos != nil
           @gpos.list_info("Table 'GPOS'")
         end
@@ -697,15 +710,17 @@ class ParseBinary
   def initialize(data, index=0)
     @gsub = nil
     @gpos = nil
-    magic = data[0, 4].unpack("L>")[0]
+    magic = unpack(data, 0, 4, "L>")[0]
     if [0x00010000, 0x4F54544F, 0x74727565].include?(magic)
       parse_one data, 0
     elsif magic == 0x74746366 then
-      header = data[0, 12].unpack("a4S>2L>")
-      offset_list = data[12, header[3] * 4].unpack("L>#{header[3]}")
+      header = unpack(data, 0, 12, "a4S>2L>")
+      offset_list = unpack(data, 12, header[3] * 4, "L>*")
       if index < offset_list.count
         parse_one data, offset_list[index]
       end
     end
+    rescue => error
+      puts error
   end
 end

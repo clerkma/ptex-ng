@@ -1,4 +1,4 @@
-# Copyright (c) 2020, 2022 Clerk Ma
+# Copyright (c) 2020, 2022, 2023 Clerk Ma
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -29,11 +29,11 @@ end
 
 if ARGV.length == 1
   File.open(ARGV[0], "rb") do |f|
-    b = ParseBinary.new(f.read)
+    b = ParseBinary.new(f)
   end
 elsif ARGV.length == 2
   File.open(ARGV[0], "rb") do |f|
-    b = ParseBinary.new(f.read, ARGV[1].to_i)
+    b = ParseBinary.new(f, ARGV[1].to_i)
   end
 else
   puts("Usage: lsotfea font [index]")
