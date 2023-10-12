@@ -1,4 +1,4 @@
-## $Id: Makefile.am 68232 2023-09-10 19:42:49Z karl $
+## $Id: Makefile.am 68515 2023-10-11 20:46:52Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2023 Karl Berry <tex-live@tug.org>
@@ -137,6 +137,7 @@ texmf_other_scripts = \
 	dosepsbin/dosepsbin.pl \
 	dviasm/dviasm.py \
 	dviinfox/dviinfox.pl \
+	easydtx/edtx2dtx.pl \
 	ebong/ebong.py \
 	epspdf/epspdf.tlu \
 	epspdf/epspdftk.tcl \
@@ -181,6 +182,10 @@ texmf_other_scripts = \
 	make4ht/make4ht \
 	match_parens/match_parens \
 	mathspic/mathspic.pl \
+	memoize/memoize-clean.pl \
+	memoize/memoize-clean.py \
+	memoize/memoize-extract.pl \
+	memoize/memoize-extract.py \
 	mf2pt1/mf2pt1.pl \
 	mkgrkindex/mkgrkindex \
 	mkjobtexmf/mkjobtexmf.pl \
