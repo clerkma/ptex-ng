@@ -88,13 +88,7 @@ module OpenTypeDataParser
   end
 
   def value_size(value_format)
-    size = 0
-    (0..7).each do |i|
-      if value_format & (1 << i) > 0
-        size += 2
-      end
-    end
-    size
+    2 * (value_format & 0xFF).to_s(2).bytes.sum { |x| x - 48 }
   end
 
   def parse_value(base_offset, value_format)
@@ -118,8 +112,7 @@ module OpenTypeDataParser
 
   def parse_mark_array(base_offset, delta)
     offset = base_offset + u16(base_offset + delta)
-    mark_count = u16(offset)
-    mark_count.times.map do |i|
+    u16(offset).times.map do |i|
       mark_class, anchor_offset = u16_list(offset + 2 + 4 * i, 2)
       anchor = parse_anchor(offset, anchor_offset)
       {mark_class: mark_class, anchor: anchor}
@@ -151,11 +144,9 @@ class GTabParser
       script_tag, script_offset = unpack(script_one_offset, 6, "a4S>")
       script_offset += base_offset
       default_lang_sys_offset, lang_sys_count = u16_list(script_offset, 2)
-      if default_lang_sys_offset != 0
+      default_lang_sys = if default_lang_sys_offset != 0
         offset = script_offset + default_lang_sys_offset
-        default_lang_sys = parse_lang_sys(offset)
-      else
-        default_lang_sys = nil
+        parse_lang_sys(offset)
       end
       script = lang_sys_count.times.map do |lang_sys_index|
         offset = script_offset + 4 + 6 * lang_sys_index
@@ -395,7 +386,8 @@ class GTabParser
         end
       end
       {sig: sig, coverage: coverage,
-       class_def1: class_def1, class_def2: class_def2, class_set_list: class_set_list}
+       class_def1: class_def1, class_def2: class_def2,
+       class_set_list: class_set_list}
     when 31
       coverage = unpack_coverage(base_offset, 2)
       count = u16(base_offset + 4)
@@ -419,7 +411,8 @@ class GTabParser
           parse_anchor(base_array_offset, j)
         end
       end
-      {sig: sig, mark_coverage: mark_coverage, base_coverage: base_coverage,
+      {sig: sig, mark_coverage: mark_coverage,
+       base_coverage: base_coverage,
        mark_array: mark_array, base_array: base_array}
     when 51
       mark_coverage = unpack_coverage(base_offset, 2)
@@ -445,14 +438,14 @@ class GTabParser
       mark_class_count = u16(base_offset + 6)
       mark_array = parse_mark_array(base_offset, 8)
       mark2_array_offset = u16(base_offset + 10) + base_offset
-      mark2_count = u16(mark2_array_offset)
-      mark2_array = mark2_count.times.map do |i|
+      mark2_array = u16(mark2_array_offset).times.map do |i|
         offset = mark2_array_offset + 2 + i * 2 * mark_class_count
         u16_list(offset, mark_class_count).map do |j|
           parse_anchor(mark2_array_offset, j)
         end
       end
-      {sig: sig, mark1_coverage: mark1_coverage, mark2_coverage: mark2_coverage,
+      {sig: sig, mark1_coverage: mark1_coverage,
+       mark2_coverage: mark2_coverage,
        mark_array: mark_array, mark2_array: mark2_array}
     when 71
       {sig: sig}.merge(parse_lookup_context1(base_offset))
