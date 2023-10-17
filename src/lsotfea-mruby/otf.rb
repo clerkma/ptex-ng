@@ -34,6 +34,15 @@ module OpenTypeDataParser
     unpack(base_offset, 2, "S>")[0]
   end
 
+  def u24(base_offset)
+    h, b = unpack(base_offset, 3, "S>C")
+    h * 256 + b
+  end
+
+  def u32(base_offset)
+    unpack(base_offset, 4, "L>")[0]
+  end
+
   def i16(base_offset)
     unpack(base_offset, 2, "s>")[0]
   end
@@ -118,10 +127,6 @@ module OpenTypeDataParser
       {mark_class: mark_class, anchor: anchor}
     end
   end
-end
-
-class GTabParser
-  include OpenTypeDataParser
 
   def unpack(start, length, format)
     if start + length > @length
@@ -131,6 +136,164 @@ class GTabParser
       @data[start, length].unpack(format)
     end
   end
+end
+
+class CMapParser
+  include OpenTypeDataParser
+
+  def f1(offset)
+    length, language = unpack(offset + 2, 4, "S>S>")
+    map = unpack(offset + 6, length - 6, "C*")
+    {format: 1, language: language, map: map}
+  end
+
+  def f2(offset)
+    length, language = unpack(offset + 2, 4, "S>S>")
+    keys = unpack(offset + 6, 512, "S>*")
+    key_max = keys.max + 8
+    pos_d = 518 + key_max
+    header = keys.each.map do |i|
+      pos_h = 518 + i
+      first, count, id_delta, id_offset = unpack(offset + pos_h, 8, "S>S>s>S>")
+      pos_g = 518 + i + 6 + id_offset
+      if id_offset != 0
+        {first: first, count: count, id_delta: id_delta, id_offset: (pos_g - pos_d) / 2}
+      else
+        nil
+      end
+    end
+    glyph = unpack(pos_d, length - pos_d, "S>*")
+    {format: 2, language: language, header: header, glyph: glyph}
+  end
+
+  def f4(offset)
+    length, language = unpack(offset + 2, 4, "S>S>")
+    seg = u16(offset + 6)
+    one_offset = 14
+    end_code = unpack(offset + one_offset, seg, "S>*")
+    one_offset += 2 + seg
+    start_code = unpack(offset + one_offset, seg, "S>*")
+    one_offset += seg
+    id_delta = unpack(offset + one_offset, seg, "s>*")
+    one_offset += seg
+    id_offset = unpack(offset + one_offset, seg, "S>*")
+    one_offset += seg
+    glyph = unpack(offset + one_offset, length - one_offset, "S>*")
+    id_offset = id_offset.each_with_index.map {|v, i| (v - seg) / 2 + i if v != 0 }
+    {format: 4, language: language,
+     start_code: start_code, end_code: end_code,
+     id_delta: id_delta, id_offset: id_offset}
+  end
+
+  def f6(offset)
+    length, language, first, count = unpack(offset + 2, 8, "S>*")
+    glyph = unpack(offset + 10, count * 2, "S>*")
+    {format: 6, language: language, first: first, glyph: glyph}
+  end
+
+  def f8(offset)
+    length, language = unpack(offset + 4, 8, "L>L>")
+    is32 = unpack(offset + 12, 8192, "C*")
+    count = u32(offset + 8204)
+    one_offset = offset + 8208
+    glyph = count.times.map do |i|
+      start_code, end_code, glyph = unpack(one_offset, 12, "L>*")
+      one_offset += 12
+      {start_code: start_code, end_code: end_code, glyph: glyph}
+    end
+    {format: 8, language: language, is32: is32, glyph: glyph}
+  end
+
+  def f10(offset)
+    length, language, start_code, count = unpack(offset + 4, 16, "L>*")
+    glyph = unpack(offset + 20, count * 2, "S>*")
+    {format: 10, language: language,
+     start_code: start_code, glyph: glyph}
+  end
+
+  def f12_13(offset)
+    length, language, count = unpack(offset + 4, 12, "L>*")
+    one_offset = offset +  16
+    glyph = count.times.map do |i|
+      start_code, end_code, glyph = unpack(one_offset, 12, "L>*")
+      one_offset += 12
+      {start_code: start_code, end_code: end_code, glyph: glyph}
+    end
+    {format: u16(offset), language: language, glyph: glyph}
+  end
+
+  def f14(offset)
+    length, count = unpack(offset + 2, 8, "L>*")
+    one_offset = offset + 10
+    variation = count.times.map do |i|
+      selector = u24(one_offset + i * 11)
+      default_offset, non_default_offset = unpack(one_offset + i * 11 + 3, 8, "L>*")
+      default = if default_offset != 0
+        default_offset += offset
+        count = u32(default_offset)
+        count.times.map do |i|
+          start_add = u32(default_offset + 4 + 4 * i)
+          {start: start_add >> 8, add: start_add & 0xFF}
+        end
+      end
+      non_default_offset = if non_default_offset != 0
+        non_default_offset += offset
+        count = u32(non_default_offset)
+        count.times.map do |i|
+          code = u24(non_default_offset + 4 + 5 * i)
+          glyph = u16(non_default_offset + 4 + 5 * i + 3)
+          {code: code, glyph: glyph}
+        end
+      end
+    end
+    {format: 14, variation: variation}
+  end
+
+  def initialize(data, tag)
+    @data = data
+    @tag = tag
+    @length = data.length
+    version = u16(0)
+    if version == 0
+      @encoding = u16(2).times.map do |i|
+        platform, encoding, offset = unpack(4 + 8 * i, 8, "S>S>L>")
+        {platform: platform, encoding: encoding, offset: offset}
+      end
+      @offset = @encoding.map {|e| e[:offset]}.uniq.sort
+      @ctable = @offset.each do |i|
+        format = u16(i)
+        case format
+        when 1
+          f1(i)
+        when 2
+          f2(i)
+        when 4
+          f4(i)
+        when 6
+          f6(i)
+        when 8
+          f8(i)
+        when 10
+          f10(i)
+        when 12, 13
+          f12_13(i)
+        when 14
+          f14(i)
+        end
+      end
+    end
+  rescue => error
+    puts error
+    nil
+  end
+
+  def inspect
+    "OpenTypeParser(`cmap`)"
+  end
+end
+
+class GTabParser
+  include OpenTypeDataParser
 
   def parse_lang_sys(base_offset)
     lookup_order, required_feature_index = u16_list(base_offset, 2)
@@ -488,7 +651,7 @@ class GTabParser
   end
 
   def inspect
-    "OpenTypeParser"
+    "OpenTypeParser(`#{@tag}`)"
   end
 
   def initialize(data, tag)
@@ -497,7 +660,7 @@ class GTabParser
     @length = data.length
     @script_list = nil
     version = u16_list(0, 2)
-    if version == [1, 0]
+    if version == [1, 0] or version == [1, 1]
       script_list_offset, feature_list_offset, lookup_list_offset = u16_list(4, 3)
       @script_list = parse_script_list(script_list_offset)
       @feature_list = parse_feature_list(feature_list_offset)
@@ -672,6 +835,7 @@ class ParseBinary
       src.read(length).unpack(format)
     end
   end
+
   def calc_check_sum(src, offset, length)
     sum = 0
     padding_count = (4 - length & 3) & 3
@@ -696,6 +860,8 @@ class ParseBinary
         if @gpos != nil
           @gpos.list_info("Table 'GPOS'")
         end
+      elsif tag == "cmap"
+        @cmap = CMapParser.new(block(src, offset, length), tag)
       end
     end
   end
