@@ -79,7 +79,8 @@
 // TeX Live's kpathsea
 #include <kpathsea/config.h>
 #include <kpathsea/c-pathmx.h> // PATH_MAX
-#include <kpathsea/getopt.h>   // get_opt
+#define __GNU_LIBRARY__
+#include <kpathsea/getopt.h>   // getopt_long_only
 #include <kpathsea/tex-file.h> // kpse_find_file
 #include <kpathsea/types.h>    // RPId64
 #include <kpathsea/version.h>  // kpathsea_version_string
