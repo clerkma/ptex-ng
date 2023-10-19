@@ -79,7 +79,9 @@
 // TeX Live's kpathsea
 #include <kpathsea/config.h>
 #include <kpathsea/c-pathmx.h> // PATH_MAX
+#if defined (__APPLE__)
 #define __GNU_LIBRARY__
+#endif
 #include <kpathsea/getopt.h>   // getopt_long_only
 #include <kpathsea/tex-file.h> // kpse_find_file
 #include <kpathsea/types.h>    // RPId64

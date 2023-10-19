@@ -1,7 +1,6 @@
 
 ## Build Status
 
-[![Travis-CI Build Status](https://app.travis-ci.com/clerkma/ptex-ng.svg?branch=master)](https://app.travis-ci.com/github/clerkma/ptex-ng)
 [![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/clerkma/ptex-ng?branch=master&svg=true)](https://ci.appveyor.com/project/clerkma/ptex-ng)
 
 ## How to Build
