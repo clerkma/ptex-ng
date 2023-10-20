@@ -1,11 +1,11 @@
 platform:
   - Any CPU
-clone_depth: 10
+clone_depth: 2
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
 build_script:
-  - cmd: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+  - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"'
   - cmd: cd build-msvc
   - cmd: build-aptex.bat
 test_script:
