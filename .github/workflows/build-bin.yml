@@ -7,13 +7,17 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  build-linux:
     runs-on: ubuntu-latest
-
     steps:
-        - uses: actions/checkout@v2
-        - name: install deps
-          run: sudo apt install automake autoconf libtool texinfo texi2html gcc ruby make
-        - name: build
-          run: ./build-gcc/build-aptex.sh
+      - uses: actions/checkout@v2
+      - name: install deps
+        run: sudo apt install automake autoconf libtool texinfo texi2html gcc ruby make
+      - name: build
+        run: ./build-gcc/build-aptex.sh
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: build
+        run: ./build-gcc/build-aptex.sh
