@@ -37,7 +37,7 @@ function build_mruby() {
   fi
 }
 #
-build_mruby
+# build_mruby
 #
 set_flags
 # libraries from TeX Live.

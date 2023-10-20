@@ -3,7 +3,7 @@ AR = lib
 CFLAGS = $(APTEX_CFLAGS) -DWIN32 -DNO_KPSE_DLL -DMAKE_KPSE_DLL -Ibuild/ -I$(TL_ROOT)/texk
 ROOT = $(TL_ROOT)/texk/kpathsea
 OBJS = kpathsea-tex-file.obj kpathsea-absolute.obj kpathsea-atou.obj kpathsea-cnf.obj kpathsea-concat.obj \
-	kpathsea-concat3.obj kpathsea-concatn.obj kpathsea-db.obj kpathsea-debug.obj kpathsea-dir.obj \
+	kpathsea-concat3.obj kpathsea-concatn.obj kpathsea-db.obj kpathsea-debug.obj kpathsea-dir.obj kpathsea-dirent.obj \
 	kpathsea-elt-dirs.obj kpathsea-expand.obj kpathsea-extend-fname.obj kpathsea-file-p.obj kpathsea-find-suffix.obj \
 	kpathsea-fn.obj kpathsea-fontmap.obj kpathsea-getopt.obj kpathsea-getopt1.obj kpathsea-hash.obj \
 	kpathsea-kdefault.obj kpathsea-kpathsea.obj kpathsea-line.obj kpathsea-magstep.obj kpathsea-make-suffix.obj \
@@ -37,6 +37,8 @@ kpathsea-debug.obj: $(ROOT)/debug.c
 	$(CC) $(CFLAGS) -Fokpathsea-debug.obj $(ROOT)/debug.c
 kpathsea-dir.obj: $(ROOT)/dir.c
 	$(CC) $(CFLAGS) -Fokpathsea-dir.obj $(ROOT)/dir.c
+kpathsea-dirent.obj: build/kpathsea/dirent.c
+	$(CC) $(CFLAGS) -Fokpathsea-dirent.obj build/kpathsea/dirent.c
 kpathsea-elt-dirs.obj: $(ROOT)/elt-dirs.c
 	$(CC) $(CFLAGS) -Fokpathsea-elt-dirs.obj $(ROOT)/elt-dirs.c
 kpathsea-expand.obj: $(ROOT)/expand.c

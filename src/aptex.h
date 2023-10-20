@@ -96,17 +96,14 @@
 #include "zlib.h"
 
 // libmruby
+#if defined (USE_MRUBY)
 #include "mruby.h"
 #include "mruby/compile.h"
 #include "aptex-mruby.h"
-#define USE_MRUBY
+#endif
 
 // internal headers
-#include "aptex-cairo-visual-debug.h"
 #define USE_VISUAL_DEBUG
-
-#include "aptex-opentype.h"
-#include "aptex-unicode.h"
 #include "aptex-utils.h"
 
 #ifdef __cplusplus

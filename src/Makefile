@@ -15,20 +15,15 @@ INCLUDES = \
 	-I ../texlive/libs/cairo/cairo \
 	-I ../texlive/libs/cairo/cairo-src/src \
 	-I ../texlive/texk/web2c/libmd5 \
-	-I libotf/src \
-	-I mruby/include
+	-I libotf/src
 LDLIBS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a\
 	libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a\
-	libmd5.a libmruby.a -lm
+	libmd5.a -lm
 LDFLAGS += -o
 
 objects = \
 	aptex.o \
-	aptex-cairo-visual-debug.o \
-	aptex-opentype.o \
-	aptex-unicode.o \
 	aptex-utils.o \
-	aptex-mruby.o \
 	aptex-src.o
 
 headers = aptex.h aptex-functions.h aptex-macros.h aptex-cairo-visual-debug.h aptex-opentype.h
@@ -51,20 +46,8 @@ lsotfea: lsotfea-src/lsotfea.c lsotfea-src/lsotfea-stag.c lsotfea-src/lsotfea-lt
 aptex.o: aptex.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex.c
 
-aptex-cairo-visual-debug.o: aptex-cairo-visual-debug.c $(headers)
-	$(CC) $(CFLAGS) $(INCLUDES) aptex-cairo-visual-debug.c
-
-aptex-opentype.o: aptex-opentype.c $(headers)
-	$(CC) $(CFLAGS) $(INCLUDES) aptex-opentype.c
-
-aptex-unicode.o: aptex-unicode.c $(headers)
-	$(CC) $(CFLAGS) $(INCLUDES) aptex-unicode.c
-
 aptex-utils.o: aptex-utils.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-utils.c
-
-aptex-mruby.o: aptex-mruby.c $(headers)
-	$(CC) $(CFLAGS) $(INCLUDES) aptex-mruby.c
 
 aptex-src.o: aptex-src.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex-src.c
