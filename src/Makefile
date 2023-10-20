@@ -15,7 +15,6 @@ INCLUDES = \
 	-I ../texlive/libs/cairo/cairo \
 	-I ../texlive/libs/cairo/cairo-src/src \
 	-I ../texlive/texk/web2c/libmd5 \
-	-I libyaml/include \
 	-I libotf/src \
 	-I mruby/include
 LDLIBS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a\
