@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 Clerk Ma
+   Copyright 2019-2023 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,13 +24,3 @@ char * aptex_utils_get_file_mod_date (char * file_name);
 char * aptex_utils_get_file_size (char * file_name);
 char * aptex_utils_get_md5_sum (char * file_name, uint32_t file_or_str);
 char * aptex_utils_get_file_dump (char * file_name, uint32_t s, uint32_t l);
-
-struct native_info {
-  char * src;
-  uint16_t idx;
-  char * act;
-};
-
-int read_native_yaml(unsigned char* spec, size_t spec_len, struct native_info* spec_native);
-
-/* char native_buffer[1024]; */

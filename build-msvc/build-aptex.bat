@@ -53,9 +53,6 @@ if exist *.obj (del *.obj)
 echo Building libdpx ...
 if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libdpx.nmake
-echo Building libyaml ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-libyaml.nmake
 echo Building libmd5 ...
 if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libmd5.nmake

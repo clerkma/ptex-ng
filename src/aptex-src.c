@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Clerk Ma
+   Copyright 2014-2023 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -126,30 +126,22 @@ static void print_aptex_usage (void)
 
 static void print_aptex_version (void)
 {
-  printf("Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma.\n"
+  printf("Copyright 2014-2023 Clerk Ma.\n"
     "banner: \"%s\"\n"
-    "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n"
+    "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n",
+    banner, pTeX_version_string, upTeX_version_string);
 #ifdef USE_KPATHSEA
-    "Compiled with %s\n"
+  printf("Compiled with %s\n", kpathsea_version_string);
 #endif
-    "Compiled with %s\n"
+  printf("Compiled with %s\n"
     "Compiled with libotf version %s\n"
-    "Compiled with zlib version %s\n"
+    "Compiled with zlib version %s\n",
+    ptexenc_version_string, LIBOTF_VERSION, zlib_version);
 #ifdef USE_MRUBY
-    "Compiled with mruby version %s\n"
+  printf("Compiled with mruby version %s\n", MRUBY_VERSION);
 #endif
-    "Compiled with synctex (build-in edition)\n"
-    "Compiled with libdpx (build-in dvipdfmx)\n",
-    banner, pTeX_version_string, upTeX_version_string,
-#ifdef USE_KPATHSEA
-    kpathsea_version_string,
-#endif
-    ptexenc_version_string,
-    LIBOTF_VERSION, zlib_version
-#ifdef USE_MRUBY
-    , MRUBY_VERSION
-#endif /* USE_MRUBY */
-  );
+  printf("Compiled with synctex (build-in edition)\n"
+    "Compiled with libdpx (build-in dvipdfmx)\n");
   aptex_utils_exit(EXIT_SUCCESS);
 }
 

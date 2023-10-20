@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Clerk Ma
+# Copyright (c) 2014-2023 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #
@@ -18,7 +18,9 @@ INCLUDES = \
 	-I libyaml/include \
 	-I libotf/src \
 	-I mruby/include
-LDLIBS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a libmd5.a libmruby.a libyaml.a -lm
+LDLIBS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a\
+	libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a\
+	libmd5.a libmruby.a -lm
 LDFLAGS += -o
 
 objects = \

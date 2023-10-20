@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 Clerk Ma
+   Copyright 2019-2023 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@
 #include "aptex-utils.h"
 
 #include "md5.h"
-#include "yaml.h"
 
 void aptex_utils_get_seconds_and_micros (int64_t * s, int64_t * m)
 {
@@ -293,68 +292,4 @@ char * aptex_utils_get_file_dump (char * file_name, uint32_t s, uint32_t l)
   }
 
   return NULL;
-}
-
-int read_native_yaml (unsigned char* spec, size_t spec_len, struct native_info* spec_native)
-{
-  yaml_parser_t parser;
-  yaml_document_t document;
-  yaml_node_t* root;
-  int result = 0;
-
-  yaml_parser_initialize(&parser);
-  yaml_parser_set_input_string(&parser, spec, strlen((const char *) spec));
-  yaml_parser_load(&parser, &document);
-
-  if (parser.error != YAML_NO_ERROR)
-  {
-    result = 1;
-    goto done;
-  }
-
-  root = yaml_document_get_root_node(&document);
-  if (root->type != YAML_MAPPING_NODE)
-  {
-    result = 2;
-    goto done;
-  }
-  else
-  {
-    yaml_node_t* key;
-    yaml_node_t* val;
-    yaml_node_pair_t* pair;
-
-    for (pair = root->data.mapping.pairs.start; pair < root->data.mapping.pairs.top; pair++)
-    {
-      key = yaml_document_get_node(&document, pair->key);
-      val = yaml_document_get_node(&document, pair->value);
-
-      if (key->type == YAML_SCALAR_NODE && val->type == YAML_SCALAR_NODE)
-      {
-        const char * key_value = (const char *) key->data.scalar.value;
-        const char * val_value = (const char *) val->data.scalar.value;
-        if (strcmp(key_value, "src") == 0)
-          spec_native->src = strdup(val_value);
-        else if (strcmp(key_value, "act") == 0)
-          spec_native->act = strdup(val_value);
-        else if (strcmp(key_value, "idx") == 0)
-        {
-          int idx;
-          char* endp;
-          idx = strtol(val_value, &endp, 10);
-          spec_native->idx = idx;
-        }
-      }
-      else
-      {
-        result = 3;
-        goto done;
-      }
-    }
-  }
-
-done:
-  yaml_parser_delete(&parser);
-
-  return result;
 }
