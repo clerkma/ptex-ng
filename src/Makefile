@@ -21,18 +21,10 @@ LDLIBS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a\
 	libmd5.a -lm
 LDFLAGS += -o
 
-objects = \
-	aptex.o \
-	aptex-utils.o \
-	aptex-src.o
+objects = aptex.o aptex-utils.o aptex-src.o
+headers = aptex.h aptex-functions.h aptex-macros.h aptex-utils.h
 
-headers = aptex.h aptex-functions.h aptex-macros.h aptex-cairo-visual-debug.h aptex-opentype.h
-
-lsotfea_objects = \
-	lsotfea.o \
-	lsotfea-stag.o \
-	lsotfea-ltag.o \
-	lsotfea-ftag.o
+lsotfea_objects = lsotfea.o lsotfea-stag.o lsotfea-ltag.o lsotfea-ftag.o
 
 all: aptex lsotfea
 
