@@ -1,6 +1,7 @@
 
 ## Build Status
 
+![pTeX-ng Workflow](https://github.com/clerkma/ptex-ng/actions/workflows/build-bin.yml/badge.svg)
 [![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/clerkma/ptex-ng?branch=master&svg=true)](https://ci.appveyor.com/project/clerkma/ptex-ng)
 
 ## How to Build
