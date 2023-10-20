@@ -66,11 +66,7 @@ static const char * dist = "Linux";
 static const char * dist = "Unknown";
 #endif
 
-#if defined (W32TeX)
-static const char * banner = "This is Asiatic pTeX, Version 3.141592653 (W32TeX)";
-#else
 static const char * banner = "This is Asiatic pTeX, Version 3.141592653";
-#endif
 
 static void aptex_utils_exit (int unix_code)
 {
@@ -82,47 +78,47 @@ static void print_aptex_usage (void)
 {
   printf("\n"
       "Useage: aptex [OPTION]... [+fmt_file_name] [file]\n\n"
-      " --help\n"
-      "   show this usage summary\n"
-      " --version\n"
-      "   output version information and exit\n"
-      " --ini\n"
-      "   start up as INITEX (create format file)\n"
-      " --shell-escape\n"
-      "   enable \\write18\n"
-      " --merge-kanji-baseline\n"
-      "   shift baseline of OpenType's ascender/descender to JFM's height/depth\n"
+      "  --help\n"
+      "    show this usage summary\n"
+      "  --version\n"
+      "    output version information and exit\n"
+      "  --ini\n"
+      "    start up as INITEX (create format file)\n"
+      "  --shell-escape\n"
+      "    enable \\write18\n"
+      "  --merge-kanji-baseline\n"
+      "    shift baseline of OpenType's ascender/descender to JFM's height/depth\n"
 #ifdef USE_VISUAL_DEBUG
-      " --visual-debug\n"
-      "   when ship out DVI, show ApTeX's internal node to PNG/PDF via Cairo\n"
+      "  --visual-debug\n"
+      "    when ship out DVI, show ApTeX's internal node to PNG/PDF via Cairo\n"
 #endif /* USE_VISUAL_DEBUG */
 #ifdef USE_MRUBY
       "\n"
-      " --mrb-load-file\n"
-      "   execute file of mruby\n"
-      " --mrb-load-string\n"
-      "   execute string of mruby\n"
+      "  --mrb-load-file\n"
+      "    execute file of mruby\n"
+      "  --mrb-load-string\n"
+      "    execute string of mruby\n"
 #endif /* USE_MRUBY */
       "\n"
-      " --jobname=str\n"
-      "   set the job name to str, e.g.: '--jobname=book2016'\n"
-      " --progname=str\n"
-      "   set program (and fmt) name to str\n"
-      " --synctex=num\n"
-      "   generate SyncTeX data for previewers if nonzero\n"
-      " --fontmap=map\n"
-      "   +mapfile (append mode), !mapfile (replace mode), e.g.: '--fontmap=!replace.map'\n"
-      " --format=fmt\n"
-      "   set preloaded format, e.g.: 'aptex --format=plain name.tex'\n"
+      "  --jobname=str\n"
+      "    set the job name to str, e.g.: '--jobname=book2016'\n"
+      "  --progname=str\n"
+      "    set program (and fmt) name to str\n"
+      "  --synctex=num\n"
+      "    generate SyncTeX data for previewers if nonzero\n"
+      "  --fontmap=map\n"
+      "    +mapfile (append mode), !mapfile (replace mode), e.g.: '--fontmap=!replace.map'\n"
+      "  --format=fmt\n"
+      "    set preloaded format, e.g.: 'aptex --format=plain name.tex'\n"
       "\n"
-      " --patterns\n"
-      "   (INITEX only) allow use of \\patterns after loading format\n"
-      " --main-mem\n"
-      "   (INITEX only) initial main memory size in kilo words\n"
-      " --hyph-size\n"
-      "   (INITEX only) hyphenation exception dictionary size\n"
-      " --trie-size\n"
-      "   (INITEX only) hyphenation pattern trie size\n\n"
+      "  --patterns\n"
+      "    (INITEX only) allow use of \\patterns after loading format\n"
+      "  --main-mem\n"
+      "    (INITEX only) initial main memory size in kilo words\n"
+      "  --hyph-size\n"
+      "    (INITEX only) hyphenation exception dictionary size\n"
+      "  --trie-size\n"
+      "    (INITEX only) hyphenation pattern trie size\n\n"
       "Email bug reports to clerkma@gmail.com.\n"
   );
   aptex_utils_exit(EXIT_SUCCESS);
