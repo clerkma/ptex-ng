@@ -12,13 +12,10 @@ INCLUDES = \
 	-I ../texlive/texk/ \
 	-I ../texlive/libs/zlib/include \
 	-I ../texlive/libs/freetype2/freetype2 \
-	-I ../texlive/libs/cairo/cairo \
-	-I ../texlive/libs/cairo/cairo-src/src \
 	-I ../texlive/texk/web2c/libmd5 \
 	-I libotf/src
-LDLIBS = libdpx.a libcairo-pdf.a libcairo.a libpixman.a libpng.a\
-	libpaper.a libz.a libptexenc.a libkpathsea.a libotf.a libfreetype.a\
-	libmd5.a -lm
+LDLIBS = libdpx.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a\
+	libotf.a libfreetype.a libmd5.a -lm
 LDFLAGS += -o
 
 objects = aptex.o aptex-utils.o aptex-src.o

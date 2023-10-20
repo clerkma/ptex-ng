@@ -29,18 +29,6 @@ if exist *.obj (del *.obj)
 echo Building libotf ...
 if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libotf.nmake
-echo Building libpixman ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-libpixman.nmake
-echo Building libcairo ...
-if exist *.obj (del *.obj)
-md build\cairo\src
-copy %TL_ROOT%\libs\cairo\cairo-src\src\*.c build\cairo\src\
-copy %TL_ROOT%\libs\cairo\cairo-src\src\*.h build\cairo\src\
-copy %TL_ROOT%\libs\cairo\cairo-src\cairo-version.h build\cairo\cairo-version.h
-del build\cairo\src\cairoint.h
-%MAKE% -s -nologo -f makefiles\mk-libcairo.nmake
-rd /s /q build\cairo\src
 echo Building lsotfea ...
 if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-lsotfea.nmake
@@ -57,12 +45,7 @@ echo Building libmd5 ...
 if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libmd5.nmake
 echo Building aptex/ptex-ng
-copy %TL_ROOT%\libs\cairo\cairo-src\src\cairo.h build\cairo\cairo.h
-copy %TL_ROOT%\libs\cairo\cairo-src\src\cairo-deprecated.h build\cairo\cairo-deprecated.h
 if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-aptex.nmake
 if exist *.obj (del *.obj)
 if exist *.lib (del *.lib)
-del build\cairo\cairo-version.h
-del build\cairo\cairo.h
-del build\cairo\cairo-deprecated.h

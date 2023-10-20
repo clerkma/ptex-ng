@@ -29,13 +29,6 @@ char * aptex_utils_get_file_size (char * file_name);
 char * aptex_utils_get_md5_sum (char * file_name, uint32_t file_or_str);
 char * aptex_utils_get_file_dump (char * file_name, uint32_t s, uint32_t l);
 
-void aptex_vdbg_ship_open (const char * out_name);
-void aptex_vdbg_ship_close (void);
-void aptex_vdbg_bop (double w, double h, double x, double y);
-void aptex_vdbg_eop (void);
-void aptex_vdbg_node_char (int32_t dir, int32_t x, int32_t y, int32_t w, int32_t h, int32_t d);
-void aptex_vdbg_node_rule (int32_t dir, int32_t x, int32_t y, int32_t w, int32_t h);
-
 typedef struct {
   uint16_t GID;
   uint16_t firstLayerIndex;

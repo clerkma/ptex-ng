@@ -88,10 +88,6 @@ static void print_aptex_usage (void)
       "    enable \\write18\n"
       "  --merge-kanji-baseline\n"
       "    shift baseline of OpenType's ascender/descender to JFM's height/depth\n"
-#ifdef USE_VISUAL_DEBUG
-      "  --visual-debug\n"
-      "    when ship out DVI, show ApTeX's internal node to PNG/PDF via Cairo\n"
-#endif /* USE_VISUAL_DEBUG */
 #ifdef USE_MRUBY
       "\n"
       "  --mrb-load-file\n"
@@ -1336,7 +1332,6 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.flag_tex82                = false;
   aptex_env.flag_compact_fmt          = true;
   aptex_env.flag_merge_kanji_baseline = false;
-  aptex_env.flag_visual_debug         = false;
 
   aptex_env.trace_realloc         = true;
   aptex_env.trace_mem             = false;
@@ -1388,7 +1383,6 @@ static void aptex_commands_init (int ac, char **av)
       { "mrb-load-string",required_argument, NULL, 0 },
       { "shell-escape",   no_argument, NULL, 0 },
       { "merge-kanji-baseline", no_argument, NULL, 0 },
-      { "visual-debug",   no_argument, NULL, 0 },
       { "patterns",       no_argument, NULL, 0 },
       { "ini",            no_argument, NULL, 0 },
       { "showlbstats",    no_argument, NULL, 0 },
@@ -1424,8 +1418,6 @@ static void aptex_commands_init (int ac, char **av)
         aptex_env.flag_shell_escape = true;
       else if (ARGUMENT_IS("merge-kanji-baseline"))
         aptex_env.flag_merge_kanji_baseline = true;
-      else if (ARGUMENT_IS("visual-debug"))
-        aptex_env.flag_visual_debug = true;
       else if (ARGUMENT_IS("patterns"))
         aptex_env.flag_reset_trie = true;
       else if (ARGUMENT_IS("trace"))
@@ -21560,18 +21552,10 @@ static void ship_out (pointer p)
       FT_Init_FreeType(&font_ftlib);
     }
 #endif
-#ifdef USE_VISUAL_DEBUG
-    if (aptex_env.flag_visual_debug)
-      aptex_vdbg_ship_open("aptex-visual-debug.pdf");
-#endif
   }
 
 #ifndef APTEX_DVI_ONLY
   aptex_dpx_bop(total_pages + 1, pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
-#endif
-#ifdef USE_VISUAL_DEBUG
-  if (aptex_env.flag_visual_debug)
-    aptex_vdbg_bop(pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
 #endif
   page_loc = dvi_offset + dvi_ptr;
   dvi_out(bop);
@@ -21601,10 +21585,6 @@ static void ship_out (pointer p)
 
 #ifndef APTEX_DVI_ONLY
   aptex_dpx_eop();
-#endif
-#ifdef USE_VISUAL_DEBUG
-  if (aptex_env.flag_visual_debug)
-    aptex_vdbg_eop();
 #endif
   dvi_out(eop);
 
@@ -21919,13 +21899,6 @@ reswitch:
 #ifndef APTEX_DVI_ONLY
         pdf_char_out(dvi_f, c);
 #endif
-#ifdef USE_VISUAL_DEBUG
-        if (aptex_env.flag_visual_debug)
-          aptex_vdbg_node_char(0, cur_h, cur_v,
-            char_width(f, char_info(f, c)),
-            char_height(f, height_depth(char_info(f, c))),
-            char_depth(f, height_depth(char_info(f, c))));
-#endif
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
       else
@@ -21983,13 +21956,6 @@ reswitch:
 
 #ifndef APTEX_DVI_ONLY
         pdf_kanji_out(dvi_f, jc);
-#endif
-#ifdef USE_VISUAL_DEBUG
-        if (aptex_env.flag_visual_debug)
-          aptex_vdbg_node_char(0, cur_h, cur_v,
-            char_width(f, char_info(f, c)),
-            char_height(f, height_depth(char_info(f, c))),
-            char_depth(f, height_depth(char_info(f, c))));
 #endif
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
@@ -22297,10 +22263,6 @@ reswitch:
       dvi_four(rule_wd);
 #ifndef APTEX_DVI_ONLY
       pdf_rule_out(rule_wd, rule_ht);
-#endif
-#ifdef USE_VISUAL_DEBUG
-      if (aptex_env.flag_visual_debug)
-        aptex_vdbg_node_rule(0, cur_h, cur_v, rule_wd, rule_ht);
 #endif
       cur_v = base_line;
       dvi_h = dvi_h + rule_wd;
@@ -22634,10 +22596,6 @@ fin_rule:
         dvi_four(rule_wd);
 #ifndef APTEX_DVI_ONLY
         pdf_rule_out(rule_wd, rule_ht);
-#endif
-#ifdef USE_VISUAL_DEBUG
-        if (aptex_env.flag_visual_debug)
-          aptex_vdbg_node_rule(0, cur_h, cur_v, rule_wd, rule_ht);
 #endif
         cur_h = left_edge;
       }
@@ -36782,10 +36740,6 @@ void close_files_and_terminate (void)
         print_int(pdf_output_stats());
         prints(" bytes).");
       }
-#endif
-#ifdef USE_VISUAL_DEBUG
-      if (aptex_env.flag_visual_debug)
-        aptex_vdbg_ship_close();
 #endif
     }
   }

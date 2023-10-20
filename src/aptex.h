@@ -103,7 +103,6 @@
 #endif
 
 // internal headers
-#define USE_VISUAL_DEBUG
 #include "aptex-utils.h"
 
 #ifdef __cplusplus
@@ -822,7 +821,6 @@ EXTERN struct {
   boolean flag_reset_hyphen;
   boolean flag_suppress_f_ligs;
   boolean flag_merge_kanji_baseline;
-  boolean flag_visual_debug;
 } aptex_env;
 
 #include "aptex-functions.h"
