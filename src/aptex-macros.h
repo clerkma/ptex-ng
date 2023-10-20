@@ -22,12 +22,12 @@
 
 #define pTeX_version 4
 #define pTeX_minor_version 1
-#define pTeX_revision ".0"
-#define pTeX_version_string "-p4.1.0"
+#define pTeX_revision ".1"
+#define pTeX_version_string "-p4.1.1"
 
 #define upTeX_version 1
-#define upTeX_revision ".29"
-#define upTeX_version_string "-u1.29"
+#define upTeX_revision ".30"
+#define upTeX_version_string "-u1.30"
 
 #define eTeX_version        2         // { \.{\\eTeXversion} }
 #define eTeX_revision       ".6"      // { \.{\\eTeXrevision} }
@@ -3039,7 +3039,7 @@ do {                                                              \
             if (op_byte(main_j) < kern_flag)                      \
             {                                                     \
               gp = font_glue[main_f];                             \
-              cur_r = rem_byte(main_j);                           \
+              cur_r = op_byte(main_j) * 256 + rem_byte(main_j);   \
                                                                   \
               if (gp != null)                                     \
               {                                                   \

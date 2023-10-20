@@ -3918,7 +3918,7 @@ static void do_initex (void)
       kcat_code(k) = kana;
  
     // { CJK Unified Ideographs Extension B .. H }
-    for (k = 0x13B; k <= 0x142; k++)
+    for (k = 0x13B; k <= 0x143; k++)
       kcat_code(k) = kanji;
 
     kcat_code(0x1FD) = not_cjk; // { Latin-1 Letters }
@@ -20275,7 +20275,7 @@ not_found:;
         {
           if (jfm_flag != dir_default)
           {
-            if (d >= ne)
+            if (256 * c + d >= ne)
               goto bad_tfm;
           }
           else
@@ -21474,7 +21474,7 @@ static void ship_out (pointer p)
 #ifndef APTEX_DVI_ONLY
     {
       struct pdf_setting aptex_pdf_setting;
-      char * aptex_producer = "Asiatic pTeX 2021";
+      char * aptex_producer = "Asiatic pTeX 2023";
       int aptex_pdf_version;
       unsigned char aptex_id1[16], aptex_id2[16];
 
@@ -24879,7 +24879,7 @@ restart:
                     if (op_byte(cur_i) < kern_flag)
                     {
                       gp = font_glue[cur_f];
-                      rr = rem_byte(cur_i);
+                      rr = op_byte(cur_i) * 256 + rem_byte(cur_i);
                         
                       if (gp != null)
                       {
@@ -32340,10 +32340,6 @@ reswitch:
         KANJI(cx) = cur_chr;
       break;
 
-    case kchar_given:
-      KANJI(cx) = cur_chr;
-      break;
-
     case kanji:
     case kana:
     case other_kchar:
@@ -32351,11 +32347,24 @@ reswitch:
       cx = cur_chr;
       break;
 
+    case kchar_given:
+      KANJI(cx) = cur_chr;
+      break;
+
     case char_num:
       {
         scan_char_num();
         cur_chr = cur_val;
         cur_cmd = char_given;
+        goto reswitch;
+      }
+      break;
+
+    case kchar_num:
+      {
+        scan_char_num();
+        cur_chr = cur_val;
+        cur_cmd = kchar_given;
         goto reswitch;
       }
       break;
@@ -35394,17 +35403,17 @@ reswitch:
       goto main_loop_j;
       break;
 
-    case hmode + kchar_given:
+    case hmode + char_given:
+      if (check_echar_range(cur_chr))
+        goto main_loop;
+      else
       {
         cur_cmd = kcat_code(kcatcodekey(cur_chr));
         goto main_loop_j;
       }
       break;
 
-    case hmode + char_given:
-      if (check_echar_range(cur_chr))
-        goto main_loop;
-      else
+    case hmode + kchar_given:
       {
         cur_cmd = kcat_code(kcatcodekey(cur_chr));
         goto main_loop_j;
@@ -36184,6 +36193,12 @@ main_loop_lookahead:
       cur_cmd = kcat_code(kcatcodekey(cur_chr));
       goto_main_lig_loop();
     }
+  }
+
+  if (cur_cmd == kchar_given)
+  {
+    cur_cmd = kcat_code(kcatcodekey(cur_chr));
+    goto_main_lig_loop();
   }
 
   if (cur_cmd == char_num)
