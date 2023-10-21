@@ -725,6 +725,31 @@ class GTabParser
     end
   end
 
+  def reduce_to_range(src)
+    if src.count > 1
+      range_index = [0]
+      (1..src.count - 1).each do |i|
+        if src[i] - src[i - 1] > 1
+          range_index << i
+        end
+      end
+      range_index << src.count
+      range = []
+      (0..range_index.count - 2).each do |i|
+        l_pos = range_index[i]
+        r_pos = range_index[i + 1] - 1
+        if r_pos - l_pos > 1
+            range << "#{src[l_pos]}-#{src[r_pos]}"
+        else
+            range << "#{src[l_pos]}"
+        end
+      end
+      range.join(", ")
+    else
+      src[0]
+    end
+  end
+
   def list_feature(feature_index_list)
     lines = (feature_index_list.length + 3).div(4)
     lines.times do |line|
@@ -737,7 +762,7 @@ class GTabParser
       feature = @feature_list[feature_index]
       tag = feature[:tag]
       lookup_index_list = feature[:lookup_index_list]
-      puts("      #{tag} -> #{lookup_index_list.join(', ')}")
+      puts("      #{tag} -> #{reduce_to_range(lookup_index_list.sort)}")
       lookup_index_list.each do |lookup_index|
         if lookup_map.has_key?(lookup_index)
           lookup_map[lookup_index].push(tag)
