@@ -506,7 +506,7 @@ class GTabParser
       lookahead_list = unpack_u16_list(offset).map do |i|
         parse_coverage(base + i)
       end
-      offset += 2 * lookahead_count + 2
+      offset += 2 * lookahead_list.size + 2
       substitute_glyph_list = unpack_u16_list(offset)
       {sig: sig, coverage: coverage, backtrack: backtrack_list, lookahead: lookahead_list,
        substitute_glyph_list: substitute_glyph_list}
