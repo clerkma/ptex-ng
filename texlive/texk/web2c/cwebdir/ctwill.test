@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: ctwill.test 68157 2023-09-03 11:26:37Z takuji $
+# $Id: ctwill.test 68690 2023-10-29 13:15:04Z ascherer $
 # Copyright 2023 Andreas Scherer <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
@@ -36,7 +36,7 @@ $DIFF index.tex $testdir/index.tex || exit 6
 # Perl script not available in builddir, and requires Unicode::Collate;
 # if that module is not available, just quit testing.
 perl -e 'use Unicode::Collate; Unicode::Collate->new();' 2>/dev/null || exit 0
-$testdir/../ctwill-proofsort ham.tex > ham-sorted.tex || exit 7
+$testdir/../ctwill-proofsort < ham.tex > ham-sorted.tex || exit 7
 $DIFF ham-sorted.tex $testdir/ham-sorted.tex || exit 8
 
 exit 0
