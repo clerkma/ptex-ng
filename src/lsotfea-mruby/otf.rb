@@ -331,7 +331,7 @@ class GTabParser
   def parse_script_list(base, delta)
     offset = u16(base + delta) + base
     u16(offset).times.map do |i|
-      tag, script_offset = unpack(offset + 2 + 6 * i, 6, "a4S>")
+      script_tag, script_offset = unpack(offset + 2 + 6 * i, 6, "a4S>")
       script_offset += offset
       default_offset, count = u16_list(script_offset, 2)
       default = if default_offset != 0
@@ -341,7 +341,7 @@ class GTabParser
         tag, lang_sys_offset = unpack(script_offset + 4 + 6 * j, 6, "a4S>")
         {tag: tag, lang_sys: parse_lang_sys(script_offset + lang_sys_offset)}
       end
-      {tag: tag, default: default, script: script}
+      {tag: script_tag, default: default, script: script}
     end
   end
 
@@ -783,14 +783,18 @@ class GTabParser
     puts(banner)
     @script_list.each do |script|
       puts("script #{get_tag(script[:tag], :script)}:")
-      puts("  default features:")
+      puts("  default  'dflt':")
       if script[:default] == nil
         puts("    (none)")
       else
         list_feature(script[:default][:feature_index_list])
       end
       script[:script].each do |lang_sys|
-        puts("  language #{get_tag(lang_sys[:tag], :language)}:")
+        required = lang_sys[:lang_sys][:required]
+        required_feature = if required != 0xFFFF
+          " *(`" + @feature_list[required][:tag] + "`)"
+        end
+        puts("  language #{get_tag(lang_sys[:tag], :language)}#{required_feature}:")
         list_feature(lang_sys[:lang_sys][:feature_index_list])
       end
     end

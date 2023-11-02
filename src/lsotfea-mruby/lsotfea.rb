@@ -19,8 +19,8 @@
 # DEALINGS IN THE SOFTWARE.
 
 #
-# ruby test.py
-# mruby -r tag.rb -r otf.rb test.rb
+# ruby lsotfea.py
+# mruby -r tag.rb -r otf.rb lsotfea.rb
 # 
 if Kernel.respond_to? :require_relative
   require_relative "otf"
