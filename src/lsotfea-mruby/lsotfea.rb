@@ -20,22 +20,22 @@
 
 #
 # ruby lsotfea.py
-# mruby -r tag.rb -r otf.rb lsotfea.rb
+# mruby -r tag.rb -r otf.rb -r main.rb lsotfea.rb
 # 
 if Kernel.respond_to? :require_relative
-  require_relative "otf"
+  require_relative 'otf'
   require_relative 'tag'
+  require_relative 'main'
 end
 
-if ARGV.length == 1
-  File.open(ARGV[0], "rb") do |f|
-    b = ParseBinary.new(f)
-  end
-elsif ARGV.length == 2
-  File.open(ARGV[0], "rb") do |f|
-    b = ParseBinary.new(f, ARGV[1].to_i)
-  end
-else
-  puts("Usage: lsotfea font [index]")
+argc = ARGV.length
+if argc == 1
+  puts "Usage: lsotfea file path [index]"
+  puts "       lsotfea dir path"
+elsif ARGV[0] == "file" and argc == 2
+  parse_font ARGV[1]
+elsif ARGV[0] == "file" and argc == 3
+  parse_font ARGV[1], ARGV[2]
+elsif ARGV[0] == "dir" and argc == 2
+  parse_directory ARGV[2]
 end
-
