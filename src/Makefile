@@ -8,10 +8,10 @@ CC = gcc
 CDEBUG =
 CFLAGS += $(CDEBUG) -Werror -c -O2
 INCLUDES = \
-	-I ../texlive/texk/ptexenc/ \
-	-I ../texlive/texk/ \
-	-I ../texlive/libs/zlib/include \
-	-I ../texlive/texk/web2c/libmd5
+	-I $(TLROOT)/texk/ptexenc/ \
+	-I $(TLROOT)/texk/ \
+	-I $(TLROOT)/libs/zlib/include \
+	-I $(TLROOT)/texk/web2c/libmd5
 LDLIBS = libdpx.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libmd5.a -lm
 LDFLAGS += -o
 
