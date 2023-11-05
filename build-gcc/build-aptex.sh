@@ -3,7 +3,7 @@
 MACHINE=`uname -m`
 UNIVERSAL=$1
 NG_SRC_DIR=`pwd`
-export TLROOT=..
+export TLROOT=`pwd`/texlive
 
 export have_brotli=no
 export with_brotli=no
