@@ -1,4 +1,4 @@
-rem Build ApTeX on Visual Studio 2015/2017/2019/2022.
+rem Build ApTeX on Visual Studio 2022.
 
 echo off
 if "%1" == "" goto set_nmake
@@ -23,15 +23,6 @@ if exist *.obj (del *.obj)
 echo Building libpng ...
 if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-libpng.nmake
-echo Building freetype ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-freetype.nmake
-echo Building libotf ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-libotf.nmake
-echo Building lsotfea ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-lsotfea.nmake
 echo Building kpathsea ...
 if exist *.obj (del *.obj)
 %MAKE% -s -nologo -f makefiles\mk-kpathsea.nmake

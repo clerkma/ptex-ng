@@ -30,7 +30,6 @@ Run the shell script:
 ## Source
 
 * TeX Live 2024/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
-* libotf 0.9.16 (`http://cvs.savannah.gnu.org/viewvc/libotf/?root=m17n`)
 * mruby 3.2.0 (`http://mruby.org/downloads/`)
 
 ## How to Install

@@ -54,8 +54,6 @@ fi
 #
 cd $NG_SRC_DIR/texlive/libs/libpaper && ./configure && make -j || exit 1
 cp libpaper.a $NG_SRC_DIR/src
-cd $NG_SRC_DIR/texlive/libs/freetype2 && ./configure && make -j || exit 1
-cp libfreetype.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/texlive/texk/kpathsea && ./configure && make -j || exit 1
 cp .libs/libkpathsea.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/texlive/texk/ptexenc && ./configure && make -j || exit 1
@@ -63,8 +61,6 @@ cp .libs/libptexenc.a $NG_SRC_DIR/src
 #
 cd $NG_SRC_DIR/src/libdpx && make -j || exit 1
 cp libdpx.a $NG_SRC_DIR/src
-cd $NG_SRC_DIR/src/libotf && make -j || exit 1
-cp libotf.a $NG_SRC_DIR/src
 cd $NG_SRC_DIR/src/libmd5 && make -j || exit 1
 cp libmd5.a $NG_SRC_DIR/src
 #

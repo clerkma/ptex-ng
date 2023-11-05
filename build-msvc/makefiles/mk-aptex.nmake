@@ -1,13 +1,13 @@
 CC = cl
 AR = lib
 LINK = link
-CFLAGS = $(APTEX_CFLAGS) -DCAIRO_WIN32_STATIC_BUILD -DWIN32 -DNO_KPSE_DLL -DNO_PTENC_DLL -DYAML_DECLARE_STATIC \
-	-Ibuild/ -Ibuild/zlib -I../texlive/texk -I../texlive/libs/freetype2/freetype-src/include \
-	-I../texlive/texk/ptexenc -I../texlive/libs/zlib/zlib-src -I../src/libotf/src \
+CFLAGS = $(APTEX_CFLAGS) -DCAIRO_WIN32_STATIC_BUILD -DWIN32 -DNO_KPSE_DLL -DNO_PTENC_DLL \
+	-Ibuild/ -Ibuild/zlib -I../texlive/texk \
+	-I../texlive/texk/ptexenc -I../texlive/libs/zlib/zlib-src \
 	-I../texlive/texk/web2c/libmd5
 ROOT = ../src
 OBJS = aptex.obj aptex-utils.obj aptex-src.obj
-LIBS = libdpx.lib libpng.lib zlib.lib ptexenc.lib kpathsea.lib libotf.lib freetype.lib \
+LIBS = libdpx.lib libpng.lib zlib.lib ptexenc.lib kpathsea.lib \
 	libmd5.lib advapi32.lib user32.lib shell32.lib Ws2_32.lib wsock32.lib ws2_32.lib
 
 all: $(OBJS)
