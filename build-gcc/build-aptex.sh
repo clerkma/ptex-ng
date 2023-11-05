@@ -3,7 +3,7 @@
 MACHINE=`uname -m`
 UNIVERSAL=$1
 NG_SRC_DIR=`pwd`
-TLROOT=..
+export TLROOT=..
 
 export have_brotli=no
 export with_brotli=no
