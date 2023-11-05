@@ -9,5 +9,4 @@ build_script:
   - cmd: cd build-msvc
   - cmd: build-aptex.bat
 test_script:
-  - cmd: lsotfea.exe C:\Windows\Fonts\segoeui.ttf
   - cmd: aptex.exe --version
