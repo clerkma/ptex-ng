@@ -37,5 +37,5 @@ elsif ARGV[0] == "file" and argc == 2
 elsif ARGV[0] == "file" and argc == 3
   parse_font ARGV[1], ARGV[2]
 elsif ARGV[0] == "dir" and argc == 2
-  parse_directory ARGV[2]
+  parse_directory ARGV[1]
 end
