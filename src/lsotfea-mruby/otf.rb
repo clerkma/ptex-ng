@@ -163,10 +163,9 @@ class GTabParser
   end
 
   def list_feature(feature_index_list)
-    lines = (feature_index_list.length + 3).div(4)
-    lines.times do |line|
-      one_line = feature_index_list[4 * line, 4].map {|i| @feature_list[i][:tag]}
-      puts("    " + one_line.join(" "))
+    feature_index_list.each_slice(4) do |x|
+      line = x.map {|i| @feature_list[i][:tag]}
+      puts("    " + line.join(" "))
     end
     lookup_map = {}
     puts("\n    Feature -> LookupIndex")
