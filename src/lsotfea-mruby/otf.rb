@@ -61,9 +61,7 @@ class GTabParser
       script_tag, script_offset = unpack(offset + 2 + 6 * i, 6, "a4S>")
       script_offset += offset
       default_offset, count = u16_list(script_offset, 2)
-      default = if default_offset != 0
-        parse_lang_sys(script_offset + default_offset)
-      end
+      default = parse_lang_sys(script_offset + default_offset) if default_offset != 0
       script = count.times.map do |j|
         tag, lang_sys_offset = unpack(script_offset + 4 + 6 * j, 6, "a4S>")
         {tag: tag, lang_sys: parse_lang_sys(script_offset + lang_sys_offset)}
@@ -186,7 +184,8 @@ class GTabParser
     idx_len = lookup_map.keys.max.to_s.length
     lookup_map.keys.sort.each do |m|
       lookup = @lookup_list[m]
-      info = sprintf("(%s, %s, %s)", lookup[:type], (lookup[:flag] & 0x10).to_s(2).rjust(5, "0"), (lookup[:flag] & 0xFF00) >> 8)
+      flag = (lookup[:flag] & 0x10).to_s(2).rjust(5, "0")
+      info = sprintf("(%s, %s, %s)", lookup[:type], flag, (lookup[:flag] & 0xFF00) >> 8)
       puts("      #{m.to_s.rjust(idx_len)} #{info} #{lookup_map[m].join(', ')}")
     end
   end
@@ -233,30 +232,44 @@ class ParseBinary
   end
 
   def calc_check_sum(src, offset, length)
-    sum = 0
     padding_count = (4 - length & 3) & 3
-    value_count = (length + padding_count) / 4
-    src[offset, length + padding_count].unpack("L>*").each do |val|
-      sum = (sum + val) & 0xFFFFFFFF
-    end
-    sum
+    block(src, offset, length + padding_count).unpack("L>*").sum & 0xFFFFFFFF
   end
 
   def parse_one(src, one_offset)
     offset_table = unpack(src, one_offset, 12, "L>S>4")
-    offset_table[1].times do |tableIndex|
+    gpos_seg = nil
+    gsub_seg = nil
+    directory = offset_table[1].times.to_h do |tableIndex|
       tag, check_sum, offset, length = unpack(src, one_offset + 12 + 16 * tableIndex, 16, "a4L>3")
-      if tag == "GSUB"
-        @gsub = GTabParser.new(block(src, offset, length), tag)
-        if @gsub != nil
-          @gsub.list_info("Table 'GSUB'")
-        end
-      elsif tag == "GPOS"
-        @gpos = GTabParser.new(block(src, offset, length), tag)
-        if @gpos != nil
-          @gpos.list_info("Table 'GPOS'")
-        end
-      end
+      gpos_seg = [offset, length] if tag == "GPOS"
+      gsub_seg = [offset, length] if tag == "GSUB"
+      [tag, [check_sum, offset, length]]
+    end
+    values = directory.values
+    offset_max = [values.max{|a, b| a[1] <=> b[1]}[1].to_s.length, 6].max
+    length_max = [values.max{|a, b| a[2] <=> b[2]}[2].to_s.length, 6].max
+    puts "Font Directory:"
+    o = "OFFSET".rjust(offset_max, " ")
+    l = "LENGTH".rjust(length_max, " ")
+    puts "   TAG CHECKSUM #{o} #{l}"
+    line = [4, 8, offset_max, length_max].map {|x| "-" * x}.join("+")
+    puts "  #{line}"
+    directory.each do |k, v|
+      s = v[0].to_s(16).rjust(8, "0")
+      o = v[1].to_s.rjust(offset_max, " ")
+      l = v[2].to_s.rjust(length_max, " ")
+      puts "  #{k} #{s} #{o} #{l}"
+    end
+
+    if gpos_seg != nil
+      gpos = GTabParser.new(block(src, *gpos_seg), "GPOS")
+      gpos.list_info("Table 'GPOS'")
+    end
+
+    if gsub_seg != nil
+      gsub = GTabParser.new(block(src, *gsub_seg), "GSUB")
+      gsub.list_info("Table 'GSUB'")
     end
   end
 
