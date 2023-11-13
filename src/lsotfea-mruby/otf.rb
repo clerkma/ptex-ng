@@ -121,11 +121,11 @@ class GTabParser
   def get_tag(tag, category)
     meaning = nil
     if category == :feature
-      meaning = $ot_tag_feature[tag]
+      meaning = $OT_TAG_FEATURE[tag]
     elsif category == :language
-      meaning = $ot_tag_language[tag]
+      meaning = $OT_TAG_LANGUAGE[tag]
     elsif  category == :script
-      meaning = $ot_tag_script[tag]
+      meaning = $OT_TAG_SCRIPT[tag]
     end
 
     if meaning == nil
