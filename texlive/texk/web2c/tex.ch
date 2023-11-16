@@ -1,4 +1,4 @@
-% $Id: tex.ch 64547 2022-09-29 01:20:56Z karl $
+% $Id: tex.ch 68865 2023-11-15 21:23:49Z karl $
 % tex.ch for C compilation with web2c, derived from various other change files.
 % By Tim Morgan, UC Irvine ICS Department, and many others.
 %
@@ -3651,6 +3651,15 @@ dump_things(mem[hi_mem_min], mem_end+1-hi_mem_min);
 repeat for k:=p to q+1 do undump_wd(mem[k]);
 @y
 repeat undump_things(mem[p], q+2-p);
+@z
+
+@x [50.1312] l.23955 - Check that p did not become corrupt.
+if (p>lo_mem_max)or((q>=rlink(q))and(rlink(q)<>rover)) then goto bad_fmt;
+@y
+{If the format file is messed up, that addition to |p| might cause it to
+ become garbage. Report from Gregory James DUCK to Karl, 14 Sep 2023.
+ Found with a fuzz tester similar to AFL-fuzz. Also changed in \MF.}
+if (p<mem_min)or(p>lo_mem_max)or((q>=rlink(q))and(rlink(q)<>rover)) then goto bad_fmt;
 @z
 
 @x [50.1312] l.23878 - Make dumping/undumping more efficient.
