@@ -25,7 +25,7 @@ for those people who are interested.
 --]]
 
 -- Version information
-release_date = "2023-11-01"
+release_date = "2023-12-13-2"
 
 -- File operations are aided by the LuaFileSystem module
 local lfs = require("lfs")
@@ -165,16 +165,7 @@ if #checkconfigs > 1 then
     end
     if next(failed) then
       for _,config in ipairs(failed) do
-        print("Failed tests for configuration \"" .. config .. "\":")
-        print("\n  Check failed with difference files")
-        local testdir = testdir
-        if config ~= "build" then
-          testdir = testdir .. "-" .. config
-        end
-        for _,i in ipairs(ordered_filelist(testdir,"*" .. os_diffext)) do
-          print("  - " .. testdir .. "/" .. i)
-        end
-        print("")
+        checkdiff(config)
       end
       if options["show-saves"] then
         local savecmds, recheckcmds = "", ""
@@ -200,8 +191,8 @@ if #checkconfigs > 1 then
         end
         print"To regenerate the test files, run\n"
         print(savecmds)
-        if recheckcmds ~= "" then
-          print"To detect engine specific differences, run after that\n"
+        if recheckcmds ~= "" and #checkengines ~= 1 then
+          print"To detect engine-specific differences, run after that\n"
           print(recheckcmds)
         end
       end
