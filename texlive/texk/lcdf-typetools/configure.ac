@@ -1,6 +1,8 @@
+dnl $Id: configure.ac 69194 2023-12-22 02:16:38Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl   Copyright (C) 2009-2014 Peter Breitenlohner <tex-live@tug.org>
+dnl   Copyright 2014-2023 Karl Berry <tex-live@tug.org>
+dnl   Copyright 2009-2014 Peter Breitenlohner <tex-live@tug.org>
 dnl
 dnl   This file is free software; the copyright holder
 dnl   gives unlimited permission to copy and/or distribute it,
@@ -298,7 +300,7 @@ m4_foreach_w([Kpse_Prog],[kpse_lcdf_typetools_progs],[test "x$enable_[]Kpse_Prog
 ])
 AC_SUBST(SELECTED_SUBDIRS)
 
-m4_foreach_w([Kpse_Opt],[kpse_otftotfm_auto_opts],[AS_IF([test "x$enable_auto_]Kpse_Opt[" != xno],
+m4_foreach_w([Kpse_Opt],kpse_otftotfm_auto_opts,[AS_IF([test "x$enable_auto_]Kpse_Opt[" != xno],
                   [AC_DEFINE([HAVE_AUTO_]AS_TR_CPP(Kpse_Opt), 1,
                              [Define to run ]Kpse_Opt[ from otftotfm.])])
 ])
@@ -435,7 +437,20 @@ dnl
 
 AC_SUBST([LCDF_TYPETOOLS_TREE], [lcdf-typetools-src])
 
-AC_CONFIG_FILES([Makefile lcdf-typetools-src/Makefile])
-m4_foreach_w([Kpse_Prog],[liblcdf libefont kpse_lcdf_typetools_progs],[AC_CONFIG_FILES([lcdf-typetools-src/]Kpse_Prog[/Makefile])])
-
+AC_CONFIG_FILES([Makefile
+                 lcdf-typetools-src/Makefile
+                 lcdf-typetools-src/liblcdf/Makefile
+                 lcdf-typetools-src/libefont/Makefile
+                 lcdf-typetools-src/cfftot1/Makefile
+                 lcdf-typetools-src/mmafm/Makefile
+                 lcdf-typetools-src/mmpfb/Makefile
+                 lcdf-typetools-src/otfinfo/Makefile
+                 lcdf-typetools-src/otftotfm/Makefile
+                 lcdf-typetools-src/t1dotlessj/Makefile
+                 lcdf-typetools-src/t1lint/Makefile
+                 lcdf-typetools-src/t1rawafm/Makefile
+                 lcdf-typetools-src/t1reencode/Makefile
+                 lcdf-typetools-src/t1testpage/Makefile
+                 lcdf-typetools-src/ttftotype42/Makefile
+                ])
 AC_OUTPUT

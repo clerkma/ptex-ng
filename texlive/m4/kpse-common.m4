@@ -1,4 +1,4 @@
-# $Id: kpse-common.m4 67404 2023-06-18 22:03:59Z karl $
+# $Id: kpse-common.m4 69184 2023-12-21 21:02:03Z karl $
 # Public macros for the TeX Live (TL) tree.
 # Copyright 1995-2009, 2015-2023 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
@@ -257,7 +257,6 @@ AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 dnl
 AC_HEADER_DIRENT
-AC_HEADER_STDC
 AC_FUNC_CLOSEDIR_VOID
 AC_CHECK_HEADERS([assert.h float.h limits.h pwd.h stdlib.h sys/param.h])
 dnl

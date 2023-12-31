@@ -1,4 +1,4 @@
-## $Id: euptex.am 68332 2023-09-21 11:12:26Z hironobu $
+## $Id: euptex.am 69202 2023-12-23 14:04:46Z takuji $
 ## texk/web2c/euptexdir/am/euptex.am: Makefile fragment for e-upTeX.
 ##
 ## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
@@ -12,6 +12,12 @@ bin_PROGRAMS += euptex
 if !UPTEX
 bin_links += euptex$(EXEEXT):uptex
 endif !UPTEX
+if !EPTEX
+bin_links += euptex$(EXEEXT):eptex
+if !PTEX
+bin_links += euptex$(EXEEXT):ptex
+endif !PTEX
+endif !EPTEX
 endif EUPTEX
 EXTRA_PROGRAMS += euptex
 
