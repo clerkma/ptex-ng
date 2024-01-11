@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: reautoconf 69219 2023-12-26 17:22:21Z karl $
+# $Id: reautoconf 69342 2024-01-07 21:44:58Z karl $
 # This "reautoconf" script at the root of the TeX Live source tree 
 # runs autoreconf (from PATH) in all relevant TL directories.
 #
@@ -32,6 +32,7 @@ usage="Usage: $0 [OPTION]... [DIR]...
   because you want to spend time fixing them), use --warn-obsolete.
 
 Options:
+  -f, --force     pass --force to autoreconf
   -h, --help      display this help and exit successfully
   -n, --dry-run   don't run any commands; just print them
   -q, --quiet     don't echo commands
@@ -46,11 +47,12 @@ source tree.
 Report bugs (and any other discussion) to:
   tlbuild@tug.org (https://lists.tug.org/tlbuild)
 
-Version: $Id: reautoconf 69219 2023-12-26 17:22:21Z karl $
+Version: $Id: reautoconf 69342 2024-01-07 21:44:58Z karl $
 "
 
 do_cmd=eval
 do_say=echo
+force=
 verbose=-v
 warn_obsolete=-Wno-obsolete
 
@@ -59,6 +61,7 @@ list=
 for option
 do
   case $option in
+    -f | --force) force=--force              ;;
     -h | --help | --version) echo "$usage"; exit 0 ;;
     -n | --dry-run)  do_cmd=:                ;;
     -q | --quiet)    do_say=:;    verbose=   ;;
@@ -120,7 +123,8 @@ for dir in $list; do
   else
     extra_dirs=
   fi
-  do_it autoreconf $verbose --no-recursive $warn_obsolete $dir $extra_dirs
+  do_it autoreconf $verbose --no-recursive \
+                   $warn_obsolete $force $dir $extra_dirs
 done
 
 echo "$0: done at `date`."

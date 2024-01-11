@@ -1,4 +1,4 @@
-$Id: README 69201 2023-12-23 14:04:41Z takuji $
+$Id: README 69324 2024-01-07 02:49:52Z hironobu $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -31,7 +31,7 @@ harfbuzz 8.3.0 - checked 12nov23
 icu 74.2 - checked 22dec23
   https://github.com/unicode-org/icu/releases/
 
-libpaper 1.1.28 - checked 10sep22
+libpaper 1.1.29 - checked 07jan24
   http://ftp.debian.org/debian/pool/main/libp/libpaper/
 
 libpng 1.6.40 - checked 22jun23
