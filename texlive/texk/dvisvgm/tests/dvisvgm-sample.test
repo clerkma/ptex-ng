@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: dvisvgm-sample.test 69453 2024-01-16 18:32:08Z karl $
 # Copyright 2024 Japanese TeX Development Community <issue@texjp.org>
 # You may freely use, modify and/or distribute this file.
 
