@@ -10,6 +10,7 @@ fi
 
 if [ "$CUR" = "Updated" ]; then
   echo "Updated."
+  git status
   git add *
   VER=`echo $TRY | cut -d" " -f4`
   git commit -a -m "synchronized texlive $VER"
