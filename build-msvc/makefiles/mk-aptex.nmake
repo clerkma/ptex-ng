@@ -1,7 +1,7 @@
 CC = cl
 AR = lib
 LINK = link
-CFLAGS = $(APTEX_CFLAGS) -DCAIRO_WIN32_STATIC_BUILD -DWIN32 -DNO_KPSE_DLL -DNO_PTENC_DLL \
+CFLAGS = $(APTEX_CFLAGS) -DWIN32 -DNO_KPSE_DLL -DNO_PTENC_DLL \
 	-Ibuild/ -Ibuild/zlib -I$(TL_ROOT)/texk \
 	-I$(TL_ROOT)/texk/ptexenc -I$(TL_ROOT)/libs/zlib/zlib-src \
 	-I$(TL_ROOT)/texk/web2c/libmd5
