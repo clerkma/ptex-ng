@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# $Id$
+# $Id: twill-refsort 69812 2024-02-11 23:09:24Z karl $
 # Public domain.  Originally written by Andreas Scherer, 2023.
 
 use strict;
@@ -39,7 +39,7 @@ sub help_handler {
 }
 ## version()
 sub version {
-  return $progname.' $Revision$ $Date$'."\n";
+  return $progname.' $Revision: 69812 $ $Date: 2024-02-12 07:09:24 +0800 (Mon, 12 Feb 2024) $'."\n";
 }
 
 # Read input lines from the console and look for blocks like

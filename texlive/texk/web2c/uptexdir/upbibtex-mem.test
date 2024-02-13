@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: upbibtex-mem.test 69812 2024-02-11 23:09:24Z karl $
 # Copyright 2022 Japanese TeX Development Community <issue@texjp.org>
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2010-2013 Peter Breitenlohner <tex-live@tug.org>

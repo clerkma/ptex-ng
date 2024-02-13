@@ -43,14 +43,15 @@ EXTRA_DIST = COPYRIGHT ChangeLog.jp
 ## The programs
 bin_PROGRAMS = ptekf
 ptekf_LDADD = libptexenc.la
+man1_MANS = ptekf.1
 
 LDADD = $(KPATHSEA_LIBS)
 
 ## Tests
 #
-TESTS = tests/ptekf-smoke.test tests/ptekf-guess.test  tests/ptekf-conv.test
+TESTS = tests/ptekf-smoke.test tests/ptekf-guess.test tests/ptekf-conv.test tests/ptekf-eol.test
 #
-tests/ptekf-smoke.log tests/ptekf-guess.log tests/ptekf-conv.log \
+tests/ptekf-smoke.log tests/ptekf-guess.log tests/ptekf-conv.log tests/ptekf-eol.log \
   : ptekf$(EXEEXT)
 #
 EXTRA_DIST += $(TESTS)
@@ -66,7 +67,7 @@ EXTRA_DIST += \
   tests/enc-utf8.bib-euc tests/enc-utf8.bib-jis tests/enc-utf8.bib-sjis tests/enc-utf8.bib-utf8 \
   tests/enc-utf8a.bib-euc tests/enc-utf8a.bib-jis tests/enc-utf8a.bib-sjis tests/enc-utf8a.bib-utf8 \
   tests/enc-utf8b.bib-euc tests/enc-utf8b.bib-jis tests/enc-utf8b.bib-sjis tests/enc-utf8b.bib-utf8
-DISTCLEANFILES = enc-*.bib*
+DISTCLEANFILES = enc-*.bib* saza-*.txt*
 
 
 # Rebuild

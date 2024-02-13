@@ -45,7 +45,7 @@ static struct option long_options[] = {
   {0, 0, 0, 0}
 };
 
-#define MY_VERSION   "20240201"
+#define MY_VERSION   "20240211"
 #define BUG_ADDRESS  "issue@texjp.org"
 
 static void show_version(void)
@@ -56,14 +56,14 @@ static void show_version(void)
 
 static void show_usage(void)
 {
-  printf("Usage: ptekf -[OPTION] [--] in_file1 [in_file2 ..]\n");
-  printf("  j/s/e/u  Specify output encoding ISO-2022-JP, Shift_JIS, EUC-JP, UTF8\n");
-  printf("  J/S/E/U  Specify input encoding ISO-2022-JP, Shift_JIS, EUC-JP, UTF8\n");
+  printf("Usage: ptekf -[OPTION] [--] in_file1 [in_file2 ...]\n");
+  printf("  j/s/e/u  Specify output encoding ISO-2022-JP, Shift_JIS, EUC-JP, UTF-8\n");
+  printf("  J/S/E/U  Specify input encoding ISO-2022-JP, Shift_JIS, EUC-JP, UTF-8\n");
   printf("  G        Guess the input encoding and output to stdout or files\n");
   printf("  --guess    -g  Guess the input encoding (no conversion)\n");
+  printf("  --buffer   -b  Output internal buffer without code conversion\n");
   printf("  --version  -v  Print version number\n");
   printf("  --help     -h  Print this help\n");
-  printf("  --buffer   -b  Output internal buffer without code conversion\n");
   printf("Default input/output encoding depends on kpathsearch parameters PTEX_KANJI_ENC, guess_input_kanji_encoding\n");
   printf("\nEmail bug reports to %s.\n", BUG_ADDRESS);
 }
@@ -87,7 +87,7 @@ static char *mfgets(char *buff, int size, FILE *fp)
   if ((len = input_line2(fp, (unsigned char *)buff, NULL, 0, size, &c)) == 0
       && c != '\r' && c != '\n') return NULL;
   if (c == '\n' || c == '\r') {
-    if (len+1 < size) strcat(buff+len, "\n");
+    if (len+1 < size) { buff[len]=(unsigned char)c; buff[len+1]='\0'; }
     else ungetc(c, fp);
   }
   if (c == EOF) return NULL;
@@ -183,7 +183,7 @@ main (int argc,  char **argv)
       exit(32);
     }
     if (flg_guess_enc) {
-      genc = ptenc_guess_enc(infp, 1);
+      genc = ptenc_guess_enc(infp, 1, 1);
       printf("%s: %s\n", infname, genc);
       setinfileenc(infp, genc);
       free(genc);
@@ -211,6 +211,11 @@ main (int argc,  char **argv)
       }
       while ((ret = mfgets(buff, BUFFERLEN, infp)) != NULL) {
         (*fputs__)(buff, outfp);
+      }
+      if (ret == NULL && feof(infp)) {
+        c = buff[strlen(buff)-1];
+        if (c != '\n' && c != '\r')
+          (*fputs__)(buff, outfp);
       }
       if (fclose(infp)) {
         fprintf(stderr, "ERROR: fail to close input file [%s].", infname);

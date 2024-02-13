@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: upkcat.test 69812 2024-02-11 23:09:24Z karl $
 # Copyright 2022 TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 # You may freely use, modify and/or distribute this file.
 

@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: upver.test 69812 2024-02-11 23:09:24Z karl $
 # Copyright 2019 Hironobu Yamashita <h.y.acetaminophen@gmail.com>
 # You may freely use, modify and/or distribute this file.
 

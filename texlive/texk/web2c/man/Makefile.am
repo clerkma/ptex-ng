@@ -1,4 +1,4 @@
-## $Id: Makefile.am 65543 2023-01-15 05:09:14Z takuji $
+## $Id: Makefile.am 69820 2024-02-12 06:55:30Z ascherer $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
 ##
 ## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
@@ -15,6 +15,7 @@ man1_links += ctwill:ctwill-refsort ctwill:ctwill-twinx
 
 if WEB
 man_sources += $(web_man_sources)
+man1_links += twill:twill-refsort
 endif WEB
 EXTRA_DIST += $(web_man_sources)
 web_man_sources = bibtex.man dvicopy.man dvitomp.man dvitype.man gftodvi.man \

@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: gkhuge.test 69812 2024-02-11 23:09:24Z karl $
 # Copyright 2018 Karl Berry <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
