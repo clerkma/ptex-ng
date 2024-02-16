@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# $Id: ctwill-proofsort 68690 2023-10-29 13:15:04Z ascherer $
+# $Id: ctwill-proofsort 69852 2024-02-14 08:19:45Z ascherer $
 # Public domain.  Originally written by Andreas Scherer, 2023.
 
 use strict;
@@ -39,7 +39,7 @@ sub help_handler {
 }
 ## version()
 sub version {
-  return $progname.' $Revision: 68690 $ $Date: 2023-10-29 21:15:04 +0800 (Sun, 29 Oct 2023) $'."\n";
+  return $progname.' $Revision: 69852 $ $Date: 2024-02-14 16:19:45 +0800 (Wed, 14 Feb 2024) $'."\n";
 }
 
 # Read input from the console and look for blocks like
@@ -100,11 +100,9 @@ It reads its input from <STDIN> and writes its output to <STDOUT>.
 
 =item Run CTWILL twice on your 'input_file'.w, creating 'input_file'.tex
 
-=item Invoke "ctwill-proofsort < 'input_file'.tex > 'input_file'-sorted.tex"
+=item Invoke "( ctwill-proofsort < 'input_file'.tex ) 1<> 'input_file'.tex"
 
-=item Invoke "mv 'input_file'-sorted.tex 'input_file'.tex"
-
-=item Run TeX on 'input_file'.tex
+=item Run TeX on 'input_file'.tex once
 
 =back
 
@@ -121,9 +119,7 @@ Example from MMIX (https://github.com/ascherer/mmix, 'local' branch):
 
 =item $ ctwill +P -x mmotype mmotype-twill (run this two times)
 
-=item $ ctwill-proofsort < mmotype.tex > mmotype-sorted.tex
-
-=item $ mv mmotype-sorted.tex mmotype.tex
+=item $ ( ctwill-proofsort < mmotype.tex ) 1<> mmotype.tex
 
 =item $ tex mmotype
 

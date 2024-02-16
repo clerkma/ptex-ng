@@ -1,4 +1,4 @@
-## $Id: Makefile.am 69820 2024-02-12 06:55:30Z ascherer $
+## $Id: Makefile.am 69852 2024-02-14 08:19:45Z ascherer $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
 ##
 ## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
@@ -11,7 +11,7 @@ bootstrap_man_sources = ctie.man cweb.man ctwill.man tangle.man tie.man
 
 # Symlinks within $(man1dir): FILE:LINK indicates LINK.1->FILE.1
 man1_links = cweb:ctangle cweb:cweave
-man1_links += ctwill:ctwill-refsort ctwill:ctwill-twinx
+man1_links += ctwill:ctwill-proofsort ctwill:ctwill-refsort ctwill:ctwill-twinx
 
 if WEB
 man_sources += $(web_man_sources)
