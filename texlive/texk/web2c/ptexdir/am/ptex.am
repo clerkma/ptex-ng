@@ -1,7 +1,7 @@
-## $Id: ptex.am 68332 2023-09-21 11:12:26Z hironobu $
+## $Id: ptex.am 70150 2024-02-25 17:08:15Z karl $
 ## texk/web2c/ptexdir/am/ptex.am: Makefile fragment for pTeX.
 ##
-## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
+## Copyright 2015-2024 Karl Berry <tex-live@tug.org>
 ## Copyright 2010-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 
@@ -76,6 +76,7 @@ ptex_web_srcs = \
 	tex.ch \
 	tracingstacklevels.ch \
 	partoken.ch \
+	locnull-optimize.ch \
 	zlib-fmt.ch
 
 # Generate ptex.ch
