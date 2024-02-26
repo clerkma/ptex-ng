@@ -1,4 +1,4 @@
-## $Id: pdftex.am 70150 2024-02-25 17:08:15Z karl $
+## $Id: pdftex.am 70173 2024-02-26 15:53:56Z karl $
 ## texk/web2c/pdftexdir/am/pdftex.am: Makefile fragment for pdfTeX.
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -79,6 +79,7 @@ pdftex_ch_srcs = \
 	enctexdir/enctex1.ch \
 	enctexdir/enctex-pdftex.ch \
 	enctexdir/enctex2.ch \
+	unbalanced-braces.ch \
 	$(pdftex_ch_synctex) \
 	pdftexdir/pdftex.ch \
 	pdftexdir/char-warning-pdftex.ch \
