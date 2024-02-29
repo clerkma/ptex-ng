@@ -1,4 +1,4 @@
-## $Id: eptex.am 70150 2024-02-25 17:08:15Z karl $
+## $Id: eptex.am 70222 2024-02-28 04:19:31Z kakuto $
 ## texk/web2c/eptexdir/am/eptex.am: Makefile fragment for e-pTeX.
 ##
 ## Copyright 2015-2024 Karl Berry <tex-live@tug.org>
@@ -77,6 +77,7 @@ eptex_ch_srcs = \
 	eptexdir/fam256.ch \
 	eptexdir/pdfutils.ch \
 	eptexdir/suppresserrors.ch \
+	eptexdir/unbalanced-braces-eptex.ch \
 	eptexdir/char-warning-eptex.ch \
 	tex-binpool.ch
 
