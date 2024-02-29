@@ -41,18 +41,15 @@
  *
  */
 
-#ifdef __GNUC__
-/* Validate in case of UNIX */
-#define UNIX 1
-#define GCC 1
-#else
-/* Win32 MSVC is assumed */
-#define WIN32 1
+#ifdef WIN32
 #define MSVC 1
+#else
+#define UNIX 1
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #ifndef UNIX
 #include <dos.h>
 #ifdef MSVC
@@ -62,10 +59,10 @@
 #endif
 #include <io.h>
 #endif
-#include <string.h>
 
-#ifdef GCC
+#ifdef __GNUC__
 #include <ctype.h>
+#define GCC 1
 #endif
 
 #include <config.h>
@@ -935,7 +932,7 @@ void tfm_define(FILE * fp)
 
     font.c = read_n(fp,4);          /* header[0] */
     font.d = read_long(fp);         /* header[1] */
-    if (ch == 'j') {    /* check for new features in pTeX p3.8.0 / JFM 2.0 */
+    if (ch == 'j') {    /* check for new features in Community pTeX / JFM 2.0 */
         for (i = 2; i < lh; i++)    /* the rest of header */
             read_long(fp);
         for (i = 0; i < nt; i++){           /* char_type */
@@ -946,11 +943,13 @@ void tfm_define(FILE * fp)
             read_long(fp);
         for (i = 0; i < nw+nh+nd+ni; i++)   /* width, height, depth, italic */
             read_long(fp);
-        for (i = 0; i < nl; i++){            /* glue_kern */
+        for (i = 0; i < nl; i++){           /* glue_kern */
             x = read_byte(fp); read_n(fp,3);
             if (x>0 && x<128) tfmver |= 2;      /* SKIP command */
             if (x>128 && x<=255) tfmver |= 4;   /* rearrangement */
         }
+        if (nk>256) tfmver |= 8;    /* many kern */
+        if (ne>256) tfmver |= 16;   /* many glue */
     }
     fclose(fp);
 
@@ -962,10 +961,12 @@ void tfm_define(FILE * fp)
             printf("\t\"%s\" is a %cfm%s file :%3ld  -> %3ld\n",
                 font.n, ch, u, bc, ec);
             if (ch == 'j' && tfmver > 0) {
-                printf("\t\tNew features in pTeX p3.8.0 / JFM 2.0:\n");
-                if (tfmver & 1) printf("\t\t+ 3-byte kanji code\n");
-                if (tfmver & 2) printf("\t\t+ SKIP command in glue_kern\n");
-                if (tfmver & 4) printf("\t\t+ rearrangement in glue_kern\n");
+                printf("\t\tNew features in Community pTeX / JFM 2.0:\n");
+                if (tfmver & 1) printf("\t\t+ 3-byte kanji code\n"); /* TL18 */
+                if (tfmver & 2) printf("\t\t+ SKIP command in glue_kern\n"); /* TL18 */
+                if (tfmver & 4) printf("\t\t+ rearrangement in glue_kern\n"); /* TL18 */
+                if (tfmver & 8) printf("\t\t+ more than 256 different kern\n"); /* TL24 */
+                if (tfmver & 16) printf("\t\t+ more than 256 different glue\n"); /* TL24 */
             }
         }
         if (f_vv > 0) {

@@ -1,5 +1,13 @@
-$Id: NEWS 66510 2023-03-09 23:07:06Z karl $
+$Id: NEWS 69711 2024-02-05 17:23:27Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+6.4.0 (for TeX Live 2024)
+* Support an extended check for safe filenames which also allows
+  TEXMF[SYS]VAR, for Lua(La)TeX; new functions and corresponding
+  kpsewhich options.
+* Support a new variable TEXMF_OUTPUT_DIRECTORY (alongside the
+  traditional TEXMFOUTPUT), so that subprograms can have access to an
+  --output-directory setting in an engine invocation.
 
 6.3.5 (for TeX Live 2023, 9 March 2023)
 * Support guessing input file encodings for Unix-ish platforms, as on

@@ -1,28 +1,48 @@
 ==============================================================
+LuaTeX 1.18.0 2024-02-13
+==============================================================
+
+- New kpse.in_name_ok_silent_extended and kpse.in_name_ok_silent_extended
+- New kpse.in_name_ok, kpse.in_name_ok
+- New lfs.mkdirp that make parent directories as needed
+- In kpse mode os.rename,os.remove, lfs.attributes,
+  lfs.chdir, lfs.lock_dir, lfs.dir, lfs.link,
+  lfs.mkdir, lfs.mkdirp, lfs.rmdir, lfs.symlinkattributes, lfs.touch 
+  are now validated with kpse.in_name_ok_silent_extended  *and* kpse.out_name_ok_silent_extended;
+  lfs.attributes, lfs.dir and lfs.symlinkattributes are now validated only against kpse.in_name_ok_silent_extended
+- With --safer, all debug functions except traceback are nil 
+- New commandline switch --[no-]check-dvi-total-pages  exit when DVI exceeds 65535 pages (default: check).
+  This breaks backward compatibility.
+- Some fixes, among others:  
+  * setgentounicode has a glyph_unicode_tree not NULL (thanks M. Chernoff)
+  * Character index within the  limits in defining a Type 3 font (H.Hagen). Thanks M. Chernoff.
+  * Fix for dubious cff fonts (not following the 1000 unit recommendation) (Hans Hagen).
+  * TEXMF_OUTPUT_DIRECTORY and output_directory have the same value, having output_directory
+    the priority on TEXMF_OUTPUT_DIRECTORY.
+
+
+==============================================================
 LuaTeX 1.17.0 2023-04-29
 ==============================================================
  
 - A breaking backward compatibility change: by default the socket 
-  library is not enabled.
+  library is not enabled . 
   The new option --socket enable the socket library as 
   before, as also --shell-escape (without --shell-restricted);
   --nosocket, --no-socket , --safer disabled the library, and 
   they have the priority in case of conflicting options.
-  
-  socket.sleep and socket.gettime are duplicated as os.socketsleep and
-  os.socketgettime, both always available.
-  
-  The new function os.kpsepopen replaces io.popen in kpse mode
-  (i.e. when kpse_init is not zero) as it was before,
-  but the permission can no longer be changed with
-  kpse.check_permission.
+  The mime library is always available; socket.sleep
+  and socket.gettime are duplicated as os.socketsleep
+  and os.socketgettime, both always available.
+  The new os.kpsepopen replace io.popopen in kpse mode
+  (i.e. when kpse_init is not zero) as it was before
+  but the permission now cannot be changed anymore with 
+  kpse.check_permission . 
   The function os.kpsepopen follows the same restrictions
-  as io.popen.
-
-  The mime library is always available.
-
+  as io.popen .
   Thanks to Max Chernoff for debugging.
 
+ 
 
 
 ==============================================================

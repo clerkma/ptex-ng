@@ -1,4 +1,4 @@
-% $Id$
+% $Id: mpmathdecimal.w 69812 2024-02-11 23:09:24Z karl $
 %
 % This file is part of MetaPost;
 % the MetaPost program is in the public domain.

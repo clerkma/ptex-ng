@@ -1,6 +1,28 @@
+2024-02-03  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* {,u}pmpsamp.test: Tweak.
+
+2024-02-01  Luigi Scarso  <luigi.scarso@gmail.com>
+
+	* pmp.ch: bump MetaPost version to 2.10 for mpfi.
+	* am/pmpost.am: link with mpfi.
+
+2023-09-16  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* pmp.ch: Bump upmpost version to 2.02-0.04-u1.30.
+
+2023-08-20  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* {,u}{pmpost,pmpsamp}.test:
+	Make easier to test on Windows.
+
 2023-03-09  Karl Berry  <karl@tug.org>
 
 	* TL'23 release.
+
+2022-07-23  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* pmp.ch: Bump upmpost version to 2.02-0.04-u1.29.
 
 2022-03-21  Karl Berry  <karl@tug.org>
 

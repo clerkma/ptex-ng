@@ -17,17 +17,17 @@ by using "huge" pointers.
 The ``banner line'' defined here should be changed whenever \.{CTANGLE}
 is modified.
 
-@d banner "This is CTANGLE (Version 4.9)"
+@d banner "This is CTANGLE (Version 4.11)"
 @y
 The ``banner line'' defined here should be changed whenever \.{CTANGLE}
 is modified.
 
-@d banner "This is CTANGLE (Version 4.9pc/big)"
+@d banner "This is CTANGLE (Version 4.11pc/big)"
 @z
 
 
-@x Section 10.
-  for section names */
+@x Section 11.
+@d ilk dummy.Ilk /* used by \.{CWEAVE} only */
 
 @<Common code...@>=
 typedef struct name_info {
@@ -36,7 +36,7 @@ typedef struct name_info {
   union {
     struct name_info *Rlink; /* right link in binary search tree for section
       names */
-    char Ilk; /* used by identifiers in \.{CWEAVE} only */
+    eight_bits Ilk; /* used by identifiers in \.{CWEAVE} only */
   } dummy;
   void *equiv_or_xref; /* info corresponding to names */
 } name_info; /* contains information about an identifier or section name */
@@ -48,11 +48,8 @@ extern char *byte_ptr; /* first unused position in |byte_mem| */
 extern name_info name_dir[]; /* information about names */
 extern name_pointer name_dir_end; /* end of |name_dir| */
 extern name_pointer name_ptr; /* first unused position in |name_dir| */
-extern name_pointer hash[]; /* heads of hash lists */
-extern hash_pointer hash_end; /* end of |hash| */
-extern hash_pointer h; /* index into hash-head array */
 @y
-  for section names */
+@d ilk dummy.Ilk /* used by \.{CWEAVE} only */
 
 @f huge extern
 
@@ -63,7 +60,7 @@ typedef struct name_info {
   union {
     struct name_info *Rlink; /* right link in binary search tree for section
       names */
-    char Ilk; /* used by identifiers in \.{CWEAVE} only */
+    eight_bits Ilk; /* used by identifiers in \.{CWEAVE} only */
   } dummy;
   union {
     char *equiv_member;
@@ -78,9 +75,6 @@ extern name_info name_dir[]; /* information about names */
 extern name_pointer name_dir_end; /* end of |name_dir| */
 extern name_pointer name_ptr; /* first unused position in |name_dir| */
 extern char huge* byte_ptr; /* first unused position in |byte_mem| */
-extern name_pointer hash[]; /* heads of hash lists */
-extern hash_pointer hash_end; /* end of |hash| */
-extern hash_pointer h; /* index into hash-head array */
 @z
 
 
@@ -144,10 +138,8 @@ text_ptr=text_info+1; text_ptr->tok_start=tok_mem;
 
 
 @x Section 31.
-  eight_bits *end_field; /* ending location of replacement text */
   eight_bits *byte_field; /* present location within replacement text */
 @y
-  eight_bits huge* end_field; /* ending location of replacement text */
   eight_bits huge* byte_field; /* present location within replacement text */
 @z
 
@@ -156,10 +148,10 @@ text_ptr=text_info+1; text_ptr->tok_start=tok_mem;
 out_char(
 eight_bits cur_char)
 {
-  char *j, *k; /* pointer into |byte_mem| */
+  char *j; /* pointer into |byte_mem| */
 @y
 out_char(cur_char)
 eight_bits cur_char;
 {
-  char huge* j, huge* k; /* pointer into |byte_mem| */
+  char huge* j; /* pointer into |byte_mem| */
 @z

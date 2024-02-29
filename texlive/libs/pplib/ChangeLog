@@ -1,2 +1,24 @@
+2023-12-23  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* pplib-src/src/util/README.md,
+	pplib-src/doc/{ppapi-{1,2}.x,ppcode,pplib,ppnew}.rst,
+	pplib-src/doc/_build/html/_source/{ppapi-{1,2}.x,ppcode,pplib,ppnew}.rst.txt,
+	doc/_build/html/_static/pygments.css, .gitattributes:
+	Convert newline from CRLF to LF.
+
+2023-08-23  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* pplib.test: Make easier to test on Windows.
+
+2023-05-27  Karl Berry  <karl@freefriends.org>
+
+	* pplib-src/test/out2: no period at end of message.
+
+2023-05-23 Luigi Scarso luigi.scarso@gmail.com
+
+	* sync with the upstream repo.:
+          fixes decryption failure on unreadable perms (Paweł Jackowski)
+
 2020-04-18 Luigi Scarso luigi.scarso@gmail.com
+
 	* Moved luatexdir/luapplib under libs/pplib.

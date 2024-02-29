@@ -1,11 +1,15 @@
 #! /bin/sh -vx
-# $Id: weave.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: weave.test 68157 2023-09-03 11:26:37Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2009 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_weave=$BinDir/weave$ExeExt
+
 test -d tests || mkdir -p tests
 
 TEXMFCNF=$srcdir/../kpathsea WEBINPUTS=$srcdir \
-  ./weave pooltype || exit 1
+  $_weave pooltype || exit 1
 

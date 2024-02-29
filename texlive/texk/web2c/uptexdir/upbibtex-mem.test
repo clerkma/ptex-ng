@@ -1,11 +1,15 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: upbibtex-mem.test 69812 2024-02-11 23:09:24Z karl $
 # Copyright 2022 Japanese TeX Development Community <issue@texjp.org>
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2010-2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
 # Using test data from Philipp Lehman <lehman@gmx.net>
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_upbibtex=$BinDir/upbibtex$ExeExt
 
 test -d uptests || mkdir -p uptests
 
@@ -65,7 +69,7 @@ for t in 1 2 3; do
     TEXMFCNF=$srcdir/../kpathsea \
     BSTINPUTS=$srcdir/tests \
     BIBINPUTS=./uptests \
-    ./upbibtex uptests/memtest$t || exit 1
+    $_upbibtex uptests/memtest$t || exit $t
 
 done
 

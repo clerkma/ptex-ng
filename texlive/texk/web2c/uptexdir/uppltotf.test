@@ -1,10 +1,14 @@
 #! /bin/sh -vx
-# $Id: uppltotf.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: uppltotf.test 67990 2023-08-20 14:26:56Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2011-2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_uppltotf=$BinDir/uppltotf$ExeExt
+
 test -d uptests || mkdir -p uptests
 
-./uppltotf -verbose $srcdir/tests/cmr10 uptests/xcmr10 || exit 1
+$_uppltotf -verbose $srcdir/tests/cmr10 uptests/xcmr10 || exit 1
 

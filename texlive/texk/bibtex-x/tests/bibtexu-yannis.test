@@ -1,8 +1,12 @@
 #! /bin/sh -vx
-# $Id: bibtexu-yannis.test 60293 2021-08-21 13:42:52Z takuji $
+# $Id: bibtexu-yannis.test 67881 2023-08-11 11:46:28Z takuji $
 # Copyright 2019-2021 Karl Berry <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 # Some actual sorting needed.
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_bibtexu=$BinDir/bibtexu$ExeExt
 
 test -d tests || mkdir -p tests
 
@@ -14,10 +18,12 @@ TEXMFCNF=$srcdir/../kpathsea; export TEXMFCNF
 BSTINPUTS=$srcdir/../web2c/tests; export BSTINPUTS
 BIBINPUTS=$srcdir/tests; export BIBINPUTS
 
-if ./bibtexu -t -d all -l fr -o fr tests/x$testname; then :; else
+if $_bibtexu -t -d all -l fr -o fr tests/x$testname; then :; else
   echo "*** bibtexu failed, tests/x$testname.blg is:" >&2
   cat tests/x$testname.blg >&2
   exit 1
 fi
 
 diff $srcdir/tests/$testname.bbl tests/x$testname.bbl || exit 1
+
+exit 0

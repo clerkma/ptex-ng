@@ -2,7 +2,7 @@
 % This program by Silvio Levy and Donald E. Knuth
 % is based on a program by Knuth.
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 4.9 --- May 2023
+% Version 4.11 --- December 2023
 
 % Copyright (C) 1987,1990,1993,2000 Silvio Levy and Donald E. Knuth
 
@@ -22,12 +22,12 @@
 
 \def\v{\char'174} % vertical (|) in typewriter font
 
-\def\title{Common code for CTANGLE and CWEAVE (Version 4.9)}
+\def\title{Common code for CTANGLE and CWEAVE (Version 4.11)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont Common code for {\ttitlefont CTANGLE} and
     {\ttitlefont CWEAVE}}
   \vskip 15pt
-  \centerline{(Version 4.9)}
+  \centerline{(Version 4.11)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -47,7 +47,7 @@ under the terms of a permission notice identical to this one.
 \pageno=\contentspagenumber \advance\pageno by 1
 \let\maybe=\iftrue
 
-@** Introduction.  This file contains code common
+@* Introduction.  This file contains code common
 to both \.{CTANGLE} and \.{CWEAVE}, which roughly concerns the following
 problems: character uniformity, input routines, error handling and
 parsing of command line.  We have tried to concentrate in this file
@@ -129,7 +129,7 @@ char *section_text_end = section_text+longest_name; /* end of |section_text| */
 char *id_first; /* where the current identifier begins in the buffer */
 char *id_loc; /* just after the current identifier in the buffer */
 
-@** Input routines.  The lowest level of input to the \.{CWEB} programs
+@* Input routines.  The lowest level of input to the \.{CWEB} programs
 is performed by |input_ln|, which must be told which file to read from.
 The return value of |input_ln| is |true| if the read is successful and
 |false| if not (generally this means the file has ended). The conventions
@@ -150,7 +150,7 @@ char *loc=buffer; /* points to the next character to be read from the buffer */
 char *limit=buffer; /* points to the last character in the buffer */
 
 @ In the unlikely event that your standard I/O library does not
-support |feof|, |getc|, and |ungetc| you may have to change things here.
+support |feof| and |getc| you may have to change things here.
 @^system dependencies@>
 
 @c
@@ -163,9 +163,9 @@ FILE *fp) /* what file to read from */
   limit = k = buffer; /* beginning of buffer */
   while (k<=buffer_end && (c=getc(fp)) != EOF && c!='\n')
     if ((*(k++) = c) != ' ') limit = k;
-  if (k>buffer_end)
-    if ((c=getc(fp))!=EOF && c!='\n') {
-      ungetc(c,fp); loc=buffer; err_print("! Input line too long");
+  if (k>buffer_end) {
+    while ((c=getc(fp))!=EOF && c!='\n'); /* discard rest of line */
+    loc=buffer; err_print("! Input line too long");
 @.Input line too long@>
     }
   if (c==EOF && limit==buffer) return false; /* there was nothing after
@@ -175,8 +175,8 @@ FILE *fp) /* what file to read from */
 
 @ @<Predecl...@>=@+static boolean input_ln(FILE *);
 
-@ Now comes the problem of deciding which file to read from next.
-Recall that the actual text that \.{CWEB} should process comes from two
+@* File handling. Now comes the problem of deciding which file to read from
+next.  Recall that the actual text that \.{CWEB} should process comes from two
 streams: a |web_file|, which can contain possibly nested include
 commands~\.{@@i}, and a |change_file|, which might also contain
 includes.  The |web_file| together with the currently open include
@@ -313,7 +313,7 @@ check_change(void) /* switches to |change_file| if the buffers match */
       return;
     }
     if (limit>buffer+1 && buffer[0]=='@@') {
-      char xyz_code=xisupper(buffer[1])? tolower((int)buffer[1]): buffer[1];
+      if (xisupper(buffer[1])) buffer[1]=tolower((int)buffer[1]);
       @<If the current line starts with \.{@@y},
         report any discrepancies and |return|@>@;
     }
@@ -334,11 +334,11 @@ check_change(void) /* switches to |change_file| if the buffers match */
 @ @<Predecl...@>=@+static void check_change(void);
 
 @ @<If the current line starts with \.{@@y}...@>=
-if (xyz_code=='x' || xyz_code=='z') {
+if (buffer[1]=='x' || buffer[1]=='z') {
   loc=buffer+2; err_print("! Where is the matching @@y?");
 @.Where is the match...@>
   }
-else if (xyz_code=='y') {
+else if (buffer[1]=='y') {
   if (n>0) {
     loc=buffer+2;
     printf("\n! Hmm... %d ",n);
@@ -348,37 +348,6 @@ else if (xyz_code=='y') {
   change_depth=include_depth;
   return;
 }
-
-@ The |reset_input| procedure, which gets \.{CWEB} ready to read the
-user's \.{CWEB} input, is used at the beginning of phase one of \.{CTANGLE},
-phases one and two of \.{CWEAVE}.
-
-@c
-void
-reset_input(void)
-{
-  limit=buffer; loc=buffer+1; buffer[0]=' ';
-  @<Open input files@>@;
-  include_depth=cur_line=change_line=0;
-  change_depth=include_depth;
-  changing=true; prime_the_change_buffer(); changing=!changing;
-  limit=buffer; loc=buffer+1; buffer[0]=' '; input_has_ended=false;
-}
-
-@ The following code opens the input files.
-@^system dependencies@>
-
-@<Open input files@>=
-if ((web_file=fopen(web_file_name,"r"))==NULL) {
-  strcpy(web_file_name,alt_web_file_name);
-  if ((web_file=fopen(web_file_name,"r"))==NULL)
-       fatal("! Cannot open input file ", web_file_name);
-}
-@.Cannot open input file@>
-@.Cannot open change file@>
-web_file_open=true;
-if ((change_file=fopen(change_file_name,"r"))==NULL)
-       fatal("! Cannot open change file ", change_file_name);
 
 @ The |get_line| procedure is called when |loc>limit|; it puts the next
 line of merged input into the buffer and updates the other variables
@@ -390,14 +359,7 @@ If we've just changed from the |cur_file| to the |change_file|, or if
 the |cur_file| has changed, we tell \.{CTANGLE} to print this
 information in the \CEE/ file by means of the |print_where| flag.
 
-@<Global var...@>=
-sixteen_bits section_count; /* the current section number */
-boolean changed_section[max_sections]; /* is the section changed? */
-boolean change_pending; /* if the current change is not yet recorded in
-  |changed_section[section_count]| */
-boolean print_where=false; /* should \.{CTANGLE} print line and file info? */
-
-@ @c
+@c
 boolean get_line(void) /* inputs the next line */
 {
   restart:
@@ -432,7 +394,7 @@ boolean get_line(void) /* inputs the next line */
 stop reading it and start reading from the named include file.  The
 \.{@@i} line should give a complete file name with or without
 double quotes.
-If the environment variable \.{CWEBINPUTS} is set, or if the compiler flag
+If the environment variable |CWEBINPUTS| is set, or if the compiler flag
 of the same name was defined at compile time,
 \.{CWEB} will look for include files in the directory thus named, if
 it cannot find them in the current directory.
@@ -462,7 +424,6 @@ The remainder of the \.{@@i} line after the file name is ignored.
     goto restart; /* success */
   }
   if ((kk=getenv("CWEBINPUTS"))!=NULL) {
-@.CWEBINPUTS@>
     if ((l=strlen(kk))>max_file_name_length-2) too_long();
     strcpy(temp_file_name,kk);
   }
@@ -480,6 +441,7 @@ The remainder of the \.{@@i} line after the file name is ignored.
     for (; k>=cur_file_name; k--) *(k+l+1)=*k;
     strcpy(cur_file_name,temp_file_name);
     cur_file_name[l]='/'; /* \UNIX/ pathname separator */
+@^system dependencies@>
     if ((cur_file=fopen(cur_file_name,"r"))!=NULL) {
       cur_line=0; print_where=true;
       goto restart; /* success */
@@ -549,7 +511,45 @@ check_complete(void) {
   }
 }
 
-@** Storage of names and strings.
+@ The |reset_input| procedure, which gets \.{CWEB} ready to read the
+user's \.{CWEB} input, is used at the beginning of phase one of \.{CTANGLE},
+phases one and two of \.{CWEAVE}.
+
+@c
+void
+reset_input(void)
+{
+  limit=buffer; loc=buffer+1; buffer[0]=' ';
+  @<Open input files@>@;
+  include_depth=cur_line=change_line=0;
+  change_depth=include_depth;
+  changing=true; prime_the_change_buffer(); changing=!changing;
+  limit=buffer; loc=buffer+1; buffer[0]=' '; input_has_ended=false;
+}
+
+@ The following code opens the input files.
+@^system dependencies@>
+
+@<Open input files@>=
+if ((web_file=fopen(web_file_name,"r"))==NULL) {
+  strcpy(web_file_name,alt_web_file_name);
+  if ((web_file=fopen(web_file_name,"r"))==NULL)
+       fatal("! Cannot open input file ", web_file_name);
+}
+@.Cannot open input file@>
+@.Cannot open change file@>
+web_file_open=true;
+if ((change_file=fopen(change_file_name,"r"))==NULL)
+       fatal("! Cannot open change file ", change_file_name);
+
+@ @<Global var...@>=
+sixteen_bits section_count; /* the current section number */
+boolean changed_section[max_sections]; /* is the section changed? */
+boolean change_pending; /* if the current change is not yet recorded in
+  |changed_section[section_count]| */
+boolean print_where=false; /* should \.{CTANGLE} print line and file info? */
+
+@* Storage of names and strings.
 Both \.{CWEAVE} and \.{CTANGLE} store identifiers, section names and
 other strings in a large array of |char|s, called |byte_mem|.
 Information about the names is kept in the array |name_dir|, whose
@@ -619,14 +619,11 @@ it is inserted into the table.
 @d hash_size 353 /* should be prime */
 
 @<Global var...@>=
-name_pointer hash[hash_size]; /* heads of hash lists */
+name_pointer hash[hash_size]={NULL}; /* heads of hash lists */
 hash_pointer hash_end = hash+hash_size-1; /* end of |hash| */
-hash_pointer h; /* index into hash-head array */
+hash_pointer hash_ptr; /* index into hash-head array */
 
 @ Initially all the hash lists are empty.
-
-@<Init...@>=
-for (h=hash; h<=hash_end; *h++=NULL) ;
 
 @ Here is the main procedure for finding identifiers:
 
@@ -638,7 +635,7 @@ const char *last, /* last character of string plus one */
 eight_bits t) /* the |ilk|; used by \.{CWEAVE} only */
 {
   const char *i=first; /* position in |buffer| */
-  int h; /* hash code; shadows |hash_pointer h| */
+  int h; /* hash code */
   size_t l; /* length of the given identifier */
   name_pointer p; /* where the identifier is being sought */
   if (last==NULL) for (last=first; *last!='\0'; last++);
@@ -670,15 +667,14 @@ if (p==NULL) {
 }
 
 @ The information associated with a new identifier must be initialized
-in a slightly different way in \.{CWEAVE} than in \.{CTANGLE}; hence the
-|init_p| procedure.
+in a slightly different way in \.{CWEAVE} than in \.{CTANGLE}.
 
 @<Enter a new name...@>= {
   if (byte_ptr+l>byte_mem_end) overflow("byte memory");
   if (name_ptr>=name_dir_end) overflow("name");
   strncpy(byte_ptr,first,l);
   (++name_ptr)->byte_start=byte_ptr+=l;
-  init_p(p,t);
+  if (program==cweave) p->ilk=t, init_node(p);
 }
 
 @ If |p| is a |name_pointer| variable, as we have seen,
@@ -884,10 +880,10 @@ while (p) { /* compare shortest prefix of |p| with new name */
     p=(c==less?p->llink:p->rlink);
   } else { /* new name matches |p| */
     if (r!=NULL) { /* and also |r|: illegal */
-      fputs("\n! Ambiguous prefix: matches <",stdout);
+      printf("%s","\n! Ambiguous prefix: matches <");
 @.Ambiguous prefix ... @>
       print_prefix_name(p);
-      fputs(">\n and <",stdout);
+      printf("%s",">\n and <");
       print_prefix_name(r);
       err_print(">");
       return name_dir; /* the unsection */
@@ -913,7 +909,7 @@ switch(section_name_cmp(&first,name_len,r)) {
               /* compare all of |r| with new name */
   case prefix:
     if (!ispref) {
-      fputs("\n! New name is a prefix of <",stdout);
+      printf("%s","\n! New name is a prefix of <");
 @.New name is a prefix...@>
       print_section_name(r);
       err_print(">");
@@ -925,16 +921,16 @@ switch(section_name_cmp(&first,name_len,r)) {
         extend_section_name(r,first,last+1,ispref);
       break;
   case bad_extension:
-      fputs("\n! New name extends <",stdout);
+      printf("%s","\n! New name extends <");
 @.New name extends...@>
       print_section_name(r);
       err_print(">");
     break;
   default: /* no match: illegal */
-    fputs("\n! Section name incompatible with <",stdout);
+    printf("%s","\n! Section name incompatible with <");
 @.Section name incompatible...@>
     print_prefix_name(r);
-    fputs(">,\n which abbreviates <",stdout);
+    printf("%s",">,\n which abbreviates <");
     print_section_name(r);
     err_print(">");
 }
@@ -977,7 +973,7 @@ name_pointer r) /* section name being compared */
           *pfirst=first+(ptrdiff_t)(ss-s);
           return extension; /* null extension */
         } else return equal;
-      else return (q->byte_start==(q+1)->byte_start)? equal: prefix;
+      else return length(q)==0? equal: prefix;
     case extension:
       if (!ispref) return bad_extension;
       first += ss-s;
@@ -990,7 +986,7 @@ name_pointer r) /* section name being compared */
 
 @ @<Predec...@>=@+static int section_name_cmp(char **,size_t,name_pointer);
 
-@** Reporting errors to the user.
+@* Reporting errors to the user.
 A global variable called |history| will contain one of four values
 at the end of every run: |spotless| means that no unusual messages were
 printed; |harmless_message| means that a message of possible interest
@@ -1015,9 +1011,9 @@ void
 err_print( /* prints `\..' and location of error message */
 const char *s)
 {
-  *s=='!'? printf("\n%s",s) : printf("%s",s);
+  printf(*s=='!' ? "\n%s" : "%s",s);
   if (web_file_open) @<Print error location based on input buffer@>@;
-  update_terminal; mark_error;
+  update_terminal(); mark_error();
 }
 
 @ The error locations can be indicated by using the global variables
@@ -1031,16 +1027,18 @@ has special line-numbering conventions.
 
 @<Print error location based on input buffer@>=
 {char *k,*l; /* pointers into |buffer| */
-if (changing && include_depth==change_depth)
+if (changing && include_depth==change_depth && change_line>0)
   printf(". (l. %d of change file)\n", change_line);
-else if (include_depth==0) printf(". (l. %d)\n", cur_line);
+else if (cur_line>0) {
+  if (include_depth==0) printf(". (l. %d)\n", cur_line);
   else printf(". (l. %d of include file %s)\n", cur_line, cur_file_name);
+}
 l= (loc>=limit? limit: loc);
 if (l>buffer) {
   for (k=buffer; k<l; k++)
     if (*k=='\t') putchar(' ');
     else putchar(*k); /* print the characters already read */
-  new_line;
+  new_line();
   for (k=buffer; k<l; k++) putchar(' '); /* space out the next line */
 }
 for (k=l; k<limit; k++) putchar(*k); /* print the part not yet read */
@@ -1064,7 +1062,7 @@ a status of |EXIT_SUCCESS| if and only if only harmless messages were printed.
 
 @c
 int wrap_up(void) {
-  if (show_progress) new_line;
+  if (show_progress || show_happiness || history != spotless) new_line();
   if (show_stats)
     print_stats(); /* print statistics about memory usage */
   @<Print the job |history|@>@;
@@ -1094,7 +1092,7 @@ concatenated to print the final error message.
 fatal(
   const char *s,const char *t)
 {
-  if (*s) err_print(s);
+  if (*s) printf("%s",s);
   err_print(t);
   history=fatal_message; exit(wrap_up());
 }
@@ -1114,7 +1112,7 @@ and \.{CWEB} prints an error message that is really for the \.{CWEB}
 maintenance person, not the user. In such cases the program says
 |confusion("indication of where we are")|.
 
-@** Command line arguments.
+@* Command line arguments.
 The user calls \.{CWEAVE} and \.{CTANGLE} with arguments on the command line.
 These are either file names or flags to be turned off (beginning with |"-"|)
 or flags to be turned on (beginning with |"+"|).
@@ -1204,8 +1202,10 @@ after the dot.  We must check that there is enough room in
   }
   sprintf(alt_web_file_name,"%s.web",*argv);
   sprintf(tex_file_name,"%s.tex",name_pos); /* strip off directory name */
-  sprintf(idx_file_name,"%s.idx",name_pos);
-  sprintf(scn_file_name,"%s.scn",name_pos);
+  if (make_xrefs) { /* indexes will be generated */
+    sprintf(idx_file_name,"%s.idx",name_pos);
+    sprintf(scn_file_name,"%s.scn",name_pos);
+  }
   sprintf(C_file_name,"%s.c",name_pos);
   found_web=true;
 }
@@ -1228,17 +1228,15 @@ after the dot.  We must check that there is enough room in
     @<Complain about argument length@>@;
   if (dot_pos==NULL) {
     sprintf(tex_file_name,"%s.tex",*argv);
-    sprintf(idx_file_name,"%s.idx",*argv);
-    sprintf(scn_file_name,"%s.scn",*argv);
     sprintf(C_file_name,"%s.c",*argv);
   } else {
     strcpy(tex_file_name,*argv);
     strcpy(C_file_name,*argv);
-    if (make_xrefs) { /* indexes will be generated */
-      *dot_pos='\0';
-      sprintf(idx_file_name,"%s.idx",*argv);
-      sprintf(scn_file_name,"%s.scn",*argv);
-    }
+    *dot_pos='\0'; /* string now ends where the dot was */
+  }
+  if (make_xrefs) { /* indexes will be generated */
+    sprintf(idx_file_name,"%s.idx",*argv);
+    sprintf(scn_file_name,"%s.scn",*argv);
   }
   found_out=true;
 }
@@ -1263,7 +1261,7 @@ else fatal(
 @ @<Complain about arg...@>= fatal("! Filename too long\n", *argv);
 @.Filename too long@>
 
-@** Output. Here is the code that opens the output file:
+@* Output. Here is the code that opens the output file:
 @^system dependencies@>
 
 @<Global var...@>=
@@ -1285,4 +1283,4 @@ else {
     fatal("! Cannot open output file ", tex_file_name);
 }
 
-@** Index.
+@* Index.

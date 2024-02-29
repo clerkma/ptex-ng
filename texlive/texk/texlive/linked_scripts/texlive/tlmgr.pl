@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
-# $Id: tlmgr.pl 66798 2023-04-08 00:15:21Z preining $
-# Copyright 2008-2023 Norbert Preining
+# $Id: tlmgr.pl 70080 2024-02-22 23:13:07Z karl $
+# Copyright 2008-2024 Norbert Preining
 # This file is licensed under the GNU General Public License version 2
 # or any later version.
 # 
@@ -8,8 +8,8 @@
 
 use strict; use warnings;
 
-my $svnrev = '$Revision: 66798 $';
-my $datrev = '$Date: 2023-04-08 02:15:21 +0200 (Sat, 08 Apr 2023) $';
+my $svnrev = '$Revision: 70080 $';
+my $datrev = '$Date: 2024-02-23 00:13:07 +0100 (Fri, 23 Feb 2024) $';
 my $tlmgrrevision;
 my $tlmgrversion;
 my $prg;
@@ -37,7 +37,7 @@ our $allowed_verify_args_regex = qr/^(none|main|all)$/i;
 
 END {
   if ($opts{"pause"}) {
-    print "Press Enter to exit the program.\n";
+    print "\n$prg: Pausing at end of run as requested; press Enter to exit.\n";
     <STDIN>;
   }
 }
@@ -65,7 +65,7 @@ BEGIN {
     $kpsewhichname = "kpsewhich";
   }
   if (-r "$bindir/$kpsewhichname") {
-    # if not in bootstrapping mode => kpsewhich exists, so use it to get $Master
+    # not in bootstrapping mode => kpsewhich exists, so use it to get $Master
     chomp($Master = `kpsewhich -var-value=TEXMFROOT`);
   }
 
@@ -146,6 +146,9 @@ my %action_specification = (
     },
     "run-post" => 1,
     "function" => \&action_backup
+  },
+  "bug" => {
+    "function" => \&action_bug
   },
   "candidates" => {
     "run-post" => 0,
@@ -622,7 +625,9 @@ for the full story.\n";
     tldie("$prg: Try --help if you need it.\n");
   }
 
-  #
+  # nice to have the version if debugging.
+  debug("tlmgr version $tlmgrversion\n");
+
   # the main tree we will be working on
   $::maintree = $Master;
   if ($opts{"usermode"}) {
@@ -634,6 +639,7 @@ for the full story.\n";
       chomp($::maintree = `kpsewhich -var-value TEXMFHOME`);
     }
   }
+  debug("maintree=$::maintree\n");
 
   # besides doing normal logging if -logfile is specified, we try to log
   # package related actions (install, remove, update) to
@@ -690,7 +696,9 @@ for the full story.\n";
   # if we are asked to use persistent connections try to start it here
   ddebug("tlmgr:main: do persistent downloads = $opts{'persistent-downloads'}\n");
   if ($opts{'persistent-downloads'}) {
-    TeXLive::TLUtils::setup_persistent_downloads() ;
+    TeXLive::TLUtils::setup_persistent_downloads(
+      "$Master/tlpkg/installer/curl/curl-ca-bundle.crt"
+    ) ;
   }
   if (!defined($::tldownload_server)) {
     debug("tlmgr:main: ::tldownload_server not defined\n");
@@ -830,7 +838,8 @@ sub execute_action {
 
 
 # run CMD with notice to the user and if exit status is nonzero, complain.
-# return exit status.
+# log output with logcommand (tlmgr-commands.log).
+# return F_OK or F_ERROR.
 # 
 sub do_cmd_and_check {
   my $cmd = shift;
@@ -846,7 +855,8 @@ sub do_cmd_and_check {
     $out = "";
   } elsif (wndws() && (! -r "$Master/bin/windows/luatex.dll")) {
     # deal with the case where only scheme-infrastructure is installed
-    # on Windows, thus no luatex.dll is available and the wrapper cannot be started
+    # on Windows, thus no luatex.dll is available and the wrapper cannot
+    # be started
     tlwarn("Cannot run wrapper due to missing luatex.dll\n");
     $ret = $F_OK;
     $out = "";
@@ -855,27 +865,28 @@ sub do_cmd_and_check {
   }
   $out =~ s/\n+$//; # trailing newlines don't seem interesting
   my $outmsg = "output:\n$out\n--end of output of $cmd.\n";
-  if ($ret == $F_OK) {
+  if ($ret == 0) {
     info("done running $cmd.\n") unless $cmd =~ /^fmtutil/;
     logcommand("success, $outmsg");
     ddebug("$cmd $outmsg");
-    return ($F_OK);
   } else {
     info("\n");
     tlwarn("$prg: $cmd failed (status $ret), output:\n$out\n");
     logcommand("error, status: $ret, $outmsg");
-    return ($F_ERROR);
+    $ret = $F_ERROR;
   }
+  return $ret;
 }
 
 # run external programs (mktexlsr, updmap-sys, etc.) as specified by the
-# keys in the RET hash.  We return the number of unsuccessful runs, zero
-# if all ok.
+# keys in the ::execute_actions hash. We return the number of
+# unsuccessful runs, zero if all ok.
 #
 # If the "map" key is specified, the value may be a reference to a list
 # of map command strings to pass to updmap, e.g., "enable Map=ascii.map".
 #
 sub handle_execute_actions {
+  debug("starting handle_execute_actions\n");
   my $errors = 0;
 
   my $sysmode = ($opts{"usermode"} ? "-user" : "-sys");
@@ -983,7 +994,7 @@ sub handle_execute_actions {
       for my $e (keys %updated_engines) {
         debug ("updating formats based on $e\n");
         $errors += do_cmd_and_check
-                    ("$fmtutil_cmd --byengine $e --no-error-if-no-format $fmtutil_args");
+          ("$fmtutil_cmd --byengine $e --no-error-if-no-format $fmtutil_args");
         read_and_report_fmtutil_status_file($status_file);
         unlink($status_file);
       }
@@ -1002,10 +1013,10 @@ sub handle_execute_actions {
 
     # now go back to the hyphenation patterns and regenerate formats
     # based on the various language files
-    # this of course will in some cases duplicate fmtutil calls,
+    # this will in some cases duplicate fmtutil calls,
     # but it is much easier than actually checking which formats
     # don't need to be updated
-
+    #
     if ($regenerate_language) {
       for my $ext ("dat", "def", "dat.lua") {
         my $lang = "language.$ext";
@@ -1025,8 +1036,9 @@ sub handle_execute_actions {
     # --refresh existing formats to avoid generating new ones.
     if ($::regenerate_all_formats) {
       info("Regenerating existing formats, this may take some time ...");
-      # --refresh might already be in $invoke_fmtutil, but we don't care
-      $errors += do_cmd_and_check("$fmtutil_cmd --refresh --all $fmtutil_args");
+      # --refresh might already be in $fmtutil_args, but that's ok.
+      my $args = "--refresh --all";
+      $errors += do_cmd_and_check("$fmtutil_cmd $args $fmtutil_args");
       read_and_report_fmtutil_status_file($status_file);
       unlink($status_file);
       info("done\n");
@@ -1034,16 +1046,68 @@ sub handle_execute_actions {
     }
   }
 
+  # lmtx/context cache creation/update. This variable is set, in
+  # TLPDB::install_package, when the context package is updated or installed.
+  if (defined $::context_cache_update_needed
+      && $::context_cache_update_needed) {
+    if ($opts{"dry-run"}) {
+      debug("dry-run, skipping context cache update\n");
+    } else {
+      my $progext = ($^O =~ /^MSWin/i ? ".exe" : "");
+      $errors +=
+        TeXLive::TLUtils::update_context_cache($bindir, $progext,
+                                               \&run_postinst_logcommand);
+    }
+    $::context_cache_update_needed = 0;
+  }
+
   # undefine the global var, otherwise in GUI mode the actions
   # are accumulating
   undef %::execute_actions;
 
+  debug("finished handle_execute_actions, errors=$errors\n");
   if ($errors > 0) {
-    # should we return warning here?
+    # warning might suffice sometimes, but safer to return error.
     return $F_ERROR;
   } else {
     return $F_OK;
   }
+}
+
+# Run CMD with output logged via logcommand().  We use this for the
+# ConTeXt cache updates (above); since they are so verbose, we want the
+# output to be only in tlmgr-commands.log, not tlmgr.log or the terminal.
+# 
+# This is the same result as do_cmd_and_check, which we use for the
+# other postaction commands (fmtutil, etc.); the difference is that for
+# context, we want to share the code to actually do the updates with
+# install-tl, so there is a common routine TLUtils::update_context_cache,
+# and thus we have to handle the logging differently.
+# 
+# Another approach would be to move do_cmd_and_check to TLUtils and
+# have install-tl call that. Perhaps that would be cleaner, but then
+# there is tlmgr-specific stuff that would have to be conditionalized.
+# So, not great either way. Maybe someday we will merge install-tl and tlmgr.
+# 
+# As a result, the logging text here surrounding the output is mostly a
+# duplicate of what's in do_cmd_and_check.
+# 
+sub run_postinst_logcommand {
+  my ($cmd) = @_;
+  logpackage("command: $cmd");
+  logcommand("running $cmd");
+  my $ret = TeXLive::TLUtils::run_cmd_with_log ($cmd, \&logcommand_bare);
+  my $outmsg = "\n--end of output of $cmd";
+  if ($ret == 0) {
+    info("done running $cmd.\n") unless $cmd =~ /^fmtutil/;
+    logcommand("$outmsg (success).\n");
+  } else {
+    info("\n");
+    tlwarn("$prg: $cmd failed (status $ret), see $commandlogfile\n");
+    logcommand("$outmsg (failure, status $ret");
+    $ret = 1;
+  }
+  return $ret;
 }
 
 sub read_and_report_fmtutil_status_file {
@@ -1790,10 +1854,9 @@ sub action_search {
   return ($F_OK | $F_NOPOSTACTION);
 }
 
-sub search_tlpdb {
+sub _search_tlpdb {
   my ($tlpdb, $what, $dofile, $dodesc, $inword) = @_;
-  my $retfile = '';
-  my $retdesc = '';
+  my %pkgs;
   foreach my $pkg ($tlpdb->list_packages) {
     my $tlp = $tlpdb->get_package($pkg);
     
@@ -1801,9 +1864,8 @@ sub search_tlpdb {
     if ($dofile) {
       my @ret = search_pkg_files($tlp, $what);
       if (@ret) {
-        $retfile .= "$pkg:\n";
         foreach (@ret) {
-          $retfile .= "\t$_\n";
+          $pkgs{$pkg}{'files'}{$_} = 1;
         }
       }
     }
@@ -1811,28 +1873,43 @@ sub search_tlpdb {
     # no options or --all -> search package names/descriptions
     if ($dodesc) {
       next if ($pkg =~ m/\./);
-      my $matched = search_pkg_desc($tlp, $what, $inword);
-      $retdesc .= "$matched\n" if ($matched);
+      my $t = "$pkg\n";
+      $t = $t . $tlp->shortdesc . "\n" if (defined($tlp->shortdesc));
+      $t = $t . $tlp->longdesc . "\n" if (defined($tlp->longdesc));
+      $t = $t . $tlp->cataloguedata->{'topics'} . "\n" if (defined($tlp->cataloguedata->{'topics'}));
+      my $pat = $what;
+      $pat = '\W' . $what . '\W' if ($inword);
+      my $matched = "";
+      if ($t =~ m/$pat/i) {
+        my $shortdesc = $tlp->shortdesc || "";
+        $pkgs{$pkg}{'desc'} = $shortdesc;
+      }
+    }
+  }
+  return \%pkgs;
+}
+
+
+sub search_tlpdb {
+  my ($tlpdb, $what, $dofile, $dodesc, $inword) = @_;
+  my $fndptr = _search_tlpdb($tlpdb, $what, $dofile, $dodesc, $inword);
+  # first report on $pkg - $shortdesc found
+  my $retfile = '';
+  my $retdesc = '';
+  for my $pkg (sort keys %$fndptr) {
+    if ($fndptr->{$pkg}{'desc'}) {
+      $retdesc .= "$pkg - " . $fndptr->{$pkg}{'desc'} . "\n";
+    }
+  }
+  for my $pkg (sort keys %$fndptr) {
+    if ($fndptr->{$pkg}{'files'}) {
+      $retfile .= "$pkg:\n";
+      for my $f (keys %{$fndptr->{$pkg}{'files'}}) {
+        $retfile .= "\t$f\n";
+      }
     }
   }
   return($retfile, $retdesc);
-}
-
-sub search_pkg_desc {
-  my ($tlp, $what, $inword) = @_;
-  my $pkg = $tlp->name;
-  my $t = "$pkg\n";
-  $t = $t . $tlp->shortdesc . "\n" if (defined($tlp->shortdesc));
-  $t = $t . $tlp->longdesc . "\n" if (defined($tlp->longdesc));
-  $t = $t . $tlp->cataloguedata->{'topics'} . "\n" if (defined($tlp->cataloguedata->{'topics'}));
-  my $pat = $what;
-  $pat = '\W' . $what . '\W' if ($inword);
-  my $matched = "";
-  if ($t =~ m/$pat/i) {
-    my $shortdesc = $tlp->shortdesc || "";
-    $matched .= "$pkg - $shortdesc";
-  }
-  return $matched;
 }
 
 sub search_pkg_files {
@@ -2253,7 +2330,7 @@ sub action_backup {
     if ($clean_mode) {
       clear_old_backups ($pkg, $opts{"backupdir"}, $opts{"clean"}, $opts{"dry-run"}, 1);
     } else {
-      # for now default to xz and allow overriding with env var
+      # for now default to xz and allow overriding with envvar
       my $compressorextension = $Compressors{$::progs{'compressor'}}{'extension'};
       my $tlp = $localtlpdb->get_package($pkg);
       my $saving_verb = $opts{"dry-run"} ? "would save" : "saving";
@@ -2334,7 +2411,9 @@ sub write_w32_updater {
   my $root = $localtlpdb->root;
   my $temp = "$root/temp";
   TeXLive::TLUtils::mkdirhier($temp);
-  tlwarn("$prg: Backup option not implemented for infrastructure update.\n") if ($opts{"backup"});
+  tlwarn("$prg: warning: backup option not implemented for infrastructure "
+         . " update on Windows; continuing anyway.\n") 
+    if ($opts{"backup"});
   if ($media eq 'local_uncompressed') {
     tlwarn("$prg: Creating updater from local_uncompressed currently not implemented!\n");
     tlwarn("$prg: But it should not be necessary!\n");
@@ -3371,8 +3450,11 @@ sub action_update {
       if ($pkg =~ m/$CriticalPackagesRegexp/) {
         debug("Not removing critical package $pkg\n");
       } else {
-        $localtlpdb->remove_package($pkg, 
-          "remove-warn-files" => \%do_warn_on_move);
+        if (! $localtlpdb->remove_package($pkg, 
+                "remove-warn-files" => \%do_warn_on_move)) {
+          info("aborted\n") unless $::machinereadable;
+          next;
+        }
       }
       if ($remotetlpdb->install_package($pkg, $localtlpdb)) {
         # installation succeeded because we got a reference
@@ -3520,7 +3602,6 @@ sub action_update {
 
   print "end-of-updates\n" if $::machinereadable;
 
-  #
   # check that if updates to the critical packages are present all of
   # them have been successfully updated
   my $infra_update_done = 1;
@@ -3916,6 +3997,7 @@ sub action_install {
     if (!$opts{"dry-run"}) {
       if ($remotetlpdb->install_package($pkg, $localtlpdb,
             ($packs{$pkg} ? $packs{$pkg} : undef) )) {
+        # installation succeeded because we got a reference
         logpackage("${re}install: $pkg$tagstr");
       } else {
         logpackage("failed ${re}install: $pkg$tagstr");
@@ -4921,7 +5003,7 @@ sub action_option {
       }
     }
     if (!$found) {
-      tlwarn("$prg: option $what not supported!\n");
+      tlwarn("$prg: Option not supported: $what\n");
       return ($F_ERROR);
     }
   }
@@ -5423,7 +5505,8 @@ sub action_recreate_tlpdb {
     next if $dirent eq ".";
     next if $dirent eq "..";
     next unless -d "$Master/bin/$dirent";
-    if (-r "$Master/bin/$dirent/kpsewhich" || -r "$Master/bin/$dirent/kpsewhich.exe") {
+    if (-r "$Master/bin/$dirent/kpsewhich"
+        || -r "$Master/bin/$dirent/kpsewhich.exe") {
       push @archs, $dirent;
       debug("$prg: skipping directory $Master/bin/$dirent, no kpsewhich there\n");
     }
@@ -6543,7 +6626,7 @@ sub action_key {
     chomp (my $TEXMFSYSCONFIG = `kpsewhich -var-value=TEXMFSYSCONFIG`);
     my $local_keyring = "$Master/tlpkg/gpg/repository-keys.gpg";
     if ($arg eq 'list') {
-      debug("running $::gpg --list-keys\n");
+      debug("running: $::gpg --list-keys\n");
       system("$::gpg --list-keys");
       return $F_OK;
     } elsif ($arg eq 'remove') {
@@ -6860,6 +6943,151 @@ sub action_shell {
       print "ERROR unknown command $cmd\n";
     }
   }
+}
+
+
+#  BUG
+# bug-reporting info, possibly interactive
+# 
+sub action_bug {
+  sub prompt_it {
+    my ($q, $required, $default) = @_;
+    print "$q ";
+    my $ans = <STDIN>;
+    if (!defined($ans)) {
+      if ($required) {
+        return $F_ERROR, "";
+      } else {
+        return $F_OK, $default;
+      }
+    }
+    chomp($ans);
+    return $F_OK, $ans;
+  }
+  my ($ans) = @ARGV;
+  init_local_db();
+  if (!$ans) {
+    my $ok;
+    ($ok, $ans) = prompt_it("Package or file to report a bug against:", 1);
+    if ($ok == $F_ERROR) {
+      print "Bailing out!\n";
+      return $F_ERROR;
+    }
+  }
+  # first search for packages that match $ans, and if not search for files
+  my $tlp = $localtlpdb->get_package($ans);
+  if ($tlp) {
+    return issue_bug_info_for_package($tlp);
+  }
+  # we are still here, so search for a file that matches
+  my $fndptr = _search_tlpdb($localtlpdb, $ans,
+    1, # search files,
+    1, # search descriptions
+    1  # don't search within words
+  );
+  my @deschit;
+  for my $pkg (sort keys %$fndptr) {
+    if ($fndptr->{$pkg}{'desc'}) {
+      push @deschit, [$pkg, "$pkg (" . $fndptr->{$pkg}{'desc'} . ")\n"] ;
+      # delete files if we found it already via description (which
+      # includes package name) since we don't want to show the same
+      # package twice times, and the files hit will be mostly based on the
+      # directory name.
+      delete $fndptr->{$pkg}{'files'};
+    } elsif ($pkg eq "00texlive.image") { # never a good match
+        delete $fndptr->{$pkg}{'files'};
+    }
+  }
+  my @filehit;
+  for my $pkg (sort keys %$fndptr) {
+    if ($fndptr->{$pkg}{'files'}) {
+      push @filehit, [$pkg, "$pkg\n\t"
+                      . join("\n\t", sort keys %{$fndptr->{$pkg}{'files'}})
+                      . "\n"];
+    }
+  }
+  my $nr_total_hit = $#deschit + 1 + $#filehit + 1;
+  my $pkg;
+  if ($nr_total_hit > 1) {
+    my $n = 1;
+    my $ndigits = $#deschit < 10 ? "1" : "2";
+    if ($#deschit >= 0) {
+      print "\nPackage matches (alphabetical):\n";
+      for my $i (0..$#deschit) {
+        printf "%" . $ndigits . "d %s", $n, $deschit[$i][1];
+        $n++;
+      }
+    }
+    if ($#filehit >= 0) {
+      print "\nFile matches (alphabetical by package):\n";
+      $ndigits = $n + $#filehit < 10 ? "1" : "2";
+      for my $i (0..$#filehit) {
+        printf "%" . $ndigits . "d %s", $n, $filehit[$i][1];
+        $n++;
+      }
+    }
+    print "\nSelect a package: ";
+    my $pkgidx = <STDIN>;
+    $pkgidx = "" if ! defined ($pkgidx); # if they hit eof
+    chomp($pkgidx);
+    if ($pkgidx !~ /^\d+$/) {
+      print "$prg: Not a positive integer, exiting: $pkgidx\n";
+      return $F_ERROR;
+    }
+    $pkgidx = int($pkgidx);
+    if (!defined($pkgidx) or $pkgidx < 1 or $pkgidx > $nr_total_hit) {
+      print "$prg: number out of range, exiting: $pkgidx\n";
+      return $F_ERROR;
+    }
+    # print "#deschit = $#deschit, #filehit = $#filehit, pkgidx = $pkgidx\n";
+    if ($pkgidx <= $#deschit + 1) {
+      $pkg = $deschit[$pkgidx - 1][0];
+    } else {
+      $pkg = $filehit[$pkgidx - 1 - $#deschit - 1][0];
+    }
+  } elsif ($nr_total_hit == 1) {
+    if ($#deschit == 0) {
+      $pkg = $deschit[0][0];
+    } else {
+      $pkg = $filehit[0][0];
+    }
+  } else {
+    print "$prg: Nothing found for: $ans\n";
+    return $F_OK;
+  }
+  $tlp = $localtlpdb->get_package($pkg);
+  return issue_bug_info_for_package($tlp);
+}
+
+sub issue_bug_info_for_package {
+  my $tlp = shift;
+  print "Package:        ", $tlp->name, "\n";
+  if (defined($tlp->cataloguedata->{'ctan'})) {
+    print "CTAN page:      https://ctan.org/pkg/" . $tlp->name . "\n";
+    print "CTAN directory: https://mirror.ctan.org"
+          . $tlp->cataloguedata->{'ctan'} . "\n";
+  }
+  my $output = '';
+  if (defined($tlp->cataloguedata->{'contact-bugs'})) {
+    $output .= "Bug contact:    " . $tlp->cataloguedata->{'contact-bugs'}
+               . "\n";
+  }
+  my $other_output = '';
+  for my $k (keys %{$tlp->cataloguedata}) {
+    if ($k =~ m/^contact-/) {
+      next if ($k eq 'contact-bugs');
+      $other_output .= "$k: " . $tlp->cataloguedata->{$k} . "\n";
+    }
+  }
+  if ($other_output) {
+    $output .= "\nOther contact points:\n$other_output\n";
+  }
+  if ($output) {
+    print $output;
+  } else {
+    print "No other information was found.\n";
+  }
+  return $F_OK;
 }
 
 
@@ -7337,9 +7565,56 @@ and the repository are not compatible:
     }
   }
 
+  # Check for remote main db being *older* than what we have seen
+  # before, to avoid wrongly removing packages because a stale mirror
+  # happens to be chosen.
+  # 
+  # The check we employ is heuristic: texlive-scripts is updated practically
+  # every day. We compare the locally-installed texlive-scripts with the
+  # remote revision, and if that does not line up, we error out.
+  # 
+  # We only do this check if the remote database contains texlive-scripts
+  # otherwise sub-repos (like tlgpg) will fail.
+  # Alternative approaches:
+  # - loop over all installed packages and take the maximum of revisions found
+  # - on every update, save the last seen remote main revision into
+  #   00texlive.installation
+  #
+  if ($is_main) {
+    my $rtlp = $remotetlpdb->get_package("texlive-scripts");
+    my $ltlp = $localtlpdb->get_package("texlive-scripts");
+    my $local_revision;
+    my $remote_revision;
+    if (!defined($rtlp)) {
+      # remote db does not contain texlive-scripts, so we skip all checks
+      debug("Remote database does not contain the texlive-scripts package, "
+            . "skipping version consistency check\n");
+      $remote_revision = 0;
+    } else {
+      $remote_revision = $rtlp->revision;
+    }
+    if (!defined($ltlp)) {
+      info("texlive-scripts package not found (?!), "
+           . "skipping version consistency check\n");
+      $local_revision = 0;
+    } else {
+      $local_revision = $ltlp->revision;
+    }
+    debug("texlive-scripts remote revision $remote_revision, "
+          . "texlive-scripts local revision $local_revision\n");
+    if ($remote_revision > 0 && $local_revision > $remote_revision) {
+      info("fail load $location\n") if ($::machinereadable);
+      return(undef, <<OLD_REMOTE_MSG);
+Remote database (revision $remote_revision of the texlive-scripts package)
+seems to be older than the local installation (rev $local_revision of
+texlive-scripts); please use a different mirror and/or wait a day or two.
+OLD_REMOTE_MSG
+    }
+  }
+
   # check for being frozen
   if ($remotetlpdb->config_frozen) {
-    my $frozen_msg = <<FROZEN;
+    my $frozen_msg = <<FROZEN_MSG;
 TeX Live $TeXLive::TLConfig::ReleaseYear is frozen
 and will no longer be routinely updated.  This happens when a new
 release is made, or will be made shortly.
@@ -7347,7 +7622,7 @@ release is made, or will be made shortly.
 For general status information about TeX Live, see its home page:
 https://tug.org/texlive
 
-FROZEN
+FROZEN_MSG
     # don't die here, we want to allow updates even if tlnet is frozen!
     tlwarn($frozen_msg);
   }
@@ -7355,12 +7630,17 @@ FROZEN
   # save remote database if it is a net location
   # make sure that the writeout of the tlpdb is done in UNIX mode
   # since otherwise the checksum will change.
+  # For the main tlnet and tlcontrib, both of which are distributed
+  # via mirror.ctan, we make sure that we have only one hashed version
+  # of the tlpdb saved locally.
   if (!$local_copy_tlpdb_used && $location =~ m;^(https?|ftp)://;) {
     my $loc_digest = TeXLive::TLCrypto::tl_short_digest($location);
     my $loc_copy_of_remote_tlpdb =
       ($is_main ? 
         "$Master/$InfraLocation/texlive.tlpdb.main.$loc_digest" :
-        "$Master/$InfraLocation/texlive.tlpdb.$loc_digest");
+        ($location =~ m;texlive/tlcontrib/?$; ?
+          "$Master/$InfraLocation/texlive.tlpdb.tlcontrib.$loc_digest" :
+          "$Master/$InfraLocation/texlive.tlpdb.$loc_digest"));
     my $tlfh;
     if (!open($tlfh, ">:unix", $loc_copy_of_remote_tlpdb)) {
       # that should be only a debug statement, since a user without
@@ -7375,6 +7655,13 @@ FROZEN
       # are used $Master/$InfraLocation/texlive.tlpdb.main.$loc_digest
       if ($is_main) {
         for my $fn (<"$Master/$InfraLocation/texlive.tlpdb.main.*">) {
+          next if ($fn eq $loc_copy_of_remote_tlpdb);
+          unlink($fn);
+        }
+      }
+      # Do the same for tlcontrib, which is also distributed via mirror.
+      if ($location =~ m;texlive/tlcontrib/?$;) {
+        for my $fn (<"$Master/$InfraLocation/texlive.tlpdb.tlcontrib.*">) {
           next if ($fn eq $loc_copy_of_remote_tlpdb);
           unlink($fn);
         }
@@ -7634,9 +7921,16 @@ sub logpackage {
 }
 sub logcommand {
   if ($commandlogfile) {
-    $commandslogged++;
+    $commandslogged++; # not really counting commands logged, but calls
     my $tim = localtime();
     print COMMANDLOG "[$tim] @_\n";
+  }
+}
+# without the timestamp
+sub logcommand_bare {
+  if ($commandlogfile) {
+    $commandslogged++;
+    print COMMANDLOG "@_\n";
   }
 }
 
@@ -7710,7 +8004,7 @@ sub check_for_critical_updates {
     my $localrev = $tlp->revision;
     my $mtlp = $mediatlpdb->get_package($pkg);
     if (!defined($mtlp)) {
-      debug("Very surprising, $pkg is not present in the remote tlpdb.\n");
+      debug("Surprising, $pkg not present in remote tlpdb.\n");
       next;
     }
     my $remoterev = $mtlp->revision;
@@ -7849,6 +8143,11 @@ repository (typically useful when updating from CTAN).
 
 Display detailed information about a package I<what>, such as the installation
 status and description, of searches for I<what> in all packages.
+
+=item C<tlmgr bug> I<what>
+
+Display available bug-reporting information for I<what>, a package or
+file name.
 
 =back
 
@@ -8144,6 +8443,16 @@ performed are written to the terminal.
 =back
 
 =back
+
+=head2 bug [I<search-string>]
+
+Searches for I<search-string> (prompted for, if not given) as a package
+name and in package descriptions, as complete words, and in filenames,
+as any substring, and outputs bug-reporting and other information for
+the package selected from the results.
+
+The search is equivalent to C<tlmgr search --word --file> I<search-string>.
+Thus, I<search-string> is interpreted as a (Perl) regular expression.
 
 =head2 candidates I<pkg>
 
@@ -10243,7 +10552,7 @@ This script and its documentation were written for the TeX Live
 distribution (L<https://tug.org/texlive>) and both are licensed under the
 GNU General Public License Version 2 or later.
 
-$Id: tlmgr.pl 66798 2023-04-08 00:15:21Z preining $
+$Id: tlmgr.pl 70080 2024-02-22 23:13:07Z karl $
 =cut
 
 # test HTML version: pod2html --cachedir=/tmp tlmgr.pl >/tmp/tlmgr.html
@@ -10253,4 +10562,4 @@ $Id: tlmgr.pl 66798 2023-04-08 00:15:21Z preining $
 ### tab-width: 2
 ### indent-tabs-mode: nil
 ### End:
-# vim:set tabstop=2 expandtab: #
+# vim:set tabstop=2 shiftwidth=2 expandtab: #

@@ -1,4 +1,4 @@
-% $Id: ptex-base.ch 66853 2023-04-15 00:49:49Z takuji $
+% $Id: ptex-base.ch 68305 2023-09-17 13:24:00Z hironobu $
 % This is a change file for pTeX
 % By Sadayuki Tanaka and ASCII MEDIA WORKS.
 %
@@ -73,6 +73,7 @@
 %                  More details in TUGboat 41(2):329--334, 2020.
 % (2022-10-24) HY  pTeX p4.1.0 Add new syntax \font [in jis/ucs].
 %                  New primitives: \tojis, \ptextracingfonts and \ptexfontname.
+% (2023-09-17) HY  pTeX p4.1.1 Support more than 256 different glue/kern.
 
 @x
 % Here is TeX material that gets inserted after \input webmac
@@ -87,8 +88,8 @@
 @y
 @d pTeX_version=4
 @d pTeX_minor_version=1
-@d pTeX_revision==".0"
-@d pTeX_version_string=='-p4.1.0' {current \pTeX\ version}
+@d pTeX_revision==".1"
+@d pTeX_version_string=='-p4.1.1' {current \pTeX\ version}
 @#
 @d pTeX_banner=='This is pTeX, Version 3.141592653',pTeX_version_string
 @d pTeX_banner_k==pTeX_banner
@@ -499,26 +500,9 @@ sufficiently large and this is required for \pTeX.
 In \pTeX\ the |subtype| field records the box direction |box_dir|.
 @z
 
-@x [10.135] l.2897 - pTeX: box_dir, space_ptr, xspace_ptr
+@x [10.135] l.2897 - pTeX: box_dir
 @d hlist_node=0 {|type| of hlist nodes}
 @d box_node_size=7 {number of words to allocate for a box node}
-@d width_offset=1 {position of |width| field in a box node}
-@d depth_offset=2 {position of |depth| field in a box node}
-@d height_offset=3 {position of |height| field in a box node}
-@d width(#) == mem[#+width_offset].sc {width of the box, in sp}
-@d depth(#) == mem[#+depth_offset].sc {depth of the box, in sp}
-@d height(#) == mem[#+height_offset].sc {height of the box, in sp}
-@d shift_amount(#) == mem[#+4].sc {repositioning distance, in sp}
-@d list_offset=5 {position of |list_ptr| field in a box node}
-@d list_ptr(#) == link(#+list_offset) {beginning of the list inside the box}
-@d glue_order(#) == subtype(#+list_offset) {applicable order of infinity}
-@d glue_sign(#) == type(#+list_offset) {stretching or shrinking}
-@d normal=0 {the most common case when several cases are named}
-@d stretching = 1 {glue setting applies to the stretch components}
-@d shrinking = 2 {glue setting applies to the shrink components}
-@d glue_offset = 6 {position of |glue_set| in a box node}
-@d glue_set(#) == mem[#+glue_offset].gr
-  {a word of type |glue_ratio| for glue setting}
 @y
 @d hlist_node=0 {|type| of hlist nodes}
 @d box_node_size=8 {number of words to allocate for a box node}
@@ -534,20 +518,13 @@ In \pTeX\ the |subtype| field records the box direction |box_dir|.
 @d dir_yoko = 4 {direction of the box, equal default}
 @d any_dir == dir_yoko,dir_tate,dir_dtou
 @#
-@d width_offset=1 {position of |width| field in a box node}
-@d depth_offset=2 {position of |depth| field in a box node}
-@d height_offset=3 {position of |height| field in a box node}
-@d width(#) == mem[#+width_offset].sc {width of the box, in sp}
-@d depth(#) == mem[#+depth_offset].sc {depth of the box, in sp}
-@d height(#) == mem[#+height_offset].sc {height of the box, in sp}
-@d shift_amount(#) == mem[#+4].sc {repositioning distance, in sp}
-@d list_offset=5 {position of |list_ptr| field in a box node}
-@d list_ptr(#) == link(#+list_offset) {beginning of the list inside the box}
-@d glue_order(#) == subtype(#+list_offset) {applicable order of infinity}
-@d glue_sign(#) == type(#+list_offset) {stretching or shrinking}
-@d normal=0 {the most common case when several cases are named}
-@d stretching = 1 {glue setting applies to the stretch components}
-@d shrinking = 2 {glue setting applies to the shrink components}
+@z
+
+@x [10.135] l.2897 - pTeX: space_ptr, xspace_ptr
+@d glue_offset = 6 {position of |glue_set| in a box node}
+@d glue_set(#) == mem[#+glue_offset].gr
+  {a word of type |glue_ratio| for glue setting}
+@y
 @d glue_offset = 6 {position of |glue_set| in a box node}
 @d glue_set(#) == mem[#+glue_offset].gr
   {a word of type |glue_ratio| for glue setting}
@@ -754,8 +731,8 @@ procedure short_display(@!p:integer); {prints highlights of list |p|}
 hlist_node,vlist_node,ins_node,whatsit_node,mark_node,adjust_node,
   unset_node: print("[]");
 @y
-hlist_node,vlist_node,dir_node,ins_node,whatsit_node,
-  mark_node,adjust_node,unset_node: print("[]");
+hlist_node,vlist_node,dir_node,ins_node,whatsit_node,mark_node,adjust_node,
+  unset_node: print("[]");
 @z
 
 @x [12.176] l.3698 - pTeX: print KANJI.
@@ -1292,8 +1269,8 @@ primitive("xkanjiskip",assign_glue,glue_base+xkanji_skip_code);@/
 @d char_sub_code(#)==equiv(char_sub_code_base+#)
   {Note: |char_sub_code(c)| is the true substitution info plus |min_halfword|}
 @#
-@d cur_jfont==equiv(cur_jfont_loc) {pTeX: }
-@d cur_tfont==equiv(cur_tfont_loc)
+@d cur_jfont==equiv(cur_jfont_loc) { \pTeX }
+@d cur_tfont==equiv(cur_tfont_loc) { \pTeX }
 @d auto_spacing==equiv(auto_spacing_code)
 @d auto_xspacing==equiv(auto_xspacing_code)
 @d kcat_code(#)==equiv(kcat_code_base+#)
@@ -3383,9 +3360,11 @@ for k:=char_base[f]+bc to width_base[f]-1 do
       end
     else begin if b<>bchar then check_existence(b);
       if c<128 then begin
-          if jfm_flag<>dir_default then begin if d>=ne then abort; end
+        if jfm_flag<>dir_default then
+          begin if 256*c+d>=ne then abort; end {check glue}
         else check_existence(d); {check ligature}
-      end else if 256*(c-128)+d>=nk then abort; {check kern}
+        end
+      else if 256*(c-128)+d>=nk then abort; {check kern}
       if a<128 then if k-lig_kern_base[f]+a+1>=nl then abort;
       end;
     end;
@@ -4475,7 +4454,7 @@ if (math_type(subscr(q))=empty)and(math_type(supscr(q))=empty)and@|
        loop@+ begin
          if next_char(cur_i)=cur_c then if skip_byte(cur_i)<=stop_flag then
          if op_byte(cur_i)<kern_flag then
-           begin gp:=font_glue[cur_f]; rr:=rem_byte(cur_i);
+           begin gp:=font_glue[cur_f]; rr:=op_byte(cur_i)*256+rem_byte(cur_i);
            if gp<>null then begin
              while((type(gp)<>rr)and(link(gp)<>null)) do begin gp:=link(gp);
                end;
@@ -7028,7 +7007,7 @@ for k:=256 to 511 do xchr[k]:=k;
 @x l.26984 - pTeX
 @* \[54] System-dependent changes.
 @y
-@* \[55/\pTeX] System-dependent changes for \pTeX.
+@* \[53b/\pTeX] The extended features for \pTeX.
 This section described extended variables, procesures, functions and so on
 for \pTeX.
 
@@ -8094,7 +8073,7 @@ if inhibit_glue_flag<>true then
         end;
     loop@+begin if next_char(main_j)=cur_l then if skip_byte(main_j)<=stop_flag then
       begin if op_byte(main_j)<kern_flag then
-        begin gp:=font_glue[main_f]; cur_r:=rem_byte(main_j);
+        begin gp:=font_glue[main_f]; cur_r:=op_byte(main_j)*256+rem_byte(main_j);
         if gp<>null then
           begin while((type(gp)<>cur_r)and(link(gp)<>null)) do gp:=link(gp);
           gq:=glue_ptr(gp);
@@ -8192,5 +8171,5 @@ begin
   end;
 end;
 
-@* \[56] System-dependent changes.
+@* \[54] System-dependent changes.
 @z

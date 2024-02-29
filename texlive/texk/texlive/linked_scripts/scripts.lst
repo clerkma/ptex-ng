@@ -53,6 +53,7 @@ authorindex/authorindex
 bib2gls/bib2gls.sh
 bib2gls/convertgls2bib.sh
 bibcop/bibcop.pl
+bibtexperllibs/ltx2unitxt
 bundledoc/arlatex
 bundledoc/bundledoc
 cachepic/cachepic.tlu
@@ -79,7 +80,9 @@ digestif/digestif.texlua
 dosepsbin/dosepsbin.pl
 dviasm/dviasm.py
 dviinfox/dviinfox.pl
+easydtx/edtx2dtx.pl
 ebong/ebong.py
+eolang/eolang.pl
 epspdf/epspdf.tlu
 epspdf/epspdftk.tcl
 epstopdf/epstopdf.pl
@@ -123,6 +126,10 @@ makedtx/makedtx.pl
 make4ht/make4ht
 match_parens/match_parens
 mathspic/mathspic.pl
+memoize/memoize-clean.pl
+memoize/memoize-clean.py
+memoize/memoize-extract.pl
+memoize/memoize-extract.py
 mf2pt1/mf2pt1.pl
 mkgrkindex/mkgrkindex
 mkjobtexmf/mkjobtexmf.pl
@@ -153,12 +160,14 @@ pygmentex/pygmentex.py
 pythontex/depythontex.py
 pythontex/pythontex.py
 rubik/rubikrotation.pl
+runtexshebang/runtexshebang.lua
 spix/spix.py
 splitindex/splitindex.pl
 srcredact/srcredact.pl
 sty2dtx/sty2dtx.pl
 svn-multi/svn-multi.pl
 tex4ebook/tex4ebook
+texblend/texblend
 texcount/texcount.pl
 texdef/texdef.pl
 texdiff/texdiff

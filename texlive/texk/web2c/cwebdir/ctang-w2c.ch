@@ -17,15 +17,15 @@
 @q Please send comments, suggestions, etc. to tex-k@@tug.org.            @>
 
 @x
-\def\title{CTANGLE (Version 4.9)}
+\def\title{CTANGLE (Version 4.11)}
 @y
-\def\title{CTANGLE (Version 4.9 [\TeX~Live])}
+\def\title{CTANGLE (Version 4.11 [\TeX~Live])}
 @z
 
 @x
-  \centerline{(Version 4.9)}
+  \centerline{(Version 4.11)}
 @y
-  \centerline{(Version 4.9 [\TeX~Live])}
+  \centerline{(Version 4.11 [\TeX~Live])}
 @z
 
 @x
@@ -41,9 +41,9 @@
 @z
 
 @x
-@d banner "This is CTANGLE (Version 4.9)"
+@d banner "This is CTANGLE (Version 4.11)"
 @y
-@d banner "This is CTANGLE, Version 4.9"
+@d banner "This is CTANGLE, Version 4.11"
   /* will be extended by the \TeX~Live |versionstring| */
 @z
 
@@ -80,9 +80,9 @@
 @z
 
 @x
-    fputs("\n! Not present: <",stdout);
+    printf("%s","\n! Not present: <");
 @y
-    fputs(_("\n! Not present: <"),stdout);
+    printf("%s",_("\n! Not present: <"));
 @z
 
 @x
@@ -92,27 +92,23 @@
 @z
 
 @x
-    fputs("\n! No program text was specified.",stdout); mark_harmless;
+    printf("%s","\n! No program text was specified."); mark_harmless();
 @y
-    fputs(_("\n! No program text was specified."),stdout); mark_harmless;
+    printf("%s",_("\n! No program text was specified.")); mark_harmless();
 @z
 
 @x
-        printf("\nWriting the output file (%s):",C_file_name);
+        "\nWriting the output file (%s):" : @|
+        "\nWriting the output files: (%s)",C_file_name);
 @y
-        printf(_("\nWriting the output file (%s):"),C_file_name);
+       _("\nWriting the output file (%s):") : @|
+       _("\nWriting the output files: (%s)"),C_file_name);
 @z
 
 @x
-        fputs("\nWriting the output files:",stdout);
+      printf("%s","Done.");
 @y
-        fputs(_("\nWriting the output files:"),stdout);
-@z
-
-@x
-      fputs("Done.",stdout);
-@y
-      fputs(_("Done."),stdout);
+      printf("%s",_("Done."));
 @z
 
 @x
@@ -124,15 +120,10 @@ for (an_output_file=end_output_files; an_output_file>cur_out_file;) {
     if ((C_file=fopen(output_file_name,"wb"))==NULL)
       fatal("! Cannot open output file ",output_file_name);
 @.Cannot open output file@>
-    if (show_progress) { printf("\n(%s)",output_file_name); update_terminal; }
+    if (show_progress) { printf("\n(%s)",output_file_name); update_terminal(); }
     cur_line=1;
-    stack_ptr=stack+1;
-    cur_name=*an_output_file;
-    cur_repl=(text_pointer)cur_name->equiv;
-    cur_byte=cur_repl->tok_start;
-    cur_end=(cur_repl+1)->tok_start;
-    while (stack_ptr > stack) get_output();
-    flush_buffer();
+    @<Initialize the secondary output@>@;
+    @<Output material...@>@;
 }
 @y
 @<Write all the named output files@>=
@@ -150,15 +141,10 @@ for (an_output_file=end_output_files; an_output_file>cur_out_file;) {
       fatal(_("! Cannot open output file "),output_file_name);
 @.Cannot open output file@>
   }
-  if (show_progress) { printf("\n(%s)",output_file_name); update_terminal; }
+  if (show_progress) { printf("\n(%s)",output_file_name); update_terminal(); }
   cur_line=1;
-  stack_ptr=stack+1;
-  cur_name=*an_output_file;
-  cur_repl=(text_pointer)cur_name->equiv;
-  cur_byte=cur_repl->tok_start;
-  cur_end=(cur_repl+1)->tok_start;
-  while (stack_ptr > stack) get_output();
-  flush_buffer();
+  @<Initialize the secondary output@>@;
+  @<Output material...@>@;
   if (check_for_change) {
     fclose(C_file); C_file=NULL;
     @<Update the secondary results when they have changed@>@;
@@ -248,9 +234,9 @@ quarter) with its two-byte encoding \.{c2 bc}.
 @z
 
 @x
-    fputs("\n! String too long: ",stdout);
+    printf("%s","\n! String too long: ");
 @y
-    fputs(_("\n! String too long: "),stdout);
+    printf("%s",_("\n! String too long: "));
 @z
 
 @x
@@ -284,9 +270,9 @@ quarter) with its two-byte encoding \.{c2 bc}.
 @z
 
 @x
-  fputs("\n! Section name too long: ",stdout);
+  printf("%s","\n! Section name too long: ");
 @y
-  fputs(_("\n! Section name too long: "),stdout);
+  printf("%s",_("\n! Section name too long: "));
 @z
 
 @x
@@ -389,7 +375,7 @@ case output_defs_code: if (t!=section_name) err_print(_("! Misplaced @@h"));
 
 @x
   puts("\nMemory usage statistics:");
-  printf("%td names (out of %ld)\n",
+  printf("%td names (out of %ld)\n",@^system dependencies@>
           (ptrdiff_t)(name_ptr-name_dir),(long)max_names);
   printf("%td replacement texts (out of %ld)\n",
           (ptrdiff_t)(text_ptr-text_info),(long)max_texts);
@@ -398,7 +384,7 @@ case output_defs_code: if (t!=section_name) err_print(_("! Misplaced @@h"));
   printf("%td tokens (out of %ld)\n",
 @y
   puts(_("\nMemory usage statistics:"));
-  printf(_("%td names (out of %ld)\n"),
+  printf(_("%td names (out of %ld)\n"),@^system dependencies@>
           (ptrdiff_t)(name_ptr-name_dir),(long)max_names);
   printf(_("%td replacement texts (out of %ld)\n"),
           (ptrdiff_t)(text_ptr-text_info),(long)max_texts);
@@ -465,7 +451,7 @@ do {
 } while(comparison && !feof(C_file) && !feof(check_file));
 
 @ Note the superfluous call to |remove| before |rename|.  We're using it to
-get around a bug in some implementations of |rename|.
+get around a bug in some implementations of |rename|.@^system dependencies@>
 
 @<Create the primary output...@>=
 if(comparison)

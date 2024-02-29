@@ -1,3 +1,50 @@
+2024-02-10  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* eptex_version.h, eptex.ech, etex.ch{0,1},
+	{char-warning-eptex,fam256,pdfutils,suppresserrors}.ch,
+	eptrip/eptrip.{diffs,log,tex}, eptrip/texmf.cnf,
+	tests/pdfprimitive-test.tex, am/euptex.am:
+	Copy eptex source files from ../eptexdir
+	to cleaning up building environment.
+	https://github.com/texjporg/tex-jp-build/issues/32
+
+2023-12-24  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* wcfname{,0}.test:
+	Avoid errors on parallel test processing.
+
+2023-12-23  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* am/euptex.am:
+	Do not build binaries of e-pTeX and
+	we use alias of e-upTeX for e-pTeX by default.
+	https://github.com/texjporg/tex-jp-build/issues/32
+
+2023-11-25  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* wcfname{,0}.test: Add tests for --recorder and *.fls.
+	https://github.com/texjporg/tex-jp-build/issues/45
+
+2023-11-24  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* wcfname.test: Add test for file names with over-BMP
+	(4byte UTF-8).
+	https://tug.org/pipermail/tex-live/2023-November/049685.html
+	* eptriptest.test, euptriptest.test:
+	Check diffs of trip.{fot,typ} with ignoring trivial changes
+	in trip tests.
+
+2023-09-03  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* {eptriptest,euptriptest,eupver}.test:
+	Update tests for Windows.
+
+2023-08-20  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* am/euptex.am, {eptriptest,euptriptest,eupver,
+	pdfprimitive,wcfname,wcfname0}.test:
+	Make easier to test on Windows.
+
 2023-03-29  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* wcfname.test:

@@ -1,3 +1,104 @@
+2024-02-23  Karl Berry  <karl@freefriends.org>
+
+	* texmf.cnf (XE_FONTCONFIG_PATH, XE_FC_CACHEDIR): rename from
+	FONTCONFIG_PATH resp. FC_CACHEDIR so we don't collide with
+	system directories specified by those paths, such as /etc/fonts.
+
+2024-02-22  Karl Berry  <karl@freefriends.org>
+
+	* tests/kpsereadlink.test: create and use our own test file and
+	symlink, instead of using libtool's, in case slibtool is in use.
+	From orbea, https://github.com/TeX-Live/texlive-source/pull/65.
+
+2023-02-10  Karl Berry  <karl@tug.org>
+
+	* texmf.cnf (TEXMFVAR, TEXMFCONFIG, doc): 2024.
+
+2024-01-31  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	* tex-file.c (kpathsea_name_ok) [MSDOS]: change #ifndef MSDOS
+	to #if !defined(MSDOS) && !defined(_WIN32) because MSDOS is not
+	defined in the current Windows build.
+
+2024-01-30  Karl Berry  <karl@freefriends.org>
+
+	* tex-file.c (kpathsea_name_ok) [MSDOS]: remove [unix] from cpp
+	test, since it's not defined by clang. See thread surrounding
+	https://tug.org/pipermail/tlbuild/2024q1/005408.html.
+
+2024-01-27  Karl Berry  <karl@freefriends.org>
+
+	* tex-file.c (kpathsea_name_ok): 
+	* tests/kpsesafe.test: kpse_expand (variable and ~ expansion)
+	input name when needed; don't reject /dir/.foo if extended
+	and it matches TEXMF[SYS]VAR, since TEXMFVAR=~/.texliveYYYY is the
+	case that matters in practice. Report from Marcel.
+
+2024-01-17  Karl Berry  <karl@freefriends.org>
+
+	* tex-file.c (kpse_{in,out}_name_ok{,_silent}_extended):
+	declare the kpse_* abbreviations of the new (and old) kpathsea_* 
+	functions. LuaTeX provides both kpse.* and kpathsea.* bindings,
+	so it's good to always have both.
+	* tex-file.h: declare them.
+	* doc/kpathsea.texi (Safe filenames): mention them.
+
+2024-01-14  Karl Berry  <karl@freefriends.org>
+
+	* version.ac: bump to 6.4.0/dev.
+
+	* tex-file.h (kpathsea_{in,out}_name_ok{,_silent}_extended):
+	four more declarations for extended access checks including
+	TEXMF[SYS]VAR (needed for luaotfload and hence LuaLaTeX).
+	* tex-file.c (abs_fname_ok): new helper fn.
+	(kpathsea_name_ok): new parameter, extended.
+	(kpathsea_{in,out}_ok_name{,_silent}): pass additional false arg.
+	(kpathsea_{in,out}_ok_name{,_silent}{,_extended}): new fns,
+	passing true.
+	* kpsewhich.c (-safe-extended-in-name, -safe-extended-out-name):
+	new options, corresponding variables, calls.	
+	* doc/kpathsea.texi (Safe filenames): new node to document this.
+	(Security): update.
+	(Global font cache and security): split off new node from Security.
+	* Makefile.am (TESTS): add kpsesafe.test.
+	* tests/kpsesafe.test: new test.
+
+2023-10-11  Karl Berry  <karl@tug.org>
+
+	* texmf.cnf (shell_escape_commands): add memoize-extract.pl and .py,
+	after analysis on tlsecurity. https://ctan.org/pkg/memoize
+
+2023-10-09  Karl Berry  <karl@freefriends.org>
+
+	* tex-file.c (kpathsea_name_ok): also allow files under
+	the TEXMF_OUTPUT_DIRECTORY envvar.
+	* tex-make.c (misstex): first try writing missfont.log in
+	TEXMF_OUTPUT_DIRECTORY, if it's set. Update unit test.
+	* doc/kpathsea.texi (mktex script names): mention
+	TEXMF_OUTPUT_DIRECTORY as new first location for missfont.log.
+	(Calling sequence) <kpathsea_out_name_ok>: also mention
+	TEXMF_OUTPUT_DIRECTORY, and kpsewhich's --safe-{in,out}-name options.
+	* texmf.cnf: mention that TEXMF_OUTPUT_DIRECTORY must be set in
+	the environment, and emphasize caveats.
+	
+	* doc/kpathsea.texi (Specially-recognized files): reword
+	to avoid underfull line.
+
+2023-08-11  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* tests/{cnfline,cnfnewline,cnfnull,cnfprog,kpsestat,kpsewhich}.test:
+	Make easier to test on Windows.
+	{kpseaccess,kpsereadlink}.test are not modified since
+	they are not used for tests on Windows.
+	* tests/windows/texmf.cnf:
+	New cnf for testing windows MS Visual C build.
+
+2023-07-16  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* kpsewhich.c: Allow Unicode file name for bibtex8 and bibtexu
+	in kpsewhich. (Windows only)
+	* texmf.cnf: Update comment.
+
 2023-04-11  Karl Berry  <karl@tug.org>
 
 	* texmf.cnf: doc; explicitly mention that all the texmf trees need

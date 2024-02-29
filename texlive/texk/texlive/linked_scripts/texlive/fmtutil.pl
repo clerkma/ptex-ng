@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# $Id: fmtutil.pl 65989 2023-02-20 21:52:59Z karl $
+# $Id: fmtutil.pl 68962 2023-11-24 23:01:43Z karl $
 # fmtutil - utility to maintain format files.
 # (Maintained in TeX Live:Master/texmf-dist/scripts/texlive.)
 # 
@@ -24,11 +24,11 @@ BEGIN {
   TeX::Update->import();
 }
 
-my $svnid = '$Id: fmtutil.pl 65989 2023-02-20 21:52:59Z karl $';
-my $lastchdate = '$Date: 2023-02-20 22:52:59 +0100 (Mon, 20 Feb 2023) $';
+my $svnid = '$Id: fmtutil.pl 68962 2023-11-24 23:01:43Z karl $';
+my $lastchdate = '$Date: 2023-11-25 00:01:43 +0100 (Sat, 25 Nov 2023) $';
 $lastchdate =~ s/^\$Date:\s*//;
 $lastchdate =~ s/ \(.*$//;
-my $svnrev = '$Revision: 65989 $';
+my $svnrev = '$Revision: 68962 $';
 $svnrev =~ s/^\$Revision:\s*//;
 $svnrev =~ s/\s*\$$//;
 my $version = "r$svnrev ($lastchdate)";
@@ -382,6 +382,11 @@ sub log_to_status {
 #
 sub callback_build_formats {
   my ($what, $whatarg) = @_;
+
+  # sometimes (missing, all) there is no argument passed.
+  # Avoid warning from undef value being logged.
+  # https://tug.org/pipermail/tex-live/2023-September/049526.html
+  $whatarg = "" if ! defined $whatarg;
 
   # set up a tmp dir
   # On W32 it seems that File::Temp creates restrictive permissions (ok)
@@ -1478,7 +1483,7 @@ Options:
   --force                 (does nothing, exists for compatibility)
   --test                  (does nothing, exists for compatibility)
 
-Commands:
+Commands (exactly one must be specified):
   --all                   recreate all format files
   --missing               create all missing format files
   --byengine ENGINE       (re)create formats built with ENGINE
@@ -1605,6 +1610,12 @@ Supporting development binaries:
   the respective directory with the -dev stripped.  This allows for
   easily running development binaries in parallel with the released
   binaries.
+
+Environment:
+
+  This script runs TeX and Metafont to generate the fmt/base file, and
+  thus all normal environment variables and search path rules for TeX/MF
+  apply.
 
 Report bugs to: tex-live\@tug.org
 TeX Live home page: <https://tug.org/texlive/>

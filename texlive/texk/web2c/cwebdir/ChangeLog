@@ -1,3 +1,446 @@
+2024-02-14  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwtwill-proofsort: In-place invocation.
+
+2024-01-24  Andreas Scherer  <https://ascherer.github.io>
+
+	* cweave.w,
+	* cwebmac.tex,
+	* prod-cweave.w,
+	* prod-twill.w,
+	* prod.w: Changes for CWEB 4.12 (dev).
+
+2023-12-02  Andreas Scherer  <https://ascherer.github.io>
+
+	* Makefile,
+	* comm-{mac,mini,ql,w2c}.ch,
+	* comm-w2c.h,
+	* common.h,
+	* common.w,
+	* ctang-{bs,pc,ql,vms,w2c,w32}.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-w2c.ch,
+	* cweav-{bs,pc,ql,vms,w2c,w32}.ch,
+	* cweave.w,
+	* cwebman-w2c.ch,
+	* cwebman.tex,
+	* po/cweb-tl.pot,
+	* po/cweb.pot,
+	* po/de/cweb-tl.po,
+	* po/de/cweb.po,
+	* po/it/cweb.po,
+	* prod-{cweave,twill}.w,
+	* prod.w: CWEB 4.11 release.
+
+2023-11-19  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-hint.ch,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Make 'k_section' block-local.
+
+2023-11-19  Andreas Scherer  <https://ascherer.github.io>
+
+	* common.c,
+	* common.w,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-mini.ch,
+	* cweave.w: Use zero-initialisation.
+
+2023-10-29  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-proofsort,
+	* ctwill.test: Make 'proofsort' like 'refsort'.
+
+2023-10-25  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebmac.tex,
+	* texinputs/pdfctproofmac.tex,
+	* texinputs/pdfctwimac.tex: Bring PDF/HINT macros together.
+
+2023-10-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebmac.tex,
+	* cwebman-w2c.ch: Minor redactions in the CWEB manual and macros.
+
+2023-10-15  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebman-w2c.ch: Fix display in Skim and Acrobat Reader on macOS.
+
+2023-09-30  Andreas Scherer  <https://ascherer.github.io>
+
+	* Makefile,
+	* ctwill-mini.ch,
+	* cwebacromac.tex,
+	* cwebmac.tex,
+	* cwebman-w2c.ch,
+	* cwebman.tex,
+	* texinputs/dcwebmac.tex,
+	* texinputs/fcwebmac.tex,
+	* texinputs/icwebmac.tex,
+	* texinputs/pdfctproofmac.tex,
+	* texinputs/pdfctwimac.tex,
+	* texinputs/pdfwebtocfront.tex: Add support for LuaTeX.
+
+2023-09-26  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebman-w2c.ch,
+	* cwebman.tex: HINT: The Viewer.
+
+2023-09-25  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.h,
+	* common.c,
+	* common.w: Check for available input.
+
+2023-09-24  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.h,
+	* common.c,
+	* common.h,
+	* common.w,
+	* ctang-bs.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill.bux,
+	* cweav-bs.ch,
+	* cweave.w: Avoid shadow variables.
+
+2023-09-24  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-{hint,mini}.ch,
+	* cweave.w: Disentangle 'reduce' and 'translate'.
+
+2023-09-23  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-mini.ch,
+	* cweave.w: Copy structures via pointers.
+
+2023-09-22  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctang-w2c.ch,
+	* ctangle.c,
+	* ctangle.w: Reuse code for secondary output.
+
+2023-09-22  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebacromac.tex: Factor out PDF/HINT macros.
+
+2023-09-03  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* {ctwill,cweave}.test: Make easier to test on Windows.
+
+2023-08-30  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-proofsort,
+	* ctwill.test: Accommodate Perl v5.8.4 on Solaris.
+
+2023-08-19  Andreas Scherer  <https://ascherer.github.io>
+
+	* Makefile,
+	* comm-{mac,mini,ql,w2c}.ch,
+	* comm-w2c.h,
+	* common.h,
+	* common.w,
+	* ctang-{bs,pc,ql,vms,w2c,w32}.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-w2c.ch,
+	* cweav-{bs,pc,ql,vms,w2c,w32}.ch,
+	* cweave.w,
+	* cwebmac.tex,
+	* cwebman-w2c.ch,
+	* cwebman.tex,
+	* po/cweb-tl.pot,
+	* po/cweb.pot,
+	* po/de/cweb-tl.po,
+	* po/de/cweb.po,
+	* po/it/cweb.po,
+	* prod-{cweave,twill}.w,
+	* prod.w: CWEB 4.10 release.
+
+2023-08-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-bs.ch,
+	* comm-mac.ch,
+	* comm-mini.ch,
+	* comm-w2c.ch,
+	* comm-w32.ch,
+	* ctang-bs.ch,
+	* ctang-vms.ch,
+	* ctang-w32.ch,
+	* ctwill-hint.ch,
+	* ctwill-mini.ch,
+	* cweav-bs.ch: Update section/line references.
+
+2023-08-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch,
+	* common.c,
+	* common.w: Section 36 of COMMON is system-dependent.
+
+2023-08-13  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.h,
+	* common.c,
+	* common.h,
+	* ctangle.c: Move 'print_stats' prototype in common.h.
+	* ctwill-w2c.ch
+	* cweave.w: Insert blank line after '\ch'.
+
+2023-08-11  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Refurbish 'phase_three'.
+
+2023-08-08  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch,
+	* comm-w2c.h,
+	* common.h,
+	* ctang-w2c.ch,
+	* ctangle.w,
+	* ctwill-hint.ch,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Mark a few 'system dependencies' for the index.
+
+2023-08-07  Andreas Scherer  <https://ascherer.github.io>
+
+	* common.c,
+	* common.w,
+	* ctang-w2c.ch,
+	* ctangle.c,
+	* ctangle.w: Code cleanup.
+
+2023-08-06  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-hint.ch,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Hide 'print_text' analytics.
+
+2023-08-04  Andreas Scherer  <https://ascherer.github.io>
+
+	* common.bux,
+	* ctwill-hint.ch,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-bs.ch,
+	* cweav-pc.ch,
+	* cweav-vms.ch,
+	* cweav-w2c.ch,
+	* cweav-w32.ch,
+	* cweave.w: Desove section with internal array sizes.
+
+2023-08-02  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctang-bs.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-w2c.ch,
+	* cweave.w,
+	* system.bux: Replace 'sprintf' with 'snprintf'.
+
+2023-08-01  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.ch,
+	* common.c,
+	* common.w: Squeeze section 51 to preserve page count.
+
+2023-07-29  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-bs.ch,
+	* comm-w2c.h,
+	* common.c,
+	* common.h,
+	* common.w,
+	* ctang-bs.ch,
+	* ctang-w2c.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-w2c.ch,
+	* cweav-bs.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Syntactic sugar.
+
+2023-07-28  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.h,
+	* common.c,
+	* common.h,
+	* ctangle.c: Ilk is of type eight_bits.
+
+2023-07-28  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-mini.ch,
+	* comm-w2c.ch,
+	* common.bux,
+	* common.c,
+	* common.w,
+	* ctangle.c,
+	* ctangle.w,
+	* system.bux: Format 'common' with 'ctwill'.
+
+2023-07-26  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-bs.ch,
+	* comm-w2c.ch,
+	* comm-w2c.h,
+	* comm-w32.ch,
+	* common.bux,
+	* common.c,
+	* common.h,
+	* common.w,
+	* ctang-w32.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* cweav-w32.ch,
+	* cweave.w: Purge 'init_p'.
+
+2023-07-21  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-{mac,mini,vms,w2c}.ch,
+	* comm-w2c.h,
+	* common.bux,
+	* common.{c,h,w},
+	* ctangle.{c,w},
+	* ctwill-mini.ch,
+	* ctwill.bux: Match common.w with common.h.
+
+2023-07-18  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebdir/comm-mac.ch,
+	* cwebdir/comm-w2c.ch,
+	* cwebdir/common.c,
+	* cwebdir/common.w: Discard rest of overfull input line.
+
+2023-07-17  Andreas Scherer  <https://ascherer.github.io>
+
+	* cweave.w: Deal with malign user input.
+
+2023-07-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-mini.ch,
+	* cweave.w: 'pop_level' is a macro (again).
+
+2023-07-14  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.bux,
+	* cweave.w: Finally make use of type 'mode' -- C-style.
+
+2023-07-13  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctang-{bs,w2c}.ch,
+	* ctangle.c,
+	+ ctangle.w,
+	* cweave.w: Merge 'cur_state' into 'stack'.
+
+2023-07-09  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-ql.ch,
+	* common.c,
+	* common.w: Don't create index/section file names.
+
+2023-07-08  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-w2c.ch,
+	* cweav-w2c.ch: Purge redundant change line.
+
+2023-06-27  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-{hint,mini}.ch: Add intro.
+	* ctwill-proofsort: Purge duplicate subversion tag.
+
+2023-06-27  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-hint.ch: Stand-alone twin of ctwill-mini.ch.
+	* ctwill-proofsort: Don't print bare '$0'.
+	* ctwill.test: Test ctwill-proofsort last.
+
+2023-06-26  Karl Berry  <karl@freefriends.org>
+
+	* ctwill-proofsort: Unicode::Collate is required but may not be
+	available.
+	* ctwill.test: exit 0 if Unicode::Collate is not available,
+	so we don't fail in environments without it.
+
+2023-06-23  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.test: Check CTWILL output.
+
+2023-06-22  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctproofmac.tex,
+	* cttwinxmac.tex,
+	* ctwimac.tex: Minor fixes, bug in TWINX macros.
+	* ctwill-proofsort: Avoid provoked user errors.
+	* ctwill.test,
+	* tests/index.tex: Shorter test suite, TWINX tested.
+
+2023-06-21  Karl Berry  <karl@freefriends.org>
+
+	* ctwill-proofsort: 'quotes' for $Revision$.
+
+2023-06-20  Andreas Scherer  <https://ascherer.github.io>
+
+	* comm-w2c.h,
+	* ctwill-mini.ch,
+	* ctwill-w2c.ch,
+	* ctwill.bux: Use 'kpse_find_file' for '*.bux' files.
+	* ctwill.test,
+	* tests/: Comprehensive test of CTWILL and its utilities.
+
+2023-06-18  Karl Berry  <karl@freefriends.org>
+
+	* ctwill-proofsort: die if getopt fails;
+	standardize version() output;
+	move COPYRIGHT to end of help, include github repo.
+	* ctwill.test: for now, exit before running TeX,
+	since building plain.fmt is too intensive.
+	Consistently use ./ctie instead of ctie since we want
+	the binary in the build directory.
+	
+2023-06-17  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-{mini,hint}.ch: Make ctwill.w plain-TeX-able again.
+	* ctwill.test: Make script executable and fix ./ctwill calls.
+
+2023-06-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-proofsort: Rename from 'proofsort'.
+	* ctwill.test: Comprehensive test of the CTWILL system.
+
+2023-06-14  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctproofmac.tex,
+	* cttwinxmac.tex,
+	* ctwimac.tex,
+	* texinputs/pdfctwimac.tex: Touch up for CWEB 4.9.
+	* ctwill-hint.ch: Revert two changes for HiTeX.
+	* texinputs/pdfctproofmac.tex: New macros for HiTeX.
+
+2023-06-12  Andreas Scherer  <https://ascherer.github.io>
+
+	* proofsort: Sort mini-indexes in CTWILL output.
+
+2023-05-26  Andreas Scherer  <https://ascherer.github.io>
+
+	* examples/wordtest.w: Fix page number for Aragon and Seidel.
+
+2023-05-24  Andreas Scherer  <https://ascherer.github.io>
+
+	* refsort.ch: Make room for larger index entries.
+
 2023-05-19  Andreas Scherer  <https://ascherer.github.io>
 
 	* cwebmac.tex,

@@ -1,3 +1,97 @@
+2024-02-20  Luigi Scarso <luigi.scarso@gmail.com>
+	* in kpse mode, --shell-escape enable the standard lfs.* and os.* functions otherwise protected
+        * fixed lfs.mkdirp return value
+
+
+2024-02-19  Luigi Scarso <luigi.scarso@gmail.com>
+        *  new function lfs.mkdirp -- make parent directories as needed.
+
+
+2024-02-04  Luigi Scarso <luigi.scarso@gmail.com>
+	* LuaTeX 1.18.0.
+
+
+2024-02-04  Luigi Scarso <luigi.scarso@gmail.com>
+	* Character index within the  limits in defining a Type 3 font (H.Hagen). Thanks M. Chernoff.
+
+	
+2024-02-03  Luigi Scarso <luigi.scarso@gmail.com>
+	* Ensures that setgentounicode has a glyph_unicode_tree not NULL (thanks M. Chernoff)
+
+	
+2024-01-29  Luigi Scarso <luigi.scarso@gmail.com>
+	*  Integrate interval mode of metapost (as binary, it's not used in luatex)
+
+
+2024-01-28  Luigi Scarso <luigi.scarso@gmail.com>
+	* By default now debug.traceback is not nil.
+
+	
+2024-01-27  Luigi Scarso <luigi.scarso@gmail.com>
+	* lfs.attributes, lfs.dir and lfs.symlinkattributes are now checked
+	  only against kpse.in_name_ok_silent_extended
+	
+
+2024-01-24  Luigi Scarso <luigi.scarso@gmail.com>
+        * New 	kpse.in_name_ok_silent_extended and kpse.in_name_ok_silent_extended
+        * In kpse mode
+	  os.rename,
+          os.remove
+          lfs.attributes,
+	  lfs.chdir,
+	  lfs.lock_dir,
+	  lfs.dir,
+	  lfs.link ,
+	  lfs.mkdir,
+	  lfs.rmdir,
+	  lfs.symlinkattributes,
+	  lfs.touch 
+        are now checked with kpse.in_name_ok_silent_extended  *and* kpse.out_name_ok_silent_extended
+        * TEXMF_OUTPUT_DIRECTORY and output_directory have the same value, output_directory (when not empty)
+          having higher priority than TEXMF_OUTPUT_DIRECTORY.
+
+2024-01-21  Luigi Scarso <luigi.scarso@gmail.com>
+	*  Fixed position of verbatim_written in mpxout.w
+
+
+2024-01-13  Luigi Scarso <luigi.scarso@gmail.com>
+	*  Added missed definition of P_tmpdir for  splinefont.c .
+
+	
+
+2024-01-04  Luigi Scarso <luigi.scarso@gmail.com> 
+        * With --safer now each function in debug is nil as also package.loaded.debug = nil and  debug = nil 
+
+
+2023-12-21  Luigi Scarso <luigi.scarso@gmail.com> 
+        * LuaTeX 1.17.1	
+        * New commandline switch --[no-]check-dvi-total-pages  exit when DVI exceeds 65535 pages (default: check).
+          This breaks backward compatibility.
+
+
+2023-11-20  Karl Berry  <karl@freefriends.org>
+
+        * luazlib/lzlib.c: relax zlib version check to just checking
+        the major version, since (it turns out) zlib 1.3 is compatible
+        with 1.2.
+        https://github.com/TeX-Live/texlive-source/pull/62
+        https://lists.debian.org/debian-tex-maint/2010/06/msg00074.html
+        https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=581818
+
+2023-11-05  Luigi Scarso <luigi.scarso@gmail.com> 
+	* New binding for in_name_ok, out_name_ok from kpathsea. 
+	* When status.kpse_used = 1 io.open checks if the filename is ok
+          with in_name_ok or out_name_ok.
+
+2023-11-02  Luigi Scarso <luigi.scarso@gmail.com> 
+	* Fix for dubious cff fonts (not following the 1000 unit recommendation) (Hans Hagen).
+
+2023-10-04  Karl Berry  <karl@freefriends.org>
+
+	* luaoutputdir.test: new test for Lua-level reading from a given
+	--output-directory.
+	* am/luatex.am (luatex_tests): add it, plus .log dependency.
+
 2023-04-29  Luigi Scarso <luigi.scarso@gmail.com> 
     * LuaTeX 1.17.0
 

@@ -1,14 +1,18 @@
 #! /bin/sh -vx
-# $Id: gftype.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: gftype.test 68157 2023-09-03 11:26:37Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2009 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_gftype=$BinDir/gftype$ExeExt
+
 test -d tests || mkdir -p tests
 
 TEXMFCNF=$srcdir/../kpathsea \
-  ./gftype $srcdir/tests/cmr10.600gf >tests/xcmr10.gft1 || exit 1
+  $_gftype $srcdir/tests/cmr10.600gf >tests/xcmr10.gft1 || exit 1
 
 TEXMFCNF=$srcdir/../kpathsea \
-  ./gftype -m -i $srcdir/tests/cmr10.600gf >tests/xcmr10.gft2 || exit 1
+  $_gftype -m -i $srcdir/tests/cmr10.600gf >tests/xcmr10.gft2 || exit 2
 

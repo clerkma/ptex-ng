@@ -14,8 +14,8 @@
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
-m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.71],,
-[m4_warning([this file was generated for autoconf 2.71.
+m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.72],,
+[m4_warning([this file was generated for autoconf 2.72.
 You have another version of autoconf.  It may work, but is not guaranteed to.
 If you have problems, you may need to regenerate the build system entirely.
 To do so, use the procedure documented by the package, typically 'autoreconf'.])])
@@ -1198,6 +1198,7 @@ m4_include([../m4/kpse-libpaper-flags.m4])
 m4_include([../m4/kpse-libpng-flags.m4])
 m4_include([../m4/kpse-lt-hack.m4])
 m4_include([../m4/kpse-mktex.m4])
+m4_include([../m4/kpse-mpfi-flags.m4])
 m4_include([../m4/kpse-mpfr-flags.m4])
 m4_include([../m4/kpse-options.m4])
 m4_include([../m4/kpse-pixman-flags.m4])

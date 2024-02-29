@@ -1,3 +1,66 @@
+2024-01-27  Karl Berry  <karl@freefriends.org>
+
+	* tests/bibtexu-iscjk.test: sed -E is not portable to Solaris 10
+	(and other systems); also, use sed -n .../p instead of grep.
+
+2023-12-16  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* configure.ac, version.h:
+	Bump version to 4.02 (16 dec 2023).
+	* bibtex-4.c:
+	Support characters defined by Unicode 15.1.
+	It works with ICU 74.1 or later.
+	* tests/bibtexu-{char,iscjk}.test,
+	tests/iscjku.bbl, tests/testiscjku.bib, Makefile.am:
+	Update tests.
+
+2023-08-30  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* tests/{bibtex8u-mem,bibtexu-char}.test:
+	Tweak for portability.
+
+2023-08-20  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* bibtex.c, sysdep.h: Avoid compiler warnings on Windows.
+	* tests/bibtex8u-mem.test: Tweak.
+
+2023-08-11  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* tests/bibtex{8,u}.test, tests/bibtex8-{char,sort}.test,
+	tests/bibtex8u-mem.test, bibtexu-{basic,char,range,sort,yannis}.test:
+	Make easier to test on Windows.
+	In bibtexu-char.test, all tests are skipped on MinGW
+	since it does not pass. More study is required.
+
+2023-07-15  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* configure.ac, version.h:
+	Bump version to 4.01 (15 jul 2023).
+	* bibtex.{c,h}, bibtex-{1,2,3}.c, utils.c, gblvars.h:
+	Define "max_print_line" by function setup_bound_variable().
+	* bibtex-{1,4}.c:
+	Support characters defined by Unicode 15.0
+	and fix the degrade at 2023-07-08.
+	* bibtex-{2,3}.c, utils.c, sysdep.h:
+	Allow 8-bit/Unicode file names (both on Unix/Linux and Windows).
+	* tests/bibtexu-char.test: Enable test rc=16 again.
+	* tests/bibtex{8,u}.test, tests/bibtex8u-mem.test,
+	caseu.bbl, iscjku.bbl, testcaseu.bib, testiscjku.bib:
+	Update tests.
+
+2023-07-09  Karl Berry  <karl@freefriends.org>
+
+	* tests/bibtexu-char.test (is.knj.str$): test fails (rc=16).
+
+2023-07-08  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* utils.c, gblprocs.h:
+	Enable to build with system ICU DLL icu.dll
+	for Windows 10 version 1903 (May 2019 Update) or later.
+	https://learn.microsoft.com/en-us/windows/win32/intl/international-components-for-unicode--icu-
+	* bibtex-{1,4}.c:
+	Enable to build with older ICU.
+
 2023-04-12  Karl Berry  <karl@freefriends.org>
 
 	* tests/bibtex8.test,

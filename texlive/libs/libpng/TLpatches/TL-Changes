@@ -1,13 +1,16 @@
-Changes applied to the libpng-1.6.39/ tree as obtained from:
-	https://sourceforge.net/projects/libpng/files/libpng16/1.6.39/
+Changes applied to the libpng-1.6.43/ tree as obtained from:
+	https://sourceforge.net/projects/libpng/files/libpng16/1.6.43/
 
 Copied:
 	scripts/pnglibconf.h.prebuilt -> pnglibconf.h
 
 Removed:
+	.github (dir)
 	.appveyor.yml
+	.editorconfig
 	.gitignore
 	.travis.yml
+	.yamllint.yml
 	Makefile.in
 	aclocal.m4
 	compile

@@ -1,4 +1,4 @@
-## $Id: Makefile.am 43567 2017-03-21 17:43:10Z karl $
+## $Id: Makefile.am 69315 2024-01-06 01:25:26Z karl $
 ## Makefile.am for the TeX Live subdirectory utils/xindy/
 ##
 ## Copyright 2017 Karl Berry <tex-live@tug.org>
@@ -55,7 +55,7 @@ texmfdir = $(datarootdir)/$(scriptsdir)
 nodist_texmf_SCRIPTS = $(perl_scripts:=.pl)
 
 %.pl: $(XINDY_TREE)/user-commands/%.in
-	$(AM_V_GEN)sed -e 's:@is_TL\@:yes:' $< >$@
+	$(AM_V_GEN)sed -e 's:@is_TL@:yes:' $< >$@
 	$(AM_V_at)chmod +x $@
 
 CLEANFILES = $(nodist_bin_SCRIPTS) $(nodist_texmf_SCRIPTS)

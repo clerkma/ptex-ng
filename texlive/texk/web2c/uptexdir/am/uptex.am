@@ -1,7 +1,7 @@
-## $Id: uptex.am 65655 2023-01-28 05:27:55Z takuji $
+## $Id: uptex.am 70222 2024-02-28 04:19:31Z kakuto $
 ## texk/web2c/uptexdir/am/uptex.am: Makefile fragment for upTeX.
 ##
-## Copyright 2016-2022 Karl Berry <tex-live@tug.org>
+## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
 ## Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 
@@ -40,7 +40,7 @@ nodist_uptex_SOURCES = $(uptex_c_h) uptex-pool.c
 dist_uptex_SOURCES = uptexdir/uptexextra.c uptexdir/uptexextra.h uptexdir/uptex_version.h
 
 # We must create uptexd.h and uptexdir/uptex_version.h before building the uptex_OBJECTS.
-uptex_prereq = uptexd.h ptexdir/ptex_version.h uptexdir/uptex_version.h
+uptex_prereq = uptexd.h uptexdir/ptex_version.h uptexdir/uptex_version.h
 $(uptex_OBJECTS): $(uptex_prereq)
 
 $(uptex_c_h): uptex-web2c
@@ -70,13 +70,15 @@ uptex_web_srcs = \
 	tex.ch \
 	tracingstacklevels.ch \
 	partoken.ch \
+	locnull-optimize.ch \
 	zlib-fmt.ch
 
 # Generate uptex.ch
 uptex.ch: tie$(EXEEXT) uptex.web $(uptex_ch_srcs)
 	$(tie_c) uptex.web $(uptex_ch_srcs)
 uptex_ch_srcs = \
-	ptexdir/ptex-base.ch \
+	uptexdir/ptex-base.ch \
+	unbalanced-braces.ch \
 	uptexdir/uptex-m.ch \
 	$(uptex_ch_synctex) \
 	tex-binpool.ch
@@ -161,13 +163,19 @@ bin_links += uptftopl$(EXEEXT):ptftopl
 ##
 EXTRA_DIST += \
 	uptexdir/COPYRIGHT \
-	uptexdir/COPYRIGHT.jis \
+	uptexdir/COPYRIGHT.ja \
 	uptexdir/ChangeLog
 
 # upTeX Tests
-uptex_tests = uptexdir/uptriptest.test uptexdir/ptriptest.test uptexdir/upver.test uptexdir/upkcat.test uptexdir/wcfname.test
-uptexdir/uptriptest.log uptexdir/ptriptest.log: uptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
-uptexdir/upver.log uptexdir/upkcat.log uptexdir/wcfname.log: uptex$(EXEEXT)
+uptex_tests = \
+	uptexdir/uptriptest.test uptexdir/ptriptest.test \
+	uptexdir/upver.test \
+	uptexdir/upkcat.test \
+	uptexdir/wcfname.test uptexdir/wcfname0.test
+uptexdir/uptriptest.log uptexdir/ptriptest.log: \
+	uptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
+uptexdir/upver.log uptexdir/upkcat.log \
+	uptexdir/wcfname.log uptexdir/wcfname0.log: uptex$(EXEEXT)
 upweb_tests = \
 	uptexdir/upbibtex.test \
 	uptexdir/updvitype.test \
@@ -176,23 +184,27 @@ upweb_tests = \
 ## upBibTeX
 upweb_tests += \
 	uptexdir/upbibtex-openout-test.pl uptexdir/upbibtex-longline-test.pl \
-	uptexdir/upbibtex-mem.test uptexdir/nissya.test
+	uptexdir/upbibtex-mem.test uptexdir/nissya.test \
+	uptexdir/unibib.test
 ## upDviType
 upweb_tests += \
 	uptexdir/sample.test
 # uppPLtoTF/upTFtoPL
 upweb_tests += \
 	uptexdir/yokotate.test uptexdir/skipjfmp.test \
-	uptexdir/newjfm.test uptexdir/uparse.test uptexdir/gkhuge.test
+	uptexdir/newjfm.test uptexdir/uparse.test \
+	uptexdir/gkhuge.test uptexdir/gk256.test
 uptexdir/upbibtex.log: upbibtex$(EXEEXT)
 uptexdir/updvitype.log: updvitype$(EXEEXT)
 uptexdir/uppltotf.log: uppltotf$(EXEEXT)
 uptexdir/uptftopl.log: uptftopl$(EXEEXT)
 uptexdir/upbibtex-openout-test.log uptexdir/upbibtex-longline-test.log \
-	uptexdir/upbibtex-mem.log uptexdir/nissya.log: upbibtex$(EXEEXT)
+	uptexdir/upbibtex-mem.log uptexdir/nissya.log \
+	uptexdir/unibib.log: upbibtex$(EXEEXT)
 uptexdir/sample.log: updvitype$(EXEEXT)
 uptexdir/yokotate.log uptexdir/skipjfmp.log \
-	uptexdir/newjfm.log uptexdir/uparse.log uptexdir/gkhuge.log: uppltotf$(EXEEXT) uptftopl$(EXEEXT)
+	uptexdir/newjfm.log uptexdir/uparse.log \
+	uptexdir/gkhuge.log uptexdir/gk256.log: uppltotf$(EXEEXT) uptftopl$(EXEEXT)
 
 EXTRA_DIST += $(uptex_tests) $(upweb_tests)
 DISTCLEANFILES += $(upweb_programs:=.c) $(upweb_programs:=.h) \
@@ -226,7 +238,7 @@ DISTCLEANFILES += uptests/xstory.dvityp uptests/xpagenum.typ uptests/x*ptex[34]*
 DISTCLEANFILES += uptests/xcmr10.tfm
 ## uptexdir/uptftopl.test
 DISTCLEANFILES += uptests/xcmr10.pl
-## ptexdir/sample.test
+## uptexdir/sample.test
 DISTCLEANFILES += uptests/xsample*.typ
 ## uptexdir/yokotate.test
 EXTRA_DIST += uptexdir/tests/umin10.pl uptexdir/tests/umin10.tfm
@@ -241,6 +253,9 @@ DISTCLEANFILES += uptests/xuparse.* uptests/yuparse.*
 ## uptexdir/gkhuge.test
 EXTRA_DIST += uptexdir/tests/gkhugeok.tfm uptexdir/tests/gkhugeng.tfm uptexdir/tests/gkhugeng.err
 DISTCLEANFILES += uptests/ygkhuge*.*
+## uptexdir/gk256.test
+EXTRA_DIST += uptexdir/tests/gk256g.tfm uptexdir/tests/gk256k.tfm
+DISTCLEANFILES += uptests/ygk256*.*
 ## uptexdir/skipjfmp.test
 DISTCLEANFILES += uptests/xskipjfmp.*
 ## uptexdir/uptriptest

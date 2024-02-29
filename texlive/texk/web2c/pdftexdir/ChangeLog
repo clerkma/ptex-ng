@@ -1,3 +1,73 @@
+2024-02-04  Karl Berry  <karl@tug.org>
+
+        * NEWS,
+        * pdftex_version.h,
+        * pdftex.web (pdftex_revision, pdftex_version_string):
+        version [1.40.]26 for TL23.
+
+2024-01-14  Thanh Han The  <hanthethanh@gmail.com>
+
+	* pdftoepdf.cc (write_epdf): call writeRefs at the end, to write
+	all indirect objects after writing everything else.
+	From pdftex r916 (and test in r915). Original report:
+	https://bugs.ghostscript.com/show_bug.cgi?id=706940
+
+2023-12-24  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* wcfname.test:
+	Avoid errors on parallel test processing.
+
+2023-11-25  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* wcfname.test: Add tests for --recorder and *.fls.
+
+2023-11-24  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* wcfname.test: Add test for file names with over-BMP
+	(4byte UTF-8).
+	https://tug.org/pipermail/tex-live/2023-November/049685.html
+
+2023-10-27  Thanh Han The  <hanthethanh@gmail.com>
+
+	* tounicode.c (deftounicode): sscanf %lX into unsigned long to
+	avoid failure in text extraction on BigEndian systems. Report
+	from hille42,
+	https://tug.org/pipermail/pdftex/2023-October/009342.html.
+
+2023-09-01  Karl Berry  <karl@freefriends.org>
+
+	* ptexmac.h (cmp_return): a few words of documentation about
+	the seemingly strange lack of handling the a==b case.
+	Suggested by Jim Diamond.
+
+2023-08-28  Karl Berry  <karl@freefriends.org>
+
+	* tounicode.c (undump_to_unicode): check that gu->name
+	(and gu->unicode_seq) did not get undumped as NULL.
+	Report from Gregory DUCK,
+	https://tug.org/pipermail/tex-live/2023-August/049406.html.
+
+2023-08-27  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* tests/{cnfline,partoken}.test:
+	Make easier to test on Windows.
+
+2023-08-26  Karl Berry  <karl@freefriends.org>
+
+	* writet1.c (t1_builtin_enc): guard somewhat against corrupt pfbs,
+	in the dup and dup dup checking. Report from Gregory DUCK,
+	https://tug.org/pipermail/tex-live/2023-August/049400.html.
+
+2023-08-20  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* {expanded,pdfimage,pdftex,pdftosrc,ttf2afm,wcfname,
+	wprob}.test:
+	Make easier to test on Windows.
+
+2023-08-18  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
+
+	* pdftex.web: minor cleanup (sync with etex.ch r24155)
+
 2023-03-29  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* wcfname.test:
@@ -64,7 +134,7 @@
 	* mapfile.c (hasspacechar, pdfmaplinesp): new fns.
 	* NEWS: mention new behavior.
 
-2021-02-17  Karl Berry  <karl@tug.org>
+2023-02-17  Karl Berry  <karl@tug.org>
 
         * NEWS,
         * pdftex_version.h,

@@ -1,3 +1,20 @@
+2023-08-23  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* seetexk.test: Tweak.
+
+2023-08-11  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* dvibook.c, dviconcat.c:
+	Better handling of STDIN/STDOUT on Windows.
+	* seetexk.test:
+	Make easier to test on Windows.
+
+2023-07-05  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* dvibook.c, dviconcat.c, dviselect.c, dvitodvi.c:
+	Skip Unicode conversion if command line arguments are missing
+	in order to prevent unwanted looking for texmf.cnf. (Windows only)
+
 2020-09-13  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* configure.ac: SeeTeX Ver.20200908

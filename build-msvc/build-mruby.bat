@@ -1,10 +1,14 @@
 if exist build\mruby (
   rd /s /q build\mruby
+) else (
+  md build\mruby
 )
-xcopy ..\src\mruby build\mruby\ /e/h
+set MRUBY_SOURCE=%CD%\..\src\mruby
+set PREFIX=%CD%\build\mruby
 set MRUBY_CONFIG=ci/msvc
 set CFLAGS=-nologo -c -O2 -Oy
-cd build\mruby
-ruby .\minirake all
-copy build\host\lib\libmruby.lib ..\..\libmruby.lib
-cd ..\..
+set BUILD_CMD=ruby %MRUBY_SOURCE%\minirake -f %MRUBY_SOURCE%\Rakefile
+%BUILD_CMD% all
+%BUILD_CMD% install
+%BUILD_CMD% clean
+copy build\mruby\lib\libmruby.lib .

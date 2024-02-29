@@ -1,12 +1,16 @@
 #! /bin/sh -vx
-# $Id: test-dvips.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: test-dvips.test 67885 2023-08-11 14:25:18Z takuji $
 # Public domain.
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_dvips=$BinDir/dvips$ExeExt
 
 rm -f mtest.ps
 
-./dvips -D 300 $srcdir/testdata/dvipstst.xdv -o dvipstst.ps
+$_dvips -D 300 $srcdir/testdata/dvipstst.xdv -o dvipstst.ps
 mv dvipstst.ps mtest.ps || exit 1
-./dvips -D 300 $srcdir/testdata/dvipstst.xdv -o || exit 1
+$_dvips -D 300 $srcdir/testdata/dvipstst.xdv -o || exit 2
 diff $srcdir/testdata/dvipstst.xps dvipstst.ps
 
 exit 0

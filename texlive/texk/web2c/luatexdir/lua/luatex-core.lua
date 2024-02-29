@@ -7,7 +7,7 @@
 --     copyright = 'LuaTeX Development Team',
 -- }
 
-LUATEXCOREVERSION = 1.161 -- we reflect the luatex version where changes happened
+LUATEXCOREVERSION = 1.180 -- we reflect the luatex version where changes happened
 
 -- This file overloads some Lua functions. The readline variants provide the same
 -- functionality as LuaTeX <= 1.04 and doing it this way permits us to keep the
@@ -18,11 +18,30 @@ LUATEXCOREVERSION = 1.161 -- we reflect the luatex version where changes happene
 
 
 
-local saferoption = status.safer_option
-local shellescape = status.shell_escape -- 0 (disabled) 1 (anything) 2 (restricted)
-local kpseused    = status.kpse_used    -- 0 1
+local saferoption    = status.safer_option
+local luadebugoption = status.luadebug_option
+local shellescape    = status.shell_escape -- 0 (disabled) 1 (anything) 2 (restricted)
+local kpseused       = status.kpse_used    -- 0 1
+local gmatch         = string.gmatch
 
-if kpseused == 1 then
+--
+-- Useful extension of lfs.mkdir,
+-- lfs.mkdirp(path) make parent directories as needed
+-- (from  luatex-fonts-merged.lua)
+--
+function lfs.mkdirp(path)
+ local full=""
+ local r1,r2,r3
+ for sub in gmatch(path,"(/*[^\\/]+)") do 
+  full=full..sub
+  r1,r2,r3 = lfs.mkdir(full)
+ end
+ return r1,r2,r3 
+end
+
+
+
+if kpseused == 1 and (status.shell_escape ~=1)  then
 
     local type = type
     local gsub = string.gsub
@@ -35,6 +54,9 @@ if kpseused == 1 then
     local kpse_recordinputfile  = kpse.record_input_file
     local kpse_recordoutputfile = kpse.record_output_file
 
+    local kpse_in_name_ok_silent_extended = kpse.in_name_ok_silent_extended
+    local kpse_out_name_ok_silent_extended = kpse.out_name_ok_silent_extended
+
     local io_open               = io.open
     -- local io_popen              = io.popen -- not need, we  use os.kpsepopen
     local io_lines              = io.lines
@@ -42,22 +64,51 @@ if kpseused == 1 then
     local fio_readline          = fio.readline
 
     local write_nl              = texio.write_nl
+    local format   		= string.format
 
     io.saved_lines              = io_lines -- always readonly
     mt.saved_lines              = mt_lines -- always readonly
+ 
+    local os_rename = os.rename
+    local os_remove = os.remove
+
+    local lfs_attributes = lfs.attributes 
+    local lfs_chdir = lfs.chdir
+    local lfs_lock_dir =  lfs.lock_dir
+    local lfs_dir = lfs.dir 
+    local lfs_link = lfs.link 
+    local lfs_mkdir = lfs.mkdir
+    local lfs_mkdirp = lfs.mkdirp
+    local lfs_rmdir = lfs.rmdir
+    local lfs_symlinkattributes = lfs.symlinkattributes
+    local lfs_touch = lfs.touch
+
+
+
+    local LUATEX_EPERM = -1 
+    local LUATEX_EPERM_MSG = "LuaTeX: operation not permitted"
 
     local function luatex_io_open(name,how)
         if not how then
             how = 'r'
         end
-        local f = io_open(name,how)
-        if f then
+        local check = true 
+        if how == 'r' or how == 'rb' or how == '' then 
+           check = kpse_in_name_ok_silent_extended(name)  
+        else 
+           check = kpse_out_name_ok_silent_extended(name)
+        end  
+	local f = nil 
+	if check then
+	 f = io_open(name,how)
+         if f then
             if type(how) == 'string' and find(how,'w') then
                 kpse_recordoutputfile(name,'w')
             else
                 kpse_recordinputfile(name,'r')
             end
-        end
+         end
+	end
         return f
     end
 
@@ -70,10 +121,17 @@ if kpseused == 1 then
                 how = 'r'
             end
         end
-        local f = io_open(name,how)
-        if f then
+        local check = false 
+        if how == 'r' or how == 'rb' or how == '' then 
+           check = kpse_in_name_ok_silent_extended(name)  
+        end  
+	local f = nil 
+	if check then
+	  f = io_open(name,how)
+          if f then
             fio_recordfilename(name,'r')
-        end
+          end
+	end  
         return f
     end
 
@@ -105,7 +163,8 @@ if kpseused == 1 then
 
     local function luatex_io_lines(name,how)
         if type(name) == "string" then
-            local f = io_open(name,how or 'r')
+            local check = kpse_in_name_ok_silent_extended(name)  
+            local f = check and io_open(name,how or 'r')
             if f then
                 return function()
                     local l = fio_readline(f)
@@ -129,6 +188,137 @@ if kpseused == 1 then
         end
     end
 
+    --
+    --
+    -- These functions must pass
+    --  kpse.in_name_ok_silent_extended
+    -- and kpse.out_name_ok_silent_extended
+    --
+
+    local function luatex_os_rename(oldname,newname)
+      local check1 = kpse_in_name_ok_silent_extended(oldname)  
+      local check2 = kpse_out_name_ok_silent_extended(newname)  
+      if check1 and check2 then 
+        return os_rename(oldname,newname)
+      else
+        return nil, LUATEX_EPERM_MSG,LUATEX_EPERM
+      end
+    end
+
+    local function luatex_os_remove(filename)
+      local check1 = kpse_in_name_ok_silent_extended(filename)  
+      local check2 = kpse_out_name_ok_silent_extended(filename)  
+      if check1 and check2 then 
+       return os_remove(filename)
+      else
+       return nil, LUATEX_EPERM_MSG,LUATEX_EPERM
+      end
+    end
+
+    local function luatex_lfs_attributes(filepath, opt)
+      local check1 = kpse_in_name_ok_silent_extended(filepath)
+      if check1 then 
+       return lfs_attributes(filepath,opt)
+      else
+       return nil, LUATEX_EPERM_MSG,LUATEX_EPERM
+      end
+    end
+
+    local function luatex_lfs_chdir(name)
+     local check1 = kpse_in_name_ok_silent_extended(name) and kpse_out_name_ok_silent_extended(name)  
+     if check1 then 
+       return lfs_chdir(name)
+      else
+       return nil, LUATEX_EPERM_MSG
+     end
+    end
+
+    local function luatex_lfs_lock_dir(name,second_stale)
+     local check1 = kpse_in_name_ok_silent_extended(name) and kpse_out_name_ok_silent_extended(name)  
+     if check1 then 
+       return lfs_lock_dir(name,second_stale)
+      else
+       return nil, LUATEX_EPERM_MSG
+     end
+    end
+
+    local function luatex_lfs_dir(name)
+     local check1 = kpse_in_name_ok_silent_extended(name)
+     if check1 then 
+       return lfs_dir(name)
+      else
+       error(LUATEX_EPERM_MSG)
+     end
+    end
+
+    local function luatex_lfs_link(oldf,newf,symlink) 
+     local check1 = kpse_in_name_ok_silent_extended(newf) and kpse_out_name_ok_silent_extended(newf)
+     if check1 then
+	check1 = kpse_in_name_ok_silent_extended(oldf) and kpse_out_name_ok_silent_extended(oldf)
+	if check1 then
+	  return lfs_link(oldf,newf,symlink) 
+	 else
+	  return nil, LUATEX_EPERM_MSG,LUATEX_EPERM
+	end 
+      else
+       return nil, LUATEX_EPERM_MSG,LUATEX_EPERM
+     end
+    end
+
+    local function luatex_lfs_mkdir(name)
+     local check1 = kpse_in_name_ok_silent_extended(name) and kpse_out_name_ok_silent_extended(name)  
+     if check1 then 
+       return lfs_mkdir(name)
+      else
+       return nil, LUATEX_EPERM_MSG,LUATEX_EPERM
+     end
+    end
+
+    local function luatex_lfs_mkdirp(name)
+     local check1 = kpse_in_name_ok_silent_extended(name) and kpse_out_name_ok_silent_extended(name)  
+     if check1 then 
+        local full=""
+        local r1,r2,r3 
+        for sub in gmatch(name,"(/*[^\\/]+)") do 
+	  full=full..sub
+  	  r1,r2,r3 = lfs_mkdir(full)
+        end
+        return r1,r2,r3
+     else
+       return nil, LUATEX_EPERM_MSG,LUATEX_EPERM
+     end
+    end
+
+    local function luatex_lfs_rmdir(name)
+     local check1 = kpse_in_name_ok_silent_extended(name) and kpse_out_name_ok_silent_extended(name)  
+     if check1 then 
+       return lfs_rmdir(name)
+      else
+       return nil, LUATEX_EPERM_MSG,LUATEX_EPERM
+     end
+    end
+
+    local function luatex_lfs_symlinkattributes(filepath,aname)
+     local check1 = kpse_in_name_ok_silent_extended(filepath) 
+     if check1 then 
+       return lfs_symlinkattributes(filepath,aname)
+      else
+       return nil, LUATEX_EPERM_MSG,LUATEX_EPERM
+     end
+    end
+
+    local function luatex_lfs_touch(name,atime,mtime)
+     local check1 = kpse_in_name_ok_silent_extended(name) and kpse_out_name_ok_silent_extended(name)  
+     if check1 then 
+       return lfs_touch(name,atime,mtime)
+      else
+       return nil, LUATEX_EPERM_MSG
+     end
+    end
+
+
+
+
     io.lines = luatex_io_lines
     mt.lines = luatex_io_readline
 
@@ -136,11 +326,40 @@ if kpseused == 1 then
     --io.popen = luatex_io_popen -- not need, we  use os.kpsepopen
     io.popen = os.kpsepopen
 
+    os.rename = luatex_os_rename
+    os.remove = luatex_os_remove
+
+    lfs.attributes        = luatex_lfs_attributes
+    lfs.chdir             = luatex_lfs_chdir
+    lfs.lock_dir          = luatex_lfs_lock_dir
+    lfs.dir               = luatex_lfs_dir
+    lfs.link              = luatex_lfs_link
+    lfs.mkdir             = luatex_lfs_mkdir
+    lfs.mkdirp            = luatex_lfs_mkdirp
+    lfs.rmdir             = luatex_lfs_rmdir
+    lfs.symlinkattributes = luatex_lfs_symlinkattributes
+    lfs.touch             = luatex_lfs_touch                
+
+
 else
 
     -- we assume management elsewhere
 
 end
+
+if luadebugoption == 0  then
+
+  for k,_  in pairs(package.loaded.debug) do 
+   if not(k=='traceback') then package.loaded.debug[k] = nil; end 
+  end
+
+  --[==[ Not really necessary ]==]
+  for k,v in pairs(debug) do 
+   if not(k=='traceback') then debug[k] = nil; end 
+  end
+
+end
+
 
 -- maybe also only when in kpse mode
 
@@ -189,7 +408,10 @@ if saferoption == 1 then
     lfs.touch  = installdummy("lfs.touch")
     lfs.rmdir  = installdummy("lfs.rmdir")
     lfs.mkdir  = installdummy("lfs.mkdir")
+    lfs.mkdirp  = installdummy("lfs.mkdirp")
 
+
+    package.loaded.debug = nil
     debug = nil
 
     -- os.[execute|os.spawn|os.exec] already are shellescape aware)

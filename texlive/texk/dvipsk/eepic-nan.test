@@ -1,11 +1,15 @@
 #! /bin/sh -vx
-# $Id: eepic-nan.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: eepic-nan.test 67885 2023-08-11 14:25:18Z takuji $
 # Public domain.
 # ensure we don't get nan from eepic doc.
 # Report from Stefan Moser to mactex-support, 20 Oct 2010 02:37:45.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_dvips=$BinDir/dvips$ExeExt
+
 tst=eepic-nan
-./dvips -Ppdf $srcdir/testdata/$tst.dvi -o || exit 1
+$_dvips -Ppdf $srcdir/testdata/$tst.dvi -o || exit 1
 grep ' nan ' $tst.ps && exit 1
 
 exit 0

@@ -1,8 +1,0 @@
-otfdump
-otflist
-otfview
-otftobdf
-Makefile.in
-Makefile
-.libs
-.deps

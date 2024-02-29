@@ -1,12 +1,16 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: twill.test 69812 2024-02-11 23:09:24Z karl $
 # Copyright 2022 Andreas Scherer <https://ascherer.github.io>
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2009 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_twill=$BinDir/twill$ExeExt
+
 test -d tests || mkdir -p tests
 
 TEXMFCNF=$srcdir/../kpathsea WEBINPUTS=$srcdir \
-  ./twill pooltype || exit 1
+  $_twill pooltype || exit 1
 

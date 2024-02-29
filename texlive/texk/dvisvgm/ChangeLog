@@ -1,3 +1,40 @@
+2024-01-27  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* tests/dvisvgm-{uptex,hara}.test:
+	Split tests for upTeX DVIs into two.
+	* Makefile.am: Adjusted.
+
+2024-01-20  Karl Berry  <karl@tug.org>
+
+	* dvisvgm-src/src/Makefile.am (dvisvgm_LDADD) [TEXLIVE_BUILD]:
+	forgot LIBGS_LIBS, i.e., -ldl.
+
+2024-01-18  Karl Berry  <karl@freefriends.org>
+
+	* configure.ac,
+	* Makefile.am,
+	* TLpatches/patch-04-configure,
+	* TLpatches/patch-08-makefiles: tweaks from Martin for non-TL build.
+	https://github.com/mgieseki/dvisvgm/issues/259
+
+2024-01-18  Karl Berry  <karl@freefriends.org>
+
+	* Import dvisvgm-3.2.
+
+2024-01-01  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* tests/dvisvgm.test: Make easier to test on Windows.
+	* tests/dvisvgm-sample.test, tests/sample_v{2,3}_{nf,wf}.svg:
+	New tests using samples in the original source.
+	* tests/dvisvgm-uptex.test, tests/upjf.dvi, tests/upj{f,v}{,-{r,g}}.tfm,
+	tests/upj{f,v}-{r,g}00.ofm, tests/upj{f{,1},v}_{full,omit}.vf,
+	upjf{,_hara}.map, upjf{,1}.svg: New tests for upTeX DVIs.
+	* Makefile.am: Adjusted.
+
+2023-06-18  Karl Berry  <karl@freefriends.org>
+
+	* configure.ac: no more AM_PROG_AR, it's in KPSE_COMMON now.
+
 2023-03-11  Karl Berry  <karl@freefriends.org>
 
 	* dvisvgm-src/src/Process.cpp: apply last-minute patch for

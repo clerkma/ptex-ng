@@ -2,7 +2,7 @@
 % This program by Silvio Levy and Donald E. Knuth
 % is based on a program by Knuth.
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 4.9 --- May 2023 (works also with later versions)
+% Version 4.11 --- December 2023 (works also with later versions)
 
 % Copyright (C) 1987,1990,1993 Silvio Levy and Donald E. Knuth
 
@@ -32,12 +32,16 @@ First comes general stuff:
 @d ctangle false
 @d cweave true
 
-@<Common code...@>=
+@<Common code...@>=@^system dependencies@>
 typedef bool boolean;
 typedef uint8_t eight_bits;
 typedef uint16_t sixteen_bits;
 extern boolean program; /* \.{CWEAVE} or \.{CTANGLE}? */
 extern int phase; /* which phase are we in? */
+
+@ The procedure that gets everything rolling:
+@<Predecl...@>=
+extern void common_init(void);
 
 @ Interface to the standard \CEE/ library:
 
@@ -139,6 +143,7 @@ extern boolean print_where; /* tells \.{CTANGLE} to print line and file info */
 @d rlink dummy.Rlink /* right link in binary search tree for section names */
 @d root name_dir->rlink /* the root of the binary search tree
   for section names */
+@d ilk dummy.Ilk /* used by \.{CWEAVE} only */
 
 @<Common code...@>=
 typedef struct name_info {
@@ -147,7 +152,7 @@ typedef struct name_info {
   union {
     struct name_info *Rlink; /* right link in binary search tree for section
       names */
-    char Ilk; /* used by identifiers in \.{CWEAVE} only */
+    eight_bits Ilk; /* used by identifiers in \.{CWEAVE} only */
   } dummy;
   void *equiv_or_xref; /* info corresponding to names */
 } name_info; /* contains information about an identifier or section name */
@@ -161,26 +166,27 @@ extern name_pointer name_dir_end; /* end of |name_dir| */
 extern name_pointer name_ptr; /* first unused position in |name_dir| */
 extern name_pointer hash[]; /* heads of hash lists */
 extern hash_pointer hash_end; /* end of |hash| */
-extern hash_pointer h; /* index into hash-head array */
+extern hash_pointer hash_ptr; /* index into hash-head array */
 
 @ @<Predecl...@>=
-extern boolean names_match(name_pointer,const char *,size_t,eight_bits);@/
 extern name_pointer id_lookup(const char *,const char *,eight_bits);
    /* looks up a string in the identifier table */
 extern name_pointer section_lookup(char *,char *,boolean); /* finds section name */
-extern void init_node(name_pointer);@/
-extern void init_p(name_pointer,eight_bits);@/
 extern void print_prefix_name(name_pointer);@/
 extern void print_section_name(name_pointer);@/
 extern void sprint_section_name(char *,name_pointer);
+@#
+extern boolean names_match(name_pointer,const char *,size_t,eight_bits);
+/* two routines defined in \.{ctangle.w} and \.{cweave.w} */
+extern void init_node(name_pointer);
 
 @ Code related to error handling:
 @d spotless 0 /* |history| value for normal jobs */
 @d harmless_message 1 /* |history| value when non-serious info was printed */
 @d error_message 2 /* |history| value when an error was noted */
 @d fatal_message 3 /* |history| value when we had to stop prematurely */
-@d mark_harmless if (history==spotless) history=harmless_message
-@d mark_error history=error_message
+@d mark_harmless() if (history==spotless) history=harmless_message
+@d mark_error() history=error_message
 @d confusion(s) fatal("! This can't happen: ",s)
 @.This can't happen@>
 
@@ -192,6 +198,8 @@ extern int wrap_up(void); /* indicate |history| and exit */
 extern void err_print(const char *); /* print error message and context */
 extern void fatal(const char *,const char *); /* issue error message and die */
 extern void overflow(const char *); /* succumb because a table has overflowed */
+@#
+extern void print_stats(void); /* defined in \.{ctangle.w} and \.{cweave.w} */
 
 @ Code related to command line arguments:
 @d show_banner flags['b'] /* should the banner line be printed? */
@@ -210,8 +218,8 @@ extern char scn_file_name[]; /* name of |scn_file| */
 extern boolean flags[]; /* an option for each 7-bit code */
 
 @ Code related to output:
-@d update_terminal fflush(stdout) /* empty the terminal output buffer */
-@d new_line putchar('\n')
+@d update_terminal() fflush(stdout) /* empty the terminal output buffer */
+@d new_line() putchar('\n')
 @d term_write(a,b) fflush(stdout),fwrite(a,sizeof(char),b,stdout)
 
 @<Common code...@>=
@@ -220,11 +228,6 @@ extern FILE *tex_file; /* where output of \.{CWEAVE} goes */
 extern FILE *idx_file; /* where index from \.{CWEAVE} goes */
 extern FILE *scn_file; /* where list of sections from \.{CWEAVE} goes */
 extern FILE *active_file; /* currently active file for \.{CWEAVE} output */
-
-@ The procedure that gets everything rolling:
-@<Predecl...@>=
-extern void common_init(void);@/
-extern void print_stats(void);
 
 @ The following parameters are sufficient to handle \TEX/ (converted to
 \.{CWEB}), so they should be sufficient for most applications of \.{CWEB}.

@@ -40,7 +40,7 @@
 \ifacro
   \pdfpagewidth=\pagewidth \advance\pdfpagewidth by 2cm
   \pdfpageheight=\pageheight \advance\pdfpageheight by 3cm
-  \ifpdftex \pdfhorigin=1cm \pdfvorigin=1cm
+  \ifpdflua \pdfhorigin=1cm \pdfvorigin=1cm
   \else \advance\pdfpageheight by 1cm \global\pageshift=-1.54cm
     \global\hoffset=-1.54cm \global\voffset=-1.54cm \fi
 \fi
@@ -51,10 +51,10 @@
 \outer\def\section #1.{\penalty-500\bigskip
         \centerline{\sectionfont\def\.##1{{\twelvett##1}}
   \ifacro\vbox to 0pt{\kern-2.5ex\relax
-    \ifpdftex\pdfdest num \destcount fitbh\relax
-    \else\special{pdf: dest (\the\destcount) [ @thispage /FitBH @ypos ]}\fi
+    \ifpdflua\pdfdest num \destcount fith\relax
+    \else\special{pdf: dest (\the\destcount) [ @thispage /FitH @ypos ]}\fi
     \def\.##1{##1}\def\TeX{TeX}%
-    \ifpdftex\pdfoutline goto num \destcount
+    \ifpdflua\pdfoutline goto num \destcount
       \ifnum\subsections>0 count -\subsections\fi {#1}\relax
     \else\special{pdf: outline 0 << /Title (#1)
       /A << /S /GoTo /D (\the\destcount) >> >>}\fi
@@ -69,7 +69,7 @@
 \def\appC{17}
 
 \def\Appendix#1{\leavevmode
-  \ifacro\ifpdftex
+  \ifacro\ifpdflua
     \pdfstartlink attr{/Border[0 0 0]} goto num\csname app#1\endcsname\relax
     \Blue\hbox{Appendix}~#1\Black
     \pdfendlink
@@ -83,9 +83,9 @@
 \newcount\subdestcount \subdestcount=151\relax
 
 \outer\def\subsection #1.{\ifacro
-    \ifpdftex\pdfdest num \subdestcount fitbh\relax
+    \ifpdflua\pdfdest num \subdestcount fith\relax
       \pdfoutline goto num \subdestcount {#1}\relax
-    \else\special{pdf: dest (\the\subdestcount) [ @thispage /FitBH @ypos ]}%
+    \else\special{pdf: dest (\the\subdestcount) [ @thispage /FitH @ypos ]}%
       \special{pdf: outline 1 << /Title (#1)
         /A << /S /GoTo /D (\the\subdestcount) >> >>}\fi
     \global\advance\subdestcount by 1\relax
@@ -93,17 +93,17 @@
 @z
 
 @x
-\def\runninghead{{\tentt CWEB} USER MANUAL (VERSION 4.9)}
+\def\runninghead{{\tentt CWEB} USER MANUAL (VERSION 4.11)}
 @y
 \def\Kpathsea/{{\mc KPATHSEA\spacefactor1000}}
-\def\runninghead{{\tentt CWEB} USER MANUAL (Version 4.9 [\TeX~Live])}
+\def\runninghead{{\tentt CWEB} USER MANUAL (Version 4.11 [\TeX~Live])}
 @z
 
 @x
-\vskip 18pt\centerline{(Version 4.9 --- May 2023)}
+\vskip 18pt\centerline{(Version 4.11 --- December 2023)}
 @y
-\vskip 18pt\centerline{(Version 4.9 --- May 2023)%
-\footnote*{This document describes the extended \.{CWEB} (Version 4.9 [\TeX~Live]).}}
+\vskip 18pt\centerline{(Version 4.11 --- December 2023)%
+\footnote*{This document describes the extended \.{CWEB} (Version 4.11 [\TeX~Live]).}}
 @z
 
 @x
@@ -205,7 +205,7 @@ Sometimes things don't work as smoothly, and you get a bunch of
 @y
 `$\\{main}(\\{argc},\39\\{argv}{}$)'.
 \ifx\pdf+\pdftrue\fi \ifxetex\pdftrue\fi
-\ifpdftex\ifnum\pdfoutput>0\pdftrue\fi\fi
+\ifpdflua\ifnum\pdfoutput>0\pdftrue\fi\fi
 \ifpdf\acrohinttrue\fi \ifhint\acrohinttrue\fi
 @z
 
@@ -225,6 +225,14 @@ to suppress the extra space globally.}
 @z
 
 @x
+from \.{https://hint.userweb.mwn.de/hint/hintview.html}.
+@y
+from
+\pdfURL{\.{https://hint.userweb.mwn.de/hint/hintview.html}}%
+          {https://hint.userweb.mwn.de/hint/hintview.html}.%
+@z
+
+@x
 the program sources at \.{ftp://ftp.cs.stanford.edu/pub/ctwill}.
 @y
 the program sources at
@@ -241,10 +249,10 @@ As an example of a real program written in \.{CWEB}, \Appendix A
 @z
 
 @x
-Appendix B is the file that sets \TEX/ up to accept
+Appendix B displays the files that set \TEX/ up to accept
 the output of \.{CWEAVE}, and Appendix~C discusses how to use some of those
 @y
-\Appendix B is the file that sets \TEX/ up to accept
+\Appendix B displays the files that set \TEX/ up to accept
 the output of \.{CWEAVE}, and \Appendix C discusses how to use some of those
 @z
 
@@ -315,22 +323,28 @@ And here's what the same excerpt looks like when typeset.
 @y
 \vfil\eject\titletrue
 \ifx\pdf+\pdftrue\fi \ifxetex\pdftrue\fi
-\ifpdftex\ifnum\pdfoutput>0 \pdftrue\fi\fi
+\ifpdflua\ifnum\pdfoutput>0 \pdftrue\fi\fi
 \ifacro\acrohinttrue\fi \ifhint\acrohinttrue\fi
 @z
 
 @x
-  \.{ { }\\vskip 15pt \\centerline\{(Version 4.9)\}{ }\\vfill\}}\cr}$$
+  \.{ { }\\vskip 15pt \\centerline\{(Version 4.11)\}{ }\\vfill\}}\cr}$$
 @y
-  \.{ { }\\vskip 15pt \\centerline\{(Version 4.9)\}{ }\\vfill\}}\cr}$$
+  \.{ { }\\vskip 15pt \\centerline\{(Version 4.11)\}{ }\\vfill\}}\cr}$$
 @z
 
 @x
 if you have a duplex printer. Appendices D, E, and F of the complete
+version of this manual are printed using a commented-out option that
+substitutes `$\gets$' for `$=$' in the program listings. Looking at those
 @y
 if you have a duplex printer. Appendices \pdfURL{D}{common.pdf},
 \pdfURL{E}{ctangle.pdf}, and \pdfURL{F}{cweave.pdf}\cwebfootnote{And
 \pdfURL{Appendix~G}{ctwill.pdf}.} of the complete
+version of this manual are printed using a commented-out option that
+substitutes `$\gets$' for `$=$' in the program listings.\cwebfootnote{They
+also make use of the alternative format for \CEE/ comments.}
+Looking at those
 @z
 
 @x
@@ -338,5 +352,17 @@ if you have a duplex printer. Appendices \pdfURL{D}{common.pdf},
 @y
 \vfill\eject
 \point 20. Furthermore, group titles can be converted to an arbitrary
+@z
+
+@x
+\vfill\end
+@y
+\point 21. With modern \TeX\ engines like `\.{luatex}', `\.{pdftex}', and
+`\.{xetex}' (but \\{not} with classic `\.{tex}') you can say `\.{\\input
+pdfwebtocfront}' as the last command in the limbo section and run \TeX\
+\\{twice} on your woven \.{CWEB} document, in order to shift the
+table-of-contents to the front of the {\mc PDF} output.
+
+\vfill\end
 @z
 

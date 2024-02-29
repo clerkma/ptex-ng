@@ -10,24 +10,24 @@ ex <dev_>cc;'-v -h -c -=500000 -DCWEBINPUTS=flp2_ common_c'
 @x
 \def\v{\char'174} % vertical (|) in typewriter font
 
-\def\title{Common code for CTANGLE and CWEAVE (Version 4.9)}
+\def\title{Common code for CTANGLE and CWEAVE (Version 4.11)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont Common code for {\ttitlefont CTANGLE} and
     {\ttitlefont CWEAVE}}
   \vskip 15pt
-  \centerline{(Version 4.9)}
+  \centerline{(Version 4.11)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
 @y
 \def\v{\char'174} % vertical (|) in typewriter font
 
-\def\title{Common code for CTANGLE and CWEAVE (QL Version 4.9)}
+\def\title{Common code for CTANGLE and CWEAVE (QL Version 4.11)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont Common code for {\ttitlefont CTANGLE} and
     {\ttitlefont CWEAVE}}
   \vskip 15pt
-  \centerline{(Version 4.9)}
+  \centerline{(Version 4.11)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -152,8 +152,10 @@ the routine as if it would work.
   }
   sprintf(alt_web_file_name,"%s.web",*argv);
   sprintf(tex_file_name,"%s.tex",name_pos); /* strip off directory name */
-  sprintf(idx_file_name,"%s.idx",name_pos);
-  sprintf(scn_file_name,"%s.scn",name_pos);
+  if (make_xrefs) { /* indexes will be generated */
+    sprintf(idx_file_name,"%s.idx",name_pos);
+    sprintf(scn_file_name,"%s.scn",name_pos);
+  }
   sprintf(C_file_name,"%s.c",name_pos);
   found_web=true;
 }
@@ -170,8 +172,10 @@ the routine as if it would work.
   }
   sprintf(alt_web_file_name,"%s_web",*argv);
   sprintf(tex_file_name,"%s_tex",name_pos); /* strip off directory name */
-  sprintf(idx_file_name,"%s_idx",name_pos);
-  sprintf(scn_file_name,"%s_scn",name_pos);
+  if (make_xrefs) { /* indexes will be generated */
+    sprintf(idx_file_name,"%s_idx",name_pos);
+    sprintf(scn_file_name,"%s_scn",name_pos);
+  }
   sprintf(C_file_name,"%s_c",name_pos);
   found_web=true;
 }
@@ -212,17 +216,15 @@ the routine as if it would work.
     @<Complain about argument length@>@;
   if (dot_pos==NULL) {
     sprintf(tex_file_name,"%s.tex",*argv);
-    sprintf(idx_file_name,"%s.idx",*argv);
-    sprintf(scn_file_name,"%s.scn",*argv);
     sprintf(C_file_name,"%s.c",*argv);
   } else {
     strcpy(tex_file_name,*argv);
     strcpy(C_file_name,*argv);
-    if (make_xrefs) { /* indexes will be generated */
-      *dot_pos='\0';
-      sprintf(idx_file_name,"%s.idx",*argv);
-      sprintf(scn_file_name,"%s.scn",*argv);
-    }
+    *dot_pos='\0'; /* string now ends where the dot was */
+  }
+  if (make_xrefs) { /* indexes will be generated */
+    sprintf(idx_file_name,"%s.idx",*argv);
+    sprintf(scn_file_name,"%s.scn",*argv);
   }
   found_out=true;
 }
@@ -233,17 +235,15 @@ the routine as if it would work.
     @<Complain about argument length@>;
   if (dot_pos==NULL) {
     sprintf(tex_file_name,"%s_tex",*argv);
-    sprintf(idx_file_name,"%s_idx",*argv);
-    sprintf(scn_file_name,"%s_scn",*argv);
     sprintf(C_file_name,"%s_c",*argv);
   } else {
     strcpy(tex_file_name,*argv);
     strcpy(C_file_name,*argv);
-    if (make_xrefs) { /* indexes will be generated */
-      *dot_pos='\0';
-      sprintf(idx_file_name,"%s_idx",*argv);
-      sprintf(scn_file_name,"%s_scn",*argv);
-    }
+    *dot_pos='\0'; /* string now ends where the dot was */
+  }
+  if (make_xrefs) { /* indexes will be generated */
+    sprintf(idx_file_name,"%s_idx",*argv);
+    sprintf(scn_file_name,"%s_scn",*argv);
   }
   found_out=true;
 }

@@ -17,16 +17,16 @@
 @q Please send comments, suggestions, etc. to tex-k@@tug.org.            @>
 
 @x
-\def\title{Common code for CTANGLE and CWEAVE (Version 4.9)}
+\def\title{Common code for CTANGLE and CWEAVE (Version 4.11)}
 @y
 \def\Kpathsea/{{\mc KPATHSEA\spacefactor1000}} \ifacro\sanitizecommand\Kpathsea{KPATHSEA}\fi
-\def\title{Common code for CTANGLE and CWEAVE (4.9 [\TeX~Live])}
+\def\title{Common code for CTANGLE and CWEAVE (4.11 [\TeX~Live])}
 @z
 
 @x
-  \centerline{(Version 4.9)}
+  \centerline{(Version 4.11)}
 @y
-  \centerline{(Version 4.9 [\TeX~Live])}
+  \centerline{(Version 4.11 [\TeX~Live])}
 @z
 
 @x
@@ -76,7 +76,7 @@ cweb program; /* \.{CTANGLE} or \.{CWEAVE} or \.{CTWILL}? */
   @<Initialize pointers@>@;
 @y
   @<Initialize pointers@>@;
-  @<Set up |PROGNAME| feature and initialize the search path mechanism@>@;
+  @<Set up \.{PROGNAME} feature and initialize the search path mechanism@>@;
 @z
 
 @x
@@ -93,14 +93,15 @@ cweb program; /* \.{CTANGLE} or \.{CWEAVE} or \.{CTWILL}? */
 @z
 
 @x
-      ungetc(c,fp); loc=buffer; err_print("! Input line too long");
+    loc=buffer; err_print("! Input line too long");
 @y
-      ungetc(c,fp); loc=buffer; err_print(_("! Input line too long"));
+    loc=buffer; err_print(_("! Input line too long"));
 @z
 
 @x
 static char alt_web_file_name[max_file_name_length]; /* alternate name to try */
 @y
+char *found_filename; /* filename found by |kpse_find_file| */
 @z
 
 @x
@@ -140,6 +141,118 @@ static char alt_web_file_name[max_file_name_length]; /* alternate name to try */
 @z
 
 @x
+      err_print("! Include file name not given");
+@y
+      err_print(_("! Include file name not given"));
+@z
+
+@x
+      err_print("! Too many nested includes");
+@y
+      err_print(_("! Too many nested includes"));
+@z
+
+@x
+@ When an \.{@@i} line is found in the |cur_file|, we must temporarily
+stop reading it and start reading from the named include file.  The
+\.{@@i} line should give a complete file name with or without
+double quotes.
+If the environment variable |CWEBINPUTS| is set, or if the compiler flag
+of the same name was defined at compile time,
+\.{CWEB} will look for include files in the directory thus named, if
+it cannot find them in the current directory.
+(Colon-separated paths are not supported.)
+The remainder of the \.{@@i} line after the file name is ignored.
+@y
+@ When an \.{@@i} line is found in the |cur_file|, we must temporarily
+stop reading it and start reading from the named include file.  The
+\.{@@i} line should give a complete file name with or without
+double quotes.
+The actual file lookup is done with the help of the \Kpathsea/ library;
+see section~\X93:File lookup with \Kpathsea/\X~for details. % FIXME
+The remainder of the \.{@@i} line after the file name is ignored.
+@^system dependencies@>
+@z
+
+@x
+        err_print("! Include file name too long"); goto restart;}
+@y
+        err_print(_("! Include file name too long")); goto restart;}
+@z
+
+@x
+  char temp_file_name[max_file_name_length];
+  char *cur_file_name_end=cur_file_name+max_file_name_length-1;
+  char *kk, *k=cur_file_name;
+  size_t l; /* length of file name */
+@y
+  char *cur_file_name_end=cur_file_name+max_file_name_length-1;
+  char *k=cur_file_name;
+@z
+
+@x
+  if ((cur_file=fopen(cur_file_name,"r"))!=NULL) {
+@y
+  if ((found_filename=kpse_find_cweb(cur_file_name))!=NULL @|
+      && (cur_file=fopen(found_filename,"r"))!=NULL) {
+    /* Copy name for \#\&{line} directives. */
+    if (strlen(found_filename) < max_file_name_length) {
+      if (strcmp(cur_file_name, found_filename))
+        strcpy(cur_file_name, found_filename +
+          ((strncmp(found_filename,"./",2)==0) ? 2 : 0));
+      free(found_filename);
+    } else fatal(_("! Filename too long\n"), found_filename);
+@z
+
+@x
+  if ((kk=getenv("CWEBINPUTS"))!=NULL) {
+    if ((l=strlen(kk))>max_file_name_length-2) too_long();
+    strcpy(temp_file_name,kk);
+  }
+  else {
+#ifdef CWEBINPUTS
+    if ((l=strlen(CWEBINPUTS))>max_file_name_length-2) too_long();
+    strcpy(temp_file_name,CWEBINPUTS);
+#else
+    l=0;
+#endif /* |CWEBINPUTS| */
+  }
+  if (l>0) {
+    if (k+l+2>=cur_file_name_end) too_long();
+@.Include file name ...@>
+    for (; k>=cur_file_name; k--) *(k+l+1)=*k;
+    strcpy(cur_file_name,temp_file_name);
+    cur_file_name[l]='/'; /* \UNIX/ pathname separator */
+@^system dependencies@>
+    if ((cur_file=fopen(cur_file_name,"r"))!=NULL) {
+      cur_line=0; print_where=true;
+      goto restart; /* success */
+    }
+  }
+  include_depth--; err_print("! Cannot open include file"); goto restart;
+@y
+  include_depth--; err_print(_("! Cannot open include file")); goto restart;
+@z
+
+@x
+    err_print("! Change file ended without @@z");
+@y
+    err_print(_("! Change file ended without @@z"));
+@z
+
+@x
+        err_print("! Where is the matching @@z?");
+@y
+        err_print(_("! Where is the matching @@z?"));
+@z
+
+@x
+    err_print("! Change file entry did not match");
+@y
+    err_print(_("! Change file entry did not match"));
+@z
+
+@x
 if ((web_file=fopen(web_file_name,"r"))==NULL) {
   strcpy(web_file_name,alt_web_file_name);
   if ((web_file=fopen(web_file_name,"r"))==NULL)
@@ -175,118 +288,6 @@ else if (strlen(found_filename) < max_file_name_length) {
 @z
 
 @x
-      err_print("! Include file name not given");
-@y
-      err_print(_("! Include file name not given"));
-@z
-
-@x
-      err_print("! Too many nested includes");
-@y
-      err_print(_("! Too many nested includes"));
-@z
-
-@x
-@ When an \.{@@i} line is found in the |cur_file|, we must temporarily
-stop reading it and start reading from the named include file.  The
-\.{@@i} line should give a complete file name with or without
-double quotes.
-If the environment variable \.{CWEBINPUTS} is set, or if the compiler flag
-of the same name was defined at compile time,
-\.{CWEB} will look for include files in the directory thus named, if
-it cannot find them in the current directory.
-(Colon-separated paths are not supported.)
-The remainder of the \.{@@i} line after the file name is ignored.
-@y
-@ When an \.{@@i} line is found in the |cur_file|, we must temporarily
-stop reading it and start reading from the named include file.  The
-\.{@@i} line should give a complete file name with or without
-double quotes.
-The actual file lookup is done with the help of the \Kpathsea/ library;
-see section~\X93:File lookup with \Kpathsea/\X~for details. % FIXME
-The remainder of the \.{@@i} line after the file name is ignored.
-@^system dependencies@> @.CWEBINPUTS@>
-@z
-
-@x
-        err_print("! Include file name too long"); goto restart;}
-@y
-        err_print(_("! Include file name too long")); goto restart;}
-@z
-
-@x
-  char temp_file_name[max_file_name_length];
-  char *cur_file_name_end=cur_file_name+max_file_name_length-1;
-  char *kk, *k=cur_file_name;
-  size_t l; /* length of file name */
-@y
-  char *cur_file_name_end=cur_file_name+max_file_name_length-1;
-  char *k=cur_file_name;
-@z
-
-@x
-  if ((cur_file=fopen(cur_file_name,"r"))!=NULL) {
-@y
-  if ((found_filename=kpse_find_cweb(cur_file_name))!=NULL @|
-      && (cur_file=fopen(found_filename,"r"))!=NULL) {
-    /* Copy name for \#\&{line} directives. */
-    if (strlen(found_filename) < max_file_name_length) {
-      if (strcmp(cur_file_name, found_filename))
-        strcpy(cur_file_name, found_filename +
-          ((strncmp(found_filename,"./",2)==0) ? 2 : 0));
-      free(found_filename);
-    } else fatal(_("! Filename too long\n"), found_filename);
-@z
-
-@x
-  if ((kk=getenv("CWEBINPUTS"))!=NULL) {
-@.CWEBINPUTS@>
-    if ((l=strlen(kk))>max_file_name_length-2) too_long();
-    strcpy(temp_file_name,kk);
-  }
-  else {
-#ifdef CWEBINPUTS
-    if ((l=strlen(CWEBINPUTS))>max_file_name_length-2) too_long();
-    strcpy(temp_file_name,CWEBINPUTS);
-#else
-    l=0;
-#endif /* |CWEBINPUTS| */
-  }
-  if (l>0) {
-    if (k+l+2>=cur_file_name_end) too_long();
-@.Include file name ...@>
-    for (; k>=cur_file_name; k--) *(k+l+1)=*k;
-    strcpy(cur_file_name,temp_file_name);
-    cur_file_name[l]='/'; /* \UNIX/ pathname separator */
-    if ((cur_file=fopen(cur_file_name,"r"))!=NULL) {
-      cur_line=0; print_where=true;
-      goto restart; /* success */
-    }
-  }
-  include_depth--; err_print("! Cannot open include file"); goto restart;
-@y
-  include_depth--; err_print(_("! Cannot open include file")); goto restart;
-@z
-
-@x
-    err_print("! Change file ended without @@z");
-@y
-    err_print(_("! Change file ended without @@z"));
-@z
-
-@x
-        err_print("! Where is the matching @@z?");
-@y
-        err_print(_("! Where is the matching @@z?"));
-@z
-
-@x
-    err_print("! Change file entry did not match");
-@y
-    err_print(_("! Change file entry did not match"));
-@z
-
-@x
 @d hash_size 353 /* should be prime */
 @y
 @d hash_size 8501 /* should be prime */
@@ -298,6 +299,12 @@ The remainder of the \.{@@i} line after the file name is ignored.
 @y
   if (byte_ptr+l>byte_mem_end) overflow(_("byte memory"));
   if (name_ptr>=name_dir_end) overflow(_("name"));
+@z
+
+@x
+  if (program==cweave) p->ilk=t, init_node(p);
+@y
+  if (program!=ctangle) p->ilk=t, init_node(p);
 @z
 
 @x
@@ -321,48 +328,50 @@ The remainder of the \.{@@i} line after the file name is ignored.
 @z
 
 @x
-      fputs("\n! Ambiguous prefix: matches <",stdout);
+      printf("%s","\n! Ambiguous prefix: matches <");
 @y
-      fputs(_("\n! Ambiguous prefix: matches <"),stdout);
+      printf("%s",_("\n! Ambiguous prefix: matches <"));
 @z
 
 @x
-      fputs(">\n and <",stdout);
+      printf("%s",">\n and <");
 @y
-      fputs(_(">\n and <"),stdout);
+      printf("%s",_(">\n and <"));
 @z
 
 @x
-      fputs("\n! New name is a prefix of <",stdout);
+      printf("%s","\n! New name is a prefix of <");
 @y
-      fputs(_("\n! New name is a prefix of <"),stdout);
+      printf("%s",_("\n! New name is a prefix of <"));
 @z
 
 @x
-      fputs("\n! New name extends <",stdout);
+      printf("%s","\n! New name extends <");
 @y
-      fputs(_("\n! New name extends <"),stdout);
+      printf("%s",_("\n! New name extends <"));
 @z
 
 @x
-    fputs("\n! Section name incompatible with <",stdout);
+    printf("%s","\n! Section name incompatible with <");
 @y
-    fputs(_("\n! Section name incompatible with <"),stdout);
+    printf("%s",_("\n! Section name incompatible with <"));
 @z
 
 @x
-    fputs(">,\n which abbreviates <",stdout);
+    printf("%s",">,\n which abbreviates <");
 @y
-    fputs(_(">,\n which abbreviates <"),stdout);
+    printf("%s",_(">,\n which abbreviates <"));
 @z
 
 @x
   printf(". (l. %d of change file)\n", change_line);
-else if (include_depth==0) printf(". (l. %d)\n", cur_line);
+else if (cur_line>0) {
+  if (include_depth==0) printf(". (l. %d)\n", cur_line);
   else printf(". (l. %d of include file %s)\n", cur_line, cur_file_name);
 @y
   printf(_(". (l. %d of change file)\n"), change_line);
-else if (include_depth==0) printf(_(". (l. %d)\n"), cur_line);
+else if (cur_line>0) {
+  if (include_depth==0) printf(_(". (l. %d)\n"), cur_line);
   else printf(_(". (l. %d of include file %s)\n"), cur_line, cur_file_name);
 @z
 
@@ -486,12 +495,10 @@ systems the contents of the compile-time variable |DEV_NULL| (\TeX~Live) or
 @z
 
 @x
-      while (*s)
         if (*s=='.') dot_pos=s++;
         else if (*s=='/') dot_pos=NULL,name_pos=++s;
         else s++;
 @y
-      while (*s)
         if (*s=='.') dot_pos=s++;
         else if (*s==DIR_SEPARATOR || *s==DEVICE_SEPARATOR || *s=='/')
           dot_pos=NULL,name_pos=++s;
@@ -572,17 +579,10 @@ cb_usage(program==ctangle ? "ctangle" : program==cweave ? "cweave" : "ctwill");
 @z
 
 @x
-FILE *scn_file; /* where list of sections from \.{CWEAVE} goes */
+FILE *active_file; /* currently active file for \.{CWEAVE} output */
 @y
-FILE *scn_file; /* where list of sections from \.{CWEAVE} goes */
+FILE *active_file; /* currently active file for \.{CWEAVE} output */
 FILE *check_file; /* temporary output file */
-@z
-
-@x
-FILE *active_file; /* currently active file for \.{CWEAVE} output */
-@y
-FILE *active_file; /* currently active file for \.{CWEAVE} output */
-char *found_filename; /* filename found by |kpse_find_file| */
 @z
 
 @x
@@ -614,7 +614,7 @@ else {
 @z
 
 @x
-@** Index.
+@* Index.
 @y
 @** Extensions to {\tentex CWEB}.  The following sections introduce new or
 improved features that have been created by numerous contributors over the
@@ -643,7 +643,7 @@ const char *use_language=""; /* prefix of \.{cwebmac.tex} in \TEX/ output */
 char cb_banner[max_banner];@/
 string texmf_locale;@/
 #ifndef SEPARATORS
-#define SEPARATORS "://"
+#define SEPARATORS "://"@^system dependencies@>
 #endif
 char separators[]=SEPARATORS;
 
@@ -795,7 +795,7 @@ in the environment) its value will be used as the search path for filenames.
 This allows different flavors of \.{CWEB} to have different search paths.
 @.CWEBINPUTS@>
 
-@<Set up |PROGNAME| feature and initialize the search path mechanism@>=
+@<Set up \.{PROGNAME} feature and initialize the search path mechanism@>=
 kpse_set_program_name(argv[0], "cweb");
 
 @ When the files you expect are not found, the thing to do is to enable
@@ -820,7 +820,7 @@ Debugging output is always written to |stderr|, and begins with the string
 
 Modules for dealing with help messages and version info.
 
-@<Include files@>=
+@<Include files@>=@^system dependencies@>
 #define CWEB
 #include "help.h" /* |@!CTANGLEHELP|, |@!CWEAVEHELP|, |@!CTWILLHELP| */
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2022 Clerk Ma
+   Copyright 2014-2023 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -79,7 +79,10 @@
 // TeX Live's kpathsea
 #include <kpathsea/config.h>
 #include <kpathsea/c-pathmx.h> // PATH_MAX
-#include <kpathsea/getopt.h>   // get_opt
+#if defined (__APPLE__)
+#define __GNU_LIBRARY__
+#endif
+#include <kpathsea/getopt.h>   // getopt_long_only
 #include <kpathsea/tex-file.h> // kpse_find_file
 #include <kpathsea/types.h>    // RPId64
 #include <kpathsea/version.h>  // kpathsea_version_string
@@ -93,17 +96,13 @@
 #include "zlib.h"
 
 // libmruby
+#if defined (USE_MRUBY)
 #include "mruby.h"
 #include "mruby/compile.h"
 #include "aptex-mruby.h"
-#define USE_MRUBY
+#endif
 
 // internal headers
-#include "aptex-cairo-visual-debug.h"
-#define USE_VISUAL_DEBUG
-
-#include "aptex-opentype.h"
-#include "aptex-unicode.h"
 #include "aptex-utils.h"
 
 #ifdef __cplusplus
@@ -822,7 +821,6 @@ EXTERN struct {
   boolean flag_reset_hyphen;
   boolean flag_suppress_f_ligs;
   boolean flag_merge_kanji_baseline;
-  boolean flag_visual_debug;
 } aptex_env;
 
 #include "aptex-functions.h"

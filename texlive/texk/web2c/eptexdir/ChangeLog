@@ -1,3 +1,29 @@
+2023-12-24  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* wcfname.test:
+	Avoid errors on parallel test processing.
+
+2023-11-25  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* wcfname.test: Add tests for --recorder and *.fls.
+	https://github.com/texjporg/tex-jp-build/issues/45
+
+2023-11-24  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* eptriptest.test, eptrip/eptrip.{log,tex}:
+	Check diffs of trip.{fot,typ} with ignoring trivial changes
+	in trip tests.
+
+2023-09-03  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* {eptriptest,epver}.test:
+	Update tests for Windows.
+
+2023-08-20  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* {eptriptest,epver,pdfprimitive,wcfname}.test:
+	Make easier to test on Windows.
+
 2023-03-29  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* wcfname.test:

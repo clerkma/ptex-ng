@@ -1,8 +1,8 @@
 \input texinfo
 @setfilename tlbuild.info
 
-@set version 2023
-@set month-year February 2023
+@set version 2024
+@set month-year March 2024
 
 @set mytitle Building @TeX{} Live (@value{version})
 @settitle @value{mytitle}
@@ -15,7 +15,7 @@
 This file documents the @TL{} build system and more.
 
 @noindent
-Copyright @copyright{} 2016--2023 Karl Berry.@*
+Copyright @copyright{} 2016--2024 Karl Berry.@*
 Copyright @copyright{} 2013--2015 Karl Berry & Peter Breitenlohner.
 
 Permission is granted to make and distribute verbatim copies of this
@@ -402,11 +402,16 @@ and @code{convert}) creates several output files.  This allows for
 parallel builds (@code{make -j @var{n}} with @math{@var{n}>1} or even
 @code{make -j}) that can considerably speed up the TL build.
 
+@vindex TL_MAKE_FLAGS
+If you're using TL's @code{Build} script, you can enable @code{-j}
+with the environment variable @code{TL_MAKE_FLAGS}, as in:
+@samp{env TL_MAKE_FLAGS=-j`nproc` ./Build}.
+
 @cindex cache file, for @code{configure}
 @vindex -C configure @r{option}
-Incidentally, a noticeable speed-up can be independently gained by
-using a configure cache file, i.e., specifying the @code{configure}
-option @code{-C} (recommended).
+Independently, a noticeable speed-up can also be gained by using a
+configure cache file, i.e., specifying the @code{configure} option
+@code{-C} (recommended).
 
 @node Build distribution
 @section Build distribution
@@ -618,6 +623,13 @@ name exactly as specified in the @file{.am} file:
 
 @example
 make -C $ww check SUBDIRS=. TESTS=hitexdir/tests/hello.test
+@end example
+
+Without the @code{SUBDIRS=.}, errors like this will show up, since
+@code{make} will descend into every directory.
+
+@example
+fatal: making test-suite.log: failed to create hitexdir/tests/hello.test
 @end example
 
 @vindex --no-print-directory @r{GNU make option}

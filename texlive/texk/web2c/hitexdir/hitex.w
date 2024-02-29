@@ -81,10 +81,18 @@
 
 % A reward of $327.68 will be paid to the first finder of any remaining bug.
 
-% This is a beta version of 1.0 of Prote, developed during August 2021,
-% and corrected during september/october 2021.
+% This is the 1.1 version of Prote, developed during August 2021,
+% and corrected during september/october 2021 and amended in august 2023
+% for file primitives behavior matching input behavior.
 %
 % 1.0: adds primitives needed by LaTeX as listed in ltnews31.
+%    - 2022-07-21: tiddying formal fix: a spurious line was a left over
+%      of a removed paragraph (pointed by Martin Ruckert). Suppressed.
+%
+% 1.1: 2023-08-01: the new file primitives are used in LaTeX expecting
+%    the input behavior that ".tex" be appended if no extension. So
+%    modified to provide this.
+%
 %  History towards 1.0 release:
 %    0.99.4:
 %      - typos and style corrections provided by Martin Ruckert for
@@ -110,6 +118,8 @@
 %        xchg_buffer_length:=0 (caught by Martin Ruckert).
 %    0.99.10:
 %      - KerTeX Public License -> X11/MIT license.
+%    1.0:
+%      - Just naming the official release. No change.
 %
 % This work was done by Thierry Laronde and is under the MIT/X11
 % license.
@@ -358,9 +368,9 @@ known as `\Prote'.
 @#
 @d eTeX_states 1 /*number of \eTeX\ state variables in |eqtb|*/
 @#
-@d Prote_version_string "3.141592653-2.6-0.99.9" /*current \Prote\ version*/
-@d Prote_version 0 /* \.{\\Proteversion} */
-@d Prote_revision ".99.9" /* \.{\\Proterevision} */
+@d Prote_version_string "3.141592653-2.6-1.1.0" /*current \Prote\ version*/
+@d Prote_version 1 /* \.{\\Proteversion} */
+@d Prote_revision ".1.0" /* \.{\\Proterevision} */
 @#
 @d Prote_banner "This is Prote, Version " Prote_version_string
    /*printed when \Prote\ starts*/
@@ -5169,7 +5179,8 @@ that will be defined later.
 @d right_hyphen_min_code 52 /*minimum right hyphenation fragment size*/
 @d holding_inserts_code 53 /*do not remove insertion nodes from \.{\\box255}*/
 @d error_context_lines_code 54 /*maximum intermediate line pairs shown*/
-@d tex_int_pars 55 /*total number of \TeX's integer parameters*/
+@d tracing_stack_levels_code 55 /*tracing |input_stack| level if |tracingmacros| positive*/
+@d tex_int_pars 56 /*total number of \TeX's integer parameters*/
 @#
 @d etex_int_base tex_int_pars /*base for \eTeX's integer parameters*/
 @d tracing_assigns_code etex_int_base /*show assignments*/
@@ -5246,6 +5257,7 @@ that will be defined later.
 @d right_hyphen_min int_par(right_hyphen_min_code)
 @d holding_inserts int_par(holding_inserts_code)
 @d error_context_lines int_par(error_context_lines_code)
+@d tracing_stack_levels int_par(tracing_stack_levels_code)
 @#
 @d tracing_assigns int_par(tracing_assigns_code)
 @d tracing_groups int_par(tracing_groups_code)
@@ -5319,6 +5331,7 @@ case left_hyphen_min_code: print_esc("lefthyphenmin");@+break;
 case right_hyphen_min_code: print_esc("righthyphenmin");@+break;
 case holding_inserts_code: print_esc("holdinginserts");@+break;
 case error_context_lines_code: print_esc("errorcontextlines");@+break;
+case tracing_stack_levels_code: print_esc("tracingstacklevels");@+break;
 @/@<Cases for |print_param|@>@/
 default:print("[unknown integer parameter!]");
 }
@@ -5440,6 +5453,8 @@ primitive("holdinginserts", assign_int, int_base+holding_inserts_code);@/
 @!@:holding\_inserts\_}{\.{\\holdinginserts} primitive@>
 primitive("errorcontextlines", assign_int, int_base+error_context_lines_code);@/
 @!@:error\_context\_lines\_}{\.{\\errorcontextlines} primitive@>
+primitive("tracingstacklevels", assign_int, int_base+tracing_stack_levels_code);@/
+@!@:tracing\_stack\_levels_}{\.{\\tracingstacklevels} primitive@>
 
 @ @<Cases of |print_cmd_chr|...@>=
 case assign_int: if (chr_code < count_base) print_param(chr_code-int_base);
@@ -7497,7 +7512,8 @@ or |limit| or |line|.
 if (first==buf_size) overflow("buffer size", buf_size);
 @:TeX capacity exceeded buffer size}{\quad buffer size@>
 incr(in_open);push_input;index=in_open;@/
-source_filename_stack[index]=0; /* \TeX\ Live */
+source_filename_stack[index]=NULL; /* \TeX\ Live */
+full_source_filename_stack[index]=NULL; /* \TeX\ Live */
 eof_seen[index]=false;
 grp_stack[index]=cur_boundary;if_stack[index]=cond_ptr;
 line_stack[index]=line;start=first;state=mid_line;
@@ -7511,6 +7527,10 @@ is finished:
 {@+first=start;line=line_stack[index];
 if ((name==18)||(name==19)) pseudo_close();else
 if (name > 17) a_close(&cur_file); /*forget it*/
+if (full_source_filename_stack[in_open]!=NULL)
+{ free(full_source_filename_stack[in_open]);
+  full_source_filename_stack[in_open]=NULL;
+}
 pop_input;decr(in_open);
 }
 
@@ -8648,6 +8668,7 @@ strip off the enclosing braces. That's why |rbrace_ptr| was introduced.
 else pstack[n]=link(temp_head);
 incr(n);
 if (tracing_macros > 0)
+  if ((tracing_stack_levels==0)||(input_ptr < tracing_stack_levels))
   {@+begin_diagnostic();print_nl("");printn(match_chr);print_int(n);
   print("<-");show_token_list(pstack[n-1], null, 1000);
   end_diagnostic(false);
@@ -8655,8 +8676,19 @@ if (tracing_macros > 0)
 }
 
 @ @<Show the text of the macro being expanded@>=
-{@+begin_diagnostic();print_ln();print_cs(warning_index);
-token_show(ref_count);end_diagnostic(false);
+{@+begin_diagnostic();
+  if (tracing_stack_levels > 0)
+  { if (input_ptr < tracing_stack_levels)
+      {@+
+        int v=input_ptr;
+        print_ln();print_char('~');
+        while (v-- > 0) print_char('.');
+        print_cs(warning_index);token_show(ref_count);
+      }
+    else{@+print_char('~');print_char('~');print_cs(warning_index);}
+  }
+  else{@+print_ln();print_cs(warning_index);token_show(ref_count);}
+  end_diagnostic(false);
 }
 
 @* Basic scanning subroutines.
@@ -10961,22 +10993,40 @@ of string pool space; but that can confuse the interactive `\.E' option.
 @p static void start_input(void) /*\TeX\ will \.{\\input} something*/
 {@+
 scan_file_name(); /*set |cur_name| to desired file name*/
-pack_cur_name(".tex");
+pack_cur_name("");
 loop@+{@+begin_file_reading(); /*set up |cur_file| and new level of input*/
-  if (a_open_in(&cur_file)) goto done;
+  if (kpse_in_name_ok((char*)name_of_file+1) && a_open_in(&cur_file)) goto done;
   end_file_reading(); /*remove the level that didn't work*/
   prompt_file_name("input file name",".tex");
   }
 done: name=a_make_name_string(&cur_file);@/
-source_filename_stack[in_open]=name; /* \TeX\ Live*/
+if (source_filename_stack[in_open]!=NULL)
+  free(source_filename_stack[in_open]);
+source_filename_stack[in_open]=strdup((char *)name_of_file+1); /*\TeX\ Live*/
+if (full_source_filename_stack[in_open]!=NULL)
+  free(full_source_filename_stack[in_open]);
+full_source_filename_stack[in_open]=strdup(full_name_of_file);
 if (job_name==0)
   {@+if (c_job_name==NULL) job_name=cur_name;
      else job_name=s_no(c_job_name); open_log_file(); /* \TeX\ Live*/
   }  /*|open_log_file| doesn't |show_context|, so |limit|
     and |loc| needn't be set to meaningful values yet*/
-if (term_offset+length(name) > max_print_line-2) print_ln();
+if (term_offset+strlen(full_source_filename_stack[in_open]) > max_print_line-2)
+  print_ln();
 else if ((term_offset > 0)||(file_offset > 0)) print_char(' ');
-print_char('(');incr(open_parens);slow_print(name);update_terminal;
+print_char('(');incr(open_parens);
+print(full_source_filename_stack[in_open]);update_terminal;
+if (tracing_stack_levels > 0)
+{@+int v;
+  begin_diagnostic();print_ln();
+  print_char('~');
+  v=input_ptr-1;
+  if (v < tracing_stack_levels)
+    while (v-- > 0) print_char('.');
+  else print_char('~');
+  print("INPUT ");slow_print(cur_name);slow_print(cur_ext);print_ln();
+  end_diagnostic(false);
+}
 state=new_line;
 if (name==str_ptr-1)  /*conserve string pool space (but see note above)*/
   {@+flush_string;name=cur_name;
@@ -25669,8 +25719,8 @@ primitive("setlanguage", extension, set_language_code);@/
 primitive("HINTversion", last_item, HINT_version_code);
 @!@:HINT\_version\_}{\.{\\HINTversion} primitive@>
 
-primitive("HINTsubversion", last_item, HINT_subversion_code);
-@!@:HINT\_subversion\_}{\.{\\HINTsubversion} primitive@>
+primitive("HINTminorversion", last_item, HINT_minor_version_code);
+@!@:HINT\_minor\_version\_}{\.{\\HINTminorversion} primitive@>
 
 primitive("HINTdest", extension, label_node);@/
 @!@:HINTdest\_}{\.{\\HINTdest} primitive@>
@@ -29122,9 +29172,14 @@ old_setting=selector;selector=new_string;
 @*1 \Prote\ added strings routines.
 
 The next procedure sets |name_of_file| from the string given as an
-argument. It silently truncates if the length of the string exceeds the
-size of the name buffer and doesn't use |cur_area| and |cur_ext|: it
-takes the string as is and the string is not flushed.
+argument, mimicking the |input| primitive by adding an |.tex| extension
+if there is none. It silently truncates if the length of the string
+exceeds the size of the name buffer and doesn't use |cur_area| and
+|cur_ext|, but |name_length| is set to the real name length (without
+truncating) so a test about |k <= file_name_size| allows to detect the
+impossibility of opening the file without having to call external code.
+The string is not flushed: it is the responsability of the code calling
+the procedure to flush it if wanted.
 
 @<Declare \Prote\ procedures for strings@>=
 static void str_to_name(str_number @!s)
@@ -29559,6 +29614,7 @@ returned.
 @<Cases of `Scan the argument for command |c|'@>=
 case file_size_code: {@+scan_general_x_text();toks_to_str();
   s=info(garbage);flush_list(link(garbage));str_to_name(s);
+  cur_val=-1; /*invalid value if error*/
   cur_val=get_file_size();
   flush_string;
   } @+break;
@@ -29601,7 +29657,6 @@ If the length is $0$, nothing is printed.
 @<Cases of `Print the result of command |c|'@>=
 case file_mod_date_code: for (k=0; time_str[k]!='\0'; k++)
    print_char(time_str[k]);@+break;
-
 
 @ The primitive \.{\\filedump} expands to the dump of the first
  \.{length} bytes of the file, starting from \.{offset}. Offset and
@@ -29722,7 +29777,7 @@ it, as a binary file.
 @<Generate the MD5 hash for a file@>=
 {@+str_to_name(s);
 xchg_buffer_length=0; /*empty if file not opened*/
-if (b_open_in(&data_in)) {@+
+if ((name_length <= file_name_size)&&(b_open_in(&data_in))) {@+
   mdfive_init;
   r=false; /*reset it to indicate eof*/
   while (!r)
@@ -30396,21 +30451,21 @@ implement the various features that have been used above to replace
 the new engine returns a version number as an integer
 extending the cases for |last_item|. Since the additional
 primitives that we define are specific to the \HINT\ format,
-we return version and subversion of the \HINT\ file
+we return major and minor version of the \HINT\ file
 format that this program will generate.
 
 @d HINT_version_code (eTeX_last_last_item_cmd_mod+7) /* \.{\\HINTversion} */
-@d HINT_subversion_code (eTeX_last_last_item_cmd_mod+8) /* \.{\\HINTsubversion} */
+@d HINT_minor_version_code (eTeX_last_last_item_cmd_mod+8) /* \.{\\HINTminorversion} */
 
 @ Now this new primitive needs its implementation.
 
 @<Cases of |last_item| for |print_cmd_chr|@>=
 case HINT_version_code: print_esc("HINTversion");@+break;
-case HINT_subversion_code: print_esc("HINTsubversion");@+break;
+case HINT_minor_version_code: print_esc("HINTminorversion");@+break;
 
 @ @<Cases for fetching a \Prote\ int value@>=
 case HINT_version_code: cur_val=HINT_VERSION;@+break;
-case HINT_subversion_code: cur_val=HINT_SUB_VERSION;@+break;
+case HINT_minor_version_code: cur_val=HINT_MINOR_VERSION;@+break;
 
 
 @ The implementation reuses code that has been written as part of
@@ -31589,7 +31644,7 @@ static pointer vpackage(pointer p, scaled h, scaled hf, scaled vf, small_number 
                           if (image_xheight(p)!=null)
                           { pointer r=image_xheight(p);
                             if (xdimen_hfactor(r)==0 && xdimen_vfactor(r)==0)
-			    {  x= x+d+xdimen_width(p);d=0;}
+			    {  x= x+d+xdimen_width(r);d=0;}
                             else goto repack;
                           }
 			}
@@ -34383,8 +34438,9 @@ static void parse_options (int argc, char *argv[])
     { fprintf(stderr,"Try '%s --help' for more information\n",argv[0]);
       exit(1);
     }
-    else if (g == -1) return;
+    else if (g == -1) break;
   }
+  @<Check the environment for extra settings@>@;
 }
 
 @ @<Forward declarations@>=
@@ -34513,6 +34569,19 @@ static char *normalize_quotes (const char *nom, const char *mesg)
     }
     return ret;
 }
+
+@ If the output directory was specified on the command line,
+we save it in an environment variable so that subbrocesses can
+get the value. If on the other hand the environment specifies
+a directory and the command line does not, save the value from
+the environment to the global variable so that it is used in the
+rest of the code.
+
+@<Check the environment for extra settings@>=
+if (output_directory)
+    xputenv ("TEXMF_OUTPUT_DIRECTORY", output_directory);
+else if (getenv ("TEXMF_OUTPUT_DIRECTORY"))
+    output_directory = getenv ("TEXMF_OUTPUT_DIRECTORY");
 
 @*1 Passing a file name as a general text argument.
 
@@ -34821,6 +34890,10 @@ static char *find_file(char *fname, kpse_file_format_type t, int mx)
         fname++;
   }
   filename = kpse_find_file(fname, t, mx);
+  if (full_name_of_file!=NULL)
+  { free(full_name_of_file); full_name_of_file=NULL;}
+  if (filename!=NULL)
+    full_name_of_file=strdup(filename);
   if (quoted) {
         /* Undo modifications */
         fname--;
@@ -34883,11 +34956,13 @@ static int texmf_yesno(const char *var)
 }
 
 @ We need a stack, matching the |line_stack| that
-contains the source file names;
-we postpone \TeX\ Live's |full_source_filename_stack| to a later time.
+contains the source file names. For the full source filenames we use
+poiters to |char| because these names are just used for output.
 
 @<Global...@>=
-static int @!source_filename_stack0[max_in_open], *const @!source_filename_stack = @!source_filename_stack0-1;
+static char * @!source_filename_stack0[max_in_open]={NULL}, **const @!source_filename_stack = @!source_filename_stack0-1;
+static char * @!full_source_filename_stack0[max_in_open]={NULL}, **const @!full_source_filename_stack = @!full_source_filename_stack0-1;
+static char *full_name_of_file=NULL;
 
 @ The function |print_file_line|
 prints ``file:line:error'' style messages using
@@ -34897,10 +34972,10 @@ falls back to the ``non-file:line:error'' style.
 @<Basic printing...@>=
 static void print_file_line(void)
 {@+int level=in_open;
-  while (level>0 && source_filename_stack[level]==0) level--;
+  while (level>0 && full_source_filename_stack[level]==NULL) level--;
   if (level==0) print_nl("! ");
   else
-  { print_nl(""); printn(source_filename_stack[level]); print_char(':');
+  { print_nl(""); print(full_source_filename_stack[level]); print_char(':');
     if (level==in_open) print_int(line);
     else print_int(line_stack[level]);
     print(": ");
@@ -35128,7 +35203,8 @@ static FILE*open_in(char*filename,kpse_file_format_type t,const char*rwb)
   {@+
     f= fopen(fname,rwb);
     if (f!=NULL) recorder_record_input(fname);
-    free(fname);@+
+    if (full_name_of_file!=NULL) free(full_name_of_file);
+    full_name_of_file=fname;@+
   }
   return f;
 }
@@ -35291,7 +35367,7 @@ make_time_str(time_t t, bool utc)
         lt = *localtime(&t);
     }
     size = strftime(time_str, TIME_STR_SIZE, "D:%Y%m%d%H%M%S", &lt);
-    /* expected format: |"YYYYmmddHHMMSS"| */
+    /* expected format: |"D:YYYYmmddHHMMSS"| */
     if (size == 0) {
         /* unexpected, contents of |time_str| is undefined */
         time_str[0] = '\0';
@@ -35324,7 +35400,7 @@ make_time_str(time_t t, bool utc)
     } else {
         off_hours = off / 60;
         off_mins = abs(off - off_hours * 60);
-        snprintf(&time_str[size], 9, "%+03d'%02d'", off_hours, off_mins);
+        snprintf(&time_str[size], TIME_STR_SIZE-size, "%+03d'%02d'", off_hours, off_mins);
     }
 }
 

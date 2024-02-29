@@ -42,6 +42,9 @@
 extern char *optarg;
 extern int optind;
 #endif
+#if defined(WIN32)
+#include <sys/stat.h>
+#endif
 
 #include "types.h"
 #include "dviclass.h"
@@ -404,11 +407,13 @@ main(int argc, char **argv)
 	int ac;
 	char **av, *enc;
 
-	kpse_set_program_name(argv[0], "dviconcat");
-	enc = kpse_var_value("command_line_encoding");
-	if (get_command_line_args_utf8(enc, &ac, &av)) {
-		argc = ac;
-		argv = av;
+	if (argc>1) {
+		kpse_set_program_name(argv[0], "dviconcat");
+		enc = kpse_var_value("command_line_encoding");
+		if (get_command_line_args_utf8(enc, &ac, &av)) {
+			argc = ac;
+			argv = av;
+		}
 	}
 #endif
 
@@ -465,6 +470,16 @@ usage:
 	 * We write a preamble based on the first input file.
 	 */
 	if (optind >= argc) {
+#if defined(WIN32)
+		if (outf == stdout) {
+			struct stat sti, sto;
+			int fdi = fileno(stdin), fdo = fileno(stdout);
+			if (isatty(fdi) == 0 && fstat(fdi, &sti) == 0 && S_ISFIFO(sti.st_mode)
+				&& isatty(fdo) == 0 && fstat(fdo, &sto) == 0 && S_ISFIFO(sto.st_mode)) {
+				goto usage;
+			}
+		}
+#endif
 	  if (!isatty(fileno(stdin)))
 	    SET_BINARY(fileno(stdin));
 	  else

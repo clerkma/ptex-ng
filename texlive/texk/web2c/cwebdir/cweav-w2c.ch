@@ -17,15 +17,15 @@
 @q Please send comments, suggestions, etc. to tex-k@@tug.org.            @>
 
 @x
-\def\title{CWEAVE (Version 4.9)}
+\def\title{CWEAVE (Version 4.11)}
 @y
-\def\title{CWEAVE (Version 4.9 [\TeX~Live])}
+\def\title{CWEAVE (Version 4.11 [\TeX~Live])}
 @z
 
 @x
-  \centerline{(Version 4.9)}
+  \centerline{(Version 4.11)}
 @y
-  \centerline{(Version 4.9 [\TeX~Live])}
+  \centerline{(Version 4.11 [\TeX~Live])}
 @z
 
 @x
@@ -41,9 +41,9 @@
 @z
 
 @x
-@d banner "This is CWEAVE (Version 4.9)"
+@d banner "This is CWEAVE (Version 4.11)"
 @y
-@d banner "This is CWEAVE, Version 4.9"
+@d banner "This is CWEAVE, Version 4.11"
   /* will be extended by the \TeX~Live |versionstring| */
 @z
 
@@ -60,11 +60,9 @@
 @z
 
 @x
-@d max_refs 30000 /* number of cross-references; must be less than 65536 */
-@d max_scraps 5000 /* number of tokens in \CEE/ texts being parsed */
+@ @d max_refs 30000 /* number of cross-references; must be less than 65536 */
 @y
-@d max_refs 65535 /* number of cross-references; must be less than 65536 */
-@d max_scraps 5000 /* number of tokens in \CEE/ texts being parsed */
+@ @d max_refs 65535 /* number of cross-references; must be less than 65536 */
 @z
 
 @x
@@ -98,9 +96,9 @@
 @z
 
 @x
-    fputs("\n! String too long: ",stdout);
+    printf("%s","\n! String too long: ");
 @y
-    fputs(_("\n! String too long: "),stdout);
+    printf("%s",_("\n! String too long: "));
 @z
 
 @x
@@ -116,9 +114,9 @@
 @z
 
 @x
-  fputs("\n! Section name too long: ",stdout);
+  printf("%s","\n! Section name too long: ");
 @y
-  fputs(_("\n! Section name too long: "),stdout);
+  printf("%s",_("\n! Section name too long: "));
 @z
 
 @x
@@ -176,19 +174,19 @@ if (loc>=limit) err_print(_("! Verbatim string didn't end"));
 @z
 
 @x
-      fputs("\n! Never defined: <",stdout);
-      print_section_name(p); putchar('>'); mark_harmless;
+      printf("%s","\n! Never defined: <");
+      print_section_name(p); putchar('>'); mark_harmless();
 @y
-      fputs(_("\n! Never defined: <"),stdout);
-      print_section_name(p); putchar('>'); mark_harmless;
+      printf("%s",_("\n! Never defined: <"));
+      print_section_name(p); putchar('>'); mark_harmless();
 @z
 
 @x
-      fputs("\n! Never used: <",stdout);
-      print_section_name(p); putchar('>'); mark_harmless;
+      printf("%s","\n! Never used: <");
+      print_section_name(p); putchar('>'); mark_harmless();
 @y
-      fputs(_("\n! Never used: <"),stdout);
-      print_section_name(p); putchar('>'); mark_harmless;
+      printf("%s",_("\n! Never used: <"));
+      print_section_name(p); putchar('>'); mark_harmless();
 @z
 
 @x
@@ -272,38 +270,6 @@ tex_puts("cwebma");
 @i prod.w
 @y
 @i prod-cweave.w
-@z
-
-@x
-@d inner_tok_flag (5*id_flag) /* signifies a token list in `\pb' */
-
-@c
-static void
-print_text( /* prints a token list for debugging; not used in |main| */
-@y
-@d inner_tok_flag (5*id_flag) /* signifies a token list in `\pb' */
-
-@<Predecl...@>=
-#if 0
-static void print_text(text_pointer p);
-#endif
-
-@ @c
-#if 0
-static void
-print_text( /* prints a token list for debugging; not used in |main| */
-@z
-
-@x
-}
-@y
-}
-#endif
-@z
-
-@x
-@ @<Predecl...@>=@+static void print_text(text_pointer p);
-@y
 @z
 
 @x
@@ -445,9 +411,9 @@ else if (cat1==stmt) {
 @z
 
 @x
-  printf("\nTracing after l. %d:\n",cur_line); mark_harmless;
+  printf("\nTracing after l. %d:\n",cur_line); mark_harmless();
 @y
-  printf(_("\nTracing after l. %d:\n"),cur_line); mark_harmless;
+  printf(_("\nTracing after l. %d:\n"),cur_line); mark_harmless();
 @z
 
 @x
@@ -475,15 +441,15 @@ else if (cat1==stmt) {
 @z
 
 @x
-  fputs("\n! Illegal control code in section name: <",stdout);
+  printf("%s","\n! Illegal control code in section name: <");
 @y
-  fputs(_("\n! Illegal control code in section name: <"),stdout);
+  printf("%s",_("\n! Illegal control code in section name: <"));
 @z
 
 @x
-    fputs("\n! C text in section name didn't end: <",stdout);
+    printf("%s","\n! C text in section name didn't end: <");
 @y
-    fputs(_("\n! C text in section name didn't end: <"),stdout);
+    printf("%s",_("\n! C text in section name didn't end: <"));
 @z
 
 @x
@@ -499,9 +465,9 @@ else if (cat1==stmt) {
 @z
 
 @x
-if (show_progress) fputs("\nWriting the output file...",stdout);
+if (show_progress) printf("%s","\nWriting the output file...");
 @y
-if (show_progress) fputs(_("\nWriting the output file..."),stdout);
+if (show_progress) printf("%s",_("\nWriting the output file..."));
 @z
 
 @x
@@ -549,24 +515,9 @@ if (show_progress) fputs(_("\nWriting the output file..."),stdout);
 @z
 
 @x
-if (no_xref) {
-  finish_line();
-  out_str("\\end");
-@.\\end@>
-  finish_line();
-}
+  if (show_progress) printf("%s","\nWriting the index...");
 @y
-if (no_xref) {
-  finish_line();
-  out_str("\\end");
-@.\\end@>
-}
-@z
-
-@x
-  phase=3; if (show_progress) fputs("\nWriting the index...",stdout);
-@y
-  phase=3; if (show_progress) fputs(_("\nWriting the index..."),stdout);
+  if (show_progress) printf("%s",_("\nWriting the index..."));
 @z
 
 @x
@@ -582,21 +533,16 @@ if (no_xref) {
 @z
 
 @x
-@.\\end@>
-  finish_line();
-  fclose(active_file);
-}
+fclose(active_file);
 @y
-@.\\end@>
-}
-finish_line(); fclose(active_file); active_file=tex_file=NULL;
+fclose(active_file); active_file=tex_file=NULL;
 if (check_for_change) @<Update the result when it has changed@>@;
 @z
 
 @x
-  fputs("Done.",stdout);
+  printf("%s","Done.");
 @y
-  fputs(_("Done."),stdout);
+  printf("%s",_("Done."));
 @z
 
 @x
@@ -608,7 +554,7 @@ if (check_for_change) @<Update the result when it has changed@>@;
 @x
   puts("\nMemory usage statistics:");
 @.Memory usage statistics:@>
-  printf("%td names (out of %ld)\n",
+  printf("%td names (out of %ld)\n",@^system dependencies@>
             (ptrdiff_t)(name_ptr-name_dir),(long)max_names);
   printf("%td cross-references (out of %ld)\n",
             (ptrdiff_t)(xref_ptr-xmem),(long)max_refs);
@@ -629,7 +575,7 @@ if (check_for_change) @<Update the result when it has changed@>@;
 @y
   puts(_("\nMemory usage statistics:"));
 @.Memory usage statistics:@>
-  printf(_("%td names (out of %ld)\n"),
+  printf(_("%td names (out of %ld)\n"),@^system dependencies@>
             (ptrdiff_t)(name_ptr-name_dir),(long)max_names);
   printf(_("%td cross-references (out of %ld)\n"),
             (ptrdiff_t)(xref_ptr-xmem),(long)max_refs);
@@ -657,7 +603,7 @@ improved features that have been created by numerous contributors over the
 course of a quarter century.
 
 Care has been taken to keep the original section numbering intact, so this new
-material should nicely integrate with the original ``\&{271.~Index}.''
+material should nicely integrate with the original ``\&{270.~Index}.''
 
 @* Formatting alternatives.
 \.{CWEAVE} indents declarations after old-style function definitions and
@@ -719,7 +665,7 @@ do {
 } while(comparison && !feof(tex_file) && !feof(check_file));
 
 @ Note the superfluous call to |remove| before |rename|.  We're using it to
-get around a bug in some implementations of |rename|.
+get around a bug in some implementations of |rename|.@^system dependencies@>
 
 @<Take appropriate action...@>=
 if(comparison)

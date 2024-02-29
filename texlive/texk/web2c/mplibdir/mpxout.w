@@ -540,7 +540,7 @@ static void mpx_copy_mpto (MPX mpx, FILE *outfile, int textype) {
         res = strncat(res,mpx->bb, strlen(mpx->bb));
       }
       if (c == '\0')
-        res = strncat(res, "\n", 1);
+        res = strcat(res, "\n");
       *s = c;
     } while (*(mpx->tt) != 'e');
     s = res;
@@ -656,11 +656,11 @@ static void mpx_mpto(MPX mpx, char *tmpname, char *mptexpre) {
          mpx_copy_mpto(mpx, outfile, FIRST_VERBATIM_TEX);
       else
          mpx_copy_mpto(mpx, outfile, VERBATIM_TEX);
+      verbatim_written = 1;
       fprintf(outfile,"%s", mpx_postverb[mode]);
     } else {
       mpx_error(mpx,"unmatched etex");
     }
-    verbatim_written = 1;
   }
 }
 

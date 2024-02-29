@@ -1,8 +1,8 @@
 % standard macros for CWEB listings (in addition to plain.tex)
-% Version 4.5 --- October 2021
+% Version 4.9 --- June 2023
 % Modified for proofs in CTWILL
-\ifx\documentstyle\undefined\else\endinput\fi % LaTeX will use other macros
-\xdef\fmtversion{\fmtversion+CWEB4.5+PROOFS}
+\ifx\renewenvironment\undefined\else\endinput\fi % LaTeX will use other macros
+\xdef\fmtversion{\fmtversion+CTWILL4.9+PROOFS}
 
 \let\:=\. % preserve a way to get the dot accent
  % (all other accents will still work as usual)
@@ -115,7 +115,7 @@
   \sfcode`;=1500 \pretolerance 200 \hyphenpenalty 50 \exhyphenpenalty 50
   \noindent{\let\*=\lapstar\bf\secstar.\quad}}
 \let\startsection=\stsec
-\def\defin#1{\global\advance\ind by 2 \1\&{#1 } } % begin `define' or `format'
+\def\defin#1{\global\advance\ind by 2 \1\&{#1 }} % begin `define' or `format'
 \def\A{\note{See also section}} % xref for doubly defined section name
 \def\As{\note{See also sections}} % xref for multiply defined section name
 \def\B{\rightskip=0pt plus 100pt minus 10pt % go into C mode
@@ -128,7 +128,7 @@
 \let\SHC\C % "// short comments" treated like "/* ordinary comments */"
 %\def\C#1{\5\5\quad$\triangleright\,${\cmntfont#1}$\,\triangleleft$}
 %\def\SHC#1{\5\5\quad$\diamond\,${\cmntfont#1}}
-\def\D{\defin{\#define}} % macro definition
+\def\D{\defin{{\rm\#}define}} % macro definition
 \let\E=\equiv % equivalence sign
 \def\ET{ and~} % conjunction between two section numbers
 \def\ETs{, and~} % conjunction between the last two of several section numbers
@@ -136,7 +136,7 @@
 \let\G=\ge % greater than or equal sign
 % \H is long Hungarian umlaut accent
 \let\I=\ne % unequal sign
-\def\J{\.{@\&}} % TANGLE's join operation
+\def\J{\.{@\&}} % CTANGLE's join operation
 \let\K== % assignment operator
 %\let\K=\leftarrow % "honest" alternative to standard assignment operator
 % \L is Polish letter suppressed-L

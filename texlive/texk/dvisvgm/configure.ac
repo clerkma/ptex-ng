@@ -1,8 +1,8 @@
-dnl $Id: configure.ac 66047 2023-02-22 01:49:14Z karl $
+dnl $Id: configure.ac 69453 2024-01-16 18:32:08Z karl $
 dnl Process this file with autoconf to produce a configure script
 dnl for dvisvgm in TeX Live.
 dnl
-dnl   Copyright 2015-2023 Karl Berry <tex-live@tug.org>
+dnl   Copyright 2015-2024 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2009-2014 Peter Breitenlohner <tex-live@tug.org>
 dnl
 dnl   This file is free software; the copyright holder
@@ -10,12 +10,12 @@ dnl   gives unlimited permission to copy and/or distribute it,
 dnl   with or without modifications, as long as this notice is preserved.
 dnl
 dnl  Adapted for TeX Live from original dvisvgm configure.ac
-dnl  Copyright 2005-2023 Martin Gieseking
+dnl  Copyright 2005-2024 Martin Gieseking
 dnl
 AC_PREREQ([2.69])
 m4_include([version.ac])[] dnl define dvisvgm_version
 AC_INIT([dvisvgm (TeX Live)], dvisvgm_version, [tex-k@tug.org])
-DATE="February 2023"
+DATE="January 2024"
 AC_CONFIG_SRCDIR([dvisvgm-src/src/dvisvgm.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIRS([../../m4])dnl not just _DIR
@@ -25,8 +25,6 @@ AC_CONFIG_AUX_DIR([../../build-aux])
 AM_CONDITIONAL([TEXLIVE_BUILD], [test "x$enable_texlive_build" = xyes])
 
 # Common code for all programs using libkpathsea.
-# PROG_AR must be run before KPSE_COMMON, since the latter calls LT_INIT.
-AM_PROG_AR
 KPSE_COMMON([dvisvgm])
 
 AH_TEMPLATE([HOST_SYSTEM], [The machine triplet of the host system])
@@ -36,7 +34,6 @@ AC_DEFINE_UNQUOTED([HOST_SYSTEM], ["$host"])
 AC_PROG_CC
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX([11])
-dnl AM_PROG_AR is above.
 LT_INIT
 KPSE_CXX_HACK
 
@@ -156,7 +153,6 @@ KPSE_RESTORE_FLAGS
 # emacs-page
 # Check for header files.
 AC_HEADER_DIRENT
-AC_HEADER_STDC
 AC_CHECK_HEADERS_ONCE([libintl.h stdlib.h string.h strings.h unistd.h])
 
 # Check for typedefs, structures, and compiler characteristics.

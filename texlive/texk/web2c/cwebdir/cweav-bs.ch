@@ -20,17 +20,17 @@ This file contributed by Barry Schwartz, trashman@crud.mn.org, 28 Jun 94.
 The ``banner line'' defined here should be changed whenever \.{CWEAVE}
 is modified.
 
-@d banner "This is CWEAVE (Version 4.9)"
+@d banner "This is CWEAVE (Version 4.11)"
 @y
 The ``banner line'' defined here should be changed whenever \.{CWEAVE}
 is modified.
 
-@d banner "This is CWEAVE (Version 4.9pc/big)"
+@d banner "This is CWEAVE (Version 4.11pc/big)"
 @z
 
 
-@x Section 10.
-  for section names */
+@x Section 11.
+@d ilk dummy.Ilk /* used by \.{CWEAVE} only */
 
 @<Common code...@>=
 typedef struct name_info {
@@ -39,7 +39,7 @@ typedef struct name_info {
   union {
     struct name_info *Rlink; /* right link in binary search tree for section
       names */
-    char Ilk; /* used by identifiers in \.{CWEAVE} only */
+    eight_bits Ilk; /* used by identifiers in \.{CWEAVE} only */
   } dummy;
   void *equiv_or_xref; /* info corresponding to names */
 } name_info; /* contains information about an identifier or section name */
@@ -51,11 +51,8 @@ extern char *byte_ptr; /* first unused position in |byte_mem| */
 extern name_info name_dir[]; /* information about names */
 extern name_pointer name_dir_end; /* end of |name_dir| */
 extern name_pointer name_ptr; /* first unused position in |name_dir| */
-extern name_pointer hash[]; /* heads of hash lists */
-extern hash_pointer hash_end; /* end of |hash| */
-extern hash_pointer h; /* index into hash-head array */
 @y
-  for section names */
+@d ilk dummy.Ilk /* used by \.{CWEAVE} only */
 
 @f huge extern
 
@@ -66,7 +63,7 @@ typedef struct name_info {
   union {
     struct name_info *Rlink; /* right link in binary search tree for section
       names */
-    char Ilk; /* used by identifiers in \.{CWEAVE} only */
+    eight_bits Ilk; /* used by identifiers in \.{CWEAVE} only */
   } dummy;
   union {
     char *equiv_member;
@@ -81,9 +78,6 @@ extern name_info name_dir[]; /* information about names */
 extern name_pointer name_dir_end; /* end of |name_dir| */
 extern name_pointer name_ptr; /* first unused position in |name_dir| */
 extern char huge* byte_ptr; /* first unused position in |byte_mem| */
-extern name_pointer hash[]; /* heads of hash lists */
-extern hash_pointer hash_end; /* end of |hash| */
-extern hash_pointer h; /* index into hash-head array */
 @z
 
 
@@ -146,6 +140,7 @@ static text_pointer tok_start_end; /* end of |tok_start| */
 static text_pointer text_ptr; /* first unused position in |tok_start| */
 @z
 
+
 @x Section 31. (goes with the previous change)
 tok_ptr=max_tok_ptr=tok_mem+1;@/
 tok_start[0]=tok_start[1]=tok_mem+1;@/
@@ -187,39 +182,35 @@ max_tok_ptr=tok_mem+1; max_text_ptr=tok_start+1;
 
 
 @x Section 97.
-  char *k, *k_end=(p+1)->byte_start; /* pointers into |byte_mem| */
-  out('{');
-  for (k=p->byte_start; k<k_end; k++) {
+  char *k; /* pointer into |byte_mem| */
 @y
-  char huge* k, huge* k_end=(p+1)->byte_start; /* pointers into |byte_mem| */
-  out('{');
-  for (k=p->byte_start; k<k_end; k++) {
+  char huge* *k; /* pointer into |byte_mem| */
 @z
 
 
-@x Section 218.
+@x Section 217.
   char *p; /* index into |byte_mem| */
 @y
   char huge *p; /* index into |byte_mem| */
 @z
 
 
-@x Section 253.
+@x Section 252.
     if (cur_name->xref!=(void *)xmem) {
 @y
     if (cur_name->xref!=(void huge*)xmem) {
 @z
 
 
-@x Section 255.
+@x Section 254.
 static char *cur_byte; /* index into |byte_mem| */
 @y
 static char huge* cur_byte; /* index into |byte_mem| */
 @z
 
 
-@x Section 264.
-switch (cur_name->ilk) {@+char *j;@+@t}\6{\4@>
+@x Section 263.
+switch (cur_name->ilk) {@+char *p; /* index into |byte_mem| */@+@t}\6{\4@>
 @y
-switch (cur_name->ilk) {@+char huge* j;@+@t}\6{\4@>
+switch (cur_name->ilk) {@+char huge* p; /* index into |byte_mem| */@+@t}\6{\4@>
 @z

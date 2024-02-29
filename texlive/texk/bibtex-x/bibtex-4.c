@@ -2818,7 +2818,17 @@ BEGIN
           case UBLOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_D:
           case UBLOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_E:
           case UBLOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_F:
+#if defined(U_ICU_VERSION_MAJOR_NUM)
+#if U_ICU_VERSION_MAJOR_NUM > 65
           case UBLOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_G:
+#endif
+#if U_ICU_VERSION_MAJOR_NUM > 71
+          case UBLOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_H:
+#endif
+#if U_ICU_VERSION_MAJOR_NUM > 73
+          case UBLOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_I:
+#endif
+#endif
             string_width |= 0x001;
             break;
       /* kana */
@@ -2826,8 +2836,14 @@ BEGIN
           case UBLOCK_KATAKANA:
           case UBLOCK_KATAKANA_PHONETIC_EXTENSIONS:
           case UBLOCK_KANA_EXTENDED_A:
+#if defined(U_ICU_VERSION_MAJOR_NUM)
+#if U_ICU_VERSION_MAJOR_NUM > 69
           case UBLOCK_KANA_EXTENDED_B:
+#endif
+#if U_ICU_VERSION_MAJOR_NUM > 63
           case UBLOCK_SMALL_KANA_EXTENSION:
+#endif
+#endif
             string_width |= 0x002;
             break;
       /* hangul */

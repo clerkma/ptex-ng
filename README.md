@@ -1,7 +1,7 @@
 
 ## Build Status
 
-[![Travis-CI Build Status](https://app.travis-ci.com/clerkma/ptex-ng.svg?branch=master)](https://app.travis-ci.com/github/clerkma/ptex-ng)
+![pTeX-ng Workflow](https://github.com/clerkma/ptex-ng/actions/workflows/build-bin.yml/badge.svg)
 [![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/clerkma/ptex-ng?branch=master&svg=true)](https://ci.appveyor.com/project/clerkma/ptex-ng)
 
 ## How to Build
@@ -29,9 +29,8 @@ Run the shell script:
 
 ## Source
 
-* TeX Live 2023/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
-* libotf 0.9.16 (`http://cvs.savannah.gnu.org/viewvc/libotf/?root=m17n`)
-* mruby 3.1.0 (`http://mruby.org/downloads/`)
+* TeX Live 2024/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
+* mruby 3.2.0 (`http://mruby.org/downloads/`)
 
 ## How to Install
 

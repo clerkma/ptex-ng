@@ -1,23 +1,38 @@
 #! /bin/sh -vx
-# $Id: dvidvi.test 57800 2021-02-19 16:45:39Z karl $
+# $Id: dvidvi.test 68031 2023-08-23 14:53:12Z takuji $
 # Copyright 2017-2021 Karl Berry <tex-live@tug.org>
 # Copyright 2011 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_dvidvi=$BinDir/dvidvi$ExeExt
+
+# pre-generated test results in the repository are stored in LF
+# but the output might be written in CRLF on some platform.
+# if 'diff --strip-trailing-cr' is available, exploit it.
+# (useful for tests on win32 binaries run on MSYS shell)
+DIFF="diff"
+$DIFF --strip-trailing-cr $0 $0 \
+  && DIFF="diff --strip-trailing-cr" || echo
+
+TEXMFCNF=$srcdir/../kpathsea; export TEXMFCNF
+
 rm -rf play*
 cp $srcdir/tests/play.dvi .
-./dvidvi -f 5 -l @25 -m'4:-3,0(6,0)' play playout 2>playout.2
+$_dvidvi -f 5 -l @25 -m'4:-3,0(6,0)' play playout 2>playout.2
 #
 # Eliminate version number for the comparison.
 grep -v '^This is dvidvi' playout.2 \
-| diff - $srcdir/tests/playout.2 \
+| $DIFF - $srcdir/tests/playout.2 \
 || exit 1
 
 rm -rf play*
 cp $srcdir/tests/playtate.dvi .
-./dvidvi -f 5 -l @25 -m'4:-3,0(6,0)' playtate playout 2>playout.3
+$_dvidvi -f 5 -l @25 -m'4:-3,0(6,0)' playtate playout 2>playout.3
 #
 grep -v '^This is dvidvi' playout.3 \
-| diff - $srcdir/tests/playout.3 \
-|| exit 1
+| $DIFF - $srcdir/tests/playout.3 \
+|| exit 2
 
+exit 0

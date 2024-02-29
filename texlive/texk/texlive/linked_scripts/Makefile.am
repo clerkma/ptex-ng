@@ -1,4 +1,4 @@
-## $Id: Makefile.am 66777 2023-04-05 20:09:08Z karl $
+## $Id: Makefile.am 69786 2024-02-10 23:22:21Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2023 Karl Berry <tex-live@tug.org>
@@ -99,6 +99,7 @@ texmf_shell_scripts = \
 	typeoutfileinfo/typeoutfileinfo.sh \
 	wordcount/wordcount.sh
 
+# 
 texmf_other_scripts = \
 	a2ping/a2ping.pl \
 	accfonts/mkt1font \
@@ -111,6 +112,7 @@ texmf_other_scripts = \
 	bib2gls/bib2gls.sh \
 	bib2gls/convertgls2bib.sh \
 	bibcop/bibcop.pl \
+	bibtexperllibs/ltx2unitxt \
 	bundledoc/arlatex \
 	bundledoc/bundledoc \
 	cachepic/cachepic.tlu \
@@ -137,7 +139,9 @@ texmf_other_scripts = \
 	dosepsbin/dosepsbin.pl \
 	dviasm/dviasm.py \
 	dviinfox/dviinfox.pl \
+	easydtx/edtx2dtx.pl \
 	ebong/ebong.py \
+	eolang/eolang.pl \
 	epspdf/epspdf.tlu \
 	epspdf/epspdftk.tcl \
 	epstopdf/epstopdf.pl \
@@ -181,6 +185,10 @@ texmf_other_scripts = \
 	make4ht/make4ht \
 	match_parens/match_parens \
 	mathspic/mathspic.pl \
+	memoize/memoize-clean.pl \
+	memoize/memoize-clean.py \
+	memoize/memoize-extract.pl \
+	memoize/memoize-extract.py \
 	mf2pt1/mf2pt1.pl \
 	mkgrkindex/mkgrkindex \
 	mkjobtexmf/mkjobtexmf.pl \
@@ -211,12 +219,14 @@ texmf_other_scripts = \
 	pythontex/depythontex.py \
 	pythontex/pythontex.py \
 	rubik/rubikrotation.pl \
+	runtexshebang/runtexshebang.lua \
 	spix/spix.py \
 	splitindex/splitindex.pl \
 	srcredact/srcredact.pl \
 	sty2dtx/sty2dtx.pl \
 	svn-multi/svn-multi.pl \
 	tex4ebook/tex4ebook \
+	texblend/texblend \
 	texcount/texcount.pl \
 	texdef/texdef.pl \
 	texdiff/texdiff \

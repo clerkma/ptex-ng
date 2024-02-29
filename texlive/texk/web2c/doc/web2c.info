@@ -1,10 +1,10 @@
-This is web2c.info, produced by makeinfo version 6.5 from web2c.texi.
+This is web2c.info, produced by makeinfo version 6.7 from web2c.texi.
 
 This file documents the installation and use of the programs in Web2c,
 an implementation of Donald Knuth's TeX system.
 
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2007, 2008, 2009, 2010-2022 Karl Berry & Olaf Weber.
+2005, 2007, 2008, 2009, 2010-2023 Karl Berry & Olaf Weber.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -58,7 +58,7 @@ Web2c
 
 This document describes how to install and use the programs in the Web2c
 implementation of the TeX system, especially for Unix systems.  It
-corresponds to Web2c version 2023, released in February 2022.
+corresponds to Web2c version 2024, released in March 2024.
 
 * Menu:
 
@@ -83,8 +83,8 @@ File: web2c.info,  Node: Introduction,  Next: Installation,  Prev: Top,  Up: Top
 1 Introduction
 **************
 
-This manual corresponds to version 2023 of Web2c, released in February
-2022.
+This manual corresponds to version 2024 of Web2c, released in March
+2024.
 
    "Web2c" (also spelled Web2C) is the name of a TeX implementation,
 originally for Unix, but now also running under Windows and other
@@ -500,7 +500,9 @@ common:
 '-output-directory=DIRNAME'
      Specify the directory DIRNAME to which output files are written.
      Also look for input files in DIRNAME first, before looking along
-     the normal search path.  *Note Output file location::.
+     the normal search path.  Input files are only looked for as
+     specified; no default extension is added.  *Note Output file
+     location::.
 
 '-parse-first-line'
 '-no-parse-first-line'
@@ -568,29 +570,68 @@ File: web2c.info,  Node: Output file location,  Prev: Path searching,  Up: Commo
 3.4 Output file location
 ========================
 
-All the programs generally follow the usual convention for output files.
-Namely, they are placed in the directory current when the program is
+All the programs generally follow the usual convention for output files;
+namely, they are placed in the directory current when the program is
 run, regardless of any input file location; or, in a few cases, output
-is to standard output.
+is to standard output.  The main programs (TeX, Metafont, MetaPost)
+provide several ways to override this, as explained below.
 
-   For example, if you run 'tex /tmp/foo', for example, the output will
-be in './foo.dvi' and './foo.log', not '/tmp/foo.dvi' and
-'/tmp/foo.log'.
+   For example, if you run 'tex /tmp/foo', by default the output will be
+in './foo.dvi' and './foo.log', not '/tmp/foo.dvi' and '/tmp/foo.log'.
 
-   You can use the '-output-directory' option to cause all output files
-that would normally be written in the current directory to be written in
-the specified directory instead.  *Note Common options::.
+   An explicitly-given output location is also checked for input files,
+as TeX often generates files that need to be subsequently read.  For
+input, the input filename is simply checked as given.  No suffixes, such
+as '.tex', are added by default, and no exhaustive path searching is
+done.
 
-   If the current directory is not writable, and '-output-directory' is
-not specified, the main programs (TeX, Metafont, MetaPost, and BibTeX)
-make an exception: if the config file or environment variable value
-'TEXMFOUTPUT' is set (it is not by default), output files are written to
-the directory specified.
+Override 1: '-output-directory' option
+--------------------------------------
 
-   'TEXMFOUTPUT' is also checked for input files, as TeX often generates
-files that need to be subsequently read; for input, no suffixes (such as
-'.tex') are added by default and no exhaustive path searching is done,
-the input name is simply checked as given.
+If the '-output-directory' option is specified, all output files that
+would normally be written in the current directory are written in the
+specified directory instead.  *Note Common options::.
+
+Override 2: 'TEXMF_OUTPUT_DIRECTORY' environment variable
+---------------------------------------------------------
+
+Furthermore, if the '-output-directory' option is specified, its
+argument is saved in the environment variable 'TEXMF_OUTPUT_DIRECTORY'.
+This is for the benefit of any subprograms that might be called via
+'\write18' (*note Shell escapes::), such as 'kpsewhich' (*note
+(kpathsea)Invoking kpsewhich::).  (This feature was added in TeX Live
+2024.)
+
+   If the '-output-directory' option is not specified, but the
+environment variable 'TEXMF_OUTPUT_DIRECTORY' is set, then the
+environment variable value is used just as if it had been given to the
+option.
+
+   Warning: we most strongly recommend always setting
+'TEXMF_OUTPUT_DIRECTORY' temporarily, for a given run.  It has great
+potential for confusion, since with it set, output files will not be in
+the expected place.  To reduce this chance somewhat,
+'TEXMF_OUTPUT_DIRECTORY' must be set in the environment, not a
+configuration file.
+
+Override 3: 'TEXMFOUTPUT' environment variable
+----------------------------------------------
+
+Finally, if neither '-output-directory' nor 'TEXMF_OUTPUT_DIRECTORY' is
+set, _and_ an output file is not writable, then the main programs (TeX,
+Metafont, MetaPost), plus BibTeX for this one case, make an exception:
+if the config file or environment variable value 'TEXMFOUTPUT' is set
+(it is not by default), the output file is written to the directory
+specified.  Usually this is because the current directory is not
+writable, and thus all output files are written to 'TEXMFOUTPUT', but
+technically it works on a file-by-file basis.
+
+   None of these explicitly-given output locations are checked until
+(and unless) the program actually needs to write a file.  For example,
+the invocation
+'tex --output-directory=/nonesuch \\end'
+won't generate an error until TeX tries to write the log file:
+'! I can't write on file `texput.log'.'.
 
 
 File: web2c.info,  Node: Three programs,  Next: TeX,  Prev: Commonalities,  Up: Top
@@ -1042,7 +1083,7 @@ argument begins with a TeX escape character (usually '\'), TeX processes
 all non-option command-line arguments as a line of regular TeX input.
 
    If no arguments or options are specified, TeX prompts for an input
-file name with '**'.
+filename with '**'.
 
    TeX writes the main DVI output to the file 'BASETEXNAME.dvi', where
 BASETEXNAME is the basename of TEXNAME, or 'texput' if no input file was
@@ -1147,7 +1188,7 @@ the log file has not yet been opened.
 '-src-specials=STRING'
      This option makes TeX output specific source information using
      '\special' commands in the DVI file.  These '\special' track the
-     current file name and line number.
+     current filename and line number.
 
      Using the first form of this option, the '\special' commands are
      inserted automatically.
@@ -1573,10 +1614,10 @@ available to TeX.
 be used in the argument to '\write18' where quoting of arguments is
 needed, as in the example above.  This is to achieve some measure of
 system independence.  On Unix systems, these are replaced with single
-quote (') characters to avoid insecure further expansion.  Care is also
-taken on Windows to avoid additional expansions (from, e.g., `...`).
+quote (') characters to avoid insecure further expansion (from, e.g.,
+`...`).  Care is also taken on Windows to avoid additional expansions.
 Mismatched quotation marks in the command string result in a diagnostic
-message in the log file; no execution is performed.
+message in the log file, and no execution is performed.
 
    After quotation processing, if the first word (delimited by a space
 or tab) of the command is in the list specified by the
@@ -1585,8 +1626,8 @@ Otherwise it is not.  In any case, a message is written to the log file.
 
    The 'shell_escape_commands' value is a comma-separated list of words.
 Whitespace is significant, and typically should not be present.  The
-default definition in 'texmf.cnf' looks like this, but with more
-commands included:
+default definition in 'texmf.cnf' looks like this, with more commands
+included:
 
      shell_escape_commands = bibtex,kpsewhich,repstopdf,...
 
@@ -1599,9 +1640,13 @@ if they are enabled with restrictions.
 
    The purpose of this feature is to make it possible for TeX documents
 to perform useful external actions in the common case of an individual
-user running a known document on his or her own machine.  In such
-environments as CGI scripts or wikis where the input has to be
+user running a known document on his or her own machine.  In
+environments such as CGI scripts or wikis where the input has to be
 considered untrustworthy, shell escapes should be completely disabled.
+
+   Programs intended to be called from TeX in restricted should
+implement the "paranoid" safety measures regarding output files that TeX
+itself does.  *Note (kpathsea)Calling sequence::.
 
 
 File: web2c.info,  Node: IPC and TeX,  Next: TeX extensions,  Prev: Shell escapes,  Up: TeX
@@ -3566,7 +3611,7 @@ Index
                                                               (line  59)
 * --with-x:                              Online Metafont graphics.
                                                               (line  57)
-* -8bit:                                 Common options.      (line 110)
+* -8bit:                                 Common options.      (line 112)
 * -base=BASE:                            Determining the memory dump to use.
                                                               (line  15)
 * -base=DUMPNAME:                        Common options.      (line  39)
@@ -3613,21 +3658,21 @@ Index
 * -no-file-line-error:                   Common options.      (line  31)
 * -no-mktex=FILETYPE:                    tex invocation.      (line 103)
 * -no-mktex=FILETYPE <1>:                mf invocation.       (line  87)
-* -no-parse-first-line:                  Common options.      (line  77)
+* -no-parse-first-line:                  Common options.      (line  79)
 * -no-shell-escape:                      tex invocation.      (line 121)
 * -output-comment=STRING:                tex invocation.      (line 113)
 * -output-directory:                     Common options.      (line  71)
 * -output-directory <1>:                 Output file location.
-                                                              (line  15)
+                                                              (line  24)
 * -output-level=N:                       dvitype invocation.  (line  36)
 * -overflow-label-offset=POINTS:         gftodvi invocation.  (line  59)
 * -page-start=PAGE-SPEC:                 dvicopy invocation.  (line  28)
 * -page-start=PAGE-SPEC <1>:             dvitype invocation.  (line  46)
-* -parse-first-line:                     Common options.      (line  76)
-* -progname=STRING:                      Common options.      (line  82)
+* -parse-first-line:                     Common options.      (line  78)
+* -progname=STRING:                      Common options.      (line  84)
 * -progname=STRING <1>:                  Determining the memory dump to use.
                                                               (line  17)
-* -recorder:                             Common options.      (line  89)
+* -recorder:                             Common options.      (line  91)
 * -shell-escape:                         tex invocation.      (line 120)
 * -shell-restricted:                     tex invocation.      (line 122)
 * -show-opcodes:                         dvitype invocation.  (line  52)
@@ -3636,7 +3681,7 @@ Index
 * -T:                                    mpost invocation.    (line 111)
 * -terse:                                bibtex invocation.   (line  28)
 * -tex=TEXPROGRAM:                       mpost invocation.    (line 114)
-* -translate-file=TCXFILE:               Common options.      (line 103)
+* -translate-file=TCXFILE:               Common options.      (line 105)
 * -troff:                                mpost invocation.    (line 111)
 * -underline:                            tangle invocation.   (line  41)
 * -uppercase:                            tangle invocation.   (line  35)
@@ -3655,7 +3700,7 @@ Index
 * .mps files and PDF:                    mpost invocation.    (line  82)
 * .NNN PostScript figures:               mpost invocation.    (line  31)
 * .NNNgf generic fonts:                  mf invocation.       (line  34)
-* .tcx character translation files:      Common options.      (line 103)
+* .tcx character translation files:      Common options.      (line 105)
 * .tcx character translation files <1>:  TCX files.           (line   6)
 * .tex:                                  tex invocation.      (line  20)
 * .tfm output:                           mf invocation.       (line  43)
@@ -3669,8 +3714,8 @@ Index
                                                               (line   6)
 * 64-bit architecture:                   Hardware and memory dumps.
                                                               (line   6)
-* 8 bit clean:                           Common options.      (line 110)
-* 8 bit clean output, specifying:        Common options.      (line 110)
+* 8 bit clean:                           Common options.      (line 112)
+* 8 bit clean output, specifying:        Common options.      (line 112)
 * 8-bit characters:                      TCX files.           (line   6)
 * \bibliography:                         bibtex invocation.   (line  18)
 * \bibliographystyle:                    bibtex invocation.   (line  18)
@@ -3700,6 +3745,8 @@ Index
 * \tracingcharsubdef and MLTeX:          \tracingcharsubdef.  (line   6)
 * \tracinglostchars and MLTeX:           \tracingcharsubdef.  (line  11)
 * \write18 shell escape extension:       Shell escapes.       (line   6)
+* \write18, output location for:         Output file location.
+                                                              (line  31)
 * ^^ notation, avoiding:                 TCX files.           (line  87)
 * ~ expansion in filenames:              \input filename caveats.
                                                               (line  17)
@@ -3763,7 +3810,7 @@ Index
                                                               (line   6)
 * BigEndian machines:                    Hardware and memory dumps.
                                                               (line   6)
-* binaries, linking:                     Common options.      (line  82)
+* binaries, linking:                     Common options.      (line  84)
 * blank lines, in TCX files:             TCX files.           (line  66)
 * boxes, memory for:                     Runtime options.     (line  20)
 * braced filename for \input:            \input braced filename.
@@ -3925,10 +3972,10 @@ Index
 * FAMILY property <1>:                   tftopl invocation.   (line  99)
 * Ferguson, Michael:                     MLTeX.               (line   6)
 * file formats for fonts:                Font file formats.   (line   6)
-* file recorder:                         Common options.      (line  89)
+* file recorder:                         Common options.      (line  91)
 * filename conventions, in input files:  \input filenames.    (line   6)
 * filenames starting with -:             Option conventions.  (line  19)
-* first line of the main input file:     Common options.      (line 103)
+* first line of the main input file:     Common options.      (line 105)
 * fixed-point arithmetic:                Compile-time options.
                                                               (line  21)
 * FIXPT:                                 Compile-time options.
@@ -4040,6 +4087,8 @@ Index
 * initial TeX:                           Initial TeX.         (line   6)
 * initializations, lengthy:              Initial and virgin.  (line  19)
 * input filenames:                       \input filenames.    (line   6)
+* input from the output directory:       Output file location.
+                                                              (line  15)
 * install-bases Make target:             Additional targets.  (line  28)
 * install-fmts Make target:              Additional targets.  (line  24)
 * install-formats Make target:           Additional targets.  (line  17)
@@ -4076,7 +4125,7 @@ Index
 * LIG property:                          tftopl invocation.   (line 101)
 * ligature table, in TFM files:          tftopl invocation.   (line 101)
 * LIGTABLE property:                     tftopl invocation.   (line 101)
-* linking binaries:                      Common options.      (line  82)
+* linking binaries:                      Common options.      (line  84)
 * links to binaries:                     Determining the memory dump to use.
                                                               (line  30)
 * literate programming:                  WEB.                 (line   6)
@@ -4208,7 +4257,7 @@ Index
 * origin:                                pktype invocation.   (line  66)
 * output directory, specifying:          Common options.      (line  71)
 * output directory, specifying <1>:      Output file location.
-                                                              (line  15)
+                                                              (line  24)
 * output file location:                  Output file location.
                                                               (line   6)
 * output files, written by TeX programs: tex invocation.      (line  48)
@@ -4218,7 +4267,7 @@ Index
 * packet length:                         pktype invocation.   (line  50)
 * page, starting:                        dvicopy invocation.  (line  28)
 * page, starting <1>:                    dvitype invocation.  (line  46)
-* parsing the first line:                Common options.      (line  77)
+* parsing the first line:                Common options.      (line  79)
 * Pascal, creating from WEB:             tangle invocation.   (line   6)
 * patgen:                                patgen invocation.   (line   6)
 * path searching:                        Path searching.      (line   6)
@@ -4284,7 +4333,7 @@ Index
 * program name, determines memory dump:  Determining the memory dump to use.
                                                               (line  30)
 * program names, special:                Common options.      (line  50)
-* program names, special <1>:            Common options.      (line  82)
+* program names, special <1>:            Common options.      (line  84)
 * program names, special <2>:            tex invocation.      (line 108)
 * prologues:                             mpost invocation.    (line 111)
 * prologues, and EPSF output:            mpost invocation.    (line  76)
@@ -4303,11 +4352,13 @@ Index
 * quoted filename for \input:            \input quoted filename.
                                                               (line   6)
 * Raichle, Bernd:                        MLTeX.               (line   6)
+* reading from the output directory:     Output file location.
+                                                              (line  15)
 * reading, additional:                   Introduction.        (line  72)
 * readonly directory, running TeX in:    Output file location.
-                                                              (line  15)
+                                                              (line  53)
 * readonly directory, running TeX in <1>: Output file location.
-                                                              (line  19)
+                                                              (line  53)
 * reallocation of arrays:                Runtime options.     (line  45)
 * recursive expansion limit:             Runtime options.     (line  25)
 * redefined character substitutions:     \tracingcharsubdef.  (line   6)
@@ -4425,11 +4476,11 @@ Index
 * texmf.cnf for shell escapes:           Shell escapes.       (line   6)
 * texmfmp.c:                             Online Metafont graphics.
                                                               (line  79)
-* TEXMFOUTPUT, used for reading:         Output file location.
-                                                              (line  25)
 * TEXMFOUTPUT, used if . unwritable:     Output file location.
-                                                              (line  19)
+                                                              (line  53)
 * texmf_casefold_search:                 Runtime options.     (line  42)
+* TEXMF_OUTPUT_DIRECTORY:                Output file location.
+                                                              (line  31)
 * texput:                                tex invocation.      (line  33)
 * TFM files, converting property lists to: pltotf invocation. (line   6)
 * TFM files, explained:                  Font file formats.   (line  12)
@@ -4449,7 +4500,7 @@ Index
 * toolkits, X:                           Online Metafont graphics.
                                                               (line  59)
 * torture tests:                         Triptrap.            (line   6)
-* translation file for TeX, specifying:  Common options.      (line 103)
+* translation file for TeX, specifying:  Common options.      (line 105)
 * translation from WEB to C:             Introduction.        (line  18)
 * trap Make target:                      Additional targets.  (line  41)
 * trap test:                             Triptrap.            (line   6)
@@ -4553,77 +4604,82 @@ Index
 
 Tag Table:
 Node: Top2759
-Node: Introduction3834
-Node: Installation7593
-Node: configure options9637
-Node: Compile-time options11659
-Node: Additional targets12761
-Node: Triptrap14038
-Node: Commonalities15541
-Node: Option conventions16198
-Node: Common options17421
-Node: Path searching22039
-Node: Output file location23011
-Node: Three programs24313
-Node: Runtime options25020
-Node: Initial and virgin28161
-Node: Memory dumps29110
-Node: Creating memory dumps29562
-Node: Determining the memory dump to use30769
-Node: Hardware and memory dumps32346
-Node: Editor invocation35096
-Node: \input filenames35959
-Node: \input quoted filename37510
-Node: \input braced filename38287
-Node: \input filename caveats39217
-Node: TeX40731
-Node: tex invocation41899
-Node: Initial TeX48885
-Node: Formats50249
-Node: Languages and hyphenation53066
-Node: MLTeX53496
-Node: \charsubdef55124
-Node: \tracingcharsubdef57447
-Node: TCX files58022
-Node: patgen invocation63462
-Node: Shell escapes64169
-Node: IPC and TeX67749
-Node: TeX extensions68319
-Node: Metafont71100
-Node: mf invocation72388
-Node: Initial Metafont76225
-Node: Modes77855
-Node: Online Metafont graphics80105
-Node: gftodvi invocation83530
-Node: mft invocation86350
-Node: MetaPost90348
-Node: mpost invocation91184
-Node: Initial MetaPost96220
-Node: dvitomp invocation97142
-Node: BibTeX97807
-Node: bibtex invocation98168
-Node: Basic BibTeX style files100642
-Node: WEB101972
-Node: tangle invocation103181
-Node: weave invocation105305
-Node: pooltype invocation106712
-Node: DVI utilities107842
-Node: dvicopy invocation108776
-Node: dvitype invocation110061
-Node: dvitype output example112392
-Node: Font utilities115445
-Node: Font file formats116625
-Node: gftopk invocation119892
-Node: pktogf invocation121083
-Node: pktype invocation122249
-Node: gftype invocation125072
-Node: tftopl invocation129575
-Node: pltotf invocation134168
-Node: vftovp invocation135219
-Node: vptovf invocation137454
-Node: Font utilities available elsewhere138481
-Node: Legalisms140686
-Node: References142133
-Node: Index146266
+Node: Introduction3831
+Node: Installation7587
+Node: configure options9631
+Node: Compile-time options11653
+Node: Additional targets12755
+Node: Triptrap14032
+Node: Commonalities15535
+Node: Option conventions16192
+Node: Common options17415
+Node: Path searching22121
+Node: Output file location23093
+Node: Three programs26218
+Node: Runtime options26925
+Node: Initial and virgin30066
+Node: Memory dumps31015
+Node: Creating memory dumps31467
+Node: Determining the memory dump to use32674
+Node: Hardware and memory dumps34251
+Node: Editor invocation37001
+Node: \input filenames37864
+Node: \input quoted filename39415
+Node: \input braced filename40192
+Node: \input filename caveats41122
+Node: TeX42636
+Node: tex invocation43804
+Node: Initial TeX50788
+Node: Formats52152
+Node: Languages and hyphenation54969
+Node: MLTeX55399
+Node: \charsubdef57027
+Node: \tracingcharsubdef59350
+Node: TCX files59925
+Node: patgen invocation65365
+Node: Shell escapes66072
+Node: IPC and TeX69840
+Node: TeX extensions70410
+Node: Metafont73191
+Node: mf invocation74479
+Node: Initial Metafont78316
+Node: Modes79946
+Node: Online Metafont graphics82196
+Node: gftodvi invocation85621
+Node: mft invocation88441
+Node: MetaPost92439
+Node: mpost invocation93275
+Node: Initial MetaPost98311
+Node: dvitomp invocation99233
+Node: BibTeX99898
+Node: bibtex invocation100259
+Node: Basic BibTeX style files102733
+Node: WEB104063
+Node: tangle invocation105272
+Node: weave invocation107396
+Node: pooltype invocation108803
+Node: DVI utilities109933
+Node: dvicopy invocation110867
+Node: dvitype invocation112152
+Node: dvitype output example114483
+Node: Font utilities117536
+Node: Font file formats118716
+Node: gftopk invocation121983
+Node: pktogf invocation123174
+Node: pktype invocation124340
+Node: gftype invocation127163
+Node: tftopl invocation131666
+Node: pltotf invocation136259
+Node: vftovp invocation137310
+Node: vptovf invocation139545
+Node: Font utilities available elsewhere140572
+Node: Legalisms142777
+Node: References144224
+Node: Index148357
 
 End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:

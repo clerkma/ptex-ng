@@ -1,9 +1,9 @@
 #! /bin/sh
-# $Id: reautoconf 59748 2021-06-29 01:19:16Z karl $
+# $Id: reautoconf 69342 2024-01-07 21:44:58Z karl $
 # This "reautoconf" script at the root of the TeX Live source tree 
 # runs autoreconf (from PATH) in all relevant TL directories.
 #
-# Copyright 2008-2021 Karl Berry.
+# Copyright 2008-2023 Karl Berry.
 # Copyright 2004-2009 Peter Breitenlohner.
 # Copyright 2005 Olaf Weber.
 #
@@ -29,20 +29,17 @@ usage="Usage: $0 [OPTION]... [DIR]...
   By default, also pass -Wno-obsolete, because Autoconf 2.70
   and later deprecated many widely used macros. See Build/m4/README for
   a lengthy discussion of this. To see the obsolete warnings (perhaps
-  because you want to spend time fixing them), use --warn-obsolete here.
+  because you want to spend time fixing them), use --warn-obsolete.
 
 Options:
+  -f, --force     pass --force to autoreconf
   -h, --help      display this help and exit successfully
   -n, --dry-run   don't run any commands; just print them
   -q, --quiet     don't echo commands
   -v, --verbose   verbosely report processing (default)
       --warn-obsolete  do not pass -Wno-obsolete
 
-Environment variables:
-  TL_AUTOCONF:   program to use instead of autoconf from PATH
-  TL_AUTOHEADER: program to use instead of autoheader from PATH
-  TL_AUTOMAKE:   program to use instead of automake from PATH
-  TL_ACLOCAL:    program to use instead of aclocal from PATH
+All programs are found along PATH.
 
 This script should be invoked only from the top level of the TeX Live
 source tree.
@@ -50,11 +47,12 @@ source tree.
 Report bugs (and any other discussion) to:
   tlbuild@tug.org (https://lists.tug.org/tlbuild)
 
-Version: $Id: reautoconf 59748 2021-06-29 01:19:16Z karl $
+Version: $Id: reautoconf 69342 2024-01-07 21:44:58Z karl $
 "
 
 do_cmd=eval
 do_say=echo
+force=
 verbose=-v
 warn_obsolete=-Wno-obsolete
 
@@ -63,6 +61,7 @@ list=
 for option
 do
   case $option in
+    -f | --force) force=--force              ;;
     -h | --help | --version) echo "$usage"; exit 0 ;;
     -n | --dry-run)  do_cmd=:                ;;
     -q | --quiet)    do_say=:;    verbose=   ;;
@@ -81,33 +80,24 @@ if test ! -f ./m4/kpse-setup.m4; then
   exit 1
 fi
 
-: ${TL_AUTOCONF=autoconf}
-echo "$0: using \"$TL_AUTOCONF\" = `$TL_AUTOCONF --version | sed 1q`"
-: ${TL_AUTOHEADER=autoheader}
-echo "$0: using \"$TL_AUTOHEADER\" = `$TL_AUTOHEADER --version | sed 1q`"
-: ${TL_AUTOMAKE=automake}
-echo "$0: using \"$TL_AUTOMAKE\" = `$TL_AUTOMAKE --version | sed 1q`"
-: ${TL_ACLOCAL=aclocal}
-echo "$0: using \"$TL_ACLOCAL\" = `$TL_ACLOCAL --version | sed 1q`"
-echo "$0:       if you want to use different versions, set TL_AUTOCONF,"
-echo "$0:               TL_AUTOHEADER, TL_AUTOMAKE, and/or TL_ACLOCAL."
+echo "$0: using `autoconf --version | sed 1q`"
+echo "$0: using `autoheader --version | sed 1q`"
+echo "$0: using `autom4te --version | sed 1q`"
+echo "$0: using `automake --version | sed 1q`"
+echo "$0: using `aclocal --version | sed 1q`"
+echo "$0:       if you want to use different versions, set PATH."
 
-# Give users a chance to quit here
-# and set TL_AUTOCONF, TL_AUTOHEADER, TL_AUTOMAKE, and/or TL_ACLOCAL
+# Give users a chance to quit here.
 $do_cmd sleep 4
 $do_say "$0: starting at `date`."
 
-AUTOCONF=$TL_AUTOCONF
-AUTOHEADER=$TL_AUTOHEADER
-AUTOMAKE=$TL_AUTOMAKE
-ACLOCAL=$TL_ACLOCAL
-export AUTOCONF AUTOHEADER AUTOMAKE ACLOCAL
-
 do_it () {
+  test x"$do_say" = x: || printf "\f "
   $do_say "$0: running \"$@\""
   $do_cmd "$@"
   if test $? -ne 0; then
-    echo "exit status of $*: $?" >&2
+    echo "$0: goodbye, exit status of $*: $?" >&2
+    exit 1
   fi
 }
 
@@ -116,7 +106,7 @@ if test "x$list" = x; then
         `find libs utils texk -type d -name ac | sed 's,/ac\$,,'`"
 fi
 
-# Autoreconf in all directories
+# Run autoreconf in all directories.
 for dir in $list; do
 
   if test ! -d "$dir"; then
@@ -133,7 +123,8 @@ for dir in $list; do
   else
     extra_dirs=
   fi
-  do_it autoreconf $verbose --no-recursive $warn_obsolete $dir $extra_dirs
+  do_it autoreconf $verbose --no-recursive \
+                   $warn_obsolete $force $dir $extra_dirs
 done
 
 echo "$0: done at `date`."

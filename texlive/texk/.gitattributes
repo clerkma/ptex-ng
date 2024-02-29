@@ -1,0 +1,63 @@
+*.txt text eol=lf
+*.c   text eol=lf
+*.h   text eol=lf
+*.sh  text eol=lf
+*.bat text eol=crlf
+
+# for web2c
+*.gen text eol=lf
+*.tex text eol=lf
+*.pl  text eol=lf
+*.typ text eol=lf
+*.p   text eol=lf
+*.vpl text eol=lf
+*.opl text eol=lf
+*.ovp text eol=lf
+*.out text eol=lf
+*.log text eol=lf
+*.typ text eol=lf
+
+# for dvi2tty
+*.tty text eol=lf
+*.dis text eol=lf
+
+# for makeindex, mendex, upmendex
+*.ind text eol=lf
+
+# for bibtex-x
+*.bbl text eol=lf
+
+# for dvipdfm-x
+*.bb  text eol=lf
+*.xbb text eol=lf
+
+# for dvips
+*.ps  text eol=lf
+*.xps text eol=lf
+/dvipsk/testdata/pfbincl.xps binary
+
+# for lcdf-typetools
+*.pfa text eol=lf
+*.afm text eol=lf
+*.t42 text eol=lf
+*.enc text eol=lf
+*.map text eol=lf
+*.tables text eol=lf
+*.info   text eol=lf
+
+# for ps2pk
+*.hex text eol=lf
+*.pix text eol=lf
+
+# for psutils
+*.eps text eol=lf
+
+# for ttfdump
+*.glyf text eol=lf
+*.gpos text eol=lf
+*.gsub text eol=lf
+*.head text eol=lf
+*.os_2 text eol=lf
+*.bad  text eol=lf
+*.gasp text eol=lf
+*.maxp text eol=lf

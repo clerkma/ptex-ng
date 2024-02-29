@@ -1,4 +1,4 @@
-## $Id$
+## $Id: Makefile.am 69812 2024-02-11 23:09:24Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/web2c/.
 ##
 ## Copyright 2015-2022 Peter Breitenlohner <tex-live@tug.org>

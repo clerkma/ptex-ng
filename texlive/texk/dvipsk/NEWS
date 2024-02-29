@@ -1,5 +1,8 @@
-$Id: NEWS 65770 2023-02-09 21:26:50Z karl $
+$Id: NEWS 69711 2024-02-05 17:23:27Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+dvips 2024.1 (TeX Live 2024):
+  Support for multibyte characters in virtual fonts to OFM fonts for (u)pTeX.
 
 dvips 2023.1 (TeX Live 2023):
   Check --help and --version early to avoid looking for texmf.cnf.

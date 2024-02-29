@@ -308,8 +308,9 @@ var q:xref_number; {pointer to previous cross reference}
 @!m,@!n: sixteen_bits; {new and previous cross-reference value}
 begin if (reserved(p)or(byte_start[p]+1=byte_start[p+ww]))and
 @y
-If the user has sent the |no_xref| flag (the -x option of the command line),
-then it is unnecessary to keep track of cross references for identifiers.
+If the user has sent the |no_xref| flag (the `\.{-x}' option of the
+command line), then it is unnecessary to keep track of cross references
+for identifiers.
 If one were careful, one could probably make more changes around module
 100 to avoid a lot of identifier looking up.
 
@@ -323,6 +324,44 @@ var q:xref_number; {pointer to previous cross-reference}
 @!m,@!n: sixteen_bits; {new and previous cross-reference value}
 begin if no_xref then return;
 if (reserved(p)or(byte_start[p]+1=byte_start[p+ww]))and
+@z
+
+@x [124]
+`\.{\\input webmac}'.
+@.\\input webmac@>
+@.webmac@>
+@y
+`\.{\\input webmac}'.
+@.\\input webmac@>
+@.webmac@>
+
+If the user has sent the |pdf_output| flag (the `\.{-p}' option of the
+command line), then we use alternative \TeX\ macros from `\.{\\input pwebmac}'.
+@.\\input pwebmac@>
+@.pwebmac@>
+@z
+
+@x
+out_ptr:=1; out_line:=1; out_buf[1]:="c"; write(tex_file,'\input webma');
+@y
+out_ptr:=1; out_line:=1; out_buf[1]:="c";
+if pdf_output then write(tex_file,'\input pwebma')
+else write(tex_file,'\input webma');
+@z
+
+@x [127] see https://tug.org/pipermail/tex-live/2023-July/049306.htm
+preceded by another backslash. In the latter case, a |"%"| is output at
+the break.
+@y
+preceded by another backslash or a \TeX\ comment marker. In the latter case, a
+|'%'| is output at the break.
+@z
+
+@x [127] deal with malign user input
+  if (d="\")and(out_buf[k-1]<>"\") then {in this case |k>1|}
+@y
+  if (d="\")and(out_buf[k-1]<>"\")and(out_buf[k-1]<>"%") then
+    {in this case |k>1|}
 @z
 
 @x [148] Purify 'reduce' and 'squash'.
@@ -452,9 +491,9 @@ begin
 @x [239] omit index and module names if no_xref set
 @<Phase III: Output the cross-reference index@>=
 @y
-If the user has set the |no_xref| flag (the -x option on the command line),
-just finish off the page, omitting the index, module name list, and table of
-contents.
+If the user has set the |no_xref| flag (the `\.{-x} option on the
+command line), just finish off the page, omitting the index, module
+name list, and table of contents.
 
 @<Phase III: Output the cross-reference index@>=
 if no_xref then begin
@@ -591,6 +630,16 @@ long_options[current_option].flag := 0;
 long_options[current_option].val := 0;
 incr (current_option);
 
+@ Use alternative \TeX\ macros more suited for {\mc PDF} output?
+@.-p@>
+
+@<Define the option...@> =
+long_options[current_option].name := char_to_string ('p');
+long_options[current_option].has_arg := 0;
+long_options[current_option].flag := address_of (pdf_output);
+long_options[current_option].val := 1;
+incr (current_option);
+
 @ Omit cross-referencing?
 @.-x@>
 
@@ -603,6 +652,7 @@ incr (current_option);
 
 @ @<Global...@> =
 @!no_xref:c_int_type;
+@!pdf_output:c_int_type;
 
 @ An element with all zeros always ends the list.
 

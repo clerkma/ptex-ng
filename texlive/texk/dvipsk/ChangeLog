@@ -1,3 +1,23 @@
+2024-02-05  Karl Berry  <karl@freefriends.org>
+
+	* NEWS,
+	* afm2tfm.c,
+	* dvips.c,
+	* dvips.h,
+	* dvips.texi,
+	* configure.ac: version 2024.1 and copyright 2024.
+
+2023-08-26  Karl Berry  <karl@freefriends.org>
+
+	* writet1.c (t1_builtin_enc): sync change from pdftexdir/writet1.c
+	(r68069).
+
+2023-08-11  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* beginfontk1.test, eepic-nan.test, pfbincl.test, same-name.test,
+	test-{afm2tfm,dvips,missing-image,overflow-buffers}.test,
+	uptex-vf.test: Make easier to test on Windows.
+
 2023-04-29  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* {virtualfont,pprescan,scanpage,dopage,tfmload}.c, dvips.h:

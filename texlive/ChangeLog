@@ -1,3 +1,21 @@
+2023-12-31  Karl Berry  <karl@freefriends.org>
+
+	* reautoconf: add -f / --force option to pass to autoreconf.
+
+2023-12-26  Karl Berry  <karl@freefriends.org>
+
+	* reautoconf: don't bother with environment variables;
+	because the autotools have many subprograms, setting PATH
+	is what makes sense.
+
+2023-12-23  Karl Berry  <karl@tug.org>
+
+	* reautoconf with autoconf-2.72.
+
+2023-12-21  Karl Berry  <karl@freefriends.org>
+
+	* reautoconf (do_it): abort the run if any command fails.
+
 2023-02-25  Karl Berry  <karl@tug.org>
 
 	* Build: show full uname -a.

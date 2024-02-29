@@ -1,28 +1,31 @@
-@$ctangle "common.h" \zip@>
-@$ctwill "common.h" \zip@>
-@$cweave "common.h" \zip@>
-
-@$HAVE_GETTEXT "common.h" \zip@>
-
-@$init_p {CWEAVE.W}32 \&{void} (\,)@>
-@$init_node {CWEAVE.W}32 \&{void} (\,)@>
-@$names_match {CWEAVE.W}32 \&{boolean} (\,)@>
-
-@$ac {CWEAVE.W}2 \&{int}@>
-@$av {CWEAVE.W}2 \&{char} ${*}{*}$@>
-@$main {CWEAVE.W}2 \&{int} (\,)@>
-
-@$print_stats {CWEAVE.W}262 \&{void} (\,)@>
-
-@$xmem {CWEAVE.W}23 \&{xref\_info} [\,]@>
-
-@$xref {CWEAVE.W}24 \\{equiv\_or\_xref}@>
+@$ctangle {COMMON}2 \&{cweb}@>
+@$cweave {COMMON}2 \&{cweb}@>
+@$ctwill {COMMON}2 \&{cweb}@>
 
 @$text_info {CTANGLE.W}20 \&{text} [\,]@>
 
 @$equiv {CTANGLE.W}22 \\{equiv\_or\_xref}@>
 
-@$ilk {CWEAVE.W}20 \\{dummy.Ilk}@>
+@$ac {CWEAVE.W}2 \&{int}@>
+@$av {CWEAVE.W}2 \&{char} ${*}{*}$@>
+@$main {CWEAVE.W}2 \&{int} (\,)@>
 
-@$DEV_NULL {COMMON.W}75 macro@>
-@$_DEV_NULL {COMMON.W}75 macro@>
+@$ilk {CWEAVE.W}11 \\{dummy.Ilk}@>
+
+@$xmem {CWEAVE.W}23 \&{xref\_info} [\,]@>
+
+@$xref {CWEAVE.W}24 \\{equiv\_or\_xref}@>
+
+@$init_node {CWEAVE.W}32 \&{void} (\,)@>
+@$names_match {CWEAVE.W}32 \&{boolean} (\,)@>
+
+@$print_stats {CWEAVE.W}270 \&{void} (\,)@>
+
+@$kpse_set_program_name "<kpathsea/progname.h>" \zip@>
+@$kpse_find_file "<kpathsea/tex-file.h>" \zip@>
+@$kpathsea_debug "<kpathsea/types.h>" \zip@>
+@$kpse_cweb_format "<kpathsea/types.h>" \zip@>
+@$kpse_program_name "<kpathsea/types.h>" \zip@>
+@$kpse_var_expand "<kpathsea/variable.h>" \zip@>
+@$printversionandexit "<lib/lib.h>" \zip@>
+@$versionstring "<lib/lib.h>" \zip@>

@@ -1,7 +1,7 @@
-## $Id: eptex.am 65655 2023-01-28 05:27:55Z takuji $
+## $Id: eptex.am 70222 2024-02-28 04:19:31Z kakuto $
 ## texk/web2c/eptexdir/am/eptex.am: Makefile fragment for e-pTeX.
 ##
-## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
+## Copyright 2015-2024 Karl Berry <tex-live@tug.org>
 ## Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 
@@ -59,6 +59,7 @@ eptex_web_srcs = \
 	tex.ch \
 	tracingstacklevels.ch \
 	partoken.ch \
+	locnull-optimize.ch \
 	showstream.ch \
 	zlib-fmt.ch \
 	etexdir/tex.ech
@@ -76,6 +77,7 @@ eptex_ch_srcs = \
 	eptexdir/fam256.ch \
 	eptexdir/pdfutils.ch \
 	eptexdir/suppresserrors.ch \
+	eptexdir/unbalanced-braces-eptex.ch \
 	eptexdir/char-warning-eptex.ch \
 	tex-binpool.ch
 
@@ -92,7 +94,11 @@ EXTRA_DIST += \
 
 # e-pTeX Tests
 #
-eptex_tests = eptexdir/eptriptest.test eptexdir/pdfprimitive.test eptexdir/epver.test eptexdir/wcfname.test
+eptex_tests = \
+	eptexdir/eptriptest.test \
+	eptexdir/pdfprimitive.test \
+	eptexdir/epver.test \
+	eptexdir/wcfname.test
 eptexdir/eptriptest.log: eptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
 eptexdir/pdfprimitive.log: eptex$(EXEEXT)
 eptexdir/epver.log eptexdir/wcfname.log: eptex$(EXEEXT)

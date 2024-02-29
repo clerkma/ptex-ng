@@ -6,11 +6,10 @@
 --       AUTHOR:  Herbert Voß
 --      LICENSE:  LPPL 1.3
 --
--- $Id: xindex.lua 22 2023-01-18 12:18:15Z hvoss $
 -----------------------------------------------------------------------
 
         xindex = xindex or { }
- local version = 0.47
+ local version = 0.55
 xindex.version = version
 --xindex.self = "xindex"
 
@@ -44,19 +43,21 @@ local args = require ('xindex-lapp') [[
     -q,--quiet
     -h,--help
     -v...          Verbosity level; can be -v, -vv, -vvv
-    -c,--config (default cfg)
-    -e,--escapechar (default ")
-    -n,--noheadings 
+    -V,--version
     -a,--no_casesensitive
     -b,--no_labels
+    -c,--config (default cfg)
+    -e,--escapechar (default ")
+    -f,--fix_hyperref
+    -g,--no_pagenumber
     -i,--ignoreSpace
-    -o,--output (default "")
     -k,--checklang               
     -l,--language (default en)   
+    -n,--noheadings 
+    -o,--output (default "")
     -p,--prefix (default L)
-    -u,--use_UCA
     -s,--use_stdin
-    -V,--version
+    -u,--use_UCA 
     <files...> (default stdin) .idx file(s)
 ]]
 
@@ -111,7 +112,6 @@ if not useStdInput and not args.files_name then
   print("Use option -s for StdIn or define an input data file!")
   os.exit()
 end
-
 
 if not useStdInput then
   if vlevel == 3 then
@@ -168,8 +168,6 @@ else
   end
 end
 
-
-
 logFile = io.open(logfilename,"w+")
 require('xindex-lib')
 
@@ -224,18 +222,18 @@ writeLog(2," ... done\n",0)
 alphabet_lower_map = CreateCharListMap(alphabet_lower)
 alphabet_upper_map = CreateCharListMap(alphabet_upper)
 
-local esc_char = args.escapechar
+esc_char = args.escapechar
+esc_char2 = esc_char..esc_char  
 writeLog(2,"Escapechar = "..esc_char.."\n",1)
 escape_chars = { -- by default " is the escape char
-  {esc_char..'"', '//escapedquote//',     '"'    },
-  {esc_char..'@', '//escapedat//',        '@'    },
-  {esc_char..'|', '//escapedvert//',      '|'    },
-  {esc_char..'!', '//escapedexcl//',       '!'    }
---  {esc_char..'%(', '//escapedparenleft//', '('    },  -- ( must beescaped
---  {esc_char..'%)', '//escapedparenright//',')'    }   -- )  "      "
+  {esc_char2,     '//escaped2//', esc_char    },
+  {esc_char..'@', '//escapedat//',    '@'    },
+  {esc_char..'|', '//escapedvert//',  '|'    },
+  {esc_char..'!', '//escapedexcl//',  '!'    },
+  {'',            '\\textbar',        '|'    },  
+  {'',            '\\braceLeft',      '{'    },  
+  {'',            '\\braceRight',     '}'    }
 }
-
--- esc_char..'%( is not needed because it can only appear after |
 
 outFile = io.open(outfilename,"w+")
 
@@ -358,6 +356,16 @@ if no_headings then
   writeLog(1,"Index without labels\n",1)
 else
   writeLog(1,"Index with labels\n",1)
+end
+
+show_pagenumber = not args["no_pagenumber"]
+if not show_pagenumber then
+  writeLog(1,"Output with NO pagenumbers!\n",1)
+end
+
+fix_hyperref = args["fix_hyperref"]
+if fix_hyperref then
+  writeLog(1,'fix hyperref with "|hyperpage -> \\textbar|hyperpage!\n',1)
 end
 
 writeLog(2,"Open outputfile "..outfilename,0)

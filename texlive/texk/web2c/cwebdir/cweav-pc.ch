@@ -11,9 +11,9 @@ that allows >64K arrays. (If you need lots more bytes, try the alternate
 change files that have -bs in their name instead of -pc.)
 
 @x section 1
-@d banner "This is CWEAVE (Version 4.9)"
+@d banner "This is CWEAVE (Version 4.11)"
 @y
-@d banner "This is CWEAVE (Version 4.9pc)"
+@d banner "This is CWEAVE (Version 4.11pc)"
 @z
 
 @x section 17
@@ -21,8 +21,9 @@ change files that have -bs in their name instead of -pc.)
 @y
 @d max_bytes (unsigned)60000 /* the number of bytes in identifiers,
 @z
-@x
-@d max_refs 30000 /* number of cross-references; must be less than 65536 */
+
+@x section 23
+@ @d max_refs 30000 /* number of cross-references; must be less than 65536 */
 @y
-@d max_refs 10000 /* number of cross-references; must be less than 65536 */
+@ @d max_refs 10000 /* number of cross-references; must be less than 65536 */
 @z

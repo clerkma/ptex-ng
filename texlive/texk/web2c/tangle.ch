@@ -202,6 +202,12 @@ rewrite (Pascal_file, pascal_name);
       begin while not eoln(f) do vgetc(f);
 @z
 
+@x [31] Fix typo as in weave.web.
+procedure error; {prints '\..' and location of error message}
+@y
+procedure error; {prints `\..' and location of error message}
+@z
+
 @x [34] Fix `jump_out'.
 and jumps out of the program. This is the only non-local |goto| statement
 in \.{TANGLE}. It is used when no recovery from a particular error has
@@ -675,7 +681,7 @@ Parse a Unix-style command line.
 
 @<Define |parse_arguments|@> =
 procedure parse_arguments;
-const n_options = 10; {Pascal won't count array lengths for us.}
+const n_options = 9; {Pascal won't count array lengths for us.}
 var @!long_options: array[0..n_options] of getopt_struct;
     @!getopt_return_val: integer;
     @!option_index: c_int_type;

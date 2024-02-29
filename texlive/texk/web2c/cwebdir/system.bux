@@ -16,6 +16,7 @@
 @$fflush "<stdio.h>" \zip@>
 @$fopen "<stdio.h>" \zip@>
 @$fprintf "<stdio.h>" \zip@>
+@$fputc "<stdio.h>" \zip@>
 @$fputs "<stdio.h>" \zip@>
 @$fread "<stdio.h>" \zip@>
 @$fwrite "<stdio.h>" \zip@>
@@ -26,7 +27,9 @@
 @$puts "<stdio.h>" \zip@>
 @$rename "<stdio.h>" \zip@>
 @$remove "<stdio.h>" \zip@>
+@$snprintf "<stdio.h>" \zip@>
 @$sprintf "<stdio.h>" \zip@>
+@$sscanf "<stdio.h>" \zip@>
 @$stderr "<stdio.h>" \zip@>
 @$stdin "<stdio.h>" \zip@>
 @$stdout "<stdio.h>" \zip@>
@@ -48,6 +51,8 @@
 
 @$gettext "<libintl.h>" \zip@>
 @$textdomain "<libintl.h>" \zip@>
+
+@$INT_MAX "<limits.h>" \zip@>
 
 @$bindtextdomain "<locale.h>" \zip@>
 @$setlocale "<locale.h>" \zip@>

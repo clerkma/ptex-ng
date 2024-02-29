@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Clerk Ma
+   Copyright 2014-2023 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -66,11 +66,7 @@ static const char * dist = "Linux";
 static const char * dist = "Unknown";
 #endif
 
-#if defined (W32TeX)
-static const char * banner = "This is Asiatic pTeX, Version 3.141592653 (W32TeX)";
-#else
 static const char * banner = "This is Asiatic pTeX, Version 3.141592653";
-#endif
 
 static void aptex_utils_exit (int unix_code)
 {
@@ -82,47 +78,43 @@ static void print_aptex_usage (void)
 {
   printf("\n"
       "Useage: aptex [OPTION]... [+fmt_file_name] [file]\n\n"
-      " --help\n"
-      "   show this usage summary\n"
-      " --version\n"
-      "   output version information and exit\n"
-      " --ini\n"
-      "   start up as INITEX (create format file)\n"
-      " --shell-escape\n"
-      "   enable \\write18\n"
-      " --merge-kanji-baseline\n"
-      "   shift baseline of OpenType's ascender/descender to JFM's height/depth\n"
-#ifdef USE_VISUAL_DEBUG
-      " --visual-debug\n"
-      "   when ship out DVI, show ApTeX's internal node to PNG/PDF via Cairo\n"
-#endif /* USE_VISUAL_DEBUG */
+      "  --help\n"
+      "    show this usage summary\n"
+      "  --version\n"
+      "    output version information and exit\n"
+      "  --ini\n"
+      "    start up as INITEX (create format file)\n"
+      "  --shell-escape\n"
+      "    enable \\write18\n"
+      "  --merge-kanji-baseline\n"
+      "    shift baseline of OpenType's ascender/descender to JFM's height/depth\n"
 #ifdef USE_MRUBY
       "\n"
-      " --mrb-load-file\n"
-      "   execute file of mruby\n"
-      " --mrb-load-string\n"
-      "   execute string of mruby\n"
+      "  --mrb-load-file\n"
+      "    execute file of mruby\n"
+      "  --mrb-load-string\n"
+      "    execute string of mruby\n"
 #endif /* USE_MRUBY */
       "\n"
-      " --jobname=str\n"
-      "   set the job name to str, e.g.: '--jobname=book2016'\n"
-      " --progname=str\n"
-      "   set program (and fmt) name to str\n"
-      " --synctex=num\n"
-      "   generate SyncTeX data for previewers if nonzero\n"
-      " --fontmap=map\n"
-      "   +mapfile (append mode), !mapfile (replace mode), e.g.: '--fontmap=!replace.map'\n"
-      " --format=fmt\n"
-      "   set preloaded format, e.g.: 'aptex --format=plain name.tex'\n"
+      "  --jobname=str\n"
+      "    set the job name to str, e.g.: '--jobname=book2016'\n"
+      "  --progname=str\n"
+      "    set program (and fmt) name to str\n"
+      "  --synctex=num\n"
+      "    generate SyncTeX data for previewers if nonzero\n"
+      "  --fontmap=map\n"
+      "    +mapfile (append mode), !mapfile (replace mode), e.g.: '--fontmap=!replace.map'\n"
+      "  --format=fmt\n"
+      "    set preloaded format, e.g.: 'aptex --format=plain name.tex'\n"
       "\n"
-      " --patterns\n"
-      "   (INITEX only) allow use of \\patterns after loading format\n"
-      " --main-mem\n"
-      "   (INITEX only) initial main memory size in kilo words\n"
-      " --hyph-size\n"
-      "   (INITEX only) hyphenation exception dictionary size\n"
-      " --trie-size\n"
-      "   (INITEX only) hyphenation pattern trie size\n\n"
+      "  --patterns\n"
+      "    (INITEX only) allow use of \\patterns after loading format\n"
+      "  --main-mem\n"
+      "    (INITEX only) initial main memory size in kilo words\n"
+      "  --hyph-size\n"
+      "    (INITEX only) hyphenation exception dictionary size\n"
+      "  --trie-size\n"
+      "    (INITEX only) hyphenation pattern trie size\n\n"
       "Email bug reports to clerkma@gmail.com.\n"
   );
   aptex_utils_exit(EXIT_SUCCESS);
@@ -130,30 +122,21 @@ static void print_aptex_usage (void)
 
 static void print_aptex_version (void)
 {
-  printf("Copyright 2014, 2015, 2016, 2017, 2018, 2019, 2020 Clerk Ma.\n"
+  printf("Copyright 2014-2023 Clerk Ma.\n"
     "banner: \"%s\"\n"
-    "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n"
+    "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n",
+    banner, pTeX_version_string, upTeX_version_string);
 #ifdef USE_KPATHSEA
-    "Compiled with %s\n"
+  printf("Compiled with %s\n", kpathsea_version_string);
 #endif
-    "Compiled with %s\n"
-    "Compiled with libotf version %s\n"
-    "Compiled with zlib version %s\n"
+  printf("Compiled with %s\n"
+    "Compiled with zlib version %s\n",
+    ptexenc_version_string, zlib_version);
 #ifdef USE_MRUBY
-    "Compiled with mruby version %s\n"
+  printf("Compiled with mruby version %s\n", MRUBY_VERSION);
 #endif
-    "Compiled with synctex (build-in edition)\n"
-    "Compiled with libdpx (build-in dvipdfmx)\n",
-    banner, pTeX_version_string, upTeX_version_string,
-#ifdef USE_KPATHSEA
-    kpathsea_version_string,
-#endif
-    ptexenc_version_string,
-    LIBOTF_VERSION, zlib_version
-#ifdef USE_MRUBY
-    , MRUBY_VERSION
-#endif /* USE_MRUBY */
-  );
+  printf("Compiled with synctex (build-in edition)\n"
+    "Compiled with libdpx (build-in dvipdfmx)\n");
   aptex_utils_exit(EXIT_SUCCESS);
 }
 
@@ -1348,7 +1331,6 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.flag_tex82                = false;
   aptex_env.flag_compact_fmt          = true;
   aptex_env.flag_merge_kanji_baseline = false;
-  aptex_env.flag_visual_debug         = false;
 
   aptex_env.trace_realloc         = true;
   aptex_env.trace_mem             = false;
@@ -1400,7 +1382,6 @@ static void aptex_commands_init (int ac, char **av)
       { "mrb-load-string",required_argument, NULL, 0 },
       { "shell-escape",   no_argument, NULL, 0 },
       { "merge-kanji-baseline", no_argument, NULL, 0 },
-      { "visual-debug",   no_argument, NULL, 0 },
       { "patterns",       no_argument, NULL, 0 },
       { "ini",            no_argument, NULL, 0 },
       { "showlbstats",    no_argument, NULL, 0 },
@@ -1436,8 +1417,6 @@ static void aptex_commands_init (int ac, char **av)
         aptex_env.flag_shell_escape = true;
       else if (ARGUMENT_IS("merge-kanji-baseline"))
         aptex_env.flag_merge_kanji_baseline = true;
-      else if (ARGUMENT_IS("visual-debug"))
-        aptex_env.flag_visual_debug = true;
       else if (ARGUMENT_IS("patterns"))
         aptex_env.flag_reset_trie = true;
       else if (ARGUMENT_IS("trace"))
@@ -3938,7 +3917,7 @@ static void do_initex (void)
       kcat_code(k) = kana;
  
     // { CJK Unified Ideographs Extension B .. H }
-    for (k = 0x13B; k <= 0x142; k++)
+    for (k = 0x13B; k <= 0x143; k++)
       kcat_code(k) = kanji;
 
     kcat_code(0x1FD) = not_cjk; // { Latin-1 Letters }
@@ -20295,7 +20274,7 @@ not_found:;
         {
           if (jfm_flag != dir_default)
           {
-            if (d >= ne)
+            if (256 * c + d >= ne)
               goto bad_tfm;
           }
           else
@@ -20966,183 +20945,14 @@ static void dpx_compute_id_string (unsigned char * id, const char * producer, co
 
 static const double sp2bp = 0.000015202;
 static int     font_id[65536];
-static OTF *   font_ot[65536];
-static char *  font_script[65536];
-static char *  font_lang[65536];
-static char *  font_gsub[65536];
-static FT_Face font_face[65536];
-static ot_tbl_colr * font_colr[65536];
-static ot_tbl_cpal * font_cpal[65536];
-static FT_Library font_ftlib;
 static char * output_pdf_name;
 static char * output_dvi_name;
-
-static char * area_split_name (char * s)
-{
-  char * ret, * delim, * fname;
-
-  if ((delim = strpbrk(s + 3, "[(;:")) != NULL)
-  {
-    ret = calloc(sizeof(char), delim - s - 3 + 1);
-    strncpy(ret, s + 3, delim - s - 3);
-#ifdef USE_KPATHSEA
-    fname = kpse_find_file(ret, kpse_truetype_format, false);
-#else
-    fname = ret;
-#endif
-
-    free(ret);
-    return fname;
-  }
-  else
-    return NULL;
-}
-
-static char * area_split_gsub (char * s)
-{
-  char * ret, * delim1, *delim2;
-
-  if ((delim1 = strpbrk(s, ";")) != NULL)
-  {
-    if ((delim2 = strpbrk(delim1 + 1, ";:")) != NULL)
-    {
-      ret = calloc(sizeof(char), delim2 - delim1 + 1);
-      strncpy(ret, delim1 + 1, delim2 - delim1 - 1);
-      return ret;
-    }
-  }
-
-  return NULL;
-}
-
-static uint32_t area_split_index (char * s)
-{
-  char * delim1, * delim2;
-
-  if ((delim1 = strpbrk(s + 3, "[")) != NULL)
-  {
-    if ((delim2 = strpbrk(delim1, "]")) != NULL)
-      return strtoul(delim1 + 1, &delim2, 10);
-  }
-
-  return 0;
-}
-
-static char * area_split_script (char * s)
-{
-  char * ret, * delim1, *delim2;
-
-  if ((delim1 = strpbrk(s + 3, "(")) != NULL)
-  {
-    if ((delim2 = strpbrk(delim1, "/)")) != NULL)
-    {
-      ret = calloc(sizeof(char), delim2 - delim1 + 1);
-      strncpy(ret, delim1 + 1, delim2 - delim1 - 1);
-      return ret;
-    }
-  }
-
-  return strdup("DFLT");
-}
-
-static char * area_split_lang (char * s)
-{
-  char * ret, *delim1, * delim2, * delim3;
-
-  if ((delim1 = strpbrk(s + 3, "(")) != NULL)
-  {
-    if ((delim2 = strpbrk(delim1, "/")) != NULL)
-    {
-      if ((delim3 = strpbrk(delim2, ")")) != NULL)
-      {
-        ret = calloc(sizeof(char), delim3 - delim2 + 1);
-        strncpy(ret, delim2 + 1, delim3 - delim2 - 1);
-        return ret;
-      }
-    }
-  }
-
-  return strdup("");
-}
-
-static void analysis_color_glyph (uint16_t idx, int32_t c, internal_font_number f, scaled h, scaled v)
-{
-  uint32_t i, j;
-  int ng_font_id = font_id[f];
-  ot_tbl_colr * colr = font_colr[f];
-  ot_tbl_cpal * cpal = font_cpal[f];
-
-  if (colr != NULL && cpal != NULL)
-  {
-    for (i = 0; i < colr->numBaseGlyphRecords; i++)
-    {
-      if (colr->base_glyphs[i].GID == idx)
-      {
-        uint16_t actual_c[2];
-        int actual_len = 0;
-
-        if (c <= 0xFFFF)
-        {
-          actual_len = 1;
-          actual_c[0] = c;
-        }
-        else
-        {
-          actual_len = 2;
-          actual_c[0] = ((c - 0x10000) >> 10) + 0xD800;
-          actual_c[1] = ((c - 0x10000) & 0x03FF) + 0xDC00;
-        }
-
-        pdf_dev_begin_actualtext(actual_c, actual_len);
-
-        for (j = 0; j < colr->base_glyphs[i].numLayers; j++)
-        {
-          ot_layer * g_layer = colr->layers + colr->base_glyphs[i].firstLayerIndex + j;
-          ot_color * g_color = cpal->colorRecords + cpal->colorRecordIndices[0] + g_layer->paletteIndex;
-
-          ng_layer(g_layer->GID, ng_font_id, h, v, g_color->red, g_color->green, g_color->blue);
-        }
-
-        pdf_dev_end_actualtext();
-        return;
-      }
-    }
-  }
-  ng_gid(idx, ng_font_id, h, v);
-}
 
 static void pdf_locate_font (internal_font_number f)
 {
   char * lfont_name = take_str_string(font_name[f]);
-  char * lfont_area = take_str_string(font_area[f]);
-
-  if (length(font_area[f]) > 3
-    && strncasecmp(lfont_area, "ot:", 3) == 0 
-    && font_dir[f] != dir_default)
-  {
-    char * ot_fname   = area_split_name(lfont_area);
-    uint32_t ot_index = area_split_index(lfont_area);
-
-    if (ot_fname != NULL)
-    {
-      font_id[f] = dvi_locate_native_font(ot_fname, ot_index, font_size[f],
-        0 - font_dir[f] + 4, 0x00010000, 0, 0);
-      FT_New_Face(font_ftlib, ot_fname, ot_index, &font_face[f]);
-      font_ot[f]   = OTF_open_ft_face(font_face[f]);
-      font_script[f] = area_split_script(lfont_area);
-      font_lang[f] = area_split_lang(lfont_area);
-      font_gsub[f] = area_split_gsub(lfont_area);
-      font_colr[f] = ot_parse_colr(font_face[f]);
-      font_cpal[f] = ot_parse_cpal(font_face[f]);
-    }
-    else
-      font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
-  }
-  else
-    font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
-
+  font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
   free(lfont_name);
-  free(lfont_area);
 }
 
 static void pdf_char_out (internal_font_number f, ASCII_code c)
@@ -21166,84 +20976,8 @@ static void pdf_char_out (internal_font_number f, ASCII_code c)
   }
 }
 
-static scaled adjust_glyph_pos (scaled gw0, scaled gw1, scaled gw2, scaled gw3)
-{
-  if (gw0 == gw3)
-    return -gw2;
-  if (gw0 < gw3)
-    return -gw2;
-  if (gw0 > gw3)
-  {
-    if (gw1 - gw2 == gw0)
-      return -gw2;
-    if (gw1 - gw2 > gw0)
-      return -(gw2 - (gw0 - gw3) / 2);
-    if (gw1 - gw2 < gw0)
-      return -(gw1 - gw0);
-  }
-  return 0;
-}
-
 static void pdf_kanji_out (internal_font_number f, KANJI_code c)
 {
-  if (length(font_area[f]) > 3 && font_ot[f] != NULL)
-  {
-    OTF_GlyphString * gstr = calloc(sizeof(OTF_GlyphString), 1);
-    gstr->glyphs = calloc(sizeof(OTF_Glyph), 1);
-    gstr->used = 1;
-    gstr->size = 1;
-    gstr->glyphs[0].c = c;
-
-    OTF_drive_tables(font_ot[f], gstr, font_script[f], font_lang[f], font_gsub[f], "");
-
-    {
-      scaled gw0, gw1, gw2, gw3, gw4, gw5, gw6;
-      scaled glyph_hpos_delta = 0;
-      scaled glyph_vpos_delta = 0;
-
-      FT_Load_Glyph(font_face[f], gstr->glyphs[0].glyph_id, FT_LOAD_NO_SCALE);
-      gw0 = char_width(f, char_info(f, get_jfm_pos(c, f)));
-      gw1 = (double)font_face[f]->glyph->metrics.horiAdvance  / (double)font_face[f]->units_per_EM * (double)font_size[f];
-      gw2 = (double)font_face[f]->glyph->metrics.horiBearingX / (double)font_face[f]->units_per_EM * (double)font_size[f];
-      gw3 = (double)font_face[f]->glyph->metrics.width        / (double)font_face[f]->units_per_EM * (double)font_size[f];
-      gw4 = (double)font_face[f]->glyph->metrics.vertAdvance  / (double)font_face[f]->units_per_EM * (double)font_size[f];
-      gw5 = (double)font_face[f]->glyph->metrics.vertBearingY / (double)font_face[f]->units_per_EM * (double)font_size[f];
-      gw6 = (double)font_face[f]->glyph->metrics.height       / (double)font_face[f]->units_per_EM * (double)font_size[f];
-
-      if (font_dir[f] == dir_yoko)
-      {
-        glyph_hpos_delta = adjust_glyph_pos(gw0, gw1, gw2, gw3);
-      }
-
-      if (font_dir[f] == dir_tate)
-      {
-        glyph_hpos_delta = adjust_glyph_pos(gw0, gw4, gw5, gw6);
-      }
-
-      switch (cur_dir_hv)
-      {
-        case dir_yoko:
-          pdf_dev_set_dirmode(dvi_yoko);
-          analysis_color_glyph(gstr->glyphs[0].glyph_id, c, f, cur_h + glyph_hpos_delta, -cur_v - glyph_vpos_delta);
-          break;
-
-        case dir_tate:
-          pdf_dev_set_dirmode(dvi_tate);
-          analysis_color_glyph(gstr->glyphs[0].glyph_id, c, f, -cur_v - glyph_vpos_delta, -cur_h - glyph_hpos_delta);
-          break;
-
-        case dir_dtou:
-          pdf_dev_set_dirmode(dvi_dtou);
-          analysis_color_glyph(gstr->glyphs[0].glyph_id, c, f, cur_v + glyph_vpos_delta, cur_h + glyph_hpos_delta);
-          break;
-      }
-    }
-
-    free(gstr->glyphs);
-    free(gstr);
-    return;
-  }
-
   switch (cur_dir_hv)
   {
     case dir_yoko:
@@ -21494,7 +21228,7 @@ static void ship_out (pointer p)
 #ifndef APTEX_DVI_ONLY
     {
       struct pdf_setting aptex_pdf_setting;
-      char * aptex_producer = "Asiatic pTeX 2021";
+      char * aptex_producer = "Asiatic pTeX 2023";
       int aptex_pdf_version;
       unsigned char aptex_id1[16], aptex_id2[16];
 
@@ -21569,21 +21303,12 @@ static void ship_out (pointer p)
       pdf_open_document(utf8_mbcs(output_pdf_name), aptex_producer, aptex_id1, aptex_id2, aptex_pdf_setting);
       aptex_dpx_init_page(pdf_page_width, pdf_page_height);
       spc_exec_at_begin_document();
-      FT_Init_FreeType(&font_ftlib);
     }
-#endif
-#ifdef USE_VISUAL_DEBUG
-    if (aptex_env.flag_visual_debug)
-      aptex_vdbg_ship_open("aptex-visual-debug.pdf");
 #endif
   }
 
 #ifndef APTEX_DVI_ONLY
   aptex_dpx_bop(total_pages + 1, pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
-#endif
-#ifdef USE_VISUAL_DEBUG
-  if (aptex_env.flag_visual_debug)
-    aptex_vdbg_bop(pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
 #endif
   page_loc = dvi_offset + dvi_ptr;
   dvi_out(bop);
@@ -21613,10 +21338,6 @@ static void ship_out (pointer p)
 
 #ifndef APTEX_DVI_ONLY
   aptex_dpx_eop();
-#endif
-#ifdef USE_VISUAL_DEBUG
-  if (aptex_env.flag_visual_debug)
-    aptex_vdbg_eop();
 #endif
   dvi_out(eop);
 
@@ -21931,13 +21652,6 @@ reswitch:
 #ifndef APTEX_DVI_ONLY
         pdf_char_out(dvi_f, c);
 #endif
-#ifdef USE_VISUAL_DEBUG
-        if (aptex_env.flag_visual_debug)
-          aptex_vdbg_node_char(0, cur_h, cur_v,
-            char_width(f, char_info(f, c)),
-            char_height(f, height_depth(char_info(f, c))),
-            char_depth(f, height_depth(char_info(f, c))));
-#endif
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
       else
@@ -21995,13 +21709,6 @@ reswitch:
 
 #ifndef APTEX_DVI_ONLY
         pdf_kanji_out(dvi_f, jc);
-#endif
-#ifdef USE_VISUAL_DEBUG
-        if (aptex_env.flag_visual_debug)
-          aptex_vdbg_node_char(0, cur_h, cur_v,
-            char_width(f, char_info(f, c)),
-            char_height(f, height_depth(char_info(f, c))),
-            char_depth(f, height_depth(char_info(f, c))));
 #endif
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
@@ -22309,10 +22016,6 @@ reswitch:
       dvi_four(rule_wd);
 #ifndef APTEX_DVI_ONLY
       pdf_rule_out(rule_wd, rule_ht);
-#endif
-#ifdef USE_VISUAL_DEBUG
-      if (aptex_env.flag_visual_debug)
-        aptex_vdbg_node_rule(0, cur_h, cur_v, rule_wd, rule_ht);
 #endif
       cur_v = base_line;
       dvi_h = dvi_h + rule_wd;
@@ -22646,10 +22349,6 @@ fin_rule:
         dvi_four(rule_wd);
 #ifndef APTEX_DVI_ONLY
         pdf_rule_out(rule_wd, rule_ht);
-#endif
-#ifdef USE_VISUAL_DEBUG
-        if (aptex_env.flag_visual_debug)
-          aptex_vdbg_node_rule(0, cur_h, cur_v, rule_wd, rule_ht);
 #endif
         cur_h = left_edge;
       }
@@ -24933,7 +24632,7 @@ restart:
                     if (op_byte(cur_i) < kern_flag)
                     {
                       gp = font_glue[cur_f];
-                      rr = rem_byte(cur_i);
+                      rr = op_byte(cur_i) * 256 + rem_byte(cur_i);
                         
                       if (gp != null)
                       {
@@ -32394,10 +32093,6 @@ reswitch:
         KANJI(cx) = cur_chr;
       break;
 
-    case kchar_given:
-      KANJI(cx) = cur_chr;
-      break;
-
     case kanji:
     case kana:
     case other_kchar:
@@ -32405,11 +32100,24 @@ reswitch:
       cx = cur_chr;
       break;
 
+    case kchar_given:
+      KANJI(cx) = cur_chr;
+      break;
+
     case char_num:
       {
         scan_char_num();
         cur_chr = cur_val;
         cur_cmd = char_given;
+        goto reswitch;
+      }
+      break;
+
+    case kchar_num:
+      {
+        scan_char_num();
+        cur_chr = cur_val;
+        cur_cmd = kchar_given;
         goto reswitch;
       }
       break;
@@ -35448,17 +35156,17 @@ reswitch:
       goto main_loop_j;
       break;
 
-    case hmode + kchar_given:
+    case hmode + char_given:
+      if (check_echar_range(cur_chr))
+        goto main_loop;
+      else
       {
         cur_cmd = kcat_code(kcatcodekey(cur_chr));
         goto main_loop_j;
       }
       break;
 
-    case hmode + char_given:
-      if (check_echar_range(cur_chr))
-        goto main_loop;
-      else
+    case hmode + kchar_given:
       {
         cur_cmd = kcat_code(kcatcodekey(cur_chr));
         goto main_loop_j;
@@ -36240,6 +35948,12 @@ main_loop_lookahead:
     }
   }
 
+  if (cur_cmd == kchar_given)
+  {
+    cur_cmd = kcat_code(kcatcodekey(cur_chr));
+    goto_main_lig_loop();
+  }
+
   if (cur_cmd == char_num)
   {
     scan_char_num();
@@ -36750,31 +36464,6 @@ void close_files_and_terminate (void)
 
 #ifndef APTEX_DVI_ONLY
       {
-        {
-          int i;
-
-          for (i = 0; i < 65536; i++)
-          {
-            if (font_ot[i] != NULL)
-              OTF_close(font_ot[i]);
-
-            if (font_script[i] != NULL)
-              free(font_script[i]);
-
-            if (font_lang[i] != NULL)
-              free(font_lang[i]);
-
-            if (font_gsub[i] != NULL)
-              free(font_gsub[i]);
-  
-            FT_Done_Face(font_face[i]);
-            ot_delete_colr(font_colr[i]);
-            ot_delete_cpal(font_cpal[i]);
-          }
-
-          FT_Done_FreeType(font_ftlib);
-        }
-
         spc_exec_at_end_document();
         pdf_close_document();
         pdf_close_fontmaps();
@@ -36794,10 +36483,6 @@ void close_files_and_terminate (void)
         print_int(pdf_output_stats());
         prints(" bytes).");
       }
-#endif
-#ifdef USE_VISUAL_DEBUG
-      if (aptex_env.flag_visual_debug)
-        aptex_vdbg_ship_close();
 #endif
     }
   }

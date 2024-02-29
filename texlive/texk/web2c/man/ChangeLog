@@ -1,3 +1,69 @@
+2024-02-21  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.man,
+	* cweb.man,
+	* twill.man: Unmask hyphen in manpages.
+
+2024-02-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.man,
+	* twill.man: Mask hyphen in manpage.
+
+2024-02-14  Andreas Scherer  <https://ascherer.github.io>
+
+	* Makefile.am,
+	* Makefile.in,
+	* ctwill.man: Link CTWILL manpage for ctwill-proofsort.
+
+2024-02-12  Andreas Scherer  <https://ascherer.github.io>
+
+	* Makefile.am,
+	* Makefile.in: Link TWILL manpage for twill-refsort.
+
+2024-01-24  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.man,
+	* cweb.man: Regenerate with Pandoc 3.1.11.1.
+
+2023-12-02  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.man: CWEB 4.11 release.
+
+2023-10-30  Andreas Scherer  <https://ascherer.github.io>
+
+	* twill.man: Mention 'twill-refsort'.
+
+2023-10-29  Andreas Scherer  <https://ascherer.github.io>
+
+	* cweb.man: Regenerate with Pandoc 3.1.9.
+	* ctwill.man: Make 'proofsort' like 'refsort'.
+
+2023-10-13  Andreas Scherer  <https://ascherer.github.io>
+
+	* weave.man: Add option '-p' to '\input pwebmac'.
+
+2023-09-22  Andreas Scherer  <https://ascherer.github.io>
+
+	* cweb.man,
+	* ctwill.man: Regenerate with Pandoc 3.1.7.
+
+2023-08-24  vaitkus  <antanas.vaitkus90@gmail.com>
+
+	* aleph.man,
+	* bibtex.man,
+	* etex.man,
+	* mf.man,
+	* pdftex.man: fix man page typos. Submitted at:
+	https://github.com/TeX-Live/texlive-source/pull/61
+
+2023-08-19  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.man: CWEB 4.10 release.
+
+2023-06-16  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.man: Add information on 'ctwill-proofsort'.
+
 2023-05-15  Andreas Scherer  <https://ascherer.github.io>
 
 	* ctwill.man: CWEB 4.9 release.

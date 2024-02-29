@@ -1,128 +1,0 @@
-NEWS -- What's new in libotf.			-*- outline -*-
-Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2011, 2012
-  National Institute of Advanced Industrial Science and Technology (AIST)
-  Registration Number H15PRO167
-Copyright (C) 2018  K. Handa  <handa@gnu.org>
-See the end for copying conditions.
-
-
-* Changes in libotf 0.9.16
-
-** This is a bug fix release.
-
-
-* Changes in libotf 0.9.13
-
-** This is a bug fix release.
-
-
-* Changes in libotf 0.9.12
-
-** This is a bug fix release.
-
-
-* Changes in libotf 0.9.11
-
-** New functions OTF_drive_gsub_with_log and OTF_drive_gpos_with_log
-works like OTF_drive_gsub and OTF_drive_gpos but also records which
-features are applied to which glyphs.
-
-** New function OTF_put_data and OTF_get_data can be used to store and
-retrieve arbitrary cliend data to/from the structure OTF.
-
-
-* Changes in libotf 0.9.10
-
-** This release is mainly for bug fixes.
-
-
-* Changes in libotf 0.9.9
-
-** New function OTF_get_variation_glyphs returns glyphs selected by
-variation selectors.
-
-** The funciton OTF_drive_cmap handles a variation selector.
-
-** The example program `otfview' can handle variation selectors.
-
-** The function OTF_drive_gpos is obsolte now, and the new function
-OTF_drive_gpos2 should be used instead.  See the comment of the member
-"glyph_id" of type "OTF_Glyph" for the detail.
-
-** If a font doesn't have GDEF table, automatically synthesized GDEF
-table is used.
-
-
-* Changes in libotf 0.9.6 through 0.9.8
-
-** There's no API change, just bug fixes.
-
-
-* Changes in libotf 0.9.5
-
-** New function OTF_open_ft_face() can be used to process a font
-already opened by FreeType library.
-
-** The example program `otfview' accept the second argument INDEX.
-
-
-* Changes in libotf 0.9.4
-
-** New functions OTF_get_scripts() and OTF_get_features() load
-GSUB/GPOS tables just partially.
-
-** New function OTF_check_features() checks if a font has specific
-features.
-
-
-* Changes in libotf 0.9.3
-
-** New function OTF_drive_gsub_alternate () performs a lookup of type
-3 (Alternate Substituion).
-
-** The example program `otfview' has new buttons "L->R" and
-"AltSubst".
-
-
-
-* Changes in libotf 0.9.1
-
-** All lookup types of GSUB and GPOS are supported now.
-
-** The example program `otfview' is enhanced to drive GSUB and GPOS
-   features.
-
-
-* Changes in libotf 0.9
-
-** Released.
-
-
-* Copyright information
-
-Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2011, 2012
-  National Institute of Advanced Industrial Science and Technology (AIST)
-  Registration Number H15PRO167
-Copyright (C) 2018  K. Handa  <handa@gnu.org>
-
-This file is part of libotf.
-
-Libotf is free software; you can redistribute it and/or modify it
-under the terms of the GNU Lesser General Public License as published
-by the Free Software Foundation; either version 2.1 of the License, or
-(at your option) any later version.
-
-Libotf is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library, in a file named COPYING; if not,
-write to the Free Software Foundation, Inc., 59 Temple Place, Suite
-330, Boston, MA 02111-1307, USA.
-
-Local variables:
-mode: outline
-paragraph-separate: "[ 	]*$"
-end:

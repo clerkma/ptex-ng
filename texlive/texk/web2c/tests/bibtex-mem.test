@@ -1,10 +1,14 @@
 #! /bin/sh -vx
-# $Id: bibtex-mem.test 45809 2017-11-15 00:36:56Z karl $
+# $Id: bibtex-mem.test 67993 2023-08-20 14:27:19Z takuji $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2010 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
 # Using test data from Philipp Lehman <lehman@gmx.net>
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_bibtex=$BinDir/bibtex$ExeExt
 
 test -d tests || mkdir -p tests
 
@@ -64,7 +68,7 @@ for t in 1 2 3; do
     TEXMFCNF=$srcdir/../kpathsea \
     BSTINPUTS=$srcdir/tests \
     BIBINPUTS=./tests \
-    ./bibtex tests/memtest$t || exit 1
+    $_bibtex tests/memtest$t || exit $t
 
 done
 
