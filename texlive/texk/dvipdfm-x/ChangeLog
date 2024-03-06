@@ -1,3 +1,13 @@
+2024-03-06  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* configure.ac: version 20240305.
+
+2024-03-05  Max Chernoff  <mseven@telus.net>
+
+	* pdfximage.c (pdf_ximage_load_image): check that strcmp args
+	are not non-null. Report from Hartmut Henkel,
+	https://tug.org/pipermail/tex-live/2024-March/050136.html
+
 2024-02-25  Max Chernoff  <mseven@telus.net>
  
  	* spc_util.{c,h}: Add "named" keyword to "pdf:image" special
