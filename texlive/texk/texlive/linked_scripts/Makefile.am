@@ -1,4 +1,4 @@
-## $Id: Makefile.am 70681 2024-03-17 22:25:42Z karl $
+## $Id: Makefile.am 70706 2024-03-19 21:28:54Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -326,7 +326,9 @@ else !WIN32
 	cd $(DESTDIR)$(bindir) && \
 	  for s in $(nobase_dist_texmf_scripts_SCRIPTS); do \
 	    target=`basename $$s | tr '[A-Z]' '[a-z]'`; \
-	    echo "$$s" | grep 'listings-ext.sh\|memoize-.*\.' >/dev/null \
+## we can't use egrep or grep -E or ere patterns portably.
+	    echo "$$s" | grep 'memoize-.*\.' >/dev/null \
+	    || echo "$$s" | grep 'listings-ext.sh' >/dev/null \
 	    || target=`echo $$target | sed 's,\.[^/]*$$,,'`; \
 	    rm -f $$target; \
 	    echo "creating link '$$target' -> '$$REL/texmf-dist/scripts/$$s'"; \
@@ -362,7 +364,8 @@ endif WIN32
 uninstall-hook:
 	@for s in $(nobase_dist_texmf_scripts_SCRIPTS); do \
 	  target=`basename $$s | tr '[A-Z]' '[a-z]'`; \
-	  echo "$$s" | grep 'listings-ext.sh\|memoize-.*\.' >/dev/null \
+	  echo "$$s" | grep 'memoize-.*\.' >/dev/null \
+	  || echo "$$s" | grep 'listings-ext.sh' >/dev/null \
 	  || target=`echo $$target | sed 's,\.[^/]*$$,,'`; \
 	  rm -f $(DESTDIR)$(bindir)/$$target$(WINEXT); \
 	done
