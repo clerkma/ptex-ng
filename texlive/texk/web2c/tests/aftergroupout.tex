@@ -1,6 +1,8 @@
-% $Id: aftergroupout.tex 70752 2024-03-24 22:32:46Z karl $
+% $Id: aftergroupout.tex 70774 2024-03-26 15:39:45Z karl $
 % Public domain. Based on a post by David Carlisle to tex-live,
 % https://tug.org/pipermail/tex-live/2024-March/050292.html
+% 
+% See ./unbalanced-braces.tex for background.
 % 
 \catcode`\{=1 \catcode`\}=2
 \pdfoutput = 1
@@ -11,7 +13,7 @@
 \parfillskip=0pt plus1fil
 
 % with original TL24 binaries, \aftergroup on the \output routine didn't work.
-\def\xxx{\aftergroup should-appear!\global\let\xxx\relax}
+\def\xxx{\aftergroup A\global\let\xxx\relax}
 
 \output{\xxx\global\advance\count0 by 1 \shipout\box255}
 
