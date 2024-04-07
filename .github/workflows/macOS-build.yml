@@ -14,7 +14,7 @@ jobs:
     runs-on: macOS-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
       #- name: install deps
       #run: brew install automake autoconf libtool texinfo texi2html gcc ruby make
@@ -22,7 +22,7 @@ jobs:
     - name: build macOS binaries
       run: ./build-gcc/build-aptex.sh
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: aptex-macOS-lastest.tar
         path: |
