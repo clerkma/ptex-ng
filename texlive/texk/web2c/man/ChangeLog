@@ -1,3 +1,27 @@
+2024-03-13  Andreas Scherer  <https://ascherer.github.io>
+
+	* weave.man,
+	* twill.man: .I, \e updates according to README.
+
+2024-03-18  Bjarni Ingi Gislason  <bjarniig@simnet.is>
+
+	* bibtex.man: \e, etc., updates.
+	https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1039975
+
+2024-03-13  Andreas Scherer  <https://ascherer.github.io>
+
+	* cweb.man: Post-release fix of typo in date string.
+
+2024-03-10  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.man,
+	* cweb.man: Add new option '-F' for CWEAVE/CTWILL.
+
+2024-03-02  Bjarni Ingi Gislason  <bjarniig@simnet.is>
+
+	* pdftex.man: whitespace, \-, etc. updates.
+	https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1065094
+
 2024-02-21  Andreas Scherer  <https://ascherer.github.io>
 
 	* ctwill.man,

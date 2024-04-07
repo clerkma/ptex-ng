@@ -3,7 +3,7 @@
 # this file.
 
 AC_PREREQ(2)
-AC_INIT([Asymptote],[2.87],[https://github.com/vectorgraphics/asymptote/issues])
+AC_INIT([Asymptote],[2.88],[https://github.com/vectorgraphics/asymptote/issues])
 VERSION=$PACKAGE_VERSION
 AC_SUBST(VERSION)
 m4_include([ax_pthread.m4])
@@ -414,7 +414,7 @@ esac
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include "xstream.h"])],
                    [AC_SEARCH_LIBS([xdrstdio_create],[nsl tirpc])
-                    AC_DEFINE(HAVE_RPC_RPC_H,1,
+                    AC_DEFINE(HAVE_LIBTIRPC,1,
                    DEFINE([a working <tirpc/rpc/rpc.h> header]))],
    AC_MSG_WARN([*** Broken rpc headers; XDR/V3D support disabled ***]))
 

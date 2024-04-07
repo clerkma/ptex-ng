@@ -1,6 +1,6 @@
 project('harfbuzz', 'c', 'cpp',
   meson_version: '>= 0.55.0',
-  version: '8.3.0',
+  version: '8.4.0',
   default_options: [
     'cpp_eh=none',          # Just to support msvc, we are passing -fno-exceptions also anyway
     # 'cpp_rtti=false',     # Do NOT enable, wraps inherit it and ICU needs RTTI
@@ -8,6 +8,13 @@ project('harfbuzz', 'c', 'cpp',
     'wrap_mode=nofallback', # Use --wrap-mode=default to revert, https://github.com/harfbuzz/harfbuzz/pull/2548
   ],
 )
+
+glib_min_version = '>= 2.30.0'
+cairo_min_version = '>= 1.10.0'
+chafa_min_version = '>= 1.6.0'
+icu_min_version = '>= 49.0'
+graphite2_min_version = '>= 1.2.0'
+freetype_min_version = '>= 12.0.6'
 
 hb_version_arr = meson.project_version().split('.')
 hb_version_major = hb_version_arr[0].to_int()
@@ -22,9 +29,16 @@ pkgmod = import('pkgconfig')
 cpp = meson.get_compiler('cpp')
 null_dep = dependency('', required: false)
 
-# Enforce C++14 requirement for MSVC STL
-if ['clang', 'clang-cl'].contains(cpp.get_id()) and cpp.get_define('_MSC_FULL_VER') != ''
-  add_project_arguments('-std=c++14', language: 'cpp')
+# Only perform these checks if cpp_std is c++11 as setting -std directly
+# produces a warning from meson.
+if get_option('cpp_std') == 'c++11'
+  # Enforce C++14 requirement for MSVC STL
+  if cpp.get_id() == 'clang' and cpp.get_define('_MSC_FULL_VER') != ''
+    add_project_arguments('-std=c++14', language: 'cpp')
+  elif cpp.get_id() == 'clang-cl'
+    # Clang-cl produces a warning when using -std=c++14, but not when using /std:c++14
+    add_project_arguments('/std:c++14', language : 'cpp')
+  endif
 endif
 
 if cpp.get_argument_syntax() == 'msvc'
@@ -34,6 +48,7 @@ if cpp.get_argument_syntax() == 'msvc'
   # NOTE: Only add warnings here if you are sure they're spurious
   msvc_args = [
     '/wd4244', # lossy type conversion (e.g. double -> int)
+    '/bigobj', # hb-subset.cc -- compile error C1128: number of sections exceeded object file format limit
     cpp.get_supported_arguments(['/utf-8']), # set the input encoding to utf-8
   ]
   add_project_arguments(msvc_args, language: ['c', 'cpp'])
@@ -72,15 +87,15 @@ check_headers = [
 ]
 
 check_funcs = [
-  ['atexit'],
-  ['mprotect'],
-  ['sysconf'],
-  ['getpagesize'],
-  ['mmap'],
-  ['isatty'],
-  ['uselocale'],
-  ['newlocale'],
-  ['sincosf'],
+  ['atexit', {'prefix': '#include <stdlib.h>'}],
+  ['mprotect', {'prefix': '#include <sys/mman.h>'}],
+  ['sysconf', {'prefix': '#include <unistd.h>'}],
+  ['getpagesize', {'prefix': '#include <unistd.h>'}],
+  ['mmap', {'prefix': '#include <sys/mman.h>'}],
+  ['isatty', {'prefix': '#include <unistd.h>'}],
+  ['uselocale', {'prefix': '#include <locale.h>'}],
+  ['newlocale', {'prefix': '#include <locale.h>'}],
+  ['sincosf', {'prefix': '#define _GNU_SOURCE\n#include <math.h>'}],
 ]
 
 m_dep = cpp.find_library('m', required: false)
@@ -88,6 +103,7 @@ m_dep = cpp.find_library('m', required: false)
 if meson.version().version_compare('>=0.60.0')
   # pkg-config: freetype2, cmake: Freetype
   freetype_dep = dependency('freetype2', 'Freetype',
+                            version: freetype_min_version,
                             required: get_option('freetype'),
                             default_options: ['harfbuzz=disabled'],
                             allow_fallback: true)
@@ -99,15 +115,16 @@ else
     freetype_opt = false
   endif
   # try pkg-config name
-  freetype_dep = dependency('freetype2', method: 'pkg-config', required: freetype_opt)
+  freetype_dep = dependency('freetype2', version: freetype_min_version, method: 'pkg-config', required: freetype_opt)
   # when disabled, leave it not-found
   if not freetype_dep.found() and not get_option('freetype').disabled()
     # Try cmake name
-    freetype_dep = dependency('Freetype', method: 'cmake', required: false)
+    freetype_dep = dependency('Freetype', version: freetype_min_version, method: 'cmake', required: false)
     # Subproject fallback, `allow_fallback: true` means the fallback will be
     # tried even if the freetype option is set to `auto`.
     if not freetype_dep.found()
       freetype_dep = dependency('freetype2',
+                                version: freetype_min_version,
                                 method: 'pkg-config',
                                 required: get_option('freetype'),
                                 default_options: ['harfbuzz=disabled'],
@@ -116,10 +133,10 @@ else
   endif
 endif
 
-glib_dep = dependency('glib-2.0', required: get_option('glib'))
-gobject_dep = dependency('gobject-2.0', required: get_option('gobject'))
-graphite2_dep = dependency('graphite2', required: get_option('graphite2'))
-graphite_dep = dependency('graphite2', required: get_option('graphite'))
+glib_dep = dependency('glib-2.0', version: glib_min_version, required: get_option('glib'))
+gobject_dep = dependency('gobject-2.0', version: glib_min_version, required: get_option('gobject'))
+graphite2_dep = dependency('graphite2', version: graphite2_min_version, required: get_option('graphite2'))
+graphite_dep = dependency('graphite2', version: graphite2_min_version, required: get_option('graphite'))
 wasm_dep = cpp.find_library('iwasm', required: get_option('wasm'))
 # How to check whether iwasm was built, and hence requires, LLVM?
 #llvm_dep = cpp.find_library('LLVM-15', required: get_option('wasm'))
@@ -127,6 +144,7 @@ wasm_dep = cpp.find_library('iwasm', required: get_option('wasm'))
 if meson.version().version_compare('>=0.60.0')
   # pkg-config: icu-uc, cmake: ICU but with components
   icu_dep = dependency('icu-uc', 'ICU',
+                            version: icu_min_version,
                             components: 'uc',
                             required: get_option('icu'),
                             allow_fallback: true)
@@ -138,17 +156,18 @@ else
     icu_opt = false
   endif
   # try pkg-config name
-  icu_dep = dependency('icu-uc', method: 'pkg-config', required: icu_opt)
+  icu_dep = dependency('icu-uc', version: icu_min_version, method: 'pkg-config', required: icu_opt)
   # when disabled, leave it not-found
   if not icu_dep.found() and not get_option('icu').disabled()
     # Try cmake name
-    icu_dep = dependency('ICU', method: 'cmake', components: 'uc', required: false)
+    icu_dep = dependency('ICU', version: icu_min_version, method: 'cmake', components: 'uc', required: false)
     # Try again with subproject fallback. `allow_fallback: true` means the
     # fallback will be tried even if the icu option is set to `auto`, but
     # we cannot pass this option until Meson 0.59.0, because no wrap file
     # is checked into git.
     if not icu_dep.found()
       icu_dep = dependency('icu-uc',
+                           version: icu_min_version,
                            method: 'pkg-config',
                            required: get_option('icu'))
     endif
@@ -165,8 +184,8 @@ endif
 cairo_dep = null_dep
 cairo_ft_dep = null_dep
 if not get_option('cairo').disabled()
-  cairo_dep = dependency('cairo', required: false)
-  cairo_ft_dep = dependency('cairo-ft', required: false)
+  cairo_dep = dependency('cairo', version: cairo_min_version, required: false)
+  cairo_ft_dep = dependency('cairo-ft', version: cairo_min_version, required: false)
 
   if (not cairo_dep.found() and
       cpp.get_argument_syntax() == 'msvc' and
@@ -184,13 +203,13 @@ if not get_option('cairo').disabled()
     # dependency cycle here because we have configured freetype2 above with
     # harfbuzz support disabled, so when cairo will lookup freetype2 dependency
     # it will be forced to use that one.
-    cairo_dep = dependency('cairo', required: get_option('cairo'))
+    cairo_dep = dependency('cairo', version: cairo_min_version, required: get_option('cairo'))
     cairo_ft_required = get_option('cairo').enabled() and get_option('freetype').enabled()
-    cairo_ft_dep = dependency('cairo-ft', required: cairo_ft_required)
+    cairo_ft_dep = dependency('cairo-ft', version: cairo_min_version, required: cairo_ft_required)
   endif
 endif
 
-chafa_dep = dependency('chafa', version: '>= 1.6.0', required: get_option('chafa'))
+chafa_dep = dependency('chafa', version: chafa_min_version, required: get_option('chafa'))
 
 conf = configuration_data()
 incconfig = include_directories('.')
@@ -356,11 +375,12 @@ foreach check : check_funcs
   opts = check.get(1, {})
   link_withs = opts.get('link_with', [])
   check_deps = opts.get('deps', [])
+  check_prefix = opts.get('prefix', '')
   extra_deps = []
   found = true
 
   # First try without linking
-  found = cpp.has_function(name, dependencies: check_deps)
+  found = cpp.has_function(name, prefix: check_prefix, dependencies: check_deps)
 
   if not found and link_withs.length() > 0
     found = true
@@ -375,7 +395,7 @@ foreach check : check_funcs
     endforeach
 
     if found
-      found = cpp.has_function(name, dependencies: check_deps + extra_deps)
+      found = cpp.has_function(name, prefix: check_prefix, dependencies: check_deps + extra_deps)
     endif
   endif
 

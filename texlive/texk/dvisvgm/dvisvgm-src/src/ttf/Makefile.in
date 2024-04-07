@@ -301,6 +301,7 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 POTRACE_DEPEND = @POTRACE_DEPEND@
 POTRACE_INCLUDES = @POTRACE_INCLUDES@
+@HAVE_POTRACE_FALSE@@TEXLIVE_BUILD_FALSE@POTRACE_LIBS = ../libs/potrace/libpotrace.a
 POTRACE_LIBS = @POTRACE_LIBS@
 RANLIB = @RANLIB@
 SED = @SED@
@@ -388,15 +389,13 @@ libttf_la_SOURCES = \
 	VheaTable.hpp   VheaTable.cpp \
 	VmtxTable.hpp   VmtxTable.cpp
 
-@HAVE_POTRACE_FALSE@POTRACE_CFLAGS = $(POTRACE_INCLUDES)
-#
+@HAVE_POTRACE_FALSE@@TEXLIVE_BUILD_FALSE@POTRACE_CFLAGS = -I$(dvisvgm_srcdir)/libs/potrace
 @TEXLIVE_BUILD_TRUE@POTRACE_CFLAGS = $(POTRACE_INCLUDES)
 @HAVE_XXHASH_FALSE@XXHASH_CFLAGS = -I$(dvisvgm_srcdir)/libs/xxHash
 @HAVE_XXHASH_FALSE@XXHASH_LIBS = ../libs/xxHash/libxxhash.a
 AM_CXXFLAGS = \
 	-I$(dvisvgm_srcdir)/libs/boost \
 	-I$(dvisvgm_srcdir)/libs/variant/include \
-        $(ZLIB_INCLUDES) \
 	$(BROTLI_CFLAGS) $(WOFF2_CFLAGS)
 
 all: all-am
