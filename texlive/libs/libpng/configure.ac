@@ -1,7 +1,7 @@
-dnl $Id: configure.ac 70115 2024-02-24 01:06:57Z kakuto $
+dnl $Id: configure.ac 70884 2024-04-07 22:16:46Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl   Copyright 2016-2023 Karl Berry <tex-live@tug.org>
+dnl   Copyright 2016-2024 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
 dnl   This file is free software; the copyright holder
@@ -24,6 +24,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_PROG_CC
 AM_PROG_AS
+AM_PROG_AR
 AC_PROG_RANLIB
 AC_PROG_LN_S
 
