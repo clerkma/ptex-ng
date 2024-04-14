@@ -1,4 +1,4 @@
-## $Id: euptex.am 70222 2024-02-28 04:19:31Z kakuto $
+## $Id: euptex.am 70943 2024-04-14 05:29:13Z takuji $
 ## texk/web2c/euptexdir/am/euptex.am: Makefile fragment for e-upTeX.
 ##
 ## Copyright 2015-2024 Karl Berry <tex-live@tug.org>
@@ -12,12 +12,10 @@ bin_PROGRAMS += euptex
 if !UPTEX
 bin_links += euptex$(EXEEXT):uptex
 endif !UPTEX
-if !EPTEX
 bin_links += euptex$(EXEEXT):eptex
 if !PTEX
 bin_links += euptex$(EXEEXT):ptex
 endif !PTEX
-endif !EPTEX
 endif EUPTEX
 EXTRA_PROGRAMS += euptex
 
@@ -83,7 +81,7 @@ euptex_ch_srcs = \
 	euptexdir/pdfutils.ch \
 	euptexdir/pdfstrcmp-eup-post.ch \
 	euptexdir/suppresserrors.ch \
-	eptexdir/unbalanced-braces-eptex.ch \
+	euptexdir/unbalanced-braces-eptex.ch \
 	euptexdir/char-warning-eptex.ch \
 	tex-binpool.ch
 

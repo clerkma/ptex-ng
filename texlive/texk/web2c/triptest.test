@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: triptest.test 68304 2023-09-17 09:06:29Z takuji $
+# $Id: triptest.test 70943 2024-04-14 05:29:13Z takuji $
 # Copyright 2017-2021 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2014 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -28,7 +28,7 @@ cat >filter <<-\_EOF
 	s,^\*\*(\./trip\.tex ##,** \&trip  trip \
 	(trip.tex ##,
 	s/ (TeX Live 20[^)]*)//
-	s/ (Web2C 202[3-9])//
+	s/ (Web2C 202[3-9][^)]*)//
 	s/(preloaded format=tex)/(INITEX)/
 	s/format=trip [^)][^)]*)/format=trip)/
 	s/)  [0-9A-Z: ]*$/)/

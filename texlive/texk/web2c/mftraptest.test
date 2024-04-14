@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: mftraptest.test 68304 2023-09-17 09:06:29Z takuji $
+# $Id: mftraptest.test 70943 2024-04-14 05:29:13Z takuji $
 # Copyright 2017-2021 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2014 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -36,7 +36,7 @@ cat >filter <<-\_EOF
 	s,^\*\*(trap\.mf,** \&trap  trap \
 	(trap.mf,
 	s/ (TeX Live 20[^)]*)//
-	s/ (Web2C 202[3-9])//
+	s/ (Web2C 202[3-9][^)]*)//
 	s/base=trap [^)][^)]*)/base=trap)/
 	s/)  [0-9A-Z: ]*$/)/
 	s/usage [1-9][0-9&]* ([1-9][0-9&]* still/usage XX\&XX (YYY\&YYYYY still/

@@ -1,4 +1,4 @@
-dnl $Id: web2c.ac 69664 2024-02-01 22:56:12Z karl $
+dnl $Id: web2c.ac 70943 2024-04-14 05:29:13Z takuji $
 # texk/web2c/ac/web2c.ac: configure.ac fragment for TL subdir
 dnl
 dnl Copyright 2015-2024 Karl Berry <tex-live@tug.org>
@@ -32,7 +32,6 @@ m4_define([kpse_tex_progs], [dnl
 [[tex],       [yes], [no],  [TeX],        []],
 [[etex],      [no],  [yes], [e-TeX],      [zlib]],
 [[ptex],      [no],  [yes], [pTeX],       [ptexenc zlib]],
-[[eptex],     [no],  [yes], [e-pTeX],     [ptexenc zlib]],
 [[uptex],     [no],  [yes], [upTeX],      [ptexenc zlib]],
 [[euptex],    [yes], [yes], [e-upTeX],    [ptexenc zlib]],
 [[aleph],     [yes], [],    [Aleph],      []],

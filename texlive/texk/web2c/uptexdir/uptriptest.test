@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: uptriptest.test 68954 2023-11-24 10:57:29Z takuji $
+# $Id: uptriptest.test 70943 2024-04-14 05:29:13Z takuji $
 # Copyright 2023 Japanese TeX Development Community <issue@texjp.org>
 # Copyright 2017-2018 Karl Berry <tex-live@tug.org>
 # Copyright 2011-2014 Peter Breitenlohner <tex-live@tug.org>
@@ -29,7 +29,7 @@ cat >filter <<-\_EOF
 	s,^\*\*(\./trip\.tex ##,** \&trip  trip \
 	(trip.tex ##,
 	s/ (TeX Live 20[^)]*)//
-	s/ (Web2C 202[3-9])//
+	s/ (Web2C 202[3-9][^)]*)//
 	s/(preloaded format=.*tex)/(INITEX)/
 	s/format=trip [^)][^)]*)/format=trip)/
 	s/)  [0-9A-Z: ]*$/)/
