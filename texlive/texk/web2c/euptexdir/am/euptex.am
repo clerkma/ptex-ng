@@ -1,4 +1,4 @@
-## $Id: euptex.am 70943 2024-04-14 05:29:13Z takuji $
+## $Id: euptex.am 71055 2024-04-24 11:59:16Z takuji $
 ## texk/web2c/euptexdir/am/euptex.am: Makefile fragment for e-upTeX.
 ##
 ## Copyright 2015-2024 Karl Berry <tex-live@tug.org>
@@ -71,15 +71,11 @@ euptex_ch_srcs = \
 	euptexdir/etex.ch0 \
 	uptexdir/ptex-base.ch \
 	uptexdir/uptex-m.ch \
-	euptexdir/euptex.ch0 \
 	euptexdir/eptex.ech \
 	euptexdir/etex.ch1 \
-	euptexdir/euptex.ch1 \
 	$(euptex_ch_synctex) \
 	euptexdir/fam256.ch \
-	euptexdir/pdfstrcmp-eup-pre.ch \
 	euptexdir/pdfutils.ch \
-	euptexdir/pdfstrcmp-eup-post.ch \
 	euptexdir/suppresserrors.ch \
 	euptexdir/unbalanced-braces-eptex.ch \
 	euptexdir/char-warning-eptex.ch \
