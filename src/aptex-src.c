@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014-2023 Clerk Ma
+   Copyright 2014-2024 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -3959,6 +3959,7 @@ static void do_initex (void)
     del_code(k) = -1;
 
   del_code('.') = 0;
+  show_stream = -1;
 
   for (k = dimen_base; k <= eqtb_size; k++)
     eqtb[k].cint = 0;
@@ -4516,7 +4517,7 @@ static boolean load_fmt_file (void)
     k = k + x;
   } while (!(k > eqtb_size));
 
-  undump(hash_base, frozen_control_sequence, par_loc);
+  undump_int(par_loc);
   par_token = cs_token_flag + par_loc;
   undump(hash_base, frozen_control_sequence, write_loc);
   undump(hash_base, frozen_control_sequence, hash_used);
@@ -5117,6 +5118,7 @@ start_of_TEX:
     init_randoms(random_seed);
     magic_offset = str_start[886] - 9 * ord_noad; /* math_spacing = 886 */
 
+    // @<Initialize the print |selector| based on |interaction|@>;
     if (interaction == batch_mode)
       selector = no_print;
     else
@@ -6426,6 +6428,9 @@ static void init_prim (void)
   primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
   primitive("synctex", assign_int, int_base + synctex_code);
   primitive("tracingstacklevels", assign_int, int_base + tracing_stack_levels_code);
+  primitive("partokenname", partoken_name, 0);
+  primitive("partokencontext", assign_int, int_base + partoken_context_code);
+  primitive("showstream", assign_int, int_base + show_stream_code);
   /* sec 0248 */
   primitive("parindent", assign_dimen, dimen_base + par_indent_code);
   primitive("mathsurround", assign_dimen, dimen_base + math_surround_code);
@@ -7043,7 +7048,7 @@ void slow_print (integer s)
 // prints string |s| at beginning of line
 void print_nl (const char * s)
 {
-  if (((term_offset > 0) && (odd(selector))) ||
+  if ((selector < no_print) || ((term_offset > 0) && (odd(selector))) ||
       ((file_offset > 0) && (selector >= log_only)))
     print_ln();
 
@@ -11321,6 +11326,10 @@ static void print_param (integer n)
       print_esc("tracingstacklevels");
       break;
 
+    case show_stream_code:
+      print_esc("showstream");
+      break;
+
     default:
       prints("[unknown integer parameter!]");
       break;
@@ -11861,6 +11870,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
     case vrule:
       print_esc("vrule");
+      break;
+
+    case partoken_name:
+      print_esc("partokenname");
       break;
 
     case par_end:
@@ -14237,7 +14250,7 @@ void back_input (void)
 {
   pointer p;  // {a token list of length one}
 
-  while ((state == token_list) && (loc == null) && (token_type != v_template))
+  while ((loc == null) && (token_type != v_template))
     end_token_list(); // {conserve stack space}
 
   p = get_avail();
@@ -14800,7 +14813,7 @@ found:
     } while (!(info(r) == end_match_token));
   }
 
-  while ((state == token_list) && (loc == null) && (token_type != v_template))
+  while ((loc == null) && (token_type != v_template))
     end_token_list();
 
   begin_token_list(ref_count, macro);
@@ -34323,6 +34336,7 @@ void new_interaction (void)
   print_ln();
   interaction = cur_chr;
 
+  // @<Initialize the print |selector| based on |interaction|@>;
   if (interaction == batch_mode)
     selector = no_print;
   else
@@ -34486,6 +34500,8 @@ static void show_whatever (void)
   {
     case show_lists_code:
       {
+        // @<Adjust |selector| based on |show_stream|@>
+        adjust_selector_based_on_show_stream();
         begin_diagnostic();
         show_activities();
       }
@@ -34496,6 +34512,8 @@ static void show_whatever (void)
       {
         scan_register_num();
         fetch_box(p);
+        // @<Adjust |selector| based on |show_stream|@>
+        adjust_selector_based_on_show_stream();
         begin_diagnostic();
         print_nl("> \\box");
         print_int(cur_val);
@@ -34512,6 +34530,8 @@ static void show_whatever (void)
       // @<Show the current meaning of a token, then |goto common_ending|@>
       {
         get_token();
+        // @<Adjust |selector| based on |show_stream|@>
+        adjust_selector_based_on_show_stream();
 
         if (interaction == error_stop_mode)
           wake_up_terminal();
@@ -34552,6 +34572,8 @@ static void show_whatever (void)
 
     case show_groups:
       {
+        // @<Adjust |selector| based on |show_stream|@>
+        adjust_selector_based_on_show_stream();
         begin_diagnostic();
         show_save_groups();
       }
@@ -34559,6 +34581,8 @@ static void show_whatever (void)
 
     case show_ifs:
       {
+        // @<Adjust |selector| based on |show_stream|@>
+        adjust_selector_based_on_show_stream();
         begin_diagnostic();
         print_nl("");
         print_ln();
@@ -34610,6 +34634,8 @@ static void show_whatever (void)
       */
       {
         p = the_toks();
+        // @<Adjust |selector| based on |show_stream|@>
+        adjust_selector_based_on_show_stream();
 
         if (interaction == error_stop_mode)
           wake_up_terminal();
@@ -34635,27 +34661,43 @@ static void show_whatever (void)
     }
 
 common_ending:
-  if (interaction < error_stop_mode)
+  if (selector < no_print)
   {
-    help0();
-    decr(error_count);
-  }
-  else if (tracing_online > 0)
-  {
-    help3("This isn't an error message; I'm just \\showing something.",
-      "Type `I\\show...' to show more (e.g., \\show\\cs,",
-      "\\showthe\\count10, \\showbox255, \\showlists).");
+    print_ln();
+
+    // @<Initialize the print |selector| based on |interaction|@>;
+    if (interaction == batch_mode)
+      selector = no_print;
+    else
+      selector = term_only;
+
+    if (log_opened)
+      selector = selector + 2;
   }
   else
   {
-    help5("This isn't an error message; I'm just \\showing something.",
-      "Type `I\\show...' to show more (e.g., \\show\\cs,",
-      "\\showthe\\count10, \\showbox255, \\showlists).",
-      "And type `I\\tracingonline=1\\show...' to show boxes and",
-      "lists on your terminal as well as in the transcript file.");
-  }
+    if (interaction < error_stop_mode)
+    {
+      help0();
+      decr(error_count);
+    }
+    else if (tracing_online > 0)
+    {
+      help3("This isn't an error message; I'm just \\showing something.",
+        "Type `I\\show...' to show more (e.g., \\show\\cs,",
+        "\\showthe\\count10, \\showbox255, \\showlists).");
+    }
+    else
+    {
+      help5("This isn't an error message; I'm just \\showing something.",
+        "Type `I\\show...' to show more (e.g., \\show\\cs,",
+        "\\showthe\\count10, \\showbox255, \\showlists).",
+        "And type `I\\tracingonline=1\\show...' to show boxes and",
+        "lists on your terminal as well as in the transcript file.");
+    }
 
-  error();
+    error();
+  }
 }
 
 static void new_whatsit (small_number s, small_number w)
@@ -34880,6 +34922,14 @@ static void handle_right_brace (void)
       break;
 
     case vbox_group:
+      if ((partoken_context > 0) && (mode == hmode))
+      {
+        back_input();
+        cur_tok = par_token;
+        back_input();
+        token_type = inserted;
+      }
+      else
       {
         end_graf();
         package(0);
@@ -34887,6 +34937,14 @@ static void handle_right_brace (void)
       break;
 
     case vtop_group:
+      if ((partoken_context > 0) && (mode == hmode))
+      {
+        back_input();
+        cur_tok = par_token;
+        back_input();
+        token_type = inserted;
+      }
+      else
       {
         end_graf();
         package(vtop_code);
@@ -34894,6 +34952,14 @@ static void handle_right_brace (void)
       break;
 
     case insert_group:
+      if ((partoken_context > 1) && (mode == hmode))
+      {
+        back_input();
+        cur_tok = par_token;
+        back_input();
+        token_type = inserted;
+      }
+      else
       {
         end_graf();
         q = split_top_skip;
@@ -34957,6 +35023,14 @@ static void handle_right_brace (void)
       break;
 
     case output_group:
+      if ((partoken_context > 1) && (mode == hmode))
+      {
+        back_input();
+        cur_tok = par_token;
+        back_input();
+        token_type = inserted;
+      }
+      else
       {
         if ((loc != 0) || ((token_type != output_text) && (token_type != backed_up)))
         {
@@ -35028,6 +35102,14 @@ static void handle_right_brace (void)
       break;
 
     case no_align_group:
+      if ((partoken_context > 1) && (mode == hmode))
+      {
+        back_input();
+        cur_tok = par_token;
+        back_input();
+        token_type = inserted;
+      }
+      else
       {
         end_graf();
         unsave();
@@ -35036,6 +35118,14 @@ static void handle_right_brace (void)
       break;
 
     case vcenter_group:
+      if ((partoken_context > 0) && (mode == hmode))
+      {
+        back_input();
+        cur_tok = par_token;
+        back_input();
+        token_type = inserted;
+      }
+      else
       {
         end_graf();
         unsave();
@@ -35562,7 +35652,15 @@ reswitch:
 
     case vmode + endv:
     case hmode + endv:
-      do_endv();
+      if ((partoken_context > 1) && (mode == hmode))
+      {
+        back_input();
+        cur_tok = par_token;
+        back_input();
+        token_type = inserted;
+      }
+      else
+        do_endv();
       break;
 
     case any_mode(end_cs_name):
@@ -35782,6 +35880,17 @@ reswitch:
       {
         get_token();
         save_for_after(cur_tok);
+      }
+      break;
+
+    case any_mode(partoken_name):
+      {
+        get_token();
+        if (cur_cs > 0)
+        {
+          par_loc = cur_cs;
+          par_token = cur_tok;
+        }
       }
       break;
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2023 Clerk Ma
+   Copyright 2014-2024 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -476,7 +476,8 @@ enum
 #define set_interaction         (hyph_data + 1)                 // {define level of interaction ( \.{\\batchmode}, etc.~)}
 #define set_auto_spacing        (set_interaction + 1)           // {set auto spaceing mode ( \.{\\autospacing}, \.{\\noautospacing}, (\.{\\autoxspacing}, \.{\\noautoxspacing})}
 #define set_enable_cjk_token    (set_auto_spacing + 1)          // {set cjk mode ( \.{\\enablecjktoken}, \.{\\disablecjktoken}, \.{\\forcecjktoken} )}
-#define max_command             set_enable_cjk_token            // {the largest command code seen at |big_switch|}
+#define partoken_name           (set_enable_cjk_token + 1)      // {set |par_token| name}
+#define max_command             partoken_name                   // {the largest command code seen at |big_switch|}
 /* sec 0210 */
 #define undefined_cs    (max_command + 1 )  // {initial state of most |eq_type| fields}
 #define expand_after    (max_command + 2 )  // {special expansion ( \.{\\expandafter} )}
@@ -774,7 +775,9 @@ enum
 #define pdf_minor_version_code        75
 #define synctex_code                  76
 #define tracing_stack_levels_code     77
-#define int_pars                      78
+#define partoken_context_code         78
+#define show_stream_code              79
+#define int_pars                      80
 #define count_base                    (int_base + int_pars) // {256 user \.{\\count} registers}
 #define del_code_base                 (count_base + 256)    // {256 delimiter code mappings}
 #define dimen_base                    (del_code_base + 256) // {beginning of region 6}
@@ -861,6 +864,8 @@ enum
 #define pdf_minor_version             int_par(pdf_minor_version_code)
 #define synctex                       int_par(synctex_code)
 #define tracing_stack_levels          int_par(tracing_stack_levels_code)
+#define partoken_context              int_par(partoken_context_code)
+#define show_stream                   int_par(show_stream_code)
 /* sec 0247 */
 #define par_indent_code               0   // {indentation of paragraphs}
 #define math_surround_code            1   // {space around math in text}
@@ -3511,4 +3516,11 @@ do {                                        \
 #define illegal_Ucharcat_wchar_catcode(a) \
   (a<kanji)||(a>hangul)
 
+#define adjust_selector_based_on_show_stream()  \
+do {                                            \
+  if ((show_stream >= 0) &&                     \
+      (show_stream < no_print) &&               \
+      write_open[show_stream])                  \
+    selector = show_stream;                     \
+} while (0)
 #endif
