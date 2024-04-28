@@ -30,6 +30,7 @@
    (GLUE O 1 R 0.5 R 0.0 R 0.5)
    (GLUE O 3 R 0.25 R 0.0 R 0.25)
    (GLUE O 5 R 0.5 R 0.0 R 0.5)
+   (GLUE O 6 R 0.5 R 0.0 R 0.5)
    (STOP)
    (LABEL O 3)
    (GLUE O 0 R 0.25 R 0.0 R 0.25)
@@ -38,33 +39,51 @@
    (GLUE O 3 R 0.5 R 0.0 R 0.25)
    (GLUE O 4 R 0.25 R 0.0 R 0.25)
    (GLUE O 5 R 0.25 R 0.0 R 0.25)
+   (GLUE O 6 R 0.25 R 0.0 R 0.25)
    (STOP)
    (LABEL O 4)
    (GLUE O 0 R 0.5 R 0.0 R 0.0)
    (GLUE O 1 R 0.5 R 0.0 R 0.0)
    (GLUE O 3 R 0.75 R 0.0 R 0.25)
    (GLUE O 5 R 0.5 R 0.0 R 0.0)
+   (GLUE O 6 R 0.5 R 0.0 R 0.0)
    (STOP)
    (LABEL O 5)
    (GLUE O 1 R 0.5 R 0.0 R 0.5)
    (GLUE O 3 R 0.25 R 0.0 R 0.25)
    (KRN O 5 R 0.0)
    (STOP)
+   (LABEL O 6)
+   (GLUE O 1 R 0.5 R 0.0 R 0.5)
+   (GLUE O 3 R 0.25 R 0.0 R 0.25)
+   (STOP)
    )
 (CHARSINTYPE O 1
-   U 81FC U FF08 U 26951 U 23B0A6 U 24304B U 25B0B1
+   « ‘ “ 〈 〈 《 「 『 【 〔
+   〖 〘 〚 〝 （ ［ ｛ ｟
    )
 (CHARSINTYPE O 2
-   U 5409 U FF09 U 20BB7 U 25EFF5
+   » ’ ” 〉 、 〉 》 」 』 】
+   〕 〗 〙 〛 〞 〟 ） ， ］ ｝
+   ｠
    )
 (CHARSINTYPE O 3
-   U 2462 U FF1A
+   · ・ ： ；
    )
 (CHARSINTYPE O 4
-   U 2463 U 3002
+   。 ．
    )
 (CHARSINTYPE O 5
-   U 2026 U 2464 U 26270B U 2FF476
+   — ― ‥ …
+   )
+(CHARSINTYPE O 6
+   ｡ ｢ ｣ ､ ･ ｦ ｧ ｨ ｩ ｪ
+   ｫ ｬ ｭ ｮ ｯ ｰ ｱ ｲ ｳ ｴ
+   ｵ ｶ ｷ ｸ ｹ ｺ ｻ ｼ ｽ ｾ
+   ｿ ﾀ ﾁ ﾂ ﾃ ﾄ ﾅ ﾆ ﾇ ﾈ
+   ﾉ ﾊ ﾋ ﾌ ﾍ ﾎ ﾏ ﾐ ﾑ ﾒ
+   ﾓ ﾔ ﾕ ﾖ ﾗ ﾘ ﾙ ﾚ ﾛ ﾜ
+   ﾝ ﾞ ﾟ
    )
 (TYPE O 0
    (CHARWD R 1.0)
@@ -76,7 +95,7 @@
       )
    )
 (TYPE O 1
-   (CHARWD R 1.01)
+   (CHARWD R 0.5)
    (CHARHT R 0.88)
    (CHARDP R 0.12)
    (COMMENT
@@ -84,7 +103,7 @@
       )
    )
 (TYPE O 2
-   (CHARWD R 1.02)
+   (CHARWD R 0.5)
    (CHARHT R 0.88)
    (CHARDP R 0.12)
    (COMMENT
@@ -92,6 +111,7 @@
       (GLUE O 1 R 0.5 R 0.0 R 0.5)
       (GLUE O 3 R 0.25 R 0.0 R 0.25)
       (GLUE O 5 R 0.5 R 0.0 R 0.5)
+      (GLUE O 6 R 0.5 R 0.0 R 0.5)
       )
    )
 (TYPE O 3
@@ -105,6 +125,7 @@
       (GLUE O 3 R 0.5 R 0.0 R 0.25)
       (GLUE O 4 R 0.25 R 0.0 R 0.25)
       (GLUE O 5 R 0.25 R 0.0 R 0.25)
+      (GLUE O 6 R 0.25 R 0.0 R 0.25)
       )
    )
 (TYPE O 4
@@ -116,15 +137,25 @@
       (GLUE O 1 R 0.5 R 0.0 R 0.0)
       (GLUE O 3 R 0.75 R 0.0 R 0.25)
       (GLUE O 5 R 0.5 R 0.0 R 0.0)
+      (GLUE O 6 R 0.5 R 0.0 R 0.0)
       )
    )
 (TYPE O 5
-   (CHARWD R 1.05)
+   (CHARWD R 1.0)
    (CHARHT R 0.88)
    (CHARDP R 0.12)
    (COMMENT
       (GLUE O 1 R 0.5 R 0.0 R 0.5)
       (GLUE O 3 R 0.25 R 0.0 R 0.25)
       (KRN O 5 R 0.0)
+      )
+   )
+(TYPE O 6
+   (CHARWD R 0.5)
+   (CHARHT R 0.88)
+   (CHARDP R 0.12)
+   (COMMENT
+      (GLUE O 1 R 0.5 R 0.0 R 0.5)
+      (GLUE O 3 R 0.25 R 0.0 R 0.25)
       )
    )

@@ -1,4 +1,5 @@
 (COMMENT THIS IS A KANJI FORMAT FILE)
+(DIRECTION TATE)
 (FAMILY UPJIS KANJI)
 (FACE F MRR)
 (CODINGSCHEME TEX KANJI TEXT)
@@ -52,41 +53,44 @@
    (STOP)
    )
 (CHARSINTYPE O 1
-   U 81FC U FF08 U 26951 U 23B0A6 U 24304B U 25B0B1
+   « ‘ “ 〈 〈 《 「 『 【 〔
+   〖 〘 〚 〝 （ ［ ｛ ｟
    )
 (CHARSINTYPE O 2
-   U 5409 U FF09 U 20BB7 U 25EFF5
+   » ’ ” 〉 、 〉 》 」 』 】
+   〕 〗 〙 〛 〞 〟 ） ， ］ ｝
+   ｠
    )
 (CHARSINTYPE O 3
-   U 2462 U FF1A
+   · ・ ： ；
    )
 (CHARSINTYPE O 4
-   U 2463 U 3002
+   。 ．
    )
 (CHARSINTYPE O 5
-   U 2026 U 2464 U 26270B U 2FF476
+   — ― ‥ …
    )
 (TYPE O 0
    (CHARWD R 1.0)
-   (CHARHT R 0.88)
-   (CHARDP R 0.12)
+   (CHARHT R 0.5)
+   (CHARDP R 0.5)
    (COMMENT
       (GLUE O 1 R 0.5 R 0.0 R 0.5)
       (GLUE O 3 R 0.25 R 0.0 R 0.25)
       )
    )
 (TYPE O 1
-   (CHARWD R 1.01)
-   (CHARHT R 0.88)
-   (CHARDP R 0.12)
+   (CHARWD R 0.5)
+   (CHARHT R 0.5)
+   (CHARDP R 0.5)
    (COMMENT
       (GLUE O 3 R 0.25 R 0.0 R 0.25)
       )
    )
 (TYPE O 2
-   (CHARWD R 1.02)
-   (CHARHT R 0.88)
-   (CHARDP R 0.12)
+   (CHARWD R 0.5)
+   (CHARHT R 0.5)
+   (CHARDP R 0.5)
    (COMMENT
       (GLUE O 0 R 0.5 R 0.0 R 0.5)
       (GLUE O 1 R 0.5 R 0.0 R 0.5)
@@ -96,8 +100,8 @@
    )
 (TYPE O 3
    (CHARWD R 0.5)
-   (CHARHT R 0.88)
-   (CHARDP R 0.12)
+   (CHARHT R 0.5)
+   (CHARDP R 0.5)
    (COMMENT
       (GLUE O 0 R 0.25 R 0.0 R 0.25)
       (GLUE O 1 R 0.25 R 0.0 R 0.25)
@@ -109,8 +113,8 @@
    )
 (TYPE O 4
    (CHARWD R 0.5)
-   (CHARHT R 0.88)
-   (CHARDP R 0.12)
+   (CHARHT R 0.5)
+   (CHARDP R 0.5)
    (COMMENT
       (GLUE O 0 R 0.5 R 0.0 R 0.0)
       (GLUE O 1 R 0.5 R 0.0 R 0.0)
@@ -119,9 +123,9 @@
       )
    )
 (TYPE O 5
-   (CHARWD R 1.05)
-   (CHARHT R 0.88)
-   (CHARDP R 0.12)
+   (CHARWD R 1.0)
+   (CHARHT R 0.5)
+   (CHARDP R 0.5)
    (COMMENT
       (GLUE O 1 R 0.5 R 0.0 R 0.5)
       (GLUE O 3 R 0.25 R 0.0 R 0.25)

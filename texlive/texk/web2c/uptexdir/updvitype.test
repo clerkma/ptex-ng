@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: updvitype.test 67990 2023-08-20 14:26:56Z takuji $
+# $Id: updvitype.test 71092 2024-04-27 10:52:08Z takuji $
 # Copyright 2022 Japanese TeX Development Community <issue@texjp.org>
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2011-2013 Peter Breitenlohner <tex-live@tug.org>
@@ -38,7 +38,7 @@ for doc in ptex3 ptex4; do
 done
 done
 
-for doc in uptex3 uptex4; do
+for doc in uptex3 uptex4 uptex5; do
   $_updvitype $srcdir/uptexdir/tests/$doc.dvi >uptests/x$doc.typ || rc=5
   sed 1d uptests/x$doc.typ >uptests/x${doc}a.typ
   diff $srcdir/uptexdir/tests/${doc}a.typ uptests/x${doc}a.typ || rc=6
