@@ -30,7 +30,7 @@ Run the shell script:
 ## Source
 
 * TeX Live 2025/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
-* mruby 3.2.0 (`http://mruby.org/downloads/`)
+* mruby 3.3.0 (`http://mruby.org/downloads/`)
 
 ## How to Install
 

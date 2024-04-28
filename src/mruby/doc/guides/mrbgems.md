@@ -1,6 +1,6 @@
 # mrbgems
 
-mrbgems is a library manager to integrate C and Ruby extension in an easy and
+mrbgems is a library manager to integrate C and Ruby extensions in an easy and
 standardised way into mruby. Conventionally, each mrbgem name is prefixed by
 `mruby-`, e.g. `mruby-time` for a gem that provides `Time` class functionality.
 
@@ -92,6 +92,21 @@ end
 However, it should be used with caution, as it may deviate from the intent
 of the gem's author.
 
+### Gem Testing
+
+If you enable unit tests in your build with `enable_test`, tests will be
+generated for all gems and their dependencies by default. If necessary, it is
+possible to suppress tests for a specific gem like so:
+
+```ruby
+conf.gem 'mruby-noisygem' do |g|
+  g.skip_test = true
+end
+```
+
+However, it is considered best practice to leave all tests enabled whenever
+possible. A warning message will be generated for each gem with disabled tests.
+
 ## GemBox
 
 There are instances when you wish to add a collection of mrbgems into mruby at
@@ -160,9 +175,9 @@ The maximal GEM structure looks like this:
     +- test/            <- Test code (Ruby)
 ```
 
-The folder `mrblib` contains pure Ruby files to extend mruby. The folder `src`
-contains C/C++ files to extend mruby. The folder `include` contains C/C++ header
-files. The folder `test` contains C/C++ and pure Ruby files for testing purposes
+The `mrblib` directory contains pure Ruby files to extend mruby. The `src` directory
+contains C/C++ files to extend mruby. The `include` directory contains C/C++ header
+files. The `test` directory contains C/C++ and pure Ruby files for testing purposes
 which will be used by `mrbtest`. `mrbgem.rake` contains the specification
 to compile C and Ruby files. `README.md` is a short description of your GEM.
 
@@ -233,7 +248,7 @@ Version requirement supports following operators:
 - '<=': is equal or lesser
 - '~>': is equal or greater and is lesser than the next major version
   - example 1: '~> 2.2.2' means '>= 2.2.2' and '< 2.3.0'
-  - example 2: '~> 2.2'   means '>= 2.2.0' and '< 3.0.0'
+  - example 2: '~> 2.2' means '>= 2.2.0' and '< 3.0.0'
 
 When more than one version requirements is passed, the dependency must satisfy all of it.
 
@@ -349,7 +364,7 @@ mrb_c_extension_example_gem_final(mrb_state* mrb) {
 
 mruby can be extended with pure Ruby. It is possible to override existing
 classes or add new ones in this way. Put all Ruby files into the `mrblib`
-folder.
+directory.
 
 ### Pre-Conditions
 
@@ -377,11 +392,11 @@ none
 
 mruby can be extended with C and Ruby at the same time. It is possible to
 override existing classes or add new ones in this way. Put all Ruby files
-into the `mrblib` folder and all C files into the `src` folder.
+into the `mrblib` directory and all C files into the `src` directory.
 
 mruby codes under `mrblib` directory would be executed after gem init C
-function is called. Make sure *mruby script* depends on *C code* and
-*C code* doesn't depend on *mruby script*.
+function is called. Make sure _mruby script_ depends on _C code_ and
+_C code_ doesn't depend on _mruby script_.
 
 ### Pre-Conditions
 
