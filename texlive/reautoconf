@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: reautoconf 69342 2024-01-07 21:44:58Z karl $
+# $Id: reautoconf 71106 2024-04-28 16:42:22Z karl $
 # This "reautoconf" script at the root of the TeX Live source tree 
 # runs autoreconf (from PATH) in all relevant TL directories.
 #
@@ -47,7 +47,7 @@ source tree.
 Report bugs (and any other discussion) to:
   tlbuild@tug.org (https://lists.tug.org/tlbuild)
 
-Version: $Id: reautoconf 69342 2024-01-07 21:44:58Z karl $
+Version: $Id: reautoconf 71106 2024-04-28 16:42:22Z karl $
 "
 
 do_cmd=eval
@@ -97,6 +97,7 @@ do_it () {
   $do_cmd "$@"
   if test $? -ne 0; then
     echo "$0: goodbye, exit status of $*: $?" >&2
+    echo "$0: directory: `/bin/pwd`" >&2
     exit 1
   fi
 }

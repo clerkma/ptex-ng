@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 71024 2024-04-21 15:16:49Z karl $
+dnl $Id: configure.ac 71105 2024-04-28 16:42:00Z karl $
 dnl Process this file with Autoconf to produce a configure script for Web2c.
 dnl
 dnl   Copyright 2015-2024 Karl Berry <tex-live@tug.org>
@@ -116,6 +116,9 @@ kpse_save_LIBS=$LIBS
 KPSE_LUA53_DEFINES
 KPSE_LUA52_DEFINES
 KPSE_LUAJIT_DEFINES
+KPSE_LARGEFILE([LUA53_DEFINES], [_LARGEFILE64_SOURCE])
+KPSE_LARGEFILE([LUA52_DEFINES], [_LARGEFILE64_SOURCE])
+KPSE_LARGEFILE([LUAJIT_DEFINES], [_LARGEFILE64_SOURCE])
 LIBS=$kpse_save_LIBS
 if test "x$kpse_cv_have_win32" = xno; then
   AC_SEARCH_LIBS([gethostbyname], [nsl])
