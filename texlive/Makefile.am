@@ -1,4 +1,4 @@
-## $Id: Makefile.am 55329 2020-05-28 22:03:59Z karl $
+## $Id: Makefile.am 71119 2024-04-29 17:11:37Z karl $
 ## Makefile.am for the TeX Live top-level
 ##
 ## Copyright 2016-2020 Karl Berry <tex-live@tug.org>
@@ -103,3 +103,16 @@ texlinks:
 .PHONY: triptrap
 triptrap:
 	cd texk && $(MAKE) $(AM_MAKEFLAGS) $@
+
+# We aren't trying to keep make dist working. Sorry.
+distdir:
+	@echo "Sorry, we don't try to keep make dist working in TeX Live."
+	@echo
+	@echo "You can retrieve the development and/or released sources"
+	@echo "  in various ways: https://tug.org/texlive/svn"
+	@echo
+	@echo "For info on how to integrate the built binaries into a runnable"
+	@echo "  system, see: https://tug.org/texlive/build.html#deploy"
+	@echo
+	@echo "The result of make install is not usable by itself."
+	@false

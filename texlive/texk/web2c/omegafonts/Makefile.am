@@ -1,4 +1,4 @@
-## $Id: Makefile.am 61335 2021-12-17 16:42:00Z karl $
+## $Id: Makefile.am 71118 2024-04-29 14:27:21Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/omegafonts/
 ##
 ## Copyright 2015-2021 Karl Berry <tex-live@tug.org>
@@ -153,8 +153,9 @@ DISTCLEANFILES += tests/Cherokee.tfm tests/OCherokee.ofm \
 	tests/OCherokee.opl tests/OCherokee.ovf \
 	tests/xCherokee.* tests/xOCherokee.*
 ## overbmp.test
-EXTRA_DIST += tests/inbmp.opl tests/overbmp.opl tests/overbmp.ovp
-DISTCLEANFILES += tests/xinbmp* tests/xoverbmp*
+EXTRA_DIST += tests/inbmp.opl tests/overbmp.opl tests/overbmp.ovp \
+	tests/overucs.opl tests/overucs.ovp adbjpn.opl
+DISTCLEANFILES += tests/xinbmp* tests/xoverbmp* tests/xoverucs* tests/xadbjpn*
 ## realnum.test
 EXTRA_DIST += tests/realnum.opl tests/realnum.out
 DISTCLEANFILES += tests/realnum.*
