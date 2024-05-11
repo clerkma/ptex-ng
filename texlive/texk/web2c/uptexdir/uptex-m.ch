@@ -1,4 +1,4 @@
-% $Id: uptex-m.ch 71143 2024-05-01 01:03:47Z takuji $
+% $Id: uptex-m.ch 71230 2024-05-11 08:27:12Z takuji $
 % This is a change file for upTeX u1.35
 % By Takuji Tanaka.
 %
@@ -1316,9 +1316,8 @@ begin if is_char_node(link(p)) then
         ins_kp:=false;
         goto again_2
         end
-      end
       end;
-    begin if not disp_called then
+    if not disp_called then
       begin prev_node:=tail; tail_append(get_node(small_node_size));
       type(tail):=disp_node; disp_dimen(tail):=0; disp_called:=true
       end;
