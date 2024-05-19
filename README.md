@@ -29,18 +29,8 @@ Run the shell script:
 
 ## Source
 
-* TeX Live 2025/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
-* mruby 3.3.0 (`http://mruby.org/downloads/`)
+* `texlive`: TeX Live 2025/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
+  * `svn co svn://tug.org/texlive/trunk/Build/source texlive`
+* `src/mruby`: mruby 3.3.0 (`http://mruby.org/downloads/`)
 
-## How to Install
-
-Author's testing repository.
-
-#### Installation on Windows/Linux/macOS
-
-    tlmgr update --self --all
-    tlmgr repository add https://www.hemibit.com/2021 ptexngdist
-    tlmgr pinning add ptexngdist "*"
-    tlmgr install ptex-ng
-    tlmgr path add
 
