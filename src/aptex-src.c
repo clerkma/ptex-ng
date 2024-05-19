@@ -17226,8 +17226,7 @@ restart:
 
     while (true)
     {
-      if ((cur_tok < zero_token + radix) && (cur_tok >= zero_token) &&
-        (cur_tok <= zero_token + 9))
+      if ((cur_tok < zero_token + radix) && (cur_tok >= zero_token) && (cur_tok <= zero_token + 9))
         d = cur_tok - zero_token;
       else if (radix == 16)
       {
@@ -17522,9 +17521,9 @@ not_found:
     if (mag != 1000)
     {
       cur_val = xn_over_d(cur_val, 1000, mag);
-      f = (1000 * f + 65536 * ng_remainder) / mag;
-      cur_val = cur_val + (f / 65536);
-      f = f % 65536;
+      f = (1000 * f + 0200000 * ng_remainder) / mag;
+      cur_val = cur_val + (f / 0200000);
+      f = f % 0200000;
     }
   }
 
@@ -17568,13 +17567,13 @@ not_found:
   }
 
   cur_val = xn_over_d(cur_val, num, denom);
-  f = (num * f + 65536 * ng_remainder) / denom;
-  cur_val = cur_val + (f / 65536);
-  f = f % 65536;
+  f = (num * f + 0200000 * ng_remainder) / denom;
+  cur_val = cur_val + (f / 0200000);
+  f = f % 0200000;
 
 done2:
 attach_fraction:
-  if (cur_val >= 16384)
+  if (cur_val >= 040000)
     arith_error = true;
   else
     cur_val = cur_val * unity + f;
@@ -17588,7 +17587,7 @@ done:
   }
 
 attach_sign:
-  if (arith_error || (abs(cur_val) >= 1073741824))
+  if (arith_error || (abs(cur_val) >= 010000000000))
   {
     print_err("Dimension too large");
     help2("I can't work with sizes bigger than about 19 feet.",
@@ -17670,7 +17669,7 @@ void scan_glue (small_number level)
   cur_val = q;
 }
 
-#define default_rule 26214
+#define default_rule 26214 // 0.4pt
 
 static pointer scan_rule_spec (void)
 {
@@ -17763,7 +17762,7 @@ static pointer str_toks_cat (pool_pointer b, uint32_t cat)
   return p;
 }
 
-static pointer str_toks(pool_pointer b)
+static pointer str_toks (pool_pointer b)
 {
   return str_toks_cat(b, 0);
 }
@@ -17915,7 +17914,7 @@ static char * aptex_find_file (str_number s)
   return file_name_kpse;
 }
 
-static void get_creation_date()
+static void get_creation_date (void)
 {
   size_t date_len;
   char * date_str;
@@ -19651,7 +19650,7 @@ str_number w_make_name_string (word_file f)
   return make_name_string();
 }
 
-static void scan_file_name_braced(void);
+static void scan_file_name_braced (void);
 
 static void scan_file_name (void)
 {
@@ -19716,7 +19715,7 @@ done:
   warning_index = save_warning_index; // {restore |warning_index|}
 }
 
-static void scan_file_name_braced(void)
+static void scan_file_name_braced (void)
 {
   small_number save_scanner_status; // {|scanner_status| upon entry}
   pointer save_def_ref; // {|def_ref| upon entry, important if inside `\.{\\message}}
@@ -19760,7 +19759,7 @@ static void scan_file_name_braced(void)
   stop_at_space = save_stop_at_space; // {restore |stop_at_space|}
 }
 
-void pack_job_name_(str_number s)
+void pack_job_name_ (str_number s)
 {
   cur_area = 335; /* "" */
   cur_ext  = s;
@@ -19768,7 +19767,7 @@ void pack_job_name_(str_number s)
   pack_cur_name();
 }
 
-void prompt_file_name_(const char * s, str_number e)
+void prompt_file_name_ (const char * s, str_number e)
 {
   uint32_t k;
 
@@ -20536,7 +20535,7 @@ static void char_warning (internal_font_number f, eight_bits c)
   }
 }
 
-static void char_warning_jis(internal_font_number f, KANJI_code jc)
+static void char_warning_jis (internal_font_number f, KANJI_code jc)
 {
   if (tracing_lost_chars > 0)
   {
@@ -20858,9 +20857,9 @@ done:
 // PDF output functions from texlive/texk/dvipdfm-x
 
 /* from "dvipdfm-x/fontmap.h" */
-extern void pdf_init_fontmaps(void);
-extern void pdf_close_fontmaps(void);
-extern int pdf_load_fontmap_file(const char *filename, int map_mode);
+extern void pdf_init_fontmaps (void);
+extern void pdf_close_fontmaps (void);
+extern int pdf_load_fontmap_file (const char *filename, int map_mode);
 
 /* from "dvipdfm-x/pdfdoc.h" */
 struct pdf_dev_setting {
@@ -20899,37 +20898,37 @@ struct pdf_setting
     struct pdf_obj_setting object;
 };
 
-extern void pdf_open_document(const char *filename, const char * creator, 
+extern void pdf_open_document (const char *filename, const char * creator, 
   const unsigned char * id1, const unsigned char * id2, struct pdf_setting settings);
-extern void pdf_close_document(void);
-extern void pdf_doc_begin_page(double scale, double x_origin, double y_origin);
-extern void pdf_doc_end_page(void);
+extern void pdf_close_document (void);
+extern void pdf_doc_begin_page (double scale, double x_origin, double y_origin);
+extern void pdf_doc_end_page (void);
 typedef struct pdf_rect {
   double llx, lly, urx, ury;
 } pdf_rect;
-extern void pdf_doc_set_mediabox(unsigned page_no, const pdf_rect *mediabox);
+extern void pdf_doc_set_mediabox (unsigned page_no, const pdf_rect *mediabox);
 
 /* from "dvipdfm-x/pdfobj.h" */
-extern long pdf_output_stats(void);
+extern long pdf_output_stats (void);
 
 /* from "dvipdfm-x/pdfdev.h" */
-extern void graphics_mode(void);
+extern void graphics_mode (void);
 typedef signed long spt_t;
-extern void pdf_dev_set_rule(spt_t xpos, spt_t ypos, spt_t width, spt_t height);
-extern void pdf_dev_set_dirmode(int dir_mode);
-extern void pdf_dev_begin_actualtext(uint16_t * unicodes, int len);
-extern void pdf_dev_end_actualtext(void);
+extern void pdf_dev_set_rule (spt_t xpos, spt_t ypos, spt_t width, spt_t height);
+extern void pdf_dev_set_dirmode (int dir_mode);
+extern void pdf_dev_begin_actualtext (uint16_t * unicodes, int len);
+extern void pdf_dev_end_actualtext (void);
 
 /* from "dvipdfm-x/pdflimits.h" */
 #define PDF_VERSION_MIN 13
 #define PDF_VERSION_MAX 20
 
 /* from "dvipdfm-x/specials.h" */
-extern int spc_exec_at_begin_document(void);
-extern void spc_exec_at_end_document(void);
-extern int spc_exec_at_begin_page(void);
-extern int spc_exec_at_end_page(void);
-extern int spc_exec_special(const char *buffer, long size,
+extern int spc_exec_at_begin_document (void);
+extern void spc_exec_at_end_document (void);
+extern int spc_exec_at_begin_page (void);
+extern int spc_exec_at_end_page (void);
+extern int spc_exec_special (const char *buffer, long size,
  double x_user, double y_user, double dpx_mag, int * is_drawable, pdf_rect *rect);
 
 /* from "dvipdfm-x/dvi.c" */
@@ -20938,10 +20937,10 @@ extern int dvi_locate_native_font (const char *filename, uint32_t fidx,
   spt_t ptsize, int layout_dir, int extend, int slant, int embolden);
 
 /* from "src/libdpx/ng/dvi_ng.c" */
-extern void ng_set(int32_t ch, int ng_font_id, int32_t h, int32_t v);
-extern void ng_gid(uint16_t gid, int ng_font_id, int32_t h, int32_t v);
-extern void ng_layer(uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, uint8_t g, uint8_t b);
-extern void spc_moveto(int32_t, int32_t);
+extern void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v);
+extern void ng_gid (uint16_t gid, int ng_font_id, int32_t h, int32_t v);
+extern void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, uint8_t g, uint8_t b);
+extern void spc_moveto (int32_t, int32_t);
 
 /* dvipdfm-x/dvipdfmx.c */
 extern int dpx_util_format_asn_date (char *, int);
@@ -20951,9 +20950,9 @@ typedef struct {
   unsigned char buf[64];
   int count;
 } MD5_CONTEXT;
-extern void MD5_init(MD5_CONTEXT *);
-extern void MD5_write(MD5_CONTEXT *, const unsigned char *, unsigned int);
-extern void MD5_final(unsigned char *, MD5_CONTEXT *);
+extern void MD5_init (MD5_CONTEXT *);
+extern void MD5_write (MD5_CONTEXT *, const unsigned char *, unsigned int);
+extern void MD5_final (unsigned char *, MD5_CONTEXT *);
 
 static void dpx_compute_id_string (unsigned char * id, const char * producer, const char * dvi_file_name, const char * pdf_file_name)
 {
