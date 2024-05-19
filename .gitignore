@@ -257,6 +257,7 @@ texlive/texk/ptexenc/libptexenc_la-ptexenc.lo
 texlive/texk/ptexenc/libptexenc_la-unicode-jp.lo
 texlive/texk/ptexenc/libptexenc_la-unicode.lo
 texlive/texk/ptexenc/libtool
+texlive/texk/ptexenc/ptekf
 texlive/texk/ptexenc/ptexenc.pc
 texlive/texk/ptexenc/ptexenc/c-auto.h
 texlive/texk/ptexenc/ptexenc/stamp-h1
