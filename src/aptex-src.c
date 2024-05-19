@@ -122,7 +122,7 @@ static void print_aptex_usage (void)
 
 static void print_aptex_version (void)
 {
-  printf("Copyright 2014-2023 Clerk Ma.\n"
+  printf("Copyright 2014-2024 Clerk Ma.\n"
     "banner: \"%s\"\n"
     "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n",
     banner, pTeX_version_string, upTeX_version_string);
@@ -17136,19 +17136,26 @@ restart:
     }
     else if (cur_tok < cs_token_flag + single_base)
       cur_val = cur_tok - cs_token_flag - active_base;
-    else if (cur_tok < cs_token_flag + null_cs)
-      cur_val = cur_tok - cs_token_flag - single_base;
     else
     {
-      m = text(cur_tok - cs_token_flag);
-      if (str_start[m + 1] - str_start[m] == multistrlenshort(str_pool, str_start[m + 1], str_start[m]))
-        cur_val = fromBUFFshort(str_pool, str_start[m + 1], str_start[m]);
-      else
-      {
+      if (!(cur_cmd < kanji))
         cur_cmd = invalid_char;
-        cur_val = 256;
-      }
+
+      cur_val = cur_tok - cs_token_flag - single_base;
     }
+    // else if (cur_tok < cs_token_flag + null_cs)
+    //   cur_val = cur_tok - cs_token_flag - single_base;
+    // else
+    // {
+    //   m = text(cur_tok - cs_token_flag);
+    //   if (str_start[m + 1] - str_start[m] == multistrlenshort(str_pool, str_start[m + 1], str_start[m]))
+    //     cur_val = fromBUFFshort(str_pool, str_start[m + 1], str_start[m]);
+    //   else
+    //   {
+    //     cur_cmd = invalid_char;
+    //     cur_val = 256;
+    //   }
+    // }
 
     if ((cur_val > 255) && (cur_cmd < kanji))
     {
@@ -21247,7 +21254,7 @@ static void ship_out (pointer p)
 #ifndef APTEX_DVI_ONLY
     {
       struct pdf_setting aptex_pdf_setting;
-      char * aptex_producer = "Asiatic pTeX 2023";
+      char * aptex_producer = "Asiatic pTeX 2024";
       int aptex_pdf_version;
       unsigned char aptex_id1[16], aptex_id2[16];
 
