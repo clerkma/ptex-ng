@@ -17136,12 +17136,18 @@ restart:
     }
     else if (cur_tok < cs_token_flag + single_base)
       cur_val = cur_tok - cs_token_flag - active_base;
+    else if (cur_tok < cs_token_flag + null_cs)
+      cur_val = cur_tok - cs_token_flag - single_base;
     else
     {
-      if (!(cur_cmd < kanji))
+      m = text(cur_tok - cs_token_flag);
+      if (str_start[m + 1] - str_start[m] == multistrlenshort(str_pool, str_start[m + 1], str_start[m]))
+        cur_val = fromBUFFshort(str_pool, str_start[m + 1], str_start[m]);
+      else
+      {
         cur_cmd = invalid_char;
-
-      cur_val = cur_tok - cs_token_flag - single_base;
+        cur_val = 256;
+      }
     }
 
     if ((cur_val > 255) && (cur_cmd < kanji))
