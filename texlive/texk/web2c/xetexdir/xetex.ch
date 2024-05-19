@@ -1,5 +1,5 @@
 /****************************************************************************\
- $Id: xetex.ch 70123 2024-02-24 06:20:54Z takuji $
+ $Id: xetex.ch 71288 2024-05-18 11:06:21Z takuji $
  Part of the XeTeX typesetting system
  Copyright (c) 1994-2008 by SIL International
  Copyright (c) 2009-2021 by Jonathan Kew
@@ -109,6 +109,14 @@ if translate_filename then read_tcx_file;
 @!term_in:unicode_file;
 @#
 @!bound_default:integer; {temporary for setup}
+@z
+
+@x [5.??] type of trick_buf[]
+@!trick_buf:array[0..ssup_error_line] of ASCII_code; {circular buffer for
+  pseudoprinting}
+@y
+@!trick_buf:array[0..ssup_error_line] of UnicodeScalar; {circular buffer for
+  pseudoprinting}
 @z
 
 @x [5.61] l.1556 - Print rest of banner, eliminate misleading `(no format preloaded)'.

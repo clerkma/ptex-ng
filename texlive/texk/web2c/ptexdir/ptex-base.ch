@@ -1,4 +1,4 @@
-% $Id: ptex-base.ch 68305 2023-09-17 13:24:00Z hironobu $
+% $Id: ptex-base.ch 71289 2024-05-18 11:06:27Z takuji $
 % This is a change file for pTeX
 % By Sadayuki Tanaka and ASCII MEDIA WORKS.
 %
@@ -2582,14 +2582,15 @@ if cur_tok<cs_token_flag then
   end
 else if cur_tok<cs_token_flag+single_base then
   cur_val:=cur_tok-cs_token_flag-active_base
-else
-  { the token is a CS;
-    * if |kanji|<=|cur_cmd|<=|max_char_code|, then CS is let-equal to |wchar_token|
-    * if |max_char_code|<|cur_cmd|, then CS is a multibyte CS
-      => both case should raise "Improper ..." error
-    * otherwise it should be a single-character CS with |cur_val|<=255 }
-  begin if not (cur_cmd<kanji) then cur_cmd:=invalid_char;
-  cur_val:=cur_tok-cs_token_flag-single_base;
+else if cur_tok<cs_token_flag+null_cs then
+  cur_val:=cur_tok-cs_token_flag-single_base
+else { check the cs is a single Japanese character }
+  begin m:=text(cur_tok-cs_token_flag);
+    if str_start[m+1]-str_start[m]
+       = multistrlenshort(str_pool, str_start[m+1], str_start[m])
+       then
+      cur_val:=fromBUFFshort(str_pool, str_start[m+1], str_start[m])
+    else begin cur_cmd:=invalid_char; cur_val:=256; end;
   end;
 if (cur_val>255)and(cur_cmd<kanji) then
   begin print_err("Improper alphabetic or KANJI constant");
