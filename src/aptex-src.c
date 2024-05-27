@@ -4517,7 +4517,7 @@ static boolean load_fmt_file (void)
     k = k + x;
   } while (!(k > eqtb_size));
 
-  undump_int(par_loc);
+  undump(hash_base, frozen_control_sequence, par_loc);
   par_token = cs_token_flag + par_loc;
   undump(hash_base, frozen_control_sequence, write_loc);
   undump(hash_base, frozen_control_sequence, hash_used);
@@ -17136,26 +17136,19 @@ restart:
     }
     else if (cur_tok < cs_token_flag + single_base)
       cur_val = cur_tok - cs_token_flag - active_base;
+    else if (cur_tok < cs_token_flag + null_cs)
+      cur_val = cur_tok - cs_token_flag - single_base;
     else
     {
-      if (!(cur_cmd < kanji))
+      m = text(cur_tok - cs_token_flag);
+      if (str_start[m + 1] - str_start[m] == multistrlen(str_pool, str_start[m + 1], str_start[m]))
+        cur_val = fromBUFF(str_pool, str_start[m + 1], str_start[m]);
+      else
+      {
         cur_cmd = invalid_char;
-
-      cur_val = cur_tok - cs_token_flag - single_base;
+        cur_val = 256;
+      }
     }
-    // else if (cur_tok < cs_token_flag + null_cs)
-    //   cur_val = cur_tok - cs_token_flag - single_base;
-    // else
-    // {
-    //   m = text(cur_tok - cs_token_flag);
-    //   if (str_start[m + 1] - str_start[m] == multistrlenshort(str_pool, str_start[m + 1], str_start[m]))
-    //     cur_val = fromBUFFshort(str_pool, str_start[m + 1], str_start[m]);
-    //   else
-    //   {
-    //     cur_cmd = invalid_char;
-    //     cur_val = 256;
-    //   }
-    // }
 
     if ((cur_val > 255) && (cur_cmd < kanji))
     {

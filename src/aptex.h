@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2023 Clerk Ma
+   Copyright 2014-2024 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
