@@ -1,0 +1,6 @@
+# plain
+aptex ptex-ng language.def *aptex.ini
+# LaTeX
+aplatex ptex-ng language.dat *aplatex.ini
+aplatex-dev ptex-ng language.dat *aplatex.ini
+# fmtutil-sys --cnffile fmt-aptex.cnf --all
