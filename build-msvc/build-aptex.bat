@@ -1,6 +1,6 @@
 rem Build ApTeX on Visual Studio 2022.
 
-echo off
+@ECHO OFF
 if "%1" == "" goto set_nmake
 if "%1" == "jom" goto set_jom
 
@@ -15,28 +15,28 @@ set MAKE=jom
 set TL_ROOT=..\texlive
 set APTEX_ROOT=..\src
 set APTEX_CFLAGS=-nologo -c -O2 -Oy
-echo on
+set CLEAN=if exist *.obj (del *.obj)
+@ECHO OFF
 
-echo Building zlib ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-zlib.nmake
-echo Building libpng ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-libpng.nmake
-echo Building kpathsea ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-kpathsea.nmake
-echo Building ptexenc ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-ptexenc.nmake
-echo Building libdpx ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-libdpx.nmake
-echo Building libmd5 ...
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-libmd5.nmake
-echo Building aptex/ptex-ng
-if exist *.obj (del *.obj)
-%MAKE% -s -nologo -f makefiles\mk-aptex.nmake
-if exist *.obj (del *.obj)
+call :build zlib
+call :build libpng
+call :build kpathsea
+call :build ptexenc
+call :build libdpx
+call :build libmd5
+call :build aptex
+
+%CLEAN%
 if exist *.lib (del *.lib)
+cl -nologo -MT -Feptex-ng-wrap.exe -DEXEPROG=\"ptex-ng.exe\" %TL_ROOT%\texk\texlive\windows_wrapper\callexe.c
+copy ptex-ng-wrap.exe platex-ng.exe
+copy ptex-ng-wrap.exe platex-dev-ng.exe
+exit /B 0
+
+:build
+@ECHO ON
+@ECHO Building %~1 ...
+@ECHO OFF
+%CLEAN%
+%MAKE% -s -nologo -f makefiles\mk-%~1.nmake
+exit /B 0

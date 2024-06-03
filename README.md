@@ -32,34 +32,3 @@ Run the shell script:
 * `texlive`: TeX Live 2025/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
   * `svn co svn://tug.org/texlive/trunk/Build/source texlive`
 * `src/mruby`: mruby 3.3.0 (`http://mruby.org/downloads/`)
-
-## Usage
-
-### Setup Variables
-
-```
-tlmgr conf texmf TEXINPUTS.aplatex "$TEXMFDOTDIR;$TEXMF/tex/{uplatex,platex,latex,generic,}//"
-tlmgr conf texmf TEXINPUTS.aplatex-dev "$TEXMFDOTDIR;$TEXMF/tex/{latex-dev,uplatex,platex,latex,generic,}//"
-tlmgr conf texmf TEXINPUTS.aptex "$TEXMFDOTDIR;$TEXMF/tex/{uptex,ptex,plain,generic,latex,}//"
-```
-
-### Generate All Formats
-
-```
-cd usage
-fmtutil-sys --cnffile fmt-aptex.cnf --all
-```
-
-### Compile Your Document
-
-```
-ptex-ng +aplatex doc.tex
-```
-or
-```
-ptex-ng +aplatex-dev doc.tex
-```
-or
-```
-ptex-ng -format=aplatex doc.tex
-```
