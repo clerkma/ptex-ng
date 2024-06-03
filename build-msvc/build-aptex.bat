@@ -1,4 +1,4 @@
-rem Build ApTeX on Visual Studio 2022.
+@REM Build ApTeX with Visual Studio 2022.
 
 @ECHO OFF
 if "%1" == "" goto set_nmake
@@ -28,7 +28,7 @@ call :build aptex
 
 %CLEAN%
 if exist *.lib (del *.lib)
-cl -nologo -MT -Feptex-ng-wrap.exe -DEXEPROG=\"ptex-ng.exe\" %TL_ROOT%\texk\texlive\windows_wrapper\callexe.c
+cl -nologo -MD -Feptex-ng-wrap.exe -DEXEPROG=\"ptex-ng.exe\" %TL_ROOT%\texk\texlive\windows_wrapper\callexe.c
 copy ptex-ng-wrap.exe platex-ng.exe
 copy ptex-ng-wrap.exe platex-dev-ng.exe
 exit /B 0
