@@ -1,0 +1,2 @@
+
+set TEXMCNF=%~dp0
