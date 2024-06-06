@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# $Id: fix-changefile-lines.py 71417 2024-06-03 22:32:13Z karl $
+# $Id: fix-changefile-lines.py 71442 2024-06-05 17:28:25Z ascherer $
 # Applied to tex.ch and mf.ch on 2024-06-03, following the request at:
 # https://tug.org/pipermail/tex-k/2024-June/004064.html
 """
@@ -71,9 +71,12 @@ class WebReader:
         section = self.section_cnt
         line_number = self._pos
 
-        part_inc = line.count("@*")
-        self.part_cnt += part_inc
-        self.section_cnt += line.count("@ ") + part_inc
+        if re.search("^@\*", line):
+            self.part_cnt += 1
+            self.section_cnt += 1
+
+        if re.search("^@ ", line) or line == "@":
+            self.section_cnt += 1
 
         return (part, section, line_number), line
 
@@ -155,7 +158,7 @@ class ChangeReader:
             text = self._lines[self._chunk_start][2:].strip()
 
             # Remove potentially leading [part.section] tag.
-            pattern = "\\[.*\\]"
+            pattern = "\\[\\d+(\\.\\d+)?\\]"
             if re.match(pattern, text):
                 text = re.sub(pattern, "", text).strip()
 
@@ -163,10 +166,11 @@ class ChangeReader:
                 pattern = "l\\.\\d+"
                 if re.match(pattern, text):
                     text = re.sub(pattern, "", text)
-                    pattern = " -+ "
+
                     # Remove potentially text comment separator.
+                    pattern = " -+ "
                     if re.match(pattern, text):
-                        text = re.sub(pattern, "", text).strip()
+                        text = re.sub(pattern, "", text, 1).strip()
 
             # Create line with standard tag.
             new_line = f"@x [{part}.{section}] l.{line_number}"
