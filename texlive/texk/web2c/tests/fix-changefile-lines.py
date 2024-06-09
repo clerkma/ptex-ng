@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# $Id: fix-changefile-lines.py 71451 2024-06-06 17:29:15Z ascherer $
+# $Id: fix-changefile-lines.py 71460 2024-06-09 12:38:46Z ascherer $
 # Applied to tex.ch and mf.ch on 2024-06-03, following the request at:
 # https://tug.org/pipermail/tex-k/2024-June/004064.html
 """
@@ -156,7 +156,11 @@ class ChangeReader:
             # Attempt to catch the case where something is inserted just before
             # the start of a section.
             match_start = self._match_lines[0].strip()[:2]
-            repl_start = self._lines[self._pos + 1].strip()[:2]
+            for repl_index in range(self._pos + 1, len(self._lines)):
+                repl_start = self._lines[repl_index].strip()[:2]
+                # CWEB @qcomments@> are ignored; see ctwill-w2c.ch
+                if repl_start != "@q":
+                    break
             if match_start == "@ ":
                 if repl_start in ["@ ", "@*"]:
                     section += 1

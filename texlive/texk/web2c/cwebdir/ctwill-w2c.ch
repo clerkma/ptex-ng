@@ -1270,7 +1270,7 @@ out_name(cur_name,proofing);
             (ptrdiff_t)(max_sort_ptr-scrap_info),(long)max_scraps);
 @z
 
-@x [13.269] l.4884
+@x [14.270] l.4884
 @** Index.
 @y
 @q Section 270. @>
@@ -1927,7 +1927,7 @@ a function block.
 order_decl_stmt=true;
 
 @* Output file update. Most \CEE/ projects are controlled by a \.{Makefile}
-that automatically takes care of the temporal dependecies between the different
+that automatically takes care of the temporal dependencies between the different
 source modules. It may be convenient that \.{CWEB} doesn't create new output
 for all existing files, when there are only changes to some of them. Thus the
 \.{make} process will only recompile those modules where necessary. You can
