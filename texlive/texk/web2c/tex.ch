@@ -1,4 +1,4 @@
-% $Id: tex.ch 71439 2024-06-05 09:28:10Z ascherer $
+% $Id: tex.ch 71563 2024-06-19 18:00:56Z ascherer $
 % tex.ch for C compilation with web2c, derived from various other change files.
 % By Tim Morgan, UC Irvine ICS Department, and many others.
 %
@@ -47,9 +47,9 @@
 %
 % Except for MLTeX, the new code in this file is in the public domain.
 %
-% The module numbers in this change file refer to TEX.WEB 3.14159 as
-% of March, 1995 (published as Donald E. Knuth, TeX: The Program,
-% Volume B of Computers & Typesetting).
+% The part, module, and line numbers in this change file refer to
+% TEX.WEB 3.141592653 as of January, 2021 (published as Donald E. Knuth,
+% TeX: The Program, Volume B of Computers & Typesetting Jubilee Editions).
 
 @x [0.0] l.88 - WEAVE: print changes only.
   \def\?##1]{\hbox to 1in{\hfil##1.\ }}
