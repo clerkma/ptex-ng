@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# $Id: fix-changefile-lines.py 71555 2024-06-18 14:45:49Z ascherer $
+# $Id: fix-changefile-lines.py 71598 2024-06-23 15:27:20Z ascherer $
 # Applied to tex.ch and mf.ch on 2024-06-03, following the request at:
 # https://tug.org/pipermail/tex-k/2024-June/004064.html
 """
@@ -127,9 +127,7 @@ class ChangeReader:
                 while True:
                     self._pos += 1
                     if self._pos >= len(self._lines):
-                        eprint(
-                            f"ERROR: Missing @y for @x on l.{self._chunk_start + 1} in change file"
-                        )
+                        eprint(f"! Change file ended before @y. (l. {self._pos+1} of change file)")
                         sys.exit(1)
                     line = self._lines[self._pos]
                     if line.startswith("@y"):
@@ -137,6 +135,10 @@ class ChangeReader:
                             self._chunk_start + 1 : self._pos
                         ]
                         return True
+                    elif line.startswith("@x") or line.startswith("@z"):
+                        eprint(f"! Where is the matching @y?. (l. {self._pos+1} of change file)")
+                        eprint(line)
+                        sys.exit(1)
             self._pos += 1
         return False
 
@@ -146,17 +148,21 @@ class ChangeReader:
         as well as the line number of the first match line in the WEB file.
         """
         while True:
-            (part, section, line_number), tex_line = web_reader.next_line()
-            if tex_line is None:
-                eprint("ERROR: Could not find match for line:")
-                eprint(f"  {self._match_lines[0]}")
+            try:
+                (part, section, line_number), tex_line = web_reader.next_line()
+            except:
+                eprint(f"! Change file entry did not match. (l. {self._chunk_start+2} of change file)")
+                eprint(self._match_lines[0])
                 sys.exit(1)
             if tex_line == self._match_lines[0]:
                 for i in range(1, len(self._match_lines)):
-                    _, tex_line = web_reader.next_line()
+                    try:
+                        _, tex_line = web_reader.next_line()
+                    except:
+                        tex_line = None
                     if tex_line is None or tex_line != self._match_lines[i]:
-                        eprint("ERROR: Could not match all lines following match line:")
-                        eprint(f"  {self._match_lines[0]}")
+                        eprint(f"! Change file entry did not match. (l. {self._chunk_start+2+i} of change file)")
+                        eprint(self._match_lines[i])
                         sys.exit(1)
 
                 return part, section, line_number
