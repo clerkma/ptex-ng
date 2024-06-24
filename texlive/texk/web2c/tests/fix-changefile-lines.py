@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# $Id: fix-changefile-lines.py 71598 2024-06-23 15:27:20Z ascherer $
+# $Id: fix-changefile-lines.py 71607 2024-06-23 22:47:31Z ascherer $
 # Applied to tex.ch and mf.ch on 2024-06-03, following the request at:
 # https://tug.org/pipermail/tex-k/2024-June/004064.html
 """
@@ -190,27 +190,12 @@ class ChangeReader:
                 elif repl_start == "@ ":
                     section += 1
 
-            # Remove leading @x.
-            text = self._lines[self._chunk_start][2:].strip()
-
-            # Remove potentially leading [part.section] tag.
-            pattern = "\\[\\d+(\\.\\d+)?\\]"
-            if re.match(pattern, text):
-                text = re.sub(pattern, "", text, 1).strip()
-
-                # Remove potentially line number information.
-                pattern = "l\\.\\d+"
-                if re.match(pattern, text):
-                    text = re.sub(pattern, "", text, 1)
-
-                    # Remove potentially text comment separator.
-                    pattern = " -*"
-                    if re.match(pattern, text):
-                        text = re.sub(pattern, "", text, 1).strip()
-
             # Create line with standard tag and optional information.
+            old_line = self._lines[self._chunk_start][2:].strip()
             new_line = "@x"
+
             if opt_handler.part_b or opt_handler.section_b:
+                old_line = re.sub("\\[\\d+(\\.\\d+)?\\]", "", old_line, 1).strip()
                 new_line += " ["
                 if opt_handler.part_b:
                     new_line += f"{part}"
@@ -219,13 +204,16 @@ class ChangeReader:
                 if opt_handler.section_b:
                     new_line += f"{section}"
                 new_line += "]"
+
             if opt_handler.line_b:
+                old_line = re.sub("l\\.\\d+", "", old_line, 1).strip()
                 new_line += f" l.{line_number}"
 
-            if opt_handler.text_b and text:
+            if opt_handler.text_b and old_line:
                 if opt_handler.hyphen_b:
+                    old_line = re.sub("-+", "", old_line, 1).strip()
                     new_line += " -"
-                new_line += f" {text}"
+                new_line += f" {old_line}"
 
             ch_line = self._lines[self._chunk_start]
             if new_line[:10] != ch_line[:10]:
