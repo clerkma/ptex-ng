@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# $Id: fix-changefile-lines.py 71613 2024-06-24 08:15:10Z ascherer $
+# $Id: fix-changefile-lines.py 71644 2024-06-28 21:47:10Z ascherer $
 # Applied to tex.ch and mf.ch on 2024-06-03, following the request at:
 # https://tug.org/pipermail/tex-k/2024-June/004064.html
 """
@@ -50,13 +50,12 @@ class WebReader:
         self.part_cnt = 0
         self.section_cnt = 0
         try:
-            self._web_file = open(web_file, "r")
+            with open(web_file, "r") as file:
+                self._web_lines = [line.rstrip() for line in file]
         except OSError:
             eprint(f"Could not open {web_file}")
             print(USAGE)
             sys.exit(1)
-        with self._web_file:
-            self._web_lines = [line.rstrip() for line in self._web_file]
 
     def next_line(self):
         """Returns the triple of current part, section and line numbers, as
@@ -67,10 +66,6 @@ class WebReader:
         line = self._web_lines[self._pos]
         self._pos += 1
 
-        part = self.part_cnt
-        section = self.section_cnt
-        line_number = self._pos
-
         # Look for starred section == part
         if line.startswith("@*"):
             self.part_cnt += 1
@@ -80,6 +75,11 @@ class WebReader:
         if line.startswith("@ ") or line == "@":
             self.section_cnt += 1
 
+        # Prepare return values
+        part = self.part_cnt
+        section = self.section_cnt
+        line_number = self._pos
+
         # Look for '@i'nclude line
         result = re.match("^@i \"?(\\w+(\\.\\w+)?)\"?", line)
         if result:
@@ -88,6 +88,7 @@ class WebReader:
                 pass
             self.part_cnt += inc_reader.part_cnt
             self.section_cnt += inc_reader.section_cnt
+            # Do not increase 'part' and 'section' just yet
             # Ignore line count in include file; we're only one step beyond
 
         return (part, section, line_number), line
@@ -103,13 +104,12 @@ class ChangeReader:
         self._chunk_start = None
         self._match_lines = None
         try:
-            self._change_file = open(change_file, "r")
+            with open(change_file, "r") as file:
+                self._lines = [line.rstrip() for line in file]
         except OSError:
             eprint(f"Could not open {change_file}")
             print(USAGE)
             sys.exit(1)
-        with self._change_file:
-            self._lines = [line.rstrip() for line in self._change_file]
 
     def advance_to_next_chunk(self):
         """Find the next change chunk. Store where it starts and
@@ -140,8 +140,8 @@ class ChangeReader:
 
     def find_match_in_web(self, web_reader):
         """Find the match for the current change chunk in the WEB file.
-        Returns the part number and section number just before the first match line,
-        as well as the line number of the first match line in the WEB file.
+        Returns the part, section, and line number of the first match line in
+        the WEB file.
         """
         while True:
             try:
@@ -167,24 +167,6 @@ class ChangeReader:
         """Go through all individual change chunks while updating their tags."""
         while self.advance_to_next_chunk():
             part, section, line_number = self.find_match_in_web(web_reader)
-
-            # Attempt to catch the case where something is inserted just before
-            # the start of a section.
-            match_start = self._match_lines[0].strip()[:2]
-            for repl_index in range(self._pos + 1, len(self._lines)):
-                repl_start = self._lines[repl_index].strip()[:2]
-                # CWEB @qcomments@> are ignored; see ctwill-w2c.ch
-                if repl_start != "@q":
-                    break
-            if match_start == "@ " or match_start == "@":
-                if repl_start in ["@ ", "@*", "@"]:
-                    section += 1
-            elif match_start == "@*":
-                if repl_start == "@*":
-                    part += 1
-                    section += 1
-                elif repl_start in ["@ ", "@"]:
-                    section += 1
 
             # Replace '@x' line with updated information.
             new_line = self._lines[self._chunk_start]
