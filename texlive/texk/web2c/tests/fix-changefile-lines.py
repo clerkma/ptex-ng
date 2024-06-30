@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# $Id: fix-changefile-lines.py 71644 2024-06-28 21:47:10Z ascherer $
+# $Id: fix-changefile-lines.py 71654 2024-06-29 13:02:53Z ascherer $
 # Applied to tex.ch and mf.ch on 2024-06-03, following the request at:
 # https://tug.org/pipermail/tex-k/2024-June/004064.html
 """
@@ -205,8 +205,7 @@ class OptHandler:
     """
 
     def __init__(self):
-        # Optional elements of the output format
-        # '@x [{part}.{section}] l.{line} {-(hyphen)} {text}'
+        # Should we insert tag '[{part}.{section}] l.{line}' after '@x'?
         self.init_b = False
 
         try:
