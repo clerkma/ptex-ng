@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# $Id: fix-changefile-lines.py 71654 2024-06-29 13:02:53Z ascherer $
+# $Id: fix-changefile-lines.py 71714 2024-07-05 12:57:53Z ascherer $
 # Applied to tex.ch and mf.ch on 2024-06-03, following the request at:
 # https://tug.org/pipermail/tex-k/2024-June/004064.html
 """
@@ -64,7 +64,6 @@ class WebReader:
         if self._pos >= len(self._web_lines):
             return None
         line = self._web_lines[self._pos]
-        self._pos += 1
 
         # Look for starred section == part
         if line.startswith("@*"):
@@ -78,7 +77,7 @@ class WebReader:
         # Prepare return values
         part = self.part_cnt
         section = self.section_cnt
-        line_number = self._pos
+        line_number = self._pos = self._pos + 1
 
         # Look for '@i'nclude line
         result = re.match("^@i \"?(\\w+(\\.\\w+)?)\"?", line)
