@@ -1,3 +1,13 @@
+2024-08-02  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill-w2c.ch,
+	* cweav-w2c.ch,
+	* cweave.w: Remove unused 'kludge'.
+
+2024-07-26  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebmac.tex: Reshuffle '\note' macro.
+
 2024-07-24  Andreas Scherer  <https://ascherer.github.io>
 
 	* cwebmac.tex,
