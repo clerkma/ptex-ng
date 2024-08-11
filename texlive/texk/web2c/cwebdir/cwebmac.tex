@@ -1,11 +1,8 @@
 % standard macros for CWEB listings (in addition to plain.tex)
-% Version 4.12 --- July 2024
+% Version 4.12 --- August 2024
 \ifx\renewenvironment\undefined\else\endinput\fi % LaTeX will use other macros
 \xdef\fmtversion{\fmtversion+CWEB4.12}
 \chardef\cwebversion=4 \chardef\cwebrevision=12
-
-\let\:=\. % preserve a way to get the dot accent
- % (all other accents will still work as usual)
 
 \parskip 0pt % no stretch between paragraphs
 \parindent 1em % for paragraphs and for the first line of C text
@@ -28,9 +25,10 @@
 \def\CPLUSPLUS/{{\mc C\PP\spacefactor1000}}
 \def\Cee{\CEE/} % for backward compatibility
 \def\Cpp{\CPLUSPLUS/} % for backward compatibility
-\def\9#1{}
- % with this definition of \9 you can say @:sort key}{TeX code@>
- % to alphabetize an index entry by the sort key but format with the TeX code
+\def\9#1{} % with this definition of \9 you can say @:sort key}{TeX code@>
+  % to alphabetize an index entry by the sort key but format with the TeX code
+\let\:=\. % preserve a way to get the dot accent
+  % (all other accents will still work as usual)
 
 \def\\#1{\leavevmode\hbox{\it#1\/\kern.05em}} % italic type for identifiers
 \def\|#1{\leavevmode\hbox{$#1$}} % one-letter identifiers look better this way
@@ -114,11 +112,9 @@
 \def\?{\mathrel?}
 \def\,{\relax\ifmmode\mskip\thinmuskip\else\thinspace\fi}
 
-\newtoks\toksA \newtoks\toksB \newtoks\toksC \newtoks\toksD
-\newtoks\toksE \newtoks\toksF \newtoks\usersanitizer
+\newtoks\toksA \newtoks\toksE
 \newcount\countA \countA=0 \newcount\countB \countB=0
-\newcount\countC \countC=0 \newcount\countD \countD=0
-\newif\iftokprocessed \newif\ifTnum \newif\ifinstr
+\newcount\countNOS \countNOS=0
 {\def\\{\global\let\spacechar= }\\ }
 
 % Here we decide the output format, depending on the TeX engine in use:
@@ -135,7 +131,7 @@
   \def\Black{\pdfliteral{0 g 0 G}} % use rgb colors for direct PDF output too
   \def\Blue{\pdfliteral{\pdflinkcolor\space rg \pdflinkcolor\space RG}}
 \fi
-\ifacrohint \input cwebacromac \fi % load hypertext macros
+\input cwebacromac % load hypertext macros
 \def\pdfURL#1#2{\ifpdf \ifpdflua\pdfannotlink height \theheight depth \thedepth
     attr {/Border [0 0 0]} user { /Type /Annot /Subtype /Link /A
       << /S /URI /URI (#2) >>}\Blue #1\Black \pdfendlink % changed in 3.69
@@ -187,7 +183,7 @@
 \outer\def\M#1{\MN{#1}\ifon\vfil\penalty-100\vfilneg % beginning of section
   \vskip\intersecskip\startsection\ignorespaces}
 \outer\def\N#1#2#3.{% beginning of starred section
-  \ifacro{\toksF={}\makeoutlinetoks#3\outlinedone\outlinedone}\fi
+  \ifacro{\makeoutlinetoks#3\outlinedone}\fi
   \gdepth=#1\gtitle={#3}\MN{#2}%
   \ifon\ifnum#1<\secpagedepth \vfil\eject % force page break if depth is small
     \else\vfil\penalty-100\vfilneg\vskip\intersecskip\fi\fi
@@ -241,9 +237,8 @@
 \def\oct{\hbox{$^\circ$\kern-.1em\it\aftergroup\?\aftergroup}} % CWEB style
 \def\hex{\hbox{$^{\scriptscriptstyle\#}$\tt\aftergroup}} % CWEB style
 \def\bin{\hbox{$^{\scriptscriptstyle b}$\tt\aftergroup}} % new in CWEB 4.3
-\def\vb#1{\leavevmode\hbox{\kern2pt\vrule\vtop{\vbox{\hrule
-        \hbox{\strut\kern2pt\.{#1}\kern2pt}}
-      \hrule}\vrule\kern2pt}} % verbatim string
+\def\vb#1{\leavevmode\hbox{\kern2pt\vrule\vtop{\vbox{\hrule\hbox{\strut
+  \kern2pt\.{#1}\kern2pt}}\hrule}\vrule\kern2pt}} % verbatim string
 \def\p#1{\cdot 2^{#1}} % power of two (hex exponent)
 
 \def\onmaybe{\let\ifon=\maybe} \let\maybe=\iftrue
@@ -318,9 +313,7 @@
   \vsize=\pageheight \advance\vsize by -\ht\sbox % the remaining height
   \hsize=.5\pagewidth \advance\hsize by -10pt
     % column width for the index (20pt between cols)
-  \ifhint\else
-  \parfillskip 0pt plus .6\hsize % try to avoid almost empty lines
-  \fi
+  \ifhint\else\parfillskip 0pt plus .6\hsize\fi % avoid almost empty lines
   \def\lr{L} % this tells whether the left or right column is next
   \output{\if L\lr\global\setbox\lbox=\page \gdef\lr{R}
     \else\normaloutput{\vbox to\pageheight{\box\sbox\vss
@@ -329,9 +322,9 @@
   \message{Index:}
   \parskip 0pt plus .5pt
   \outer\def\I##1, ##2.{\par\hangindent2em\noindent##1:\kern1em
-    \ifacrohint\pdfnote##2.\else##2\fi.} % index entry
-  \def\[##1]{$\underline{##1}$} % underlined index item
-  \rm \rightskip0pt plus 2.5em \tolerance 10000 \let\*=\lapstar
+    \scan##2!.} % index entry
+  \def\[##1]{$\underline{\scan##1!}$\scan} % underlined index item
+  \rm \rightskip0pt plus 2.5em \tolerance 10000
   \hyphenpenalty 10000 \parindent0pt
   \readindex}
 \def\fin{\par\vfill\eject % this is done when we are ending the index
@@ -354,23 +347,21 @@
   \ifacro \def\outsecname{Names of the sections} \let\Xpdf\X
 %  \ifpdflua \makebookmarks \pdfdest name {NOS} fitb % in versions < 3.68
   \ifpdflua \pdfdest name {NOS} fith % changed in version 3.69
-    \pdfoutline goto name {NOS} count -\the\countD {\outsecname}
-    \def\X##1:##2\X{\Xpdf##1:##2\X \firstsecno##1.%
-      {\toksF={}\makeoutlinetoks##2\outlinedone\outlinedone}%
-      \pdfoutline goto num \the\toksA \expandafter{\the\toksE}}
+    \pdfoutline goto name {NOS} count -\the\countNOS {\outsecname}
   \else \special{pdf: outline -1 << /Title (\outsecname)
-      /Dest [ @thispage /FitH @ypos ] >>}
-    \def\X##1:##2\X{\Xpdf##1:##2\X \firstsecno##1.%
-      {\toksF={}\makeoutlinetoks##2\outlinedone\outlinedone}%
-      \special{pdf: outline 0 << /Title (\the\toksE)
-        /A << /S /GoTo /D (\romannumeral\the\toksA) >> >>}}
-  \fi\fi
+      /Dest [ @thispage /FitH @ypos ] >>}\fi
+  \def\X##1:##2\X{\Xpdf##1:##2\X \firstsecno##1.%
+    {\makeoutlinetoks##2\outlinedone}%
+    \ifpdflua \pdfoutline goto num \the\toksA \expandafter{\the\toksE}
+    \else \special{pdf: outline 0 << /Title (\the\toksE)
+        /A << /S /GoTo /D (\romannumeral\the\toksA) >> >>}\fi}
+  \fi % \ifacro
   \readsections}
 \def\makebookmarks{\let\ZZ=\writebookmarkline \readcontents\relax}
 \def\countsections{\message{Number of named sections:}
-  {\def\I{\global\advance\countD by 1}\def\X##1\X{\relax}
+  {\def\I{\global\advance\countNOS by 1}\def\X##1\X{\relax}
   \def\Q##1.{\relax}\def\Qs##1.{\relax}\def\U##1.{\relax}\def\Us##1.{\relax}
-  \readsections\relax}\message{\the\countD}}
+  \readsections\relax}\message{\the\countNOS}}
 \def\expnumber#1{\expandafter\ifx\csname#1\endcsname\relax 0%
   \else \csname#1\endcsname \fi} % Petr Olsak's macros from texinfo.tex
 \def\advancenumber#1{\countA=\expnumber{#1}\relax \advance\countA by1
@@ -396,9 +387,9 @@
     \line{\consetup{#2}#1
       \rm\leaders\hbox to .5em{.\hfil}\hfil
       \ \ifhint
-          \HINTlink{#3}{\romannumeral#3}% No page numbers in HINT
+          \HINTlink{#3}% No page numbers in HINT
           \HINTcontents{#1}{#2}{#3}%
-        \else\ifacro\pdflink{#3}{\romannumeral#3}\else#3\fi
+        \else\ifacro\pdflink{#3}\else#3\fi
           \hbox to3em{\hss#4}\fi}}
 \def\consetup#1{\ifcase#1 \bf % depth -1 (@**)
   \or % depth 0 (@*)
