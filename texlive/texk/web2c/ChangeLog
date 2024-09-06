@@ -1,3 +1,35 @@
+2024-09-06  Andreas Scherer  <https://ascherer.github.io>
+
+	* weav-twill.ch,
+	* weave.ch: Sort section names in TWILL.
+
+2024-09-02  Andreas Scherer  <https://ascherer.github.io>
+
+	* bibtex.ch,
+	* dvitype.ch,
+	* gftodvi.ch,
+	* gftopk.ch,
+	* gftype.ch,
+	* mft.ch,
+	* pktype.ch,
+	* pltotf.ch,
+	* pooltype.ch,
+	* tangle.ch,
+	* tftopl.ch,
+	* vftovp.ch,
+	* vptovf.ch,
+	* weave.ch: Flip two section names in the index.
+	* dvicopy.ch,
+	* dvicopy.web,
+	* patgen.ch,
+	* patgen.web,
+	* pktogf.ch,
+	* pktogf.web: Fix sorting order in 'other' WEB codees.
+
+2024-08-31  Andreas Scherer  <https://ascherer.github.io>
+
+	* vftovp.ch: Fix sorting order of new named sections.
+
 2024-08-23  Andreas Scherer  <https://ascherer.github.io>
 
 	* gftopk.ch,
