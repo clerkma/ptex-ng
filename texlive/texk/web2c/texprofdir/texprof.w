@@ -1,3 +1,7 @@
+% TeXprof is copyright (C) 2024 by Martin Ruckert
+% Hochschule Muenchen, Lothstrasse 64, 80336 Muenchen
+% and put under the MIT/X11 license.
+%
 % Prote is copyright (C) 2021 by Thierry Laronde and put under
 % the MIT/X11 license.
 %
@@ -31229,24 +31233,35 @@ static long start_nsec, start_sec, diff_nsec;
 struct timespec ts;
 static int time_error;
 
-@ To get timing information, we use the |clock_gettime| function.
+@ To get timing information, we use the POSIX function |clock_gettime|.
 Depending on the operating system there are many different variations.
 The timer used for timing can be selected by defining |GETTIME| at
-compile time. The default is |GETTIME==0| which selects a tread specific
-clock.
+compile time. If |GETTIME| is not set, we try to find a good default.
+Currently we use |timespec_get| under Windows and |clock_gettime|
+with a tread specific clock otherwise.
 
 @<get current time@>= 
+#ifdef GETTIME
 #if GETTIME==0
-   time_error=clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+     time_error=clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
 #elif GETTIME==1
-   time_error=clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
+     time_error=clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
 #elif GETTIME==2
-   time_error=clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+     time_error=clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
 #elif GETTIME==3
-   time_error=clock_gettime(CLOCK_MONOTONIC, &ts);
+     time_error=clock_gettime(CLOCK_MONOTONIC, &ts);
 #else
    time_error=clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
 #endif
+#else
+/* guess a default */
+#ifdef _WIN32
+   time_error=timespec_get(&ts, TIME_UTC); 
+#else
+   time_error=clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+#endif
+#endif
+
 
 @ To record the timing information, we compute the time difference in
 nano seconds, assuming that it fits into unsigned 32 bit which means

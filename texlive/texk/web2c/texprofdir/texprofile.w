@@ -1,5 +1,5 @@
 % This file is part of HINT
-% Copyright 2017-2021 Martin Ruckert,
+% Copyright 2017-2024 Martin Ruckert,
 % Hochschule Muenchen, Lothstrasse 64, 80336 Muenchen
 %
 % Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,8 +25,7 @@
 % dealings in this Software without prior written authorization from the
 % copyright holders.
 
-%\input btxmac.tex
-\input profilemac.tex
+\input texprofilemac.tex
 
 %% defining how to display certain C identifiers
 
@@ -151,7 +150,6 @@ Germany.
 %ISBN-13: 979-854992684-4\par
 \medskip
 %First printing: August 2019\par
-%Second edition: August 2021\par
 \medskip
 %Last commit: \input lastcommit.tex
 \par
@@ -742,10 +740,11 @@ The table of |cmd_name|s is defined in the appendix.
 
 
 @<read a macro call@>=
-      int f=fget1();
-      int l=fget2();
-      int n=fget2();
-      int m=get_macro_def(f, l, n);
+      int f,l,n,m;
+      f=fget1();
+      l=fget2();
+      n=fget2();
+      m=get_macro_def(f, l, n);
       stamps[i].c=system_macro_push;
       stamps[i].f=f;
       stamps[i].l=l;
@@ -981,7 +980,7 @@ Next we can print a summary table for the files:
 @<show the file summary if requested@>=
 if (opt_files)
 { Mprintf("\nFiles in the order of appearance:\n");
-  Mprintf("  file\t lines\tpercent\t     absolute"
+  Mprintf("  file\t lines\tpercent\t        time"
          "\tname\n");
   for (i=0; i<file_num; i++)
   { double p=(100.0*file_time[i])/total_time;
@@ -1015,10 +1014,10 @@ if (opt_cmd)
 { int *cmd_link=NULL;
   @<sort the commands by time@>@;
   Mprintf("\nCommand summary:\n");
-  Mprintf(" cmd\t        time\t time%%\t  freq\t      average\tname\n");
+  Mprintf(" cmd\t        time\tpercent\t count\t      average\tname\n");
   for (i=cmd_link[cmd_num]; i>=0; i=cmd_link[i])
     if (cmd_freq[i]>0)
-    { printf("%4d\t%s\t%5.2f%%",
+    { printf("%4d\t%s\t%6.2f%%",
         i, time_str(cmd_time[i]),
         (100.0*cmd_time[i])/total_time);
       printf("\t%6d\t %s\t%s\n",
@@ -1276,7 +1275,7 @@ if (opt_lines)
       k=file_line[i+1];
     else  
     { printf("%s\n",file_names[i]);
-      printf("  file\t  line\tpercent\t     absolute"
+      printf("  file\t  line\tpercent\t        time"
              "\t count\t     average\n");
       printf("%6d\t\t%6.2f%%\t%s\n",
              i, (100.0*file_time[i])/total_time,time_str(file_time[i]));
