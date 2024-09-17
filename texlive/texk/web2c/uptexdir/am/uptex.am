@@ -1,4 +1,4 @@
-## $Id: uptex.am 71092 2024-04-27 10:52:08Z takuji $
+## $Id: uptex.am 72295 2024-09-16 12:29:16Z takuji $
 ## texk/web2c/uptexdir/am/uptex.am: Makefile fragment for upTeX.
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -263,12 +263,12 @@ DISTCLEANFILES += uptests/ygk256*.*
 DISTCLEANFILES += uptests/xskipjfmp.*
 ## uptexdir/uptriptest
 EXTRA_DIST += uptexdir/uptrip/uptrip.diffs uptexdir/uptrip/texmf.cnf
+DISTCLEANFILES += uptrip.diffs
+
 uptrip.diffs: uptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
 	$(triptrap_diffs) $@
 .PHONY: uptrip-clean
 uptrip-clean:
 	rm -rf uptripdir
-
-DISTCLEANFILES += uptrip.diffs
 
 # (end of uptex.am)
