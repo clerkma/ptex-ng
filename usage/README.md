@@ -1,2 +1,31 @@
 
-for rapid test only.
+## Usage (2024/09/19)
+
+### Setup Variables
+
+```
+tlmgr conf texmf TEXINPUTS.aplatex "$TEXMFDOTDIR;$TEXMF/tex/{uplatex,platex,latex,generic,}//"
+tlmgr conf texmf TEXINPUTS.aplatex-dev "$TEXMFDOTDIR;$TEXMF/tex/{latex-dev,uplatex,platex,latex,generic,}//"
+tlmgr conf texmf TEXINPUTS.aptex "$TEXMFDOTDIR;$TEXMF/tex/{uptex,ptex,plain,generic,latex,}//"
+```
+
+### Generate All Formats
+
+```
+cd usage
+fmtutil-sys --cnffile fmt-aptex.cnf --all
+```
+
+### Compile Your Document
+
+```
+ptex-ng +aplatex doc.tex
+```
+or
+```
+ptex-ng +aplatex-dev doc.tex
+```
+or
+```
+ptex-ng -format=aplatex doc.tex
+```
