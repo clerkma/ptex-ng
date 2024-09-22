@@ -1,4 +1,4 @@
-/*   $Id: dvips.h 69711 2024-02-05 17:23:27Z karl $
+/*   $Id: dvips.h 72345 2024-09-22 05:07:20Z takuji $
  *   Copyright 1986-2024 Tomas Rokicki.
  *   This is dvips, a freely redistributable PostScript driver
  *   for dvi files. You may freely use, modify and/or distribute this
@@ -10,6 +10,7 @@
 #define CREATIONDATE
 
 #define MAX_CODE 0x110000
+#define MAX_VF_CODE 0x1000000
 #define MAX_2BYTES_CODE 0x10000
 #define VF_MEM_UNIT 0x10000
 #define CD_IDX(i)  ((i>=MAX_2BYTES_CODE ? MAX_2BYTES_CODE : i))

@@ -1,4 +1,4 @@
-## $Id: Makefile.am 71664 2024-06-30 22:17:00Z karl $
+## $Id: Makefile.am 72338 2024-09-21 15:32:41Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -223,6 +223,7 @@ texmf_other_scripts = \
 	runtexshebang/runtexshebang.lua \
 	spix/spix.py \
 	splitindex/splitindex.pl \
+	sqltex/sqltex \
 	srcredact/srcredact.pl \
 	sty2dtx/sty2dtx.pl \
 	svn-multi/svn-multi.pl \

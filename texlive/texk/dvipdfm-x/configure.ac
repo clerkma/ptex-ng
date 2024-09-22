@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 71232 2024-05-11 08:27:20Z takuji $
+dnl $Id: configure.ac 72346 2024-09-22 05:07:26Z takuji $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -8,7 +8,7 @@ dnl   This file is free software; the copyright holder
 dnl   gives unlimited permission to copy and/or distribute it,
 dnl   with or without modifications, as long as this notice is preserved.
 dnl
-AC_INIT([dvipdfm-x (TeX Live)], [20240511], [dvipdfmx@tug.org])
+AC_INIT([dvipdfm-x (TeX Live)], [20240922], [dvipdfmx@tug.org])
 AC_PREREQ([2.65])
 AC_CONFIG_SRCDIR([agl.c])
 AC_CONFIG_AUX_DIR([../../build-aux])
