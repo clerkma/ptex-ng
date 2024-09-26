@@ -1,4 +1,4 @@
-## $Id: Makefile.am 72338 2024-09-21 15:32:41Z karl $
+## $Id: Makefile.am 72375 2024-09-24 22:39:08Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -191,6 +191,7 @@ texmf_other_scripts = \
 	memoize/memoize-extract.pl \
 	memoize/memoize-extract.py \
 	mf2pt1/mf2pt1.pl \
+	minted/latexminted.py \
 	mkgrkindex/mkgrkindex \
 	mkjobtexmf/mkjobtexmf.pl \
 	mkpic/mkpic \
