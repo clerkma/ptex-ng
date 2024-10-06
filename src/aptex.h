@@ -243,7 +243,7 @@ typedef union
   four_quarters qqqq;
 } memory_word;
 
-#include "aptex-macros.h"
+#include "aptex-defs.h"
 
 /* sec 0150 */
 typedef uint32_t glue_ord;
@@ -823,7 +823,7 @@ EXTERN struct {
   boolean flag_merge_kanji_baseline;
 } aptex_env;
 
-#include "aptex-functions.h"
+#include "aptex-funs.h"
 
 #ifdef __cplusplus
 }
