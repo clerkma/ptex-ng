@@ -37,6 +37,7 @@ additional material specific to \.{CTWILL}. % FIXME
 Until then, \.{CWEAVE}'s sequence of sections will be preserved.
 
 The ``banner line'' defined here should be changed whenever \.{CTWILL} is
+modified. The version number parallels the corresponding version of \.{CWEAVE}.
 @y
 A kind of ``user manual'' for \.{CTWILL} can be found in section~%
 \X287:Mogrify {\tentex CWEAVE} into {\tentex CTWILL}\X~and beyond,
@@ -58,6 +59,7 @@ faithful overall rendering of {\itt CTWILL}'s code, though. \hfill
 ---Enjoy!\par}
 \bigskip
 The ``banner line'' defined here should be changed whenever \.{CTWILL} is
+modified. The version number parallels the corresponding version of \.{CWEAVE}.
 @-banner@>
 @$banner {CTWILL}1 =\.{"This\ is\ CTWILL"}@>
 
@@ -1815,16 +1817,24 @@ Section 245.
 @-phase_two@>
 @z
 
+Section 246.
+
+@x
+@d save_position() save_line=out_line; save_place=out_ptr
+@y
+@d usage_sentinel (struct perm_meaning *)1
+@-usage_sentinel@>
+@$usage_sentinel {CTWILL}247 =(\&{struct} \&{perm\_meaning} ${}{*}{}$) \T{1}@>
+@d save_position() save_line=out_line; save_place=out_ptr
+@z
+
 Section 247.
 
 @x
 @ @d usage_sentinel (struct perm_meaning *)1
 @<Translate the \9{c}current section@>= {
 @y
-@ @d usage_sentinel (struct perm_meaning *)1
-@-usage_sentinel@>
-@$usage_sentinel {CTWILL}247 =(\&{struct} \&{perm\_meaning} ${}{*}{}$) \T{1}@>
-@<Translate the \9{c}current section@>= {
+@ @<Translate the \9{c}current section@>= @+ {
 @z
 
 Section 251.
