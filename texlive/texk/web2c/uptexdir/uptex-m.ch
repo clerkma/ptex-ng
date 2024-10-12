@@ -1,4 +1,4 @@
-% $Id: uptex-m.ch 72410 2024-09-30 11:39:49Z takuji $
+% $Id: uptex-m.ch 72531 2024-10-12 01:06:08Z takuji $
 % This is a change file for upTeX u1.35
 % By Takuji Tanaka.
 %
@@ -48,7 +48,7 @@
 % (2022-07-23) TTK  upTeX u1.29
 % (2022-12-09) HK   Hironori Kitagawa fixed a bug in \char, \kchar.
 % (2023-09-16) TTK  upTeX u1.30
-% (2024-05-01) TTK  upTeX u1.35
+% (2024-09-30) TTK  upTeX u1.35
 
 @x
 \def\pTeX{p\kern-.15em\TeX}
