@@ -1,4 +1,4 @@
-## $Id: web.am 65380 2022-12-28 08:09:52Z takuji $
+## $Id: web.am 72600 2024-10-20 06:53:25Z takuji $
 ## texk/web2c/am/web.am: Makefile fragment for the standard web programs --
 ## except tangle.
 ##
@@ -240,6 +240,9 @@ DISTCLEANFILES += pooltype.tex
 ## {pdftexdir,xetexdir,ptexdir,uptexdir}/wcfname.test
 EXTRA_DIST += tests/fn-generate.perl
 EXTRA_DIST += tests/fn-utf8.txt tests/fn-euc.txt tests/fn-sjis.txt
+## uptexdir/uptex-ofm.test, euptexdir/euptex-ofm.test
+EXTRA_DIST += tests/uctt10x.opl tests/uctt10x.ofm
+EXTRA_DIST += tests/uctt10x.ovp tests/uctt10x.ovf
 
 ## Test data
 ##
