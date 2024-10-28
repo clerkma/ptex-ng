@@ -1,3 +1,10 @@
+2024-10-27  Karl Berry  <karl@freefriends.org>
+
+	Update for icu-76.1.
+	
+	* patch-01-configure-gcc: no longer needed, now their configure
+	checks for cc first, which should be ok.
+
 2023-12-22  Karl Berry  <karl@freefriends.org>
 
 	* Update for icu-74.2. No changes to patches.

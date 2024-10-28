@@ -1,5 +1,5 @@
 Changes applied to the icu tree as obtained from:
-  github.com/unicode-org/icu/releases/download/release-74-2/icu4c-74_2-src.tgz
+  github.com/unicode-org/icu/releases/download/release-76-1/icu4c-76_1-src.tgz
 
 cd $Build/source/libs/icu       # for whatever $Build directory
 # update version.ac
@@ -30,8 +30,10 @@ cp -p $aux/config.guess $aux/config.sub $aux/install-sh source
 
 # autoreconf in the TL directory (Build/source/libs/icu); 
 # don't run autoreconf in the icu-src/source/ directory, it fails due to
-# missing pkg-config prerequisites. (Thus we patch configure, not just
-# configure.ac; not worth more effort for our small change of preferring gcc.)
+# missing pkg-config prerequisites.
+# 
+# For ICU 76, C++ 17 is required. To build on an older GNU/Linux, such
+# as tug.org, yum install gcc-toolset-13.
 # 
 # rebuild; must rerun configure (not just config.status),
 # so easiest is to just do a whole new build.
@@ -40,7 +42,7 @@ cp -p $aux/config.guess $aux/config.sub $aux/install-sh source
 # Assuming all seems ok, reduce size of source/data/in/icudt*.dat
 # to decrease data segment size, e.g., for old BSD.  First, check
 # that we successfully built the full .dat:
-ver=74
+ver=76
 srcdat=$Build/source/libs/icu/icu-src/source/data/in/icudt${ver}l.dat 
 cd $Work/libs/icu/icu-build/data/out/build/icudt${ver}l
 indat=../../tmp/icudt${ver}l.dat
@@ -62,12 +64,11 @@ $icupkg -r 'zone/*' $indat $outdat && \mv -v $outdat $indat
 ls -l $indat $srcdat # indat should be about 2/3 the size
 cp $indat $srcdat
 
-# check that nothing besides backup files is left, back in the srcdir:
+# check that nothing besides backup files and icu-prev is left; back in
+# the srcdir:
 cd $Build/source/libs/icu       # for whatever $Build directory
 svn status | grep -v '^[MAD]' | sort -k 2b
 
-# In 74.2, LICENSE became a (broken) symlink; revert to file.
-
 # if all is ok.
 # update icu/ChangeLog and icu/TLpatches/ChangeLog.
-# then commit.
+# then commit icu and libs/README.

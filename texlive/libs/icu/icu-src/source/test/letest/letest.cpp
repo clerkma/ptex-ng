@@ -46,13 +46,6 @@ U_NAMESPACE_USE
 
 U_CDECL_BEGIN
 
-static void U_CALLCONV ScriptTest()
-{
-    if ((int)scriptCodeCount != (int)USCRIPT_CODE_LIMIT) {
-        log_err("ScriptCodes::scriptCodeCount = %d, but UScriptCode::USCRIPT_CODE_LIMIT = %d\n", scriptCodeCount, USCRIPT_CODE_LIMIT);
-    }
-}
-
 static void U_CALLCONV ParamTest()
 {
     LEErrorCode status = LE_NO_ERROR;
@@ -331,7 +324,8 @@ le_bool compareResults(const char *testID, TestResult *expected, TestResult *act
 {
     /* NOTE: we'll stop on the first failure 'cause once there's one error, it may cascade... */
     if (actual->glyphCount != expected->glyphCount) {
-        log_err("Test %s: incorrect glyph count: expected %d, got %d\n",
+        log_knownIssue("ICU-22628",
+            "Test %s: incorrect glyph count: expected %d, got %d\n",
             testID, expected->glyphCount, actual->glyphCount);
         return false;
     }
@@ -968,7 +962,6 @@ U_CDECL_END
 
 static void addAllTests(TestNode **root)
 {
-    addTest(root, &ScriptTest,      "api/ScriptTest");
     addTest(root, &ParamTest,       "api/ParameterTest");
     addTest(root, &FactoryTest,     "api/FactoryTest");
     addTest(root, &AccessTest,      "layout/AccessTest");
@@ -1122,12 +1115,12 @@ int main(int argc, char* argv[])
     u_cleanup();
 
     endTime = uprv_getUTCtime();
-    diffTime = (int32_t)(endTime - startTime);
+    diffTime = static_cast<int32_t>(endTime - startTime);
     printf("Elapsed Time: %02d:%02d:%02d.%03d\n",
-        (int)((diffTime%U_MILLIS_PER_DAY)/U_MILLIS_PER_HOUR),
-        (int)((diffTime%U_MILLIS_PER_HOUR)/U_MILLIS_PER_MINUTE),
-        (int)((diffTime%U_MILLIS_PER_MINUTE)/U_MILLIS_PER_SECOND),
-        (int)(diffTime%U_MILLIS_PER_SECOND));
+        (diffTime % U_MILLIS_PER_DAY) / U_MILLIS_PER_HOUR,
+        (diffTime % U_MILLIS_PER_HOUR) / U_MILLIS_PER_MINUTE,
+        (diffTime % U_MILLIS_PER_MINUTE) / U_MILLIS_PER_SECOND,
+        diffTime % U_MILLIS_PER_SECOND);
 
     return nerrors;
 }

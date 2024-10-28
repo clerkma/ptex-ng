@@ -145,6 +145,9 @@ void UnitsTest::testExtractConvertibility() {
         {"percent", "portion", CONVERTIBLE},                                         //
         {"ofhg", "kilogram-per-square-meter-square-second", CONVERTIBLE},            //
         {"second-per-meter", "meter-per-second", RECIPROCAL},                        //
+        {"mile-per-hour", "meter-per-second", CONVERTIBLE},                        //
+        {"knot", "meter-per-second", CONVERTIBLE},                        //
+        {"beaufort", "meter-per-second", CONVERTIBLE},                        //
     };
 
     for (const auto &testCase : testCases) {
@@ -299,6 +302,19 @@ void UnitsTest::testConverter() {
         {"ton", "pound", 1.0, 2000},
         {"stone", "pound", 1.0, 14},
         {"stone", "kilogram", 1.0, 6.35029},
+        // Speed
+        {"mile-per-hour", "meter-per-second", 1.0, 0.44704},
+        {"knot", "meter-per-second", 1.0, 0.514444},
+        {"beaufort", "meter-per-second", 1.0, 0.95},
+        {"beaufort", "meter-per-second", 4.0, 6.75},
+        {"beaufort", "meter-per-second", 7.0, 15.55},
+        {"beaufort", "meter-per-second", 10.0, 26.5},
+        {"beaufort", "meter-per-second", 13.0, 39.15},
+        {"beaufort", "mile-per-hour", 1.0, 2.12509},
+        {"beaufort", "mile-per-hour", 4.0, 15.099319971367215},
+        {"beaufort", "mile-per-hour", 7.0, 34.784359341445956},
+        {"beaufort", "mile-per-hour", 10.0, 59.2788},
+        {"beaufort", "mile-per-hour", 13.0, 87.5761},
         // Temperature
         {"celsius", "fahrenheit", 0.0, 32.0},
         {"celsius", "fahrenheit", 10.0, 50.0},
@@ -408,7 +424,7 @@ StringPiece trimField(char *(&field)[2]) {
     while ((start < end) && U_IS_INV_WHITESPACE(*(end - 1))) {
         end--;
     }
-    int32_t length = (int32_t)(end - start);
+    int32_t length = static_cast<int32_t>(end - start);
     return StringPiece(start, length);
 }
 
@@ -455,7 +471,7 @@ void unitsTestDataLineFn(void *context, char *fields[][2], int32_t fieldCount, U
         return;
     }
     UnicodeString uExpected = UnicodeString::fromUTF8(utf8Expected);
-    double expected = unum_parseDouble(nf, uExpected.getBuffer(), uExpected.length(), 0, status);
+    double expected = unum_parseDouble(nf, uExpected.getBuffer(), uExpected.length(), nullptr, status);
     unum_close(nf);
     if (status.errIfFailureAndReset("unum_parseDouble(\"%s\") failed", utf8Expected)) {
         return;
@@ -508,7 +524,10 @@ void unitsTestDataLineFn(void *context, char *fields[][2], int32_t fieldCount, U
     double inverted = converter.convertInverse(got);
     msg.clear();
     msg.append("Converting back to ", status).append(x, status).append(" from ", status).append(y, status);
-    unitsTest->assertEqualsNear(msg.data(), 1000, inverted, 0.0001);
+    if (strncmp(x.data(), "beaufort", 8)
+    		&& log_knownIssue("CLDR-17454", "unitTest.txt for beaufort doesn't scale correctly") ) {
+		unitsTest->assertEqualsNear(msg.data(), 1000, inverted, 0.0001);
+    }
 }
 
 /**

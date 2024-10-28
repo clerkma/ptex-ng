@@ -23,11 +23,6 @@
 
 U_NAMESPACE_USE
 
-#if U_PLATFORM == U_PF_OS390
-// avoid collision with math.h/log()
-// this must be after including utypes.h so that U_PLATFORM is actually defined
-#pragma map(IntlTest::log( const UnicodeString &message ),"logos390")
-#endif
 
 //-----------------------------------------------------------------------------
 //convenience classes to ease porting code that uses the Java
@@ -407,7 +402,7 @@ protected:
     static UnicodeString &appendHex(uint32_t number, int32_t digits, UnicodeString &target);
     static UnicodeString toHex(uint32_t number, int32_t digits=-1);
     static inline UnicodeString toHex(int32_t number, int32_t digits=-1) {
-        return toHex((uint32_t)number, digits);
+        return toHex(static_cast<uint32_t>(number), digits);
     }
 
 public:
@@ -420,6 +415,8 @@ public:
     static const char* loadTestData(UErrorCode& err);
     virtual const char* getTestDataPath(UErrorCode& err) override;
     static const char* getSourceTestData(UErrorCode& err);
+    // Gets the path for the top-level testdata/ directory
+    static const char* getSharedTestData(UErrorCode& err);
     static char *getUnidataPath(char path[]);
     char16_t *ReadAndConvertFile(const char *fileName, int &ulen, const char *encoding, UErrorCode &status);
 

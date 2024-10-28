@@ -60,6 +60,12 @@ class IntlTestRBNF : public IntlTest {
    * Perform a simple spot check on the duration-formatting rules
    */
   void TestDurations();
+    
+  /**
+   * Test that rounding works correctly on multiplier substitutions that use
+   * a DecimalFormat.
+   */
+  void TestDFRounding();
 
   /**
    * Perform a simple spot check on the Spanish spellout rules
@@ -155,6 +161,8 @@ class IntlTestRBNF : public IntlTest {
     void TestParseFailure();
     void TestMinMaxIntegerDigitsIgnored();
     void TestNumberingSystem();
+    void TestMemoryLeak22899();
+    void TestInfiniteRecursion();
 
 protected:
   virtual void doTest(RuleBasedNumberFormat* formatter, const char* const testData[][2], UBool testParsing);

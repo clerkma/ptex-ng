@@ -571,6 +571,9 @@
     <ClCompile Include="uchar_type_build_test.cpp">
       <Filter>configuration</Filter>
     </ClCompile>
+    <ClCompile Include="messageformat2test.cpp" />
+    <ClCompile Include="messageformat2test_custom.cpp" />
+    <ClCompile Include="messageformat2test_read_json.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="itrbbi.h">

@@ -301,17 +301,17 @@ public:
      *
      * @draft ICU 3.8
      */
-    virtual inline UClassID getDynamicClassID() const;
+    inline UClassID getDynamicClassID() const override;
 
 protected:
-    virtual void init(le_int32 capacity);
-    virtual void grow(le_int32 capacity);
+    void init(le_int32 capacity) override;
+    void grow(le_int32 capacity) override;
 
 private:
 
     inline ULocRuns();
     inline ULocRuns(const ULocRuns &other);
-    inline ULocRuns &operator=(const ULocRuns & /*other*/) { return *this; };
+    inline ULocRuns &operator=(const ULocRuns & /*other*/) { return *this; }
     const char **fLocaleNames;
 };
 
@@ -378,7 +378,7 @@ void ULocRuns::init(le_int32 capacity)
 void ULocRuns::grow(le_int32 capacity)
 {
     LocaleRuns::grow(capacity);
-    fLocaleNames = (const char **) LE_GROW_ARRAY(fLocaleNames, capacity);
+    fLocaleNames = static_cast<const char**>(LE_GROW_ARRAY(fLocaleNames, capacity));
 }
 
 le_int32 ULocRuns::add(const char *locale, le_int32 limit)
@@ -387,9 +387,9 @@ le_int32 ULocRuns::add(const char *locale, le_int32 limit)
     le_int32 index = LocaleRuns::add(loc, limit);
 
     if (index >= 0) {
-        char **localeNames = (char **) fLocaleNames;
+        char** localeNames = const_cast<char**>(fLocaleNames);
 
-        localeNames[index] = (char *) locale;
+        localeNames[index] = const_cast<char*>(locale);
     }
 
     return index;
