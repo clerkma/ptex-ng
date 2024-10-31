@@ -56,7 +56,7 @@
 // implementations (looking at you, Apple, spring 2024) actually do this, so
 // ICU4C must detect and deal with that.
 #if !defined(__cplusplus) && !defined(U_IN_DOXYGEN)
-#   if U_HAVE_CHAR16_T
+#   if U_HAVE_CHAR16_T && U_PLATFORM_IS_LINUX_BASED
 #       include <uchar.h>
 #   else
         typedef uint16_t char16_t;

@@ -1,3 +1,16 @@
+2024-10-30  Karl Berry  <karl@freefriends.org>
+
+	* icu-src/source/common/uposixdefs.h: undo #define of
+	 _ISOC99_SOURCE on __NETBSD__, what was patch-19-netbsd,
+	 now delete. (See TLpatches/ChangeLog).
+	 * icu-src/source/common/unicode/ptypes.h [U_PLATFORM_IS_LINUX_BASED]:
+	 add conditional for #include <uchar.h>.
+
+2024-10-27  Karl Berry  <karl@freefriends.org>
+
+	* Import 76.2.
+	(version.ac): update.
+
 2023-12-22  Karl Berry  <karl@freefriends.org>
 
 	* Import 74.2.

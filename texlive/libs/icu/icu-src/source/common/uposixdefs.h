@@ -74,8 +74,4 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
-#if defined(__cplusplus) && defined(__NetBSD__)
-#define _ISOC99_SOURCE
-#endif
-
 #endif  /* __UPOSIXDEFS_H__ */

@@ -1,0 +1,12 @@
+	From Marc Baudoin.
+	https://tug.org/pipermail/tlbuild/2024q4/005581.html
+
+--- source/common/unicode/ptypes.h~	2024-10-24 11:24:00.000000000 -0700
++++ source/common/unicode/ptypes.h	2024-10-30 17:25:22.442817993 -0700
+@@ -57,5 +57,5 @@
+ // ICU4C must detect and deal with that.
+ #if !defined(__cplusplus) && !defined(U_IN_DOXYGEN)
+-#   if U_HAVE_CHAR16_T
++#   if U_HAVE_CHAR16_T && U_PLATFORM_IS_LINUX_BASED
+ #       include <uchar.h>
+ #   else
