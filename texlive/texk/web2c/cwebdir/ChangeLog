@@ -1,3 +1,7 @@
+2024-11-01  Andreas Scherer  <https://ascherer.github.io>
+
+	* cwebacromac.tex: Purge spurious space(s).
+
 2024-10-06  Andreas Scherer  <https://ascherer.github.io>
 
 	* ctwill-mini.ch: Fix line/paragraph break.
