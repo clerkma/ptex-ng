@@ -3,7 +3,7 @@
 @settitle Kpathsea: A library for path searching
 
 @set version 6.4.0
-@set month-year January 2024
+@set month-year November 2024
 
 @copying
 This file documents the Kpathsea library for path searching.
@@ -3386,8 +3386,7 @@ When set to @samp{a} (for ``any''), no restrictions are imposed.
 @item
 @cindex restricted mode, for output files
 When is set to @samp{r} (for ``restricted''), filenames beginning
-with @samp{.} are disallowed (except @file{.tex}, because @LaTeX{}
-needs it).
+with @samp{.} are disallowed.
 
 @item
 @cindex paranoid mode, for output files

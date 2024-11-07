@@ -1,5 +1,9 @@
-$Id: NEWS 70573 2024-03-10 21:37:05Z karl $
+$Id: NEWS 72783 2024-11-06 22:37:50Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+* A file named ".tex" can no longer be written from TeX; previously this
+  was allowed as a special case.  (The LaTeX 2024-11-01 release changes
+  their build process so as not to write it from TeX.)
 
 6.4.0 (for TeX Live 2024, 10 March 2024)
 * Support an extended check for safe filenames which also allows

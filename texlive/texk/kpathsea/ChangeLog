@@ -1,3 +1,13 @@
+2024-11-06  Karl Berry  <karl@freefriends.org>
+
+	* tex-file.c (kpathsea_name_ok): don't allow writing to the
+	filename ".tex". LaTeX 2024-11-01 changes their build process so
+	their .tex file is not created from TeX. Although maybe not
+	technically a security problem, it feels better not to allow it.
+	Report from Nicola Talbot, tlsecurity May 24 13:48:16 CEST 2024.
+	* NEWS: mention this.
+	* doc/kpathsea.texi (Safe filenames): remove doc of special case.
+
 2024-09-25  Karl Berry  <karl@tug.org>
 
 	* texmf.cnf (shell_escape_commands): add latexminted for minted 3.0,

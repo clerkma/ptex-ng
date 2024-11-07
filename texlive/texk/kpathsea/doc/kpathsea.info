@@ -1,4 +1,4 @@
-This is kpathsea.info, produced by makeinfo version 7.1 from
+This is kpathsea.info, produced by makeinfo version 7.1.1 from
 kpathsea.texi.
 
 This file documents the Kpathsea library for path searching.
@@ -37,7 +37,7 @@ Kpathsea library
 ****************
 
 This manual documents the Kpathsea library for path searching.  It
-corresponds to version 6.4.0, released in January 2024.
+corresponds to version 6.4.0, released in November 2024.
 
 * Menu:
 
@@ -62,7 +62,7 @@ File: kpathsea.info,  Node: Introduction,  Next: unixtex.ftp,  Prev: Top,  Up: T
 **************
 
 This manual corresponds to version 6.4.0 of the Kpathsea library,
-released in January 2024.
+released in November 2024.
 
    The library's fundamental purpose is to return a filename from a list
 of directories specified by the user, similar to what shells do when
@@ -2574,7 +2574,7 @@ to potentially dangerous files is a configuration variable
    • When set to ‘a’ (for "any"), no restrictions are imposed.
 
    • When is set to ‘r’ (for "restricted"), filenames beginning with ‘.’
-     are disallowed (except ‘.tex’, because LaTeX needs it).
+     are disallowed.
 
    • When set to ‘p’ (for "paranoid"), additional restrictions are
      imposed.
@@ -4124,66 +4124,66 @@ Index
 
 
 Tag Table:
-Node: Top1479
-Node: Introduction2261
-Node: History4352
-Node: unixtex.ftp8972
-Node: Security10454
-Node: Global font cache and security13167
-Node: TeX directory structure15158
-Node: Path searching19333
-Node: Searching overview20291
-Node: Path sources24198
-Node: Config files25468
-Node: Path expansion30516
-Node: Default expansion31485
-Node: Variable expansion33607
-Node: Tilde expansion35076
-Node: Brace expansion36124
-Node: KPSE_DOT expansion37119
-Node: Subdirectory expansion37644
-Node: Casefolding search40084
-Node: Casefolding rationale40861
-Node: Casefolding examples42219
-Node: Filename database47441
-Node: ls-R48455
-Node: Filename aliases52327
-Node: Database format53569
-Node: Invoking kpsewhich54618
-Node: Path searching options55601
-Node: Specially-recognized files65603
-Node: Auxiliary tasks67078
-Node: Standard options71222
-Node: TeX support71590
-Node: Supported file formats72948
-Node: File lookup81699
-Node: Glyph lookup83504
-Node: Basic glyph lookup84652
-Node: Fontmap85560
-Node: Fallback font88168
-Node: Suppressing warnings89104
-Node: mktex scripts90267
-Node: mktex configuration91510
-Node: mktex script names97603
-Node: mktex script arguments99286
-Node: Programming100201
-Node: Programming overview100844
-Node: Calling sequence103755
-Node: Safe filenames109092
-Ref: openout_any109251
-Node: Program-specific files113104
-Node: Programming with config files114157
-Node: Reporting bugs115804
-Node: Bug checklist116482
-Node: Mailing lists120039
-Node: Debugging120716
-Node: Logging125973
-Node: Common problems127880
-Node: Unable to find files128357
-Node: Slow path searching130813
-Node: Unable to generate fonts132208
-Node: TeX or Metafont failing134744
-Node: Index135946
+Node: Top1481
+Node: Introduction2264
+Node: History4356
+Node: unixtex.ftp8976
+Node: Security10458
+Node: Global font cache and security13171
+Node: TeX directory structure15162
+Node: Path searching19337
+Node: Searching overview20295
+Node: Path sources24202
+Node: Config files25472
+Node: Path expansion30520
+Node: Default expansion31489
+Node: Variable expansion33611
+Node: Tilde expansion35080
+Node: Brace expansion36128
+Node: KPSE_DOT expansion37123
+Node: Subdirectory expansion37648
+Node: Casefolding search40088
+Node: Casefolding rationale40865
+Node: Casefolding examples42223
+Node: Filename database47445
+Node: ls-R48459
+Node: Filename aliases52331
+Node: Database format53573
+Node: Invoking kpsewhich54622
+Node: Path searching options55605
+Node: Specially-recognized files65607
+Node: Auxiliary tasks67082
+Node: Standard options71226
+Node: TeX support71594
+Node: Supported file formats72952
+Node: File lookup81703
+Node: Glyph lookup83508
+Node: Basic glyph lookup84656
+Node: Fontmap85564
+Node: Fallback font88172
+Node: Suppressing warnings89108
+Node: mktex scripts90271
+Node: mktex configuration91514
+Node: mktex script names97607
+Node: mktex script arguments99290
+Node: Programming100205
+Node: Programming overview100848
+Node: Calling sequence103759
+Node: Safe filenames109096
+Ref: openout_any109255
+Node: Program-specific files113064
+Node: Programming with config files114117
+Node: Reporting bugs115764
+Node: Bug checklist116442
+Node: Mailing lists119999
+Node: Debugging120676
+Node: Logging125933
+Node: Common problems127840
+Node: Unable to find files128317
+Node: Slow path searching130773
+Node: Unable to generate fonts132168
+Node: TeX or Metafont failing134704
+Node: Index135906
 
 End Tag Table
 

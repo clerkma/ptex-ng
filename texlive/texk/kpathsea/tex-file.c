@@ -1277,7 +1277,6 @@ kpathsea_name_ok (kpathsea kpse, const_string fname, const_string check_var,
       if ((q == fname || IS_DIR_SEP (*(q - 1))) /* start or / precedes dot? */
           && !IS_DIR_SEP (*(q + 1))             /* ok if /./                */
           && !(*(q + 1) == '.' && IS_DIR_SEP (*(q + 2))) /* ok if /../      */
-          && !STREQ (q, ".tex")                 /* specially allow .tex     */
           && !(extended && kpathsea_absolute_p (kpse, expanded_fname, false))
                /* Don't quit if EXTENDED and the input is absolute,
                   because we want to allow TEXMFVAR=~/.texliveYYYY.  This
