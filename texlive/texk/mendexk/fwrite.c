@@ -333,7 +333,8 @@ void indwrite(char *filename, struct index *ind, int pagenum)
 					else                   SAPPENDF(lbuff,"%s",item_x2);
 				}
 				else {
-					SAPPENDF(lbuff,"%s",item_2);
+					if (ind[i-1].words==2) SAPPENDF(lbuff,"%s",item_12);
+					else                   SAPPENDF(lbuff,"%s",item_2);
 				}
 				SAPPENDF(lbuff,"%s",ind[i].idx[2]);
 				SAPPENDF(lbuff,"%s",delim_2);

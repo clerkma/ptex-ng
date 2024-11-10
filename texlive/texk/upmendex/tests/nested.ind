@@ -1,0 +1,101 @@
+\begin{theindex}
+
+  \item_0 a(0) 1
+    \item_01 a(1) 2
+      \item_12 a(2) 3
+        \item_23 a(3) 4
+          \item_34 a(4) 5
+  \item_0 ab(0) 6
+  \item_0 ac
+    \item_x1 a
+      \item_x2 a
+        \item_x3 a
+          \item_x4 a(4) 7
+  \item_0 ad
+    \item_x1 a(1) 8
+    \item_1 b(1) 9
+      \item_12 a
+        \item_x3 a
+          \item_x4 a(4) 10
+  \item_0 ae
+    \item_x1 a
+      \item_x2 a(2) 11
+    \item_1 b
+      \item_x2 b(2) 12
+        \item_23 a
+          \item_x4 a(4) 13
+  \item_0 af
+    \item_x1 b
+      \item_x2 a
+        \item_x3 a(3) 14
+      \item_2 b
+        \item_x3 b(3) 15
+          \item_34 a(4) 16
+  \item_0 ag
+    \item_x1 b
+      \item_x2 b
+        \item_x3 a(3) 17
+        \item_3 b(3) 18
+          \item_34 a(4) 19
+
+  \indexspace
+
+  \item_0 pa(0) 21
+    \item_01 qa
+      \item_x2 ra(2) 22
+  \item_0 pb(0) 23
+    \item_01 qb
+      \item_x2 rb
+        \item_x3 sb(3) 24
+  \item_0 pc(0) 25
+    \item_01 qc
+      \item_x2 rc
+        \item_x3 sc
+          \item_x4 tc(4) 26
+  \item_0 pd
+    \item_x1 qd(1) 27
+      \item_12 rd
+        \item_x3 sd(3) 28
+  \item_0 pe
+    \item_x1 qe(1) 29
+      \item_12 re
+        \item_x3 se
+          \item_x4 te(4) 30
+  \item_0 pf
+    \item_x1 qf
+      \item_x2 rf(2) 31
+        \item_23 sf
+          \item_x4 tf(4) 32
+
+  \indexspace
+
+  \item_0 xa(0) 1
+  \item_0 xb(0) 1
+  \item_0 xc(0) 1
+
+  \indexspace
+
+  \item_0 ya
+    \item_x1 x(1) 1
+    \item_1 y(1) 1
+    \item_1 z(1) 1
+  \item_0 yb
+    \item_x1 x
+      \item_x2 x(2) 1
+      \item_2 y(2) 1
+      \item_2 z(2) 1
+  \item_0 yc
+    \item_x1 x
+      \item_x2 y
+        \item_x3 x(3) 1
+        \item_3 y(3) 1
+        \item_3 z(3) 1
+  \item_0 yd
+    \item_x1 x
+      \item_x2 y
+        \item_x3 z
+          \item_x4 x(4) 1
+          \item_4 y(4) 1
+          \item_4 z(4) 1
+
+\end{theindex}

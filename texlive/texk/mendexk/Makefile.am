@@ -51,7 +51,10 @@ EXTRA_DIST += \
 
 ## Tests
 ##
-TESTS = tests/mendex.test
+TESTS = tests/mendex.test \
+	tests/pprec.test \
+	tests/nest.test \
+	tests/encode.test
 tests/mendex.log: mendex$(EXEEXT)
 EXTRA_DIST += $(TESTS)
 
@@ -59,8 +62,11 @@ EXTRA_DIST += $(TESTS)
 EXTRA_DIST += tests/foo.idx tests/foo.ind \
 	tests/uni.idx tests/uni.dict tests/uni.ist \
 	tests/uni1.ist tests/uni2.ist tests/uni.ind \
-	tests/sjis.ist tests/euc.ist tests/jis.ist \
-	tests/range.idx tests/range2.ist tests/range2.ist tests/range3.ist \
+	tests/tort.idx tests/tortW.idx tests/ok-tort.ind
+DISTCLEANFILES = foo.* uni.* tort*.*
+## tests/pprec.test
+EXTRA_DIST += tests/range.idx \
+	tests/range1.ist tests/range2.ist tests/range3.ist \
 	tests/range1.ind tests/range2.ind tests/range3.ind \
 	tests/pprec0.ist tests/pprec1.ist tests/pprec2.ist tests/pprec3.ist \
 	tests/pprec4.ist tests/pprec5.ist tests/pprec6.ist tests/pprec7.ist \
@@ -69,8 +75,15 @@ EXTRA_DIST += tests/foo.idx tests/foo.ind \
 	tests/romalpA.idx tests/romalpA-5.ind tests/romalpA-6.ind \
 	tests/romalpB.idx tests/romalpB-5.ind tests/romalpB-6.ind tests/romalpB-7.ind \
 	tests/romalpC.idx tests/romalpC-5.ind \
-	tests/romalpD.idx tests/romalpD-5.ind tests/romalpD-6.ind tests/romalpD-7.ind \
+	tests/romalpD.idx tests/romalpD-5.ind tests/romalpD-6.ind tests/romalpD-7.ind
+DISTCLEANFILES += range*.* pprec*.* romalp*.*
+## tests/nest.test
+EXTRA_DIST += tests/nested3.ist tests/nested3.ind \
+	tests/toodeep.idx
+DISTCLEANFILES += nested*.* toodeep*.*
+## tests/encode.test
+EXTRA_DIST += tests/sjis.ist tests/euc.ist tests/jis.ist \
 	tests/enc-e.idx tests/enc-j.idx tests/enc-s.idx tests/enc-u.idx \
 	tests/enc-x.ind tests/enc.dic
-DISTCLEANFILES = foo.* uni.* range*.* pprec*.* romalp*.* enc*.*
+DISTCLEANFILES += sjis.* euc.* enc*.*
 

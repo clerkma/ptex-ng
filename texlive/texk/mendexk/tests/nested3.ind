@@ -1,0 +1,40 @@
+\begin{theindex}
+
+  \item_0 a(0) 1
+    \item_01 a(1) 2
+      \item_12 a(2) 3
+  \item_0 ab(0) 6
+  \item_0 ad
+    \item_x1 a(1) 8
+    \item_1 b(1) 9
+  \item_0 ae
+    \item_x1 a
+      \item_x2 a(2) 11
+    \item_1 b
+      \item_x2 b(2) 12
+
+  \indexspace
+
+  \item_0 pa(0) 21
+    \item_01 qa
+      \item_x2 ra(2) 22
+
+  \indexspace
+
+  \item_0 xa(0) 1
+  \item_0 xb(0) 1
+  \item_0 xc(0) 1
+
+  \indexspace
+
+  \item_0 ya
+    \item_x1 x(1) 1
+    \item_1 y(1) 1
+    \item_1 z(1) 1
+  \item_0 yb
+    \item_x1 x
+      \item_x2 x(2) 1
+      \item_2 y(2) 1
+      \item_2 z(2) 1
+
+\end{theindex}

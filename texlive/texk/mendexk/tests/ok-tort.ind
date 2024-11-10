@@ -1,0 +1,24 @@
+\begin{theindex}
+
+  \item bad-encaps, \ii{5--7}
+
+  \indexspace
+
+  \item implicit-range, 10--12
+  \item incons-encaps, \ii{6}, 5--7
+  \item incons-encaps2, \ii{5}, 5
+  \item incons-entries, 6, \xx{6}
+
+  \indexspace
+
+  \item missing(, 6
+  \item missing), 6
+  \item mixed-range, i, 6
+  \item mixed-range1, i--iv, 3--6
+  \item mixed-range2, \xx{ii}, i--ii, \yy{3--6}
+
+  \indexspace
+
+  \item ok-encaps, \ii{5--7}
+
+\end{theindex}

@@ -1,0 +1,41 @@
+#! /bin/sh -vx
+# $Id$
+# Copyright 2024 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
+# Copyright 2017-2022 Karl Berry <tex-live@tug.org>
+# Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_upmendex=$BinDir/upmendex$ExeExt
+
+TEXMFCNF=$srcdir/../kpathsea
+export TEXMFCNF
+
+rm -f nested*.* toodeep*.*
+rc=0
+
+# test for nested items and delimiters
+$_upmendex -s $srcdir/tests/nested3.ist -o nested3.ind1 -t nested3.ilg $srcdir/tests/nested3.idx \
+	&& diff $srcdir/tests/nested3.ind nested3.ind1 || rc=30
+$_upmendex -s $srcdir/tests/nested.ist -o nested.ind1 -t nested.ilg $srcdir/tests/nested.idx \
+	&& diff $srcdir/tests/nested.ind nested.ind1 || rc=31
+
+# check compatibility with makeindex if exist
+if type makeindex > /dev/null 2>&1; then
+  makeindex -s $srcdir/tests/nested3.ist -o nested_mi.ind1 -t nested_mi.ilg $srcdir/tests/nested3.idx \
+	&& diff $srcdir/tests/nested3.ind nested_mi.ind1 || rc=32
+fi
+
+# test for too deep indexentry
+$_upmendex $srcdir/tests/toodeep.idx -o toodeep.ind1 -t toodeep.ilg
+
+if [ $? -eq 255 ]; then
+  echo "Error check: OK"
+else
+  echo "Error check: NG"
+  rc=56
+fi
+
+
+exit $rc

@@ -1,3 +1,19 @@
+2024-11-09  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* configure.ac, version.h:
+	Version 3.7 [09-Nov-2024].
+	* fwrite.c: Better treatment of "item_12"
+	for compatibility with makeindex.
+	https://github.com/t-tk/upmendex-package/pull/9
+	* fread.c: Improve error message when reading index entries.
+	https://github.com/t-tk/upmendex-package/issues/13
+	* tests/{mendex,pprec,encode}.test: Split test scripts.
+	* tests/nest.test, tests/nested3.{ist,idx,ind},
+	tests/toodeep.idx: Add new tests for nested depth.
+	* tests/mendex.test, tests/tort{,W}.idx, tests/ok-tort.ind:
+	Add new tests for error/warning.
+	* Makefile.am: Adjust.
+
 2024-03-10  Karl Berry  <karl@tug.org>
 
 	* TL'24 release.

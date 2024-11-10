@@ -1,3 +1,13 @@
+2024-11-09  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* tests/{makeindex,pprec}.test: Split test scripts.
+	* tests/rangeA[123].ind: Remove unused files.
+	* tests/nest.test, tests/nested3.{ist,idx,ind},
+	tests/toodeep.idx: Add new tests for nested depth.
+	* tests/makeindex.test, tests/tort{,W}.idx, tests/ok-tort.ind:
+	Add new tests for error/warning.
+	* Makefile.am: Adjust.
+
 2023-08-27  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* tests/makeindex.test: Make easier to test on Windows.

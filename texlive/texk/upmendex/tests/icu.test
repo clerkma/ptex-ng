@@ -1,0 +1,66 @@
+#! /bin/sh -vx
+# $Id$
+# Copyright 2021-2024 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
+# Copyright 2017-2022 Karl Berry <tex-live@tug.org>
+# Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_upmendex=$BinDir/upmendex$ExeExt
+
+TEXMFCNF=$srcdir/../kpathsea
+export TEXMFCNF
+
+rm -f locale*.* attr*.* rule*.*
+rc=0
+
+# test for icu_locale
+$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/locale1.ist $srcdir/tests/rule.idx \
+	-o locale1.ind1 -t locale1.ilg \
+	&& diff $srcdir/tests/locale1.ind locale1.ind1 || rc=51
+
+# test for icu_attributes
+$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/attr1.ist $srcdir/tests/rule.idx \
+	-o attr1.ind1 -t attr1.ilg \
+	&& diff $srcdir/tests/attr1.ind attr1.ind1 || rc=52
+
+# test for icu_rules
+$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/rule1.ist $srcdir/tests/rule.idx \
+	-o rule1.ind1 -t rule1.ilg \
+	&& diff $srcdir/tests/rule.ind rule1.ind1 || rc=53
+
+$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/rule2.ist $srcdir/tests/rule.idx \
+	-o rule2.ind1 -t rule2.ilg \
+	&& diff $srcdir/tests/rule.ind rule2.ind1 || rc=54
+
+# malformed input
+$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/rule3.ist $srcdir/tests/rule.idx \
+	   -o rule3.ind1 -t rule3.ilg
+if [ $? -eq 254 ]; then
+  echo "Error check: OK"
+else
+  echo "Error check: NG"
+  exit 1
+fi
+
+$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/rule4.ist $srcdir/tests/rule.idx \
+	-o rule4.ind1 -t rule4.ilg
+if [ $? -eq 254 ]; then
+  echo "Error check: OK"
+else
+  echo "Error check: NG"
+  exit 1
+fi
+
+# test for icu_locale + icu_rules
+$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/locale2.ist -s $srcdir/tests/rule1.ist $srcdir/tests/rule.idx \
+	-o locale2-rule1.ind1 -t locale2-rule1.ilg \
+	&& diff $srcdir/tests/locale2-rule.ind locale2-rule1.ind1 || rc=55
+
+$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/locale3.ist -s $srcdir/tests/rule1.ist $srcdir/tests/rule.idx \
+	-o locale3-rule1.ind1 -t locale3-rule1.ilg \
+	&& diff $srcdir/tests/locale3-rule.ind locale3-rule1.ind1 || rc=56
+
+
+exit $rc

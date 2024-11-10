@@ -40,7 +40,7 @@ boolean check_kanji (integer c)
 
 boolean is_char_ascii(integer c)
 {
-    return (0 <= c && c < 0x2E80);
+    return (0 <= c && c < LATIN_CHAR_LIMIT);
 }
 
 boolean is_char_kanji(integer c)

@@ -622,8 +622,9 @@ nodist_EXTRA_upmendex_SOURCES = dummy.cxx
 LDADD = $(KPATHSEA_LIBS) $(ICU_LIBS) $(PTHREAD_LIB) $(ICU_LIBS_EXTRA)
 EXTRA_DIST = COPYRIGHT indexsty upmendex.ja.txt $(TESTS) tests/foo.idx \
 	tests/foo.ind tests/uni.idx tests/uni.dict tests/uni.ist \
-	tests/uni1.ist tests/uni2.ist tests/uni.ind tests/range.idx \
-	tests/range2.ist tests/range2.ist tests/range3.ist \
+	tests/uni1.ist tests/uni2.ist tests/uni.ind tests/tort.idx \
+	tests/tortW.idx tests/ok-tort.ind tests/range.idx \
+	tests/range1.ist tests/range2.ist tests/range3.ist \
 	tests/range1.ind tests/range2.ind tests/range3.ind \
 	tests/pprec0.ist tests/pprec1.ist tests/pprec2.ist \
 	tests/pprec3.ist tests/pprec4.ist tests/pprec5.ist \
@@ -634,14 +635,20 @@ EXTRA_DIST = COPYRIGHT indexsty upmendex.ja.txt $(TESTS) tests/foo.idx \
 	tests/romalpA-6.ind tests/romalpB.idx tests/romalpB-5.ind \
 	tests/romalpB-6.ind tests/romalpB-7.ind tests/romalpC.idx \
 	tests/romalpC-5.ind tests/romalpD.idx tests/romalpD-5.ind \
-	tests/romalpD-6.ind tests/romalpD-7.ind tests/locale1.ist \
-	tests/locale2.ist tests/locale3.ist tests/rule.idx \
-	tests/attr1.ist tests/attr1.ind tests/locale1.ind \
-	tests/locale2-rule.ind tests/locale3-rule.ind tests/rule1.ist \
-	tests/rule2.ist tests/rule3.ist tests/rule4.ist rule.ind
-TESTS = tests/upmendex.test
-DISTCLEANFILES = foo.* uni.* range*.* pprec*.* romalp*.* locale*.* \
-	attr*.* rule*.*
+	tests/romalpD-6.ind tests/romalpD-7.ind tests/nested3.ist \
+	tests/nested3.ind tests/nested.ist tests/nested.ind \
+	tests/toodeep.idx tests/locale1.ist tests/locale2.ist \
+	tests/locale3.ist tests/rule.idx tests/attr1.ist \
+	tests/attr1.ind tests/locale1.ind tests/locale2-rule.ind \
+	tests/locale3-rule.ind tests/rule1.ist tests/rule2.ist \
+	tests/rule3.ist tests/rule4.ist rule.ind
+TESTS = tests/upmendex.test \
+	tests/pprec.test \
+	tests/nest.test \
+	tests/icu.test
+
+DISTCLEANFILES = foo.* uni.* range*.* pprec*.* romalp*.* nested*.* \
+	toodeep*.* locale*.* attr*.* rule*.*
 all: c-auto.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

@@ -1,0 +1,26 @@
+#! /bin/sh -vx
+# $Id$
+# Copyright 2024 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
+# Copyright 2017-2022 Karl Berry <tex-live@tug.org>
+# Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_makeindex=$BinDir/makeindex$ExeExt
+
+TEXMFCNF=$srcdir/../kpathsea
+export TEXMFCNF
+
+rm -f nested*.* toodeep*.*
+rc=0
+
+# test for nested items and delimiters
+$_makeindex -s $srcdir/tests/nested3.ist -o nested3.ind1 -t nested3.ilg $srcdir/tests/nested3.idx \
+	&& diff $srcdir/tests/nested3.ind nested3.ind1 || rc=30
+
+# test for too deep indexentry
+$_makeindex $srcdir/tests/toodeep.idx -o toodeep.ind1 -t toodeep.ilg
+
+
+exit $rc

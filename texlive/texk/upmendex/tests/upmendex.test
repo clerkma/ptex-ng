@@ -1,6 +1,6 @@
 #! /bin/sh -vx
-# $Id: upmendex.test 69144 2023-12-16 06:51:51Z takuji $
-# Copyright 2021-2023 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
+# $Id: upmendex.test 72806 2024-11-09 10:39:33Z takuji $
+# Copyright 2021-2024 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
 # Copyright 2017-2022 Karl Berry <tex-live@tug.org>
 # Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -12,7 +12,7 @@ _upmendex=$BinDir/upmendex$ExeExt
 TEXMFCNF=$srcdir/../kpathsea
 export TEXMFCNF
 
-rm -f foo.* uni.* range*.* pprec*.* romalp*.* locale*.* attr*.* rule*.*
+rm -f foo.* uni.* tort*.*
 rc=0
 
 $_upmendex $srcdir/tests/foo.idx -o foo.ind1 -t foo.ilg1 \
@@ -34,103 +34,13 @@ $_upmendex -d $srcdir/tests/uni.dict -s $srcdir/tests/uni1.ist -s $srcdir/tests/
 	$srcdir/tests/uni.idx -o uni.ind3 -t uni.ilg3 \
 	&& diff $srcdir/tests/uni.ind uni.ind3 || rc=5
 
+$_upmendex $srcdir/tests/tort.idx -o tort.ind1 -t tort.ilg1 \
+	&& rc=20
+#$_upmendex $srcdir/tests/tort.idx -o tort.ind1 -t tort.ilg1 \
+#	&& diff $srcdir/tests/ok-tort.ind tort.ind1 || :
 
-# test for range suffix_2p, suffix_3p, suffix_mp
-for num in 1 2 3; do
-$_upmendex -s $srcdir/tests/range$num.ist $srcdir/tests/range.idx \
-	-o range$num.ind1 -t range$num.ilg \
-	&& diff $srcdir/tests/range$num.ind range$num.ind1 || rc=6
-done
-
-
-# test for page_precedence and suffix_3p
-sfx=A
-for num in 0 1 2; do
-$_upmendex -s $srcdir/tests/pprec$num.ist $srcdir/tests/pprec$sfx.idx \
-	-o pprec$sfx-$num.ind1 -t pprec$sfx-$num.ilg \
-	&& diff $srcdir/tests/pprec$sfx-$num.ind pprec$sfx-$num.ind1 || rc=7
-done
-sfx=B
-for num in 0 3 4; do
-$_upmendex -s $srcdir/tests/pprec$num.ist $srcdir/tests/pprec$sfx.idx \
-	-o pprec$sfx-$num.ind1 -t pprec$sfx-$num.ilg \
-	&& diff $srcdir/tests/pprec$sfx-$num.ind pprec$sfx-$num.ind1 || rc=8
-done
-
-
-# test for page_precedence, heuristic detection if a letter is Roman or Alpha
-sfx=A
-for num in 5 6; do
-$_upmendex -s $srcdir/tests/pprec$num.ist $srcdir/tests/romalp$sfx.idx \
-	-o romalp$sfx-$num.ind1 -t romalp$sfx-$num.ilg \
-	&& diff $srcdir/tests/romalp$sfx-$num.ind romalp$sfx-$num.ind1 || rc=9
-done
-sfx=B
-for num in 5 6 7; do
-$_upmendex -s $srcdir/tests/pprec$num.ist $srcdir/tests/romalp$sfx.idx \
-	-o romalp$sfx-$num.ind1 -t romalp$sfx-$num.ilg \
-	&& diff $srcdir/tests/romalp$sfx-$num.ind romalp$sfx-$num.ind1 || rc=10
-done
-sfx=C
-for num in 5; do
-$_upmendex -s $srcdir/tests/pprec$num.ist $srcdir/tests/romalp$sfx.idx \
-	-o romalp$sfx-$num.ind1 -t romalp$sfx-$num.ilg \
-	&& diff $srcdir/tests/romalp$sfx-$num.ind romalp$sfx-$num.ind1 || rc=11
-done
-sfx=D
-for num in 5 6 7; do
-$_upmendex -s $srcdir/tests/pprec$num.ist $srcdir/tests/romalp$sfx.idx \
-	-o romalp$sfx-$num.ind1 -t romalp$sfx-$num.ilg \
-	&& diff $srcdir/tests/romalp$sfx-$num.ind romalp$sfx-$num.ind1 || rc=12
-done
-
-
-# test for icu_locale
-$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/locale1.ist $srcdir/tests/rule.idx \
-	-o locale1.ind1 -t locale1.ilg \
-	&& diff $srcdir/tests/locale1.ind locale1.ind1 || rc=51
-
-# test for icu_attributes
-$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/attr1.ist $srcdir/tests/rule.idx \
-	-o attr1.ind1 -t attr1.ilg \
-	&& diff $srcdir/tests/attr1.ind attr1.ind1 || rc=52
-
-# test for icu_rules
-$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/rule1.ist $srcdir/tests/rule.idx \
-	-o rule1.ind1 -t rule1.ilg \
-	&& diff $srcdir/tests/rule.ind rule1.ind1 || rc=53
-
-$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/rule2.ist $srcdir/tests/rule.idx \
-	-o rule2.ind1 -t rule2.ilg \
-	&& diff $srcdir/tests/rule.ind rule2.ind1 || rc=54
-
-# malformed input
-$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/rule3.ist $srcdir/tests/rule.idx \
-	   -o rule3.ind1 -t rule3.ilg
-if [ $? -eq 254 ]; then
-  echo "Error check: OK"
-else
-  echo "Error check: NG"
-  exit 1
-fi
-
-$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/rule4.ist $srcdir/tests/rule.idx \
-	-o rule4.ind1 -t rule4.ilg
-if [ $? -eq 254 ]; then
-  echo "Error check: OK"
-else
-  echo "Error check: NG"
-  exit 1
-fi
-
-# test for icu_locale + icu_rules
-$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/locale2.ist -s $srcdir/tests/rule1.ist $srcdir/tests/rule.idx \
-	-o locale2-rule1.ind1 -t locale2-rule1.ilg \
-	&& diff $srcdir/tests/locale2-rule.ind locale2-rule1.ind1 || rc=55
-
-$_upmendex -s $srcdir/tests/uni.ist -s $srcdir/tests/locale3.ist -s $srcdir/tests/rule1.ist $srcdir/tests/rule.idx \
-	-o locale3-rule1.ind1 -t locale3-rule1.ilg \
-	&& diff $srcdir/tests/locale3-rule.ind locale3-rule1.ind1 || rc=56
+$_upmendex $srcdir/tests/tortW.idx -o tortW.ind1 -t tortW.ilg1 \
+	&& diff $srcdir/tests/ok-tort.ind tortW.ind1 || :
 
 
 exit $rc

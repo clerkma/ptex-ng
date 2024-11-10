@@ -1,5 +1,6 @@
 #! /bin/sh -vx
-# $Id: makeindex.test 68083 2023-08-27 14:18:16Z takuji $
+# $Id: makeindex.test 72804 2024-11-09 10:39:22Z takuji $
+# Copyright 2024 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2012 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -11,7 +12,7 @@ _makeindex=$BinDir/makeindex$ExeExt
 TEXMFCNF=$srcdir/../kpathsea
 export TEXMFCNF
 
-rm -f sample.* range*.* pprec*.* romalp*.*
+rm -f sample.* tort*.*
 rc=0
 
 $_makeindex $srcdir/tests/sample.idx -o sample.ind1 -t sample.ilg1 \
@@ -20,58 +21,11 @@ $_makeindex $srcdir/tests/sample.idx -o sample.ind1 -t sample.ilg1 \
 cat $srcdir/tests/sample.idx | $_makeindex >sample.ind2 2>sample.ilg2 \
 	&& diff $srcdir/tests/sample.ind sample.ind2 || rc=2
 
+$_makeindex $srcdir/tests/tort.idx -o tort.ind1 -t tort.ilg1 \
+	&& diff $srcdir/tests/ok-tort.ind tort.ind1 || rc=20
 
-# test for range suffix_2p, suffix_3p, suffix_mp
-
-for num in 1 2 3; do
-$_makeindex -s $srcdir/tests/range$num.ist $srcdir/tests/range.idx \
-	-o range$num.ind1 -t range$num.ilg \
-	&& diff $srcdir/tests/range$num.ind range$num.ind1 || rc=3
-done
-
-
-# test for page_precedence and suffix_3p
-
-sfx=A
-for num in 0 1 2; do
-$_makeindex -s $srcdir/tests/pprec$num.ist $srcdir/tests/pprec$sfx.idx \
-	-o pprec$sfx-$num.ind1 -t pprec$sfx-$num.ilg \
-	&& diff $srcdir/tests/pprec$sfx-$num.ind pprec$sfx-$num.ind1 || rc=4
-done
-sfx=B
-for num in 0 3 4; do
-$_makeindex -s $srcdir/tests/pprec$num.ist $srcdir/tests/pprec$sfx.idx \
-	-o pprec$sfx-$num.ind1 -t pprec$sfx-$num.ilg \
-	&& diff $srcdir/tests/pprec$sfx-$num.ind pprec$sfx-$num.ind1 || rc=5
-done
-
-
-# test for page_precedence, heuristic detection if a letter is Roman or Alpha
-
-sfx=A
-for num in 5 6; do
-$_makeindex -s $srcdir/tests/pprec$num.ist $srcdir/tests/romalp$sfx.idx \
-	-o romalp$sfx-$num.ind1 -t romalp$sfx-$num.ilg \
-	&& diff $srcdir/tests/romalp$sfx-$num.ind romalp$sfx-$num.ind1 || rc=6
-done
-sfx=B
-for num in 5 6 7; do
-$_makeindex -s $srcdir/tests/pprec$num.ist $srcdir/tests/romalp$sfx.idx \
-	-o romalp$sfx-$num.ind1 -t romalp$sfx-$num.ilg \
-	&& diff $srcdir/tests/romalp$sfx-$num.ind romalp$sfx-$num.ind1 || rc=7
-done
-sfx=C
-for num in 5; do
-$_makeindex -s $srcdir/tests/pprec$num.ist $srcdir/tests/romalp$sfx.idx \
-	-o romalp$sfx-$num.ind1 -t romalp$sfx-$num.ilg \
-	&& diff $srcdir/tests/romalp$sfx-$num.ind romalp$sfx-$num.ind1 || rc=8
-done
-sfx=D
-for num in 5 6 7; do
-$_makeindex -s $srcdir/tests/pprec$num.ist $srcdir/tests/romalp$sfx.idx \
-	-o romalp$sfx-$num.ind1 -t romalp$sfx-$num.ilg \
-	&& diff $srcdir/tests/romalp$sfx-$num.ind romalp$sfx-$num.ind1 || rc=9
-done
+$_makeindex $srcdir/tests/tortW.idx -o tortW.ind1 -t tortW.ilg1 \
+	&& diff $srcdir/tests/ok-tort.ind tortW.ind1 || rc=21
 
 
 exit $rc

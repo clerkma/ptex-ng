@@ -39,7 +39,9 @@ EXTRA_DIST = CONTRIB NOTES ind-src
 ## Tests
 ##
 TEST_EXTENSIONS = .pl .test
-TESTS = tests/nested-range-test.pl tests/makeindex.test
+TESTS = tests/nested-range-test.pl tests/makeindex.test \
+	tests/pprec.test \
+	tests/nest.test
 tests/nested-range-test.log tests/makeindex.log: makeindex$(EXEEXT)
 EXTRA_DIST += $(TESTS)
 
@@ -49,7 +51,11 @@ EXTRA_DIST += tests/nested-range.tex tests/nested-range.idx \
 DISTCLEANFILES = nested-range.ilg nested-range.ind
 ## tests/makeindex.test
 EXTRA_DIST += tests/sample.idx tests/sample.ind \
-	tests/range.idx tests/range2.ist tests/range2.ist tests/range3.ist \
+	tests/tort.idx tests/tortW.idx tests/ok-tort.ind
+DISTCLEANFILES += sample.* tort*.*
+## tests/pprec.test
+EXTRA_DIST += tests/range.idx \
+	tests/range1.ist tests/range2.ist tests/range3.ist \
 	tests/range1.ind tests/range2.ind tests/range3.ind \
 	tests/pprec0.ist tests/pprec1.ist tests/pprec2.ist tests/pprec3.ist \
 	tests/pprec4.ist tests/pprec5.ist tests/pprec6.ist tests/pprec7.ist \
@@ -59,5 +65,9 @@ EXTRA_DIST += tests/sample.idx tests/sample.ind \
 	tests/romalpB.idx tests/romalpB-5.ind tests/romalpB-6.ind tests/romalpB-7.ind \
 	tests/romalpC.idx tests/romalpC-5.ind \
 	tests/romalpD.idx tests/romalpD-5.ind tests/romalpD-6.ind tests/romalpD-7.ind
-DISTCLEANFILES += sample.* range*.* pprec*.* romalp*.*
+DISTCLEANFILES += range*.* pprec*.* romalp*.*
+## tests/nest.test
+EXTRA_DIST += tests/nested3.ist tests/nested3.ind \
+	tests/toodeep.idx
+DISTCLEANFILES += nested*.* toodeep*.*
 

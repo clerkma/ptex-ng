@@ -592,7 +592,8 @@ dist_man1_MANS = makeindex.1 mkindex.1
 EXTRA_DIST = CONTRIB NOTES ind-src $(TESTS) tests/nested-range.tex \
 	tests/nested-range.idx tests/nested-range-bb.tex \
 	tests/nested-range-bb.idx tests/sample.idx tests/sample.ind \
-	tests/range.idx tests/range2.ist tests/range2.ist \
+	tests/tort.idx tests/tortW.idx tests/ok-tort.ind \
+	tests/range.idx tests/range1.ist tests/range2.ist \
 	tests/range3.ist tests/range1.ind tests/range2.ind \
 	tests/range3.ind tests/pprec0.ist tests/pprec1.ist \
 	tests/pprec2.ist tests/pprec3.ist tests/pprec4.ist \
@@ -603,11 +604,15 @@ EXTRA_DIST = CONTRIB NOTES ind-src $(TESTS) tests/nested-range.tex \
 	tests/romalpA-5.ind tests/romalpA-6.ind tests/romalpB.idx \
 	tests/romalpB-5.ind tests/romalpB-6.ind tests/romalpB-7.ind \
 	tests/romalpC.idx tests/romalpC-5.ind tests/romalpD.idx \
-	tests/romalpD-5.ind tests/romalpD-6.ind tests/romalpD-7.ind
+	tests/romalpD-5.ind tests/romalpD-6.ind tests/romalpD-7.ind \
+	tests/nested3.ist tests/nested3.ind tests/toodeep.idx
 TEST_EXTENSIONS = .pl .test
-TESTS = tests/nested-range-test.pl tests/makeindex.test
-DISTCLEANFILES = nested-range.ilg nested-range.ind sample.* range*.* \
-	pprec*.* romalp*.*
+TESTS = tests/nested-range-test.pl tests/makeindex.test \
+	tests/pprec.test \
+	tests/nest.test
+
+DISTCLEANFILES = nested-range.ilg nested-range.ind sample.* tort*.* \
+	range*.* pprec*.* romalp*.* nested*.* toodeep*.*
 all: c-auto.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
