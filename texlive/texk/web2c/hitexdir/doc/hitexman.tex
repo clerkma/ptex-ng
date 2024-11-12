@@ -28,6 +28,25 @@
 \input btxmac.tex
 \input hintmac.tex
 
+\hyphenation{HINT-ver-sion}
+\hyphenation{HINT-mi-nor-ver-sion}
+\hyphenation{HINT-image}
+\hyphenation{HINT-global-color}
+\hyphenation{HINT-color}
+\hyphenation{HINT-end-color}
+\hyphenation{HINT-start-link}
+\hyphenation{HINT-end-link}
+\hyphenation{HINT-global-link-color}
+\hyphenation{HINT-link-color}
+\hyphenation{HINT-dest}
+\hyphenation{HINT-out-line}
+\hyphenation{HINT-set-page}
+\hyphenation{HINT-stream}
+\hyphenation{HINT-set-stream}
+\hyphenation{HINT-before}
+\hyphenation{HINT-after}
+
+
 \makeindex
 \maketoc
 
@@ -96,8 +115,8 @@ Germany.
 \medskip
 {\tt ruckert\:@cs.hm.edu}
 \medskip
-\def\lastrevision{Date: Mon Dec 4 15:00:09 2023}
-\lastrevision\par
+Last commit: Sat Sep 14 14:38:07 2024
+\par
 }
 \eject
 \endgroup
@@ -109,31 +128,35 @@ Germany.
 
 \mainmatter
 
-\def\rs{\hskip 2pt plus 3pt minus 2pt\penalty0\relax}
+%\def\rs{\penalty100\hskip 2pt plus 3pt minus 2pt\penalty100\relax}
+%\def\rs{\kern 2pt}
 \def\rule#1:#2.{\par{\hangindent32pt\hangafter1\parindent0pt\rightskip 0pt plus 60pt#1{\bf:}\quad%
   \hskip 0pt plus 60pt\penalty-300\hskip 0pt plus -60pt#2{\bf.}\par}}
-\def\sym#1{\rs$<${\it #1\/}$>$\rs}
-\def\OR{\rs${}\vert{}$\rs}
-\def\opt#1{\rs$[{}$#1${}]$\rs}
+\def\prim#1.{\par{\hangindent32pt\hangafter1\parindent0pt\rightskip 0pt plus 60pt#1\par}}  
+\def\sym#1{$\left<\right.${\it #1\/}$\left.\right>$}
+\def\OR{${}\vert{}$}
+\def\opt#1{$\left[\right.$#1$\left.\right]$}
 \def\ctl#1{{\tt\BS #1}}
+
 
 \section{Introduction}
 When I started the \HINT\ project in 2017,
 I tried to keep the project as small as possible to increase the
 chances that I would be able to complete it. So one design decision
-was to keep things simple---or to quote Albert Einstein: ``Make things 
-as simple as possible, but not simpler''. The other imperative was:
+was to keep things simple---or to quote an aphorism attributed to
+Albert Einstein: ``Make things as simple as possible, but not simpler''.
+The other imperative was:
 keep things out of the viewer if possible because I do not know
 how much processing power or battery power is available.
 
 As a consequence, I focused on Donald Knuth' original \TeX,
-disregarding all later extensions like \eTeX\ or \LaTeX, and I
+disregarding all later developments like \eTeX\ or \LaTeX, and I
 decided that the \TeX\ interpreter would not need to run in the
 viewer.
 Of course \TeX's line breaking routine will run in the viewer
 and modifications of \TeX's page breaking routine. 
-But the decision to keep the TeX interpreter
-out of the HINT viewer implies that \HINT\ files do
+But the decision to keep the \TeX\ interpreter
+out of the \HINT\ viewer implies that \HINT\ files do
 not contain token lists and that there are
 neither output routines nor marks.
 To replace them, the \HINT\ file format includes
@@ -149,7 +172,7 @@ graphics card directly using OpenEGL.
 
 The following sections will describe all the primitive control sequences
 that are special for Hi\TeX. I tried to be as close to similar primitives
-that have proven to be useful in other engines, notably pdftex, to make
+that have proven to be useful in other engines, notably pdf\TeX, to make
 it easy for package writers to support the Hi\TeX\ engine.
 
 While currently Hi\TeX\ is the only \TeX\ engine that supports output in the \HINT\ file
@@ -171,10 +194,10 @@ the \HINT\ file format and therefore features that are part of the \HINT\
 file format will enjoy support in Hi\TeX\ by corresponding primitives.
 Everything that is not available through primitives in Hi\TeX\ should
 be considered ``internal'' and might change in the future.
-Second, Hi\TeX\ is not considered a replacement but 
+Second, Hi\TeX\ is not considered a replacement for but 
 a supplement to other engines. If your aim is the production of a printed
-book, your will probably target one of the engines that produce PDF output.
-But if, on occassion, you want to read what you wrote on a computer screen,
+book, your will target one of the engines that produce PDF output.
+But if, on occasion, you want to read what you wrote on a computer screen,
 you might just use Hi\TeX\ to process your source file. At this point you
 do not want to write \ctl{special} commands for the new target; you want
 Hi\TeX\ as a plug-in replacement for your main target engine, even if it
@@ -209,6 +232,8 @@ are enclosed in \opt{square brackets}.
 \medskip
 \rule\sym{integer}: \index{integer+\sym{integer}}
   an integer as in  \ctl{penalty}\sym{integer}.
+\rule\sym{number}: \index{number+\sym{number}}
+  a general number as in  \ctl{kern}\sym{number}\.{pt}.
 \rule\sym{normal dimension}:\index{normal dimension+\sym{normal dimension}}
   a dimension as in \ctl{hrule} \.{width} \sym{normal dimension}.
 \rule\sym{dimension}:\index{dimension+\sym{dimension}}
@@ -217,13 +242,13 @@ are enclosed in \opt{square brackets}.
   a name as in \ctl{input} \sym{name}.
 \rule\sym{vertical list}:\index{vertical list+\sym{vertical list}}
   a token list  with matching braces as in
-  \ctl{vbox}\.{\LB}\sym{vertical list}\.{\RB}.
+  \ctl{vbox}\.{\{}\sym{vertical list}\.{\}}.
 \rule\sym{horizontal list}:\index{horizontal list+\sym{horizontal list}}
   a token list  with matching braces as in
-  \ctl{hbox}\.{\LB}\sym{horizontal list}\.{\RB}.
+  \ctl{hbox}\.{\{}\sym{horizontal list}\.{\}}.
 \rule\sym{general text}:\index{general text+\sym{general text}}
   a token list with matching braces as in
-  \ctl{write}\.{\LB}\sym{general text}\.{\RB}.
+  \ctl{write}\.{\{}\sym{general text}\.{\}}.
 \medskip
 \enditemize
 
@@ -252,8 +277,8 @@ includes an image\index{image} in a document.
 The syntax is as follows:
 
 \medskip
-\ctl{HINTimage}  \opt{\.{=}} \sym{name}
-\opt{\sym{width}} \opt{\sym{height}} 
+\prim\ctl{HINTimage}  \opt{\.{=}} \sym{name}
+\opt{\sym{width}} \opt{\sym{height}}. 
 \medskip
 
 The optional equal sign can be added to make the code look nicer.
@@ -283,9 +308,299 @@ must specify the absolute width and height of the image.
 It is considered an error if valid settings for the image's width and height
 can not be obtained.
 
+\subsection{Colors}
+Since Hi\TeX\ is designed to produce files for on-screen viewing,
+the only color model supported is the RGBA model, where a color is
+specified by four values: the red, the green, the blue, and the alpha
+value. The first three determine the light intensity of the red,
+green, and blue component of a pixel; the alpha value determines
+the relative share of a color when displaying
+one color on top of another color. 
+
+\subsubsection{Foreground Color}
+The most common color specification is the specification of a
+foreground color. (We will consider background colors below.)
+Because in practice most display devices use one byte for
+each of the four values that define a color,
+it is common to specify the four color
+components using integer values in the range 0 to 255.
+Using this representation, a foreground color can be specified using
+the following syntax:
+
+\medskip
+\rule\sym{foreground}\index{foreground+\sym{foreground}}:
+   \.{FG} \.{\{} \sym{integer} \sym{integer} \sym{integer} \opt{\sym{integer}} \.{\}}.
+\medskip
+
+Note that for convenience, the alpha value
+is optional; if no alpha value is given, the value 255 will be used
+and the color is completely opaque.
+
+Here are some examples:
+\.{FG\{255 0 0\}}, \.{FG\{255 0 0 255\}},
+both specify the same plain opaque red;
+\.{FG\{0 0 255\}} is plain blue;
+\.{FG\{255 255 0 127\}} is  a transparent yellow.
+Because each value fits in a single byte, the values are often given in
+hexadecimal notation. In \TeX, hexadecimal values are written with
+a \.{"}~prefix. The same colors as before are then written
+\.{FG\{"FF 0 0\}}, \.{FG\{"FF 0 0 "FF\}},
+\.{FG\{0 0 "FF\}} and \.{FG\{"FF "FF "7F\}}. 
+Values greater than 255 or less than 0 are not allowed.
+
+A common alternative to the color representation just described
+is the device independent notation where each
+value is a real number in the interval from 0 to 1.
+To keep both representations apart, the device independent
+representation (with the smaller numbers) uses the lowercase
+keyword \.{fg} instead of \.{FG}. Here is the syntax:
+
+\medskip
+\rule\sym{foreground}\index{foreground+\sym{foreground}}:
+\.{fg} \.{\{} \sym{number} \sym{number} \sym{number} \opt{\sym{number}} \.{\}}.
+\medskip
+
+Using the new syntax the colors above are written
+\.{fg\{1 0 0\}}, \.{fg\{1 0 0 1\}},
+\.{fg\{0 0 1\}} and \.{fg\{1 1 0 0.5\}}.
+Values greater than 1 and less than 0 are not allowed.
+Note that \.{fg\{1 1 1\}} is pure white while  \.{FG\{1 1 1\}} is
+the darkest possible gray, which on most devices is indistinguishable
+from pure black. 
+
+\subsubsection{Defining and Using Colors}
+As we will see, colors come in whole sets of colors.
+To define such a set of colors, Hi\TeX\ provides
+the primitive \ctl{HINTcolor}. It syntax is
+\medskip
+\prim\ctl{HINTcolor} \.{\{} \sym{color specification} \.{\}}.
+\medskip
+Before we give the complete definition of a  \sym{color specification},
+we start with some examples.
+In its simplest form this primitive just specifies a single color.
+For example \ctl{HINTcolor}\.{\{fg\{ 0 0 0\}\}} specifies
+the foreground color black which is then used for rules and glyphs.
+In addition to the foreground color, you can specify a background color.
+For example, black text on white background is specified by
+\ctl{HINTcolor}\.{\{fg\{0 0 0\}} \.{bg\{1 1 1\}\}} or
+\ctl{HINTcolor}\.{\{fg\{0 0 0\}} \.{BG\{"FF "FF "FF\}\}}.
+
+The viewer for \HINT\ files may provide a ``dark'' mode, and as a document
+author, you can specify the colors also for dark mode.
+If you like white letters on dark blue background you can write
+\ctl{HINTcolor}\.{\{fg\{0 0 0\}} \.{bg\{ 1 1 1\}}
+\.{dark} \.{fg\{1 1 1\}} \.{bg\{0 0 0.3\}\}}.
+
+There are two more colors that an author might care about: When searching
+for a text, all occurrences of the search phrase are highlighted by
+using a different color. And while the user iterates over the occurrences
+on the page, one occurrence has the ``focus'' and is rendered again in a
+different color. You can specify the highlight color right after
+the normal text color and the focus color right after the highlight color.
+The same can be done for the colors in ``dark'' mode.
+
+Here are the remaining rules that complete the \sym{color specification}:
+
+\medskip
+\rule\sym{color specification}\index{color specification+\sym{color specification}}: \sym{color set} \opt{\.{dark} \sym{color set}}.
+\rule\sym{color set}\index{color set+\sym{color set}}:
+    \sym{color} \opt{\sym{color} \opt{\sym{color}}}.
+\rule\sym{color}\index{color+\sym{color}}:
+    \sym{foreground} \opt{\sym{background}}.
+\rule\sym{background}:
+\.{BG} \.{\{} \sym{integer} \sym{integer} \sym{integer} \opt{\sym{integer}} \.{\}}.
+\rule\sym{background}:
+\.{bg} \.{\{} \sym{number} \sym{number} \sym{number} \opt{\sym{number}} \.{\}}.
+\medskip
+If some of the optional parts in the \sym{color specification} are missing,
+the corresponding colors from the set of default colors, as described below,
+are used.
+
+Note that the background colors for highlighted text and focus text
+can be given, but current viewers ignore these background specifications.
+Further note that the current specification of the \HINT\ file format
+limits the total number of different color specifications in a document to 255.
 
 
-\subsection{Links, Labels, and Outlines}
+The colors given in \ctl{HINTcolor} will have an immediate effect
+on all following rules and glyphs and the background in the enclosing box.
+The effect will persist until the next change of colors or until
+the end of the box---whatever occurs first.
+
+The line breaking algorithm of Hi\TeX\ 
+tracks changes in color within a paragraph and reinsert an appropriate
+color change at the start of every \ctl{hbox} that contains a new line.
+In this way local color changes inside a paragraph can span multiple lines
+but do not affect the inter line glue or material that is inserted with
+\ctl{vadjust}. Similarly, spliting off the initial part of a vertical
+box with \ctl{vsplit} will insert a color node in the remaining part
+if necessary to keep the color consistent accross the split.
+
+Special care is needed if background colors are used.
+Unless the background color is completely transparent
+with an alpha value equal to zero,
+the background color will fill a vertical box from left to right
+and a horizontal box from top to bottom. Since height, depth, and width of
+boxes often depend on the text that is inside, which in turn
+might depend on the outcome of line breaking, it is strongly recommended
+to use background colors with caution, and use \ctl{strut}s to enforce
+a fixed height and depth of horizontal boxes.
+
+
+\subsubsection{Default Colors}
+The \HINT\ file format specifies default values for all colors in a set.
+Hi\TeX\ provides the primitive \ctl{HINTdefaultcolor} to overwrite these
+default colors. This primitive must not be used after defining any custom
+colors using \ctl{HINTcolor}. Its syntax is
+\medskip
+\prim\ctl{HINTdefaultcolor} \.{\{} \sym{color specification} \.{\}}.
+\medskip
+The \HINT\ format specifies the following default colors:
+Normal text is black \.{FG\{0 0 0\}},
+highlight text is a slightly dark red  \.{FG\{"EE 0 0\}},
+and focus text is slighty dark green \.{FG\{0 "EE 0\}}.
+The background is transparent white \.{BG\{"FF "FF "FF 0\}}.
+In dark mode the background is transparent black \.{BG\{0 0 0 0\}},
+normal text is white \.{FG\{"FF "FF "FF\}},
+and a slightly lighter red \.{FG\{"FF "11 "11\}},
+and green \.{FG\{"11 "FF "11\}}, are used for highlighted and focus text.
+
+\subsubsection{Nesting Colors}
+A color change is limited to the enclosing box. Hence the
+nesting of boxes leads to a nesting of color definitions.
+So for example a transparent background color in the inner box
+will not completely replace the background color of the enclosing
+box but will only modify this color like seeing it through colored glas.
+
+A color change ends not only at the end of the enclosing box,
+it will also end at the next use of the \ctl{HINTcolor}
+or \ctl{HINTendcolor} primitive:
+The \ctl{HINTcolor} primitive will replace the current colors by
+a new set of colors; the \ctl{HINTendcolor} primitive will resume
+the color specification that was valid just before the matching use
+of \ctl{HINTcolor}. Hi\TeX\ maintains a color stack tracking
+local color changes within a box or paragraph, and uses it to
+insert appropriate color changes so that the \ctl{HINTendcolor} primitive
+will simply cancel the color change by the matching \ctl{HINTcolor} primitive.
+If there is no matching \ctl{HINTcolor} primitive,
+the \ctl{HINTendcolor} primitive is silently ignored.
+Note that within a single box, there is at any point only a single
+background color: The color stack will switch from one background
+color to an other background color but will not overlay an ``inner''
+background color over an ``outer'' background color.
+This is only the case when multiple boxes are nested as described above.
+
+Here is an example:
+Suppose we want the \TeX\ logo to be rendered in light red,
+and notes in dark green. You can write
+\medskip
+\verbatim/\def\redTeX{\HINTcolor{fg{1 0.3 0.3}}\TeX\HINTendcolor}
+\def\beginnote{\HINTcolor{fg{0 0.5 0}}}
+\def\endnote{\HINTendcolor}/
+\medskip
+{\tt\parindent 0pt\rightskip=0pt plus 160pt
+This is an example showing the \ctl{redTeX}\BS\ logo in red color.
+\ctl{beginnote}\ Note how the \ctl{redTeX}\BS\ logo is still red inside
+this note.\ctl{endnote}\par}
+\medskip
+
+After the first occurrence of the red \TeX\ logo, the color will be switched
+back to normal black, while after the second occurrence the color will
+be switched back to dark green. The color switching will work as intended
+even if the paragraph is spread over several lines by the line breaking routine.
+
+
+\subsubsection{Colors for Pages}
+When a page get rendered in the \HINT\ file viewer,
+the renderer starts with the default colors and the page is initially
+cleared using the default background color. If a different page
+color is desired, color changes can be added to the page templates.
+
+In a vertical box, the color stack of Hi\TeX\ has a similar effect as in
+a horizontal box. Similar to the precautions in the line breaking routine,
+Hi\TeX\ will insert color changes when splitting a vertical box with \ctl{vsplit}.
+Complications arise from color changes in the top level vertical list
+which is split into pages in the \HINT\ file viewer at runtime.
+Because the page builder in the viewer has no global information and
+should not need global information, Hi\TeX\ will insert copies of the
+local color information after every possible breakpoint in the top
+level vertical list. This will ensure that page breaks will not
+affect the colors of the displayed material.
+Note, however, that \TeX\ considers glue (and kerns) as discardable
+and will remove these items from the top of a new page. Because glues and kerns
+are colored using the current background color, these items might be visible
+on a page but disappear when they follow immediately after a page break.
+So if you want the effect of a colored glue or kern that is not affected by
+a page break, you should include it inside a box or use a colored rule instead.
+
+\subsubsection{Colors for Links}
+The most common change in color is caused by the use of links.
+To support this changing of colors, the primitives
+\ctl{HINTstartlink}\index{HINTstartlink+\ctl{HINTstartlink}}
+and \ctl{HINTendlink}\index{HINTendlink+\ctl{HINTendlink}}
+(see section~\secref{llo})
+cause an automatic change of the color specification.
+A document author can set the default colors used for links
+with the  primitive \ctl{HINTdefaultlinkcolor} and change
+the current link color with the primitive \ctl{HINTlinkcolor}.
+The syntax is:
+\medskip
+\prim\ctl{HINTdefaultlinkcolor} \.{\{} \sym{color specification} \.{\}}.
+\prim\ctl{HINTlinkcolor} \.{\{} \sym{color specification} \.{\}}.
+\medskip
+
+For convenience, the \HINT\ file format specifies default colors
+for links as well: for normal text instead of black links use
+dark blue \.{FG\{0 0 "EE\}};  in dark mode instead of white
+links use light blue \.{FG\{"11 "11 "FF\}}.
+The primitive \ctl{HINTdefaultlinkcolor} is used
+to partly or completely redefine these defaults.
+
+Later uses of \ctl{HINTlinkcolor} will set new current link colors.
+Colors that are missing in the new link color specification are taken
+from the corresponding default colors for links.
+
+Whenever the \ctl{HINTstartlink} primitive is used, its effect on the
+colors is equivalent to the \ctl{HINTcolor} primitive using the current
+link color. This implies that the color change caused by \ctl{HINTstartlink}
+is local to the enclosing box.
+
+Whenever the \ctl{HINTendlink} primitive is used, it will restore
+the color stack of Hi\TeX\ to its state before the matching \ctl{HINTstartlink}.
+It is the responsibility of the \TeX\ source code (or package) to keep the
+sequence of  \ctl{HINTstartlink}, \ctl{HINTendlink},
+\ctl{HINTcolor}, and \ctl{HINTendcolor} properly nested.
+A sequence like  ``\ctl{HINTstartlink} \dots\ \ctl{HINTcolor}
+ \dots\ \ctl{HINTendlink} \dots\ \ctl{HINTendcolor}'' is possible,
+but it will cause \ctl{HINTendlink} to restore the colors to those
+in effect before the \ctl{HINTstartlink}.
+The following \ctl{HINTendcolor} will then either restore
+a color of a matching \ctl{HINTcolor} preceeding
+the link in the same box or it will restore the
+color in the outer box, or it will be ignored.
+In effect, the color changes inside a link stay local to the link.
+
+\subsubsection{Color Numbers}
+The \HINT\ file format references a color set by a number in the range
+0 to 254.
+So Hi\TeX\ assigns each color specification a number, using the same
+number for two identical color specifications.
+One extension to the above specification of Hi\TeX's color primitives
+could be to make these numbers accessible to document authors or
+package programmers. For example \ctl{the}\ctl{HINTcolor} could
+expand to the number $n$ of the current color set and
+\ctl{HINTcolor}$n$ would be equivalent to a use of \ctl{HINTcolor}
+with a full color specification that is equivalent to the color specification
+belonging to $n$.
+This would be much more efficient, because it would not be necessary
+to scan the color specification and search the existing color specifications
+for the matching specification with number $n$.
+But because for \TeX\ storing the number or storing the color specification
+as a macro does not make much of a difference, this extension is just
+a matter of efficiency. So currently, there are no plans to implement
+this extension.
+
+\subsection{Links, Labels, and Outlines}\label{llo}
 A link\index{link} in a \HINT\ document refers to another location in the same document.
 It can be used to navigate to that location.
 A link is defined using the primitives 
@@ -297,8 +612,9 @@ constitutes the visible part of the link. Depending on the user interface, click
 or tapping or otherwise activating the link (e.g. pronouncing)
 will navigate to the destination of the link.
 The user interface might provide a visual clue to make the user aware of the
-available links but it also may choose to leave the visual clues to the author
-of the document (e.g. using a special image or a special font).
+available links for example using a special cursor when hovering over a link.
+But it also may choose to leave the visual clues completely to the author
+of the document (e.g. using a special colors, images, or fonts).
 
 The syntax is 
 \ctl{HINTstartlink}  \sym{destination}
@@ -309,7 +625,7 @@ with
 \medskip
 \rule \sym{destination}\index{destination+\sym{destination}}:\.{goto} \sym{label}.
 \rule \sym{label}\index{label+\sym{label}}:
-  \.{name} \.{\LB}\sym{general text}\.{\RB} \OR\ \.{num} \sym{integer}.
+  \.{name} \.{\{}\sym{general text}\.{\}} \OR\ \.{num} \sym{integer}.
 \medskip
 
 As you can see, the link refers to its destination using a label
@@ -322,9 +638,10 @@ is undefined, a warning is given, and the label will reference the beginning of 
 document.
 
 The syntax is
-\ctl{HINTdest} \sym{label} \opt{\sym{placement}}
+\medskip
+\prim\ctl{HINTdest} \sym{label} \opt{\sym{placement}}.
+\medskip
 with
-
 \medskip
 \rule\sym{placement}\index{placement+\sym{placement}}:
 \.{top}\index{top+{\tt top}} \OR\ \.{bot}\index{bot+{\tt bot}}.
@@ -345,7 +662,7 @@ by a chapter heading, the negative penalty found there will probably
 persuade the page builder to start with the chapter heading instead.
 
 There is a special label that has the form
-\.{name} \.{\LB}\.{HINT.home}\.{\RB}\index{HINT.home+{\tt HINT.home}}.
+\.{name} \.{\{}\.{HINT.home}\.{\}}\index{HINT.home+{\tt HINT.home}}.
 It is used to mark the ``home page''\index{home page} of the document. User interfaces
 are encouraged to offer a button or keyboard shortcut to navigate to the
 document location labeled this way. The page should be a convenient
@@ -358,15 +675,15 @@ given as a hierarchical list of headings where each of them
 refers to a specific location in the document.
 
 The syntax is
-\ctl{HINToutline}\index{HINToutline+\ctl{HINToutline}}
-\sym{destination} \opt{\sym{depth}} \.{\LB}\sym{horizontal list}\.{\RB}.
-
+\medskip
+\prim\ctl{HINToutline}\index{HINToutline+\ctl{HINToutline}}
+\sym{destination} \opt{\sym{depth}} \.{\{}\sym{horizontal list}\.{\}}.
 \medskip
 \rule \sym{depth}\index{depth+\sym{depth}}: \.{depth} \sym{integer}.
 \medskip
 
 The user interface can format the \sym{horizontal list} much like 
-a \ctl{hbox} would do and displays it to the user. When the user selects
+a \ctl{hbox} would do and display it to the user. When the user selects
 this text, the document will be repositioned to show the destination location
 in the same way as with a link. In order to support also simpler
 user interfaces, the current \HINT\ backend also extracts the characters
@@ -396,11 +713,12 @@ how page templates relate to \TeX's page building mechanism, a
 separate section follows at the end.
 
 The syntax of a page template specification is:
-\ctl{HINTsetpage}\index{HINTsetpage+\ctl{HINTsetpage}}
+\medskip
+\prim\ctl{HINTsetpage}\index{HINTsetpage+\ctl{HINTsetpage}}
 \sym{integer} \opt{\.{=}} \sym{name} 
 \opt{\sym{priority}} \opt{\sym{width}} \opt{\sym{height}}
-\.{\LB}\sym{vertical list} \sym{stream definition list}\.{\RB}
-
+\.{\{}\sym{vertical list} \sym{stream definition list}\.{\}}.
+\medskip
 
 The \sym{integer} specifies the page templates number in the range 1
 to 255.  The number 0 is reserved for the build in page template of
@@ -435,7 +753,8 @@ for the height so there are no margins.
 The following \sym{vertical list} defines the page itself. It should assign suitable values
 to \ctl{topskip} and \ctl{maxdepth} because the values valid at the end of the vertical list
 are stored in the page template and are used in the page building process. 
-The vertical list usually also specifies the insertion of content streams using a \sym{stream insert point}.
+The vertical list usually also specifies the insertion of content streams
+using a \sym{stream insert point}.
 
 \medskip
 \rule\sym{stream insert point}\index{stream insert point+\sym{stream insert point}}:
@@ -445,7 +764,7 @@ The vertical list usually also specifies the insertion of content streams using 
 Here  the \sym{integer} must be in the range 0 to 254. The value 255 is invalid;
 the value 0 indicates the main body of text (what \TeX's page builder would normally put into
 box 255 before calling the output routine).
-Otherwise, the \sym{integer} is TeX's insertion number, that is the number of \TeX's box 
+Otherwise, the \sym{integer} is \TeX's insertion number, that is the number of \TeX's box 
 containing the insertions. As usual, this box is filled using \TeX's \ctl{insert} primitive. 
 So after plain \TeX\ has defined \ctl{footins},
 the footnotes for the current page can be inserted after the main body of text in the \sym{vertical list}
@@ -461,7 +780,7 @@ footnotes ---if there are any---from the main text. This can be achieved by a su
   \ctl{HINTsetstream} \sym{integer}  \opt{\.{=}}
 \opt{{\tt preferred} \sym{integer}}
 \opt{\.{next} \sym{integer}}
-\opt{\.{ratio} \sym{integer}} \.{\LB}\sym{vertical list}\.{\RB}.
+\opt{\.{ratio} \sym{integer}} \.{\{}\sym{vertical list}\.{\}}.
 \medskip
 
 
@@ -488,9 +807,9 @@ such as for example the footnote rule. This material can be defined by a
 
 \medskip\index{HINTbefore+\ctl{HINTbefore}}\index{HINTafter+\ctl{HINTafter}}
 \rule \sym{before list}\index{before list+\sym{before list}}:
-  \ctl{HINTbefore} \opt{\.{=}} \.{\LB}\sym{vertical list}\.{\RB}.
+  \ctl{HINTbefore} \opt{\.{=}} \.{\{}\sym{vertical list}\.{\}}.
 \rule \sym{after list}\index{after list+\sym{after list}}:
-  \ctl{HINTafter} \opt{\.{=}} \.{\LB}\sym{vertical list}\.{\RB}.
+  \ctl{HINTafter} \opt{\.{=}} \.{\{}\sym{vertical list}\.{\}}.
 \medskip
 
 If you are interested in the design decision that motivate the definitions that have
@@ -542,15 +861,15 @@ Second, the primitives required to support
 
 
 \subsection{{\tt kpathsearch} and \ctl{input}}
-In Don Knuths implementation of \TeX, the \ctl{input} primitive
+In Don Knuth's implementation of \TeX, the \ctl{input} primitive
 will add the extension {\tt .tex} to any filename that does not have an
-extension. This implies that a file without extension can not be opened
+extension. This implies that a file without extension cannot be opened
 as an input file. The usual engines do not add such an extension but
 pass the filename as given to \verbatim/kpse_find_file/ function. 
 Hi\TeX\ does the same. The {\tt kpathsearch} library will find files
 in a variety of directories and yes, it will also find files without
-extension. Using this library is just mandatory for any engine that
-wants to process \LaTeX\ input.
+extension. Using this library, or equivalent functionality, is just about
+mandatory for any engine that wants to process \LaTeX\ input.
 
 
 \section{Replacing \TeX's Page Builder}\label{build}

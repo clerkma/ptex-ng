@@ -92,21 +92,21 @@
 \newif\ifpdf
 
 % HINT
-\ifx\HINTversion\undefined
+\expandafter\ifx\csname HINTversion\endcsname\relax
   \hintfalse
 \else 
   \hinttrue
 \fi
 
 % PDF
-\ifx\pdfliteral\undefined %  postscript und ps2pdf
+\expandafter\ifx\csname pdfliteral\endcsname\relax
   \pdffalse
 \else
   \pdftrue
 \fi
 
 % Book
-\ifx\book\undefined
+\expandafter\ifx\csname book\endcsname\relax
   \ifhint\bookfalse
   \else\ifpdf\bookfalse % This might change
   \else\bookfalse
@@ -785,7 +785,7 @@
 
 \def\tocsection#1#2#3{% depth sectionnumber sectiontitle
 \global\advance\toccount by 1%
-\newdest{SC.\the\toccount}%
+\newtopdest{SC.\the\toccount}%
 \ifhint
   \immediate\write\cont{\noexpand\ZZ {#1}{#2}{#3}% write to contents file
     {\noexpand\thepageno}{\the\toccount}}
@@ -1302,6 +1302,16 @@
 \else\ifhint
   \HINTdest name {#1}%\message{Defining HINT label #1}%
 \fi\fi\fi}
+
+\def\newtopdest#1{% used to make a new destination
+%\message{New destination #1}%
+\ifbook
+\else\ifpdf
+  \pdfdest name {#1} fith%\message{Defining pdf label #1}%
+\else\ifhint
+  \HINTdest name {#1} top%\message{Defining HINT label #1 top}%
+\fi\fi\fi}
+
 
 \def\newlink#1#2{%
   \ifbook #2\else
