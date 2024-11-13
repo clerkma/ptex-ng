@@ -1,4 +1,4 @@
-## $Id: libmplib.am 69664 2024-02-01 22:56:12Z karl $
+## $Id: libmplib.am 72836 2024-11-12 22:39:49Z karl $
 ## texk/web2c/mplibdir/am/libmplib.am: Makefile fragment for libmplib.
 ##
 ## Copyright 2015-2022 Luigi Scarso <tex-live@tug.org>
@@ -98,8 +98,8 @@ libmplib_web += mplibdir/mpmathdouble.w mplibdir/mpstrings.w mplibdir/tfmin.w
 $(nodist_libmplibcore_a_SOURCES): $(mpmathbinary_c_h) $(mpmathinterval_c_h) $(svgout_c_h) $(pngout_c_h)
 
 $(libmplibcore_a_OBJECTS): $(nodist_libmplibcore_a_SOURCES) $(KPATHSEA_DEPEND)  
-$(libmplibextramath_a_OBJECTS): $(nodist_libmplibextramath_a_SOURCES) $(KPATHSEA_DEPEND)  $(MPFI_DEPEND) $(MPFR_DEPEND)
-$(libmplibbackends_a_OBJECTS): $(nodist_libmplibbackends_a_SOURCES) $(KPATHSEA_DEPEND) $(CAIRO_DEPEND) $(MPFI_DEPEND) $(MPFR_DEPEND)
+$(libmplibextramath_a_OBJECTS): $(nodist_libmplibextramath_a_SOURCES) $(KPATHSEA_DEPEND)  $(MPFI_DEPEND) $(MPFR_DEPEND) mplib.h
+$(libmplibbackends_a_OBJECTS): $(nodist_libmplibbackends_a_SOURCES) $(KPATHSEA_DEPEND) $(CAIRO_DEPEND) $(MPFI_DEPEND) $(MPFR_DEPEND) mplib.h
 
 
 EXTRA_DIST += $(libmplib_web)
