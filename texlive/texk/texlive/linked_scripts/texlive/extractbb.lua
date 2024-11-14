@@ -1,5 +1,5 @@
 #!/usr/bin/env texlua
--- $Id: extractbb.lua 71832 2024-07-18 09:36:59Z mseven $
+-- $Id: extractbb.lua 72829 2024-11-12 02:41:50Z kakuto $
 -- SPDX-License-Identifier: CC0-1.0
 -- SPDX-FileCopyrightText: 2024 Max Chernoff
 --
@@ -225,11 +225,14 @@ end
 for i = 1, #script_args do
     -- We use a numeric iterator here to avoid ``arg[-1]'' and ``arg[0]''.
     local this_arg = script_args[i]
+    if os.type == 'windows' then
+        this_arg = '"'..this_arg..'"'
+    end
     insert(target_args, this_arg)
 
     -- Show version information
     if this_arg:match("%-version") then
-        print("(Wrapped by extractbb.lua $Revision: 71832 $.)")
+        print("(Wrapped by extractbb.lua $Revision: 72829 $.)")
     end
 end
 

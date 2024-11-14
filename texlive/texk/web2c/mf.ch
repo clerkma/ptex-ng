@@ -1108,25 +1108,35 @@ if info(h)<>1 then print(" offsets")
 else print(" offset");
 @z
 
-% [25.530] |make_fraction| and |take_fraction| arguments are too long for
-% some preprocessors, when they were defined as macros, just as in the
-% previous change.
-@x [25.530] l.11334
-  alpha:=take_fraction(take_fraction(major_axis,
-      make_fraction(gamma,beta)),n_cos)@|
-    -take_fraction(take_fraction(minor_axis,
-      make_fraction(delta,beta)),n_sin);
-  alpha:=(alpha+half_unit) div unity;
-  gamma:=pyth_add(take_fraction(major_axis,n_cos),
-    take_fraction(minor_axis,n_sin));
-@y
-  alpha := make_fraction (gamma, beta);
-  alpha := take_fraction (major_axis, alpha);
-  alpha := take_fraction (alpha, n_cos);
-  alpha := (alpha+half_unit) div unity;
-  gamma := take_fraction (minor_axis, n_sin);
-  gamma := pyth_add (take_fraction (major_axis, n_cos), gamma);
-@z
+% This change was erroneous; it omitted the second term of the
+% difference. This affects a few pen polygons in a small way,
+% but don't know if any extant fonts are impacted.
+% 
+% Hopefully by now, many years later, there's no problem
+% with the long arguments, but leaving the code here just in case.
+% Report from Tim Stadelman,
+% https://tug.org/pipermail/tex-k/2021-August/003648.html.
+% Applied 13 November 2024.
+% 
+%% |make_fraction| and |take_fraction| arguments are too long for
+%% some preprocessors, when they were defined as macros, just as in the
+%% previous change.
+%@x [25.530] l.11334
+%  alpha:=take_fraction(take_fraction(major_axis,
+%      make_fraction(gamma,beta)),n_cos)@|
+%    -take_fraction(take_fraction(minor_axis,
+%      make_fraction(delta,beta)),n_sin);
+%  alpha:=(alpha+half_unit) div unity;
+%  gamma:=pyth_add(take_fraction(major_axis,n_cos),
+%    take_fraction(minor_axis,n_sin));
+%@y
+%  alpha := make_fraction (gamma, beta);
+%  alpha := take_fraction (major_axis, alpha);
+%  alpha := take_fraction (alpha, n_cos);
+%  alpha := (alpha+half_unit) div unity;
+%  gamma := take_fraction (minor_axis, n_sin);
+%  gamma := pyth_add (take_fraction (major_axis, n_cos), gamma);
+%@z
 
 @x [26.556] l.11902 - Use halfp.
         begin cur_t:=half(cur_t+1); cur_tt:=half(cur_tt+1); return;

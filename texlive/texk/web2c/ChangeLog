@@ -1,3 +1,11 @@
+2024-11-13  Karl Berry  <karl@freefriends.org>
+
+	* mf.ch (Calculate integers $\alpha$...): comment out erroneous
+	change that "simplified" the assignment of alpha, resulting in a
+	few pen polygons being affected, but don't know if any extant
+	fonts are impacted. Report from Tim Stadelman,
+	https://tug.org/pipermail/tex-k/2021-August/003648.html.
+
 2024-10-20  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* lib/texmfmp.c (maininit): Support ofm in {,e}upTeX.

@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# 2024-05-03 0.0.21
+# 2024/11/13 0.0.23
 package bibcop;
 
 use warnings;
@@ -112,7 +112,7 @@ sub check_capitalization {
           return "The minor word '$word' in the '$tag' must be upper-cased since it is the first one"
         }
         my $before = $words[$pos - 2];
-        if (grep(/^$before$/, @ends)) {
+        if (grep(/^\Q$before\E$/, @ends)) {
           return "The minor word '$word' in the '$tag' must be upper-cased, because it follows the '$before'"
         }
         next;
@@ -122,7 +122,7 @@ sub check_capitalization {
           next;
         }
         my $before = $words[$pos - 2];
-        if (grep(/^$before$/, @ends)) {
+        if (grep(/^\Q$before\E$/, @ends)) {
           next;
         }
         return "All minor words in the '$tag' must be lower-cased, while @{[as_position($pos)]} word '$word' is not"
@@ -1065,14 +1065,14 @@ if (not $script eq 'bibcop') {
 }
 
 if (@ARGV+0 eq 0 or exists $args{'--help'} or exists $args{'-?'}) {
-  info("Bibcop is a Style Checker of BibTeX Files\n\n" .
+  info("Bibcop is a style checker of BibTeX files (.bib)\n\n" .
     "Usage:\n" .
     "  bibcop [<options>] <.bib file path>\n\n" .
     "Options:\n" .
-    "  -v, --version   Print the current version of the tool and exit\n" .
+    "  -v, --version   Print the current version of Bibcop and exit\n" .
     "  -?, --help      Print this help screen\n" .
     "      --fix       Fix the errors and print a new version of the .bib file to the console\n" .
-    "  -i, --in-place  When used together with --fix, modifies the file in place, doesn't print it to the console\n" .
+    "  -i, --in-place  When used together with the --fix, modifies the file in place, doesn't print it to the console\n" .
     "      --verbose   Print supplementary debugging information\n" .
     "      --no:XXX    Disable one of the following checks (e.g. --no:wraps):\n" .
     "                    tags    Only some tags are allowed, while some of them are mandatory\n" .
@@ -1081,10 +1081,10 @@ if (@ARGV+0 eq 0 or exists $args{'--help'} or exists $args{'-?'}) {
     "                    doi     The presence of the 'doi' tag is mandatory in all entries\n" .
     "                    inproc  The booktitle of \@inproceedings must start with 'Proceedings of the'\n" .
     "                    org     The booktitle may not mention ACM or IEEE\n" .
-    "      --latex     Report errors in LaTeX format using \\PackageWarningNoLine command\n\n" .
-    "If any issues, report to GitHub: https://github.com/yegor256/bibcop");
+    "      --latex     Report errors in LaTeX format using the \\PackageWarningNoLine command\n\n" .
+    "If any issues, please, report to GitHub: https://github.com/yegor256/bibcop");
 } elsif (exists $args{'--version'} or exists $args{'-v'}) {
-  info('0.0.21 2024-05-03');
+  info('0.0.23 2024/11/13');
 } else {
   my ($file) = grep { not($_ =~ /^-.*$/) } @ARGV;
   if (not $file) {
