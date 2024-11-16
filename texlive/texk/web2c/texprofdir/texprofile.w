@@ -1690,7 +1690,7 @@ void explain_usage(void)
     @<explain format options@>@;
     "\n"
   );
-  exit(1);
+  exit(0);
 }
 @
 
@@ -1728,7 +1728,7 @@ The only other long option currently supported is the {\tt --version} option.
 @<process long options@>=
  if (strcmp(option,"version")==0)
  { printf(VERSION_STR "\n");
-   exit(1);
+   exit(0);
  }
 @
 

@@ -12,7 +12,10 @@ T1FONTS=$srcdir/tests; export T1FONTS
 
 # separate from texprofdir/tests because automake writes hello.log
 # in texprofdir/tests (so it already exists).
-OUTDIR=./texprofdir/tests/outdir; mkdir $OUTDIR
+test -d ./texprofdir || mkdir texprofdir
+test -d ./texprofdir/tests || mkdir texprofdir/tests
+OUTDIR=./texprofdir/tests/outdir;
+test -d $OUTDIR || mkdir $OUTDIR
 
 #./texprof --help >/dev/null  || exit $?
 ./texprof --version || exit $?
