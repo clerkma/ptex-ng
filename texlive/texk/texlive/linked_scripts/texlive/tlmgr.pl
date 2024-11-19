@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# $Id: tlmgr.pl 71331 2024-05-24 07:30:36Z preining $
+# $Id: tlmgr.pl 72848 2024-11-14 15:14:04Z karl $
 # Copyright 2008-2024 Norbert Preining
 # This file is licensed under the GNU General Public License version 2
 # or any later version.
@@ -8,8 +8,8 @@
 
 use strict; use warnings;
 
-my $svnrev = '$Revision: 71331 $';
-my $datrev = '$Date: 2024-05-24 09:30:36 +0200 (Fri, 24 May 2024) $';
+my $svnrev = '$Revision: 72848 $';
+my $datrev = '$Date: 2024-11-14 16:14:04 +0100 (Thu, 14 Nov 2024) $';
 my $tlmgrrevision;
 my $tlmgrversion;
 my $prg;
@@ -2783,8 +2783,8 @@ sub auto_remove_install_force_packages {
 # tlmgr update --no-depends-at-all foo
 #   will absolutely only update foo not even taking .ARCH into account
 #
-# TLPDB->install_package INSTALLS ONLY ONE PACKAGE, no deps whatsoever
-# anymore. That has all to be done by hand.
+# TLPDB->install_package INSTALLS ONLY ONE PACKAGE, no deps whatsoever.
+# That has all to be done by hand.
 #
 sub machine_line {
   my ($flag1) = @_;
@@ -3836,8 +3836,8 @@ sub check_announce_format_triggers {
 #   . it does not care for whether a package seems to be installed or
 #     not (that is the --reinstall)
 #
-# TLPDB->install_package does ONLY INSTALL ONE PACKAGE, no deps whatsoever
-# anymore!  That has all to be done by the caller.
+# TLPDB->install_package does ONLY INSTALL ONE PACKAGE, no deps
+# whatsoever; that has all to be done by the caller.
 #
 sub action_install {
   init_local_db(1);
@@ -5244,7 +5244,7 @@ sub action_generate {
   # we create fmtutil.cnf, language.dat, language.def in TEXMFSYSVAR and
   # updmap.cfg in TEXMFDIST. The reason is that we are now using an
   # implementation of updmap that supports multiple updmap files.
-  # Local adaptions should not be made there, but only in TEXMFLOCAL
+  # Local adaptations should not be made there, but only in TEXMFLOCAL
   # or TEXMF(SYS)CONFIG updmap.cfg
   #
   chomp (my $TEXMFSYSVAR = `kpsewhich -var-value=TEXMFSYSVAR`);
@@ -6066,7 +6066,7 @@ sub check_executes {
       if (!check_file($a, $f)) {
         push @{$missingbins{$_}}, "bin/$a/${name}[engine=$engine]" if $mode;
 #      # unfortunately there are too many exceptions to this check:
-#      # cygwin symlinks pointing to .exe names, pdcsplain extras, mptopdf,
+#      # cygwin symlinks pointing to .exe names, pdfcsplain extras, mptopdf,
 #      # *latex-dev pointing to *latex instead of the binary. Instead of
 #      # writing all those error-prone tests, just give up.
 #      } elsif (-l $f) {
@@ -8666,7 +8666,7 @@ Line endings may be either LF or CRLF depending on the current platform.
 
 The C<generate> action overwrites any manual changes made in the
 respective files: it recreates them from scratch based on the
-information of the installed packages, plus local adaptions.
+information of the installed packages, plus local adaptations.
 The TeX Live installer and C<tlmgr> routinely call C<generate> for
 all of these files.
 
@@ -9076,7 +9076,7 @@ The last three options affect behavior on Windows installations.  If
 C<desktop_integration> is set, then some packages will install items in
 a sub-folder of the Start menu for C<tlmgr gui>, documentation, etc.  If
 C<fileassocs> is set, Windows file associations are made (see also the
-C<postaction> action).  Finally, if C<multiuser> is set, then adaptions
+C<postaction> action).  Finally, if C<multiuser> is set, then changes
 to the registry and the menus are done for all users on the system
 instead of only the current user.  All three options are on by default.
 
@@ -10591,7 +10591,7 @@ This script and its documentation were written for the TeX Live
 distribution (L<https://tug.org/texlive>) and both are licensed under the
 GNU General Public License Version 2 or later.
 
-$Id: tlmgr.pl 71331 2024-05-24 07:30:36Z preining $
+$Id: tlmgr.pl 72848 2024-11-14 15:14:04Z karl $
 =cut
 
 # test HTML version: pod2html --cachedir=/tmp tlmgr.pl >/tmp/tlmgr.html

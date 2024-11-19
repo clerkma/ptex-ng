@@ -1,3 +1,12 @@
+2024-11-18  Karl Berry  <karl@freefriends.org>
+
+	* Makefile.am (bin_links): no longer make symlinks for ebb and
+	extractbb, as extractbb is now a separate package, reimplemented
+	in Lua: https://ctan.org/pkg/extractbb. This is because the
+	previous symlink to dvipdfmx could be exploited using -D.
+	(man1_links): likewise.
+	(install-bin-links, uninstall-bin-links) [WIN32]: likewise.
+
 2024-10-20  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* dvipdfmx-lmr{0,1}.test, tests/UPJF-UTF16-{H,V},

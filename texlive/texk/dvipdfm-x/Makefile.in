@@ -810,17 +810,14 @@ xdvipdfmx_SOURCES = \
 LDADD = $(KPATHSEA_LIBS) $(LIBPNG_LIBS) $(ZLIB_LIBS) $(LIBPAPER_LIBS)
 bin_links = \
 	xdvipdfmx$(EXEEXT):dvipdfm \
-	xdvipdfmx$(EXEEXT):dvipdfmx \
-	xdvipdfmx$(EXEEXT):ebb \
-	xdvipdfmx$(EXEEXT):extractbb
+	xdvipdfmx$(EXEEXT):dvipdfmx
 
 call_xdvipdfmx_CPPFLAGS = -DEXEPROG=\"xdvipdfmx.exe\"
 nodist_call_xdvipdfmx_SOURCES = callexe.c
 dist_man1_MANS = man/dvipdfmx.1 man/dvipdft.1 man/extractbb.1
 man1_links = \
 	dvipdfmx:dvipdfm \
-	dvipdfmx:xdvipdfmx \
-	extractbb:ebb
+	dvipdfmx:xdvipdfmx
 
 configdatadir = $(datarootdir)/texmf-dist/dvipdfmx
 dist_configdata_DATA = data/dvipdfmx.cfg
@@ -2041,16 +2038,12 @@ install-exec-hook: install-bin-links
 # same install happens in web2c/omegafonts.
 @WIN32_TRUE@	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) "$(DESTDIR)$(bindir)/dvipdfm$(EXEEXT)"
 @WIN32_TRUE@	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) "$(DESTDIR)$(bindir)/dvipdfmx$(EXEEXT)"
-@WIN32_TRUE@	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) "$(DESTDIR)$(bindir)/ebb$(EXEEXT)"
-@WIN32_TRUE@	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) "$(DESTDIR)$(bindir)/extractbb$(EXEEXT)"
 
 install-data-hook: install-man1-links
 
 uninstall-hook: uninstall-bin-links uninstall-man1-links
 @WIN32_TRUE@	rm -f $(DESTDIR)$(bindir)/dvipdfm$(EXEEXT)
 @WIN32_TRUE@	rm -f $(DESTDIR)$(bindir)/dvipdfmx$(EXEEXT)
-@WIN32_TRUE@	rm -f $(DESTDIR)$(bindir)/ebb$(EXEEXT)
-@WIN32_TRUE@	rm -f $(DESTDIR)$(bindir)/extractbb$(EXEEXT)
 
 all-local: config.force
 

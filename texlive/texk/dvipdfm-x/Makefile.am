@@ -1,6 +1,7 @@
+## $Id: Makefile.am 72891 2024-11-18 22:42:52Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/dvipdfm-x/
 ##
-## Copyright 2015-2021 Karl Berry <tex-live@tug.org>
+## Copyright 2015-2024 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##
@@ -172,9 +173,9 @@ $(xdvipdfmx_OBJECTS): config.force
 ##
 bin_links = \
 	xdvipdfmx$(EXEEXT):dvipdfm \
-	xdvipdfmx$(EXEEXT):dvipdfmx \
-	xdvipdfmx$(EXEEXT):ebb \
-	xdvipdfmx$(EXEEXT):extractbb
+	xdvipdfmx$(EXEEXT):dvipdfmx
+
+# extractbb is now a separate package, reimplemented in Lua.
 
 if WIN32
 noinst_PROGRAMS = call_xdvipdfmx
@@ -190,8 +191,7 @@ include $(top_srcdir)/../../am/bin_links.am
 dist_man1_MANS = man/dvipdfmx.1 man/dvipdft.1 man/extractbb.1
 man1_links = \
 	dvipdfmx:dvipdfm \
-	dvipdfmx:xdvipdfmx \
-	extractbb:ebb
+	dvipdfmx:xdvipdfmx
 include $(top_srcdir)/../../am/man1_links.am
 
 ## Data
@@ -213,8 +213,6 @@ if WIN32
 # same install happens in web2c/omegafonts.
 	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) "$(DESTDIR)$(bindir)/dvipdfm$(EXEEXT)"
 	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) "$(DESTDIR)$(bindir)/dvipdfmx$(EXEEXT)"
-	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) "$(DESTDIR)$(bindir)/ebb$(EXEEXT)"
-	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) call_xdvipdfmx$(EXEEXT) "$(DESTDIR)$(bindir)/extractbb$(EXEEXT)"
 endif WIN32
 
 install-data-hook: install-man1-links
@@ -223,8 +221,6 @@ uninstall-hook: uninstall-bin-links uninstall-man1-links
 if WIN32
 	rm -f $(DESTDIR)$(bindir)/dvipdfm$(EXEEXT)
 	rm -f $(DESTDIR)$(bindir)/dvipdfmx$(EXEEXT)
-	rm -f $(DESTDIR)$(bindir)/ebb$(EXEEXT)
-	rm -f $(DESTDIR)$(bindir)/extractbb$(EXEEXT)
 endif WIN32
 
 all-local: config.force
