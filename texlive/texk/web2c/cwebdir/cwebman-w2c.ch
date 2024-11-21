@@ -136,7 +136,7 @@ Readers who are familiar with Knuth's memo ``The \.{WEB} System of Structured
 Documentation'' will be able
 @y
 Readers who are familiar with Knuth's memo ``\pdfURL{The \.{WEB} System of
-Structured Documentation}{../web/webman.pdf}'' will be able
+Structured Documentation}{../web/webman-changes.pdf}'' will be able
 @z
 
 @x l.523
