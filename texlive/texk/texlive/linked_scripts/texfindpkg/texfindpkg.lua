@@ -1,14 +1,14 @@
 #!/usr/bin/env texlua
 
 -- Description: Install TeX packages and their dependencies
--- Copyright: 2023 (c) Jianrui Lyu <tolvjr@163.com>
+-- Copyright: 2023-2024 (c) Jianrui Lyu <tolvjr@163.com>
 -- Repository: https://github.com/lvjr/texfindpkg
 -- License: GNU General Public License v3.0
 
 local tfp = tfp or {}
 
-tfp.version = "2023E"
-tfp.date = "2023-05-05"
+tfp.version = "2024A"
+tfp.date = "2024-11-22"
 
 local building = tfp.building
 local tfpresult = ""
@@ -135,7 +135,8 @@ local function tlReadPackageDB()
   end
 end
 
-local tlpkgdata = {}
+local tlfiletopkg = {}
+local tlpkgtofile = {}
 local tlinspkgdata = {}
 
 local function tlExtractFiles(name, desc)
@@ -147,12 +148,15 @@ local function tlExtractFiles(name, desc)
   end
   -- ignore package files in doc folder
   desc = match(desc, "\nrunfiles .+") or ""
+  local flist = {}
   for base, ext in gmatch(desc, "/([%a%d%-%.]+)%.([%a%d]+)\n") do
     if ext == "sty" or ext == "cls" or ext == "tex" or ext == "ltx" then
       dbgPrint(name, base .. "." .. ext)
-      tlpkgdata[base .. "." .. ext] = name
+      tlfiletopkg[base .. "." .. ext] = name
+      insert(flist, base .. "." .. ext)
     end
   end
+  tlpkgtofile[name]= flist
 end
 
 local function tlExtractPackages(name, desc)
@@ -161,7 +165,7 @@ end
 
 local function tlParsePackageDB(tlpkgtext)
   gsub(tlpkgtext, "name (.-)\n(.-)\n\n", tlExtractFiles)
-  return tlpkgdata
+  return tlfiletopkg
 end
 
 local function tlParseTwoPackageDB()
@@ -193,7 +197,8 @@ local function mtReadPackageDB()
   end
 end
 
-local mtpkgdata = {}
+local mtfiletopkg = {}
+local mtpkgtofile = {}
 local mtinspkgdata = {}
 
 local function mtExtractFiles(name, desc)
@@ -203,12 +208,15 @@ local function mtExtractFiles(name, desc)
     --print(name)
     return
   end
+  local flist = {}
   for base, ext in gmatch(desc, "/([%a%d%-%.]+)%.([%a%d]+)\r?\n") do
     if ext == "sty" or ext == "cls" or ext == "tex" or ext == "ltx" then
       dbgPrint(name, base .. "." .. ext)
-      mtpkgdata[base .. "." .. ext] = name
+      mtfiletopkg[base .. "." .. ext] = name
+      insert(flist, base .. "." .. ext)
     end
   end
+  mtpkgtofile[name]= flist
 end
 
 local function mtExtractPackages(name, desc)
@@ -218,7 +226,7 @@ end
 local function mtParsePackageDB(mtpkgtext)
   -- package-manifests.ini might use different eol characters
   gsub(mtpkgtext, "%[(.-)%]\r?\n(.-)\r?\n\r?\n", mtExtractFiles)
-  return mtpkgdata
+  return mtfiletopkg
 end
 
 local function mtParseTwoPackageDB()
@@ -232,6 +240,7 @@ end
 ------------------------------------------------------------
 
 local dist               -- name of current tex distribution
+local totaldeplist = {}  -- list of all depending packages
 local totalinslist = {}  -- list of all missing packages
 local filecount = 0      -- total number of files found
 
@@ -247,11 +256,19 @@ local function initPackageDB()
   end
 end
 
-local function findOnePackage(fname)
+local function findPackageFromFile(fname)
   if dist == "texlive" then
-    return tlpkgdata[fname]
+    return tlfiletopkg[fname]
   else
-    return mtpkgdata[fname]
+    return mtfiletopkg[fname]
+  end
+end
+
+local function findFilesInPackage(pkg)
+  if dist == "texlive" then
+    return tlpkgtofile[pkg]
+  else
+    return mtpkgtofile[pkg]
   end
 end
 
@@ -284,6 +301,8 @@ local function installSomePackages(list)
     end
     tfpExecute("tlmgr install " .. pkgs)
   else
+    -- miktex fails if one of the packages is already installed
+    -- so we install miktex packages one by one
     for _, p in ipairs(list) do
       tfpRealPrint("installing miktex package: " .. p)
       tfpExecute("miktex packages install " .. p)
@@ -308,6 +327,7 @@ local function listSomePackages(list)
   if #list > 0 then
     filecount = filecount + 1
   end
+  table.sort(list)
   local pkgs = concat(list, " ")
   if #list == 1 then
     tfpPrint(dist .. " package needed: " .. pkgs)
@@ -327,6 +347,7 @@ local function listSomePackages(list)
       tfpRealPrint("these packages are already installed")
     end
   else
+    table.sort(inslist)
     local pkgs = concat(inslist, " ")
     if #inslist == 1 then
       tfpRealPrint(dist .. " package not yet installed: " .. pkgs)
@@ -359,11 +380,14 @@ end
 
 local function printDependency(fname, level)
   local msg = fname
-  local pkg = findOnePackage(fname)
+  local pkg = findPackageFromFile(fname)
   if pkg then
     msg = msg .. " (from " .. pkg .. ")"
     if not valueExists(pkglist, pkg) then
       insert(pkglist, pkg)
+    end
+    if not valueExists(totaldeplist, pkg) then
+      insert(totaldeplist, pkg)
     end
   else
     msg = msg .. " (not found)"
@@ -397,6 +421,9 @@ end
 
 local function queryByFileName(fname)
   fnlist, pkglist = {}, {} -- reset the list
+  if not find(fname, "%.") then
+    fname = fname .. ".sty"
+  end
   tfpPrint("building dependency tree for " .. fname .. ":")
   tfpPrint(rep("-", 24))
   findDependencies(fname, 0)
@@ -410,6 +437,28 @@ local function queryByFileName(fname)
     return
   end
   listSomePackages(pkglist)
+end
+
+local function queryByPackageName(pname)
+  local list = findFilesInPackage(pname)
+  if list == nil then
+    tfpPrint(dist .. " package " .. pname .. " doesn't exist")
+    return
+  end
+  if #list > 0 then
+    tfpPrint("finding package files in " .. dist .. " package " .. pname)
+    for _, fname in ipairs(list) do
+      tfpPrint(rep("=", 48))
+      tfpPrint("found package file " .. fname .. " in " .. dist .. " package " .. pname)
+      queryByFileName(fname)
+    end
+  else
+    tfpPrint("could not find any package file in " .. dist .. " package " .. pname)
+    listSomePackages({pname})
+    if not valueExists(totaldeplist, pname) then
+      insert(totaldeplist, pname)
+    end
+  end
 end
 
 local function getFileNameFromCmdEnvName(cmdenv, name)
@@ -465,10 +514,13 @@ local function queryOne(t, name)
   elseif t == "file" then
     tfpPrint(rep("=", 48))
     queryByFileName(name)
-  else
-    -- do something for t == "pkg"
+  else -- t == "pkg"
+    tfpPrint(rep("=", 48))
+    queryByPackageName(name)
   end
 end
+
+local outfile = nil
 
 local function query(namelist)
   for _, v in ipairs(namelist) do
@@ -476,11 +528,29 @@ local function query(namelist)
   end
   if filecount > 1 then
     tfpRealPrint(rep("=", 48))
+    table.sort(totaldeplist)
+    local pkgs = concat(totaldeplist, " ")
+    if #totaldeplist == 0 then
+      --tfpRealPrint("no packages needed are found")
+    elseif #totaldeplist == 1 then
+      tfpRealPrint(dist .. " package needed in total: " .. pkgs)
+    else
+      tfpRealPrint(dist .. " packages needed in total: " .. pkgs)
+    end
+    tfpRealPrint(rep("=", 48))
+    table.sort(totalinslist)
     local pkgs = concat(totalinslist, " ")
-    if #totalinslist == 1 then
+    if #totalinslist == 0 then
+      tfpRealPrint("you don't need to install any packages")
+    elseif #totalinslist == 1 then
       tfpRealPrint(dist .. " package not yet installed in total: " .. pkgs)
     else
       tfpRealPrint(dist .. " packages not yet installed in total: " .. pkgs)
+    end
+    if outfile then
+      --print(outfile)
+      pkgs = concat(totaldeplist, "\n")
+      fileWrite(pkgs, outfile)
     end
   end
 end
@@ -515,16 +585,58 @@ local function parseName(name)
   end
 end
 
+local function readArgsInFile(list, inname)
+  local intext = fileRead(inname)
+  if not intext then
+    tfpPrint("error in reading input file " .. inname)
+    return list
+  end
+  tfpPrint("reading input file " .. inname)
+  for line in gmatch(intext, "%s*(.-)%s*\r?\n") do
+    line = match(line, "(.-)%s*#") or line
+    --print("|" .. line .. "|")
+    if line ~= "" then
+      insert(list, line)
+    end
+  end
+  return list
+end
+
+local function readArgList(arglist)
+  local reallist = {}
+  local isinput = false
+  local isoutput = false
+  for _, v in ipairs(arglist) do
+    if isinput then
+      reallist = readArgsInFile(reallist, v)
+      isinput = false
+    elseif isoutput then
+      outfile = v
+      isoutput = false
+    elseif v == "-i" then
+      isinput = true
+    elseif v == "-o" then
+      isoutput = true
+    else
+      insert(reallist, v)
+    end
+  end
+  return reallist
+end
+
 local function parseArgList(arglist)
+  local reallist = readArgList(arglist)
   local namelist = {}
   local nametype = nil
-  for _, v in ipairs(arglist) do
-    if v == "-f" then
-      nametype = "file"
-    elseif v == "-c" then
+  for _, v in ipairs(reallist) do
+    if v == "-c" then
       nametype = "cmd"
     elseif v == "-e" then
       nametype = "env"
+    elseif v == "-f" then
+      nametype = "file"
+    elseif v == "-p" then
+      nametype = "pkg"
     else
       if nametype then
         insert(namelist, {nametype, v})
@@ -568,9 +680,12 @@ valid actions are:
    version      Print version information and exit
 
 valid options are:
-   -f           Query or install by file name
    -c           Query or install by command name
    -e           Query or install by environment name
+   -f           Query or install by file name
+   -p           Query or install by package name
+   -i           Read arguments line by line from a file
+   -o           Write total dependent list to a file
 
 please report bug at https://github.com/lvjr/texfindpkg
 ]]

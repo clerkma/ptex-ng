@@ -521,7 +521,8 @@ Possible SOMEWHEREs:
 
 2. has occurred while \output is active
    -> If horizontal, this is probably in a header, footer or something
-      similar; if vertical, the vertical glues got too stretched
+      similar; if vertical, the vertical glues got too stretched. For
+      hboxes, this is followed by the offending text.
 
 3. in alignment at lines LINE NUMBERS
    -> the problematic box is part of a tabular or math alignment
@@ -974,7 +975,7 @@ Options:
   --version                              print program version]]
 
 versionmsg = [[
-texlogsieve 1.4.1
+texlogsieve 1.4.2
 Copyright (C) 2021-2024 Nelson Lago <lago@ime.usp.br>
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
@@ -1531,6 +1532,9 @@ function adjustSeverity(msg)
             .. "Font shape `[^']*/regular/[^']*' tried instead",
     "Font shape `[^']*/b/[^']*' in size %b<> not available.*"
             .. "Font shape `[^']*/bold/[^']*' tried instead",
+    -- versions of xcolor after 2022
+    "Package option `hyperref' is obsolete and ignored",
+    "Package lipsum Warning: Unknown language 'latin'%.",
   }
 
   DEFAULT_FORCED_WARNING = {}
@@ -2400,14 +2404,20 @@ function underOverFullBoxHandler:handleFirstLine()
   self.doit = self.handleClosing
 
   _, last = string.find(Lines.current, "has occurred while \\output is active")
+  if last ~= nil and data.verthoriz == 'h' then
+      self.doit = self.handleOffendingText
+  end
+
   if last == nil then
       _, last = string.find(Lines.current, "in %S+ at lines %d+%-%-%d+")
-      if last == nil then
-          _, last = string.find(Lines.current, "detected at line %d+")
-          if last ~= nil and data.verthoriz == 'h' then
-              self.doit = self.handleOffendingText
-          end
-      else
+      if last ~= nil then
+          self.doit = self.handleOffendingText
+      end
+  end
+
+  if last == nil then
+      _, last = string.find(Lines.current, "detected at line %d+")
+      if last ~= nil and data.verthoriz == 'h' then
           self.doit = self.handleOffendingText
       end
   end
@@ -2911,6 +2921,12 @@ beginningOfLineDebugStringsHandler.patterns = {
 
   "^`newtxtext' v[%d%.]+, " .. datepat .. " Text macros taking advantage of "
               .. "TeXGyre Termes and its extensions %(msharpe%)",
+
+  -- don't know where this comes from...
+  "^ %*%*%*%*%*%*%*%*%*%*%*\n"
+  .. "LaTeX2e <" .. datepat .. ">\n"
+  .. "L3 programming layer <" .. datepat .. ">\n"
+  .. " %*%*%*%*%*%*%*%*%*%*%*"
 }
 
 
@@ -2937,6 +2953,7 @@ anywhereDebugStringsHandler.patterns = {
   -- <blah.jpg, id=555, [...,] 722.7pt x 722.7pt>
   '^%s*%<' .. filepat .. ', id=.- [%d%.]+pt x [%d%.]+pt%>',
   '^%s*%<use ' .. filepat .. '%>', -- <use blah.jpg>
+  '^%s*%<use ' .. filepat .. ', page %d-%>', -- <use blah.jpg, page ???>
 
   "^%s*`Fixed Point Package', .- %(C%) Michael Mehlich",
 
@@ -2967,6 +2984,18 @@ anywhereDebugStringsHandler.patterns = {
   '^%s*<Inserting dummy QR code in draft mode for "[^"]+" in version .-%.>',
   '^%s*<Copying the QR code for "[^"]+" in version .- as previously calculated%.>',
   '^%s*<Reading QR code for "[^"]+" at level %S+ from aux file%.>',
+  -- package "comment"
+  "^%s*Special comment '[^']+'",
+  "^%s*General comment '[^']+'",
+  "^%s*Include comment '[^']+'",
+  "^%s*Excluding comment '[^']+'",
+  "^%s*Lines%-Processing comment '[^']+'",
+  "^%s*Including '[^']+' comment%.",
+  "^%s*Excluding '[^']+' comment%.",
+  "^%s*Processing '[^']+' comment%.",
+  "^%s*Comment '[^']+' writing to " .. filepat .. "%.",
+  "^%s*Straight input of " .. filepat .. "%.",
+  "^%s*Include comment '[^']+' up to level '[^']+'",
 }
 
 
@@ -2984,8 +3013,8 @@ beginningOfLineInfoStringsHandler.patterns = {
   "^Driver file for pgf:.*%.def",
   "^Package pgfplots: loading complementary utilities for your pgf version%.%.%.",
   "^%s*file:line:error style messages enabled%.",
-  "^Applying: %b[] float order in 2%-column on input line .-%.",
-  "^Already applied: %b[] float order in 2%-column on input line .-%.",
+  "^Applying: %b[] .- on input line %d-%.",
+  "^Already applied: %b[] .- on input line %d-%.",
   "^\\%S+ = a dialect from .*",
   -- TODO: we should capture the jobname and use it here
   "^No file .-%.aux%.",
@@ -2993,7 +3022,7 @@ beginningOfLineInfoStringsHandler.patterns = {
   "^No file .-%.bbl%.",
   "^No file .-%.gls%.",
 
-  "^runsystem%b()%.%.%.executed",
+  "^runsystem%b()%.%.%.executed%.?",
 
   'luaotfload | db : Reload initiated %(formats: .-%); reason: Font ".-" not found%.',
 
