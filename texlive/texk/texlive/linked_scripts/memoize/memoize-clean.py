@@ -18,7 +18,7 @@
 # The files belonging to this work and covered by LPPL are listed in
 # <texmf>/doc/generic/memoize/FILES.
 
-__version__ = '2024/04/02 v1.3.0'
+__version__ = '2024/11/24 v1.4.0'
 
 import argparse, re, sys, pathlib, os
 
@@ -111,8 +111,8 @@ tbdeleted = []
 def populate_tbdeleted(folder, basename_prefix):
     re_aux = re.compile(
         re.escape(basename_prefix) + 
-        '[0-9A-F]{32}(?:-[0-9A-F]{32})?'
-        '(?:-[0-9]+)?(?:\.memo|(?:-[0-9]+)?\.pdf|\.log)$')
+        r'[0-9A-F]{32}(?:-[0-9A-F]{32})?'
+        r'(?:-[0-9]+)?(?:\.memo|(?:-[0-9]+)?\.pdf|\.log)$')
     try:
         for f in folder.iterdir():
             if re_aux.match(f.name) and (args.all or f not in keep):

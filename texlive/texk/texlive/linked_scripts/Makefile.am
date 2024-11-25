@@ -1,4 +1,4 @@
-## $Id: Makefile.am 72890 2024-11-18 22:29:08Z karl $
+## $Id: Makefile.am 72962 2024-11-24 21:49:51Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -240,7 +240,6 @@ texmf_other_scripts = \
 	texfindpkg/texfindpkg.lua \
 	texdoc/texdoc.tlu \
 	texfot/texfot.pl \
-	texlive/extractbb.lua \
 	texlive/fmtutil-sys.sh \
 	texlive/fmtutil-user.sh \
 	texlive/fmtutil.pl \

@@ -1,3 +1,9 @@
+2024-11-24  David Fuchs  <drfuchs@yahoo.com>
+
+	* tex.ch (Initialize the input routines): also initialize
+	buffer[0]:=0 for uninitialized virtex read, in the
+	cases of printing garbage fixed by Kitagawa-san on 2021-07-19.
+
 2024-11-13  Karl Berry  <karl@freefriends.org>
 
 	* mf.ch (Calculate integers $\alpha$...): comment out erroneous

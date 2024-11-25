@@ -1,3 +1,7 @@
+2024-11-24  Karl Berry  <karl@tug.org>
+
+	* Makefile.am (texmf_other_scripts): no more texlive/extractbb.lua.
+
 2024-07-04  Karl Berry  <karl@freefriends.org>
 
 	* xput/xput,

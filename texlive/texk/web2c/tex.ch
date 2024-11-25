@@ -1,4 +1,4 @@
-% $Id: tex.ch 71655 2024-06-29 18:09:10Z ascherer $
+% $Id: tex.ch 72951 2024-11-24 17:37:46Z karl $
 % tex.ch for C compilation with web2c, derived from various other change files.
 % By Tim Morgan, UC Irvine ICS Department, and many others.
 %
@@ -787,6 +787,7 @@ if translate_filename then begin
 end;
 @z
 
+% Original report: https://tug.org/pipermail/tex-k/2021-July/003630.html
 @x [5.71] l.1713 - term_input: set limit when fatal_error
 if not input_ln(term_in,true) then fatal_error("End of file on the terminal!");
 @y
@@ -1501,6 +1502,14 @@ begin input_ptr:=0; max_in_stack:=0;
 source_filename_stack[0]:=0;full_source_filename_stack[0]:=0;
 @z
 
+% This one is a consequence of the limit:=0 fix.
+@x [23.331] l.7095 - initialize buffer[0]
+first:=buf_size; repeat buffer[first]:=0; decr(first); until first=0;
+@y
+first:=buf_size; repeat buffer[first]:=0; decr(first); until first=0;
+buffer[0]:=0;
+@z
+
 % Original report: https://tug.org/pipermail/tex-k/2024-March/004021.html
 % TeX bug entry:   https://tug.org/texmfbug/newbug.html#B142outer
 @x [24.336] l.7152 - allow interactive deletion of \outer token
@@ -1560,6 +1569,7 @@ if t>=cs_token_flag then
 if (t>=cs_token_flag)and(t<>end_write_token) then
 @z
 
+% See above change "term_input: set limit when fatal_error" for references.
 @x [27.484] l.9495 - set limit when fatal_error
 else fatal_error("*** (cannot \read from terminal in nonstop modes)")
 @y
