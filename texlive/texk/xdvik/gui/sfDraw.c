@@ -238,7 +238,6 @@ SFstatAndCheck(SFDir *dir, SFEntry *entry)
     struct stat statBuf;
     char save;
     int last;
-    extern int SFchdir();
 
     /*
      * must be restored before returning

@@ -62,7 +62,7 @@ static struct button_info *m_button_info = NULL; /* toplevel node of pulldown me
 
 
 static void
-set_menu_info(void *val, XtActionProc proc, Boolean (*cmp)(), struct button_info *item)
+set_menu_info(void *val, XtActionProc proc, Boolean (*cmp)(void *, const char *), struct button_info *item)
 {
     size_t i;
     ASSERT(item != NULL, "item in set_menu_info musn't be NULL!");
@@ -96,7 +96,7 @@ set_menu_info(void *val, XtActionProc proc, Boolean (*cmp)(), struct button_info
 
 /* set a menu according to val and the compare function cmp */
 void
-set_menu(void *val, XtActionProc proc, Boolean (*cmp)())
+set_menu(void *val, XtActionProc proc, Boolean (*cmp)(void *, const char *))
 {
     /* removed following since cast from function pointer to void pointer is not supported by ANSI C */
     /* TRACE_GUI((stderr, "set_menu_info: %d, %p, %p", *(int *)val, (void *)proc, (void *)cmp)); */

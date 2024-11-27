@@ -67,6 +67,6 @@ extern void create_menu_buttons(Widget parent,
 #endif
 				);
 
-extern void set_menu(void *val, XtActionProc proc, Boolean (*cmp)());
+extern void set_menu(void *val, XtActionProc proc, Boolean (*cmp)(void *, const char *));
 
 #endif /* MENU_H_ */

@@ -115,7 +115,7 @@ Germany.
 \medskip
 {\tt ruckert\:@cs.hm.edu}
 \medskip
-Last commit: Sat Sep 14 14:38:07 2024
+Last commit: Tue Nov 26 15:28:24 2024
 \par
 }
 \eject
@@ -345,7 +345,7 @@ Because each value fits in a single byte, the values are often given in
 hexadecimal notation. In \TeX, hexadecimal values are written with
 a \.{"}~prefix. The same colors as before are then written
 \.{FG\{"FF 0 0\}}, \.{FG\{"FF 0 0 "FF\}},
-\.{FG\{0 0 "FF\}} and \.{FG\{"FF "FF "7F\}}. 
+\.{FG\{0 0 "FF\}} and \.{FG\{"FF "FF 0 "7F\}}. 
 Values greater than 255 or less than 0 are not allowed.
 
 A common alternative to the color representation just described
@@ -366,7 +366,32 @@ Using the new syntax the colors above are written
 Values greater than 1 and less than 0 are not allowed.
 Note that \.{fg\{1 1 1\}} is pure white while  \.{FG\{1 1 1\}} is
 the darkest possible gray, which on most devices is indistinguishable
-from pure black. 
+from pure black.
+
+While specifying colors using red, green, and blue components is natural for
+computer screens, for printing on paper, the specification using cyan, magenta, yellow,
+and black is the default. Since collections of named colors using the latter format
+are common, Hi\TeX\ allows the use of this format by prefixing the numbers with
+the keyword \.{cmyk}. Specifying the keyword \.{rgb} is also possible and has the
+same effect as giving no keyword. Using the new syntax the transparent yellow
+can be written \.{fg\{cmyk 0 0 1 0 0.5\}},  \.{FG\{cmyk 0 0 "FF 0 "7F\}},
+ \.{fg\{rgb 1 1 0 0.5\}}, or \.{FG\{rgb "FF "FF 0 "7F\}}.
+
+The additional syntax rules are:
+
+\medskip
+\rule\sym{foreground}\index{foreground+\sym{foreground}}:
+\.{fg} \.{\{ rgb} \sym{number} \sym{number} \sym{number} \opt{\sym{number}} \.{\}}.
+\rule\sym{foreground}\index{foreground+\sym{foreground}}:
+\.{fg} \.{\{ cmyk} \sym{number} \sym{number} \sym{number} \sym{number} \opt{\sym{number}} \.{\}}.
+\rule\sym{foreground}\index{foreground+\sym{foreground}}:
+   \.{FG} \.{\{ rgb} \sym{integer} \sym{integer} \sym{integer} \opt{\sym{integer}} \.{\}}.
+\rule\sym{foreground}\index{foreground+\sym{foreground}}:
+   \.{FG} \.{\{ cmyk} \sym{integer} \sym{integer} \sym{integer} \sym{integer} \opt{\sym{integer}} \.{\}}.
+\medskip
+
+
+
 
 \subsubsection{Defining and Using Colors}
 As we will see, colors come in whole sets of colors.
@@ -407,10 +432,14 @@ Here are the remaining rules that complete the \sym{color specification}:
     \sym{color} \opt{\sym{color} \opt{\sym{color}}}.
 \rule\sym{color}\index{color+\sym{color}}:
     \sym{foreground} \opt{\sym{background}}.
-\rule\sym{background}:
-\.{BG} \.{\{} \sym{integer} \sym{integer} \sym{integer} \opt{\sym{integer}} \.{\}}.
-\rule\sym{background}:
-\.{bg} \.{\{} \sym{number} \sym{number} \sym{number} \opt{\sym{number}} \.{\}}.
+\rule\sym{background}\index{foreground+\sym{foreground}}:
+   \.{FG} \.{\{} \opt{\.{rgb}} \sym{integer} \sym{integer} \sym{integer} \opt{\sym{integer}} \.{\}}.
+\rule\sym{background}\index{foreground+\sym{foreground}}:
+   \.{fg} \.{\{} \opt{\.{rgb}} \sym{number} \sym{number} \sym{number} \opt{\sym{number}} \.{\}}.
+\rule\sym{background}\index{foreground+\sym{foreground}}:
+   \.{FG} \.{\{ cmyk} \sym{integer} \sym{integer} \sym{integer} \sym{integer} \opt{\sym{integer}} \.{\}}.
+\rule\sym{background}\index{foreground+\sym{foreground}}:
+  \.{fg} \.{\{ cmyk} \sym{number} \sym{number} \sym{number} \sym{number} \opt{\sym{number}} \.{\}}.
 \medskip
 If some of the optional parts in the \sym{color specification} are missing,
 the corresponding colors from the set of default colors, as described below,

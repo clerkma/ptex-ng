@@ -198,7 +198,6 @@ bmUnitT bit_masks[] = {
 #ifdef	VMS
 #define	off_t	int
 #endif
-extern off_t lseek();
 
 #ifndef	SEEK_SET	/* if <unistd.h> is not provided (or for <X11R5) */
 #define	SEEK_SET	0
@@ -4692,8 +4691,6 @@ anchor_search(const char *str)
 
 
 #if GREY
-
-extern	double	pow();
 
 static void
 mask_shifts(Pixel mask, int *pshift1, int *pshift2)

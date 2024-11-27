@@ -125,7 +125,7 @@ XtAppContext SFapp;
 int SFpathScrollWidth, SFvScrollHeight, SFhScrollWidth;
 char SFtextBuffer[MAXPATHLEN];
 XtIntervalId SFdirModTimerId;
-int (*SFfunc) ();
+int (*SFfunc) (char *entryReal, char **entryShown, struct stat *statBuf);
 
 static int SFstatus = SEL_FILE_NULL;
 

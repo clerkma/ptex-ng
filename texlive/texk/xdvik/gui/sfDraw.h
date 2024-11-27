@@ -56,7 +56,7 @@ void SFhAreaSelectedCallback(Widget w, int n, int pnew);
 void SFpathSliderMovedCallback(Widget w, XtPointer client_data, float *new);
 void SFpathAreaSelectedCallback(Widget w, XtPointer client_data, int pnew);
 Boolean SFworkProc(void);
-extern int (*SFfunc)();
+extern int (*SFfunc)(char *entryReal, char **entryShown, struct stat *statBuf);
 
 extern Widget selFileField, selFileForm, selFileHScroll, selFileHScrolls[], selFileLists[], selFileVScrolls[];
 extern Display *SFdisplay;

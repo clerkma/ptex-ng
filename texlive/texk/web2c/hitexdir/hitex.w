@@ -30994,13 +30994,15 @@ static void scan_scaled(void)
 @ A color specification starting with ``FG'' or ``BG'' expects
 integers in the range 0 to |0xFF|;
 a color specification starting with ``fg'' or ``bg'' expects
-real numbers in the range 0 to 1 which are then scalled to the
-same range as before.
-The four color components are enclosed in braces. The last
-component is optional and its default value is |0xFF|.
+real numbers in the range 0 to 1.
+ The last component for the alpha value is optional and its default value is |0xFF| respectively 1.0.
+The color components are enclosed in braces.
+After the initial brace the keyword \.{rgb} specifies color values encoded with red/green/blue/alpha values;
+the keyword \.{cmyk} specifies color values encoded with cyan/magenta/yellow/black/alpha values.
+Giving no keyword is equivalent to giving the keyword \.{rgb}.
 
 @<Declare procedures needed in |do_extension|@>=
-static uint8_t scan_color_component(bool expect_reals)
+static uint8_t scan_rgb_component(bool expect_reals)
 { if (expect_reals)
   { scan_scaled(); cur_val=(cur_val*0xFF+0x1000)>>16; }
   else
@@ -31010,18 +31012,16 @@ static uint8_t scan_color_component(bool expect_reals)
   else return cur_val;
 }
 
-static uint32_t scan_color(bool expect_reals)
+static uint32_t scan_rgb_color(bool expect_reals)
 { uint8_t r,g,b,a;
-  scan_left_brace();
-  r=scan_color_component(expect_reals);
-  g=scan_color_component(expect_reals);
-  b=scan_color_component(expect_reals);
+  r=scan_rgb_component(expect_reals);
+  g=scan_rgb_component(expect_reals);
+  b=scan_rgb_component(expect_reals);
+  a=0xFF;
   @<Get the next non-blank non-relax...@>;
-  if (cur_cmd==right_brace)
-    a=0xFF;
-  else
+  if (cur_cmd!=right_brace)
   { back_input();
-    a=scan_color_component(expect_reals);
+    a=scan_rgb_component(expect_reals);
     @<Get the next non-blank non-call token@>;
     if (cur_cmd!=right_brace)
     { back_input();
@@ -31029,6 +31029,55 @@ static uint32_t scan_color(bool expect_reals)
     }
   }
   return (r<<24)|(g<<16)|(b<<8)|a;
+}
+
+static double scan_cmyk_component(bool expect_reals)
+{ double c;
+  if (expect_reals)
+  { scan_scaled(); c=cur_val/(double)ONE;
+  }
+  else
+  { scan_int(); c=cur_val/255.0;
+  }
+  if (c>1.0) return 1.0;
+  else if (c<0.0) return 0.0;
+  else return c;
+}
+
+
+static uint32_t scan_cmyk_color(bool expect_reals)
+{ uint8_t r,g,b,a;
+  double c,m,y,k;
+  c=scan_cmyk_component(expect_reals);
+  m=scan_cmyk_component(expect_reals);
+  y=scan_cmyk_component(expect_reals);
+  k=scan_cmyk_component(expect_reals);
+  a=0xFF;
+  @<Get the next non-blank non-relax...@>;
+    if (cur_cmd!=right_brace)
+  { back_input();
+    a=scan_cmyk_component(expect_reals)*0xFF+0.5;
+    @<Get the next non-blank non-call token@>;
+    if (cur_cmd!=right_brace)
+    { back_input();
+      print_err("Missing right brace after color definition");
+    }
+  }
+  r=(1-c)*(1-k)*255+0.5;
+  g=(1-m)*(1-k)*255+0.5;
+  b=(1-y)*(1-k)*255+0.5;
+  return (r<<24)|(g<<16)|(b<<8)|a;
+}
+
+static uint32_t scan_color(bool expect_reals)
+{ uint8_t r,g,b,a;
+  scan_left_brace();
+  if (scan_keyword("cmyk"))
+     return scan_cmyk_color(expect_reals);
+  else if (scan_keyword("rgb"))
+     return scan_rgb_color(expect_reals);
+  else
+    return scan_rgb_color(expect_reals);
 }
 
 @ Colors are specified in pairs of a foreground color, prefixed
