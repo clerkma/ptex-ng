@@ -1,6 +1,9 @@
 This file records noteworthy changes.  (Public domain.)
 See also */NEWS, */ChangeLog, etc.
 
+* Most engines: if TeX exits due to the -halt-on-error option,
+write the help message to the log file, as happens without -halt-on-error.
+
 * mf: remove incorrect change of long standing in the Web2c mf.ch file,
 which affects calculation of a few pen polygons in a small way; we don't
 know if any extant fonts are impacted.

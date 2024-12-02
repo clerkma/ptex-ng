@@ -1,4 +1,4 @@
-% $Id: tex.ch 72951 2024-11-24 17:37:46Z karl $
+% $Id: tex.ch 73009 2024-12-01 17:52:26Z karl $
 % tex.ch for C compilation with web2c, derived from various other change files.
 % By Tim Morgan, UC Irvine ICS Department, and many others.
 %
@@ -881,6 +881,15 @@ if (halt_on_error_p) then begin
    here; just give up in that case. If files are truncated, too bad.}
   if (halting_on_error_p) then do_final_end; {quit immediately}
   halting_on_error_p:=true;
+
+  {This module is executed at the end of the |error| procedure in
+   \.{tex.web}, but we'll never get there when |halt_on_error_p|, so the
+   error help shouldn't get duplicated. It's potentially useful to see,
+   especially if \.{\\errhelp} is being used. See thread at:
+   \.{https://tug.org/pipermail/tex-live/2024-July/050741.html}.}
+  @<Put help message on the transcript file@>;
+
+  {Proceed with normal exit.}
   history:=fatal_error_stop;
   jump_out;
 end;
