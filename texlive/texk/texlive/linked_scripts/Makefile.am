@@ -1,4 +1,4 @@
-## $Id: Makefile.am 72962 2024-11-24 21:49:51Z karl $
+## $Id: Makefile.am 73030 2024-12-03 22:38:03Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -213,6 +213,7 @@ texmf_other_scripts = \
 	pkfix-helper/pkfix-helper \
 	pkfix/pkfix.pl \
 	pmxchords/pmxchords.lua \
+	ppmcheckpdf/ppmcheckpdf.lua \
 	pst2pdf/pst2pdf.pl \
 	ptex-fontmaps/kanji-config-updmap-sys.sh \
 	ptex-fontmaps/kanji-config-updmap-user.sh \

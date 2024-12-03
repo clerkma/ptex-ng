@@ -433,6 +433,7 @@ texmf_other_scripts = \
 	pkfix-helper/pkfix-helper \
 	pkfix/pkfix.pl \
 	pmxchords/pmxchords.lua \
+	ppmcheckpdf/ppmcheckpdf.lua \
 	pst2pdf/pst2pdf.pl \
 	ptex-fontmaps/kanji-config-updmap-sys.sh \
 	ptex-fontmaps/kanji-config-updmap-user.sh \
