@@ -18,14 +18,10 @@ fmtutil-sys --cnffile fmt-aptex.cnf --all
 
 ### Compile Your Document
 
+
 ```
-ptex-ng +aplatex doc.tex
+ptex-ng +[fmt] doc.tex
 ```
-or
-```
-ptex-ng +aplatex-dev doc.tex
-```
-or
-```
-ptex-ng -format=aplatex doc.tex
-```
+
+`fmt`: `aplatex`, `platex-ng`, `platex-dev-ng`
+
