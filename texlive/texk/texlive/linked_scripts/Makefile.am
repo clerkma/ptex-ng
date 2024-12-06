@@ -1,4 +1,4 @@
-## $Id: Makefile.am 73030 2024-12-03 22:38:03Z karl $
+## $Id: Makefile.am 73049 2024-12-05 21:37:35Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -148,6 +148,7 @@ texmf_other_scripts = \
 	epspdf/epspdftk.tcl \
 	epstopdf/epstopdf.pl \
 	exceltex/exceltex \
+	expltools/explcheck.lua \
 	extractbb/extractbb.lua \
 	fig4latex/fig4latex \
 	findhyph/findhyph \
