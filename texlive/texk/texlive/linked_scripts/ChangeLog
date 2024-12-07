@@ -1,3 +1,11 @@
+2024-12-07  Karl Berry  <karl@freefriends.org>
+
+	* Makefile.am (check-make-vs-files): new target to compare
+	list in Makefile[.am] with files on filesystem.
+	* texlive/extractbb.lua,
+	* texlive/mktexlsr.pl: remove, not listed.
+	tldistro thread around 4 Jul 2024 16:27:36.
+
 2024-11-24  Karl Berry  <karl@tug.org>
 
 	* Makefile.am (texmf_other_scripts): no more texlive/extractbb.lua.

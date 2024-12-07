@@ -1,4 +1,4 @@
-## $Id: Makefile.am 73049 2024-12-05 21:37:35Z karl $
+## $Id: Makefile.am 73062 2024-12-07 17:56:53Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -363,8 +363,9 @@ endif !WIN32
 .PHONY: install-links
 install-links:
 
-## For WIN32 (MinGW or native) we have wrapper binaries with .exe,
-## for Cygwin and Unix we have symlinks without .exe.
+# 
+# For WIN32 (MinGW or native) we have wrapper binaries with .exe,
+# for Cygwin and Unix we have symlinks without .exe.
 if WIN32
 WINEXT = $(EXEEXT)
 endif WIN32
@@ -387,9 +388,21 @@ if !WIN32
 	else :; fi
 endif !WIN32
 
-## 
-## This target is invoked by check-wrapper-consistency (run from cron).
+# 
+# This target is invoked by tl-check-wrapper-consistency (run from cron).
 .PHONY: echo-shell-scripts
 shell_scripts = $(texmf_shell_scripts)
 echo-shell-scripts:
 	@echo $(shell_scripts)
+
+# just a shorter name for all the scripts for convenience.
+all_scripts = $(nobase_dist_texmf_scripts_SCRIPTS)
+
+# Compare the list of scripts to the extant files in the repo;
+# should be exactly the same. Run from cron.
+check-make-vs-files:
+	# we descend two levels here because of context/perl/mptopdf.pl.
+	find "$(srcdir)"/*/* -type f | sed "s,$(srcdir)/,," | sort \
+	  >tmplist.files
+	echo $(all_scripts) | tr ' ' '\n' | sort >tmplist.make
+	comm -3 tmplist.files tmplist.make

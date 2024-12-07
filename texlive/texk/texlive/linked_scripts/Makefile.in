@@ -509,8 +509,15 @@ bin_links = \
 
 relpath = $(SHELL) $(top_srcdir)/../../build-aux/relpath
 runscript = $(top_srcdir)/$(WIN_WRAPPER)/runscript.exe
+
+# 
+# For WIN32 (MinGW or native) we have wrapper binaries with .exe,
+# for Cygwin and Unix we have symlinks without .exe.
 @WIN32_TRUE@WINEXT = $(EXEEXT)
 shell_scripts = $(texmf_shell_scripts)
+
+# just a shorter name for all the scripts for convenience.
+all_scripts = $(nobase_dist_texmf_scripts_SCRIPTS)
 all: all-am
 
 .SUFFIXES:
@@ -824,9 +831,18 @@ uninstall-hook:
 @WIN32_FALSE@	  rm -f $(DESTDIR)$(bindir)/man; \
 @WIN32_FALSE@	else :; fi
 
+# 
+# This target is invoked by check-wrapper-consistency (run from cron).
 .PHONY: echo-shell-scripts
 echo-shell-scripts:
 	@echo $(shell_scripts)
+
+# Compare 
+check-make-vs-files:
+# we descend two levels because of context/perl/mptopdf.pl.
+	find "$(srcdir)"/*/* -type f | sed "s,$(srcdir)/,," | sort >tmplist.files
+	echo $(all_scripts) | tr ' ' '\n' | sort >tmplist.make
+	comm -3 tmplist.files tmplist.make
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
