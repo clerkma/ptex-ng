@@ -2,7 +2,7 @@
 @setfilename tlbuild.info
 
 @set version 2024
-@set month-year April 2024
+@set month-year December 2024
 
 @set mytitle Building @TeX{} Live (@value{version})
 @settitle @value{mytitle}
@@ -889,25 +889,31 @@ that end up in @file{./inst/} are ignored.
 
 @cindex linked scripts
 @cindex scripts, linked and not maintained
+@cindex symbolic links, used for scripts
 
 @cindex symlinks, used for scripts
 @cindex wrapper binary for scripts on Windows
 @cindex Windows, invoking scripts on
-Quite a few executables are architecture-independent shell, Perl, or
-other interpreted scripts, rather than compiled binaries.  A few are
-maintained as part of the TL source tree, but most are maintained
-elsewhere with copies under @file{texk/texlive/linked_scripts}.
+Quite a few of the executables in @TL{} are architecture-independent
+shell, Perl, or other interpreted scripts, rather than compiled
+binaries.  A few are maintained as part of the TL source tree, but
+most are maintained independently in their own packages, with copies
+under @file{texk/texlive/linked_scripts}.
 
 These so-called @dfn{linked scripts} are installed under
 @code{@var{datarootdir}/texmf-dist/scripts}; for Unix-like systems a
 symbolic link is made in @code{@var{bindir}}.  For example, a symlink
-points from @code{@var{bindir}/ps2eps} to
-@code{@var{datarootdir}/texmf-dist/scripts/ps2eps/ps2eps.pl}.  For
-Windows, a standard wrapper binary (copied to, e.g.,
-@code{@var{bindir}/ps2eps.exe}) serves the same purpose.  The source
-for the wrapper is in @file{texk/texlive/windows_wrapper}.
+points from @code{@var{bindir}/fmtutil} to
+@code{@var{datarootdir}/texmf-dist/scripts/texlive/fmtutil.pl}. The
+symlink is relative, so the installation root can be anywhere.
 
-One reason for this is to avoid having many copies of the same
+@cindex wrapper for scripts, on Windows
+For Windows, we cannot portably use symlinks, so a standard wrapper
+binary (copied to, e.g., @code{@var{bindir}/fmtutil.exe}) serves the
+same purpose (the source for the wrapper is in
+@file{texk/texlive/windows_wrapper}).
+
+One reason for all this is to avoid having many copies of the same
 script; a more important reason is that it guarantees the scripts will
 stay in sync across the different supported operating systems.
 
@@ -917,12 +923,38 @@ stay in sync across the different supported operating systems.
 @pindex xz
 @pindex wget
 Most important of all, we want the @code{@var{bindir}} resulting from
-the build to be as close as possible to what is in the TL
-distribution.  At present, there are a few exceptions---Asymptote,
-Biber, Xindy---and each one creates considerable extra work.  We don't
-want to add more.  (See @url{https://tug.org/texlive/build.html} for
-information about building those exceptions, as well as the @code{xz}
-and @code{wget} programs that are used in the TL infrastructure.)
+@code{make install} in the TL source tree to be as close as possible
+to what's in thej TL distribution.  At present, there are a few
+exceptions---Asymptote, Biber, Xindy---and each one creates
+considerable extra work.  We don't want to add more.  (See
+@url{https://tug.org/texlive/build.html} for information about
+building those exceptions, as well as the @code{xz} and @code{wget}
+programs that are used in the TL infrastructure.)
+
+@pindex scripts-targets.lst
+As part of the @code{make install} in the @file{linked_scripts}
+directory, a file @file{scripts-targets.lst} is created to record all
+the links that are created this way, so that distros and others can
+reproduce them. The file has one line per link. The first word is the
+target of the link (e.g.,
+@samp{texmf-dist/scripts/texlive/fmtutil.pl}), and the second word
+is the name of the link to be placed in the bindir (e.g.,
+@samp{fmtutil}). Determining the relative link target (how many
+@samp{../}s) is left to the users of this file, since it varies among
+distributions. It can be assumed there is no whitespace in these filenames.
+
+A few links are within bindir; in that case, the first word of the
+line is just a base name, e.g., the file @samp{fmtutil mktexfmt} means
+that doing the equivalent of @code{ln -s fmtutil mktexfmt} in the bindir.
+
+Be aware that although extensions are usually stripped (as with
+@code{fmtutil}), there are exceptions, such as
+@code{memoize-extract.pl} and @code{listings-ext.sh}.
+
+The @file{scripts-targets.lst} file started being created as of the
+@TL{} 2025 release. Historically, another file @file{scripts.lst} has
+been (and still is) created, containing only the link targets, and
+using a Bourne shell syntax.
 
 @node Distro builds
 @section Distro builds

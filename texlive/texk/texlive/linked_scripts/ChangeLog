@@ -1,3 +1,12 @@
+2024-12-08  Karl Berry  <karl@freefriends.org>
+
+	* Makefile.am (linkfile): new variable, scripts-targets.lst.
+	(install-data-hook): create it, en passant, with all link names
+	and target names, including special cases memoize* and
+	listings-ext.sh. scripts.lst has only the link names.
+	* scripts-targets.lst: new file.
+	tldistro threads around 4 Jul 2024 16:27:36 and now.
+
 2024-12-07  Karl Berry  <karl@freefriends.org>
 
 	* Makefile.am (check-make-vs-files): new target to compare

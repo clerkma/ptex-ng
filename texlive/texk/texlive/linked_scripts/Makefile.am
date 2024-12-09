@@ -1,4 +1,4 @@
-## $Id: Makefile.am 73062 2024-12-07 17:56:53Z karl $
+## $Id: Makefile.am 73071 2024-12-08 18:00:10Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -312,6 +312,13 @@ bin_links = \
 EXTRA_DIST += ../../../build-aux/relpath
 relpath = $(SHELL) $(top_srcdir)/../../build-aux/relpath
 runscript = $(top_srcdir)/$(WIN_WRAPPER)/runscript.exe
+
+# Make a copy of all targets and link names, for distros etc., so they
+# don't have to duplicate the special cases for memoize* etc. below. It
+# would be cleaner to make the file and then use it in both the install
+# and uninstall hooks, but we'll leave that for another time.
+linkfile = $(abs_builddir)/scripts-targets.lst
+
 install-data-hook: installdirs-local
 if WIN32
 	@for s in $(texmf_other_scripts); do \
@@ -323,9 +330,11 @@ if WIN32
 	$(INSTALL_SCRIPT) $(top_srcdir)/$(WIN_WRAPPER)/runscript.exe $(DESTDIR)$(bindir)
 	$(INSTALL_SCRIPT) $(top_srcdir)/$(WIN_WRAPPER)/runscript.tlu $(DESTDIR)$(bindir)
 else !WIN32
-## Name the link as the basename, removing any extension,
-## except for listings-ext.sh, which is documented as that name.
-## Downcase for the sake of TeXcount.pl -> texcount.
+	>$(linkfile)
+# Name the link as the basename, removing any extension,
+# except for memoize* and listings-ext.sh, which are documented to be
+# used with extension. Downcase for the sake of TeXcount.pl -> texcount.
+# Unfortunately this logic is duplicated in uninstall-hook.
 	@REL=`$(relpath) '$(DESTDIR)' '$(bindir)' '$(datarootdir)'`; \
 	if test -z "$$REL"; then \
 	  echo 'unable to compute relative path for linked scripts' >&2; \
@@ -334,20 +343,22 @@ else !WIN32
 	cd $(DESTDIR)$(bindir) && \
 	  for s in $(nobase_dist_texmf_scripts_SCRIPTS); do \
 	    target=`basename $$s | tr '[A-Z]' '[a-z]'`; \
-## we can't use egrep or grep -E or ere patterns portably.
+## we can't portably use egrep or grep -E or ere patterns.
 	    echo "$$s" | grep 'memoize-.*\.' >/dev/null \
 	    || echo "$$s" | grep 'listings-ext.sh' >/dev/null \
 	    || target=`echo $$target | sed 's,\.[^/]*$$,,'`; \
 	    rm -f $$target; \
-	    echo "creating link '$$target' -> '$$REL/texmf-dist/scripts/$$s'"; \
+	    echo "creating link '$$target' -> '$$REL/texmf-dist/scripts/$$s'";\
 	    $(LN_S) $$REL/texmf-dist/scripts/$$s $$target || exit 1; \
+	    echo texmf-dist/scripts/$$s $$target >>$(linkfile); \
 	  done && \
 	  for s in $(bin_links); do \
 	    link=`echo $$s | sed 's,.*:,,'`; \
 	    file=`echo $$s | sed 's,:.*,,'`; \
 	    rm -f $$link; \
-	    echo "creating link '$$link' -> '$$file'"; \
+	    echo "creating bin link '$$link' -> '$$file'"; \
 	    $(LN_S) $$file $$link || exit 1; \
+	    echo $$file $$link >>$(linkfile); \
 	  done && \
 ## man dir link for those mans which can use it, but don't overwrite a
 ## real file, e.g., /usr/bin/man.
@@ -358,6 +369,9 @@ else !WIN32
 	    rm -f man; \
 	    (ln -s "$$REL/texmf-dist/doc/man" man || :); \
 	  else :; fi
+# If we got to the end, update the $(linkfile) in srcdir if needed.
+	cmp -s $(srcdir)/`basename $(linkfile)` $(linkfile) \
+	|| cp -f $(linkfile) $(srcdir)/`basename $(linkfile)`
 endif !WIN32
 
 .PHONY: install-links
@@ -401,7 +415,7 @@ all_scripts = $(nobase_dist_texmf_scripts_SCRIPTS)
 # Compare the list of scripts to the extant files in the repo;
 # should be exactly the same. Run from cron.
 check-make-vs-files:
-	# we descend two levels here because of context/perl/mptopdf.pl.
+# We descend two levels here because of context/perl/mptopdf.pl.
 	find "$(srcdir)"/*/* -type f | sed "s,$(srcdir)/,," | sort \
 	  >tmplist.files
 	echo $(all_scripts) | tr ' ' '\n' | sort >tmplist.make
