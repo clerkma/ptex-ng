@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 69664 2024-02-01 22:56:12Z karl $
+dnl $Id: configure.ac 73096 2024-12-10 22:43:17Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
 dnl   Copyright (C) 2022-2024 Luigi Scarso <luigi.scarso@gmail.com>
@@ -25,8 +25,6 @@ KPSE_COMPILER_VISIBILITY
 AC_CONFIG_HEADERS([mpfi_config.h])
 
 KPSE_CANONICAL_HOST
-
-MPFI_CONFIGS
 
 AM_CONDITIONAL([build], [test "x$enable_build" != xno])
 
