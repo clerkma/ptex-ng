@@ -47,9 +47,15 @@ BEGIN {
     # blocks.
     $my_name = 'latexmk';
     $My_name = 'Latexmk';
-    $version_num = '4.85';
-    $version_details = "$My_name, John Collins, 7 Apr. 2024. Version $version_num";
+    $version_num = '4.86';
+    $version_details = "$My_name, John Collins, 11 Dec. 2024. Version $version_num";
 }
+
+# Ensure that when STDERR and STDOUT are both redirected, the results are
+#   in the order they are written.  Otherwise, the default situation for
+#   redirected output is that STDERR is always autoflushed, but STDOUT is
+#   not, and therefore output does not appear in the order is was written.
+STDOUT->autoflush(1);
 
 use Config;
 use File::Basename;
@@ -1227,7 +1233,7 @@ our $user_deleted_file_treated_as_changed = 0; # Whether when testing for change
                # compilation of .tex file tests for file existence and
                # adjusts behavior accordingly, instead of simply giving an
                # error. 
-our $max_repeat = 5;        # Maximum times I repeat latex.  Normally
+our $max_repeat = 5;    # Maximum times I repeat latex.  Normally
                         # 3 would be sufficient: 1st run generates aux file,
                         # 2nd run picks up aux file, and maybe toc, lof which 
                         # contain out-of-date information, e.g., wrong page
@@ -2033,16 +2039,18 @@ while (defined(local $_ = $ARGV[0])) {
   elsif (/^-dir-report$/)    { $aux_out_dir_report = 1; }
   elsif (/^-dir-report-$/)   { $aux_out_dir_report = 0; }
   elsif (/^-dvi$/)    { $dvi_mode = 1;
-                        $hnt_mode = 0;
+                        $hnt_mode = $xdv_mode = 0;
+                        # Postscript mode OK
                         if ( ($pdf_mode != 2) && ($pdf_mode != 3) ) {
-                            # if pdf_mode is not via dvi or pdf, turn it off
+                            # if pdf_mode is not via dvi or ps, turn it off
                             $pdf_mode = 0;
                         }
                       }
   elsif (/^-dvilua$/) { $dvi_mode = 2;
-                        $hnt_mode = 0;
+                        $hnt_mode = $xdv_mode = 0;
+                        # Postscript mode OK
                         if ( ($pdf_mode != 2) && ($pdf_mode != 3) ) {
-                            # if pdf_mode is not via dvi or pdf, turn it off
+                            # if pdf_mode is not via dvi or ps, turn it off
                             $pdf_mode = 0;
                         }
                       }
@@ -2064,18 +2072,20 @@ while (defined(local $_ = $ARGV[0])) {
   }
   elsif ( /^-h$/ || /^-help$/ )   { &print_help; exit;}
   elsif (/^-hnt$/)    { $hnt_mode = 1;
-                        $dvi_mode = $postscript_mode = $pdf_mode = 0;
+                        $dvi_mode = $postscript_mode = $pdf_mode = $xdv_mode = 0;
                       }
   elsif (/^-jobname=(.*)$/) {
       $jobname = $1;
   }
   elsif (/^-l$/)     { $landscape_mode = 1; }
   elsif (/^-l-$/)    { $landscape_mode = 0; }
-  elsif ( /^-latex$/ )      { 
-      $pdf_mode = 0;
-      $postscript_mode = 0; 
-      $dvi_mode = 1;
-      $hnt_mode = 0;
+  elsif ( /^-latex$/ ) { $dvi_mode = 1;
+                         $hnt_mode = $postscript_mode = $xdv_mode = 0;
+                         # Postscript mode OK
+                         if ( ($pdf_mode != 2) && ($pdf_mode != 3) ) {
+                             # if pdf_mode is not via dvi or ps, turn it off
+                             $pdf_mode = 0;
+                         }
   }
   elsif (/^-latex=(.*)$/) {
       $latex = $1;
@@ -2093,7 +2103,7 @@ while (defined(local $_ = $ARGV[0])) {
       { $silence_logfile_warnings = 1; }
   elsif ( /^-lualatex$/ || /^-pdflualatex$/ )      { 
       $pdf_mode = 4;
-      $dvi_mode = $hnt_mode = $postscript_mode = 0; 
+      $dvi_mode = $hnt_mode = $postscript_mode = $xdv_mode = 0; 
   }
 # See below for -lualatex=...
 # See above for -M
@@ -2132,15 +2142,16 @@ while (defined(local $_ = $ARGV[0])) {
       my $format = $1;
       if ($format eq 'dvi' ) {
           $dvi_mode = 1;
-          $hnt_mode = 0;
+          $hnt_mode = $xdv_mode = 0;
+          # Postscript mode OK
           if ( ($pdf_mode != 2) && ($pdf_mode != 3) ) {
-              # if pdf_mode is not via dvi or pdf, turn it off
+              # if pdf_mode is not via dvi or ps, turn it off
               $pdf_mode = 0;
           }
       }
       elsif ($format eq 'pdf' ) {
           $pdf_mode = 1;
-          $dvi_mode = $hnt_mode = $postscript_mode = 0;
+          $dvi_mode = $hnt_mode = $postscript_mode = $xdv_mode = 0;
       }
       else {
           warn "$My_name: unknown format in option '$_'\n";
@@ -2152,16 +2163,16 @@ while (defined(local $_ = $ARGV[0])) {
                        $preview_mode = 0;  
                      }
   elsif (/^-p-$/)    { $printout_mode = 0; }
-  elsif (/^-pdf$/)   { $pdf_mode = 1; $dvi_mode = $hnt_mode = $postscript_mode = 0; }
+  elsif (/^-pdf$/)   { $pdf_mode = 1; $dvi_mode = $hnt_mode = $postscript_mode = $xdv_mode = 0; }
   elsif (/^-pdf-$/)  { $pdf_mode = 0; }
-  elsif (/^-pdfdvi$/){ $pdf_mode = 3;  $hnt_mode = 0; }
-  elsif (/^-pdflua$/){ $pdf_mode = 4; $dvi_mode =  $hnt_mode = $postscript_mode = 0; }
-  elsif (/^-pdfps$/) { $pdf_mode = 2;  $hnt_mode = 0; }
+  elsif (/^-pdfdvi$/){ $pdf_mode = 3;  $hnt_mode = $xdv_mode = 0; }
+  elsif (/^-pdflua$/){ $pdf_mode = 4; $dvi_mode =  $hnt_mode = $postscript_mode = $xdv_mode = 0; }
+  elsif (/^-pdfps$/) { $pdf_mode = 2;  $hnt_mode = $xdv_mode = 0; }
   elsif (/^-pdfxe$/) { $pdf_mode = 5; $dvi_mode =  $hnt_mode = $postscript_mode = 0; }
   elsif (/^-pdflatex$/) {
       $pdflatex = "pdflatex %O %S";
       $pdf_mode = 1;
-      $dvi_mode =  $hnt_mode = $postscript_mode = 0; 
+      $dvi_mode =  $hnt_mode = $postscript_mode = $xdv_mode = 0; 
   }
   elsif (/^-pdflatex=(.*)$/) {
       $pdflatex = $1;
@@ -2186,6 +2197,8 @@ while (defined(local $_ = $ARGV[0])) {
       }
   }
   elsif (/^-ps$/)    { $postscript_mode = 1;
+                       # dvi mode OK
+                       $hnt_mode = $xdv_mode = 0;
                        if ( ($pdf_mode != 2) && ($pdf_mode != 3) ) {
                            # if pdf_mode is not via dvi or pdf, turn it off
                            $pdf_mode = 0;
@@ -2254,10 +2267,17 @@ while (defined(local $_ = $ARGV[0])) {
   elsif (/^-view=ps$/)      { $view = "ps";}
   elsif (/^-view=pdf$/)     { $view = "pdf"; }
   elsif (/^-Werror$/){ $warnings_as_errors = 1; }
-  elsif (/^-xdv$/)    { $xdv_mode = 1; }
+  elsif (/^-xdv$/)    { $xdv_mode = 1;
+                        $dvi_mode = $hnt_mode = $postscript_mode = 0;
+                        if ( $pdf_mode != 5 ) {
+                           # if pdf_mode is not by xelatex
+                           $pdf_mode = 0;
+                        }
+}
   elsif (/^-xdv-$/)   { $xdv_mode = 0; }
   elsif ( /^-xelatex$/ || /^-pdfxelatex$/ )      { 
       $pdf_mode = 5;
+      # Xdv mode OK, since use xelatex to make xdv file
       $dvi_mode =  $hnt_mode = $postscript_mode = 0; 
   }
 # See above for -xelatex=...
@@ -2590,10 +2610,11 @@ if ( $view eq "default" ) {
     # If default viewer requested, use "highest" of dvi, ps and pdf
     #    that was requested by user.  
     # No explicit request means view dvi.
-    $view = "dvi";
-    if ( $hnt_mode ) { $view = "hnt"; }
     if ( $pdf_mode ) { $view = "pdf"; }
-    if ( $postscript_mode ) { $view = "ps"; }
+    elsif ( $postscript_mode ) { $view = "ps"; }
+    elsif ( $xdv_mode ) { $view = "none"; }
+    elsif ( $hnt_mode ) { $view = "hnt"; }
+    else { $view = "dvi"; }
 }
 
 # Determine requests.
@@ -2615,6 +2636,19 @@ if ($pdf_mode > 5) {
 if ( ($dvi_mode || $postscript_mode) && $pdf_mode ) {
     my %disallowed = ();
     foreach (1,4,5) { $disallowed{$_} = 1; }
+    if ($disallowed{$pdf_mode}) {
+        warn
+            "$My_name: \$pdf_mode = $pdf_mode is incompatible with dvi and postscript modes\n",
+            "  which are required by other requests.\n";
+        if ($postscript_mode) { $pdf_mode = 2; }
+        else { $pdf_mode = 3; }
+        warn
+            "  I replaced it by $pdf_mode, to be compatible with those other requests.\n";
+    }
+}
+if ( $xdv_mode && $pdf_mode ) {
+    my %disallowed = ();
+    foreach (1,2,3,4) { $disallowed{$_} = 1; }
     if ($disallowed{$pdf_mode}) {
         warn
             "$My_name: \$pdf_mode = $pdf_mode is incompatible with dvi and postscript modes\n",
@@ -2779,6 +2813,7 @@ $Psource = \$texfile_name;
 my $start_time = time();
 $Prun_time = \$start_time;
 
+
 FILE:
 foreach $filename ( @file_list )
 {
@@ -2825,6 +2860,18 @@ foreach $filename ( @file_list )
     # not known until after the call to normalize_aux_out_ETC:
     &set_aux_out_options;
     &set_names;   # Names of standard files
+    if ($diagnostics || $aux_out_dir_report ) {
+        print "$My_name: Cwd: '", good_cwd(), "'\n";
+        print "$My_name: Normalized aux dir, out dir, out2 dir:\n",
+              "  '$aux_dir', '$out_dir', '$out2_dir'\n";
+        print "$My_name: Combining forms of aux dir, out dir, out2 dir:\n",
+              "  '$aux_dir1', '$out_dir1', '$out2_dir1'\n";
+        print "$My_name: Base name of generated files:\n",
+              "  '$root_filename'\n";
+        if ($aux_out_dir_report == 2) {
+            next FILE;
+        }
+    }
     
     # For use under error conditions:
     @default_includes = ($texfile_name, $aux_main);
@@ -3355,17 +3402,6 @@ sub normalize_aux_out_ETC {
         # So the following is only needed for TeXLive.
         $ENV{TEXMFOUTPUT} = $aux_dir;
     }
-    
-    if ($diagnostics || $aux_out_dir_report ) {
-        print "$My_name: Cwd: '", good_cwd(), "'\n";
-        print "$My_name: Normalized aux dir and out dirs:\n",
-              " '$aux_dir', '$out_dir', '$out2_dir'\n";
-        print "$My_name: and combining forms:\n '$aux_dir1', '$out_dir1', '$out2_dir1'\n";
-        if ($aux_out_dir_report == 2) {
-            exit 0;
-        }
-    }
-
 }  #END normalize_aux_out_ETC
 
 #############################################################
@@ -3529,6 +3565,7 @@ sub rdb_initialize_rules {
     elsif    ($pdf_mode == 5) { rdb_activate( 'xdvipdfmx' ); $current_primary = 'xelatex';  }
     if ($dvi_mode == 2) { $current_primary = 'dvilualatex'; }
     if ($hnt_mode) { $current_primary = 'hilatex'; }
+    if ($xdv_mode) { $current_primary = 'xelatex';  }
 
     rdb_activate( $current_primary );
 
@@ -3537,7 +3574,6 @@ sub rdb_initialize_rules {
     if ($postscript_mode) { $target_files{$ps_final} = 1; }
     if ($pdf_mode) { $target_files{$pdf_final} = 1; }
     if ($xdv_mode) { $target_files{$xdv_final} = 1; }
-
     &rdb_set_rule_net;
 } # END rdb_initialize_rules
 
@@ -3936,7 +3972,7 @@ sub get_small_cleanup {
                        }
                    }
                }
-               elsif ( $rule =~ /^(latex|lualtex|pdflatex|xelatex)/ ) {
+               elsif ( exists $possible_primaries{$rule} ) {
                    foreach my $key (keys %$PHdest) {
                        $other_generated{$key} = 1;
                    }
@@ -4735,7 +4771,8 @@ sub print_help
   "   -bibtex-cond  - use bibtex when needed, but only if the bib file exists\n",
   "   -bibtex-cond1 - use bibtex when needed, but only if the bib file exists;\n",
   "                   on cleanup delete bbl file only if bib file exists\n",
-  "   -bibfudge or -bibtexfudge - change directory to output directory when running bibtex\n",
+  "   -bibfudge or -bibtexfudge - change directory to output directory when\n",
+  "                   running bibtex\n",
   "   -bibfudge- or -bibtexfudge- - don't change directory when running bibtex\n",
   "   -bm <message> - Print message across the page when converting to postscript\n",
   "   -bi <intensity> - Set contrast or intensity of banner\n",
@@ -4761,10 +4798,11 @@ sub print_help
   "                    and turn on showing of dependency list\n",
   "   -dF <filter> - Filter to apply to dvi file\n",
   "   -dir-report  - Before processing a tex file, report aux and out dir settings\n",
+  "                  Report includes cwd and basename of output files\n",
   "   -dir-report- - Before processing a tex file, do not report aux and out dir\n",
   "                  settings\n",
-  "   -dir-report-only - Report aux and out dir settings after initialization\n",
-  "                  and previous option processing, and then stop\n", 
+  "   -dir-report-only - Report aux and out dir settings after initialization for\n",
+  "                  each tex file, without compiling it\n", 
   "   -dvi    - generate dvi by latex\n",
   "   -dvilua - generate dvi by dvilualatex\n",
   "   -dvi-   - turn off required dvi\n",
@@ -4784,9 +4822,11 @@ sub print_help
   "   -g-    - Turn off -g and -gg\n",
   "   -h     - print help\n",
   "   -hnt   - generate hnt by hilatex\n",
-  "   -help - print help\n",
-  "   -indexfudge or -makeindexfudge - change directory to output directory when running makeindex\n",
-  "   -indexfudge- or -makeindexfudge- - don't change directory when running makeindex\n",
+  "   -help  - print help\n",
+  "   -indexfudge or -makeindexfudge - change directory to output directory when\n",
+  "            running makeindex\n",
+  "   -indexfudge- or -makeindexfudge- - don't change directory when running\n",
+  "            makeindex\n",
   "   -jobname=STRING - set basename of output file(s) to STRING.\n",
   "            (Like --jobname=STRING on command line for many current\n",
   "            implementations of latex/pdflatex.)\n",
@@ -4803,9 +4843,12 @@ sub print_help
   "                   and turn dvi/ps modes off\n",
   "   -M     - Show list of dependent files after processing\n",
   "   -MF file - Specifies name of file to receives list dependent files\n",
-  "   -MP    - List of dependent files includes phony target for each source file.\n",
-  "   -makeindexfudge - change directory to output directory when running makeindex\n",
-  "   -makeindexfudge-- don't change directory to output directory when running makeindex\n",
+  "   -MP    - List of dependent files includes phony target for each source\n",
+  "            file.\n",
+  "   -makeindexfudge - change directory to output directory when running\n",
+  "                     makeindex\n",
+  "   -makeindexfudge- - don't change directory to output directory when\n",
+  "                      running makeindex\n",
   "   -MSWinBackSlash  under MSWin use backslash (\\) for directory separators\n",
   "                    for filenames given to called programs\n",
   "   -MSWinBackSlash-  under MSWin use forward slash (/) for directory separators\n",
@@ -4816,7 +4859,8 @@ sub print_help
   "   -nobibfudge or -nobibtexfudge - don't change directory when running bibtex\n",
   "   -nodependents  - Do not show list of dependent files after processing\n",
   "   -noemulate-aux-dir - use -aux-directory option with *latex\n",
-  "   -noindexfudge or -nomakeindexfudge - don't change directory when running makeindex\n",
+  "   -noindexfudge or -nomakeindexfudge - don't change directory when running\n",
+  "                    makeindex\n",
   "   -norc          - omit automatic reading of system, user and project rc files\n",
   "   -output-directory=dir or -outdir=dir\n",
   "                  - set name of directory for output files\n",
@@ -5187,7 +5231,7 @@ sub check_biber_log {
         warn "$My_name: Failed to find one or more biber source files:\n";
         foreach (@not_found) { warn "    '$_'\n"; }
         if ($force_mode) {
-            warn "==== Force_mode is on, so I will continue.  ",
+           warn "==== Force_mode is on, so I will continue.  ",
                  "But there may be problems ===\n";
         }
         if ($control_file_missing) {
@@ -5485,10 +5529,10 @@ sub set_names {
     $ps_name   = "%Z%R.ps";
     $psF_name  = "%Z%R.psF";
     $pdf_name  = "%Z%R.pdf";
-    $dvi_final2 = "%X%R.pdf";
-    $hnt_final2 = "%X%R.pdf";
+    $dvi_final2 = "%X%R.dvi";
+    $hnt_final2 = "%X%R.hnt";
     $pdf_final2 = "%X%R.pdf";
-    $ps_final2 = "%X%R.pdf";
+    $ps_final2 = "%X%R.ps";
     ## It would be logical for a .xdv file to be put in the out_dir,
     ## just like a .dvi file.  But the only program, MiKTeX, that
     ## currently implements aux_dir, and hence allows aux_dir ne out_dir,
@@ -6293,7 +6337,7 @@ LINE:
         my @new_includes = ();
         
    GRAPHICS_INCLUDE_CANDIDATE:
-        while ( /<([^>]+)(>|$)/g ) {
+        while ( /<([^>\{]+)(>|\{|$)/g ) {
             if ( -f $1 ) { push @new_includes, $1; }
          }  # GRAPHICS_INCLUDE_CANDIDATE:
 
@@ -6832,9 +6876,13 @@ sub parse_fls {
     print "$My_name: Examining '$fls_name'\n"
         if not $silent;
 
-    my $pdf_base = basename($pdf_name);
-    my $log_base = basename($log_name);
-    my $out_base = basename($$Pdest);
+    # For use when checking for INPUT of normal OUTPUT file:
+    my %danger_dirs = ( $aux_dir1 => 1, $out_dir1 => 1, $out2_dir1 => 1 );
+    # The keys of %vetoed are the names of INPUT files that aren't to be treated as source files.
+    # This variable is used to avoid repeated repeated warnings for the same file of this kind.
+    # Such repeats would be common, since INPUT filename lines are often repeated in the .fls file.
+    my %vetoed = ();
+    
     my $pwd_subst = undef; # Initial string for pwd that is to be removed to
                            # make relative paths, when possible.  It must end
                            # in '/', if defined.
@@ -6865,8 +6913,10 @@ sub parse_fls {
             # line is UTF-8. 
             # So give special treatment to PWD line under Windows.
             # Also to guard against any other problems, check for non-UTF-8 lines. 
-            if ( ($^O eq 'MSWin32') && /PWD/ && ! is_valid_utf8($_) ) {                               print
-                  "PWD line not in UTF-8.  This is normal for older TeXLives (2021 and earlier).\n".                                                                                        "I will handle it.\n";
+            if ( ($^O eq 'MSWin32') && /PWD/ && ! is_valid_utf8($_) ) {
+                print
+                    "PWD line not in UTF-8.  This is normal for older TeXLives (2021 and earlier).\n".
+                    "   I will handle it.\n";
                 # Assume in CS_system, no change needed.
             }
             elsif ( ! is_valid_utf8($_) ) {
@@ -6914,48 +6964,99 @@ sub parse_fls {
             if ( (exists $$Poutputs{$file}) && (! exists $$Pinputs{$file}) ) {
                 $$Pfirst_read_after_write{$file} = 1;
             }
-            # Take precautions when the main destination file (or pdf file) or the log
-            # file are listed as INPUT files in the .fls file.
-            # At present, the known cases are caused by hyperxmp, which reads file metadata
-            # for certain purposes (e.g., setting a current date and time, or finding the
-            # pdf file size).  These uses are legitimate, but the files should not be
-            # treated as genuine source files for *latex.
-            # Note that both the pdf and log files have in their contents strings for
-            # time and date, so in general their contents don't stabilize between runs
-            # of *latex.  Hence adding them to the list of source files on the basis of
-            # their appearance in the list of input files in the .fls file would cause
-            # an incorrect infinite loop in the reruns of *latex.
+            
+
+            # PRECAUTIONS for main output pdf file (and potentially others) being INPUT
+            #==========================================================================
+            #     
+            # In almost all cases, the main output files (notably pdf, but
+            # also dvi, ps, xdv, hnt, and also the log file) are pure
+            # output files, and don't participate in circular dependences.
+            # However, there are known situations where at least the pdf
+            # file does.  This siutation is potentially problematic, since
+            # some of these normally output-only files, including the pdf
+            # file, contain content that gives a time stamp.  In a circular
+            # dependency involving such files, latexmk's normal methods
+            # give a perpetually out-of-date situation, and hence an
+            # infinite loop.
             #
-            # Older versions of hyperxmp (e.g., 2020/10/05 v. 5.6) reported the pdf file
-            # as an input file.
-            # The current version when used with xelatex reports the .log file as an
-            # input file. 
+            # If such a file is listed as being INPUT in the .fls file,
+            # then this needs to be detected, and special precautions
+            # taken. In the one known case where there is both such a
+            # circular dependency and the pdf file listed as INPUT in the
+            # fls file, it suffices not to put that file in the list of
+            # input files.
             #
-            # The test for finding the relevant .pdf (or .dvi ...) and .log files is
-            # on basenames rather than full name to evade in a simple-minded way
-            # alias issues with the directory part:
-            if ( basename($file) eq $pdf_base ) {
-                warn "$My_name: !!!!!!!!!!! Fls file lists main pdf **output** file as an input\n",
-                     "   file for rule '$rule'. I won't treat as a source file, since that can\n",
-                     "   lead to an infinite loop.\n",
-                     "   This situation can be caused by the hyperxmp package in an old version,\n",
-                     "   in which case you can ignore this message.\n";
-            } elsif ( basename($file) eq $out_base ) {
-                warn "$My_name: !!!!!!!!!!! Fls file lists main **output** file as an input\n",
-                     "   file for rule '$rule'. I won't treat as a source file, since that can\n",
-                     "   lead to an infinite loop.\n",
-                     "   This situation can be caused by the hyperxmp package in an old version,\n",
-                     "   in which case you can ignore this message.\n";
-            } elsif ( basename($file) eq $log_base ) {
-                warn "$My_name: !!!!!!!!!!! Fls file lists log file as an input file for\n",
-                     "   rule '$rule'. I won't treat it as a source file.\n",
-                     "   This situation can occur when the hyperxmp package is used with\n",
-                     "   xelatex; the package reads the .log file's metadata to set current\n",
-                     "   date and time.  In this case you can safely ignore this message.\n";
-            } else {
-                $$Pinputs{$file} = 1;
+            # Note that, in general, it is logically difficult to set up
+            # such circular dependencies within *latex to get a desired
+            # useful effect without the use of external software
+            #
+            # The known cases of the relevant kinds of circular dependency
+            # both involve the output pdf file:
+            #
+            # (a) hyperxmp in some versions, e.g., 2020/10/05 v. 5.6, reads
+            #     metadata of the pdf file produced by pdflatex (to get the
+            #     filesize), which results in the pdf file being reported
+            #     as an INPUT file of pdflatex.
+            #     Without special precautions, latexmk gets into an
+            #     infinite loop.  But correct functioning is achieved
+            #     simply by ensuring that the pdf file is not inserted in
+            #     the list of source files for *latex.
+            #     More recent versions of hyperxmp work differently, and so
+            #     do not cause 
+            #     
+            # (b) The memoize package uses non-trivial content from the pdf
+            #     file.  There is a clear and essential circular
+            #     dependency.  But given the way the package and its
+            #     associated script work, the pdf file doesn't appear any
+            #     where relevant to be detected by latexmk, and the package
+            #     and its script take care such that all necessary reruns
+            #     by latexmk get done.
+            #     In addition, there is a special configuration --- see
+            #     example_rcfiles/memoize_latexmkrc --- to allow memoize to
+            #     be used properly with latexmk.  So that doesn't entail
+            #     special diagnosis here.
+            #
+            # The above illustrate that circular dependencies involving
+            # these normally output-only files can exist, legitimately.  So
+            # we have to allow for the situation.
+            #
+            # The hyperxmp example shows that it does happen in reality
+            # that the main pdf output file is listed in the .fls file, and
+            # so that we do need an explicit test.
+            # But there are no other known situations for other classes of
+            # files that are normally only output (e.g., log, dvi, etc), so
+            # I'll restrict the detection to the pdf case, but in a form
+            # that can be generalized if need be.
+            #
+            # Given the vagaries of how the aux and output directories
+            # could be used, the test allows for the file being in any of
+            # the relevant directories.  There is a potential issue that
+            # different strings could be used for the name of the same
+            # directories. That would entail a fancier test, but that issue
+            # has not arisen in practice so far.  Since the cases where the
+            # test actually matters are already very rare, I won't handle
+            # that extra complication.
+
+            my ($base, $path, $ext) = fileparseA( $file );
+            if ( exists ($vetoed{$file}) ) {
             }
-        }
+            elsif ( ( $base eq $root_filename )
+                    && ( $ext eq '.pdf' )
+                    && ( exists $danger_dirs{$path} )
+                ) {
+                warn "$My_name: !!!!!!!!!!! Fls file lists a normal output-only file\n",
+                     "  '$file as an input file for rule '$rule'.\n",
+                     "  Hence I won't treat '$file' as an input file.\n",
+                     "  This kind of situation can be caused by the hyperxmp package in an old\n",
+                     "  version, in which case you can safely  ignore this message.\n";
+                $vetoed{$file} = 1;
+            }
+            else {
+                $$Pinputs{$file} = 1;
+            }        
+            
+        }  # end of handling INPUT line
         elsif (/^\s*OUTPUT\s+(.*)$/) {
             # Take precautions against aliasing of foo, ./foo and other possibilities for cwd.
             my $file = $1;
@@ -8124,7 +8225,7 @@ sub rdb_set_latex_deps {
                          "     But a non-directory file of this name exists!\n";
                 }
                 else {
-                    if (mkdir $dir) {
+                    if (make_path_mod($dir)) {
                         print "$My_name: Directory '$dir' created\n";
                     }
                     else {
@@ -9313,7 +9414,7 @@ sub rdb_make {
         #      no output files changed), either because no input files
         #      changed and no run was needed, or because the
         #      number of passes through the rule exceeded the
-        #      limit.  In the second case $too_many_runs is set.
+        #      limit.  In the second case $too_many_passes was set.
         rdb_for_some( [@pre_primary, $current_primary], \&rdb_make1 );
         if ($switched_primary_output) {
             print "=========SWITCH OF OUTPUT WAS DONE.\n";
@@ -9340,7 +9441,7 @@ sub rdb_make {
             }
             else { last PASS; }
         }
-        if ($runs == 0) {
+        if ( ($runs == 0) && (! $too_many_passes) && (! $failure) ) {
             # $failure not set on this pass, so use value from previous pass:
             $failure = $previous_failure;
             if ($retry_msg) {
@@ -9359,9 +9460,8 @@ sub rdb_make {
         }
         rdb_for_some( [@post_primary], \&rdb_make1 );
         if ( ($runs == 0) || $too_many_passes ) {
-            # If $too_many_passes is set, it should also be that
-            # $runs == 0; but for safety, I also checked
-            # $too_many_passes.
+            # Either nothing needed to be done,
+            # and/or a rule needed to be run more than the allowed count.
             last PASS;
         }
      }
