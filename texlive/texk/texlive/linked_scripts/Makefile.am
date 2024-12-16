@@ -1,4 +1,4 @@
-## $Id: Makefile.am 73071 2024-12-08 18:00:10Z karl $
+## $Id: Makefile.am 73132 2024-12-15 21:15:55Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -111,6 +111,7 @@ texmf_other_scripts = \
 	authorindex/authorindex \
 	bib2gls/bib2gls.sh \
 	bib2gls/convertgls2bib.sh \
+	bib2gls/datatool2bib.sh \
 	bibcop/bibcop.pl \
 	bibtexperllibs/ltx2unitxt \
 	bookshelf/bookshelf-listallfonts \

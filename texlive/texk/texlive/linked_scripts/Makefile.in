@@ -331,6 +331,7 @@ texmf_other_scripts = \
 	authorindex/authorindex \
 	bib2gls/bib2gls.sh \
 	bib2gls/convertgls2bib.sh \
+	bib2gls/datatool2bib.sh \
 	bibcop/bibcop.pl \
 	bibtexperllibs/ltx2unitxt \
 	bookshelf/bookshelf-listallfonts \
@@ -510,7 +511,10 @@ bin_links = \
 relpath = $(SHELL) $(top_srcdir)/../../build-aux/relpath
 runscript = $(top_srcdir)/$(WIN_WRAPPER)/runscript.exe
 
-# Make a copy of all targets and link names, for distros etc.
+# Make a copy of all targets and link names, for distros etc., so they
+# don't have to duplicate the special cases for memoize* etc. below. It
+# would be cleaner to make the file and then use it in both the install
+# and uninstall hooks, but we'll leave that for another time.
 linkfile = $(abs_builddir)/scripts-targets.lst
 
 # 
