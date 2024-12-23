@@ -1,0 +1,174 @@
+% language=uk
+
+\environment luatex-style
+
+\startcomponent luatex-introduction
+
+\startchapter[title=Introduction]
+
+This is the reference manual of \LUATEX. We don't claim it is complete and we
+assume that the reader knows about \TEX\ as described in \quotation {The \TEX\
+Book}, the \quotation {\ETEX\ manual}, the \quotation {\PDFTEX\ manual}, etc.
+Additional reference material is published in journals of user groups and
+\CONTEXT\ related documentation.
+
+It took about a decade to reach stable version 1.0, but for good reason.
+Successive versions brought new functionality, more control, some cleanup of
+internals. Experimental features evolved into stable ones or were dropped.
+Already quite early \LUATEX\ could be used for production and it was used on a
+daily basis by the authors. Successive versions sometimes demanded an adaption to
+the \LUA\ interfacing, but the concepts were unchanged. The current version can
+be considered stable in functionality and there will be no fundamental changes.
+Of course we then can decide to move towards version 2.00 with different
+properties.
+
+Don't expect \LUATEX\ to behave the same as \PDFTEX ! Although the core
+functionality of that 8 bit engine was starting point, it has been combined with
+the directional support of \OMEGA\ (\ALEPH). But, \LUATEX\ can behave different
+due to its wide (32 bit) characters, many registers and large memory support. The
+\PDF\ code produced differs from \PDFTEX\ but users will normally not notice
+that. There is native \UTF\ input, support for large (more than 8 bit) fonts, and
+the math machinery is tuned for \OPENTYPE\ math. There is support for directional
+typesetting too. The log output can differ from other engines and will likely
+differ more as we move forward. When you run plain \TEX\ for sure \LUATEX\ runs
+slower than \PDFTEX\ but when you run for instance \CONTEXT\ \MKIV\ in many cases
+it runs faster, especially when you have a bit more complex documents or input.
+Anyway, 32 bit all||over combined with more features has a price, but on a modern
+machine this is no real problem.
+
+Testing is done with \CONTEXT, but \LUATEX\ should work fine with other macro
+packages too. For that purpose we provide generic font handlers that are mostly
+the same as used in \CONTEXT. Discussing specific implementations is beyond this
+manual. Even when we keep \LUATEX\ lean and mean, we already have enough to
+discuss here.
+
+\LUATEX\ consists of a number of interrelated but (still) distinguishable parts.
+The organization of the source code is adapted so that it can glue all these
+components together. We continue cleaning up side effects of the accumulated
+code in \TEX\ engines (especially code that is not needed any longer).
+
+\startitemize [unpacked]
+    \startitem
+        We started out with most of \PDFTEX\ version 1.40.9. The code base was
+        converted to \CCODE\ and split in modules. Experimental features were
+        removed and utility macros are not inherited because their functionality
+        can be programmed in \LUA. The number of backend interface commands has
+        been reduced to a few. The so called extensions are separated from the
+        core (which we try to keep close to the original \TEX\ core). Some
+        mechanisms like expansion and protrusion can behave different from the
+        original due to some cleanup and optimization. Some whatsit based
+        functionality (image support and reusable content) is now core
+        functionality. We don't stay in sync with \PDFTEX\ development.
+    \stopitem
+    \startitem
+        The direction model from \ALEPH\ RC4 (which is derived from \OMEGA) is
+        included. The related primitives are part of core \LUATEX\ but at the
+        node level directional support is no longer based on so called whatsits
+        but on real nodes with relevant properties. The number of directions is
+        limited to the useful set and the backend has been made direction aware.
+    \stopitem
+    \startitem
+        Neither \ALEPH's I/O translation processes, nor tcx files, nor \ENCTEX\
+        are available. These encoding|-|related functions are superseded by a
+        \LUA|-|based solution (reader callbacks). In a similar fashion all file
+        \IO\ can be intercepted.
+    \stopitem
+    \startitem
+        We currently use \LUA\ 5.3.*. There are few \LUA\ libraries that we
+        consider part of the core \LUA\ machinery, for instance \type {lpeg}.
+        There are additional \LUA\ libraries that interface to the internals of
+        \TEX. We also keep the \LUA\ 5.2 \type {bit32} library around.
+    \stopitem
+    \startitem
+        There are various \TEX\ extensions but only those that cannot be done
+        using the \LUA\ interfaces. The math machinery often has two code paths:
+        one traditional and the other more suitable for wide \OPENTYPE\ fonts. Here
+        we follow the \MICROSOFT\ specifications as much as possible.  Some math
+        functionality has been opened up a bit so that users have more control.
+    \stopitem
+    \startitem
+        The fontloader uses parts of \FONTFORGE\ 2008.11.17 combined with
+        additional code specific for usage in a \TEX\ engine. We try to minimize
+        specific font support to what \TEX\ needs: character references and
+        dimensions and delegate everything else to \LUA. That way we keep \TEX\
+        open for extensions without touching the core. In order to minimize
+        dependencies at some point we may decide to make this an optional
+        library.
+    \stopitem
+    \startitem
+        The \METAPOST\ library is integral part of \LUATEX. This gives \TEX\ some
+        graphical capabilities using a relative high speed graphical subsystem.
+        Again \LUA\ is used as glue between the frontend and backend. Further
+        development of \METAPOST\ is closely related to \LUATEX.
+    \stopitem
+    \startitem
+        The virtual font technology that comes with \TEX\ has been integrated
+        into the font machinery in a way that permits creating virtual fonts
+        at runtime. Because \LUATEX\ can also act as a \LUA\ interpreter this
+        means that a complete \TEX\ workflow can be built without the need for
+        additional programs.
+    \stopitem
+    \startitem
+        The versions starting from 1.09 no longer use the poppler library for
+        inclusion but a lightweight dedicated one. This removes a dependency but
+        also makes the inclusion code of \LUATEX\ different from \PDFTEX. In fact
+        it was already much different due to the \LUA\ image interfacing.
+    \stopitem
+\stopitemize
+
+We try to keep upcoming versions compatible but intermediate releases can contain
+experimental features. A general rule is that versions that end up on \TEXLIVE\
+and|/|or are released around \CONTEXT\ meetings are stable. Any version between
+the yearly \TEXLIVE\ releases are to be considered beta and in the repository end
+up as trunk releases. We have an experimental branch that we use for development
+but there is no support for any of its experimental features. Intermediate
+releases (from trunk) are normally available via the \CONTEXT\ distribution
+channels (the garden and so called minimals).
+
+Version 1.10 is more or less an endpoint in development: this is what you get.
+Because not only \CONTEXT, that we can adapt rather easily, uses \LUATEX, we
+cannot change fundamentals without unforeseen consequences. By now it has been
+proven that \LUA\ can be used to extend the core functionality so there is no
+need to add more, and definitely no hard coded solutions for (not so) common
+problems. Of course there will be bug fixes, maybe some optimization, and there
+might even be some additions or non|-|intrusive improvements, but only after
+testing outside the stable release. After all, the binary is already more than
+large enough and there is not that much to gain.
+
+You might find \LUA\ helpers that are not yet documented. These are considered
+experimental, although when you encounter them in a \CONTEXT\ version that has
+been around for a while you can assume that they will stay. Of course it can just
+be that we forgot to document them yet.
+
+A manual like this is not really meant as tutorial, for that we refer to
+documents that ship with \CONTEXT, articles, etc. It is also never complete
+enough for all readers. We try to keep up but the reader needs to realize that
+it's all volunteer work done in spare time. And for sure, complaining about a bad
+manual or crappy documentation will not really motivate us to spend more time on
+it. That being said, we hope that this document is useful.
+
+\blank[big]
+
+\testpage[5]
+
+\startlines
+Hans Hagen
+Harmut Henkel
+Taco Hoekwater
+Luigi Scarso
+\stoplines
+
+\blank[3*big]
+
+\starttabulate[|||]
+\NC Version  \EQ \currentdate \NC \NR
+\NC \LUATEX  \EQ \cldcontext{LUATEXENGINE} %
+                 \cldcontext{"\letterpercent 0.2f",LUATEXVERSION} / %
+                 \cldcontext{LUATEXFUNCTIONALITY}
+                 \NC \NR
+\NC \CONTEXT \EQ MkIV \contextversion \NC \NR
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

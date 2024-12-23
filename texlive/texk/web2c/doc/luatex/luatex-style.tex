@@ -1,0 +1,443 @@
+\startenvironment luatex-style
+
+% todo: use \useMPlibrary[lua]
+
+\enabletrackers[fonts.usage]
+
+\usemodule[fonts-statistics]
+
+\setuplayout
+  [height=middle,
+   width=middle,
+   backspace=2cm,
+   topspace=10mm,
+   bottomspace=10mm,
+   header=10mm,
+   footer=10mm,
+   footerdistance=10mm,
+   headerdistance=10mm]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setuptolerance
+  [stretch,tolerant]
+
+\setuptype
+  [lines=hyphenated]
+
+\setuptyping
+  [lines=hyphenated]
+
+\setupitemize
+  [each]
+  [packed]
+
+\definesymbol[1][\Uchar"2023]
+\definesymbol[2][\endash]
+\definesymbol[3][\wait]      % we want to catch it
+
+\setupitemize
+  [each]
+  [headcolor=maincolor,
+   symbolcolor=maincolor,
+   color=maincolor]
+
+\setupwhitespace
+  [medium]
+
+\setuptabulate
+  [blank={small,samepage},
+   headstyle=bold,
+   rulecolor=maincolor,
+   rulethickness=1pt,
+   foregroundcolor=white,
+   foregroundstyle=\ss\bfx\WORD,
+   backgroundcolor=maincolor]
+
+\setupcaptions
+  [headcolor=darkblue]
+
+\startluacode
+    local skipped = table.tohash { 'id', 'subtype', 'next', 'prev' }
+
+    function document.functions.showfields(s)
+        local t = string.split(s,',')
+        local f = node.fields(t[1],t[2])
+        if f then
+            local d = false
+            for i=1,#f do
+                local fi = f[i]
+                if skipped[fi] then
+                    -- okay
+                elseif d then
+                    context(', {\tttf %s}', fi)
+                else
+                    context('{\tttf %s}', fi)
+                    d = true
+                end
+            end
+        end
+    end
+
+    function document.functions.showid(s)
+        local t = string.split(s,',')
+        context('{tttf %s}',node.id(t[1]))
+        if t[2] then
+            context(', {tttf %s}',node.subtype(t[2]))
+        end
+    end
+
+    function document.functions.showsubtypes(s)
+        local s = node.subtypes(s)
+        local d = false
+        for k, v in table.sortedhash(s) do
+            if d then
+                context(', %s = {\\tttf %s}',k,v)
+            else
+                context('%s = {\\tttf %s}',k,v)
+                d = true
+            end
+        end
+    end
+\stopluacode
+
+\unexpanded\def\showfields  #1{\ctxlua{document.functions.showfields("#1")}}
+\unexpanded\def\showid      #1{\ctxlua{document.functions.showid("#1")}}
+\unexpanded\def\showsubtypes#1{\ctxlua{document.functions.showsubtypes("#1")}}
+
+\definecolor[blue]      [b=.5]
+\definecolor[red]       [r=.5]
+\definecolor[green]     [g=.5]
+\definecolor[maincolor] [b=.5]
+\definecolor[keptcolor] [b=.5]
+\definecolor[othercolor][r=.5,g=.5]
+
+\writestatus{luatex manual}{}
+\writestatus{luatex manual}{defining lucodaot} \usebodyfont  [lucidaot]
+\writestatus{luatex manual}{defining pagella}  \usebodyfont  [pagella]
+\writestatus{luatex manual}{defining cambria}  \usebodyfont  [cambria]
+\writestatus{luatex manual}{defining modern}   \usebodyfont  [modern]
+\writestatus{luatex manual}{defining dejavu}   \setupbodyfont[dejavu,10pt]
+\writestatus{luatex manual}{}
+
+\setuphead [chapter]      [align={flushleft,broad},style=\bfd]
+\setuphead [section]      [align={flushleft,broad},style=\bfb]
+\setuphead [subsection]   [align={flushleft,broad},style=\bfa]
+\setuphead [subsubsection][align={flushleft,broad},style=\bf]
+
+\setuphead [chapter]      [color=maincolor]
+\setuphead [section]      [color=maincolor]
+\setuphead [subsection]   [color=maincolor]
+\setuphead [subsubsection][color=maincolor]
+
+\setupfloats
+  [ntop=4]
+
+\definehead
+  [remark]
+  [subsubsubject]
+
+\setupheadertexts
+  []
+
+% \setuplayout
+%   [style=bold,
+%    color=maincolor]
+
+\definemixedcolumns
+  [twocolumns]
+  [n=2,
+   balance=yes,
+   before=\blank,
+   after=\blank]
+
+\definemixedcolumns
+  [threecolumns]
+  [twocolumns]
+  [n=3]
+
+\definemixedcolumns
+  [fourcolumns]
+  [threecolumns]
+  [n=4]
+
+% if we do this we also need to do it in table cells
+%
+% \setuptyping
+%   [color=maincolor]
+%
+% \setuptype
+%   [color=maincolor]
+
+\definetyping
+  [functioncall]
+
+\startMPdefinitions
+
+    color   luaplanetcolor ; luaplanetcolor := \MPcolor{maincolor} ;
+    color   luaholecolor   ; luaholecolor   := white ;
+    numeric luaextraangle  ; luaextraangle  := 0 ;
+    numeric luaorbitfactor ; luaorbitfactor := .25 ;
+
+    vardef lualogo = image (
+
+        % Graphic design by A. Nakonechnyj. Copyright (c) 1998, All rights reserved.
+
+        save d, r, p ; numeric d, r, p ;
+
+        d := sqrt(2)/4 ; r := 1/4 ; p := r/8 ;
+
+        fill fullcircle scaled 1
+            withcolor luaplanetcolor ;
+        draw fullcircle rotated 40.5 scaled (1+r)
+            dashed evenly scaled p
+            withpen pencircle scaled (p/2)
+            withcolor (luaorbitfactor * luaholecolor) ;
+        fill fullcircle scaled r shifted (d+1/8,d+1/8)
+            rotated - luaextraangle
+            withcolor luaplanetcolor ;
+        fill fullcircle scaled r shifted (d-1/8,d-1/8)
+            withcolor luaholecolor   ;
+        luaorbitfactor := .25 ;
+    ) enddef ;
+
+\stopMPdefinitions
+
+\startuseMPgraphic{luapage}
+    StartPage ;
+
+        fill Page withcolor \MPcolor{othercolor} ;
+
+        luaorbitfactor := 1 ;
+
+        picture p ; p := lualogo ysized (5*\measure{paperheight}/10) ;
+        draw p
+            shifted - center p
+            shifted (
+                \measure{spreadwidth} - .5*\measure{paperwidth} + \measure{spinewidth},
+                .375*\measure{paperheight}
+            )
+        ;
+
+    StopPage ;
+\stopuseMPgraphic
+
+% \starttexdefinition luaextraangle
+%     % we can also just access the last page and so in mp directly
+%     \ctxlua {
+%         context(\lastpage == 0 and 0 or \realfolio*360/\lastpage)
+%     }
+% \stoptexdefinition
+
+\startuseMPgraphic{luanumber}
+  % luaextraangle  := \luaextraangle;
+    luaextraangle  := if (LastPageNumber < 10) : 10 else : (RealPageNumber / LastPageNumber) * 360  fi;
+    luaorbitfactor := 0.25 ;
+    picture p ; p := lualogo ;
+    setbounds p to boundingbox fullcircle ;
+    draw p ysized 1cm ;
+\stopuseMPgraphic
+
+\definelayer
+  [page]
+  [width=\paperwidth,
+   height=\paperheight]
+
+\setupbackgrounds
+  [leftpage]
+  [background=page]
+
+\setupbackgrounds
+  [rightpage]
+  [background=page]
+
+\definemeasure[banneroffset][\bottomspace-\footerheight-\footerdistance+2cm]
+
+\startsetups pagenumber:right
+  \setlayerframed
+    [page]
+    [preset=rightbottom,x=1.0cm,y=\measure{banneroffset}]
+    [frame=off,height=1cm,offset=overlay]
+    {\strut\useMPgraphic{luanumber}}
+  \setlayerframed
+    [page]
+    [preset=rightbottom,x=2.5cm,y=\measure{banneroffset}]
+    [frame=off,height=1cm,width=1cm,offset=overlay,
+     foregroundstyle=bold,foregroundcolor=maincolor]
+    {\strut\pagenumber}
+  \setlayerframed
+    [page]
+    [preset=rightbottom,x=3.5cm,y=\measure{banneroffset}]
+    [frame=off,height=1cm,offset=overlay,
+     foregroundstyle=bold,foregroundcolor=maincolor]
+    {\strut\getmarking[chapter]}
+\stopsetups
+
+\startsetups pagenumber:left
+  \setlayerframed
+    [page]
+    [preset=leftbottom,x=3.5cm,y=\measure{banneroffset}]
+    [frame=off,height=1cm,offset=overlay,
+     foregroundstyle=bold,foregroundcolor=maincolor]
+    {\strut\getmarking[chapter]}
+  \setlayerframed
+    [page]
+    [preset=leftbottom,x=2.5cm,y=\measure{banneroffset}]
+    [frame=off,height=1cm,width=1cm,offset=overlay,
+     foregroundstyle=bold,foregroundcolor=maincolor]
+    {\strut\pagenumber}
+  \setlayerframed
+    [page]
+    [preset=leftbottom,x=1.0cm,y=\measure{banneroffset}]
+    [frame=off,height=1cm,offset=overlay]
+    {\strut\useMPgraphic{luanumber}}
+\stopsetups
+
+\unexpanded\def\nonterminal#1>{\mathematics{\langle\hbox{\rm #1}\rangle}}
+
+% taco's brainwave -) .. todo: create a typing variant so that we can avoid the !crlf
+
+\newcatcodetable\syntaxcodetable
+
+\unexpanded\def\makesyntaxcodetable
+  {\begingroup
+   \catcode`\<=13 \catcode`\|=12
+   \catcode`\!= 0 \catcode`\\=12
+   \savecatcodetable\syntaxcodetable
+   \endgroup}
+
+\makesyntaxcodetable
+
+\unexpanded\def\startsyntax {\begingroup\catcodetable\syntaxcodetable  \dostartsyntax}
+\unexpanded\def\syntax      {\begingroup\catcodetable\syntaxcodetable  \dosyntax}
+           \let\stopsyntax   \relax
+
+\unexpanded\def\syntaxenvbody#1%
+  {\par
+   \tt
+   \startnarrower
+ % \maincolor
+   #1
+   \stopnarrower
+   \par}
+
+\unexpanded\def\syntaxbody#1%
+  {\begingroup
+ % \maincolor
+   \tt #1%
+   \endgroup}
+
+\bgroup \catcodetable\syntaxcodetable
+
+!gdef!dostartsyntax#1\stopsyntax{!let<!nonterminal!syntaxenvbody{#1}!endgroup}
+!gdef!dosyntax     #1{!let<!nonterminal!syntaxbody{#1}!endgroup}
+
+!egroup
+
+\definetyping
+  [texsyntax]
+% [color=maincolor]
+
+% end of wave
+
+\setupinteraction
+  [state=start,
+   focus=standard,
+   style=,
+   color=,
+   contrastcolor=]
+
+\placebookmarks
+  [chapter,section,subsection]
+
+\setuplist
+  [chapter,section,subsection,subsubsection]
+  [interaction=all,
+   width=3em]
+
+\setuplist
+  [chapter]
+  [style=bold,
+   before={\testpage[4]\blank},
+   color=keptcolor]
+
+\setuplist
+  [section]
+  [before={\testpage[3]}]
+
+\setuplist
+  [subsection,subsubsection]
+  [margin=3em,
+   width=5em]
+
+\definestartstop
+  [notabene]
+  [style=slanted]
+
+\definestartstop
+  [preamble]
+  [style=normal,
+   before=\blank,
+   after=\blank]
+
+% Hans doesn't like the bookmarks opening by default so we comment this:
+%
+% \setupinteractionscreen
+%   [option=bookmark]
+
+\startbuffer[stylecalculations]
+
+    \normalexpanded{\definemeasure[spinewidth] [0pt]}
+    \normalexpanded{\definemeasure[paperwidth] [\the\paperwidth ]}
+    \normalexpanded{\definemeasure[paperheight][\the\paperheight]}
+    \normalexpanded{\definemeasure[spreadwidth][\measure{paperwidth}]}
+
+\stopbuffer
+
+\getbuffer[stylecalculations]
+
+\dontcomplain
+
+\environment luatex-logos
+
+\defineregister[topicindex]
+\defineregister[primitiveindex]
+\defineregister[callbackindex]
+\defineregister[nodeindex]
+\defineregister[libraryindex]
+
+\unexpanded\def\lpr#1{\doifmode{*bodypart}{\primitiveindex[#1]{\bf\tex {#1}}}\tex {#1}}
+\unexpanded\def\prm#1{\doifmode{*bodypart}{\primitiveindex[#1]{\tex    {#1}}}\tex {#1}}
+\unexpanded\def\orm#1{\doifmode{*bodypart}{\primitiveindex[#1]{\tex    {#1}}}\tex {#1}}
+\unexpanded\def\cbk#1{\doifmode{*bodypart}{\callbackindex [#1]{\type   {#1}}}\type{#1}}
+\unexpanded\def\nod#1{\doifmode{*bodypart}{\nodeindex     [#1]{\bf\type{#1}}}\type{#1}}
+\unexpanded\def\whs#1{\doifmode{*bodypart}{\nodeindex     [#1]{\type   {#1}}}\type{#1}}
+\unexpanded\def\noa#1{\doifmode{*bodypart}{\nodeindex     [#1]{\type   {#1}}}\type{#1}}
+
+\hyphenation{sub-nodes}
+
+\def\currentlibraryindex{\namedstructureuservariable{section}{library}}
+
+\setupregister
+  [libraryindex]
+  [indicator=no,before=]
+
+\setupregister
+  [libraryindex]
+  [1]
+  [textstyle=\ttbf]
+
+\setupregister
+  [libraryindex]
+  [2]
+  [textstyle=\tttf]
+
+\unexpanded\def\lib     #1{\doifmode{*bodypart}{\expanded{\libraryindex{\currentlibraryindex+#1}}\type{\currentlibraryindex.#1}}}
+\unexpanded\def\libindex#1{\doifmode{*bodypart}{\expanded{\libraryindex{\currentlibraryindex+#1}}}}
+\unexpanded\def\libidx#1#2{\doifmode{*bodypart}{\expanded{\libraryindex{#1+#2}}\type{#1.#2}}}
+\unexpanded\def\lix   #1#2{\doifmode{*bodypart}{\expanded{\libraryindex{#1+#2}}}}
+
+% \setstructurepageregister[][keys:1=,entries:1=]
+
+\stopenvironment

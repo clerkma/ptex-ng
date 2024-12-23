@@ -1,0 +1,1194 @@
+% language=uk
+
+\environment luatex-style
+
+\startcomponent luatex-callbacks
+
+\startchapter[reference=callbacks,title={\LUA\ callbacks}]
+
+\startsection[title={Registering callbacks}][library=callback]
+
+\topicindex{callbacks}
+
+\libindex{register}
+\libindex{list}
+\libindex{find}
+
+This library has functions that register, find and list callbacks. Callbacks are
+\LUA\ functions that are called in well defined places. There are two kind of
+callbacks: those that mix with existing functionality, and those that (when
+enabled) replace functionality. In mosty cases the second category is expected to
+behave similar to the built in functionality because in a next step specific
+data is expected. For instance, you can replace the hyphenation routine. The
+function gets a list that can be hyphenated (or not). The final list should be
+valid and is (normally) used for constructing a paragraph. Another function can
+replace the ligature builder and|/|or kerner. Doing something else is possible
+but in the end might not give the user the expected outcome.
+
+The first thing you need to do is registering a callback:
+
+\startfunctioncall
+id, error =
+    callback.register(<string> callback_name, <function> func)
+id, error =
+    callback.register(<string> callback_name, nil)
+id, error =
+    callback.register(<string> callback_name, false)
+\stopfunctioncall
+
+Here the \syntax {callback_name} is a predefined callback name, see below. The
+function returns the internal \type {id} of the callback or \type {nil}, if the
+callback could not be registered. In the latter case, \type {error} contains an
+error message, otherwise it is \type {nil}.
+
+\LUATEX\ internalizes the callback function in such a way that it does not matter
+if you redefine a function accidentally.
+
+Callback assignments are always global. You can use the special value \type {nil}
+instead of a function for clearing the callback.
+
+For some minor speed gain, you can assign the boolean \type {false} to the
+non|-|file related callbacks, doing so will prevent \LUATEX\ from executing
+whatever it would execute by default (when no callback function is registered at
+all). Be warned: this may cause all sorts of grief unless you know \notabene
+{exactly} what you are doing!
+
+\startfunctioncall
+<table> info =
+    callback.list()
+\stopfunctioncall
+
+The keys in the table are the known callback names, the value is a boolean where
+\type {true} means that the callback is currently set (active).
+
+\startfunctioncall
+<function> f = callback.find(callback_name)
+\stopfunctioncall
+
+If the callback is not set, \type {find} returns \type {nil}.
+
+\stopsection
+
+\startsection[title={File discovery callbacks}][library=callback]
+
+The behaviour documented in this subsection is considered stable in the sense that
+there will not be backward|-|incompatible changes any more.
+
+\subsection{\cbk {find_read_file} and \cbk {find_write_file}}
+
+Your callback function should have the following conventions:
+
+\startfunctioncall
+<string> actual_name =
+    function (<number> id_number, <string> asked_name)
+\stopfunctioncall
+
+Arguments:
+
+\startitemize
+
+\sym{id_number}
+
+This number is zero for the log or \prm {input} files. For \TEX's \prm {read}
+or \prm {write} the number is incremented by one, so \type {\read0} becomes~1.
+
+\sym{asked_name}
+
+This is the user|-|supplied filename, as found by \prm {input}, \prm {openin}
+or \prm {openout}.
+
+\stopitemize
+
+Return value:
+
+\startitemize
+
+\sym{actual_name}
+
+This is the filename used. For the very first file that is read in by \TEX, you
+have to make sure you return an \type {actual_name} that has an extension and
+that is suitable for use as \type {jobname}. If you don't, you will have to
+manually fix the name of the log file and output file after \LUATEX\ is finished,
+and an eventual format filename will become mangled. That is because these file
+names depend on the jobname.
+
+You have to return \type {nil} if the file cannot be found.
+
+\stopitemize
+
+\subsection{\cbk {find_font_file}}
+
+\topicindex{callbacks+font files}
+
+Your callback function should have the following conventions:
+
+\startfunctioncall
+<string> actual_name =
+    function (<string> asked_name)
+\stopfunctioncall
+
+The \type {asked_name} is an \OTF\ or \TFM\ font metrics file.
+
+Return \type {nil} if the file cannot be found.
+
+\subsection{\cbk {find_output_file}}
+
+\topicindex{callbacks+output file}
+
+Your callback function should have the following conventions:
+
+\startfunctioncall
+<string> actual_name =
+    function (<string> asked_name)
+\stopfunctioncall
+
+The \type {asked_name} is the \PDF\ or \DVI\ file for writing.
+
+\subsection{\cbk {find_format_file}}
+
+\topicindex{callbacks+format file}
+
+Your callback function should have the following conventions:
+
+\startfunctioncall
+<string> actual_name =
+    function (<string> asked_name)
+\stopfunctioncall
+
+The \type {asked_name} is a format file for reading (the format file for writing
+is always opened in the current directory).
+
+\subsection{\cbk {find_vf_file}}
+
+\topicindex{callbacks+font files}
+
+Like \cbk {find_font_file}, but for virtual fonts. This applies to both \ALEPH's
+\OVF\ files and traditional Knuthian \VF\ files.
+
+\subsection{\cbk {find_map_file}}
+
+\topicindex{callbacks+font files}
+
+Like \cbk {find_font_file}, but for map files.
+
+\subsection{\cbk {find_enc_file}}
+
+\topicindex{callbacks+font files}
+
+Like \cbk {find_font_file}, but for enc files.
+
+\subsection{\cbk {find_pk_file}}
+
+\topicindex{callbacks+font files}
+
+Like \cbk {find_font_file}, but for pk bitmap files. This callback takes two
+arguments: \type {name} and \type {dpi}. In your callback you can decide to
+look for:
+
+\starttyping
+<base res>dpi/<fontname>.<actual res>pk
+\stoptyping
+
+but other strategies are possible. It is up to you to find a \quote {reasonable}
+bitmap file to go with that specification.
+
+\subsection{\cbk {find_data_file}}
+
+\topicindex{callbacks+data files}
+
+Like \cbk {find_font_file}, but for embedded files (\type {\pdfobj file '...'}).
+
+\subsection{\cbk {find_opentype_file}}
+
+\topicindex{callbacks+font files}
+
+Like \cbk {find_font_file}, but for \OPENTYPE\ font files.
+
+\subsection{\cbk {find_truetype_file} and \cbk {find_type1_file}}
+
+\topicindex{callbacks+font files}
+
+Your callback function should have the following conventions:
+
+\startfunctioncall
+<string> actual_name =
+    function (<string> asked_name)
+\stopfunctioncall
+
+The \type {asked_name} is a font file. This callback is called while \LUATEX\ is
+building its internal list of needed font files, so the actual timing may
+surprise you. Your return value is later fed back into the matching \type
+{read_file} callback.
+
+Strangely enough, \cbk {find_type1_file} is also used for \OPENTYPE\ (\OTF)
+fonts.
+
+\subsection{\cbk {find_image_file}}
+
+\topicindex{callbacks+image files}
+
+Your callback function should have the following conventions:
+
+\startfunctioncall
+<string> actual_name =
+    function (<string> asked_name)
+\stopfunctioncall
+
+The \type {asked_name} is an image file. Your return value is used to open a file
+from the hard disk, so make sure you return something that is considered the name
+of a valid file by your operating system.
+
+\stopsection
+
+\startsection[reference=iocallback,title={File reading callbacks}]
+
+The behavior documented in this subsection is considered stable in the sense that
+there will not be backward-incompatible changes any more.
+
+\subsection{\cbk {open_read_file}}
+
+\topicindex{callbacks+opening files}
+
+Your callback function should have the following conventions:
+
+\startfunctioncall
+<table> env =
+    function (<string> file_name)
+\stopfunctioncall
+
+Argument:
+
+\startitemize
+
+\sym{file_name}
+
+The filename returned by a previous \cbk {find_read_file} or the return value of
+\type {kpse.find_file()} if there was no such callback defined.
+
+\stopitemize
+
+Return value:
+
+\startitemize
+
+\sym{env}
+
+This is a table containing at least one required and one optional callback
+function for this file. The required field is \type {reader} and the associated
+function will be called once for each new line to be read, the optional one is
+\type {close} that will be called once when \LUATEX\ is done with the file.
+
+\LUATEX\ never looks at the rest of the table, so you can use it to store your
+private per|-|file data. Both the callback functions will receive the table as
+their only argument.
+
+\stopitemize
+
+\subsubsection{\type {reader}}
+
+\topicindex{callbacks+reader}
+
+\LUATEX\ will run this function whenever it needs a new input line from the file.
+
+\startfunctioncall
+function(<table> env)
+    return <string> line
+end
+\stopfunctioncall
+
+Your function should return either a string or \type {nil}. The value \type {nil}
+signals that the end of file has occurred, and will make \TEX\ call the optional
+\type {close} function next.
+
+\subsubsection{\type {close}}
+
+\topicindex{callbacks+closing files}
+
+\LUATEX\ will run this optional function when it decides to close the file.
+
+\startfunctioncall
+function(<table> env)
+end
+\stopfunctioncall
+
+Your function should not return any value.
+
+\subsection{General file readers}
+
+\topicindex{callbacks+readers}
+
+There is a set of callbacks for the loading of binary data files. These all use
+the same interface:
+
+\startfunctioncall
+function(<string> name)
+    return <boolean> success, <string> data, <number> data_size
+end
+\stopfunctioncall
+
+The \type {name} will normally be a full path name as it is returned by either
+one of the file discovery callbacks or the internal version of \type
+{kpse.find_file()}.
+
+\startitemize
+
+\sym{success}
+
+Return \type {false} when a fatal error occurred (e.g.\ when the file cannot be
+found, after all).
+
+\sym{data}
+
+The bytes comprising the file.
+
+\sym{data_size}
+
+The length of the \type {data}, in bytes.
+
+\stopitemize
+
+Return an empty string and zero if the file was found but there was a
+reading problem.
+
+The list of functions is:
+
+\starttabulate[|l|p|]
+\DB function  \BC usage \NC \NR
+\TB
+\NC \type{read_font_file}     \NC ofm or tfm files \NC \NR
+\NC \type{read_vf_file}       \NC virtual fonts \NC \NR
+\NC \type{read_map_file}      \NC map files \NC \NR
+\NC \type{read_enc_file}      \NC encoding files \NC \NR
+\NC \type{read_pk_file}       \NC pk bitmap files \NC \NR
+\NC \type{read_data_file}     \NC embedded files (as is possible with \PDF\ objects) \NC \NR
+\NC \type{read_truetype_file} \NC \TRUETYPE\ font files \NC \NR
+\NC \type{read_type1_file}    \NC \TYPEONE\ font files \NC \NR
+\NC \type{read_opentype_file} \NC \OPENTYPE\ font files \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection[title={Data processing callbacks}][library=callback]
+
+\subsection{\cbk {process_input_buffer}}
+
+\topicindex{callbacks+input buffer}
+
+This callback allows you to change the contents of the line input buffer just
+before \LUATEX\ actually starts looking at it.
+
+\startfunctioncall
+function(<string> buffer)
+    return <string> adjusted_buffer
+end
+\stopfunctioncall
+
+If you return \type {nil}, \LUATEX\ will pretend like your callback never
+happened. You can gain a small amount of processing time from that. This callback
+does not replace any internal code.
+
+\subsection{\cbk {process_output_buffer}}
+
+\topicindex{callbacks+output buffer}
+
+This callback allows you to change the contents of the line output buffer just
+before \LUATEX\ actually starts writing it to a file as the result of a \prm
+{write} command. It is only called for output to an actual file (that is,
+excluding the log, the terminal, and so called \prm {write} 18 calls).
+
+\startfunctioncall
+function(<string> buffer)
+    return <string> adjusted_buffer
+end
+\stopfunctioncall
+
+If you return \type {nil}, \LUATEX\ will pretend like your callback never
+happened. You can gain a small amount of processing time from that. This callback
+does not replace any internal code.
+
+\subsection{\cbk {process_jobname}}
+
+\topicindex{callbacks+jobname}
+
+This callback allows you to change the jobname given by \prm {jobname} in \TEX\
+and \type {tex.jobname} in Lua. It does not affect the internal job name or the
+name of the output or log files.
+
+\startfunctioncall
+function(<string> jobname)
+    return <string> adjusted_jobname
+end
+\stopfunctioncall
+
+The only argument is the actual job name; you should not use \type {tex.jobname}
+inside this function or infinite recursion may occur. If you return \type {nil},
+\LUATEX\ will pretend your callback never happened. This callback does not
+replace any internal code.
+
+\stopsection
+
+\startsection[title={Node list processing callbacks}][library=callback]
+
+The description of nodes and node lists is in~\in{chapter}[nodes].
+
+\subsection{\cbk {contribute_filter}}
+
+\topicindex{callbacks+contributions}
+
+This callback is called when \LUATEX\ adds contents to list:
+
+\startfunctioncall
+function(<string> extrainfo)
+end
+\stopfunctioncall
+
+The string reports the group code. From this you can deduce from
+what list you can give a treat.
+
+\starttabulate[|l|p|]
+\DB value             \BC explanation                                  \NC \NR
+\TB
+\NC \type{pre_box}    \NC interline material is being added            \NC \NR
+\NC \type{pre_adjust} \NC \prm {vadjust} material is being added       \NC \NR
+\NC \type{box}        \NC a typeset box is being added (always called) \NC \NR
+\NC \type{adjust}     \NC \prm {vadjust} material is being added       \NC \NR
+\LL
+\stoptabulate
+
+\subsection{\cbk {buildpage_filter}}
+
+\topicindex{callbacks+building pages}
+
+This callback is called whenever \LUATEX\ is ready to move stuff to the main
+vertical list. You can use this callback to do specialized manipulation of the
+page building stage like imposition or column balancing.
+
+\startfunctioncall
+function(<string> extrainfo)
+end
+\stopfunctioncall
+
+The string \type {extrainfo} gives some additional information about what \TEX's
+state is with respect to the \quote {current page}. The possible values for the
+\cbk {buildpage_filter} callback are:
+
+\starttabulate[|l|p|]
+\DB value                  \BC explanation                             \NC \NR
+\TB
+\NC \type{alignment}       \NC a (partial) alignment is being added    \NC \NR
+\NC \type{after_output}    \NC an output routine has just finished     \NC \NR
+\NC \type{new_graf}        \NC the beginning of a new paragraph        \NC \NR
+\NC \type{vmode_par}       \NC \prm {par} was found in vertical mode   \NC \NR
+\NC \type{hmode_par}       \NC \prm {par} was found in horizontal mode \NC \NR
+\NC \type{insert}          \NC an insert is added                      \NC \NR
+\NC \type{penalty}         \NC a penalty (in vertical mode)            \NC \NR
+\NC \type{before_display}  \NC immediately before a display starts     \NC \NR
+\NC \type{after_display}   \NC a display is finished                   \NC \NR
+\NC \type{end}             \NC \LUATEX\ is terminating (it's all over) \NC \NR
+\LL
+\stoptabulate
+
+\subsection{\cbk {build_page_insert}}
+
+\topicindex{callbacks+inserts}
+
+This callback is called when the pagebuilder adds an insert. There is not much
+control over this mechanism but this callback permits some last minute
+manipulations of the spacing before an insert, something that might be handy when
+for instance multiple inserts (types) are appended in a row.
+
+\startfunctioncall
+function(<number> n, <number> i)
+    return <number> register
+end
+\stopfunctioncall
+
+with
+
+\starttabulate[|l|p|]
+\DB value    \BC explanation             \NC \NR
+\TB
+\NC \type{n} \NC the insert class        \NC \NR
+\NC \type{i} \NC the order of the insert \NC \NR
+\LL
+\stoptabulate
+
+The return value is a number indicating the skip register to use for the
+prepended spacing. This permits for instance a different top space (when \type
+{i} equals one) and intermediate space (when \type {i} is larger than one). Of
+course you can mess with the insert box but you need to make sure that \LUATEX\
+is happy afterwards.
+
+\subsection{\cbk {pre_linebreak_filter}}
+
+\topicindex{callbacks+linebreaks}
+
+This callback is called just before \LUATEX\ starts converting a list of nodes
+into a stack of \prm {hbox}es, after the addition of \prm {parfillskip}.
+
+\startfunctioncall
+function(<node> head, <string> groupcode)
+    return true | false | <node> newhead
+end
+\stopfunctioncall
+
+The string called \type {groupcode} identifies the nodelist's context within
+\TEX's processing. The range of possibilities is given in the table below, but
+not all of those can actually appear in \cbk {pre_linebreak_filter}, some are
+for the \cbk {hpack_filter} and \cbk {vpack_filter} callbacks that will be
+explained in the next two paragraphs.
+
+\starttabulate[|l|p|]
+\DB value                \BC explanation                                 \NC \NR
+\TB
+\NC \type{<empty>}       \NC main vertical list                          \NC \NR
+\NC \type{hbox}          \NC \prm {hbox} in horizontal mode              \NC \NR
+\NC \type{adjusted_hbox} \NC \prm {hbox} in vertical mode                \NC \NR
+\NC \type{vbox}          \NC \prm {vbox}                                 \NC \NR
+\NC \type{vtop}          \NC \prm {vtop}                                 \NC \NR
+\NC \type{align}         \NC \prm {halign} or \prm {valign}              \NC \NR
+\NC \type{disc}          \NC discretionaries                             \NC \NR
+\NC \type{insert}        \NC packaging an insert                         \NC \NR
+\NC \type{vcenter}       \NC \prm {vcenter}                              \NC \NR
+\NC \type{local_box}     \NC \lpr {localleftbox} or \lpr {localrightbox} \NC \NR
+\NC \type{split_off}     \NC top of a \prm {vsplit}                      \NC \NR
+\NC \type{split_keep}    \NC remainder of a \prm {vsplit}                \NC \NR
+\NC \type{align_set}     \NC alignment cell                              \NC \NR
+\NC \type{fin_row}       \NC alignment row                               \NC \NR
+\LL
+\stoptabulate
+
+As for all the callbacks that deal with nodes, the return value can be one of
+three things:
+
+\startitemize
+\startitem
+    boolean \type {true} signals successful processing
+\stopitem
+\startitem
+    \type {<node>} signals that the \quote {head} node should be replaced by the
+    returned node
+\stopitem
+\startitem
+    boolean \type {false} signals that the \quote {head} node list should be
+    ignored and flushed from memory
+\stopitem
+\stopitemize
+
+This callback does not replace any internal code.
+
+\subsection{\cbk {linebreak_filter}}
+
+\topicindex{callbacks+linebreaks}
+
+This callback replaces \LUATEX's line breaking algorithm.
+
+\startfunctioncall
+function(<node> head, <boolean> is_display)
+    return <node> newhead
+end
+\stopfunctioncall
+
+The returned node is the head of the list that will be added to the main vertical
+list, the boolean argument is true if this paragraph is interrupted by a
+following math display.
+
+If you return something that is not a \type {<node>}, \LUATEX\ will apply the
+internal linebreak algorithm on the list that starts at \type {<head>}.
+Otherwise, the \type {<node>} you return is supposed to be the head of a list of
+nodes that are all allowed in vertical mode, and at least one of those has to
+represent a hbox. Failure to do so will result in a fatal error.
+
+Setting this callback to \type {false} is possible, but dangerous, because it is
+possible you will end up in an unfixable \quote {deadcycles loop}.
+
+\subsection{\type {append_to_vlist_filter}}
+
+\topicindex{callbacks+contributions}
+
+This callback is called whenever \LUATEX\ adds a box to a vertical list:
+
+\startfunctioncall
+function(<node> box, <string> locationcode, <number prevdepth>,
+    <boolean> mirrored)
+    return list, prevdepth
+end
+\stopfunctioncall
+
+It is ok to return nothing in which case you also need to flush the box or deal
+with it yourself. The prevdepth is also optional. Locations are \type {box},
+\type {alignment}, \type {equation}, \type {equation_number} and \type
+{post_linebreak}. You can pass \type {nil} instead of a node.
+
+\subsection{\cbk {post_linebreak_filter}}
+
+\topicindex{callbacks+linebreaks}
+
+This callback is called just after \LUATEX\ has converted a list of nodes into a
+stack of \prm {hbox}es.
+
+\startfunctioncall
+function(<node> head, <string> groupcode)
+    return true | false | <node> newhead
+end
+\stopfunctioncall
+
+This callback does not replace any internal code.
+
+\subsection{\cbk {hpack_filter}}
+
+\topicindex{callbacks+packing}
+
+This callback is called when \TEX\ is ready to start boxing some horizontal mode
+material. Math items and line boxes are ignored at the moment.
+
+\startfunctioncall
+function(<node> head, <string> groupcode, <number> size,
+         <string> packtype [, <string> direction] [, <node> attributelist])
+    return true | false | <node> newhead
+end
+\stopfunctioncall
+
+The \type {packtype} is either \type {additional} or \type {exactly}. If \type
+{additional}, then the \type {size} is a \type {\hbox spread ...} argument. If
+\type {exactly}, then the \type {size} is a \type {\hbox to ...}. In both cases,
+the number is in scaled points.
+
+The \type {direction} is either one of the three-letter direction specifier
+strings, or \type {nil}.
+
+This callback does not replace any internal code.
+
+\subsection{\cbk {vpack_filter}}
+
+\topicindex{callbacks+packing}
+
+This callback is called when \TEX\ is ready to start boxing some vertical mode
+material. Math displays are ignored at the moment.
+
+This function is very similar to the \cbk {hpack_filter}. Besides the fact
+that it is called at different moments, there is an extra variable that matches
+\TEX's \prm {maxdepth} setting.
+
+\startfunctioncall
+function(<node> head, <string> groupcode, <number> size, <string> packtype,
+        <number> maxdepth [, <string> direction] [, <node> attributelist]))
+    return true | false | <node> newhead
+end
+\stopfunctioncall
+
+This callback does not replace any internal code.
+
+\subsection{\type {hpack_quality}}
+
+\topicindex{callbacks+packing}
+
+This callback can be used to intercept the overfull messages that can result from
+packing a horizontal list (as happens in the par builder). The function takes a
+few arguments:
+
+\startfunctioncall
+function(<string> incident, <number> detail, <node> head, <number> first,
+         <number> last)
+    return <node> whatever
+end
+\stopfunctioncall
+
+The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
+\type {tight}. The detail is either the amount of overflow in case of \type
+{overfull}, or the badness otherwise. The head is the list that is constructed
+(when protrusion or expansion is enabled, this is an intermediate list).
+Optionally you can return a node, for instance an overfull rule indicator. That
+node will be appended to the list (just like \TEX's own rule would).
+
+\subsection{\type {vpack_quality}}
+
+\topicindex{callbacks+packing}
+
+This callback can be used to intercept the overfull messages that can result from
+packing a vertical list (as happens in the page builder). The function takes a
+few arguments:
+
+\startfunctioncall
+function(<string> incident, <number> detail, <node> head, <number> first,
+         <number> last)
+end
+\stopfunctioncall
+
+The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
+\type {tight}. The detail is either the amount of overflow in case of \type
+{overfull}, or the badness otherwise. The head is the list that is constructed.
+
+\subsection{\cbk {process_rule}}
+
+\topicindex{callbacks+rules}
+
+This is an experimental callback. It can be used with rules of subtype~4
+(user). The callback gets three arguments: the node, the width and the
+height. The callback can use \type {pdf.print} to write code to the \PDF\
+file but beware of not messing up the final result. No checking is done.
+
+\subsection{\type {pre_output_filter}}
+
+\topicindex{callbacks+output}
+
+This callback is called when \TEX\ is ready to start boxing the box 255 for \prm
+{output}.
+
+\startfunctioncall
+function(<node> head, <string> groupcode, <number> size, <string> packtype,
+        <number> maxdepth [, <string> direction])
+    return true | false | <node> newhead
+end
+\stopfunctioncall
+
+This callback does not replace any internal code.
+
+\subsection{\cbk {hyphenate}}
+
+\topicindex{callbacks+hyphenation}
+
+\startfunctioncall
+function(<node> head, <node> tail)
+end
+\stopfunctioncall
+
+No return values. This callback has to insert discretionary nodes in the node
+list it receives.
+
+Setting this callback to \type {false} will prevent the internal discretionary
+insertion pass.
+
+\subsection{\cbk {ligaturing}}
+
+\topicindex{callbacks+ligature building}
+
+\startfunctioncall
+function(<node> head, <node> tail)
+end
+\stopfunctioncall
+
+No return values. This callback has to apply ligaturing to the node list it
+receives.
+
+You don't have to worry about return values because the \type {head} node that is
+passed on to the callback is guaranteed not to be a glyph_node (if need be, a
+temporary node will be prepended), and therefore it cannot be affected by the
+mutations that take place. After the callback, the internal value of the \quote
+{tail of the list} will be recalculated.
+
+The \type {next} of \type {head} is guaranteed to be non-nil.
+
+The \type {next} of \type {tail} is guaranteed to be nil, and therefore the
+second callback argument can often be ignored. It is provided for orthogonality,
+and because it can sometimes be handy when special processing has to take place.
+
+Setting this callback to \type {false} will prevent the internal ligature
+creation pass.
+
+You must not ruin the node list. For instance, the head normally is a local par node,
+and the tail a glue. Messing too much can push \LUATEX\ into panic mode.
+
+\subsection{\cbk {kerning}}
+
+\topicindex{callbacks+kerning}
+
+\startfunctioncall
+function(<node> head, <node> tail)
+end
+\stopfunctioncall
+
+No return values. This callback has to apply kerning between the nodes in the
+node list it receives. See \cbk {ligaturing} for calling conventions.
+
+Setting this callback to \type {false} will prevent the internal kern insertion
+pass.
+
+You must not ruin the node list. For instance, the head normally is a local par node,
+and the tail a glue. Messing too much can push \LUATEX\ into panic mode.
+
+\subsection{\type {insert_local_par}}
+
+Each paragraph starts with a local par node that keeps track of for instance
+the direction. You can hook a callback into the creator:
+
+\startfunctioncall
+function(<node> local_par, <string> location)
+end
+\stopfunctioncall
+
+There is no return value and you should make sure that the node stays valid
+as otherwise \TEX\ can get confused.
+
+\subsection{\cbk {mlist_to_hlist}}
+
+\topicindex{callbacks+math}
+
+This callback replaces \LUATEX's math list to node list conversion algorithm.
+
+\startfunctioncall
+function(<node> head, <string> display_type, <boolean> need_penalties)
+    return <node> newhead
+end
+\stopfunctioncall
+
+The returned node is the head of the list that will be added to the vertical or
+horizontal list, the string argument is either \quote {text} or \quote {display}
+depending on the current math mode, the boolean argument is \type {true} if
+penalties have to be inserted in this list, \type {false} otherwise.
+
+Setting this callback to \type {false} is bad, it will almost certainly result in
+an endless loop.
+
+\stopsection
+
+\startsection[title={Information reporting callbacks}][library=callback]
+
+\subsection{\cbk {pre_dump}}
+
+\topicindex{callbacks+dump}
+
+\startfunctioncall
+function()
+end
+\stopfunctioncall
+
+This function is called just before dumping to a format file starts. It does not
+replace any code and there are neither arguments nor return values.
+
+\subsection{\cbk {start_run}}
+
+\topicindex{callbacks+job run}
+
+\startfunctioncall
+function()
+end
+\stopfunctioncall
+
+This callback replaces the code that prints \LUATEX's banner. Note that for
+successful use, this callback has to be set in the \LUA\ initialization script,
+otherwise it will be seen only after the run has already started.
+
+\subsection{\cbk {stop_run}}
+
+\topicindex{callbacks+job run}
+
+\startfunctioncall
+function()
+end
+\stopfunctioncall
+
+This callback replaces the code that prints \LUATEX's statistics and \quote
+{output written to} messages. The engine can still do housekeeping and therefore
+you should not rely on this hook for postprocessing the \PDF\ or log file.
+
+\subsection{\cbk {start_page_number}}
+
+\topicindex{callbacks+pages}
+
+\startfunctioncall
+function()
+end
+\stopfunctioncall
+
+Replaces the code that prints the \type {[} and the page number at the begin of
+\prm {shipout}. This callback will also override the printing of box information
+that normally takes place when \prm {tracingoutput} is positive.
+
+\subsection{\cbk {stop_page_number}}
+
+\topicindex{callbacks+pages}
+
+\startfunctioncall
+function()
+end
+\stopfunctioncall
+
+Replaces the code that prints the \type {]} at the end of \prm {shipout}.
+
+\subsection{\cbk {show_error_hook}}
+
+\topicindex{callbacks+errors}
+
+\startfunctioncall
+function()
+end
+\stopfunctioncall
+
+This callback is run from inside the \TEX\ error function, and the idea is to
+allow you to do some extra reporting on top of what \TEX\ already does (none of
+the normal actions are removed). You may find some of the values in the \type
+{status} table useful. This callback does not replace any internal code.
+
+\subsection{\cbk {show_error_message}}
+
+\topicindex{callbacks+errors}
+
+\startfunctioncall
+function()
+end
+\stopfunctioncall
+
+This callback replaces the code that prints the error message. The usual
+interaction after the message is not affected.
+
+\subsection{\cbk {show_lua_error_hook}}
+
+\topicindex{callbacks+errors}
+
+\startfunctioncall
+function()
+end
+\stopfunctioncall
+
+This callback replaces the code that prints the extra \LUA\ error message.
+
+\subsection{\cbk {start_file}}
+
+\topicindex{callbacks+files}
+
+\startfunctioncall
+function(category,filename)
+end
+\stopfunctioncall
+
+This callback replaces the code that prints \LUATEX's when a file is opened like
+\type {(filename} for regular files. The category is a number:
+
+\starttabulate[|c|l|]
+\DB value  \BC meaning \NC \NR
+\TB
+\NC 1 \NC a normal data file, like a \TEX\ source \NC \NR
+\NC 2 \NC a font map coupling font names to resources \NC \NR
+\NC 3 \NC an image file (\type {png}, \type {pdf}, etc) \NC \NR
+\NC 4 \NC an embedded font subset \NC \NR
+\NC 5 \NC a fully embedded font \NC \NR
+\LL
+\stoptabulate
+
+\subsection{\cbk {stop_file}}
+
+\topicindex{callbacks+files}
+
+\startfunctioncall
+function(category)
+end
+\stopfunctioncall
+
+This callback replaces the code that prints \LUATEX's when a file is closed like
+the \type {)} for regular files.
+
+\subsection{\cbk {call_edit}}
+
+\topicindex{callbacks+editing}
+
+\startfunctioncall
+function(filename,linenumber)
+end
+\stopfunctioncall
+
+This callback replaces the call to an external editor when \quote{E} is pressed
+in reply to an error message. Processing will end immediately after the callback
+returns control to the main program.
+
+\subsection{\cbk {finish_synctex}}
+
+\topicindex{callbacks+synctex}
+
+This callback can be used to wrap up alternative synctex methods. It kicks in
+after the normal synctex finalizer (that happens to remove the synctex files
+after a run when native synctex is not enabled).
+
+\subsection{\cbk {wrapup_run}}
+
+\topicindex{callbacks+wrapping up}
+
+This callback is called after the \PDF\ and log files are closed. Use it at your own
+risk.
+
+\stopsection
+
+\startsection[title={\PDF\ related callbacks}][library=callback]
+
+\subsection{\cbk {finish_pdffile}}
+
+\topicindex{callbacks+\PDF\ file}
+
+\startfunctioncall
+function()
+end
+\stopfunctioncall
+
+This callback is called when all document pages are already written to the \PDF\
+file and \LUATEX\ is about to finalize the output document structure. Its
+intended use is final update of \PDF\ dictionaries such as \type {/Catalog} or
+\type {/Info}. The callback does not replace any code. There are neither
+arguments nor return values.
+
+\subsection{\cbk {finish_pdfpage}}
+
+\topicindex{callbacks+\PDF\ file}
+
+\startfunctioncall
+function(shippingout)
+end
+\stopfunctioncall
+
+This callback is called after the \PDF\ page stream has been assembled and before
+the page object gets finalized.
+
+\subsection{\cbk {page_order_index}}
+
+\topicindex{callbacks+\PDF\ file}
+
+This is one that experts can use to juggle the page tree, a data structure
+that determines the order in a \PDF\ file:
+
+\startfunctioncall
+function(pagenumber)
+  return pagenumber
+end
+\stopfunctioncall
+
+Say that we have 12 pages, then we can do this:
+
+\starttyping
+callback.register("page_order_index",function(page)
+        if page ==  1 then return 12
+    elseif page ==  2 then return 11
+    elseif page == 11 then return  2
+    elseif page == 12 then return  1
+    else                   return page
+    end
+end)
+\stoptyping
+
+This will swap the first two and last two pages. You need to know the number of
+pages which is a side effect of the implementation. When you mess things up
+\unknown\ don't complain.
+
+\subsection{\cbk {process_pdf_image_content}}
+
+\topicindex{callbacks+image content}
+
+When a page from a \PDF\ file is embedded its page stream as well as related
+objects are copied to the target file. However, it can be that the page stream
+has operators that assume additional resources, for instance marked text. You can
+decide to filter that for which \LUATEX\ provides a callback. Here is a simple
+demonstration of use:
+
+\starttyping
+pdf.setrecompress(1)
+
+callback.register("process_pdf_image_content",function(s)
+    print(s)
+    return s
+end)
+\stoptyping
+
+You need to explicitly enable recompression because otherwise the content stream
+gets just passed on in its original compressed form.
+
+\stopsection
+
+\startsection[title={Font-related callbacks}][library=callback]
+
+\subsection{\cbk {define_font}}
+
+\topicindex{callbacks+fonts}
+
+\startfunctioncall
+function(<string> name, <number> size, <number> id)
+    return <table> font | <number> id
+end
+\stopfunctioncall
+
+The string \type {name} is the filename part of the font specification, as given
+by the user.
+
+The number \type {size} is a bit special:
+
+\startitemize[packed]
+\startitem
+    If it is positive, it specifies an \quote{at size} in scaled points.
+\stopitem
+\startitem
+    If it is negative, its absolute value represents a \quote {scaled} setting
+    relative to the designsize of the font.
+\stopitem
+\stopitemize
+
+The \type {id} is the internal number assigned to the font.
+
+The internal structure of the \type {font} table that is to be returned is
+explained in \in {chapter} [fonts]. That table is saved internally, so you can
+put extra fields in the table for your later \LUA\ code to use. In alternative,
+\type {retval} can be a previously defined fontid. This is useful if a previous
+definition can be reused instead of creating a whole new font structure.
+
+Setting this callback to \type {false} is pointless as it will prevent font
+loading completely but will nevertheless generate errors.
+
+\subsection{\cbk {glyph_not_found} and \cbk {glyph_info}}
+
+\topicindex{callbacks+fonts}
+
+The \type {glyph_not_found} callback, when set, kicks in when the backend cannot
+insert a glyph. When no callback is defined a message is written to the log.
+
+\startfunctioncall
+function(<number> id, <number> char)
+    -- do something with font id and char code
+end
+\stopfunctioncall
+
+The \type {glyph_info} callback can be set to report a useful representation of a
+glyph.
+
+\startfunctioncall
+function(<node> g)
+    -- return a string or nil
+end
+\stopfunctioncall
+
+When \type {nil} is returned the character code is printed, otherwise the
+returned string is used. By default the \UTF\ representation is shown which is
+not always that useful, especially when there is no real representation. Keep in
+mind that setting this callback can change the log in an incompatible way.
+
+\subsection{\cbk {provide_charproc_data}}
+
+\topicindex{callbacks+fonts}
+
+The \type {provide_charproc_data} callback is triggered when the backend is
+writing out a user-defined Type~3 font:
+
+\startfunctioncall
+function(<number> mode, <number> id, <number> char)
+    if mode == 1 then
+        -- preroll
+        return
+    elseif mode == 2 then
+        -- write out the glyph contents
+        return <number> stream, <number> width
+    elseif mode == 3 then
+        -- the overall font scale
+        return <number> scale
+    end
+end
+\stopfunctioncall
+
+To make a user-defined Type~3 font, you need to set \type {encodingbytes = 0}
+and \type {psname = "none"} at the top-level when defining the font. From the
+\type {glyph_not_found} callback, you should return the overall font scale
+(conventionally 0.001) in mode~3, and the index of a \PDF\ stream (where the
+first operator is either \type {d0} or \type {d1}) and the width of the glyph
+(in sp's) in mode~2. You can generally ignore mode~1.
+
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

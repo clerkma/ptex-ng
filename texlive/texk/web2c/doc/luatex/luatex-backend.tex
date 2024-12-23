@@ -1,0 +1,1121 @@
+% language=us engine=luatex runpath=texruns:manuals/luatex
+
+\environment luatex-style
+
+\startcomponent luatex-backend
+
+\startchapter[reference=backend,title={The backend libraries}]
+
+\startsection[title={The \type {pdf} library}][library=pdf]
+
+\topicindex{backend}
+\topicindex{\PDF}
+
+This library contains variables and functions that are related to the \PDF\
+backend. You can find more details about the expected values to setters in \in
+{section} [backendprimitives].
+
+\startsubsection[title={\type {mapfile}, \type {mapline}}]
+
+\topicindex{map files}
+\topicindex{files+map}
+
+\startfunctioncall
+pdf.mapfile(<string> map file)
+pdf.mapline(<string> map line)
+\stopfunctioncall
+
+These two functions can be used to replace primitives \orm {pdfmapfile} and
+\orm {pdfmapline} inherited from \PDFTEX. They expect a string as only
+parameter and have no return value. The first character in a map line can be
+\type {-}, \type {+} or \type {=} which means as much as remove, add or replace
+this line. They are not state setters but act immediately.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get][catalog|info|names|trailer]}}]
+
+\topicindex{\PDF+trailer}
+\topicindex{\PDF+catalog}
+\topicindex{\PDF+info}
+
+\libindex{setcatalog} \libindex{getcatalog}
+\libindex{setinfo}    \libindex{getinfo}
+\libindex{setnames}   \libindex{getnames}
+\libindex{settrailer} \libindex{gettrailer}
+
+These functions complement the corresponding \PDF\ backend token lists dealing
+with metadata. The value types are strings and they are written to the \PDF\
+file directly after the token registers set at the \TEX\ end are written.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get][pageattributes|pageresources|pagesattributes]}}]
+
+\libindex{setpageattributes}  \libindex{getpageattributes}
+\libindex{setpageresources}   \libindex{getpageresources}
+\libindex{setpagesattributes} \libindex{getpagesattributes}
+
+\topicindex{\PDF+page attributes}
+\topicindex{\PDF+page resources}
+
+These functions complement the corresponding \PDF\ backend token lists dealing
+with page resources. The variables have no interaction with the corresponding \PDF\
+backend token register. They are written to the \PDF\ file directly after the
+token registers set at the \TEX\ end are written.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get][xformattributes|xformresources]}}]
+
+\libindex{setxformattributes} \libindex{getxformattributes}
+\libindex{setxformresources}  \libindex{getxformresources}
+
+\topicindex{\PDF+xform attributes}
+\topicindex{\PDF+xform resources}
+
+These functions complement the corresponding \PDF\ backend token lists dealing
+with reuseable boxes and images. The variables have no interaction with the
+corresponding \PDF\ backend token register. They are written to the \PDF\
+file directly after the token registers set at the \TEX\ end are written.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get][major|minor]version}}]
+
+\topicindex{\PDF+version}
+
+\libindex{getmajorversion} \libindex{setmajorversion}
+\libindex{getminorversion} \libindex{setminorversion}
+
+You can set both the major and minor version of the output. The major version is
+normally~1 but when set to~2 some data will not be written to the file in order
+to comply with the standard. What minor version you set depends on what \PDF\
+features you use. This is out of control of \LUATEX.
+
+One can set the major version number to~2 but we cannot guarantee that the engine
+adapts itself correctly, because there is no public and free specification that
+we know of. Also, user constructed annotations are not checked and just passed
+to the file. On the other hand, the \PDF\ that the engine generated is rather
+simple and not that version depending.
+
+\stopsubsection
+
+\startsubsection[title={\type {getcreationdate}}]
+
+\topicindex{\PDF+date}
+
+\libindex{getcreationdate}
+
+This function returns a string with the date in the format that ends up in the
+\PDF\ file, in this case it's: {\tttf \cldcontext{pdf.getcreationdate()}}.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get]inclusionerrorlevel} and \type {[set|get]ignoreunknownimages}}]
+
+\topicindex{\PDF+options}
+
+\libindex{getinclusionerrorlevel} \libindex{setinclusionerrorlevel}
+\libindex{getignoreunknownimages} \libindex{setignoreunknownimages}
+
+These variable control how error in included image are treated. They are modeled
+after the \PDFTEX\ equivalents.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get]suppressoptionalinfo}, \type {[set|get]trailerid},
+\type {[set|get]omitcidset}, \type {[set|get]omitinfo}, \type {[set|get]omitmediabox},
+\type {[set|get]omitprocset}, \type {[set|get]ptexprefix}} ]
+
+\topicindex{\PDF+options}
+\topicindex{\PDF+trailer}
+
+\libindex{getsuppressoptionalinfo} \libindex{setsuppressoptionalinfo}
+\libindex{gettrailerid}            \libindex{settrailerid}
+\libindex{getomitcidset}           \libindex{setomitcidset}
+\libindex{getomitcharset}          \libindex{setomitcharset}
+\libindex{getomitinfo}             \libindex{setomitinfo}
+\libindex{getomitmediabox}         \libindex{setomitmediabox}
+\libindex{getomitprocset}          \libindex{setomitprocset}
+\libindex{getptexprefix}           \libindex{setptexprefix}
+
+The optional info bitset (a number) determines what kind of info gets flushed.
+By default we flush all. See \in {section} [sec:pdfextensions] for more details.
+
+You can set your own trailer id. This has to be string containing valid \PDF\
+array content with checksums.
+
+The cidset, charset and info flags (numbers) disables inclusion of a so called
+\type {CIDSet} and \type {CharSet} entries, which can be handy when aiming at
+some of the many \PDF\ substandards. The same is true for the \type {ProcSet} and
+\type {PTEX} prefix where setting this flag will force the use of a \type {_}
+instead if a \type {.}. \footnote {In the info dictionary a period is valid pre
+version 2, but the underscore has to be used elsewhere. The prefix dates from the
+early days of \PDFTEX\ and at that time using a period was considered okay. Later
+specifications clarified this.}
+
+When it is omitted, one should provide the \type {MediaBox} via the page attribute
+options, because it is a mandate field. No checking is done.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get][obj|]compresslevel} and \type {[set|get]recompress}}]
+
+\topicindex{\PDF+compression}
+
+\libindex{getcompresslevel}    \libindex{setcompresslevel}
+\libindex{getobjcompresslevel} \libindex{setobjcompresslevel}
+\libindex{getrecompress}       \libindex{setrecompress}
+
+These functions set the level stream compression. When object compression is
+enabled multiple objects will be packed in a compressed stream which saves space.
+The minimum values are~0, the maxima are~9.
+
+When recompression is to~1 compressed objects will be decompressed and when
+compresslevel is larger than zero they will then be recompressed. This is mostly
+a debugging feature and should not be relied upon.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get]gentounicode}}]
+
+\topicindex{\PDF+unicode}
+
+\libindex{getgentounicode} \libindex{setgentounicode}
+
+This flag enables tounicode generation (like in \PDFTEX). Normally the values are
+provided by the font loader.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get]decimaldigits}}]
+
+\topicindex{\PDF+precision}
+
+\libindex{getdecimaldigits} \libindex{setdecimaldigits}
+
+These two functions set the accuracy of floats written to the \PDF file. You can
+set any value but the backend will not go below~3 and above~6.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get]pkresolution}}]
+
+\topicindex{\PDF+resolution}
+
+\libindex{getpkresolution} \libindex{setpkresolution}
+
+These setter takes two arguments: the resolution and an optional zero or one that
+indicates if this is a fixed one. The getter returns these two values.
+
+\stopsubsection
+
+\startsubsection[title={\type {getlast[obj|link|annot]} and \type {getretval}}]
+
+\topicindex{\PDF+objects}
+\topicindex{\PDF+annotations}
+
+\libindex{getlastobj}   \libindex{setlastobj}
+\libindex{getlastlink}  \libindex{setlastlink}
+\libindex{getlastannot} \libindex{setlastannot}
+\libindex{getretval}
+
+These status variables are similar to the ones traditionally used in the backend
+interface at the \TEX\ end.
+
+\stopsubsection
+
+\startsubsection[title={\type {getmaxobjnum} and \type {getobjtype}, \type {getfontname},
+\type {getfontobjnum}, \type {getfontsize}, \type {getxformname}}]
+
+\libindex{getmaxobjnum}
+\libindex{getobjtype}
+\libindex{getfontname}
+\libindex{getfontobjnum}
+\libindex{getfontsize}
+\libindex{getxformname}
+
+These introspective helpers are mostly used when you construct \PDF\ objects
+yourself and need for instance information about a (to be) embedded font.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get]origin}}]
+
+\topicindex{\PDF+positioning}
+
+\libindex{setorigin} \libindex{getorigin}
+
+This one is used to set the horizonal and|/|or vertical offset, a traditional
+backend property.
+
+\starttyping
+pdf.setorigin() -- sets both to 0pt
+pdf.setorigin(tex.sp("1in")) -- sets both to 1in
+pdf.setorigin(tex.sp("1in"),tex.sp("1in"))
+\stoptyping
+
+The counterpart of this function returns two values.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get]imageresolution}}]
+
+\topicindex{\PDF+resolution}
+
+\libindex{setimageresolution} \libindex{getimageresolution}
+
+These two functions relate to the imageresolution that is used when the image
+itself doesn't provide a non|-|zero x or y resolution.
+
+\stopsubsection
+
+\startsubsection[title={\type {[set|get][link|dest|thread|xform]margin}}]
+
+\topicindex{\PDF+margins}
+
+\libindex{getlinkmargin}   \libindex{setlinkmargin}
+\libindex{getdestmargin}   \libindex{setdestmargin}
+\libindex{getthreadmargin} \libindex{setthreadmargin}
+\libindex{getxformmargin}  \libindex{setxformmargin}
+\libindex{getmarginmargin} \libindex{setmarginmargin}
+
+These functions can be used to set and retrieve the margins that are added to the
+natural bounding boxes of the respective objects.
+
+\stopsubsection
+
+\startsubsection[title={\type {get[pos|hpos|vpos]}}]
+
+\topicindex{\PDF+positions}
+
+\libindex{getpos}
+\libindex{gethpos}
+\libindex{getvpos}
+
+These functions get current location on the output page, measured from its lower
+left corner. The values return scaled points as units.
+
+\starttyping
+local h, v = pdf.getpos()
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\type {[has|get]matrix}}]
+
+\topicindex{\PDF+matrix}
+
+\libindex{getmatrix} \libindex{hasmatrix}
+
+The current matrix transformation is available via the \type {getmatrix} command,
+which returns 6 values: \type {sx}, \type {rx}, \type {ry}, \type {sy}, \type
+{tx}, and \type {ty}. The \type {hasmatrix} function returns \type {true} when a
+matrix is applied.
+
+\starttyping
+if pdf.hasmatrix() then
+    local sx, rx, ry, sy, tx, ty = pdf.getmatrix()
+    -- do something useful or not
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\type {print}}]
+
+\topicindex{\PDF+print to}
+
+\libindex{print}
+
+You can print a string to the \PDF\ document from within a \lpr {latelua} call.
+This function is not to be used inside \prm {directlua} unless you know {\it
+exactly} what you are doing.
+
+\startfunctioncall
+pdf.print(<string> s)
+pdf.print(<string> type, <string> s)
+\stopfunctioncall
+
+The optional parameter can be used to mimic the behavior of \PDF\ literals: the
+\type {type} is \type {direct} or \type {page}.
+
+\stopsubsection
+
+\startsubsection[title={\type {immediateobj}}]
+
+\topicindex{\PDF+objects}
+
+\libindex{immediateobj}
+
+This function creates a \PDF\ object and immediately writes it to the \PDF\ file.
+It is modelled after \PDFTEX's \prm {immediate} \orm {pdfobj} primitives. All
+function variants return the object number of the newly generated object.
+
+\startfunctioncall
+<number> n =
+    pdf.immediateobj(<string> objtext)
+<number> n =
+    pdf.immediateobj("file", <string> filename)
+<number> n =
+    pdf.immediateobj("stream", <string> streamtext, <string> attrtext)
+<number> n =
+    pdf.immediateobj("streamfile", <string> filename, <string> attrtext)
+\stopfunctioncall
+
+The first version puts the \type {objtext} raw into an object. Only the object
+wrapper is automatically generated, but any internal structure (like \type {<<
+>>} dictionary markers) needs to be provided by the user. The second version with
+keyword \type {file} as first argument puts the contents of the file with name
+\type {filename} raw into the object. The third version with keyword \type
+{stream} creates a stream object and puts the \type {streamtext} raw into the
+stream. The stream length is automatically calculated. The optional \type
+{attrtext} goes into the dictionary of that object. The fourth version with
+keyword \type {streamfile} does the same as the third one, it just reads the
+stream data raw from a file.
+
+An optional first argument can be given to make the function use a previously
+reserved \PDF\ object.
+
+\startfunctioncall
+<number> n =
+    pdf.immediateobj(<integer> n, <string> objtext)
+<number> n =
+    pdf.immediateobj(<integer> n, "file", <string> filename)
+<number> n =
+    pdf.immediateobj(<integer> n, "stream", <string> streamtext, <string> attrtext)
+<number> n =
+    pdf.immediateobj(<integer> n, "streamfile", <string> filename, <string> attrtext)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type{obj}}]
+
+\topicindex{\PDF+objects}
+
+\libindex{obj}
+
+This function creates a \PDF\ object, which is written to the \PDF\ file only
+when referenced, e.g., by \type {refobj()}.
+
+All function variants return the object number of the newly generated object, and
+there are two separate calling modes. The first mode is modelled after \PDFTEX's
+\orm {pdfobj} primitive.
+
+\startfunctioncall
+<number> n =
+    pdf.obj(<string> objtext)
+<number> n =
+    pdf.obj("file", <string> filename)
+<number> n =
+    pdf.obj("stream", <string> streamtext, <string> attrtext)
+<number> n =
+    pdf.obj("streamfile", <string> filename, <string> attrtext)
+\stopfunctioncall
+
+An optional first argument can be given to make the function use a previously
+reserved \PDF\ object.
+
+\startfunctioncall
+<number> n =
+    pdf.obj(<integer> n, <string> objtext)
+<number> n =
+    pdf.obj(<integer> n, "file", <string> filename)
+<number> n =
+    pdf.obj(<integer> n, "stream", <string> streamtext, <string> attrtext)
+<number> n =
+    pdf.obj(<integer> n, "streamfile", <string> filename, <string> attrtext)
+\stopfunctioncall
+
+The second mode accepts a single argument table with key--value pairs.
+
+\startfunctioncall
+<number> n = pdf.obj {
+    type           = <string>,
+    immediate      = <boolean>,
+    objnum         = <number>,
+    attr           = <string>,
+    compresslevel  = <number>,
+    objcompression = <boolean>,
+    file           = <string>,
+    string         = <string>,
+    nolength       = <boolean>,
+}
+\stopfunctioncall
+
+The \type {type} field can have the values \type {raw} and \type {stream}, this
+field is required, the others are optional (within constraints). When \type
+{nolength} is set, there will be no \type {/Length} entry added to the
+dictionary.
+
+Note: this mode makes \type{obj} look more flexible than it actually is: the
+constraints from the separate parameter version still apply, so for example you
+can't have both \type {string} and \type {file} at the same time.
+
+\stopsubsection
+
+\startsubsection[title={\type {refobj}}]
+
+\topicindex{\PDF+objects}
+
+\libindex{refobj}
+
+This function, the \LUA\ version of the \orm {pdfrefobj} primitive, references an
+object by its object number, so that the object will be written to the \PDF\ file.
+
+\startfunctioncall
+pdf.refobj(<integer> n)
+\stopfunctioncall
+
+This function works in both the \prm {directlua} and \lpr {latelua} environment.
+Inside \prm {directlua} a new whatsit node \quote {pdf_refobj} is created, which
+will be marked for flushing during page output and the object is then written
+directly after the page, when also the resources objects are written to the \PDF\
+file. Inside \lpr {latelua} the object will be marked for flushing.
+
+This function has no return values.
+
+\stopsubsection
+
+\startsubsection[title={\type {reserveobj}}]
+
+\topicindex{\PDF+objects}
+
+\libindex{reserveobj}
+
+This function creates an empty \PDF\ object and returns its number.
+
+\startfunctioncall
+<number> n = pdf.reserveobj()
+<number> n = pdf.reserveobj("annot")
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {getpageref}}]
+
+\topicindex{\PDF+pages}
+
+\libindex{getpageref}
+
+The object number of a page can be fetched with this function. This can be a
+forward reference so when you ask for a future page, you do get a number back.
+
+\startfunctioncall
+<number> n = pdf.getpageref(123)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {registerannot}}]
+
+\topicindex{\PDF+annotations}
+
+\libindex{registerannot}
+
+This function adds an object number to the \type {/Annots} array for the current
+page without doing anything else. This function can only be used from within
+\lpr {latelua}.
+
+\startfunctioncall
+pdf.registerannot (<number> objnum)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {newcolorstack}}]
+
+\topicindex{\PDF+color stack}
+
+\libindex{newcolorstack}
+
+This function allocates a new color stack and returns it's id. The arguments
+are the same as for the similar backend extension primitive.
+
+\startfunctioncall
+pdf.newcolorstack("0 g","page",true) -- page|direct|origin
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {setfontattributes}}]
+
+\topicindex{\PDF+fonts}
+
+\libindex{setfontattributes}
+
+This function will force some additional code into the font resource. It can for
+instance be used to add a custom \type {ToUnicode} vector to a bitmap file.
+
+\startfunctioncall
+pdf.setfontattributes(<number> font id, <string> pdf code)
+\stopfunctioncall
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={The \type {pdfe} library}][library=pdfe]
+
+\startsubsection[title={Introduction}]
+
+\topicindex{\PDF+objects}
+
+\topicindex{\PDF+analyze}
+\topicindex{\PDF+\type{pdfe}}
+
+The \type {pdfe} library replaces the \type {epdf} library and provides an
+interface to \PDF\ files. It uses the same code as is used for \PDF\ image
+inclusion. The \type {pplib} library by Paweł Jackowski replaces the \type
+{poppler} (derived from \type {xpdf}) library.
+
+A \PDF\ file is basically a tree of objects and one descends into the tree via
+dictionaries (key/value) and arrays (index/value). There are a few topmost
+dictionaries that start at root that are accessed more directly.
+
+Although everything in \PDF\ is basically an object we only wrap a few in so
+called userdata \LUA\ objects.
+
+\starttabulate
+\BC \PDF          \BC \LUA \NC \NR
+\NC null          \NC nil \NC \NR
+\NC boolean       \NC boolean \NC \NR
+\NC integer       \NC integer \NC \NR
+\NC float         \NC number \NC \NR
+\NC name          \NC string \NC \NR
+\NC string        \NC string \NC \NR
+\NC array         \NC array userdatum \NC \NR
+\NC dictionary    \NC dictionary userdatum \NC \NR
+\NC stream        \NC stream userdatum (with related dictionary) \NC \NR
+\NC reference     \NC reference userdatum \NC \NR
+\stoptabulate
+
+The regular getters return these \LUA\ data types but one can also get more
+detailed information.
+
+\stopsubsection
+
+\startsubsection[title={\type {open}, \type {new}, \type {getstatus}, \type {close}, \type {unencrypt}}]
+
+\libindex {open}
+\libindex {new}
+\libindex {new}
+\libindex {getstatus}
+\libindex {close}
+\libindex {unencrypt}
+
+A document is loaded from a file or string
+
+\starttyping
+<pdfe document> = pdfe.open(filename)
+<pdfe document> = pdfe.new(somestring,somelength)
+\stoptyping
+
+Such a document is closed with:
+
+\starttyping
+pdfe.close(<pdfe document>)
+\stoptyping
+
+You can check if a document opened well by:
+
+\starttyping
+pdfe.getstatus(<pdfe document>)
+\stoptyping
+
+The returned codes are:
+
+\starttabulate[|c|l|]
+\DB value      \BC explanation \NC \NR
+\TB
+\NC \type {-2} \NC the document is (still) protected \NC \NR
+\NC \type {-1} \NC the document failed to open \NC \NR
+\NC \type  {0} \NC the document is not encrypted \NC \NR
+\NC \type  {1} \NC the document has been unencrypted \NC \NR
+\LL
+\stoptabulate
+
+An encrypted document can be unencrypted by the next command where instead of
+either password you can give \type {nil}:
+
+\starttyping
+pdfe.unencrypt(<pdfe document>,userpassword,ownerpassword)
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\type {getsize}, \type {getversion}, \type {getnofobjects}, \type {getnofpages}, \type{getmemoryusage}}]
+
+\libindex {getsize}
+\libindex {getversion}
+\libindex {getnofobjects}
+\libindex {getnofpages}
+\libindex {getmemoryusage}
+
+A successfully opened document can provide some information:
+
+\starttyping
+bytes = getsize(<pdfe document>)
+major, minor = getversion(<pdfe document>)
+n = getnofobjects(<pdfe document>)
+n = getnofpages(<pdfe document>)
+bytes, waste = getmemoryusage(<pdfe document>)
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\type {get[catalog|trailer|info]}}]
+
+\libindex {getcatalog}
+\libindex {gettrailer}
+\libindex {getinfo}
+
+For accessing the document structure you start with the so called catalog, a
+dictionary:
+
+\starttyping
+<pdfe dictionary> = pdfe.getcatalog(<pdfe document>)
+\stoptyping
+
+The other two root dictionaries are accessed with:
+
+\starttyping
+<pdfe dictionary> = pdfe.gettrailer(<pdfe document>)
+<pdfe dictionary> = pdfe.getinfo(<pdfe document>)
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\type {getpage}, \type {getbox}}]
+
+\libindex {getpage}
+\libindex {getbox}
+
+A specific page can conveniently be reached with the next command, which
+returns a dictionary. The first argument is to be a page dictionary.
+
+\starttyping
+<pdfe dictionary> = pdfe.getpage(<pdfe document>,pagenumber)
+\stoptyping
+
+Another convenience command gives you the (bounding) box of a (normally page)
+which can be inherited from the document itself. An example of a valid box name
+is \type {MediaBox}.
+
+\starttyping
+pages = pdfe.getbox(<pdfe dictionary>,boxname)
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\type {get[string|integer|number|boolean|name]}, \type{type}}]
+
+\libindex {getstring}
+\libindex {getinteger}
+\libindex {getnumber}
+\libindex {getboolean}
+\libindex {getname}
+\libindex {type}
+
+Common values in dictionaries and arrays are strings, integers, floats, booleans
+and names (which are also strings) and these are also normal \LUA\ objects:
+
+\starttyping
+s = getstring (<pdfe array|dictionary>,index|key)
+i = getinteger(<pdfe array|dictionary>,index|key)
+n = getnumber (<pdfe array|dictionary>,index|key)
+b = getboolean(<pdfe array|dictionary>,index|key)
+n = getname   (<pdfe array|dictionary>,index|key)
+s = type      (<pdfe array|dictionary|document|reference|stream)
+\stoptyping
+
+The \type {type} returns a string describing the type of the object,
+i.e. "pdfe.array", "pdfe.dictionary", "pdfe",
+"pdfe.reference", "pdfe.stream".
+
+The \type {getstring} function has two extra variants:
+
+\starttyping
+s, h = getstring (<pdfe array|dictionary>,index|key,false)
+s    = getstring (<pdfe array|dictionary>,index|key,true)
+\stoptyping
+
+The first call returns the original string plus a boolean indicating if the
+string is hex encoded. The second call returns the unencoded string.
+
+\stopsubsection
+
+\startsubsection[title={\type {get[from][dictionary|array|stream]}}]
+
+\libindex {getdictionary} \libindex {getfromdictionary}
+\libindex {getarray}      \libindex {getfromarray}
+\libindex {getstream}     \libindex {getfromstream}
+
+Normally you will use an index in an array and key in a dictionary but dictionaries
+also accept an index. The size of an array or dictionary is available with the
+usual \type {#} operator.
+
+\starttyping
+<pdfe dictionary>   = getdictionary(<pdfe array|dictionary>,index|key)
+<pdfe array>        = getarray     (<pdfe array|dictionary>,index|key)
+<pdfe stream>,
+<pdfe dictionary>   = getstream    (<pdfe array|dictionary>,index|key)
+\stoptyping
+
+These commands return dictionaries, arrays and streams, which are dictionaries
+with a blob of data attached.
+
+Before we come to an alternative access mode, we mention that the objects provide
+access in a different way too, for instance this is valid:
+
+\starttyping
+print(pdfe.open("foo.pdf").Catalog.Type)
+\stoptyping
+
+At the topmost level there are \type {Catalog}, \type {Info}, \type {Trailer}
+and \type {Pages}, so this is also okay:
+
+\starttyping
+print(pdfe.open("foo.pdf").Pages[1])
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\type {[open|close|readfrom|whole|]stream}}]
+
+\libindex {openstream}
+\libindex {closestream}
+\libindex {readfromstream}
+\libindex {readfromwholestream}
+
+Streams are sort of special. When your index or key hits a stream you get back a
+stream object and dictionary object. The dictionary you can access in the usual
+way and for the stream there are the following methods:
+
+\starttyping
+okay   = openstream(<pdfe stream>,[decode])
+         closestream(<pdfe stream>)
+str, n = readfromstream(<pdfe stream>)
+str, n = readwholestream(<pdfe stream>,[decode])
+\stoptyping
+
+You either read in chunks, or you ask for the whole. When reading in chunks, you
+need to open and close the stream yourself. The \type {n} value indicates the
+length read. The \type {decode} parameter controls if the stream data gets
+uncompressed.
+
+As with dictionaries, you can access fields in a stream dictionary in the usual
+\LUA\ way too. You get the content when you \quote {call} the stream. You can
+pass a boolean that indicates if the stream has to be decompressed.
+
+% pdfe.objectcodes      = objectcodes
+% pdfe.stringcodes      = stringcodes
+% pdfe.encryptioncodes  = encryptioncodes
+
+\stopsubsection
+
+\startsubsection[title={\type {getfrom[dictionary|array]}}]
+
+\libindex {getfromdictionary}
+\libindex {getfromarray}
+
+In addition to the interface described before, there is also a bit lower level
+interface available.
+
+\starttyping
+key, type, value, detail = getfromdictionary(<pdfe dictionary>,index)
+type, value, detail = getfromarray(<pdfe array>,index)
+\stoptyping
+
+\starttabulate[|c|l|l|l|]
+\DB type       \BC meaning    \BC value            \BC detail \NC \NR
+\NC \type {0}  \NC none       \NC nil              \NC \NC \NR
+\NC \type {1}  \NC null       \NC nil              \NC \NC \NR
+\NC \type {2}  \NC boolean    \NC boolean          \NC \NC \NR
+\NC \type {3}  \NC integer    \NC integer          \NC \NC \NR
+\NC \type {4}  \NC number     \NC float            \NC \NC \NR
+\NC \type {5}  \NC name       \NC string           \NC \NC \NR
+\NC \type {6}  \NC string     \NC string           \NC hex \NC \NR
+\NC \type {7}  \NC array      \NC arrayobject      \NC size \NC \NR
+\NC \type {8}  \NC dictionary \NC dictionaryobject \NC size \NC \NR
+\NC \type {9}  \NC stream     \NC streamobject     \NC dictionary size \NC \NR
+\NC \type {10} \NC reference  \NC integer          \NC \NC \NR
+\LL
+\stoptabulate
+
+A \type {hex} string is (in the \PDF\ file) surrounded by \type {<>} while plain
+strings are bounded by \type {<>}.
+
+\stopsubsection
+
+\startsubsection[title={\type {[dictionary|array]totable}}]
+
+\libindex {dictionarytotable}
+\libindex {arraytotable}
+
+All entries in a dictionary or table can be fetched with the following commands
+where the return values are a hashed or indexed table.
+
+\starttyping
+hash = dictionarytotable(<pdfe dictionary>)
+list = arraytotable(<pdfe array>)
+\stoptyping
+
+You can get a list of pages with:
+
+\starttyping
+{ { <pdfe dictionary>, size, objnum }, ... } = pagestotable(<pdfe document>)
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\type {getfromreference}}]
+
+\libindex {getfromreference}
+
+Because you can have unresolved references, a reference object can be resolved
+with:
+
+\starttyping
+type, <pdfe dictionary|array|stream>, detail = getfromreference(<pdfe reference>)
+\stoptyping
+
+So, as second value you get back a new \type {pdfe} userdata object that you can
+query.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Memory streams}][library=pdfe]
+
+\topicindex{\PDF+memory streams}
+
+\libindex {new}
+
+The \type {pdfe.new} that takes three arguments:
+
+\starttabulate
+\DB value           \BC explanation      \NC \NR
+\TB
+\NC \type {stream}  \NC this is a (in low level \LUA\ speak) light userdata
+                        object, i.e.\ a pointer to a sequence of bytes \NC \NR
+\NC \type {length}  \NC this is the length of the stream in bytes (the stream can
+                        have embedded zeros) \NC \NR
+\NC \type {name}    \NC optional, this is a unique identifier that is used for
+                        hashing the stream, so that multiple doesn't use more
+                        memory \NC \NR
+\LL
+\stoptabulate
+
+The third argument is optional. When it is not given the function will return an
+\type {pdfe} document object as with a regular file, otherwise it will return a
+filename that can be used elsewhere (e.g.\ in the image library) to reference the
+stream as pseudo file.
+
+Instead of a light userdata stream (which is actually fragile but handy when you
+come from a library) you can also pass a \LUA\ string, in which case the given
+length is (at most) the string length.
+
+The function returns an \type {pdfe} object and a string. The string can be used in
+the \type {img} library instead of a filename. You need to prevent garbage
+collection of the object when you use it as image (for instance by storing it
+somewhere).
+
+Both the memory stream and it's use in the image library is experimental and can
+change. In case you wonder where this can be used: when you use the swiglib
+library for \type {graphicmagick}, it can return such a userdata object. This
+permits conversion in memory and passing the result directly to the backend. This
+might save some runtime in one|-|pass workflows. This feature is currently not
+meant for production and we might come up with a better implementation.
+
+\stopsection
+
+\startsection[title={The \type {pdfscanner} library}][library=pdfscanner]
+
+\topicindex{\PDF+scanner}
+
+\libindex {scan}
+
+The \type {pdfscanner} library allows interpretation of \PDF\ content streams and
+\type {/ToUnicode} (cmap) streams. You can get those streams from the \type
+{pdfe} library, as explained in an earlier section. There is only a single
+top|-|level function in this library:
+
+\startfunctioncall
+pdfscanner.scan (<pdfe stream>, <table> operatortable, <table> info)
+pdfscanner.scan (<pdfe array>, <table> operatortable, <table> info)
+pdfscanner.scan (<string>, <table> operatortable, <table> info)
+\stopfunctioncall
+
+The first argument should be a \LUA\ string or a stream or array object coming
+from the \type {pdfe} library. The second argument, \type {operatortable}, should
+be a \LUA\ table where the keys are \PDF\ operator name strings and the values
+are \LUA\ functions (defined by you) that are used to process those operators.
+The functions are called whenever the scanner finds one of these \PDF\ operators
+in the content stream(s). The functions are called with two arguments: the \type
+{scanner} object itself, and the \type {info} table that was passed are the third
+argument to \type {pdfscanner.scan}.
+
+Internally, \type {pdfscanner.scan} loops over the \PDF\ operators in the
+stream(s), collecting operands on an internal stack until it finds a \PDF\
+operator. If that \PDF\ operator's name exists in \type {operatortable}, then the
+associated function is executed. After the function has run (or when there is no
+function to execute) the internal operand stack is cleared in preparation for the
+next operator, and processing continues.
+
+The \type {scanner} argument to the processing functions is needed because it
+offers various methods to get the actual operands from the internal operand
+stack.
+
+A simple example of processing a \PDF's document stream could look like this:
+
+\starttyping
+local operatortable = { }
+
+operatortable.Do = function(scanner,info)
+    local resources = info.resources
+    if resources then
+        local val     = scanner:pop()
+        local name    = val[2]
+        local xobject = resources.XObject
+        print(info.space .. "Uses XObject " .. name)
+        local resources = xobject.Resources
+        if resources then
+            local newinfo =  {
+                space     = info.space .. "  ",
+                resources = resources,
+            }
+            pdfscanner.scan(entry, operatortable, newinfo)
+        end
+    end
+end
+
+local function Analyze(filename)
+    local doc = pdfe.open(filename)
+    if doc then
+        local pages = doc.Pages
+        for i=1,#pages do
+            local page = pages[i]
+            local info = {
+              space     = "  " ,
+              resources = page.Resources,
+            }
+            print("Page " .. i)
+         -- pdfscanner.scan(page.Contents,operatortable,info)
+            pdfscanner.scan(page.Contents(),operatortable,info)
+        end
+    end
+end
+
+Analyze("foo.pdf")
+\stoptyping
+
+This example iterates over all the actual content in the \PDF, and prints out the
+found \type {XObject} names. While the code demonstrates quite some of the \type
+{pdfe} functions, let's focus on the type \type {pdfscanner} specific code
+instead.
+
+From the bottom up, the following line runs the scanner with the \PDF\ page's
+top|-|level content given in the first argument.
+
+The third argument, \type {info}, contains two entries: \type {space} is used to
+indent the printed output, and \type {resources} is needed so that embedded \type
+{XForms} can find their own content.
+
+The second argument, \type {operatortable} defines a processing function for a
+single \PDF\ operator, \type {Do}.
+
+The function \type {Do} prints the name of the current \type {XObject}, and then
+starts a new scanner for that object's content stream, under the condition that
+the \type {XObject} is in fact a \type {/Form}. That nested scanner is called
+with new \type {info} argument with an updated \type {space} value so that the
+indentation of the output nicely nests, and with a new \type {resources} field
+to help the next iteration down to properly process any other, embedded \type
+{XObject}s.
+
+Of course, this is not a very useful example in practice, but for the purpose of
+demonstrating \type {pdfscanner}, it is just long enough. It makes use of only
+one \type {scanner} method: \type {scanner:pop()}. That function pops the top
+operand of the internal stack, and returns a \LUA\ table where the object at index
+one is a string representing the type of the operand, and object two is its
+value.
+
+The list of possible operand types and associated \LUA\ value types is:
+
+\starttabulate[|l|l|]
+\DB types           \BC type      \NC \NR
+\TB
+\NC \type{integer}  \NC <number>  \NC \NR
+\NC \type{real}     \NC <number>  \NC \NR
+\NC \type{boolean}  \NC <boolean> \NC \NR
+\NC \type{name}     \NC <string>  \NC \NR
+\NC \type{operator} \NC <string>  \NC \NR
+\NC \type{string}   \NC <string>  \NC \NR
+\NC \type{array}    \NC <table>   \NC \NR
+\NC \type{dict}     \NC <table>   \NC \NR
+\LL
+\stoptabulate
+
+In case of \type {integer} or \type {real}, the value is always a \LUA\ (floating
+point) number. In case of \type {name}, the leading slash is always stripped.
+
+In case of \type {string}, please bear in mind that \PDF\ actually supports
+different types of strings (with different encodings) in different parts of the
+\PDF\ document, so you may need to reencode some of the results; \type {pdfscanner}
+always outputs the byte stream without reencoding anything. \type {pdfscanner}
+does not differentiate between literal strings and hexadecimal strings (the
+hexadecimal values are decoded), and it treats the stream data for inline images
+as a string that is the single operand for \type {EI}.
+
+In case of \type {array}, the table content is a list of \type {pop} return
+values and in case of \type {dict}, the table keys are \PDF\ name strings and the
+values are \type {pop} return values.
+
+\libindex{pop}
+\libindex{popnumber}
+\libindex{popname}
+\libindex{popstring}
+\libindex{poparray}
+\libindex{popdictionary}
+\libindex{popboolean}
+\libindex{done}
+
+There are a few more methods defined that you can ask \type {scanner}:
+
+\starttabulate[|l|p|]
+\DB method               \BC explanation \NC \NR
+\TB
+\NC \type{pop}           \NC see above \NC \NR
+\NC \type{popnumber}     \NC return only the value of a \type {real} or \type {integer} \NC \NR
+\NC \type{popname}       \NC return only the value of a \type {name} \NC \NR
+\NC \type{popstring}     \NC return only the value of a \type {string} \NC \NR
+\NC \type{poparray}      \NC return only the value of a \type {array} \NC \NR
+\NC \type{popdictionary} \NC return only the value of a \type {dict} \NC \NR
+\NC \type{popboolean}    \NC return only the value of a \type {boolean} \NC \NR
+\NC \type{done}          \NC abort further processing of this \type {scan()} call \NC \NR
+\LL
+\stoptabulate
+
+The \type {pop*} are convenience functions, and come in handy when you know the
+type of the operands beforehand (which you usually do, in \PDF). For example, the
+\type {Do} function could have used \type {local name = scanner:popname()}
+instead, because the single operand to the \type {Do} operator is always a \PDF\
+name object.
+
+The \type {done} function allows you to abort processing of a stream once you
+have learned everything you want to learn. This comes in handy while parsing
+\type {/ToUnicode}, because there usually is trailing garbage that you are not
+interested in. Without \type {done}, processing only ends at the end of the
+stream, possibly wasting \CPU\ cycles.
+
+{\em We keep the older names \type {popNumber}, \type {popName}, \type
+{popString}, \type {popArray}, \type {popDict} and \type {popBool} around.}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

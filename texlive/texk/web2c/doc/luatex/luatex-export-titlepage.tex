@@ -1,0 +1,31 @@
+\environment luatex-style
+
+\startcomponent luatex-export-titlepage
+
+\setupexport
+  [cssfile=extra-styles.css]
+
+\settaggedmetadata
+  [    title={LuaTeX Reference Manual},
+   copyright={LuaTeX Development Team},
+     version={\documentvariable{version}},
+      status={\documentvariable{status}},
+    snapshot={\documentvariable{snapshot}},
+        date={\rawdate[weekday,day,month,year]},
+         url={www.luatex.org}]
+
+\setupbackgrounds
+  [leftpage]
+  [setups=pagenumber:left]
+
+\setupbackgrounds
+  [rightpage]
+  [setups=pagenumber:right]
+
+\startpreamble
+    This document is derived from the original manual. When examples are given,
+    they assume processing by \LUATEX\ and therefore will not show up as
+    intended. The \PDF\ version is the real reference.
+\stoppreamble
+
+\stopcomponent

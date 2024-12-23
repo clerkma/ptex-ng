@@ -1,0 +1,842 @@
+% language=uk
+
+\environment luatex-style
+
+\startcomponent luatex-lua
+
+\startchapter[reference=lua,title={Using \LUATEX}]
+
+\startsection[title={Initialization},reference=init]
+
+\startsubsection[title={\LUATEX\ as a \LUA\ interpreter}]
+
+\topicindex {initialization}
+\topicindex {\LUA+interpreter}
+
+There are some situations that make \LUATEX\ behave like a standalone \LUA\
+interpreter:
+
+\startitemize[packed]
+\startitem
+    if a \type {--luaonly} option is given on the commandline, or
+\stopitem
+\startitem
+    if the executable is named \type {texlua} or \type {luatexlua}, or
+\stopitem
+\startitem
+    if the only non|-|option argument (file) on the commandline has the extension
+    \type {lua} or \type {luc}.
+\stopitem
+\stopitemize
+
+In this mode, it will set \LUA's \type {arg[0]} to the found script name, pushing
+preceding options in negative values and the rest of the command line in the
+positive values, just like the \LUA\ interpreter.
+
+\LUATEX\ will exit immediately after executing the specified \LUA\ script and is,
+in effect, a somewhat bulky stand alone \LUA\ interpreter with a bunch of extra
+preloaded libraries.
+
+\stopsubsection
+
+\startsubsection[title={\LUATEX\ as a \LUA\ byte compiler}]
+
+\topicindex {\LUA+byte code}
+
+There are two situations that make \LUATEX\ behave like the \LUA\ byte compiler:
+
+\startitemize[packed]
+\startitem if a \type {--luaconly} option is given on the command line, or \stopitem
+\startitem if the executable is named \type {texluac} \stopitem
+\stopitemize
+
+In this mode, \LUATEX\ is exactly like \type {luac} from the stand alone \LUA\
+distribution, except that it does not have the \type {-l} switch, and that it
+accepts (but ignores) the \type {--luaconly} switch. The current version of \LUA\
+can dump bytecode using \type {string.dump} so we might decide to drop this
+version of \LUATEX.
+
+\stopsubsection
+
+\startsubsection[title={Other commandline processing}]
+
+\topicindex {command line}
+
+When the \LUATEX\ executable starts, it looks for the \type {--lua} command line
+option. If there is no \type {--lua} option, the command line is interpreted in a
+similar fashion as the other \TEX\ engines. Some options are accepted but have no
+consequence. The following command|-|line options are understood:
+
+\starttabulate[|l|p|]
+\DB commandline argument                \BC explanation \NC \NR
+\TB
+\NC \type{--credits}                    \NC display credits and exit \NC \NR
+\NC \type{--debug-format}               \NC enable format debugging \NC \NR
+\NC \type{--draftmode}                  \NC switch on draft mode i.e.\ generate no output in \PDF\ mode \NC \NR
+\NC \type{--[no-]check-dvi-total-pages} \NC exit when DVI exceeds 65535 pages (default: check) \NC \NR
+\NC \type{--[no-]file-line-error}       \NC disable/enable \type {file:line:error} style messages \NC \NR
+\NC \type{--[no-]file-line-error-style} \NC aliases of \type {--[no-]file-line-error} \NC \NR
+\NC \type{--fmt=FORMAT}                 \NC load the format file \type {FORMAT} \NC\NR
+\NC \type{--halt-on-error}              \NC stop processing at the first error\NC \NR
+\NC \type{--help}                       \NC display help and exit \NC\NR
+\NC \type{--ini}                        \NC be \type {iniluatex}, for dumping formats \NC\NR
+\NC \type{--interaction=STRING}         \NC set interaction mode: \type {batchmode}, \type {nonstopmode},
+                                            \type {scrollmode} or \type {errorstopmode} \NC \NR
+\NC \type{--jobname=STRING}             \NC set the job name to \type {STRING} \NC \NR
+\NC \type{--kpathsea-debug=NUMBER}      \NC set path searching debugging flags according to the bits of
+                                           \type {NUMBER} \NC \NR
+\NC \type{--lua=FILE}                   \NC load and execute a \LUA\ initialization script \NC\NR
+\NC \type{--luadebug}                   \NC enable the \type{debug} library\NC\NR
+\NC \type{--[no-]mktex=FMT}             \NC disable/enable \type {mktexFMT} generation with \type {FMT} is
+                                            \type {tex} or \type {tfm} \NC \NR
+\NC \type{--nosocket}                   \NC disable the \LUA\ socket library \NC\NR
+\NC \type{--no-socket}                  \NC disable the \LUA\ socket library \NC\NR
+\NC \type{--socket}                     \NC enable the \LUA\ socket library \NC\NR
+\NC \type{--output-comment=STRING}      \NC use \type {STRING} for \DVI\ file comment instead of date (no
+                                            effect for \PDF) \NC \NR
+\NC \type{--output-directory=DIR}       \NC use \type {DIR} as the directory to write files to \NC \NR
+\NC \type{--output-format=FORMAT}       \NC use \type {FORMAT} for job output; \type {FORMAT} is \type {dvi}
+                                            or \type {pdf} \NC \NR
+\NC \type{--progname=STRING}            \NC set the program name to \type {STRING} \NC \NR
+\NC \type{--recorder}                   \NC enable filename recorder \NC \NR
+\NC \type{--safer}                      \NC disable easily exploitable \LUA\ commands \NC\NR
+\NC \type{--[no-]shell-escape}          \NC disable/enable system calls \NC \NR
+\NC \type{--shell-restricted}           \NC restrict system calls to a list of commands given in \type
+                                            {texmf.cnf} \NC \NR
+\NC \type{--synctex=NUMBER}             \NC enable \type {synctex} \NC \NR
+\NC \type{--utc}                        \NC use utc times when applicable \NC \NR
+\NC \type{--version}                    \NC display version and exit \NC \NR
+\LL
+\stoptabulate
+
+We don't support \prm {write} 18 because \type {os.execute} can do the same. It
+simplifies the code and makes more write targets possible.
+
+The value to use for \prm {jobname} is decided as follows:
+
+\startitemize
+\startitem
+    If \type {--jobname} is given on the command line, its argument will be the
+    value for \prm {jobname}, without any changes. The argument will not be
+    used for actual input so it need not exist. The \type {--jobname} switch only
+    controls the \prm {jobname} setting.
+\stopitem
+\startitem
+    Otherwise, \prm {jobname} will be the name of the first file that is read
+    from the file system, with any path components and the last extension (the
+    part following the last \type {.}) stripped off.
+\stopitem
+\startitem
+    There is an exception to the previous point: if the command line goes into
+    interactive mode (by starting with a command) and there are no files input
+    via \prm {everyjob} either, then the \prm {jobname} is set to \type
+    {texput} as a last resort.
+\stopitem
+\stopitemize
+
+The file names for output files that are generated automatically are created by
+attaching the proper extension (\type {log}, \type {pdf}, etc.) to the found
+\prm {jobname}. These files are created in the directory pointed to by \type
+{--output-directory}, or in the current directory, if that switch is not present.
+If \type{--output-directory} is not empty, its value it's copied to the
+\type{TEXMF_OUTPUT_DIRECTORY} env. variable; if it's empty, the value of
+\type{TEXMF_OUTPUT_DIRECTORY} is the value of the output directory.
+
+
+Without the \type {--lua} option, command line processing works like it does in
+any other \WEBC|-|based typesetting engine, except that \LUATEX\ has a few extra
+switches and lacks some others. Also, if the \type {--lua} option is present,
+\LUATEX\ will enter an alternative mode of command line processing in comparison
+to the standard \WEBC\ programs. In this mode, a small series of actions is taken
+in the following order:
+
+\startitemize[n]
+
+\startitem
+    First, it will parse the command line as usual, but it will only interpret a
+    small subset of the options immediately: \type {--safer}, \type {--nosocket},
+    \type {--no-socket},
+    \type {--socket}, \type {--[no-]shell-escape}, \type {--enable-write18}, \type
+    {--disable-write18}, \type {--shell-restricted}, \type {--help}, \type
+    {--version}, and \type {--credits}.
+\stopitem
+
+\startitem
+    Next \LUATEX\ searches for the requested \LUA\ initialization script. If it
+    cannot be found using the actual name given on the command line, a second
+    attempt is made by prepending the value of the environment variable \type
+    {LUATEXDIR}, if that variable is defined in the environment.
+\stopitem
+
+\startitem
+    Then it checks the various safety switches. You can use those to disable some
+    \LUA\ commands that can easily be abused by a malicious document. Currently
+    \type {--safer} nils the following functions:
+
+    \blank
+
+    \starttabulate[|c|l|]
+        \DB library     \BC functions \NC \NR
+        \TB
+        \NC \type {os}  \NC \type {execute} \type {exec} \type{kpsepopen}
+                            \type {spawn} \type {setenv}
+                            \type {rename} \type {remove} \type {tmpdir} \NC \NR
+        \NC \type {io}  \NC \type {popen} \type {output} \type {tmpfile} \NC \NR
+        \NC \type {lfs} \NC \type {rmdir} \type {mkdir} \type {mkdirp} \type {chdir}
+                            \type {lock}  \type {touch} \NC \NR
+        \LL
+    \stoptabulate
+
+    \blank
+
+    Furthermore, it disables loading of compiled \LUA\ libraries and it makes
+    \type {io.open()} fail on files that are opened for anything besides reading.
+
+    Finally, it disables the \type {socket} library unconditionally (but not the
+    \type {mime} library which is always available).
+
+    From version 1.18.0  and if  \KPATHSEA\ is used, with the exception of \type{debug.traceback}
+    the \type{debug} library is not enabled by default; it can
+    be enabled with the \type{--luadebug} switch. The \type{debug} library
+    is always enabled in shell-escape mode.
+
+   Also from version 1.18.0 and if  \KPATHSEA\ is used, the functions
+   \type{os.rename},\type{os.remove}, \type{lfs.attributes}, \type{lfs.chdir},
+   \type{lfs.lock_dir}, \type{lfs.dir}, \type{lfs.link}, \type{lfs.mkdir}, \type{lfs.mkdirp},
+   \type{lfs.rmdir}, \type{lfs.symlinkattributes}, \type{lfs.touch} 
+   return \type{true} if both \type{kpse.in_name_ok_silent_extended} and
+   \type{kpse.out_name_ok_silent_extended} validate the pathname;
+   \type{lfs.attributes}, \type{lfs.dir} and  \type{lfs.symlinkattributes} are validated
+   only against \type{kpse.in_name_ok_silent_extended}.
+
+
+
+\stopitem
+
+\startitem
+    When \LUATEX\ starts it sets the \type {locale} to a neutral value. If for
+    some reason you use \type {os.setlocale}, you need to make sure you \type {nil}
+    it afterwards because otherwise it can interfere with code that for instance
+    generates dates. You can ignore the \type {locale} with:
+
+    \starttyping
+    os.setlocale(nil,nil)
+    \stoptyping
+
+    The \type {--nosocket} or \type {--no-socket} option makes the socket library
+    unavailable, so that \LUA\ cannot use networking;  
+    \type {--socket} option makes the socket library available.
+
+    The switches \type {--[no-]shell-escape}, \type {--[enable|disable]-write18}, and
+    \type {--shell-restricted} have the same effects as in \PDFTEX, and additionally
+    make \type {io.popen()}, \type {os.execute}, \type {os.exec}, \type {os.kpsepopen}
+    and \type {os.spawn} adhere to the requested option.
+
+    By default
+    the socket library is not enabled: one can enable it with with \type {--socket}
+     or with \type {--shell-escape}  (but without  \type {--shell-restricted})
+     and disable it with \type {--nosocket} (or \type {--no-socket})
+     or unconditionally with \type {--safer}.
+
+    In case of conflictual options, the most restrictive wins.
+
+    The \type{mime} library is always available.
+
+\stopitem
+
+\startitem
+    Next the initialization script is loaded and executed. From within the
+    script, the entire command line is available in the \LUA\ table \type {arg},
+    beginning with \type {arg[0]}, containing the name of the executable. As
+    consequence warnings about unrecognized options are suppressed.
+\stopitem
+
+\stopitemize
+
+Command line processing happens very early on. So early, in fact, that none of
+\TEX's initializations have taken place yet. For that reason, the tables that
+deal with typesetting, like \type {tex}, \type {token}, \type {node} and
+\type {pdf}, are off|-|limits during the execution of the startup file (they
+are \type {nil}'d). Special care is taken that \type {texio.write} and \type
+{texio.write_nl} function properly, so that you can at least report your actions
+to the log file when (and if) it eventually becomes opened (note that \TEX\ does
+not even know its \prm {jobname} yet at this point).
+
+Everything you do in the \LUA\ initialization script will remain visible during
+the rest of the run, with the exception of the \TEX\ specific libraries like
+\type {tex}, \type {token}, \type {node} and \type {pdf} tables. These will be
+initialized to their documented state after the execution of the script. You
+should not store anything in variables or within tables with these four global
+names, as they will be overwritten completely.
+
+We recommend you use the startup file only for your own \TEX|-|independent
+initializations (if you need any), to parse the command line, set values in the
+\type {texconfig} table, and register the callbacks you need.
+
+\LUATEX\ allows some of the command line options to be overridden by reading
+values from the \type {texconfig} table at the end of script execution (see the
+description of the \type {texconfig} table later on in this document for more
+details on which ones exactly).
+
+Unless the \type {texconfig} table tells \LUATEX\ not to initialize \KPATHSEA\
+at all (set \type {texconfig.kpse_init} to \type {false} for that), \LUATEX\
+acts on some more command line options after the initialization script is
+finished: in order to initialize the built|-|in \KPATHSEA\ library properly,
+\LUATEX\ needs to know the correct program name to use, and for that it needs to
+check \type {--progname}, or \type {--ini} and \type {--fmt}, if \type
+{--progname} is missing.
+
+From version 1.17.1, in \DVI\ mode the new commandline switch \type {--check-dvi-total-pages},
+enabled by default, checks  that the total number of pages does not
+exceeds 65535, and in case the run abort. This breaks the compatibility with \PDFTEX\
+where, as in \TEX, when the total number of pages is greater than 65535 the file will lie.
+The previous behaviour can be restored with \type {--[no-]check-dvi-total-pages}.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\LUA\ behaviour}]
+
+\startsubsection[title={The \LUA\ version}]
+
+\topicindex {\LUA+libraries}
+\topicindex {\LUA+extensions}
+
+We currently use \LUA\ 5.3 and will follow developments of the language but
+normally with some delay. Therefore the user needs to keep an eye on (subtle)
+differences in successive versions of the language. Also, \LUAJITTEX\ lags behind
+in the sense that \LUAJIT\ is not in sync with regular \LUA\ development. Here is
+an example of one aspect.
+
+\LUA s \type {tostring} function (and \type {string.format} may return values in
+scientific notation, thereby confusing the \TEX\ end of things when it is used as
+the right|-|hand side of an assignment to a \prm {dimen} or \prm {count}. The
+output of these serializers also depend on the \LUA\ version, so in \LUA\ 5.3 you
+can get different output than from 5.2.
+
+\stopsubsection
+
+\startsubsection[title={Integration in the \TDS\ ecosystem}]
+
+The main \TEX\ distributions follow the \TEX\ directory structure (\TDS).
+\LUATEX\ is able to use the kpathsea library to find \type {require()}d modules.
+For this purpose, \type {package.searchers[2]} is replaced by a different loader
+function, that decides at runtime whether to use kpathsea or the built|-|in core
+\LUA\ function. It uses \KPATHSEA\ when that is already initialized at that point
+in time, otherwise it reverts to using the normal \type {package.path} loader.
+
+Initialization of \KPATHSEA\ can happen either implicitly (when \LUATEX\ starts
+up and the startup script has not set \type {texconfig.kpse_init} to false), or
+explicitly by calling the \LUA\ function \type {kpse.set_program_name()}.
+
+\stopsubsection
+
+\startsubsection[title={Loading libraries}]
+
+\LUATEX\ is able to use dynamically loadable \LUA\ libraries, unless
+\type {--safer} was given as an option on the command line. For this purpose,
+\type {package.searchers[3]} is replaced by a different loader function, that
+decides at runtime whether to use \KPATHSEA\ or the built|-|in core \LUA\
+function. It uses \KPATHSEA\ when that is already initialized at that point in
+time, otherwise it reverts to using the normal \type {package.cpath} loader.
+
+This functionality required an extension to kpathsea. There is a new kpathsea
+file format: \type {kpse_clua_format} that searches for files with extension
+\type {.dll} and \type {.so}. The \type {texmf.cnf} setting for this variable is
+\type {CLUAINPUTS}, and by default it has this value:
+
+\starttyping
+CLUAINPUTS=.:$SELFAUTOLOC/lib/{$progname,$engine,}/lua//
+\stoptyping
+
+This path is imperfect (it requires a \TDS\ subtree below the binaries
+directory), but the architecture has to be in the path somewhere, and the
+currently simplest way to do that is to search below the binaries directory only.
+Of course it no big deal to write an alternative loader and use that in a macro
+package. One level up (a \type {lib} directory parallel to \type {bin}) would
+have been nicer, but that is not doable because \TEXLIVE\ uses a \type
+{bin/<arch>} structure.
+
+Loading dynamic \LUA\ libraries will fail if there are two \LUA\ libraries loaded
+at the same time (which will typically happen on \type {win32}, because there is
+one \LUA\ 5.3 inside \LUATEX, and another will likely be linked to the \DLL\ file
+of the module itself).
+
+\stopsubsection
+
+\startsubsection[title={Executing programs}]
+
+In keeping with the other \TEX|-|like programs in \TEXLIVE, the \LUA\ functions
+\type {os.execute}, \type{os.kpsepopen} and \type {io.popen}, as well as the two new functions \type
+{os.exec} and \type {os.spawn} that are explained below, take the value of \type
+{shell_escape} and|/|or \type {shell_escape_commands} in account. Whenever
+\LUATEX\ is run with the assumed intention to typeset a document (and by that we
+mean that it is called as \type {luatex}, as opposed to \type {texlua}, and that
+the command line option \type {--luaonly} was not given), it will only run the
+four functions above if the matching \type {texmf.cnf} variable(s) or their \type
+{texconfig} (see \in {section} [texconfig]) counterparts allow execution of the
+requested system command. In \quote {script interpreter} runs of \LUATEX, these
+settings have no effect, and all four functions have their original meaning.
+
+Some libraries have a few more functions, either coded in \CCODE\ or in \LUA. For
+instance, when we started with \LUATEX\ we added some helpers to the \type
+{luafilesystem} namespace \type {lfs}. The two boolean functions \type
+{lfs.isdir} and \type {lfs.isfile} were speedy and better variants of what could
+be done with \type {lfs.attributes}. The additional function \type
+{lfs.shortname} takes a file name and returns its short name on \type {win32}
+platforms; \type{lfs.mkdirp} is like \type{lfs.mkdir} but make parent directories as needed.
+Finally, for non|-|\type {win32} platforms only, we provided \type
+{lfs.readlink} that takes an existing symbolic link as argument and returns its
+name. However, the \type {lfs} library evolved so we have dropped these in favour of
+pure \LUA\ variants. The \type {shortname} helper is obsolete and now just
+returns the name.
+
+\stopsubsection
+
+\startsubsection[title={Multibyte \type {string} functions}]
+
+The \type {string} library has a few extra functions, for example \libidx
+{string} {explode}. This function takes upto two arguments: \type
+{string.explode(s[,m])} and returns an array containing the string argument \type
+{s} split into sub-strings based on the value of the string argument \type {m}.
+The second argument is a string that is either empty (this splits the string into
+characters), a single character (this splits on each occurrence of that
+character, possibly introducing empty strings), or a single character followed by
+the plus sign \type {+} (this special version does not create empty sub-strings).
+The default value for \type {m} is \quote {\type { +}} (multiple spaces). Note:
+\type {m} is not hidden by surrounding braces as it would be if this function was
+written in \TEX\ macros.
+
+The \type {string} library also has six extra iterators that return strings
+piecemeal: \libidx {string} {utfvalues}, \libidx {string} {utfcharacters},
+\libidx {string} {characters}, \libidx {string} {characterpairs}, \libidx
+{string} {bytes} and \libidx {string} {bytepairs}.
+
+\startitemize
+\startitem
+    \type {string.utfvalues(s)}: an integer value in the \UNICODE\ range
+\stopitem
+\startitem
+    \type {string.utfcharacters(s)}: a string with a single \UTF-8 token in it
+\stopitem
+\startitem
+    \type {string.characters(s)}: a string containing one byte
+\stopitem
+\startitem
+    \type {string.characterpairs(s)}: two strings each containing one byte or an
+    empty second string if the string length was odd
+\stopitem
+\startitem
+    \type {string.bytes(s)}: a single byte value
+\stopitem
+\startitem
+    \type {string.bytepairs(s)}: two byte values or nil instead of a number as
+    its second return value if the string length was odd
+\stopitem
+\stopitemize
+
+The \type {string.characterpairs()} and \type {string.bytepairs()} iterators
+are useful especially in the conversion of \UTF16 encoded data into \UTF8.
+
+There is also a two|-|argument form of \type {string.dump()}. The second argument
+is a boolean which, if true, strips the symbols from the dumped data. This
+matches an extension made in \type {luajit}. This is typically a function that
+gets adapted as \LUA\ itself progresses.
+
+The \type {string} library functions \type {len}, \type {lower}, \type {sub}
+etc.\ are not \UNICODE|-|aware. For strings in the \UTF8 encoding, i.e., strings
+containing characters above code point 127, the corresponding functions from the
+\type {slnunicode} library can be used, e.g., \type {unicode.utf8.len}, \type
+{unicode.utf8.lower} etc.\ The exceptions are \type {unicode.utf8.find}, that
+always returns byte positions in a string, and \type {unicode.utf8.match} and
+\type {unicode.utf8.gmatch}. While the latter two functions in general {\it
+are} \UNICODE|-|aware, they fall|-|back to non|-|\UNICODE|-|aware behavior when
+using the empty capture \type {()} but other captures work as expected. For the
+interpretation of character classes in \type {unicode.utf8} functions refer to
+the library sources at \hyphenatedurl {http://luaforge.net/projects/sln}.
+
+Version 5.3 of \LUA\ provides some native \UTF8 support but we have added a few
+similar helpers too: \libidx {string} {utfvalue}, \libidx {string} {utfcharacter}
+and \libidx {string} {utflength}.
+
+\startitemize
+\startitem
+    \type {string.utfvalue(s)}: returns the codepoints of the characters in the
+    given string
+\stopitem
+\startitem
+    \type {string.utfcharacter(c,...)}: returns a string with the characters of
+    the given code points
+\stopitem
+\startitem
+    \type {string.utflength(s)}: returns the length of the given string
+\stopitem
+\stopitemize
+
+These three functions are relative fast and don't do much checking. They can be
+used as building blocks for other helpers.
+
+\stopsubsection
+
+\startsubsection[title={Extra \type {os} library functions}]
+
+The \type {os} library has a few extra functions and
+variables: \libidx {os} {selfdir}, \libidx {os} {exec},
+\libidx {os} {kpsepopen},
+\libidx {os} {socketgettime}, \libidx {os} {socketsleep},
+\libidx {os} {spawn}, \libidx {os} {setenv},
+\libidx {os} {env}, \libidx {os} {gettimeofday}, \libidx {os} {times},
+\libidx {os} {sleep}, \libidx {os} {tmpdir}, \libidx {os} {type},
+\libidx {os} {name} and \libidx {os} {uname},{os} {uname},
+that we will discuss here.
+
+
+
+
+\startitemize
+
+\startitem
+    \type {os.selfdir} is a variable that holds the directory path of the
+    actual executable. For example: \type {\directlua {tex.sprint(os.selfdir)}}.
+\stopitem
+
+\startitem
+    \type {os.exec(commandline)} is a variation on \type {os.execute}. Here
+    \type {commandline} can be either a single string or a single table.
+
+    \startitemize
+
+    \startitem
+        If the argument is a table \LUATEX\ first checks if there is a value at
+        integer index zero. If there is, this is the command to be executed.
+        Otherwise, it will use the value at integer index one. If neither are
+        present, nothing at all happens.
+    \stopitem
+
+    \startitem
+        The set of consecutive values starting at integer~1 in the table are the
+        arguments that are passed on to the command (the value at index~1 becomes
+        \type {arg[0]}). The command is searched for in the execution path, so
+        there is normally no need to pass on a fully qualified path name.
+    \stopitem
+
+    \startitem
+        If the argument is a string, then it is automatically converted into a
+        table by splitting on whitespace. In this case, it is impossible for the
+        command and first argument to differ from each other.
+    \stopitem
+
+    \startitem
+        In the string argument format, whitespace can be protected by putting
+        (part of) an argument inside single or double quotes. One layer of quotes
+        is interpreted by \LUATEX, and all occurrences of \type {\"}, \type {\'}
+        or \type {\\} within the quoted text are unescaped. In the table format,
+        there is no string handling taking place.
+    \stopitem
+
+    \stopitemize
+
+    This function normally does not return control back to the \LUA\ script: the
+    command will replace the current process. However, it will return the two
+    values \type {nil} and \type {error} if there was a problem while
+    attempting to execute the command.
+
+    On \MSWINDOWS, the current process is actually kept in memory until after the
+    execution of the command has finished. This prevents crashes in situations
+    where \TEXLUA\ scripts are run inside integrated \TEX\ environments.
+
+    The original reason for this command is that it cleans out the current
+    process before starting the new one, making it especially useful for use in
+    \TEXLUA.
+\stopitem
+
+\startitem
+    \type {os.kpsepopen(commandline,[opt])} is similar to \type {io.popen}
+    but with a preliminary check of the  commandline;
+    if the check is ok then the return value is the same as in \type{io.popen};
+    Otherwise it will return the two values \type {nil} and \type {error}.
+\stopitem
+
+\startitem
+    \type {os.socketgettime} and \type {os.socketsleep} are the same as for
+    \type{socket.gettime} and \type{socket.sleep} but they are always available.
+\stopitem
+
+\startitem
+    \type {os.spawn(commandline)} is a returning version of \type {os.exec},
+    with otherwise identical calling conventions.
+
+    If the command ran ok, then the return value is the exit status of the
+    command. Otherwise, it will return the two values \type {nil} and \type
+    {error}.
+\stopitem
+
+\startitem
+    \type {os.setenv(key,value)} sets a variable in the environment. Passing
+    \type {nil} instead of a value string will remove the variable.
+\stopitem
+
+\startitem
+    \type {os.env} is a hash table containing a dump of the variables and
+    values in the process environment at the start of the run. It is writeable,
+    but the actual environment is \notabene {not} updated automatically.
+\stopitem
+
+\startitem
+    \type {os.gettimeofday()} returns the current \quote {\UNIX\ time}, but as a
+    float. This function is not available on the \SUNOS\ platforms, so do not use
+    this function for portable documents.
+\stopitem
+
+\startitem
+    \type {os.times()}returns the current process times according to the
+    \UNIX\ C library function \quote {times}. This function is not available on
+    the \MSWINDOWS\ and \SUNOS\ platforms, so do not use this function for
+    portable documents.
+\stopitem
+
+\startitem
+    \type {os.sleep(interval[, unit])} suspends the execution of the current run for
+    a given number of seconds. If the optional argument \type {unit} is present, the
+    function waits \type {interval / units} seconds. \type {os.sleep(1, 1000)}
+    for example pauses the program for one millisecond.
+\stopitem
+
+\startitem
+    \type {os.tmpdir([template])} creates a directory in the \quote {current directory}
+    with the name \type {luatex.XXXXXX} where the \type {X}-es are replaced by a
+    unique string. The function also returns this string, so you can \type
+    {lfs.chdir()} into it, or \type {nil} if it failed to create the directory.
+    The user is responsible for cleaning up at the end of the run, it does not
+    happen automatically. You can also use your own \type {template} for the name
+    of the temporary folder. However, the passed string must end with six capital
+    \type {X}-es. For example, the template \type {tmp.XXXXXX} could result in the
+    folder name \type {tmp.vX3gPo}.
+\stopitem
+
+\startitem
+    \type {os.type} is a string that gives a global indication of the class of
+    operating system. The possible values are currently \type {windows}, \type
+    {unix}, and \type {msdos} (you are unlikely to find this value \quote {in the
+    wild}).
+\stopitem
+
+\startitem
+    \type {os.name} is a string that gives a more precise indication of the
+    operating system. These possible values are not yet fixed, and for \type
+    {os.type} values \type {windows} and \type {msdos}, the \type {os.name}
+    values are simply \type {windows} and \type {msdos}
+
+    The list for the type \type {unix} is more precise: \type {linux}, \type
+    {freebsd}, \type {kfreebsd}, \type {cygwin}, \type {openbsd}, \type
+    {solaris}, \type {sunos} (pre-solaris), \type {hpux}, \type {irix}, \type
+    {macosx}, \type {gnu} (hurd), \type {bsd} (unknown, but \BSD|-|like), \type
+    {sysv} (unknown, but \SYSV|-|like), \type {generic} (unknown).
+\stopitem
+
+\startitem
+    \type {os.uname} returns a table with specific operating system
+    information acquired at runtime. The keys in the returned table are all
+    string values, and their names are: \type {sysname}, \type {machine}, \type
+    {release}, \type {version}, and \type {nodename}.
+\stopitem
+
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title={Binary input from files with \type {fio}}]
+
+There is a whole set of helpers for reading numbers and strings from a file:
+\libidx {fio} {readcardinal1}, \libidx {fio} {readcardinal2}, \libidx {fio}
+{readcardinal3}, \libidx {fio} {readcardinal4}, \libidx {fio}
+{readcardinaltable}, \libidx {fio} {readinteger1}, \libidx {fio} {readinteger2},
+\libidx {fio} {readinteger3}, \libidx {fio} {readinteger4}, \libidx {fio}
+{readintegertable}, \libidx {fio} {readfixed2}, \libidx {fio} {readfixed4},
+\libidx {fio} {read2dot14}, \libidx {fio} {setposition}, \libidx {fio}
+{getposition}, \libidx {fio} {skipposition}, \libidx {fio} {readbytes}, \libidx
+{fio} {readbytetable}. They work on normal \LUA\ file handles.
+
+%libidx{fio}{readline}
+%libidx{fio}{recordfilename}
+%libidx{fio}{checkpermission}
+
+This library provides a set of functions for reading numbers from a file and
+in addition to the regular \type {io} library functions.
+
+\starttabulate
+\NC \type{readcardinal1(f)}         \NC a 1 byte unsigned integer \NC \NR
+\NC \type{readcardinal2(f)}         \NC a 2 byte unsigned integer \NC \NR
+\NC \type{readcardinal3(f)}         \NC a 3 byte unsigned integer \NC \NR
+\NC \type{readcardinal4(f)}         \NC a 4 byte unsigned integer \NC \NR
+\NC \type{readcardinaltable(f,n,b)} \NC \type {n} cardinals of \type {b} bytes \NC \NR
+\NC \type{readinteger1(f)}          \NC a 1 byte signed integer \NC \NR
+\NC \type{readinteger2(f)}          \NC a 2 byte signed integer \NC \NR
+\NC \type{readinteger3(f)}          \NC a 3 byte signed integer \NC \NR
+\NC \type{readinteger4(f)}          \NC a 4 byte signed integer \NC \NR
+\NC \type{readintegertable(f,n,b)}  \NC \type {n} integers of \type {b} bytes \NC \NR
+\NC \type{readfixed2(f)}            \NC a 2 byte float (used in font files) \NC \NR
+\NC \type{readfixed4(f)}            \NC a 4 byte float (used in font files) \NC \NR
+\NC \type{read2dot14(f)}            \NC a 2 byte float (used in font files) \NC \NR
+\NC \type{setposition(f,p)}         \NC goto position \type {p} \NC \NR
+\NC \type{getposition(f)}           \NC get the current position \NC \NR
+\NC \type{skipposition(f,n)}        \NC skip \type {n} positions \NC \NR
+\NC \type{readbytes(f,n)}           \NC \type {n} bytes \NC \NR
+\NC \type{readbytetable(f,n)}       \NC \type {n} bytes\NC \NR
+\stoptabulate
+
+There are eight additional little endian variants for the \type {cardinal[1-4]}
+and \type {integer[1-4]} readers: \type {cardinal[1-4]le} and \type
+{integer[1-4]le}.
+
+\stopsubsection
+
+\startsubsection[title={Binary input from strings with \type {sio}}]
+
+A similar set of function as in the \type {fio} library is available in the \type
+{sio} library: \libidx {sio} {readcardinal1}, \libidx {sio} {readcardinal2},
+\libidx {sio} {readcardinal3}, \libidx {sio} {readcardinal4}, \libidx {sio}
+{readcardinaltable}, \libidx {sio} {readinteger1}, \libidx {sio} {readinteger2},
+\libidx {sio} {readinteger3}, \libidx {sio} {readinteger4}, \libidx {sio}
+{readintegertable}, \libidx {sio} {readfixed2}, \libidx {sio} {readfixed4},
+\libidx {sio} {read2dot14}, \libidx {sio} {setposition}, \libidx {sio}
+{getposition}, \libidx {sio} {skipposition}, \libidx {sio} {readbytes} and
+\libidx {sio} {readbytetable}. Here the first argument is a string instead of a
+file handle. More details can be found in the previous section.
+
+\stopsubsection
+
+\startsubsection[title={Hashes conform \type {sha2}}]
+
+This library is a side effect of the \type {pdfe} library that needs such
+helpers. The \libidx{sha2}{digest256}, \libidx{sha2}{digest384} and
+\libidx{sha2}{digest512} functions accept a string and return a string with the
+hash.
+
+\stopsubsection
+
+\startsubsection[title={Locales}]
+
+\index {locales}
+
+In stock \LUA, many things depend on the current locale. In \LUATEX, we can't do
+that, because it makes documents unportable.  While \LUATEX\ is running if
+forces the following locale settings:
+
+\starttyping
+LC_CTYPE=C
+LC_COLLATE=C
+LC_NUMERIC=C
+\stoptyping
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\LUA\ modules}]
+
+\topicindex {\LUA+libraries}
+\topicindex {\LUA+modules}
+
+Some modules that are normally external to \LUA\ are statically linked in with
+\LUATEX, because they offer useful functionality:
+
+\startitemize
+
+\startitem
+    \type {lpeg}, by Roberto Ierusalimschy, \hyphenatedurl
+    {http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html}. This library is not
+    \UNICODE|-|aware, but interprets strings on a byte|-|per|-|byte basis. This
+    mainly means that \type {lpeg.S} cannot be used with \UTF8 characters encoded
+    in more than two bytes, and thus \type {lpeg.S} will look for one of those
+    two bytes when matching, not the combination of the two. The same is true for
+    \type {lpeg.R}, although the latter will display an error message if used
+    with multibyte characters. Therefore \type {lpeg.R('aä')} results in the
+    message \type {bad argument #1 to 'R' (range must have two characters)},
+    since to \type {lpeg}, \type {ä} is two 'characters' (bytes), so \type {aä}
+    totals three. In practice this is no real issue and with some care you can
+    deal with \UNICODE\ just fine.
+\stopitem
+
+\startitem
+    \type {slnunicode}, from the \type {selene} libraries, \hyphenatedurl
+    {http://luaforge.net/projects/sln}. This library has been slightly extended
+    so that the \type {unicode.utf8.*} functions also accept the first 256 values
+    of plane~18. This is the range \LUATEX\ uses for raw binary output, as
+    explained above. We have no plans to provide more like this because you can
+    basically do all that you want in \LUA.
+\stopitem
+
+\startitem
+    \type {luazip}, from the kepler project, \hyphenatedurl
+    {http://www.keplerproject.org/luazip/}.
+\stopitem
+
+\startitem
+    \type {luafilesystem}, also from the kepler project, \hyphenatedurl
+    {http://www.keplerproject.org/luafilesystem/}.
+\stopitem
+
+\startitem
+    \type {lzlib}, by Tiago Dionizio, \hyphenatedurl
+    {http://luaforge.net/projects/lzlib/}.
+\stopitem
+
+\startitem
+    \type {md5}, by Roberto Ierusalimschy \hyphenatedurl
+    {http://www.inf.puc-rio.br/~roberto/md5/md5-5/md5.html}.
+\stopitem
+
+\startitem
+    \type {luasocket}, by Diego Nehab \hyphenatedurl
+    {http://w3.impa.br/~diego/software/luasocket/}. The \type {.lua} support
+    modules from \type {luasocket} are also preloaded inside the executable,
+    there are no external file dependencies.
+\stopitem
+
+\stopitemize
+
+\stopsection
+
+\startsection[title={Testing}]
+
+\topicindex {testing}
+\topicindex {\PDF+date}
+
+For development reasons you can influence the used startup date and time. This can
+be done in two ways.
+
+\startitemize[n]
+
+\startitem
+    By setting the environmment variable \type {SOURCE_DATE_EPOCH}. This will
+    influence the \TEX\ parameters \type {time} and \type {date}, the random seed,
+    the \PDF\ timestamp and the \PDF\ id that is derived from the time as well. This
+    variable is consulted when the \KPSE\ library is enabled. Resolving is
+    delegated to this library.
+\stopitem
+
+\startitem
+    By setting the \type {start_time} variable in the \type {texconfig} table; as
+    with other variables we use the internal name there. For compatibility
+    reasons we also honour a \type {SOURCE_DATE_EPOCH} entry. It should be noted
+    that there are no such variables in other engines and this method is only
+    relevant in case the while setup happens in \LUA.
+\stopitem
+
+\stopitemize
+
+When Universal Time is needed, you can pass the flag \type {utc} to the engine. This
+property also works when the date and time are set by \LUATEX\ itself. It has a
+complementary entry \type {use_utc_time} in the \type {texconfig} table.
+
+There is some control possible, for instance prevent filename to be written to
+the \PDF\ file. This is discussed elsewhere. In \CONTEXT\ we provide the command
+line argument \type {--nodates} that does a bit more disabling of dates.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

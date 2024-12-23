@@ -1,0 +1,114 @@
+% macros=mkvi
+
+% \nopdfcompression
+
+% \disabledirectives[vspacing.synchronizepage]
+
+% wsl /data/context/runcontext.sh --global --path=/mnt/c/data/develop/context/manuals/mkiv/external/luatex luatex.tex
+%
+% same runtime as regular context or linux
+% author    : Hans Hagen with Taco Hoekwater, Luigi Scarso & Hartmut Henkel
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : Some (parts of) chapters might have been published in TugBoat, the NTG Maps, the
+%             ConTeXt Group journal or otherwise. Thanks to the editors for corrections. Also
+%             thanks to users for testing, feedback and corrections.
+%
+% comment   : Of course specific distribution can add to the manual, but that is of course not
+%             our responsibility. The official (latest) version of this manual is part of the
+%             ConTeXt distribution, including a pdf file that is produced with the current
+%             version of ConTeXt. So, in case of doubt use that one as reference. Some of the
+%             improvements in the LuaMetaTeX manual that apply to LuaTeX might get retrofitted
+%             in LuaTeX manual in due time.
+
+% \tex vs \type vs \syntax vs. \luatex
+% \em \it \/
+
+% "context --nodates --nocompression luatex" can be used for comparison
+% runs, not that we do it
+
+% todo: all (sub)section to start/stop
+
+% \enabledirectives[hyphenator.flatten]
+
+% \setupsynctex[state=start,method=max] % adds 5 pct overhead
+
+% compoundhyphenmode      : looks okay
+% endlocalcontrol         : very experimental
+% fixupboxesmode          : very experimental
+% mathflattenmode         : looks okay
+% mathrulethicknessmode   : looks okay
+
+% after adding primitives: context mult-prm.mkiv
+
+% \enabledirectives[pdf.stripzeros]
+% \enabledirectives[metapost.stripzeros]
+
+\environment luatex-style
+
+\startmode[book]
+    \environment luatex-style-book
+\stopmode
+
+\environment luatex-logos
+\environment luatex-private
+
+\startmode[export]
+
+    \setupbackend
+      [export=luatex]
+
+\stopmode
+
+\startdocument
+  [manual=Lua\TeX,
+   status=stable,
+   version=1.18]
+
+\startnotmode[*export]
+    \component luatex-titlepage
+    \component luatex-firstpage
+\stopnotmode
+
+\startmode[*export]
+    \component luatex-export-titlepage
+\stopmode
+
+\startfrontmatter
+    \component luatex-contents
+    \component luatex-introduction
+\stopfrontmatter
+
+\startbodymatter
+    \component luatex-preamble
+    \component luatex-enhancements
+    \component luatex-modifications
+    \component luatex-lua
+    \component luatex-languages
+    \component luatex-fonts
+    \component luatex-math
+    \component luatex-nodes
+    \component luatex-callbacks
+    \component luatex-tex
+    \component luatex-graphics
+    \component luatex-fontloader
+    \component luatex-harfbuzz
+    \component luatex-backend
+\stopbodymatter
+
+\startbackmatter
+    \component luatex-registers
+    \component luatex-statistics
+\stopbackmatter
+
+\stopdocument

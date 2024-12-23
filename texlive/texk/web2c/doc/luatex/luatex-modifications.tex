@@ -1,0 +1,1449 @@
+% language=us engine=luatex runpath=texruns:manuals/luatex
+
+\environment luatex-style
+
+\startcomponent luatex-modifications
+
+\startchapter[reference=modifications,title={Modifications}]
+
+\startsection[title=The merged engines]
+
+\startsubsection[title=The need for change]
+
+\topicindex {engines}
+\topicindex {history}
+
+The first version of \LUATEX\ only had a few extra primitives and it was largely
+the same as \PDFTEX. Then we merged substantial parts of \ALEPH\ into the code
+and got more primitives. When we got more stable the decision was made to clean
+up the rather hybrid nature of the program. This means that some primitives have
+been promoted to core primitives, often with a different name, and that others
+were removed. This made it possible to start cleaning up the code base. In \in
+{chapter} [enhancements] we discussed some new primitives, here we will cover
+most of the adapted ones.
+
+Besides the expected changes caused by new functionality, there are a number of
+not|-|so|-|expected changes. These are sometimes a side|-|effect of a new
+(conflicting) feature, or, more often than not, a change necessary to clean up
+the internal interfaces. These will also be mentioned.
+
+\stopsubsection
+
+\startsubsection[title=Changes from \TEX\ 3.1415926]
+
+\topicindex {\TEX}
+
+Of course it all starts with traditional \TEX. Even if we started with \PDFTEX,
+most still comes from the original. But we divert a bit.
+
+\startitemize
+
+\startitem
+    The current code base is written in \CCODE, not \PASCAL. We use \CWEB\ when
+    possible. As a consequence instead of one large file plus change files, we
+    now have multiple files organized in categories like \type {tex}, \type
+    {pdf}, \type {lang}, \type {font}, \type {lua}, etc. There are some artifacts
+    of the conversion to \CCODE, but in due time we will clean up the source code
+    and make sure that the documentation is done right. Many files are in the
+    \CWEB\ format, but others, like those interfacing to \LUA, are \CCODE\ files.
+    Of course we want to stay as close as possible to the original so that the
+    documentation of the fundamentals behind \TEX\ by Don Knuth still applies.
+\stopitem
+
+\startitem
+    See \in {chapter} [languages] for many small changes related to paragraph
+    building, language handling and hyphenation. The most important change is
+    that adding a brace group in the middle of a word (like in \type {of{}fice})
+    does not prevent ligature creation.
+\stopitem
+
+\startitem
+    There is no pool file, all strings are embedded during compilation.
+\stopitem
+
+\startitem
+    The specifier \type {plus 1 fillll} does not generate an error. The extra
+    \quote{l} is simply typeset.
+\stopitem
+
+\startitem
+    The upper limit to \prm {endlinechar} and \prm {newlinechar} is 127.
+\stopitem
+
+\startitem
+    Magnification (\prm {mag}) is only supported in \DVI\ output mode. You can
+    set this parameter and it even works with \type {true} units till you switch
+    to \PDF\ output mode. When you use \PDF\ output you can best not touch the
+    \prm {mag} variable. This fuzzy behaviour is not much different from using
+    \PDF\ backend related functionality while eventually \DVI\ output is
+    required.
+
+    After the output mode has been frozen (normally that happens when the first
+    page is shipped out) or when \PDF\ output is enabled, the \type {true}
+    specification is ignored. When you preload a plain format adapted to
+    \LUATEX\ it can be that the \prm {mag} parameter already has been set.
+\stopitem
+
+\startitem
+    When \type {\globaldefs} is positive while a local assignment is asked for,
+    \type {{\global enforced}} is shown in the log when \type {\tracingcommands}
+    is larger than one. When \type {\globaldefs} is negative and a global
+    assignment is requested by \type {\global}, \type {\gdef} etc.\ the log will
+    mention \type {{\global canceled}}.
+\stopitem
+
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title=Changes from \ETEX\ 2.2]
+
+\topicindex {\ETEX}
+
+Being the de factor standard extension of course we provide the \ETEX\
+functionality, but with a few small adaptations.
+
+\startitemize
+
+\startitem
+    The \ETEX\ functionality is always present and enabled so the prepended
+    asterisk or \type {-etex} switch for \INITEX\ is not needed.
+\stopitem
+
+\startitem
+    The \TEXXET\ extension is not present, so the primitives \type
+    {\TeXXeTstate}, \type {\beginR}, \type {\beginL}, \type {\endR} and \type
+    {\endL} are missing. Instead we used the \OMEGA/\ALEPH\ approach to
+    directionality as starting point.
+\stopitem
+
+\startitem
+    Some of the tracing information that is output by \ETEX's \prm
+    {tracingassigns} and \prm {tracingrestores} is not there.
+\stopitem
+
+\startitem
+    Register management in \LUATEX\ uses the \OMEGA/\ALEPH\ model, so the maximum
+    value is 65535 and the implementation uses a flat array instead of the mixed
+    flat & sparse model from \ETEX.
+\stopitem
+
+\startitem
+    When kpathsea is used to find files, \LUATEX\ uses the \type {ofm} file
+    format to search for font metrics. In turn, this means that \LUATEX\ looks at
+    the \type {OFMFONTS} configuration variable (like \OMEGA\ and \ALEPH) instead
+    of \type {TFMFONTS} (like \TEX\ and \PDFTEX). Likewise for virtual fonts
+    (\LUATEX\ uses the variable \type {OVFFONTS} instead of \type {VFFONTS}).
+\stopitem
+
+\startitem
+    The primitives that report a stretch or shrink order report a value in a
+    convenient range zero upto four. Because some macro packages can break on
+    that we also provide \type {\eTeXgluestretchorder} and \type
+    {\eTeXglueshrinkorder} which report values compatible with \ETEX. The (new)
+    \type {fi} value is reported as \type {-1} (so when used in an \type
+    {\ifcase} test that value makes one end up in the \type {\else}).
+\stopitem
+
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title=Changes from \PDFTEX\ 1.40]
+
+\topicindex {\PDFTEX}
+
+Because we want to produce \PDF\ the most natural starting point was the popular
+\PDFTEX\ program. We inherit the stable features, dropped most of the
+experimental code and promoted some functionality to core \LUATEX\ functionality
+which in turn triggered renaming primitives.
+
+For compatibility reasons we still refer to \type {\pdf...} commands but \LUATEX\
+has a different backend interface. Instead of these primitives there are three
+interfacing primitives: \lpr {pdfextension}, \lpr {pdfvariable} and \lpr
+{pdffeedback} that take keywords and optional further arguments (below we will
+still use the \tex {pdf} prefix names as reference). This way we can extend the
+features when needed but don't need to adapt the core engine. The front- and
+backend are decoupled as much as possible.
+
+\startitemize
+
+\startitem
+    The (experimental) support for snap nodes has been removed, because it is
+    much more natural to build this functionality on top of node processing and
+    attributes. The associated primitives that are gone are: \orm
+    {pdfsnaprefpoint}, \orm {pdfsnapy}, and \orm {pdfsnapycomp}.
+\stopitem
+
+\startitem
+    The (experimental) support for specialized spacing around nodes has also been
+    removed. The associated primitives that are gone are: \orm
+    {pdfadjustinterwordglue}, \orm {pdfprependkern}, and \orm {pdfappendkern}, as
+    well as the five supporting primitives \orm {knbscode}, \orm {stbscode}, \orm
+    {shbscode}, \orm {knbccode}, and \orm {knaccode}.
+\stopitem
+
+\startitem
+    A number of \quote {\PDFTEX\ primitives} have been removed as they can be
+    implemented using \LUA: \orm {pdfelapsedtime}, \orm {pdfescapehex}, \orm
+    {pdfescapename}, \orm {pdfescapestring}, \orm {pdffiledump}, \orm
+    {pdffilemoddate}, \orm {pdffilesize}, \orm {pdfforcepagebox}, \orm
+    {pdflastmatch}, \orm {pdfmatch}, \orm {pdfmdfivesum}, \orm {pdfmovechars},
+    \orm {pdfoptionalwaysusepdfpagebox}, \orm {pdfoptionpdfinclusionerrorlevel},
+    \orm {pdfresettimer}, \orm {pdfshellescape}, \orm {pdfstrcmp} and \orm
+    {pdfunescapehex}.
+\stopitem
+
+\startitem
+    The version related primitives \orm {pdftexbanner}, \orm {pdftexversion}
+    and \orm {pdftexrevision} are no longer present as there is no longer a
+    relationship with \PDFTEX\ development.
+\stopitem
+
+\startitem
+    The experimental snapper mechanism has been removed and therefore also the
+    primitives \orm {pdfignoreddimen}, \orm {pdffirstlineheight}, \orm
+    {pdfeachlineheight}, \orm {pdfeachlinedepth} and \orm {pdflastlinedepth}.
+\stopitem
+
+\startitem
+    The experimental primitives \lpr {primitive}, \lpr {ifprimitive}, \lpr
+    {ifabsnum} and \lpr {ifabsdim} are promoted to core primitives. The \type
+    {\pdf*} prefixed originals are not available.
+\stopitem
+
+\startitem
+    Because \LUATEX\ has a different subsystem for managing images, more
+    diversion from its ancestor happened in the meantime. We don't adapt to
+    changes in \PDFTEX.
+\stopitem
+
+\startitem
+    Two extra token lists are provided, \orm {pdfxformresources} and \orm
+    {pdfxformattr}, as an alternative to \orm {pdfxform} keywords.
+\stopitem
+
+\startitem
+    Image specifications also support \type {visiblefilename}, \type
+    {userpassword} and \type {ownerpassword}. The password options are only
+    relevant for encrypted \PDF\ files.
+\stopitem
+
+\startitem
+    The current version of \LUATEX\ no longer replaces and|/|or merges fonts in
+    embedded \PDF\ files with fonts of the enveloping \PDF\ document. This
+    regression may be temporary, depending on how the rewritten font backend will
+    look like.
+\stopitem
+
+\startitem
+    The primitives \orm {pdfpagewidth} and \orm {pdfpageheight} have been removed
+    because \lpr {pagewidth} and \lpr {pageheight} have that purpose.
+\stopitem
+
+\startitem
+    The primitives \orm {pdfnormaldeviate}, \orm {pdfuniformdeviate}, \orm
+    {pdfsetrandomseed} and \orm {pdfrandomseed} have been promoted to core
+    primitives without \type {pdf} prefix so the original commands are no longer
+    recognized.
+\stopitem
+
+\startitem
+    The primitives \lpr {ifincsname}, \lpr {expanded} and \lpr {quitvmode}
+    are now core primitives.
+\stopitem
+
+\startitem
+    As the hz and protrusion mechanism are part of the core the related
+    primitives \lpr {lpcode}, \lpr {rpcode}, \lpr {efcode}, \lpr
+    {leftmarginkern}, \lpr {rightmarginkern} are promoted to core primitives. The
+    two commands \lpr {protrudechars} and \lpr {adjustspacing} replace their
+    prefixed with \type {\pdf} originals.
+\stopitem
+
+\startitem
+    The hz optimization code has been partially redone so that we no longer need
+    to create extra font instances. The front- and backend have been decoupled
+    and more efficient (\PDF) code is generated.
+\stopitem
+
+\startitem
+    When \lpr {adjustspacing} has value~2, hz optimization will be applied to
+    glyphs and kerns. When the value is~3, only glyphs will be treated. A value
+    smaller than~2 disables this feature. With value of 1, font expansion is
+    applied after \TEX's normal paragraph breaking routines have broken the
+    paragraph into lines. In this case, line breaks are identical to standard
+    \TEX\ behavior (as with \PDFTEX).
+\stopitem
+
+\startitem
+    The \lpr {tagcode} primitive is promoted to core primitive.
+\stopitem
+
+\startitem
+    The \lpr {letterspacefont} feature is now part of the core but will not be
+    changed (improved). We just provide it for legacy use.
+\stopitem
+
+\startitem
+    The \orm {pdfnoligatures} primitive is now \lpr {ignoreligaturesinfont}.
+\stopitem
+
+\startitem
+    The \orm {pdfcopyfont} primitive is now \lpr {copyfont}.
+\stopitem
+
+\startitem
+    The \orm {pdffontexpand} primitive is now \lpr {expandglyphsinfont}.
+\stopitem
+
+\startitem
+    Because position tracking is also available in \DVI\ mode the \lpr {savepos},
+    \lpr {lastxpos} and \lpr {lastypos} commands now replace their \type {pdf}
+    prefixed originals.
+\stopitem
+
+\startitem
+    The introspective primitives \type {\pdflastximagecolordepth} and \type
+    {\pdfximagebbox} have been removed. One can use external applications to
+    determine these properties or use the built|-|in \type {img} library.
+\stopitem
+
+\startitem
+    The initializers \orm {pdfoutput} has been replaced by \lpr {outputmode} and
+    \orm {pdfdraftmode} is now \lpr {draftmode}.
+\stopitem
+
+\startitem
+    The pixel multiplier dimension \orm {pdfpxdimen} lost its prefix and is now
+    called \lpr {pxdimen}.
+\stopitem
+
+\startitem
+    An extra \orm {pdfimageaddfilename} option has been added that can be used to
+    block writing the filename to the \PDF\ file.
+\stopitem
+
+\startitem
+    The primitive \orm {pdftracingfonts} is now \lpr {tracingfonts} as it
+    doesn't relate to the backend.
+\stopitem
+
+\startitem
+    The experimental primitive \orm {pdfinsertht} is kept as \lpr {insertht}.
+\stopitem
+
+\startitem
+    There is some more control over what metadata goes into the \PDF\ file.
+\stopitem
+
+\startitem
+    The promotion of primitives to core primitives as well as the separation of
+    font- and backend means that the initialization namespace \type {pdftex} is
+    gone.
+\stopitem
+
+\stopitemize
+
+One change involves the so called xforms and ximages. In \PDFTEX\ these are
+implemented as so called whatsits. But contrary to other whatsits they have
+dimensions that need to be taken into account when for instance calculating
+optimal line breaks. In \LUATEX\ these are now promoted to a special type of rule
+nodes, which simplifies code that needs those dimensions.
+
+Another reason for promotion is that these are useful concepts. Backends can
+provide the ability to use content that has been rendered in several places, and
+images are also common. As already mentioned in \in {section}
+[sec:imagedandforms], we now have:
+
+\starttabulate[|l|l|]
+\DB \LUATEX \BC \PDFTEX \NC \NR
+\TB
+\NC \lpr {saveboxresource}             \NC \orm {pdfxform}           \NC \NR
+\NC \lpr {saveimageresource}           \NC \orm {pdfximage}          \NC \NR
+\NC \lpr {useboxresource}              \NC \orm {pdfrefxform}        \NC \NR
+\NC \lpr {useimageresource}            \NC \orm {pdfrefximage}       \NC \NR
+\NC \lpr {lastsavedboxresourceindex}   \NC \orm {pdflastxform}       \NC \NR
+\NC \lpr {lastsavedimageresourceindex} \NC \orm {pdflastximage}      \NC \NR
+\NC \lpr {lastsavedimageresourcepages} \NC \orm {pdflastximagepages} \NC \NR
+\LL
+\stoptabulate
+
+There are a few \lpr {pdffeedback} features that relate to this but these are
+typical backend specific ones. The index that gets returned is to be considered
+as \quote {just a number} and although it still has the same meaning (object
+related) as before, you should not depend on that.
+
+The protrusion detection mechanism is enhanced a bit to enable a bit more complex
+situations. When protrusion characters are identified some nodes are skipped:
+
+\startitemize[packed,columns,two]
+\startitem zero glue \stopitem
+\startitem penalties \stopitem
+\startitem empty discretionaries \stopitem
+\startitem normal zero kerns \stopitem
+\startitem rules with zero dimensions \stopitem
+\startitem math nodes with a surround of zero \stopitem
+\startitem dir nodes \stopitem
+\startitem empty horizontal lists \stopitem
+\startitem local par nodes \stopitem
+\startitem inserts, marks and adjusts \stopitem
+\startitem boundaries \stopitem
+\startitem whatsits \stopitem
+\stopitemize
+
+Because this can not be enough, you can also use a protrusion boundary node to
+make the next node being ignored. When the value is~1 or~3, the next node will be
+ignored in the test when locating a left boundary condition. When the value is~2
+or~3, the previous node will be ignored when locating a right boundary condition
+(the search goes from right to left). This permits protrusion combined with for
+instance content moved into the margin:
+
+\starttyping
+\protrusionboundary1\llap{!\quad}«Who needs protrusion?»
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=Changes from \ALEPH\ RC4]
+
+\topicindex {\ALEPH}
+
+Because we wanted proper directional typesetting the \ALEPH\ mechanisms looked
+most attractive. These are rather close to the ones provided by \OMEGA, so what
+we say next applies to both these programs.
+
+\startitemize
+
+\startitem
+    The extended 16-bit math primitives (\orm {omathcode} etc.) have been
+    removed.
+\stopitem
+
+\startitem
+    The \OCP\ processing has been removed completely and as a consequence, the
+    following primitives have been removed: \orm {ocp}, \orm {externalocp}, \orm
+    {ocplist}, \orm {pushocplist}, \orm {popocplist}, \orm {clearocplists}, \orm
+    {addbeforeocplist}, \orm {addafterocplist}, \orm {removebeforeocplist}, \orm
+    {removeafterocplist} and \orm {ocptracelevel}.
+\stopitem
+
+\startitem
+    \LUATEX\ only understands 4~of the 16~direction specifiers of \ALEPH: \type
+    {TLT} (latin), \type {TRT} (arabic), \type {RTT} (cjk), \type {LTL} (mongolian).
+    All other direction specifiers generate an error. In addition to a keyword
+    driven model we also provide an integer driven one.
+\stopitem
+
+\startitem
+    The input translations from \ALEPH\ are not implemented, the related
+    primitives are not available: \orm {DefaultInputMode}, \orm
+    {noDefaultInputMode}, \orm {noInputMode}, \orm {InputMode}, \orm
+    {DefaultOutputMode}, \orm {noDefaultOutputMode}, \orm {noOutputMode}, \orm
+    {OutputMode}, \orm {DefaultInputTranslation}, \orm
+    {noDefaultInputTranslation}, \orm {noInputTranslation}, \orm
+    {InputTranslation}, \orm {DefaultOutputTranslation}, \orm
+    {noDefaultOutputTranslation}, \orm {noOutputTranslation} and \orm
+    {OutputTranslation}.
+\stopitem
+
+\startitem
+    Several bugs have been fixed and confusing implementation details have been
+    sorted out.
+\stopitem
+
+\startitem
+    The scanner for direction specifications now allows an optional space after
+    the direction is completely parsed.
+\stopitem
+
+\startitem
+    The \type {^^} notation has been extended: after \type {^^^^} four
+    hexadecimal characters are expected and after \type {^^^^^^} six hexadecimal
+    characters have to be given. The original \TEX\ interpretation is still valid
+    for the \type {^^} case but the four and six variants do no backtracking,
+    i.e.\ when they are not followed by the right number of hexadecimal digits
+    they issue an error message. Because \type{^^^} is a normal \TEX\ case, we
+    don't support the odd number of \type {^^^^^} either.
+\stopitem
+
+\startitem
+    Glues {\it immediately after} direction change commands are not legal
+    breakpoints.
+\stopitem
+
+\startitem
+    Several mechanisms that need to be right|-|to|-|left aware have been
+    improved. For instance placement of formula numbers.
+\stopitem
+
+\startitem
+    The page dimension related primitives \lpr {pagewidth} and \lpr {pageheight}
+    have been promoted to core primitives. The \prm {hoffset} and \prm {voffset}
+    primitives have been fixed.
+\stopitem
+
+\startitem
+    The primitives \type {\charwd}, \type {\charht}, \type {\chardp} and \type
+    {\charit} have been removed as we have the \ETEX\ variants \type
+    {\fontchar*}.
+\stopitem
+
+\startitem
+    The two dimension registers \lpr {pagerightoffset} and \lpr
+    {pagebottomoffset} are now core primitives.
+\stopitem
+
+\startitem
+    The direction related primitives \lpr {pagedir}, \lpr {bodydir}, \lpr
+    {pardir}, \lpr {textdir}, \lpr {mathdir} and \lpr {boxdir} are now core
+    primitives.
+\stopitem
+
+\startitem
+    The promotion of primitives to core primitives as well as removing of all
+    others means that the initialization namespace \type {aleph} that early
+    versions of \LUATEX\ provided is gone.
+\stopitem
+
+\stopitemize
+
+The above let's itself summarize as: we took the 32 bit aspects and much of the
+directional mechanisms and merged it into the \PDFTEX\ code base as starting
+point for further development. Then we simplified directionality, fixed it and
+opened it up.
+
+\stopsubsection
+
+\startsubsection[title=Changes from anywhere]
+
+The \type {\partokenname} and \type {\partokencontext} primitives are taken from
+the \PDFTEX\ change file posted on the implementers list. They are explained in
+the \PDFTEX\ manual and are classified as \ETEX\ extensions.
+
+\stopsubsection
+
+\startsubsection[title=Changes from standard \WEBC]
+
+\topicindex {\WEBC}
+
+The compilation framework is \WEBC\ and we keep using that but without the
+\PASCAL\ to \CCODE\ step. This framework also provides some common features that
+deal with reading bytes from files and locating files in \TDS. This is what we do
+different:
+
+\startitemize
+
+\startitem
+    There is no mltex support.
+\stopitem
+
+\startitem
+    There is no enctex support.
+\stopitem
+
+\startitem
+    The following encoding related command line switches are silently ignored,
+    even in non|-|\LUA\ mode: \type {-8bit}, \type {-translate-file}, \type
+    {-mltex}, \type {-enc} and \type {-etex}.
+\stopitem
+
+\startitem
+    The \prm {openout} whatsits are not written to the log file.
+\stopitem
+
+\startitem
+    Some of the so|-|called \WEBC\ extensions are hard to set up in non|-|\KPSE\
+    mode because \type {texmf.cnf} is not read: \type {shell-escape} is off (but
+    that is not a problem because of \LUA's \type {os.execute}), and the paranoia
+    checks on \type {openin} and \type {openout} do not happen. However, it is
+    easy for a \LUA\ script to do this itself by overloading \type {io.open} and
+    alike.
+\stopitem
+
+\startitem
+    The \quote{E} option does not do anything useful.
+\stopitem
+
+\stopitemize
+
+\stopsubsection
+
+\stopsection
+
+\startsection[reference=backendprimitives,title=The backend primitives]
+
+\startsubsection[title={Less primitives}]
+
+\topicindex {backend}
+\topicindex {\PDF+backend}
+
+In a previous section we mentioned that some \PDFTEX\ primitives were removed and
+others promoted to core \LUATEX\ primitives. That is only part of the story. In
+order to separate the backend specific primitives in de code these commands are
+now replaced by only a few. In traditional \TEX\ we only had the \DVI\ backend
+but now we have two: \DVI\ and \PDF. Additional functionality is implemented as
+\quote {extensions} in \TEX\ speak. By separating more strickly we are able to
+keep the core (frontend) clean and stable and isolate these extensions. If for
+some reason an extra backend option is needed, it can be implemented without
+touching the core. The three \PDF\ backend related primitives are:
+
+\starttyping
+\pdfextension command [specification]
+\pdfvariable  name
+\pdffeedback  name
+\stoptyping
+
+An extension triggers further parsing, depending on the command given. A variable is
+a (kind of) register and can be read and written, while a feedback is reporting
+something (as it comes from the backend it's normally a sequence of tokens).
+
+\stopsubsection
+
+\startsubsection[title={\lpr{pdfextension}, \lpr {pdfvariable} and \lpr {pdffeedback}},reference=sec:pdfextensions]
+
+In order for \LUATEX\ to be more than just \TEX\ you need to enable primitives. That
+has already been the case right from the start. If you want the traditional \PDFTEX\
+primitives (for as far their functionality is still around) you now can do this:
+
+\starttyping
+\protected\def\pdfliteral             {\pdfextension literal}
+\protected\def\pdflateliteral         {\pdfextension lateliteral}
+\protected\def\pdfcolorstack          {\pdfextension colorstack}
+\protected\def\pdfsetmatrix           {\pdfextension setmatrix}
+\protected\def\pdfsave                {\pdfextension save\relax}
+\protected\def\pdfrestore             {\pdfextension restore\relax}
+\protected\def\pdfobj                 {\pdfextension obj }
+\protected\def\pdfrefobj              {\pdfextension refobj }
+\protected\def\pdfannot               {\pdfextension annot }
+\protected\def\pdfstartlink           {\pdfextension startlink }
+\protected\def\pdfendlink             {\pdfextension endlink\relax}
+\protected\def\pdfoutline             {\pdfextension outline }
+\protected\def\pdfdest                {\pdfextension dest }
+\protected\def\pdfthread              {\pdfextension thread }
+\protected\def\pdfstartthread         {\pdfextension startthread }
+\protected\def\pdfendthread           {\pdfextension endthread\relax}
+\protected\def\pdfinfo                {\pdfextension info }
+\protected\def\pdfcatalog             {\pdfextension catalog }
+\protected\def\pdfnames               {\pdfextension names }
+\protected\def\pdfincludechars        {\pdfextension includechars }
+\protected\def\pdffontattr            {\pdfextension fontattr }
+\protected\def\pdfmapfile             {\pdfextension mapfile }
+\protected\def\pdfmapline             {\pdfextension mapline }
+\protected\def\pdftrailer             {\pdfextension trailer }
+\protected\def\pdfglyphtounicode      {\pdfextension glyphtounicode }
+\protected\def\pdfrunninglinkoff      {\pdfextension linkstate 1 }
+\protected\def\pdfrunninglinkon       {\pdfextension linkstate 0 }
+\stoptyping
+
+The introspective primitives can be defined as:
+
+\starttyping
+\def\pdftexversion    {\numexpr\pdffeedback version\relax}
+\def\pdftexrevision           {\pdffeedback revision}
+\def\pdflastlink      {\numexpr\pdffeedback lastlink\relax}
+\def\pdfretval        {\numexpr\pdffeedback retval\relax}
+\def\pdflastobj       {\numexpr\pdffeedback lastobj\relax}
+\def\pdflastannot     {\numexpr\pdffeedback lastannot\relax}
+\def\pdfxformname     {\numexpr\pdffeedback xformname\relax}
+\def\pdfcreationdate          {\pdffeedback creationdate}
+\def\pdffontname      {\numexpr\pdffeedback fontname\relax}
+\def\pdffontobjnum    {\numexpr\pdffeedback fontobjnum\relax}
+\def\pdffontsize      {\dimexpr\pdffeedback fontsize\relax}
+\def\pdfpageref       {\numexpr\pdffeedback pageref\relax}
+\def\pdfcolorstackinit        {\pdffeedback colorstackinit}
+\stoptyping
+
+The configuration related registers have become:
+
+\starttyping
+\edef\pdfcompresslevel            {\pdfvariable compresslevel}
+\edef\pdfobjcompresslevel         {\pdfvariable objcompresslevel}
+\edef\pdfrecompress               {\pdfvariable recompress}
+\edef\pdfdecimaldigits            {\pdfvariable decimaldigits}
+\edef\pdfgamma                    {\pdfvariable gamma}
+\edef\pdfimageresolution          {\pdfvariable imageresolution}
+\edef\pdfimageapplygamma          {\pdfvariable imageapplygamma}
+\edef\pdfimagegamma               {\pdfvariable imagegamma}
+\edef\pdfimagehicolor             {\pdfvariable imagehicolor}
+\edef\pdfimageaddfilename         {\pdfvariable imageaddfilename}
+\edef\pdfpkresolution             {\pdfvariable pkresolution}
+\edef\pdfpkfixeddpi               {\pdfvariable pkfixeddpi}
+\edef\pdfinclusioncopyfonts       {\pdfvariable inclusioncopyfonts}
+\edef\pdfinclusionerrorlevel      {\pdfvariable inclusionerrorlevel}
+\edef\pdfignoreunknownimages      {\pdfvariable ignoreunknownimages}
+\edef\pdfgentounicode             {\pdfvariable gentounicode}
+\edef\pdfomitcidset               {\pdfvariable omitcidset}
+\edef\pdfomitcharset              {\pdfvariable omitcharset}
+\edef\pdfomitinfodict             {\pdfvariable omitinfodict}
+\edef\pdfomitinfodict             {\pdfvariable omitinfodict}
+\edef\pdfomitmediabox             {\pdfvariable omitmediabox}
+\edef\pdfomitprocset              {\pdfvariable omitprocset}
+\edef\pdfptexprefix               {\pdfvariable ptexprefix}
+\edef\pdfpagebox                  {\pdfvariable pagebox}
+\edef\pdfminorversion             {\pdfvariable minorversion}
+\edef\pdfuniqueresname            {\pdfvariable uniqueresname}
+
+\edef\pdfhorigin                  {\pdfvariable horigin}
+\edef\pdfvorigin                  {\pdfvariable vorigin}
+\edef\pdflinkmargin               {\pdfvariable linkmargin}
+\edef\pdfdestmargin               {\pdfvariable destmargin}
+\edef\pdfthreadmargin             {\pdfvariable threadmargin}
+\edef\pdfxformmargin              {\pdfvariable xformmargin}
+
+\edef\pdfpagesattr                {\pdfvariable pagesattr}
+\edef\pdfpageattr                 {\pdfvariable pageattr}
+\edef\pdfpageresources            {\pdfvariable pageresources}
+\edef\pdfxformattr                {\pdfvariable xformattr}
+\edef\pdfxformresources           {\pdfvariable xformresources}
+\edef\pdfpkmode                   {\pdfvariable pkmode}
+
+\edef\pdfsuppressoptionalinfo     {\pdfvariable suppressoptionalinfo }
+\edef\pdftrailerid                {\pdfvariable trailerid }
+\stoptyping
+
+The variables are internal ones, so they are anonymous. When you ask for the
+meaning of a few previously defined ones:
+
+\starttyping
+\meaning\pdfhorigin
+\meaning\pdfcompresslevel
+\meaning\pdfpageattr
+\stoptyping
+
+you will get:
+
+\starttyping
+macro:->[internal backend dimension]
+macro:->[internal backend integer]
+macro:->[internal backend tokenlist]
+\stoptyping
+
+The \prm {edef} can also be a \prm {def} but it's a bit more efficient to expand
+the lookup related register beforehand.
+
+The backend is derived from \PDFTEX\ so the same syntax applies. However, the
+\type {outline} command accepts a \type {objnum} followed by a number. No
+checking takes place so when this is used it had better be a valid (flushed)
+object.
+
+In order to be (more or less) compatible with \PDFTEX\ we also support the option
+to suppress some info but we do so via a bitset:
+
+\starttyping
+\pdfvariable suppressoptionalinfo \numexpr
+        0
+    +   1   % PTEX.FullBanner
+    +   2   % PTEX.FileName
+    +   4   % PTEX.PageNumber
+    +   8   % PTEX.InfoDict
+    +  16   % Creator
+    +  32   % CreationDate
+    +  64   % ModDate
+    + 128   % Producer
+    + 256   % Trapped
+    + 512   % ID
+\relax
+\stoptyping
+
+In addition you can overload the trailer id, but we don't do any checking on
+validity, so you have to pass a valid array. The following is like the ones
+normally generated by the engine. You even need to include the brackets here!
+
+\starttyping
+\pdfvariable trailerid {[
+    <FA052949448907805BA83C1E78896398>
+    <FA052949448907805BA83C1E78896398>
+]}
+\stoptyping
+
+Although we started from a merge of \PDFTEX\ and \ALEPH, by now the code base as
+well as functionality has diverted from those parents. Here we show the options
+that can be passed to the extensions. The \type {shipout} option is a compatibility
+feature. Instead one can use the \type {deferred} prefix.
+
+\starttexsyntax
+\pdfextension literal
+    [shipout] [ direct | page | raw ] { tokens }
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension dest
+    num integer | name { tokens }!crlf
+    [ fitbh | fitbv | fitb | fith| fitv | fit |
+      fitr <rule spec> | xyz [ zoom <integer> ]
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension annot
+    reserveobjnum | useobjnum <integer>
+    { tokens }
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension save
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension restore
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension setmatrix
+    { tokens }
+\stoptexsyntax
+
+\starttexsyntax
+[ \immediate ] \pdfextension obj
+    reserveobjnum
+\stoptexsyntax
+
+\starttexsyntax
+[ \immediate ] \pdfextension obj
+    [ useobjnum <integer> ]
+    [ uncompressed ]
+    [ stream  [ attr { tokens } ] ]
+    [ file ]
+    { tokens }
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension refobj
+    <integer>
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension colorstack
+    <integer>
+    set { tokens } | push { tokens } | pop | current
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension startlink
+    [ attr { tokens } ]
+    user { tokens } | goto | thread
+    [ file { tokens } ]
+    [ page <integer> { tokens } | name { tokens } | num  integer ]
+    [ newwindow  | nonewwindow ]
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension endlink
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension startthread
+    num <integer> | name { tokens }
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension endthread
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension thread
+    num <integer> | name { tokens }
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension outline
+    [ attr { tokens } ]
+    [ useobjnum <integer> ]
+    [ count <integer> ]
+    { tokens }
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension glyphtounicode
+    { tokens }
+    { tokens }
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension catalog
+    { tokens }
+    [ openaction
+      user { tokens } | goto | thread
+      [ file { tokens } ]
+      [ page <integer> { tokens } | name { tokens } | num <integer> ]
+      [ newwindow  | nonewwindow ] ]
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension fontattr
+    <integer>
+    {tokens}
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension mapfile
+    {tokens}
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension mapline
+    {tokens}
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension includechars
+    {tokens}
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension info
+    {tokens}
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension names
+    {tokens}
+\stoptexsyntax
+
+\starttexsyntax
+\pdfextension trailer
+    {tokens}
+\stoptexsyntax
+
+\stopsubsection
+
+\startsubsection[title={Defaults}]
+
+The engine sets the following defaults.
+
+\starttyping
+\pdfcompresslevel         9
+\pdfobjcompresslevel      1 % used: (0,9)
+\pdfrecompress            0 % mostly for debugging
+\pdfdecimaldigits         4 % used: (3,6)
+\pdfgamma              1000
+\pdfimageresolution      71
+\pdfimageapplygamma       0
+\pdfimagegamma         2200
+\pdfimagehicolor          1
+\pdfimageaddfilename      1
+\pdfpkresolution         72
+\pdfpkfixeddpi            0
+\pdfinclusioncopyfonts    0
+\pdfinclusionerrorlevel   0
+\pdfignoreunknownimages   0
+\pdfgentounicode          0
+\pdfomitcidset            0
+\pdfomitcharset           0
+\pdfomitinfodict          0
+\pdfomitmediabox          0
+\pdfomitprocset           0
+\pdfptexprefix            0
+\pdfpagebox               0
+\pdfminorversion          4
+\pdfuniqueresname         0
+
+\pdfhorigin             1in
+\pdfvorigin             1in
+\pdflinkmargin          0pt
+\pdfdestmargin          0pt
+\pdfthreadmargin        0pt
+\pdfxformmargin         0pt
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={Backward compatibility}]
+
+If you also want some backward compatibility, you can add:
+
+\starttyping
+\let\pdfpagewidth      \pagewidth
+\let\pdfpageheight     \pageheight
+
+\let\pdfadjustspacing  \adjustspacing
+\let\pdfprotrudechars  \protrudechars
+\let\pdfnoligatures    \ignoreligaturesinfont
+\let\pdffontexpand     \expandglyphsinfont
+\let\pdfcopyfont       \copyfont
+
+\let\pdfxform          \saveboxresource
+\let\pdflastxform      \lastsavedboxresourceindex
+\let\pdfrefxform       \useboxresource
+
+\let\pdfximage         \saveimageresource
+\let\pdflastximage     \lastsavedimageresourceindex
+\let\pdflastximagepages\lastsavedimageresourcepages
+\let\pdfrefximage      \useimageresource
+
+\let\pdfsavepos        \savepos
+\let\pdflastxpos       \lastxpos
+\let\pdflastypos       \lastypos
+
+\let\pdfoutput         \outputmode
+\let\pdfdraftmode      \draftmode
+
+\let\pdfpxdimen        \pxdimen
+
+\let\pdfinsertht       \insertht
+
+\let\pdfnormaldeviate  \normaldeviate
+\let\pdfuniformdeviate \uniformdeviate
+\let\pdfsetrandomseed  \setrandomseed
+\let\pdfrandomseed     \randomseed
+
+\let\pdfprimitive      \primitive
+\let\ifpdfprimitive    \ifprimitive
+
+\let\ifpdfabsnum       \ifabsnum
+\let\ifpdfabsdim       \ifabsdim
+\stoptyping
+
+And even:
+
+\starttyping
+\newdimen\pdfeachlineheight
+\newdimen\pdfeachlinedepth
+\newdimen\pdflastlinedepth
+\newdimen\pdffirstlineheight
+\newdimen\pdfignoreddimen
+\stoptyping
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Directions]
+
+\topicindex {\OMEGA}
+\topicindex {\ALEPH}
+\topicindex {directions}
+
+\startsubsection[title={Four directions}]
+
+The directional model in \LUATEX\ is inherited from \OMEGA|/|\ALEPH\ but we tried
+to improve it a bit. At some point we played with recovery of modes but that was
+disabled later on when we found that it interfered with nested directions. That
+itself had as side effect that the node list was no longer balanced with respect
+to directional nodes which in turn can give side effects when a series of dir
+changes happens without grouping.
+
+When extending the \PDF\ backend to support directions some inconsistencies were
+found and as a result we decided to support only the four models that make sense
+\type {TLT} (latin), \type {TRT} (arabic), \type {RTT} (cjk) and \type {LTL}
+(mongolian).
+
+\stopsubsection
+
+\startsubsection[title={How it works}]
+
+The approach is that we again make the list balanced but try to avoid some side
+effects. What happens is quite intuitive if we forget about spaces (turned into
+glue) but even there what happens makes sense if you look at it in detail.
+However that logic makes in|-|group switching kind of useless when no proper
+nested grouping is used: switching from right to left several times nested,
+results in spacing ending up after each other due to nested mirroring. Of course
+a sane macro package will manage this for the user but here we are discussing the
+low level dir injection.
+
+This is what happens:
+
+\starttyping
+\textdir TRT nur {\textdir TLT run \textdir TRT NUR} nur
+\stoptyping
+
+This becomes stepwise:
+
+\startnarrower
+\starttyping
+injected: [+TRT]nur {[+TLT]run [+TRT]NUR} nur
+balanced: [+TRT]nur {[+TLT]run [-TLT][+TRT]NUR[-TRT]} nur[-TRT]
+result  : run {RUNrun } run
+\stoptyping
+\stopnarrower
+
+And this:
+
+\starttyping
+\textdir TRT nur {nur \textdir TLT run \textdir TRT NUR} nur
+\stoptyping
+
+becomes:
+
+\startnarrower
+\starttyping
+injected: [+TRT]nur {nur [+TLT]run [+TRT]NUR} nur
+balanced: [+TRT]nur {nur [+TLT]run [-TLT][+TRT]NUR[-TRT]} nur[-TRT]
+result  : run {run RUNrun } run
+\stoptyping
+\stopnarrower
+
+Now, in the following examples watch where we put the braces:
+
+\startbuffer
+\textdir TRT nur {{\textdir TLT run} {\textdir TRT NUR}} nur
+\stopbuffer
+
+\typebuffer
+
+This becomes:
+
+\startnarrower
+\getbuffer
+\stopnarrower
+
+Compare this to:
+
+\startbuffer
+\textdir TRT nur {{\textdir TLT run }{\textdir TRT NUR}} nur
+\stopbuffer
+
+\typebuffer
+
+Which renders as:
+
+\startnarrower
+\getbuffer
+\stopnarrower
+
+So how do we deal with the next?
+
+\startbuffer
+\def\ltr{\textdir TLT\relax}
+\def\rtl{\textdir TRT\relax}
+
+run {\rtl nur {\ltr run \rtl NUR \ltr run \rtl NUR} nur}
+run {\ltr run {\rtl nur \ltr RUN \rtl nur \ltr RUN} run}
+\stopbuffer
+
+\typebuffer
+
+It gets typeset as:
+
+\startnarrower
+\startlines
+\getbuffer
+\stoplines
+\stopnarrower
+
+We could define the two helpers to look back, pick up a skip, remove it and
+inject it after the dir node. But that way we loose the subtype information that
+for some applications can be handy to be kept as|-|is. This is why we now have a
+variant of \lpr {textdir} which injects the balanced node before the skip.
+Instead of the previous definition we can use:
+
+\startbuffer[def]
+\def\ltr{\linedir TLT\relax}
+\def\rtl{\linedir TRT\relax}
+\stopbuffer
+
+\typebuffer[def]
+
+and this time:
+
+\startbuffer[txt]
+run {\rtl nur {\ltr run \rtl NUR \ltr run \rtl NUR} nur}
+run {\ltr run {\rtl nur \ltr RUN \rtl nur \ltr RUN} run}
+\stopbuffer
+
+\typebuffer[txt]
+
+comes out as a properly spaced:
+
+\startnarrower
+\startlines
+\getbuffer[def,txt]
+\stoplines
+\stopnarrower
+
+Anything more complex that this, like combination of skips and penalties, or
+kerns, should be handled in the input or macro package because there is no way we
+can predict the expected behaviour. In fact, the \lpr {linedir} is just a
+convenience extra which could also have been implemented using node list parsing.
+
+Directions are complicated by the fact that they often need to work over groups
+so a separate grouping related stack is used. A side effect is that there can be
+paragraphs with only a local par node followed by direction synchronization
+nodes. Paragraphs like that are seen as empty paragraphs and therefore ignored.
+Because \type {\noindent} doesn't inject anything but a \type {\indent} injects
+an box, paragraphs with only an indent and directions are handled as paragraphs
+with content.
+
+\stopsubsection
+
+\startsubsection[title={Controlling glue with \lpr {breakafterdirmode}}]
+
+Glue after a dir node is ignored in the linebreak decision but you can bypass that
+by setting \lpr {breakafterdirmode} to~\type {1}. The following table shows the
+difference. Watch your spaces.
+
+\def\ShowSome#1{%
+    \BC \type{#1}
+    \NC \breakafterdirmode\zerocount\hsize\zeropoint#1
+    \NC
+    \NC \breakafterdirmode\plusone\hsize\zeropoint#1
+    \NC
+    \NC \NR
+}
+
+\starttabulate[|l|Tp(1pt)|w(5em)|Tp(1pt)|w(5em)|]
+    \DB
+    \BC \type{0}
+    \NC
+    \BC \type{1}
+    \NC
+    \NC \NR
+    \TB
+    \ShowSome{pre {\textdir TLT xxx} post}
+    \ShowSome{pre {\textdir TLT xxx }post}
+    \ShowSome{pre{ \textdir TLT xxx} post}
+    \ShowSome{pre{ \textdir TLT xxx }post}
+    \ShowSome{pre { \textdir TLT xxx } post}
+    \ShowSome{pre {\textdir TLT\relax\space xxx} post}
+    \LL
+\stoptabulate
+
+\stopsubsection
+
+\startsubsection[title={Controling parshapes with \lpr {shapemode}}]
+
+Another adaptation to the \ALEPH\ directional model is control over shapes driven
+by \prm {hangindent} and \prm {parshape}. This is controlled by a new parameter
+\lpr {shapemode}:
+
+\starttabulate[|c|l|l|]
+\DB value    \BC \prm {hangindent} \BC \prm {parshape} \NC \NR
+\TB
+\BC \type{0} \NC  normal             \NC normal            \NC \NR
+\BC \type{1} \NC  mirrored           \NC normal            \NC \NR
+\BC \type{2} \NC  normal             \NC mirrored          \NC \NR
+\BC \type{3} \NC  mirrored           \NC mirrored          \NC \NR
+\LL
+\stoptabulate
+
+The value is reset to zero (like \prm {hangindent} and \prm {parshape})
+after the paragraph is done with. You can use negative values to prevent
+this. In \in {figure} [fig:shapemode] a few examples are given.
+
+\startplacefigure[reference=fig:shapemode,title={The effect of \type {shapemode}.}]
+    \startcombination[2*3]
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+                \pardir TLT \textdir TLT
+                \hangindent 40pt \hangafter -3
+                \leftskip10pt \input tufte \par
+         \egroup} {TLT: hangindent}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \pardir TLT \textdir TLT
+            \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+            \input tufte \par
+         \egroup} {TLT: parshape}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \pardir TRT \textdir TRT
+            \hangindent 40pt \hangafter -3
+            \leftskip10pt \input tufte \par
+         \egroup} {TRT: hangindent mode 0}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \pardir TRT \textdir TRT
+            \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+            \input tufte \par
+         \egroup} {TRT: parshape mode 0}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \shapemode=3
+            \pardir TRT \textdir TRT
+            \hangindent 40pt \hangafter -3
+            \leftskip10pt \input tufte \par
+         \egroup} {TRT: hangindent mode 1 & 3}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \shapemode=3
+            \pardir TRT \textdir TRT
+            \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+            \input tufte \par
+         \egroup} {TRT: parshape mode 2 & 3}
+    \stopcombination
+\stopplacefigure
+
+\stopsubsection
+
+\startsubsection[title={Symbols or numbers}]
+
+Internally the implementation is different from \ALEPH. First of all we use no
+whatsits but dedicated nodes, but also we have only 4 directions that are mapped
+onto 4 numbers. A text direction node can mark the start or end of a sequence of
+nodes, and therefore has two states. At the \TEX\ end we don't see these states
+because \TEX\ itself will add proper end state nodes if needed.
+
+The symbolic names \type {TLT}, \type {TRT}, etc.\ originate in \OMEGA. In
+\LUATEX\ we also have a number based model which sometimes makes more sense.
+
+\starttabulate[|c|l|l|]
+\DB value     \BC equivalent \NC \NR
+\TB
+\BC \type {0} \NC TLT \NC \NR
+\BC \type {1} \NC TRT \NC \NR
+\BC \type {2} \NC LTL \NC \NR
+\BC \type {3} \NC RTT \NC \NR
+\LL
+\stoptabulate
+
+We support the \OMEGA\ primitives \orm {textdir}, \orm {pardir}, \orm {pagedir},
+\orm {pardir} and \orm {mathdir}. These accept three character keywords. The
+primitives that set the direction by number are: \lpr {textdirection}, \lpr
+{pardirection}, \lpr {pagedirection} and \lpr {bodydirection} and \lpr
+{mathdirection}. When specifying a direction for a box you can use \type {bdir}
+instead of \type {dir}.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Implementation notes]
+
+\startsubsection[title=Memory allocation]
+
+\topicindex {memory}
+
+The single internal memory heap that traditional \TEX\ used for tokens and nodes
+is split into two separate arrays. Each of these will grow dynamically when
+needed.
+
+The \type {texmf.cnf} settings related to main memory are no longer used (these
+are: \type {main_memory}, \type {mem_bot}, \type {extra_mem_top} and \type
+{extra_mem_bot}). \quote {Out of main memory} errors can still occur, but the
+limiting factor is now the amount of RAM in your system, not a predefined limit.
+
+Also, the memory (de)allocation routines for nodes are completely rewritten. The
+relevant code now lives in the C file \type {texnode.c}, and basically uses a
+dozen or so \quote {avail} lists instead of a doubly|-|linked model. An extra
+function layer is added so that the code can ask for nodes by type instead of
+directly requisitioning a certain amount of memory words.
+
+Because of the split into two arrays and the resulting differences in the data
+structures, some of the macros have been duplicated. For instance, there are now
+\type {vlink} and \type {vinfo} as well as \type {token_link} and \type
+{token_info}. All access to the variable memory array is now hidden behind a
+macro called \type {vmem}. We mention this because using the \TEX book as
+reference is still quite valid but not for memory related details. Another
+significant detail is that we have double linked node lists and that most nodes
+carry more data.
+
+The input line buffer and pool size are now also reallocated when needed, and the
+\type {texmf.cnf} settings \type {buf_size} and \type {pool_size} are silently
+ignored.
+
+\stopsubsection
+
+\startsubsection[title=Sparse arrays]
+
+The \prm {mathcode}, \prm {delcode}, \prm {catcode}, \prm {sfcode}, \prm {lccode}
+and \prm {uccode} (and the new \lpr {hjcode}) tables are now sparse arrays that
+are implemented in~\CCODE. They are no longer part of the \TEX\ \quote
+{equivalence table} and because each had 1.1 million entries with a few memory
+words each, this makes a major difference in memory usage. Performance is not
+really hurt by this.
+
+The \prm {catcode}, \prm {sfcode}, \prm {lccode}, \prm {uccode} and \lpr {hjcode}
+assignments don't show up when using the \ETEX\ tracing routines \prm
+{tracingassigns} and \prm {tracingrestores} but we don't see that as a real
+limitation.
+
+A side|-|effect of the current implementation is that \prm {global} is now more
+expensive in terms of processing than non|-|global assignments but not many users
+will notice that.
+
+The glyph ids within a font are also managed by means of a sparse array as glyph
+ids can go up to index $2^{21}-1$ but these are never accessed directly so again
+users will not notice this.
+
+\stopsubsection
+
+\startsubsection[title=Simple single|-|character csnames]
+
+\topicindex {csnames}
+
+Single|-|character commands are no longer treated specially in the internals,
+they are stored in the hash just like the multiletter csnames.
+
+The code that displays control sequences explicitly checks if the length is one
+when it has to decide whether or not to add a trailing space.
+
+Active characters are internally implemented as a special type of multi|-|letter
+control sequences that uses a prefix that is otherwise impossible to obtain.
+
+\stopsubsection
+
+\startsubsection[title=The compressed format file]
+
+\topicindex {format}
+
+The format is passed through \type {zlib}, allowing it to shrink to roughly half
+of the size it would have had in uncompressed form. This takes a bit more \CPU\
+cycles but much less disk \IO, so it should still be faster. We use a level~3
+compression which we found to be the optimal trade|-|off between filesize and
+decompression speed.
+
+\stopsubsection
+
+\startsubsection[title=Binary file reading]
+
+\topicindex {files+binary}
+
+All of the internal code is changed in such a way that if one of the \type
+{read_xxx_file} callbacks is not set, then the file is read by a \CCODE\ function
+using basically the same convention as the callback: a single read into a buffer
+big enough to hold the entire file contents. While this uses more memory than the
+previous code (that mostly used \type {getc} calls), it can be quite a bit faster
+(depending on your \IO\ subsystem).
+
+\stopsubsection
+
+\startsubsection[title=Tabs and spaces]
+
+\topicindex {space}
+\topicindex {newline}
+
+We conform to the way other \TEX\ engines handle trailing tabs and spaces. For
+decades trailing tabs and spaces (before a newline) were removed from the input
+but this behaviour was changed in September 2017 to only handle spaces. We are
+aware that this can introduce compatibility issues in existing workflows but
+because we don't want too many differences with upstream \TEXLIVE\ we just follow
+up on that patch (which is a functional one and not really a fix). It is up to
+macro packages maintainers to deal with possible compatibility issues and in
+\LUATEX\ they can do so via the callbacks that deal with reading from files.
+
+The previous behaviour was a known side effect and (as that kind of input
+normally comes from generated sources) it was normally dealt with by adding a
+comment token to the line in case the spaces and|/|or tabs were intentional and
+to be kept. We are aware of the fact that this contradicts some of our other
+choices but consistency with other engines and the fact that in \KPSE\ mode a
+common file \IO\ layer is used can have a side effect of breaking compatibility.
+We still stick to our view that at the log level we can (and might be) more
+incompatible. We already expose some more details.
+
+\stopsubsection
+
+\startsubsection[title=Hyperlinks]
+
+\topicindex {hyperlinks}
+
+There is an experimental feature that makes multi|-|line hyper links behave a
+little better, fixing some side effects that showed up in r2l typesetting but
+also can surface in l2r. Because this got unnoticed till 2023, and because it
+depends bit on how macro packages deal with hyper links, the fix is currently
+under parameter control:
+
+\starttyping
+\pdfvariable linking = 1
+\stoptyping
+
+That way (we hope) legacy documents come out as expected, whatever those
+expectations are. One of the aspects dealt with concerns (unusual) left and right
+skips.
+
+\stopsubsection
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

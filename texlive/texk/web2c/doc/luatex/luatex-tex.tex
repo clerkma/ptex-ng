@@ -1,0 +1,2945 @@
+% engine=luatex language=uk
+
+% lua.newtable
+
+\environment luatex-style
+
+\startcomponent luatex-tex
+
+\startchapter[reference=tex,title={The \TEX\ related libraries}]
+
+\startsection[title={The \type {lua} library}][library=lua]
+
+\startsubsection[title={Version information}]
+
+\topicindex{libraries+\type{lua}}
+\topicindex{version}
+
+\libindex{version}
+
+This library contains one read|-|only item:
+
+\starttyping
+<string> s = lua.version
+\stoptyping
+
+This returns the \LUA\ version identifier string. The value is currently
+\directlua {tex.print(lua.version)}.
+
+\stopsubsection
+
+\startsubsection[title={Bytecode registers}]
+
+\topicindex{bytecodes}
+\topicindex{registers+bytecodes}
+
+\libindex{bytecode}
+\libindex{setbytecode}
+\libindex{getbytecode}
+
+\LUA\ registers can be used to store \LUA\ code chunks. The accepted values for
+assignments are functions and \type {nil}. Likewise, the retrieved value is
+either a function or \type {nil}.
+
+\starttyping
+lua.bytecode[<number> n] = <function> f
+lua.bytecode[<number> n]()
+\stoptyping
+
+The contents of the \type {lua.bytecode} array is stored inside the format file
+as actual \LUA\ bytecode, so it can also be used to preload \LUA\ code. The
+function must not contain any upvalues. The associated function calls are:
+
+\startfunctioncall
+<function> f = lua.getbytecode(<number> n)
+lua.setbytecode(<number> n, <function> f)
+\stopfunctioncall
+
+Note: Since a \LUA\ file loaded using \type {loadfile(filename)} is essentially
+an anonymous function, a complete file can be stored in a bytecode register like
+this:
+
+\startfunctioncall
+lua.bytecode[n] = loadfile(filename)
+\stopfunctioncall
+
+Now all definitions (functions, variables) contained in the file can be
+created by executing this bytecode register:
+
+\startfunctioncall
+lua.bytecode[n]()
+\stopfunctioncall
+
+Note that the path of the file is stored in the \LUA\ bytecode to be used in
+stack backtraces and therefore dumped into the format file if the above code is
+used in \INITEX. If it contains private information, i.e. the user name, this
+information is then contained in the format file as well. This should be kept in
+mind when preloading files into a bytecode register in \INITEX.
+
+\stopsubsection
+
+\startsubsection[title={Chunk name registers}]
+
+\libindex{name}
+\libindex{setluaname}
+\libindex{getluaname}
+
+There is an array of 65536 (0--65535) potential chunk names for use with the
+\prm {directlua} and \lpr {latelua} primitives.
+
+\startfunctioncall
+lua.name[<number> n] = <string> s
+<string> s = lua.name[<number> n]
+\stopfunctioncall
+
+If you want to unset a \LUA\ name, you can assign \type {nil} to it. The function
+accessors are:
+
+\startfunctioncall
+lua.setluaname(<number> n, <string> s)
+<string> s = lua.getluaname(<number> n)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={Introspection}]
+
+\libindex{getstacktop}
+\libindex{getcalllevel}
+
+The \type {getstacktop} and\type {getcalllevel} functions return numbers
+indicating how much nesting is going on. They are only of use as breakpoints when
+checking some mechanism going haywire.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={The \type {status} library}][library=status]
+
+\topicindex{libraries+\type{status}}
+
+\libindex{list}
+\libindex{resetmessages}
+\libindex{setexitcode}
+
+This contains a number of run|-|time configuration items that you may find useful
+in message reporting, as well as an iterator function that gets all of the names
+and values as a table.
+
+\startfunctioncall
+<table> info = status.list()
+\stopfunctioncall
+
+The keys in the table are the known items, the value is the current value. Almost
+all of the values in \type {status} are fetched through a metatable at run|-|time
+whenever they are accessed, so you cannot use \type {pairs} on \type {status},
+but you {\it can\/} use \type {pairs} on \type {info}, of course. If you do not
+need the full list, you can also ask for a single item by using its name as an
+index into \type {status}. The current list is:
+
+\starttabulate[|l|p|]
+\DB key                       \BC explanation \NC \NR
+\TB
+\NC \type{banner}             \NC terminal display banner \NC \NR
+\NC \type{best_page_break}    \NC the current best break (a node) \NC \NR
+\NC \type{buf_size}           \NC current allocated size of the line buffer \NC \NR
+\NC \type{callbacks}          \NC total number of executed callbacks so far \NC \NR
+\NC \type{cs_count}           \NC number of control sequences \NC \NR
+\NC \type{dest_names_size}    \NC \PDF\ destination table size \NC \NR
+\NC \type{dvi_gone}           \NC written \DVI\ bytes \NC \NR
+\NC \type{dvi_ptr}            \NC not yet written \DVI\ bytes \NC \NR
+\NC \type{dyn_used}           \NC token (multi|-|word) memory in use  \NC \NR
+\NC \type{filename}           \NC name of the current input file \NC \NR
+\NC \type{fix_mem_end}        \NC maximum number of used tokens \NC \NR
+\NC \type{fix_mem_min}        \NC minimum number of allocated words for tokens \NC \NR
+\NC \type{fix_mem_max}        \NC maximum number of allocated words for tokens \NC \NR
+\NC \type{font_ptr}           \NC number of active fonts \NC \NR
+\NC \type{hash_extra}         \NC extra allowed hash \NC \NR
+\NC \type{hash_size}          \NC size of hash \NC \NR
+\NC \type{indirect_callbacks} \NC number of those that were themselves a result of other callbacks (e.g. file readers) \NC \NR
+\NC \type{ini_version}        \NC \type {true} if this is an \INITEX\ run \NC \NR
+\NC \type{init_pool_ptr}      \NC \INITEX\ string pool index \NC \NR
+\NC \type{init_str_ptr}       \NC number of \INITEX\ strings \NC \NR
+\NC \type{input_ptr}          \NC the level of input we're at \NC \NR
+\NC \type{inputid}            \NC numeric id of the current input \NC \NR
+\NC \type{largest_used_mark}  \NC max referenced marks class \NC \NR
+\NC \type{lasterrorcontext}   \NC last error context string (with newlines) \NC \NR
+\NC \type{lasterrorstring}    \NC last \TEX\ error string \NC \NR
+\NC \type{lastluaerrorstring} \NC last \LUA\ error string \NC \NR
+\NC \type{lastwarningstring}  \NC last warning tag, normally an indication of in what part\NC \NR
+\NC \type{lastwarningtag}     \NC last warning string\NC \NR
+\NC \type{linenumber}         \NC location in the current input file \NC \NR
+\NC \type{log_name}           \NC name of the log file \NC \NR
+\NC \type{luabytecode_bytes}  \NC number of bytes in \LUA\ bytecode registers \NC \NR
+\NC \type{luabytecodes}       \NC number of active \LUA\ bytecode registers \NC \NR
+\NC \type{luastate_bytes}     \NC number of bytes in use by \LUA\ interpreters \NC \NR
+\NC \type{luatex_engine}      \NC the \LUATEX\ engine identifier \NC \NR
+\NC \type{luatex_hashchars}   \NC length to which \LUA\ hashes strings ($2^n$) \NC \NR
+\NC \type{luatex_hashtype}    \NC the hash method used (in \LUAJITTEX) \NC \NR
+\NC \type{luatex_version}     \NC the \LUATEX\ version number \NC \NR
+\NC \type{luatex_revision}    \NC the \LUATEX\ revision string \NC \NR
+\NC \type{max_buf_stack}      \NC max used buffer position \NC \NR
+\NC \type{max_in_stack}       \NC max used input stack entries \NC \NR
+\NC \type{max_nest_stack}     \NC max used nesting stack entries \NC \NR
+\NC \type{max_param_stack}    \NC max used parameter stack entries \NC \NR
+\NC \type{max_save_stack}     \NC max used save stack entries \NC \NR
+\NC \type{max_strings}        \NC maximum allowed strings \NC \NR
+\NC \type{nest_size}          \NC nesting stack size \NC \NR
+\NC \type{node_mem_usage}     \NC a string giving insight into currently used nodes \NC \NR
+\NC \type{obj_ptr}            \NC max \PDF\ object pointer \NC \NR
+\NC \type{obj_tab_size}       \NC \PDF\ object table size \NC \NR
+\NC \type{output_active}      \NC \type {true} if the \prm {output} routine is active \NC \NR
+\NC \type{output_file_name}   \NC name of the \PDF\ or \DVI\ file \NC \NR
+\NC \type{param_size}         \NC parameter stack size \NC \NR
+\NC \type{pdf_dest_names_ptr} \NC max \PDF\ destination pointer \NC \NR
+\NC \type{pdf_gone}           \NC written \PDF\ bytes \NC \NR
+\NC \type{pdf_mem_ptr}        \NC max \PDF\ memory used \NC \NR
+\NC \type{pdf_mem_size}       \NC \PDF\ memory size \NC \NR
+\NC \type{pdf_os_cntr}        \NC max \PDF\ object stream pointer \NC \NR
+\NC \type{pdf_os_objidx}      \NC \PDF\ object stream index \NC \NR
+\NC \type{pdf_ptr}            \NC not yet written \PDF\ bytes \NC \NR
+\NC \type{pool_ptr}           \NC string pool index \NC \NR
+\NC \type{pool_size}          \NC current size allocated for string characters \NC \NR
+\NC \type{save_size}          \NC save stack size \NC \NR
+\NC \type{shell_escape}       \NC \type {0} means disabled, \type {1} means anything is permitted, and \type {2} is restricted \NC \NR
+\NC \type{safer_option}       \NC \type {1} means safer is enforced \NC \NR
+\NC \type{luadebug_option}    \NC true if the \type{debug} library is enabled at command line \NC\NR
+\NC \type{output_directory}   \NC the value of the output directory \NC \NR
+\NC \type{kpse_used}          \NC \type {1} means that kpse is used \NC \NR
+\NC \type{stack_size}         \NC input stack size \NC \NR
+\NC \type{str_ptr}            \NC number of strings \NC \NR
+\NC \type{total_pages}        \NC number of written pages \NC \NR
+\NC \type{var_mem_max}        \NC number of allocated words for nodes \NC \NR
+\NC \type{var_used}           \NC variable (one|-|word) memory in use \NC \NR
+\NC \type{lc_collate}         \NC the value of \type {LC_COLLATE}  at startup time (becomes \type {C} at startup) \NC \NR
+\NC \type{lc_ctype}           \NC the value of \type {LC_CTYPE}    at startup time (becomes \type {C} at startup) \NC \NR
+%NC \type{lc_monetary}        \NC the value of \type {LC_MONETARY} at startup time \NC \NR
+\NC \type{lc_numeric}         \NC the value of \type {LC_NUMERIC}  at startup time \NC \NR
+%NC \type{lc_time}            \NC the value of \type {LC_TIME}     at startup time (becomes \type {C} at startup) \NC \NR
+\LL
+\stoptabulate
+
+The error and warning messages can be wiped with the \type {resetmessages}
+function. A return value can be set with \type {setexitcode}.
+
+\stopsection
+
+\startsection[title={The \type {tex} library}][library=tex]
+
+\startsubsection[title={Introduction}]
+
+\topicindex{libraries+\type{tex}}
+
+The \type {tex} table contains a large list of virtual internal \TEX\
+parameters that are partially writable.
+
+The designation \quote {virtual} means that these items are not properly defined
+in \LUA, but are only front\-ends that are handled by a metatable that operates
+on the actual \TEX\ values. As a result, most of the \LUA\ table operators (like
+\type {pairs} and \type {#}) do not work on such items.
+
+At the moment, it is possible to access almost every parameter that you can use
+after \prm {the}, is a single tokens or is sort of special in \TEX. This excludes
+parameters that need extra arguments, like \type {\the\scriptfont}. The subset
+comprising simple integer and dimension registers are writable as well as
+readable (like \prm {tracingcommands} and \prm {parindent}).
+
+\stopsubsection
+
+\startsubsection[title={Internal parameter values, \type {set} and \type {get}}]
+
+\topicindex{parameters+internal}
+
+\libindex{set}
+\libindex{get}
+
+For all the parameters in this section, it is possible to access them directly
+using their names as index in the \type {tex} table, or by using one of the
+functions \type {tex.get} and \type {tex.set}.
+
+The exact parameters and return values differ depending on the actual parameter,
+and so does whether \type {tex.set} has any effect. For the parameters that {\em
+can} be set, it is possible to use \type {global} as the first argument to \type
+{tex.set}; this makes the assignment global instead of local.
+
+\startfunctioncall
+tex.set (["global",] <string> n, ...)
+... = tex.get (<string> n)
+\stopfunctioncall
+
+Glue is kind of special because there are five values involved. The return value
+is a \nod {glue_spec} node but when you pass \type {false} as last argument to
+\type {tex.get} you get the width of the glue and when you pass \type {true} you
+get all five values. Otherwise you get a node which is a copy of the internal
+value so you are responsible for its freeing at the \LUA\ end. When you set a
+glue quantity you can either pass a \nod {glue_spec} or upto five numbers. If
+you pass \type {true} to \type {get} you get 5 values returned for a glue and
+when you pass \type {false} you only get the width returned.
+
+\subsubsection{Integer parameters}
+
+The integer parameters accept and return \LUA\ numbers. These are read|-|write:
+
+\starttwocolumns
+\starttyping
+tex.adjdemerits
+tex.binoppenalty
+tex.brokenpenalty
+tex.catcodetable
+tex.clubpenalty
+tex.day
+tex.defaulthyphenchar
+tex.defaultskewchar
+tex.delimiterfactor
+tex.displaywidowpenalty
+tex.doublehyphendemerits
+tex.endlinechar
+tex.errorcontextlines
+tex.escapechar
+tex.exhyphenpenalty
+tex.fam
+tex.finalhyphendemerits
+tex.floatingpenalty
+tex.globaldefs
+tex.hangafter
+tex.hbadness
+tex.holdinginserts
+tex.hyphenpenalty
+tex.interlinepenalty
+tex.language
+tex.lastlinefit
+tex.lefthyphenmin
+tex.linepenalty
+tex.localbrokenpenalty
+tex.localinterlinepenalty
+tex.looseness
+tex.mag
+tex.maxdeadcycles
+tex.month
+tex.newlinechar
+tex.outputpenalty
+tex.pausing
+tex.postdisplaypenalty
+tex.predisplaydirection
+tex.predisplaypenalty
+tex.pretolerance
+tex.relpenalty
+tex.righthyphenmin
+tex.savinghyphcodes
+tex.savingvdiscards
+tex.showboxbreadth
+tex.showboxdepth
+tex.time
+tex.tolerance
+tex.tracingassigns
+tex.tracingcommands
+tex.tracinggroups
+tex.tracingifs
+tex.tracinglostchars
+tex.tracingmacros
+tex.tracingnesting
+tex.tracingonline
+tex.tracingoutput
+tex.tracingpages
+tex.tracingparagraphs
+tex.tracingrestores
+tex.tracingscantokens
+tex.tracingstats
+tex.uchyph
+tex.vbadness
+tex.widowpenalty
+tex.year
+\stoptyping
+\stoptwocolumns
+
+These are read|-|only:
+
+\startthreecolumns
+\starttyping
+tex.deadcycles
+tex.insertpenalties
+tex.parshape
+tex.interlinepenalties
+tex.clubpenalties
+tex.widowpenalties
+tex.displaywidowpenalties
+tex.prevgraf
+tex.spacefactor
+\stoptyping
+\stopthreecolumns
+
+\subsubsection{Dimension parameters}
+
+The dimension parameters accept \LUA\ numbers (signifying scaled points) or
+strings (with included dimension). The result is always a number in scaled
+points. These are read|-|write:
+
+\startthreecolumns
+\starttyping
+tex.boxmaxdepth
+tex.delimitershortfall
+tex.displayindent
+tex.displaywidth
+tex.emergencystretch
+tex.hangindent
+tex.hfuzz
+tex.hoffset
+tex.hsize
+tex.lineskiplimit
+tex.mathsurround
+tex.maxdepth
+tex.nulldelimiterspace
+tex.overfullrule
+tex.pagebottomoffset
+tex.pageheight
+tex.pageleftoffset
+tex.pagerightoffset
+tex.pagetopoffset
+tex.pagewidth
+tex.parindent
+tex.predisplaysize
+tex.scriptspace
+tex.splitmaxdepth
+tex.vfuzz
+tex.voffset
+tex.vsize
+tex.prevdepth
+tex.prevgraf
+tex.spacefactor
+\stoptyping
+\stopthreecolumns
+
+These are read|-|only:
+
+\startthreecolumns
+\starttyping
+tex.pagedepth
+tex.pagefilllstretch
+tex.pagefillstretch
+tex.pagefilstretch
+tex.pagegoal
+tex.pageshrink
+tex.pagestretch
+tex.pagetotal
+\stoptyping
+\stopthreecolumns
+
+Beware: as with all \LUA\ tables you can add values to them. So, the following is
+valid:
+
+\starttyping
+tex.foo = 123
+\stoptyping
+
+When you access a \TEX\ parameter a look up takes place. For read||only variables
+that means that you will get something back, but when you set them you create a
+new entry in the table thereby making the original invisible.
+
+There are a few special cases that we make an exception for: \type {prevdepth},
+\type {prevgraf} and \type {spacefactor}. These normally are accessed via the
+\type {tex.nest} table:
+
+\starttyping
+tex.nest[tex.nest.ptr].prevdepth   = p
+tex.nest[tex.nest.ptr].spacefactor = s
+\stoptyping
+
+However, the following also works:
+
+\starttyping
+tex.prevdepth   = p
+tex.spacefactor = s
+\stoptyping
+
+Keep in mind that when you mess with node lists directly at the \LUA\ end you
+might need to update the top of the nesting stack's \type {prevdepth} explicitly
+as there is no way \LUATEX\ can guess your intentions. By using the accessor in
+the \type {tex} tables, you get and set the values at the top of the nesting
+stack.
+
+\subsubsection{Direction parameters}
+
+The direction parameters are read|-|only and return a \LUA\ string.
+
+\startthreecolumns
+\starttyping
+tex.bodydir
+tex.mathdir
+tex.pagedir
+tex.pardir
+tex.textdir
+\stoptyping
+\stopthreecolumns
+
+\subsubsection{Glue parameters}
+
+The glue parameters accept and return a userdata object that represents a \nod {glue_spec} node.
+
+\startthreecolumns
+\starttyping
+tex.abovedisplayshortskip
+tex.abovedisplayskip
+tex.baselineskip
+tex.belowdisplayshortskip
+tex.belowdisplayskip
+tex.leftskip
+tex.lineskip
+tex.parfillskip
+tex.parskip
+tex.rightskip
+tex.spaceskip
+tex.splittopskip
+tex.tabskip
+tex.topskip
+tex.xspaceskip
+\stoptyping
+\stopthreecolumns
+
+\subsubsection{Muglue parameters}
+
+All muglue parameters are to be used read|-|only and return a \LUA\ string.
+
+\startthreecolumns
+\starttyping
+tex.medmuskip
+tex.thickmuskip
+tex.thinmuskip
+\stoptyping
+\stopthreecolumns
+
+\subsubsection{Tokenlist parameters}
+
+The tokenlist parameters accept and return \LUA\ strings. \LUA\ strings are
+converted to and from token lists using \prm {the} \prm {toks} style expansion:
+all category codes are either space (10) or other (12). It follows that assigning
+to some of these, like \quote {tex.output}, is actually useless, but it feels bad
+to make exceptions in view of a coming extension that will accept full|-|blown
+token strings.
+
+\startthreecolumns
+\starttyping
+tex.errhelp
+tex.everycr
+tex.everydisplay
+tex.everyeof
+tex.everyhbox
+tex.everyjob
+tex.everymath
+tex.everypar
+tex.everyvbox
+tex.output
+\stoptyping
+\stopthreecolumns
+
+\stopsubsection
+
+\startsubsection[title={Convert commands}]
+
+\topicindex{convert commands}
+
+All \quote {convert} commands are read|-|only and return a \LUA\ string. The
+supported commands at this moment are:
+
+\starttwocolumns
+\starttyping
+tex.eTeXVersion
+tex.eTeXrevision
+tex.formatname
+tex.jobname
+tex.luatexbanner
+tex.luatexrevision
+tex.fontname(number)
+tex.uniformdeviate(number)
+tex.number(number)
+tex.romannumeral(number)
+tex.fontidentifier(number)
+\stoptyping
+\stoptwocolumns
+
+If you are wondering why this list looks haphazard; these are all the cases of
+the \quote {convert} internal command that do not require an argument, as well as
+the ones that require only a simple numeric value. The special (\LUA|-|only) case
+of \type {tex.fontidentifier} returns the \type {csname} string that matches a
+font id number (if there is one).
+
+\stopsubsection
+
+\startsubsection[title={Last item commands}]
+
+\topicindex{last items}
+
+All \quote {last item} commands are read|-|only and return a number. The
+supported commands at this moment are:
+
+\startthreecolumns
+\starttyping
+tex.lastpenalty
+tex.lastkern
+tex.lastskip
+tex.lastnodetype
+tex.inputlineno
+tex.lastxpos
+tex.lastypos
+tex.randomseed
+tex.luatexversion
+tex.eTeXminorversion
+tex.eTeXversion
+tex.currentgrouplevel
+tex.currentgrouptype
+tex.currentiflevel
+tex.currentiftype
+tex.currentifbranch
+\stoptyping
+\stopthreecolumns
+
+\stopsubsection
+
+\startsubsection[title={Accessing registers: \type {set*}, \type {get*} and \type {is*}}]
+
+\topicindex{attributes}
+\topicindex{registers}
+
+\libindex{attribute}  \libindex{setattribute}  \libindex{getattribute}  \libindex{isattribute}
+\libindex{count}      \libindex{setcount}      \libindex{getcount}      \libindex{iscount}
+\libindex{dimen}      \libindex{setdimen}      \libindex{getdimen}      \libindex{isdimen}
+\libindex{skip}       \libindex{setskip}       \libindex{getskip}       \libindex{isskip}
+\libindex{muskip}     \libindex{setmuskip}     \libindex{getmuskip}     \libindex{ismuskip}
+\libindex{glue}       \libindex{setglue}       \libindex{getglue}       \libindex{isglue}
+\libindex{muglue}     \libindex{setmuglue}     \libindex{getmuglue}     \libindex{ismuglue}
+\libindex{toks}       \libindex{settoks}       \libindex{gettoks}       \libindex{istoks}
+\libindex{box}        \libindex{setbox}        \libindex{getbox}        \libindex{isbox}
+
+\libindex{scantoks}
+
+\libindex{getmark}
+
+\TEX's attributes (\lpr {attribute}), counters (\prm {count}), dimensions (\prm
+{dimen}), skips (\prm {skip}, \prm {muskip}) and token (\prm {toks}) registers
+can be accessed and written to using two times five virtual sub|-|tables of the
+\type {tex} table:
+
+\startthreecolumns
+\starttyping
+tex.attribute
+tex.count
+tex.dimen
+tex.skip
+tex.glue
+tex.muskip
+tex.muglue
+tex.toks
+\stoptyping
+\stopthreecolumns
+
+It is possible to use the names of relevant \lpr {attributedef}, \prm {countdef},
+\prm {dimendef}, \prm {skipdef}, or \prm {toksdef} control sequences as indices
+to these tables:
+
+\starttyping
+tex.count.scratchcounter = 0
+enormous = tex.dimen['maxdimen']
+\stoptyping
+
+In this case, \LUATEX\ looks up the value for you on the fly. You have to use a
+valid \prm {countdef} (or \lpr {attributedef}, or \prm {dimendef}, or \prm
+{skipdef}, or \prm {toksdef}), anything else will generate an error (the intent
+is to eventually also allow \type {<chardef tokens>} and even macros that expand
+into a number).
+
+\startitemize
+
+    \startitem
+        The count registers accept and return \LUA\ numbers.
+    \stopitem
+
+    \startitem
+        The dimension registers accept \LUA\ numbers (in scaled points) or
+        strings (with an included absolute dimension; \type {em} and \type {ex}
+        and \type {px} are forbidden). The result is always a number in scaled
+        points.
+    \stopitem
+
+    \startitem
+        The token registers accept and return \LUA\ strings. \LUA\ strings are
+        converted to and from token lists using \prm {the} \prm {toks} style
+        expansion: all category codes are either space (10) or other (12).
+    \stopitem
+
+    \startitem
+        The skip registers accept and return \nod {glue_spec} userdata node
+        objects (see the description of the node interface elsewhere in this
+        manual).
+    \stopitem
+
+    \startitem
+        The glue registers are just skip registers but instead of userdata
+        are verbose.
+    \stopitem
+
+    \startitem
+        Like the counts, the attribute registers accept and return \LUA\ numbers.
+    \stopitem
+
+\stopitemize
+
+As an alternative to array addressing, there are also accessor functions defined
+for all cases, for example, here is the set of possibilities for \prm {skip}
+registers:
+
+\startfunctioncall
+tex.setskip (["global",] <number> n, <node> s)
+tex.setskip (["global",] <string> s, <node> s)
+<node> s = tex.getskip (<number> n)
+<node> s = tex.getskip (<string> s)
+\stopfunctioncall
+
+We have similar setters for \type {count}, \type {dimen}, \type {muskip}, and
+\type {toks}. Counters and dimen are represented by numbers, skips and muskips by
+nodes, and toks by strings.
+
+Again the glue variants are not using the \nod {glue_spec} userdata nodes. The
+\type {setglue} function accepts upto 5 arguments: width, stretch, shrink,
+stretch order and shrink order. If you pass no values or if a value is not a
+number the corresponding property will become a zero. The \type {getglue}
+function reports all properties, unless the second argument is \type {false} in
+which care only the width is returned.
+
+Here is an example using a threesome:
+
+\startfunctioncall
+local d = tex.getdimen("foo")
+if tex.isdimen("bar") then
+    tex.setdimen("bar",d)
+end
+\stopfunctioncall
+
+There are six extra skip (glue) related helpers:
+
+\startfunctioncall
+tex.setglue (["global"], <number> n,
+    width, stretch, shrink, stretch_order, shrink_order)
+tex.setglue (["global"], <string> s,
+    width, stretch, shrink, stretch_order, shrink_order)
+width, stretch, shrink, stretch_order, shrink_order =
+    tex.getglue (<number> n)
+width, stretch, shrink, stretch_order, shrink_order =
+    tex.getglue (<string> s)
+\stopfunctioncall
+
+The other two are \type {tex.setmuglue} and \type {tex.getmuglue}.
+
+There are such helpers for \type {dimen}, \type {count}, \type {skip}, \type
+{muskip}, \type {box} and \type {attribute} registers but the glue ones
+are special because they have to deal with more properties.
+
+As with the general \type {get} and \type {set} function discussed before, for
+the skip registers \type {getskip} returns a node and \type {getglue} returns
+numbers, while \type {setskip} accepts a node and \type {setglue} expects upto five
+numbers. Again, when you pass \type {false} as second argument to \type {getglue}
+you only get the width returned. The same is true for the \type {mu} variants
+\type {getmuskip}, \type {setmuskip}, \type {getmuskip} and\type {setmuskip}.
+
+For tokens registers we have an alternative where a catcode table is specified:
+
+\startfunctioncall
+tex.scantoks(0,3,"$e=mc^2$")
+tex.scantoks("global",0,"$\int\limits^1_2$")
+\stopfunctioncall
+
+In the function|-|based interface, it is possible to define values globally by
+using the string \type {global} as the first function argument.
+
+There is a dedicated getter for marks: \type {getmark} that takes two arguments.
+The first argument is one of \type {top}, \type {bottom}, \type {first}, \type
+{splitbottom} or \type {splitfirst}, and the second argument is a marks class
+number. When no arguments are given the current maximum number of classes is
+returned.
+
+\stopsubsection
+
+\startsubsection[title={Character code registers: \type {[get|set]*code[s]}}]
+
+\topicindex{characters+codes}
+
+\libindex{lccode}    \libindex{setlccode}    \libindex{getlccode}
+\libindex{uccode}    \libindex{setuccode}    \libindex{getuccode}
+\libindex{sfcode}    \libindex{setsfcode}    \libindex{getsfcode}
+\libindex{catcode}   \libindex{setcatcode}   \libindex{getcatcode}
+\libindex{mathcode}  \libindex{setmathcode}  \libindex{getmathcode}
+\libindex{delcode}   \libindex{setdelcode}   \libindex{getdelcode}
+
+\libindex{setdelcodes}   \libindex{getdelcodes}
+\libindex{setmathcodes}  \libindex{getmathcodes}
+
+\TEX's character code tables (\prm {lccode}, \prm {uccode}, \prm {sfcode}, \prm
+{catcode}, \prm {mathcode}, \prm {delcode}) can be accessed and written to using
+six virtual subtables of the \type {tex} table
+
+\startthreecolumns
+\starttyping
+tex.lccode
+tex.uccode
+tex.sfcode
+tex.catcode
+tex.mathcode
+tex.delcode
+\stoptyping
+\stopthreecolumns
+
+The function call interfaces are roughly as above, but there are a few twists.
+\type {sfcode}s are the simple ones:
+
+\startfunctioncall
+tex.setsfcode (["global",] <number> n, <number> s)
+<number> s = tex.getsfcode (<number> n)
+\stopfunctioncall
+
+The function call interface for \type {lccode} and \type {uccode} additionally
+allows you to set the associated sibling at the same time:
+
+\startfunctioncall
+tex.setlccode (["global"], <number> n, <number> lc)
+tex.setlccode (["global"], <number> n, <number> lc, <number> uc)
+<number> lc = tex.getlccode (<number> n)
+tex.setuccode (["global"], <number> n, <number> uc)
+tex.setuccode (["global"], <number> n, <number> uc, <number> lc)
+<number> uc = tex.getuccode (<number> n)
+\stopfunctioncall
+
+The function call interface for \type {catcode} also allows you to specify a
+category table to use on assignment or on query (default in both cases is the
+current one):
+
+\startfunctioncall
+tex.setcatcode (["global"], <number> n, <number> c)
+tex.setcatcode (["global"], <number> cattable, <number> n, <number> c)
+<number> lc = tex.getcatcode (<number> n)
+<number> lc = tex.getcatcode (<number> cattable, <number> n)
+\stopfunctioncall
+
+The interfaces for \type {delcode} and \type {mathcode} use small array tables to
+set and retrieve values:
+
+\startfunctioncall
+tex.setmathcode (["global"], <number> n, <table> mval )
+<table> mval = tex.getmathcode (<number> n)
+tex.setdelcode (["global"], <number> n, <table> dval )
+<table> dval = tex.getdelcode (<number> n)
+\stopfunctioncall
+
+Where the table for \type {mathcode} is an array of 3 numbers, like this:
+
+\starttyping
+{
+    <number> class,
+    <number> family,
+    <number> character
+}
+\stoptyping
+
+And the table for \type {delcode} is an array with 4 numbers, like this:
+
+\starttyping
+{
+    <number> small_fam,
+    <number> small_char,
+    <number> large_fam,
+    <number> large_char
+}
+\stoptyping
+
+You can also avoid the table:
+
+\startfunctioncall
+tex.setmathcode (["global"], <number> n, <number> class,
+    <number> family, <number> character)
+class, family, char =
+    tex.getmathcodes (<number> n)
+tex.setdelcode (["global"], <number> n, <number> smallfam,
+    <number> smallchar, <number> largefam, <number> largechar)
+smallfam, smallchar, largefam, largechar =
+    tex.getdelcodes (<number> n)
+\stopfunctioncall
+
+Normally, the third and fourth values in a delimiter code assignment will be zero
+according to \lpr {Udelcode} usage, but the returned table can have values there
+(if the delimiter code was set using \prm {delcode}, for example). Unset \type
+{delcode}'s can be recognized because \type {dval[1]} is $-1$.
+
+\stopsubsection
+
+\startsubsection[title={Box registers: \type {[get|set]box}}]
+
+\topicindex{registers}
+\topicindex{boxes}
+
+\libindex{box}
+\libindex{setbox}  \libindex{getbox}
+
+It is possible to set and query actual boxes, coming for instance from \prm
+{hbox}, \prm {vbox} or \prm {vtop}, using the node interface as defined in the
+\type {node} library:
+
+\starttyping
+tex.box
+\stoptyping
+
+for array access, or
+
+\starttyping
+tex.setbox(["global",] <number> n, <node> s)
+tex.setbox(["global",] <string> cs, <node> s)
+<node> n = tex.getbox(<number> n)
+<node> n = tex.getbox(<string> cs)
+\stoptyping
+
+for function|-|based access. In the function-based interface, it is possible to
+define values globally by using the string \type {global} as the first function
+argument.
+
+Be warned that an assignment like
+
+\starttyping
+tex.box[0] = tex.box[2]
+\stoptyping
+
+does not copy the node list, it just duplicates a node pointer. If \type {\box2}
+will be cleared by \TEX\ commands later on, the contents of \type {\box0} becomes
+invalid as well. To prevent this from happening, always use \type
+{node.copy_list} unless you are assigning to a temporary variable:
+
+\starttyping
+tex.box[0] = node.copy_list(tex.box[2])
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={Reusing boxes: \type {[use|save]boxresource} and \type {getboxresourcedimensions}}]
+
+\topicindex{boxes+reuse}
+
+\libindex{useboxresource}
+\libindex{saveboxresource}
+\libindex{getboxresourcedimensions}
+
+The following function will register a box for reuse (this is modelled after so
+called xforms in \PDF). You can (re)use the box with \lpr {useboxresource} or
+by creating a rule node with subtype~2.
+
+\starttyping
+local index = tex.saveboxresource(n,attributes,resources,immediate,type,margin)
+\stoptyping
+
+The optional second and third arguments are strings, the fourth is a boolean. The
+fifth argument is a type. When set to non|-|zero the \type {/Type} entry is
+omitted. A value of 1 or 3 still writes a \type {/BBox}, while 2 or 3 will write
+a \type {/Matrix}. The sixth argument is the (virtual) margin that extends beyond
+the effective boundingbox as seen by \TEX. Instead of a box number one can also
+pass a \type {[h|v]list} node.
+
+You can generate the reference (a rule type) with:
+
+\starttyping
+local reused = tex.useboxresource(n,wd,ht,dp)
+\stoptyping
+
+The dimensions are optional and the final ones are returned as extra values. The
+following is just a bonus (no dimensions returned means that the resource is
+unknown):
+
+\starttyping
+local w, h, d, m = tex.getboxresourcedimensions(n)
+\stoptyping
+
+This returns the width, height, depth and margin of the resource.
+
+\stopsubsection
+
+\startsubsection[title={\type {triggerbuildpage}}]
+
+\topicindex{pages}
+
+\libindex{triggerbuildpage}
+
+You should not expect to much from the \type {triggerbuildpage} helpers because
+often \TEX\ doesn't do much if it thinks nothing has to be done, but it might be
+useful for some applications. It just does as it says it calls the internal
+function that build a page, given that there is something to build.
+
+\stopsubsection
+
+\startsubsection[title={\type {splitbox}}]
+
+\topicindex{boxes+split}
+
+\libindex{splitbox}
+
+You can split a box:
+
+\starttyping
+local vlist = tex.splitbox(n,height,mode)
+\stoptyping
+
+The remainder is kept in the original box and a packaged vlist is returned. This
+operation is comparable to the \prm {vsplit} operation. The mode can be \type
+{additional} or \type {exactly} and concerns the split off box.
+
+\stopsubsection
+
+\startsubsection[title={Accessing math parameters: \type {[get|set]math}}]
+
+\topicindex{math+parameters}
+\topicindex{parameters+math}
+
+\libindex{setmath}
+\libindex{getmath}
+
+It is possible to set and query the internal math parameters using:
+
+\startfunctioncall
+tex.setmath(["global",] <string> n, <string> t, <number> n)
+<number> n = tex.getmath(<string> n, <string> t)
+\stopfunctioncall
+
+As before an optional first parameter \type {global} indicates a global
+assignment.
+
+The first string is the parameter name minus the leading \quote {Umath}, and the
+second string is the style name minus the trailing \quote {style}. Just to be
+complete, the values for the math parameter name are:
+
+\starttyping
+quad                axis                operatorsize
+overbarkern         overbarrule         overbarvgap
+underbarkern        underbarrule        underbarvgap
+radicalkern         radicalrule         radicalvgap
+radicaldegreebefore radicaldegreeafter  radicaldegreeraise
+stackvgap           stacknumup          stackdenomdown
+fractionrule        fractionnumvgap     fractionnumup
+fractiondenomvgap   fractiondenomdown   fractiondelsize
+limitabovevgap      limitabovebgap      limitabovekern
+limitbelowvgap      limitbelowbgap      limitbelowkern
+underdelimitervgap  underdelimiterbgap
+overdelimitervgap   overdelimiterbgap
+subshiftdrop        supshiftdrop        subshiftdown
+subsupshiftdown     subtopmax           supshiftup
+supbottommin        supsubbottommax     subsupvgap
+spaceafterscript    connectoroverlapmin
+ordordspacing       ordopspacing        ordbinspacing     ordrelspacing
+ordopenspacing      ordclosespacing     ordpunctspacing   ordinnerspacing
+opordspacing        opopspacing         opbinspacing      oprelspacing
+opopenspacing       opclosespacing      oppunctspacing    opinnerspacing
+binordspacing       binopspacing        binbinspacing     binrelspacing
+binopenspacing      binclosespacing     binpunctspacing   bininnerspacing
+relordspacing       relopspacing        relbinspacing     relrelspacing
+relopenspacing      relclosespacing     relpunctspacing   relinnerspacing
+openordspacing      openopspacing       openbinspacing    openrelspacing
+openopenspacing     openclosespacing    openpunctspacing  openinnerspacing
+closeordspacing     closeopspacing      closebinspacing   closerelspacing
+closeopenspacing    closeclosespacing   closepunctspacing closeinnerspacing
+punctordspacing     punctopspacing      punctbinspacing   punctrelspacing
+punctopenspacing    punctclosespacing   punctpunctspacing punctinnerspacing
+innerordspacing     inneropspacing      innerbinspacing   innerrelspacing
+inneropenspacing    innerclosespacing   innerpunctspacing innerinnerspacing
+\stoptyping
+
+The values for the style parameter are:
+
+\starttyping
+display       crampeddisplay
+text          crampedtext
+script        crampedscript
+scriptscript  crampedscriptscript
+\stoptyping
+
+The value is either a number (representing a dimension or number) or a glue spec
+node representing a muskip for \type {ordordspacing} and similar spacing
+parameters.
+
+\stopsubsection
+
+\startsubsection[title={Special list heads: \type {[get|set]list}}]
+
+\topicindex{lists}
+
+\libindex{lists}
+\libindex{setlist}
+\libindex{getlist}
+
+The virtual table \type {tex.lists} contains the set of internal registers that
+keep track of building page lists.
+
+\starttabulate[|l|p|]
+\DB field                      \BC explanation \NC \NR
+\TB
+\NC \type{page_ins_head}       \NC circular list of pending insertions \NC \NR
+\NC \type{contrib_head}        \NC the recent contributions \NC \NR
+\NC \type{page_head}           \NC the current page content \NC \NR
+%NC \type{temp_head}           \NC \NC \NR
+\NC \type{hold_head}           \NC used for held-over items for next page \NC \NR
+\NC \type{adjust_head}         \NC head of the current \prm {vadjust} list \NC \NR
+\NC \type{pre_adjust_head}     \NC head of the current \type {\vadjust pre} list \NC \NR
+%NC \type{align_head}          \NC \NC \NR
+\NC \type{page_discards_head}  \NC head of the discarded items of a page break \NC \NR
+\NC \type{split_discards_head} \NC head of the discarded items in a vsplit \NC \NR
+\LL
+\stoptabulate
+
+The getter and setter functions are \type {getlist} and \type {setlist}. You have
+to be careful with what you set as \TEX\ can have expectations with regards to
+how a list is constructed or in what state it is.
+
+\stopsubsection
+
+\startsubsection[title={Semantic nest levels: \type {getnest} and \type {ptr}}]
+
+\topicindex{nesting}
+
+\libindex{nest}
+\libindex{ptr}
+%libindex{setnest} % only a message
+\libindex{getnest}
+
+The virtual table \type {nest} contains the currently active semantic nesting
+state. It has two main parts: a zero-based array of userdata for the semantic
+nest itself, and the numerical value \type {ptr}, which gives the highest
+available index. Neither the array items in \type {nest[]} nor \type {ptr} can be
+assigned to (as this would confuse the typesetting engine beyond repair), but you
+can assign to the individual values inside the array items, e.g.\ \type
+{tex.nest[tex.nest.ptr].prevdepth}.
+
+\type {tex.nest[tex.nest.ptr]} is the current nest state, \type {nest[0]} the
+outermost (main vertical list) level. The getter function is \type {getnest}. You
+can pass a number (which gives you a list), nothing or \type {top}, which returns
+the topmost list, or the string \type {ptr} which gives you the index of the
+topmost list.
+
+The known fields are:
+
+\starttabulate[|l|l|l|p|]
+\DB key                \BC type    \BC modes \BC explanation \NC \NR
+\TB
+\NC \type{mode}        \NC number  \NC all   \NC the meaning of these numbers depends on the engine
+                                                 and sometimes even the version; you can use \typ
+                                                 {tex.getmodevalues()} to get the mapping: positive
+                                                 values signal vertical, horizontal and math mode,
+                                                 while negative values indicate inner and inline
+                                                 variants \NC \NR
+\NC \type{modeline}    \NC number  \NC all   \NC source input line where this mode was entered in,
+                                                 negative inside the output routine \NC \NR
+\NC \type{head}        \NC node    \NC all   \NC the head of the current list \NC \NR
+\NC \type{tail}        \NC node    \NC all   \NC the tail of the current list \NC \NR
+\NC \type{prevgraf}    \NC number  \NC vmode \NC number of lines in the previous paragraph \NC \NR
+\NC \type{prevdepth}   \NC number  \NC vmode \NC depth of the previous paragraph \NC \NR
+\NC \type{spacefactor} \NC number  \NC hmode \NC the current space factor \NC \NR
+\NC \type{dirs}        \NC node    \NC hmode \NC used for temporary storage by the line break algorithm\NC \NR
+\NC \type{noad}        \NC node    \NC mmode \NC used for temporary storage of a pending fraction numerator,
+                                                 for \prm {over} etc. \NC \NR
+\NC \type{delimptr}    \NC node    \NC mmode \NC used for temporary storage of the previous math delimiter,
+                                                 for \prm {middle} \NC \NR
+\NC \type{mathdir}     \NC boolean \NC mmode \NC true when during math processing the \lpr {mathdir} is not
+                                                 the same as the surrounding \lpr {textdir} \NC \NR
+\NC \type{mathstyle}   \NC number  \NC mmode \NC the current \lpr {mathstyle} \NC \NR
+\LL
+\stoptabulate
+
+\stopsubsection
+
+\startsubsection[reference=sec:luaprint,title={Print functions}]
+
+\topicindex{printing}
+
+The \type {tex} table also contains the three print functions that are the major
+interface from \LUA\ scripting to \TEX. The arguments to these three functions
+are all stored in an in|-|memory virtual file that is fed to the \TEX\ scanner as
+the result of the expansion of \prm {directlua}.
+
+The total amount of returnable text from a \prm {directlua} command is only
+limited by available system \RAM. However, each separate printed string has to
+fit completely in \TEX's input buffer. The result of using these functions from
+inside callbacks is undefined at the moment.
+
+\subsubsection{\type {print}}
+
+\libindex{print}
+
+\startfunctioncall
+tex.print(<string> s, ...)
+tex.print(<number> n, <string> s, ...)
+tex.print(<table> t)
+tex.print(<number> n, <table> t)
+\stopfunctioncall
+
+Each string argument is treated by \TEX\ as a separate input line. If there is a
+table argument instead of a list of strings, this has to be a consecutive array
+of strings to print (the first non-string value will stop the printing process).
+
+The optional parameter can be used to print the strings using the catcode regime
+defined by \lpr {catcodetable}~\type {n}. If \type {n} is $-1$, the currently
+active catcode regime is used. If \type {n} is $-2$, the resulting catcodes are
+the result of \prm {the} \prm {toks}: all category codes are 12 (other) except for
+the space character, that has category code 10 (space). Otherwise, if \type {n}
+is not a valid catcode table, then it is ignored, and the currently active
+catcode regime is used instead.
+
+The very last string of the very last \type {tex.print} command in a \prm
+{directlua} will not have the \prm {endlinechar} appended, all others do.
+
+\subsubsection{\type {sprint}}
+
+\libindex{sprint}
+
+\startfunctioncall
+tex.sprint(<string> s, ...)
+tex.sprint(<number> n, <string> s, ...)
+tex.sprint(<table> t)
+tex.sprint(<number> n, <table> t)
+\stopfunctioncall
+
+Each string argument is treated by \TEX\ as a special kind of input line that
+makes it suitable for use as a partial line input mechanism:
+
+\startitemize[packed]
+\startitem
+    \TEX\ does not switch to the \quote {new line} state, so that leading spaces
+    are not ignored.
+\stopitem
+\startitem
+    No \prm {endlinechar} is inserted.
+\stopitem
+\startitem
+    Trailing spaces are not removed. Note that this does not prevent \TEX\ itself
+    from eating spaces as result of interpreting the line. For example, in
+
+    \starttyping
+    before\directlua{tex.sprint("\\relax")tex.sprint(" inbetween")}after
+    \stoptyping
+
+    the space before \type {in between} will be gobbled as a result of the \quote
+    {normal} scanning of \prm {relax}.
+\stopitem
+\stopitemize
+
+If there is a table argument instead of a list of strings, this has to be a
+consecutive array of strings to print (the first non-string value will stop the
+printing process).
+
+The optional argument sets the catcode regime, as with \type {tex.print}. This
+influences the string arguments (or numbers turned into strings).
+
+Although this needs to be used with care, you can also pass token or node
+userdata objects. These get injected into the stream. Tokens had best be valid
+tokens, while nodes need to be around when they get injected. Therefore it is
+important to realize the following:
+
+\startitemize
+\startitem
+    When you inject a token, you need to pass a valid token userdata object. This
+    object will be collected by \LUA\ when it no longer is referenced. When it gets
+    printed to \TEX\ the token itself gets copied so there is no interference with the
+    \LUA\ garbage collection. You manage the object yourself. Because tokens are
+    actually just numbers, there is no real extra overhead at the \TEX\ end.
+\stopitem
+\startitem
+    When you inject a node, you need to pass a valid node userdata object. The
+    node related to the object will not be collected by \LUA\ when it no longer
+    is referenced. It lives on at the \TEX\ end in its own memory space. When it
+    gets printed to \TEX\ the node reference is used assuming that node stays
+    around. There is no \LUA\ garbage collection involved. Again, you manage the
+    object yourself. The node itself is freed when \TEX\ is done with it.
+\stopitem
+\stopitemize
+
+If you consider the last remark you might realize that we have a problem when a
+printed mix of strings, tokens and nodes is reused. Inside \TEX\ the sequence
+becomes a linked list of input buffers. So, \type {"123"} or \type {"\foo{123}"}
+gets read and parsed on the fly, while \typ {<token userdata>} already is
+tokenized and effectively is a token list now. A \typ {<node userdata>} is also
+tokenized into a token list but it has a reference to a real node. Normally this
+goes fine. But now assume that you store the whole lot in a macro: in that case
+the tokenized node can be flushed many times. But, after the first such flush the
+node is used and its memory freed. You can prevent this by using copies which is
+controlled by setting \lpr {luacopyinputnodes} to a non|-|zero value. This is one
+of these fuzzy areas you have to live with if you really mess with these low
+level issues.
+
+\subsubsection{\type {tprint}}
+
+\libindex{tprint}
+
+\startfunctioncall
+tex.tprint({<number> n, <string> s, ...}, {...})
+\stopfunctioncall
+
+This function is basically a shortcut for repeated calls to \type
+{tex.sprint(<number> n, <string> s, ...)}, once for each of the supplied argument
+tables.
+
+\subsubsection{\type {cprint}}
+
+\libindex{cprint}
+
+This function takes a number indicating the to be used catcode, plus either a
+table of strings or an argument list of strings that will be pushed into the
+input stream.
+
+\startfunctioncall
+tex.cprint( 1," 1: $&{\\foo}") tex.print("\\par") -- a lot of \bgroup s
+tex.cprint( 2," 2: $&{\\foo}") tex.print("\\par") -- matching \egroup s
+tex.cprint( 9," 9: $&{\\foo}") tex.print("\\par") -- all get ignored
+tex.cprint(10,"10: $&{\\foo}") tex.print("\\par") -- all become spaces
+tex.cprint(11,"11: $&{\\foo}") tex.print("\\par") -- letters
+tex.cprint(12,"12: $&{\\foo}") tex.print("\\par") -- other characters
+tex.cprint(14,"12: $&{\\foo}") tex.print("\\par") -- comment triggers
+\stopfunctioncall
+
+% \subsubsection{\type {write}, \type {twrite}, \type {nwrite}}
+\subsubsection{\type {write}}
+
+\libindex{write}
+% \libindex{twrite}
+% \libindex{nwrite}
+
+\startfunctioncall
+tex.write(<string> s, ...)
+tex.write(<table> t)
+\stopfunctioncall
+
+Each string argument is treated by \TEX\ as a special kind of input line that
+makes it suitable for use as a quick way to dump information:
+
+\startitemize
+\item All catcodes on that line are either \quote{space} (for '~') or \quote
+      {character} (for all others).
+\item There is no \prm {endlinechar} appended.
+\stopitemize
+
+If there is a table argument instead of a list of strings, this has to be a
+consecutive array of strings to print (the first non-string value will stop the
+printing process).
+
+% The functions \type {twrite} and \type {nwrite} can be used to write a token or
+% node back to \TEX\, possibly intermixed with regular strings that will be
+% tokenized. You have to make sure that you pass the right data because sometimes
+% \TEX\ has expectations that need to be met.
+
+\stopsubsection
+
+\startsubsection[title={Helper functions}]
+
+\subsubsection{\type {round}}
+
+\topicindex {helpers}
+
+\libindex{round}
+
+\startfunctioncall
+<number> n = tex.round(<number> o)
+\stopfunctioncall
+
+Rounds \LUA\ number \type {o}, and returns a number that is in the range of a
+valid \TEX\ register value. If the number starts out of range, it generates a
+\quote {number too big} error as well.
+
+\subsubsection{\type {scale}}
+
+\libindex{scale}
+
+\startfunctioncall
+<number> n = tex.scale(<number> o, <number> delta)
+<table> n = tex.scale(table o, <number> delta)
+\stopfunctioncall
+
+Multiplies the \LUA\ numbers \type {o} and \nod {delta}, and returns a rounded
+number that is in the range of a valid \TEX\ register value. In the table
+version, it creates a copy of the table with all numeric top||level values scaled
+in that manner. If the multiplied number(s) are of range, it generates
+\quote{number too big} error(s) as well.
+
+Note: the precision of the output of this function will depend on your computer's
+architecture and operating system, so use with care! An interface to \LUATEX's
+internal, 100\% portable scale function will be added at a later date.
+
+\subsubsection{\type {number} and \type {romannumeral}}
+
+\libindex{number}
+\libindex{romannumeral}
+
+These are the companions to the primitives \prm {number} and \prm
+{romannumeral}. They can be used like:
+
+\startfunctioncall
+tex.print(tex.romannumeral(123))
+\stopfunctioncall
+
+\subsubsection{\type {fontidentifier} and \type {fontname}}
+
+\libindex{fontidentifier}
+\libindex{fontname}
+
+The first one returns the name only, the second one reports the size too.
+
+\startfunctioncall
+tex.print(tex.fontidentifier(1))
+tex.print(tex.fontname(1))
+\stopfunctioncall
+
+\subsubsection{\type {sp}}
+
+\libindex{sp}
+
+\startfunctioncall
+<number> n = tex.sp(<number> o)
+<number> n = tex.sp(<string> s)
+\stopfunctioncall
+
+Converts the number \type {o} or a string \type {s} that represents an explicit
+dimension into an integer number of scaled points.
+
+For parsing the string, the same scanning and conversion rules are used that
+\LUATEX\ would use if it was scanning a dimension specifier in its \TEX|-|like
+input language (this includes generating errors for bad values), expect for the
+following:
+
+\startitemize[n]
+\startitem
+    only explicit values are allowed, control sequences are not handled
+\stopitem
+\startitem
+    infinite dimension units (\type {fil...}) are forbidden
+\stopitem
+\startitem
+    \type {mu} units do not generate an error (but may not be useful either)
+\stopitem
+\stopitemize
+
+%\subsubsection{\type {tex.getlinenumber} and \type {tex.setlinenumber}}
+%
+%\libindex{getlinenumber}
+%\libindex{setlinenumber}
+%
+%You can mess with the current line number:
+%
+%\startfunctioncall
+%local n = tex.getlinenumber()
+%tex.setlinenumber(n+10)
+%\stopfunctioncall
+%
+%which can be shortcut to:
+%
+%\startfunctioncall
+%tex.setlinenumber(10,true)
+%\stopfunctioncall
+%
+%This might be handy when you have a callback that read numbers from a file and
+%combines them in one line (in which case an error message probably has to refer
+%to the original line). Interference with \TEX's internal handling of numbers is
+%of course possible.
+
+\subsubsection{\type {error} and \type {show_context}}
+
+\topicindex{errors}
+
+\libindex{error}
+\libindex{show_context}
+
+\startfunctioncall
+tex.error(<string> s)
+tex.error(<string> s, <table> help)
+\stopfunctioncall
+
+This creates an error somewhat like the combination of \prm {errhelp} and \prm
+{errmessage} would. During this error, deletions are disabled.
+
+The array part of the \type {help} table has to contain strings, one for each
+line of error help.
+
+In case of an error the \type {show_context} function will show the current
+context where we're at (in the expansion).
+
+\subsubsection{\type {run}, \type {finish}}
+
+\libindex{run}
+\libindex{finish}
+
+These two functions start the interpretations and force its end. A runs normally
+boils down to \TEX\ entering the so called main loop. A token is fetched and
+depending on it current meaning some actions takes place. Sometimes that actions
+comes immediately, sometimes more scanning is needed. Quite often tokens get
+pushed back into the input. This all means that the \TEX\ scanner is constantly
+pushing and popping input states, but in the end after all the action is done
+returns to the main loop.
+
+\subsubsection{\type {runtoks}}
+
+Because of the fact that \TEX\ is in a complex dance of expanding, dealing with
+fonts, typesetting paragraphs, messing around with boxes, building pages, and so
+on, you cannot easily run a nested \TEX\ run (read nested main loop). However,
+there is an option to force a local run with \type {runtoks}. The content of the
+given token list register gets expanded locally after which we return to where we
+triggered this expansion, at the \LUA\ end. Instead a function can get passed
+that does some work. You have to make sure that at the end \TEX\ is in a sane
+state and this is not always trivial. A more complex mechanism would complicate
+\TEX\ itself (and probably also harm performance) so this simple local expansion
+loop has to do.
+
+\startfunctioncall
+tex.runtoks(<token register>)
+tex.runtoks(<lua function>)
+\stopfunctioncall
+
+When the \prm {tracingnesting} parameter is set to a value larger than~2 some
+information is reported about the state of the local loop.
+
+This function has two optional arguments in case a token register is passed:
+
+\startfunctioncall
+tex.runtoks(<token register>,force,grouped)
+\stopfunctioncall
+
+Inside for instance an \type {\edef} the \type {runtoks} function behaves (at
+least tries to) like it were an \type {\the}. This prevents unwanted side
+effects: normally in such an definition tokens remain tokens and (for instance)
+characters don't become nodes. With the second argument you can force the local
+main loop, no matter what. The third argument adds a level of grouping.
+
+You can quit the local loop with \type {\endlocalcontrol} or from the \LUA\ end
+with \type {tex.quittoks}. In that case you end one level up! Of course in the
+end that can mean that you arrive at the main level in which case an extra end
+will trigger a redundancy warning (not an abort!).
+
+\subsubsection{\type {forcehmode}}
+
+\libindex{forcehmode}
+
+An example of a (possible error triggering) complication is that \TEX\ expects to
+be in some state, say horizontal mode, and you have to make sure it is when you
+start feeding back something from \LUA\ into \TEX. Normally a user will not run
+into issues but when you start writing tokens or nodes or have a nested run there
+can be situations that you need to run \type {forcehmode}. There is no recipe for
+this and intercepting possible cases would weaken \LUATEX's flexibility.
+
+\subsubsection{\type {hashtokens}}
+
+\libindex{hashtokens}
+
+\topicindex{hash}
+
+\startfunctioncall
+for i,v in pairs (tex.hashtokens()) do ... end
+\stopfunctioncall
+
+Returns a list of names. This can be useful for debugging, but note that this
+also reports control sequences that may be unreachable at this moment due to
+local redefinitions: it is strictly a dump of the hash table. You can use \type
+{token.create} to inspect properties, for instance when the \type {command} key
+in a created table equals \type {123}, you have the \type {cmdname} value \type
+{undefined_cs}.
+
+\subsubsection{\type {definefont}}
+
+\topicindex{fonts+defining}
+
+\libindex{definefont}
+
+\startfunctioncall
+tex.definefont(<string> csname, <number> fontid)
+tex.definefont(<boolean> global, <string> csname, <number> fontid)
+\stopfunctioncall
+
+Associates \type {csname} with the internal font number \type {fontid}. The
+definition is global if (and only if) \type {global} is specified and true (the
+setting of \type {globaldefs} is not taken into account).
+
+\stopsubsection
+
+\startsubsection[reference=luaprimitives,title={Functions for dealing with primitives}]
+
+\subsubsection{\type {enableprimitives}}
+
+\libindex{enableprimitives}
+
+\topicindex{initialization}
+\topicindex{primitives}
+
+\startfunctioncall
+tex.enableprimitives(<string> prefix, <table> primitive names)
+\stopfunctioncall
+
+This function accepts a prefix string and an array of primitive names. For each
+combination of \quote {prefix} and \quote {name}, the \type
+{tex.enableprimitives} first verifies that \quote {name} is an actual primitive
+(it must be returned by one of the \type {tex.extraprimitives} calls explained
+below, or part of \TEX82, or \prm {directlua}). If it is not, \type
+{tex.enableprimitives} does nothing and skips to the next pair.
+
+But if it is, then it will construct a csname variable by concatenating the
+\quote {prefix} and \quote {name}, unless the \quote {prefix} is already the
+actual prefix of \quote {name}. In the latter case, it will discard the \quote
+{prefix}, and just use \quote {name}.
+
+Then it will check for the existence of the constructed csname. If the csname is
+currently undefined (note: that is not the same as \prm {relax}), it will
+globally define the csname to have the meaning: run code belonging to the
+primitive \quote {name}. If for some reason the csname is already defined, it
+does nothing and tries the next pair.
+
+An example:
+
+\starttyping
+tex.enableprimitives('LuaTeX', {'formatname'})
+\stoptyping
+
+will define \type {\LuaTeXformatname} with the same intrinsic meaning as the
+documented primitive \lpr {formatname}, provided that the control sequences \type
+{\LuaTeXformatname} is currently undefined.
+
+When \LUATEX\ is run with \type {--ini} only the \TEX82 primitives and \prm
+{directlua} are available, so no extra primitives {\bf at all}.
+
+If you want to have all the new functionality available using their default
+names, as it is now, you will have to add
+
+\starttyping
+\ifx\directlua\undefined \else
+    \directlua {tex.enableprimitives('',tex.extraprimitives ())}
+\fi
+\stoptyping
+
+near the beginning of your format generation file. Or you can choose different
+prefixes for different subsets, as you see fit.
+
+Calling some form of \type {tex.enableprimitives} is highly important though,
+because if you do not, you will end up with a \TEX82-lookalike that can run \LUA\
+code but not do much else. The defined csnames are (of course) saved in the
+format and will be available at runtime.
+
+\subsubsection{\type {extraprimitives}}
+
+\libindex{extraprimitives}
+
+\startfunctioncall
+<table> t = tex.extraprimitives(<string> s, ...)
+\stopfunctioncall
+
+This function returns a list of the primitives that originate from the engine(s)
+given by the requested string value(s). The possible values and their (current)
+return values are given in the following table. In addition the somewhat special
+primitives \quote{\tex{ }}, \quote{\tex {/}} and \quote{\type {-}} are defined.
+
+\startluacode
+function document.showprimitives(tag)
+    local t = tex.extraprimitives(tag)
+    table.sort(t)
+    for i=1,#t do
+        local v = t[i]
+        if v ~= ' ' and v ~= "/" and v ~= "-" then
+            context.type(v)
+            context.space()
+        end
+    end
+end
+\stopluacode
+
+\starttabulate[|l|pl|]
+\DB name    \BC values \NC \NR
+\TB
+\NC tex     \NC \ctxlua{document.showprimitives('tex')    } \NC \NR
+\NC core    \NC \ctxlua{document.showprimitives('core')   } \NC \NR
+\NC etex    \NC \ctxlua{document.showprimitives('etex')   } \NC \NR
+\NC luatex  \NC \ctxlua{document.showprimitives('luatex') } \NC \NR
+\LL
+\stoptabulate
+
+Note that \type {luatex} does not contain \type {directlua}, as that is
+considered to be a core primitive, along with all the \TEX82 primitives, so it is
+part of the list that is returned from \type {'core'}.
+
+Running \type {tex.extraprimitives} will give you the complete list of
+primitives \type {-ini} startup. It is exactly equivalent to \type
+{tex.extraprimitives("etex","luatex")}.
+
+\subsubsection{\type {primitives}}
+
+\libindex{primitives}
+
+\startfunctioncall
+<table> t = tex.primitives()
+\stopfunctioncall
+
+This function returns a list of all primitives that \LUATEX\ knows about.
+
+\stopsubsection
+
+\startsubsection[title={Core functionality interfaces}]
+
+\subsubsection{\type {badness}}
+
+\libindex{badness}
+
+\startfunctioncall
+<number> b = tex.badness(<number> t, <number> s)
+\stopfunctioncall
+
+This helper function is useful during linebreak calculations. \type {t} and \type
+{s} are scaled values; the function returns the badness for when total \type {t}
+is supposed to be made from amounts that sum to \type {s}. The returned number is
+a reasonable approximation of \mathematics {100(t/s)^3};
+
+\subsubsection{\type {tex.resetparagraph}}
+
+\topicindex {paragraphs+reset}
+
+\libindex{resetparagraph}
+
+This function resets the parameters that \TEX\ normally resets when a new paragraph
+is seen.
+
+\subsubsection{\type {linebreak}}
+
+\topicindex {linebreaks}
+
+\libindex{linebreak}
+
+\startfunctioncall
+local <node> nodelist, <table> info =
+    tex.linebreak(<node> listhead, <table> parameters)
+\stopfunctioncall
+
+The understood parameters are as follows:
+
+\starttabulate[|l|l|p|]
+\DB name                        \BC type            \BC explanation \NC \NR
+\TB
+\NC \type{pardir}               \NC string          \NC \NC \NR
+\NC \type{pretolerance}         \NC number          \NC \NC \NR
+\NC \type{tracingparagraphs}    \NC number          \NC \NC \NR
+\NC \type{tolerance}            \NC number          \NC \NC \NR
+\NC \type{looseness}            \NC number          \NC \NC \NR
+\NC \type{hyphenpenalty}        \NC number          \NC \NC \NR
+\NC \type{exhyphenpenalty}      \NC number          \NC \NC \NR
+\NC \type{pdfadjustspacing}     \NC number          \NC \NC \NR
+\NC \type{adjdemerits}          \NC number          \NC \NC \NR
+\NC \type{pdfprotrudechars}     \NC number          \NC \NC \NR
+\NC \type{linepenalty}          \NC number          \NC \NC \NR
+\NC \type{lastlinefit}          \NC number          \NC \NC \NR
+\NC \type{doublehyphendemerits} \NC number          \NC \NC \NR
+\NC \type{finalhyphendemerits}  \NC number          \NC \NC \NR
+\NC \type{hangafter}            \NC number          \NC \NC \NR
+\NC \type{interlinepenalty}     \NC number or table \NC if a table, then it is an array like \prm {interlinepenalties} \NC \NR
+\NC \type{clubpenalty}          \NC number or table \NC if a table, then it is an array like \prm {clubpenalties} \NC \NR
+\NC \type{widowpenalty}         \NC number or table \NC if a table, then it is an array like \prm {widowpenalties} \NC \NR
+\NC \type{brokenpenalty}        \NC number          \NC \NC \NR
+\NC \type{emergencystretch}     \NC number          \NC in scaled points \NC \NR
+\NC \type{hangindent}           \NC number          \NC in scaled points \NC \NR
+\NC \type{hsize}                \NC number          \NC in scaled points \NC \NR
+\NC \type{leftskip}             \NC glue_spec node  \NC \NC \NR
+\NC \type{rightskip}            \NC glue_spec node  \NC \NC \NR
+\NC \type{parshape}             \NC table           \NC \NC \NR
+\LL
+\stoptabulate
+
+Note that there is no interface for \prm {displaywidowpenalties}, you have to
+pass the right choice for \type {widowpenalties} yourself.
+
+It is your own job to make sure that \type {listhead} is a proper paragraph list:
+this function does not add any nodes to it. To be exact, if you want to replace
+the core line breaking, you may have to do the following (when you are not
+actually working in the \cbk {pre_linebreak_filter} or \cbk {linebreak_filter}
+callbacks, or when the original list starting at listhead was generated in
+horizontal mode):
+
+\startitemize
+\startitem
+    add an \quote {indent box} and perhaps a \nod {local_par} node at the start
+    (only if you need them)
+\stopitem
+\startitem
+    replace any found final glue by an infinite penalty (or add such a penalty,
+    if the last node is not a glue)
+\stopitem
+\startitem
+    add a glue node for the \prm {parfillskip} after that penalty node
+\stopitem
+\startitem
+    make sure all the \type {prev} pointers are OK
+\stopitem
+\stopitemize
+
+The result is a node list, it still needs to be vpacked if you want to assign it
+to a \prm {vbox}. The returned \type {info} table contains four values that are
+all numbers:
+
+\starttabulate[|l|p|]
+\DB name      \BC explanation \NC \NR
+\TB
+\NC prevdepth \NC depth of the last line in the broken paragraph \NC \NR
+\NC prevgraf  \NC number of lines in the broken paragraph \NC \NR
+\NC looseness \NC the actual looseness value in the broken paragraph \NC \NR
+\NC demerits  \NC the total demerits of the chosen solution  \NC \NR
+\LL
+\stoptabulate
+
+Note there are a few things you cannot interface using this function: You cannot
+influence font expansion other than via \type {pdfadjustspacing}, because the
+settings for that take place elsewhere. The same is true for hbadness and hfuzz
+etc. All these are in the \type {hpack} routine, and that fetches its own
+variables via globals.
+
+\subsubsection{\type {shipout}}
+
+\topicindex {shipout}
+
+\libindex{shipout}
+
+\startfunctioncall
+tex.shipout(<number> n)
+\stopfunctioncall
+
+Ships out box number \type {n} to the output file, and clears the box register.
+
+\subsubsection{\type {getpagestate}}
+
+\topicindex {pages}
+
+\libindex{getpagestate}
+
+This helper reports the current page state: \type {empty}, \type {box_there} or
+\type {inserts_only} as integer value.
+
+\subsubsection{\type {getlocallevel}}
+
+\topicindex {nesting}
+
+\libindex{getlocallevel}
+
+This integer reports the current level of the local loop. It's only useful for
+debugging and the (relative state) numbers can change with the implementation.
+
+\stopsubsection
+
+\startsubsection[title={Randomizers}]
+
+\libindex{lua_math_random}
+\libindex{lua_math_randomseed}
+\libindex{init_rand}
+\libindex{normal_rand}
+\libindex{uniform_rand}
+\libindex{uniformdeviate}
+
+For practical reasons \LUATEX\ has its own random number generator. The original
+\LUA\ random function is available as \typ {tex.lua_math_random}. You can
+initialize with a new seed with \type {init_rand} (\typ {lua_math_randomseed} is
+equivalent to this one.
+
+There are three generators: \type {normal_rand} (no argument is used), \type
+{uniform_rand} (takes a number that will get rounded before being used) and \type
+{uniformdeviate} which behaves like the primitive and expects a scaled integer, so
+
+\startfunctioncall
+tex.print(tex.uniformdeviate(65536)/65536)
+\stopfunctioncall
+
+will give a random number between zero and one.
+
+\stopsubsection
+
+\startsubsection[reference=synctex,title={Functions related to synctex}]
+
+\topicindex {synctex}
+
+\libindex{set_synctex_mode}      \libindex{get_synctex_mode}
+\libindex{set_synctex_no_files}
+\libindex{set_synctex_tag}       \libindex{get_synctex_tag}   \libindex{force_synctex_tag}
+\libindex{set_synctex_line}      \libindex{get_synctex_line}  \libindex{force_synctex_line}
+
+The next helpers only make sense when you implement your own synctex logic. Keep in
+mind that the library used in editors assumes a certain logic and is geared for
+plain and \LATEX, so after a decade users expect a certain behaviour.
+
+\starttabulate[|l|p|]
+\DB name                        \BC explanation \NC \NR
+\TB
+\NC \type{set_synctex_mode}     \NC \type {0} is the default and used normal synctex
+                                    logic, \type {1} uses the values set by the next
+                                    helpers while \type {2} also sets these for glyph
+                                    nodes; \type{3} sets glyphs and glue and \type {4}
+                                    sets only glyphs \NC \NR
+\NC \type{set_synctex_tag}      \NC set the current tag (file) value (obeys save stack) \NC \NR
+\NC \type{set_synctex_line}     \NC set the current line value (obeys save stack) \NC \NR
+\NC \type{set_synctex_no_files} \NC disable synctex file logging \NC \NR
+\NC \type{get_synctex_mode}     \NC returns the current mode (for values see above) \NC \NR
+\NC \type{get_synctex_tag}      \NC get the currently set value of tag (file) \NC \NR
+\NC \type{get_synctex_line}     \NC get the currently set value of line \NC \NR
+\NC \type{force_synctex_tag}    \NC overload the tag (file) value (\type {0} resets) \NC \NR
+\NC \type{force_synctex_line}   \NC overload the line value  (\type {0} resets) \NC \NR
+\LL
+\stoptabulate
+
+The last one is somewhat special. Due to the way files are registered in \SYNCTEX\ we need
+to explicitly disable that feature if we provide our own alternative if we want to avoid
+that overhead. Passing a value of 1 disables registering.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={The \type {texconfig} table},reference=texconfig][library=texconfig]
+
+\topicindex{libraries+\type{texconfig}}
+
+\topicindex {configuration}
+
+This is a table that is created empty. A startup \LUA\ script could
+fill this table with a number of settings that are read out by
+the executable after loading and executing the startup file.
+
+\starttabulate[|l|l|l|p|]
+\DB key                   \BC type     \BC default \BC explanation \NC \NR
+\TB
+\NC \type{kpse_init}      \NC boolean  \NC true
+\NC
+    \type {false} totally disables \KPATHSEA\ initialisation, and enables
+    interpretation of the following numeric key--value pairs. (only ever unset
+    this if you implement {\it all\/} file find callbacks!)
+\NC \NR
+\NC
+    \type{shell_escape} \NC string \NC \type {'f'} \NC Use \type {'y'} or \type
+    {'t'} or \type {'1'} to enable \type {\write18} unconditionally, \type {'p'}
+    to enable the commands that are listed in \type {shell_escape_commands}
+\NC \NR
+\NC
+    shell_escape_commands \NC string \NC \NC Comma-separated list of command
+    names that may be executed by \type {\write18} even if \type {shell_escape}
+    is set to \type {'p'}. Do {\it not\/} use spaces around commas, separate any
+    required command arguments by using a space, and use the \ASCII\ double quote
+    (\type {"}) for any needed argument or path quoting
+\NC \NR
+\NC \type{string_vacancies} \NC number   \NC  75000  \NC cf.\ web2c docs \NC \NR
+\NC \type{pool_free}        \NC number   \NC   5000  \NC cf.\ web2c docs \NC \NR
+\NC \type{max_strings}      \NC number   \NC  15000  \NC cf.\ web2c docs \NC \NR
+\NC \type{strings_free}     \NC number   \NC    100  \NC cf.\ web2c docs \NC \NR
+\NC \type{nest_size}        \NC number   \NC     50  \NC cf.\ web2c docs \NC \NR
+\NC \type{max_in_open}      \NC number   \NC     15  \NC cf.\ web2c docs \NC \NR
+\NC \type{param_size}       \NC number   \NC     60  \NC cf.\ web2c docs \NC \NR
+\NC \type{save_size}        \NC number   \NC   4000  \NC cf.\ web2c docs \NC \NR
+\NC \type{stack_size}       \NC number   \NC    300  \NC cf.\ web2c docs \NC \NR
+\NC \type{dvi_buf_size}     \NC number   \NC  16384  \NC cf.\ web2c docs \NC \NR
+\NC \type{error_line}       \NC number   \NC     79  \NC cf.\ web2c docs \NC \NR
+\NC \type{half_error_line}  \NC number   \NC     50  \NC cf.\ web2c docs \NC \NR
+\NC \type{max_print_line}   \NC number   \NC     79  \NC cf.\ web2c docs \NC \NR
+\NC \type{hash_extra}       \NC number   \NC      0  \NC cf.\ web2c docs \NC \NR
+\NC \type{pk_dpi}           \NC number   \NC     72  \NC cf.\ web2c docs \NC \NR
+\NC \type{trace_file_names} \NC boolean  \NC true 
+\NC
+    \type {false} disables \TEX's normal file open|-|close feedback (the
+    assumption is that callbacks will take care of that)
+\NC \NR
+\NC \type{trace_extra_newline} \NC boolean  \NC false \NC adds an extra newline in \type{\tracingmacros} \NC\NR
+\NC \type{file_line_error} \NC boolean \NC false
+\NC
+    do \type {file:line} style error messages
+\NC \NR
+\NC \type{halt_on_error} \NC boolean \NC false
+\NC
+    abort run on the first encountered error
+\NC \NR
+\NC \type{formatname} \NC string \NC
+\NC
+    if no format name was given on the command line, this key will be tested first
+    instead of simply quitting
+\NC \NR
+\NC \type{jobname} \NC string \NC
+\NC
+    if no input file name was given on the command line, this key will be tested
+    first instead of simply giving up
+\NC \NR
+\NC \type{level_chr} \NC number \NC
+\NC
+    character to put in front of traced macros (see next value)
+\NC \NR
+\NC \type{level_max} \NC number \NC
+\NC
+    when larger than zero the input nesting level will be shown when \type
+    {\tracingmacros} is set; levels above this value will be clipped with
+    the level shown up front
+\NC \NR
+\NC \type{check_dvi_total_pages} \NC boolean \NC
+\NC 
+     in \DVI\ output mode, if true abort run when the number of pages exceeds 65535. 
+     This is the default behaviour. If false, the run goes on as is in \TEX.
+\NC \NR
+\LL
+\stoptabulate
+
+Note: the numeric values that match web2c parameters are only used if \type
+{kpse_init} is explicitly set to \type {false}. In all other cases, the normal
+values from \type {texmf.cnf} are used.
+
+You can kick in your own nesting level visualizer, for instance:
+
+\starttyping
+callback.register("input_level_string",function(n)
+ if tex.tracingmacros > 0 and tex.count.tracingstacklevels > 0 then
+    if tex.tracingmacros > 1 then
+        return "! " .. string.rep(">",n) .. " "
+    end
+  end
+  return ""
+end)
+\stoptyping
+
+Or, in sync with other engines (not checked):
+
+\newcount\tracingstacklevels
+
+\starttyping
+\directlua {
+  callback.register("input_level_string", function(n)
+    if tex.tracingmacros > 0 then
+      local l = tex.count.tracingstacklevels
+      if l > 0 then
+        return string.rep("~",l) .. string.rep(".",n-l)
+      end
+    end
+    return ""
+  end)
+}
+\stoptyping
+
+\stopsection
+
+\startsection[title={The \type {texio} library}][library=texio]
+
+\topicindex{libraries+\type{texio}}
+\topicindex{\IO}
+
+This library takes care of the low|-|level I/O interface: writing to the log file
+and|/|or console.
+
+\startsubsection[title={\type {write}}]
+
+\libindex{write}
+
+\startfunctioncall
+texio.write(<string> target, <string> s, ...)
+texio.write(<string> s, ...)
+\stopfunctioncall
+
+Without the \type {target} argument, writes all given strings to the same
+location(s) \TEX\ writes messages to at this moment. If \prm {batchmode} is in
+effect, it writes only to the log, otherwise it writes to the log and the
+terminal. The optional \type {target} can be one of three possibilities: \type
+{term}, \type {log} or \type {term and log}.
+
+Note: If several strings are given, and if the first of these strings is or might
+be one of the targets above, the \type {target} must be specified explicitly to
+prevent \LUA\ from interpreting the first string as the target.
+
+\stopsubsection
+
+\startsubsection[title={\type {write_nl}}]
+
+\libindex{write_nl}
+
+\startfunctioncall
+texio.write_nl(<string> target, <string> s, ...)
+texio.write_nl(<string> s, ...)
+\stopfunctioncall
+
+This function behaves like \type {texio.write}, but make sure that the given
+strings will appear at the beginning of a new line. You can pass a single empty
+string if you only want to move to the next line.
+
+\stopsubsection
+
+\startsubsection[title={\type {setescape}}]
+
+\libindex{setescape}
+
+You can disable \type {^^} escaping of control characters by passing a value of
+zero.
+
+\stopsubsection
+
+\startsubsection[title={\type {closeinput}}]
+
+\libindex{closeinput}
+
+This function that should be used with care. It acts as \prm {endinput} but at
+the \LUA\ end. You can use it to (sort of) force a jump back to \TEX. Normally a
+\LUA\ will just collect prints and at the end bump an input level and flush these
+prints. This function can help you stay at the current level but you need to know
+what you're doing (or more precise: what \TEX\ is doing with input).
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={The \type {token} library}][library=token]
+
+\startsubsection[title={The scanner}]
+
+\topicindex{libraries+\type{token}}
+\topicindex{tokens}
+
+\libindex{scan_keyword}
+\libindex{scan_keywordcs}
+\libindex{scan_int}
+\libindex{scan_real}
+\libindex{scan_float}
+\libindex{scan_dimen}
+\libindex{scan_glue}
+\libindex{scan_toks}
+\libindex{scan_code}
+\libindex{scan_string}
+\libindex{scan_argument}
+\libindex{scan_word}
+\libindex{scan_csname}
+\libindex{scan_list}
+
+The token library provides means to intercept the input and deal with it at the
+\LUA\ level. The library provides a basic scanner infrastructure that can be used
+to write macros that accept a wide range of arguments. This interface is on
+purpose kept general and as performance is quite ok. One can build additional
+parsers without too much overhead. It's up to macro package writers to see how
+they can benefit from this as the main principle behind \LUATEX\ is to provide a
+minimal set of tools and no solutions. The scanner functions are probably the
+most intriguing.
+
+\starttabulate[|l|l|p|]
+\DB function              \BC argument           \BC result \NC \NR
+\TB
+\NC \type{scan_keyword}   \NC string             \NC returns true if the given keyword is gobbled; as with
+                                                     the regular \TEX\ keyword scanner this is case insensitive
+                                                     (and \ASCII\ based) \NC \NR
+\NC \type{scan_keywordcs} \NC string             \NC returns true if the given keyword is gobbled; this variant
+                                                     is case sensitive and also suitable for \UTF8 \NC \NR
+\NC \type{scan_int}       \NC                    \NC returns an integer \NC \NR
+\NC \type{scan_real}      \NC                    \NC returns a number from e.g.\ \type {1},  \type {1.1}, \type {.1} with optional collapsed signs \NC \NR
+\NC \type{scan_float}     \NC                    \NC returns a number from e.g.\ \type {1},  \type {1.1}, \type {.1}, \type {1.1E10}, , \type {.1e-10} with optional collapsed signs \NC \NR
+\NC \type{scan_dimen}     \NC infinity, mu-units \NC returns a number representing a dimension and or two numbers being the filler and order \NC \NR
+\NC \type{scan_glue}      \NC mu-units           \NC returns a glue spec node \NC \NR
+\NC \type{scan_toks}      \NC definer, expand    \NC returns a table of tokens tokens \NC \NR
+\NC \type{scan_code}      \NC bitset             \NC returns a character if its category is in the given bitset (representing catcodes) \NC \NR
+\NC \type{scan_string}    \NC                    \NC returns a string given between \type {{}}, as \type {\macro} or as sequence of characters with catcode 11 or 12 \NC \NR
+\NC \type{scan_argument}  \NC boolean            \NC this one is simular to \type {scanstring} but also accepts a \type {\cs} \NC \NR
+\NC \type{scan_word}      \NC                    \NC returns a sequence of characters with catcode 11 or 12 as string \NC \NR
+\NC \type{scan_csname}    \NC                    \NC returns \type {foo} after scanning \type {\foo} \NC \NR
+\NC \type{scan_list}      \NC                    \NC picks up a box specification and returns a \type {[h|v]list} node \NC \NR
+\LL
+\stoptabulate
+
+The scanners can be considered stable apart from the one scanning for a token.
+The \type {scan_code} function takes an optional number, the \type {keyword}
+function a normal \LUA\ string. The \type {infinity} boolean signals that we also
+permit \type {fill} as dimension and the \type {mu-units} flags the scanner that
+we expect math units. When scanning tokens we can indicate that we are defining a
+macro, in which case the result will also provide information about what
+arguments are expected and in the result this is separated from the meaning by a
+separator token. The \type {expand} flag determines if the list will be expanded.
+
+The \type {scan_argument} function expands the given argument. When a braced
+argument is scanned, expansion can be prohibited by passing \type {false}
+(default is \type {true}). In case of a control sequence passing \type {false}
+will result in a one|-|level expansion (the meaning of the macro).
+
+The string scanner scans for something between curly braces and expands on the
+way, or when it sees a control sequence it will return its meaning. Otherwise it
+will scan characters with catcode \type {letter} or \type {other}. So, given the
+following definition:
+
+\startbuffer
+\def\bar{bar}
+\def\foo{foo-\bar}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+we get:
+
+\starttabulate[|l|Tl|l|]
+\DB name \BC result \NC \NR
+\TB
+\NC \type {\directlua{token.scan_string()}{foo}} \NC \directlua{context("{\\red\\type {"..token.scan_string().."}}")} {foo} \NC full expansion \NC \NR
+\NC \type {\directlua{token.scan_string()}foo}   \NC \directlua{context("{\\red\\type {"..token.scan_string().."}}")} foo   \NC letters and others \NC \NR
+\NC \type {\directlua{token.scan_string()}\foo}  \NC \directlua{context("{\\red\\type {"..token.scan_string().."}}")}\foo   \NC meaning \NC \NR
+\LL
+\stoptabulate
+
+The \type {\foo} case only gives the meaning, but one can pass an already
+expanded definition (\prm {edef}'d). In the case of the braced variant one can of
+course use the \prm {detokenize} and \prm {unexpanded} primitives since there we
+do expand.
+
+The \type {scan_word} scanner can be used to implement for instance a number scanner:
+
+\starttyping
+function token.scan_number(base)
+    return tonumber(token.scan_word(),base)
+end
+\stoptyping
+
+This scanner accepts any valid \LUA\ number so it is a way to pick up floats
+in the input.
+
+You can use the \LUA\ interface as follows:
+
+\starttyping
+\directlua {
+    function mymacro(n)
+        ...
+    end
+}
+
+\def\mymacro#1{%
+    \directlua {
+        mymacro(\number\dimexpr#1)
+    }%
+}
+
+\mymacro{12pt}
+\mymacro{\dimen0}
+\stoptyping
+
+You can also do this:
+
+\starttyping
+\directlua {
+    function mymacro()
+        local d = token.scan_dimen()
+        ...
+    end
+}
+
+\def\mymacro{%
+    \directlua {
+        mymacro()
+    }%
+}
+
+\mymacro 12pt
+\mymacro \dimen0
+\stoptyping
+
+It is quite clear from looking at the code what the first method needs as
+argument(s). For the second method you need to look at the \LUA\ code to see what
+gets picked up. Instead of passing from \TEX\ to \LUA\ we let \LUA\ fetch from
+the input stream.
+
+In the first case the input is tokenized and then turned into a string, then it
+is passed to \LUA\ where it gets interpreted. In the second case only a function
+call gets interpreted but then the input is picked up by explicitly calling the
+scanner functions. These return proper \LUA\ variables so no further conversion
+has to be done. This is more efficient but in practice (given what \TEX\ has to
+do) this effect should not be overestimated. For numbers and dimensions it saves
+a bit but for passing strings conversion to and from tokens has to be done anyway
+(although we can probably speed up the process in later versions if needed).
+
+\stopsubsection
+
+\startsubsection[title= {Picking up one token}]
+
+\libindex {get_next}
+\libindex {scan_token}
+\libindex {expand}
+
+The scanners look for a sequence. When you want to pick up one token from the
+input you use \type {get_next}. This creates a token with the (low level)
+properties as discussed next. This token is just the next one. If you want to
+enforce expansion first you can use \type {scan_token}. Internally tokens are
+characterized by a number that packs a lot of information. In order to access
+the bits of information a token is wrapped in a userdata object.
+
+The \type {expand} function will trigger expansion of the next token in the
+input. This can be quite unpredictable but when you call it you probably know
+enough about \TEX\ not to be too worried about that. It basically is a call to
+the internal expand related function.
+
+\stopsubsection
+
+\startsubsection[title={Creating tokens}]
+
+\libindex{create}
+\libindex{new}
+
+\libindex{is_defined}
+\libindex{is_token}
+\libindex{biggest_char}
+
+\libindex{commands}
+\libindex{command_id}
+
+\libindex{get_command}
+\libindex{get_cmdname}
+\libindex{get_csname}
+\libindex{get_id}
+\libindex{get_active}
+\libindex{get_expandable}
+\libindex{get_protected}
+\libindex{get_mode}
+\libindex{get_index}
+\libindex{get_tok}
+
+\libindex{get_next}
+
+The creator function can be used as follows:
+
+\starttyping
+local t = token.create("relax")
+\stoptyping
+
+This gives back a token object that has the properties of the \prm {relax}
+primitive. The possible properties of tokens are:
+
+\starttabulate[|l|p|]
+\DB name \BC explanation \NC \NR
+\TB
+\NC \type {command}    \NC a number representing the internal command number \NC \NR
+\NC \type {cmdname}    \NC the type of the command (for instance the catcode in case of a
+                           character or the classifier that determines the internal
+                           treatment \NC \NR
+\NC \type {csname}     \NC the associated control sequence (if applicable) \NC \NR
+\NC \type {id}         \NC the unique id of the token \NC \NR
+\NC \type {tok}        \NC the full token number as stored in \TEX \NC \NR
+\NC \type {active}     \NC a boolean indicating the active state of the token \NC \NR
+\NC \type {expandable} \NC a boolean indicating if the token (macro) is expandable \NC \NR
+\NC \type {protected}  \NC a boolean indicating if the token (macro) is protected \NC \NR
+\NC \type {mode}       \NC a number either representing a character or another entity \NC \NR
+\NC \type {index}      \NC a number running from 0x0000 upto 0xFFFF indicating a \TEX\ register index \NC \NR
+\LL
+\stoptabulate
+
+Alternatively you can use a getter \type {get_<fieldname>} to access a property
+of a token.
+
+The numbers that represent a catcode are the same as in \TEX\ itself, so using
+this information assumes that you know a bit about \TEX's internals. The other
+numbers and names are used consistently but are not frozen. So, when you use them
+for comparing you can best query a known primitive or character first to see the
+values.
+
+You can ask for a list of commands:
+
+\starttyping
+local t = token.commands()
+\stoptyping
+
+The id of a token class can be queried as follows:
+
+\starttyping
+local id = token.command_id("math_shift")
+\stoptyping
+
+If you really know what you're doing you can create character tokens by not
+passing a string but a number:
+
+\starttyping
+local letter_x = token.create(string.byte("x"))
+local other_x  = token.create(string.byte("x"),12)
+\stoptyping
+
+Passing weird numbers can give side effects so don't expect too much help with
+that. As said, you need to know what you're doing. The best way to explore the
+way these internals work is to just look at how primitives or macros or \prm
+{chardef}'d commands are tokenized. Just create a known one and inspect its
+fields. A variant that ignores the current catcode table is:
+
+\starttyping
+local whatever = token.new(123,12)
+\stoptyping
+
+You can test if a control sequence is defined with \type {is_defined}, which
+accepts a string and returns a boolean:
+
+\starttyping
+local okay = token.is_defined("foo")
+\stoptyping
+
+When a second argument to \type {is_defined} is \type {true} the check is for an
+undefined control sequence (only), otherwise any undefined command gives true.
+
+The largest character possible is returned by \type {biggest_char}, just in case you
+need to know that boundary condition.
+
+\stopsubsection
+
+\startsubsection[title={Macros}]
+
+\topicindex {macros}
+
+\libindex{set_macro}
+\libindex{get_macro}
+\libindex{get_meaning}
+\libindex{set_char}
+\libindex{set_lua}
+\libindex{get_functions_table}
+
+The \type {set_macro} function can get upto 4 arguments:
+
+\starttyping
+set_macro("csname","content")
+set_macro("csname","content","global")
+set_macro("csname")
+\stoptyping
+
+You can pass a catcodetable identifier as first argument:
+
+\starttyping
+set_macro(catcodetable,"csname","content")
+set_macro(catcodetable,"csname","content","global")
+set_macro(catcodetable,"csname")
+\stoptyping
+
+The results are like:
+
+\starttyping
+ \def\csname{content}
+\gdef\csname{content}
+ \def\csname{}
+\stoptyping
+
+The \type {get_macro} function can be used to get the content of a macro while
+the \type {get_meaning} function gives the meaning including the argument
+specification (as usual in \TEX\ separated by \type {->}).
+
+The \type {set_char} function can be used to do a \prm {chardef} at the
+\LUA\ end, where invalid assignments are silently ignored:
+
+\starttyping
+set_char("csname",number)
+set_char("csname",number,"global")
+\stoptyping
+
+A special one is the following:
+
+\starttyping
+set_lua("mycode",id)
+set_lua("mycode",id,"global","protected")
+\stoptyping
+
+This creates a token that refers to a \LUA\ function with an entry in the table
+that you can access with \type {lua.get_functions_table}. It is the companion
+to \lpr {luadef}.
+
+\stopsubsection
+
+\startsubsection[title={Pushing back}]
+
+\libindex{get_next}
+\libindex{put_next}
+
+There is a (for now) experimental putter:
+
+\starttyping
+local t1 = token.get_next()
+local t2 = token.get_next()
+local t3 = token.get_next()
+local t4 = token.get_next()
+-- watch out, we flush in sequence
+token.put_next { t1, t2 }
+-- but this one gets pushed in front
+token.put_next ( t3, t4 )
+\stoptyping
+
+When we scan \type {wxyz!} we get \type {yzwx!} back. The argument is either a table
+with tokens or a list of tokens. The \type {token.expand} function will trigger
+expansion but what happens really depends on what you're doing where.
+
+\stopsubsection
+
+\startsubsection[title={Nota bene}]
+
+When scanning for the next token you need to keep in mind that we're not scanning
+like \TEX\ does: expanding, changing modes and doing things as it goes. When we
+scan with \LUA\ we just pick up tokens. Say that we have:
+
+\starttyping
+\bar
+\stoptyping
+
+but \type {\bar} is undefined. Normally \TEX\ will then issue an error message.
+However, when we have:
+
+\starttyping
+\def\foo{\bar}
+\stoptyping
+
+We get no error, unless we expand \type {\foo} while \type {\bar} is still
+undefined. What happens is that as soon as \TEX\ sees an undefined macro it will
+create a hash entry and when later it gets defined that entry will be reused. So,
+\type {\bar} really exists but can be in an undefined state.
+
+\startbuffer[demo]
+bar        : \directlua{tex.print(token.scan_csname())}\bar
+foo        : \directlua{tex.print(token.scan_csname())}\foo
+myfirstbar : \directlua{tex.print(token.scan_csname())}\myfirstbar
+\stopbuffer
+
+\startlines
+\getbuffer[demo]
+\stoplines
+
+This was entered as:
+
+\typebuffer[demo]
+
+The reason that you see \type {bar} reported and not \type {myfirstbar} is that
+\type {\bar} was already used in a previous paragraph.
+
+If we now say:
+
+\startbuffer
+\def\foo{}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+we get:
+
+\startlines
+\getbuffer[demo]
+\stoplines
+
+And if we say
+
+\startbuffer
+\def\foo{\bar}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+we get:
+
+\startlines
+\getbuffer[demo]
+\stoplines
+
+When scanning from \LUA\ we are not in a mode that defines (undefined) macros at
+all. There we just get the real primitive undefined macro token.
+
+\startbuffer
+\directlua{local t = token.get_next() tex.print(t.id.." "..t.tok)}\myfirstbar
+\directlua{local t = token.get_next() tex.print(t.id.." "..t.tok)}\mysecondbar
+\directlua{local t = token.get_next() tex.print(t.id.." "..t.tok)}\mythirdbar
+\stopbuffer
+
+\startlines
+\getbuffer
+\stoplines
+
+This was generated with:
+
+\typebuffer
+
+So, we do get a unique token because after all we need some kind of \LUA\ object
+that can be used and garbage collected, but it is basically the same one,
+representing an undefined control sequence.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={The \type {kpse} library}][library=kpse]
+
+\topicindex{libraries+\type{kpse}}
+
+This library provides two separate, but nearly identical interfaces to the
+\KPATHSEA\ file search functionality: there is a \quote {normal} procedural
+interface that shares its kpathsea instance with \LUATEX\ itself, and an object
+oriented interface that is completely on its own.
+
+\startsubsection[title={\type {set_program_name} and \type {new}}]
+
+\libindex{set_program_name}
+\libindex{default_texmfcnf}
+\libindex{new}
+
+The way the library looks up variables is driven by the \type {texmf.cmf} file
+where the currently set program name acts as filter. You can check what file is
+used by with \type {default_texmfcnf}.
+
+Before the search library can be used at all, its database has to be initialized.
+There are three possibilities, two of which belong to the procedural interface.
+
+First, when \LUATEX\ is used to typeset documents, this initialization happens
+automatically and the \KPATHSEA\ executable and program names are set to \type
+{luatex} (that is, unless explicitly prohibited by the user's startup script.
+See~\in {section} [init] for more details).
+
+Second, in \TEXLUA\ mode, the initialization has to be done explicitly via the
+\type {kpse.set_program_name} function, which sets the \KPATHSEA\ executable
+(and optionally program) name.
+
+\startfunctioncall
+kpse.set_program_name(<string> name)
+kpse.set_program_name(<string> name, <string> progname)
+\stopfunctioncall
+
+The second argument controls the use of the \quote {dotted} values in the \type
+{texmf.cnf} configuration file, and defaults to the first argument.
+
+Third, if you prefer the object oriented interface, you have to call a different
+function. It has the same arguments, but it returns a userdata variable.
+
+\startfunctioncall
+local kpathsea = kpse.new(<string> name)
+local kpathsea = kpse.new(<string> name, <string> progname)
+\stopfunctioncall
+
+Apart from these two functions, the calling conventions of the interfaces are
+identical. Depending on the chosen interface, you either call \type
+{kpse.find_file} or \type {kpathsea:find_file}, with identical arguments and
+return values.
+
+\stopsubsection
+
+\startsubsection[title={\type {record_input_file} and \type {record_output_file}}]
+
+\topicindex {files+recording}
+
+\libindex{record_input_file}
+\libindex{record_output_file}
+
+These two function can be used to register used files. Because callbacks can load
+files themselves you might need these helpers (if you use recording at all).
+
+\startfunctioncall
+kpse.record_input_file(<string> name)
+kpse.record_output_file(<string> name)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {find_file}}]
+
+\topicindex {files+finding}
+
+\libindex {find_file}
+
+The most often used function in the library is \type {find_file}:
+
+\startfunctioncall
+<string> f = kpse.find_file(<string> filename)
+<string> f = kpse.find_file(<string> filename, <string> ftype)
+<string> f = kpse.find_file(<string> filename, <boolean> mustexist)
+<string> f = kpse.find_file(<string> filename, <string> ftype, <boolean> mustexist)
+<string> f = kpse.find_file(<string> filename, <string> ftype, <number> dpi)
+\stopfunctioncall
+
+Arguments:
+
+\startitemize[intro]
+
+\sym{filename}
+
+the name of the file you want to find, with or without extension.
+
+\sym{ftype}
+
+maps to the \type {-format} argument of \KPSEWHICH. The supported \type {ftype}
+values are the same as the ones supported by the standalone \type {kpsewhich}
+program: \startluacode
+    local list = {
+        "afm",
+        "base",
+        "bib",
+        "bitmap font",
+        "bst",
+        "cid maps",
+        "clua",
+        "cmap files",
+        "cnf",
+        "cweb",
+        "dvips config",
+        "enc files",
+        "fmt",
+        "font feature files",
+        "gf",
+        "graphic|/|figure",
+        "ist",
+        "lig files",
+        "ls-R",
+        "lua",
+        "map",
+        "mem",
+        "MetaPost support",
+        "mf",
+        "mfpool",
+        "mft",
+        "misc fonts",
+        "mlbib",
+        "mlbst",
+        "mp",
+        "mppool",
+        "ocp",
+        "ofm",
+        "opentype fonts",
+        "opl",
+        "other binary files",
+        "other text files",
+        "otp",
+        "ovf",
+        "ovp",
+        "pdftex config",
+        "pk",
+        "PostScript header",
+        "subfont definition files",
+        "tex",
+        "TeX system documentation",
+        "TeX system sources",
+        "texmfscripts",
+        "texpool",
+        "tfm",
+        "Troff fonts",
+        "truetype fonts",
+        "type1 fonts",
+        "type42 fonts",
+        "vf",
+        "web",
+        "web2c files",
+    }
+    table.sort(list)
+    context("{\\tttf \letterpercent, t}",list)
+\stopluacode
+
+The default type is \type {tex}. Note: this is different from \KPSEWHICH, which
+tries to deduce the file type itself from looking at the supplied extension.
+
+\sym{mustexist}
+
+is similar to \KPSEWHICH's \type {-must-exist}, and the default is \type {false}.
+If you specify \type {true} (or a non|-|zero integer), then the \KPSE\ library
+will search the disk as well as the \type {ls-R} databases.
+
+\sym{dpi}
+
+This is used for the size argument of the formats \type {pk}, \type {gf}, and
+\type {bitmap font}. \stopitemize
+
+If \type {--output-directory} is specified and the value is a relative pathname,
+the file is searched first here and if it fails it will be searched in the standard tree.
+
+\stopsubsection
+
+\startsubsection[title={\type {lookup}}]
+
+\libindex{lookup}
+
+A more powerful (but slower) generic method for finding files is also available.
+It returns a string for each found file.
+
+\startfunctioncall
+<string> f, ... = kpse.lookup(<string> filename, <table> options)
+\stopfunctioncall
+
+The options match commandline arguments from \type {kpsewhich}:
+
+\starttabulate[|l|l|p|]
+\DB key              \BC type     \BC explanation \NC \NR
+\TB
+\NC \type{debug}     \NC number   \NC set debugging flags for this lookup\NC     \NR
+\NC \type{format}    \NC string   \NC use specific file type (see list above)\NC \NR
+\NC \type{dpi}       \NC number   \NC use this resolution for this lookup; default 600\NC \NR
+\NC \type{path}      \NC string   \NC search in the given path\NC \NR
+\NC \type{all}       \NC boolean  \NC output all matches, not just the first\NC \NR
+\NC \type{mustexist} \NC boolean  \NC search the disk as well as ls-R if necessary\NC \NR
+\NC \type{mktexpk}   \NC boolean  \NC disable/enable mktexpk generation for this lookup\NC \NR
+\NC \type{mktextex}  \NC boolean  \NC disable/enable mktextex generation for this lookup\NC \NR
+\NC \type{mktexmf}   \NC boolean  \NC disable/enable mktexmf generation for this lookup\NC \NR
+\NC \type{mktextfm}  \NC boolean  \NC disable/enable mktextfm generation for this lookup\NC \NR
+\NC \type{subdir}    \NC string
+                         or table \NC only output matches whose directory part
+                                      ends with the given string(s) \NC \NR
+\LL
+\stoptabulate
+
+If \type {--output-directory} is specified and the value is a relative pathname,
+the file is searched first here and then in the standard tree.
+
+
+\stopsubsection
+
+\startsubsection[title={\type {init_prog}}]
+
+\topicindex {initialization+bitmaps}
+
+\libindex{init_prog}
+
+Extra initialization for programs that need to generate bitmap fonts.
+
+\startfunctioncall
+kpse.init_prog(<string> prefix, <number> base_dpi, <string> mfmode)
+kpse.init_prog(<string> prefix, <number> base_dpi, <string> mfmode, <string> fallback)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {readable_file}}]
+
+\libindex{readable_file}
+
+Test if an (absolute) file name is a readable file.
+
+\startfunctioncall
+<string> f = kpse.readable_file(<string> name)
+\stopfunctioncall
+
+The return value is the actual absolute filename you should use, because the disk
+name is not always the same as the requested name, due to aliases and
+system|-|specific handling under e.g.\ \MSDOS. Returns \type {nil} if the file
+does not exist or is not readable.
+
+\stopsubsection
+
+\startsubsection[title={\type {expand_path}}]
+
+\libindex{expand_path}
+
+Like kpsewhich's \type {-expand-path}:
+
+\startfunctioncall
+<string> r = kpse.expand_path(<string> s)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {expand_var}}]
+
+\libindex{expand_var}
+
+Like kpsewhich's  \type {-expand-var}:
+
+\startfunctioncall
+<string> r = kpse.expand_var(<string> s)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {expand_braces}}]
+
+\libindex{expand_braces}
+
+Like kpsewhich's \type {-expand-braces}:
+
+\startfunctioncall
+<string> r = kpse.expand_braces(<string> s)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {in_name_ok}}]
+
+\libindex{in_name_ok}
+
+Returns true if \type{fname} is acceptable to open for reading, otherwise false and 
+write a message to standard error. 
+
+\startfunctioncall
+<boolean> r = kpse.in_name_ok(<string> fname)
+\stopfunctioncall
+
+\startsubsection[title={\type {in_name_ok_silent_extended}}]
+
+\libindex{in_name_ok_silent_extended}
+
+\startfunctioncall
+<boolean> r = kpse.in_name_ok_silent_extended(<string> fname)
+\stopfunctioncall
+
+Returns true if \type{fname} is acceptable to open for reading;
+the values of \type{TEXMFVAR} and \type{TEXMFSYSVAR} are also
+checked for absolute filenames. Returns false otherwise but it doesn't write
+a message to standard error.
+
+\stopsubsection
+
+
+\startsubsection[title={\type {out_name_ok}}]
+
+\libindex{out_name_ok}
+
+Returns true if \type{fname} is acceptable to open for writing. 
+
+\startfunctioncall
+<boolean> r = kpse.out_name_ok(<string> fname)
+\stopfunctioncall
+
+\stopsubsection
+
+
+\startsubsection[title={\type {out_name_ok_silent_extended}}]
+
+\libindex{out_name_ok_silent_extended}
+
+\startfunctioncall
+<boolean> r = kpse.out_name_ok_silent_extended(<string> fname)
+\stopfunctioncall
+
+Returns true if \type{fname} is acceptable to open for writing;
+the values of \type{TEXMFVAR} and \type{TEXMFSYSVAR} are also
+checked for absolute filenames. Returns false otherwise but it doesn't write
+a message to standard error.
+
+\stopsubsection
+
+
+
+
+\startsubsection[title={\type {show_path}}]
+
+\libindex{show_path}
+
+Like kpsewhich's \type {-show-path}:
+
+\startfunctioncall
+<string> r = kpse.show_path(<string> ftype)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {var_value}}]
+
+\libindex{var_value}
+
+Like kpsewhich's \type {-var-value}:
+
+\startfunctioncall
+<string> r = kpse.var_value(<string> s)
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {version}}]
+
+\libindex{version}
+
+Returns the kpathsea version string.
+
+\startfunctioncall
+<string> r = kpse.version()
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {check_permission}}]
+
+\libindex{check\_permission}
+
+Checks if the \type{filename} can be executed or not.
+Returns \type{1}, \type{filename} or a safe cmd alternative  if it can be executed,
+otherwise  returns \type{0} and an error message. 
+
+\startfunctioncall
+<string> res, cmd = kpse.check_permission(filename)
+\stopfunctioncall
+
+\stopsubsection
+
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

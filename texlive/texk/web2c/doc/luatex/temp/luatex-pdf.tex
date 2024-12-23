@@ -1,0 +1,131 @@
+% This is a pdftex compatibility file. We could use \ifprimitive instead.
+
+\ifdefined\pagewidth                   \let\pdfpagewidth       \pagewidth                  \fi
+\ifdefined\pageheight                  \let\pdfpageheight      \pageheight                 \fi
+
+\ifdefined\adjustspacing               \let\pdfadjustspacing   \adjustspacing              \fi
+\ifdefined\protrudechars               \let\pdfprotrudechars   \protrudechars              \fi
+\ifdefined\ignoreligaturesinfont       \let\pdfnoligatures     \ignoreligaturesinfont      \fi
+\ifdefined\expandglyphsinfont          \let\pdffontexpand      \expandglyphsinfont         \fi
+\ifdefined\copyfont                    \let\pdfcopyfont        \copyfont                   \fi
+
+\ifdefined\normaldeviate               \let\pdfnormaldeviate  \normaldeviate               \fi
+\ifdefined\uniformdeviate              \let\pdfuniformdeviate \uniformdeviate              \fi
+\ifdefined\setrandomseed               \let\pdfsetrandomseed  \setrandomseed               \fi
+\ifdefined\randomseed                  \let\pdfrandomseed     \randomseed                  \fi
+
+\ifdefined\ifabsnum                    \let\ifpdfabsnum       \ifabsnum                    \fi
+\ifdefined\ifabsdim                    \let\ifpdfabsdim       \ifabsdim                    \fi
+\ifdefined\ifprimitive                 \let\ifpdfprimitive    \ifprimitive                 \fi
+
+\ifdefined\primitive                   \let\pdfprimitive      \primitive                   \fi
+
+\ifdefined\saveboxresource             \let\pdfxform          \saveboxresource             \fi
+\ifdefined\lastsavedboxresourceindex   \let\pdflastxform      \lastsavedboxresourceindex   \fi
+\ifdefined\useboxresource              \let\pdfrefxform       \useboxresource              \fi
+
+\ifdefined\saveimageresource           \let\pdfximage         \saveimageresource           \fi
+\ifdefined\lastsavedimageresourceindex \let\pdflastximage     \lastsavedimageresourceindex \fi
+\ifdefined\lastsavedimageresourcepages \let\pdflastximagepages\lastsavedimageresourcepages \fi
+\ifdefined\useimageresource            \let\pdfrefximage      \useimageresource            \fi
+
+\ifdefined\savepos                     \let\pdfsavepos        \savepos                     \fi
+\ifdefined\lastxpos                    \let\pdflastxpos       \lastxpos                    \fi
+\ifdefined\lastypos                    \let\pdflastypos       \lastypos                    \fi
+
+\ifdefined\luatexversion               \let\pdftexversion     \luatexversion               \fi
+\ifdefined\luatexrevision              \let\pdftexrevision    \luatexrevision              \fi
+\ifdefined\luatexbanner                \let\pdftexbanner      \luatexbanner                \fi
+
+\ifdefined\outputmode                  \let\pdfoutput         \outputmode                  \fi
+\ifdefined\draftmode                   \let\pdfdraftmode      \draftmode                   \fi
+
+\ifdefined\pdfeachlineheight     \else \newdimen\pdfeachlineheight                         \fi
+\ifdefined\pdfeachlinedepth      \else \newdimen\pdfeachlinedepth                          \fi
+\ifdefined\pdflastlinedepth      \else \newdimen\pdflastlinedepth                          \fi
+\ifdefined\pdffirstlineheight    \else \newdimen\pdffirstlineheight                        \fi
+\ifdefined\pdfignoreddimen       \else \newdimen\pdfignoreddimen                           \fi
+
+\ifdefined\pdfextension
+
+    \protected\def\pdfliteral        {\pdfextension literal }
+    \protected\def\pdfcolorstack     {\pdfextension colorstack }
+    \protected\def\pdfsetmatrix      {\pdfextension setmatrix }
+    \protected\def\pdfsave           {\pdfextension save\relax}
+    \protected\def\pdfrestore        {\pdfextension restore\relax}
+    \protected\def\pdfobj            {\pdfextension obj }
+    \protected\def\pdfrefobj         {\pdfextension refobj }
+    \protected\def\pdfannot          {\pdfextension annot }
+    \protected\def\pdfstartlink      {\pdfextension startlink }
+    \protected\def\pdfendlink        {\pdfextension endlink\relax}
+    \protected\def\pdfoutline        {\pdfextension outline }
+    \protected\def\pdfdest           {\pdfextension dest }
+    \protected\def\pdfthread         {\pdfextension thread }
+    \protected\def\pdfstartthread    {\pdfextension startthread }
+    \protected\def\pdfendthread      {\pdfextension endthread\relax}
+    \protected\def\pdfinfo           {\pdfextension info }
+    \protected\def\pdfcatalog        {\pdfextension catalog }
+    \protected\def\pdfnames          {\pdfextension names }
+    \protected\def\pdfincludechars   {\pdfextension includechars }
+    \protected\def\pdffontattr       {\pdfextension fontattr }
+    \protected\def\pdfmapfile        {\pdfextension mapfile }
+    \protected\def\pdfmapline        {\pdfextension mapline }
+    \protected\def\pdftrailer        {\pdfextension trailer }
+    \protected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+
+\fi
+
+% these are kind of special and become commands (basically they can be tex.print'd)
+%
+% \pdffontname              convert
+% \pdffontobjnum            convert
+% \pdffontsize              convert
+% \pdfpageref               convert
+% \pdfxformname             convert
+% \pdfcreationdate          convert
+% \pdfcolorstackinit        convert
+% \pdfinsertht              convert
+
+% these can be set and are read out when needed
+%
+% \pdfpagesattr             tokenlist
+% \pdfpageattr              tokenlist
+% \pdfpageresources         tokenlist
+% \pdfxformattr             tokenlist
+% \pdfxformresources        tokenlist
+% \pdfpkmode                tokenlist
+%
+% \pdfcompresslevel         integer
+% \pdfobjcompresslevel      integer
+% \pdfdecimaldigits         integer
+% \pdfimageresolution       integer
+% \pdfpkresolution          integer
+% \pdfuniqueresname         integer
+% \pdfoptionpdfminorversion integer
+% \pdfminorversion          integer
+% \pdfinclusionerrorlevel   integer
+% \pdfgamma                 integer
+% \pdfimagegamma            integer
+% \pdfimagehicolor          integer
+% \pdfimageapplygamma       integer
+% \pdftracingfonts          integer
+% \pdfgentounicode          integer
+% \pdfinclusioncopyfonts    integer
+% \pdfreplacefont           integer
+% \pdfpagebox               integer
+
+% \pdfhorigin               dimension
+% \pdfvorigin               dimension
+% \pdflinkmargin            dimension
+% \pdfdestmargin            dimension
+% \pdfthreadmargin          dimension
+% \pdfpxdimen               dimension
+
+% these are readonly (can be set but without consequence)
+%
+% \pdflastobj               integer (readonly)
+% \pdflastannot             integer (readonly)
+% \pdfretval                integer (readonly)
+% \pdflastlink              integer (readonly)
+
+\endinput

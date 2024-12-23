@@ -1,0 +1,53 @@
+\environment luatex-style
+
+\startcomponent luatex-titlepage
+
+\startstandardmakeup
+
+    \switchtobodyfont
+      [mainfacemedium]
+
+    \definedfont[Bold*default at \the\dimexpr.06\paperheight\relax] \setupinterlinespace
+
+    \setlayer
+      [page]
+      {\useMPgraphic{luapage}}
+
+    \setlayerframed
+      [page]
+      [preset=righttop,
+       location=middletop,
+       hoffset=.500\measured{paperwidth},
+       voffset=.175\measured{paperheight}]
+      [align=middle,
+       foregroundcolor=white,
+       frame=off]
+      {\documentvariable{manual}\crlf Reference\crlf Manual}
+
+    \definedfont[Bold*default at 14pt] \setupinterlinespace
+
+    \setlayerframed
+      [page]
+      [preset=rightbottom,
+       offset=.025\measured{paperheight}]
+      [align=flushright,
+       foregroundcolor=white,
+       frame=off]
+      {\doifsomething{\documentvariable{status}}{\documentvariable{status}\par}
+       \currentdate[month,space,year]\par
+       Version \documentvariable{version}}
+
+    \setlayerframed
+      [page]
+      [preset=middle,
+       hoffset=-.5\dimexpr\measured{paperwidth}-\measured{spinewidth}\relax]
+      [width=.7\measured{paperwidth},
+       align=normal,
+       foregroundstyle=\bf,
+       foregroundcolor=white,
+       frame=off]
+      {\getbuffer[backpage]}
+
+\stopstandardmakeup
+
+\stopcomponent
