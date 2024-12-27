@@ -1,6 +1,8 @@
-2024-12-21 Luigi Scarso <luigi.scarso@gmail.com>
-	* \globaldefs: more tracing (H.Hagen)
-	* LuaTeX 1.19.1
+2024-12-24 Luigi Scarso <luigi.scarso@gmail.com>
+	* For PNG, we no longer set the attr on the mask. If we get a report about dropping this 
+          we could add a 'maskattr' feature, but one should consider
+          to include a correct pdf of the image instead, it's more robust.
+	* LuaTeX 1.19.2
 
 2024-11-02  Luigi Scarso <luigi.scarso@gmail.com>
 	* Fixed a memory leak in token.put_next()  (thanks to user202729@protonmail.com)
