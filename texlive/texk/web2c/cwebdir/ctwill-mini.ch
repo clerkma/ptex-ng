@@ -21,8 +21,8 @@ Section 1.
 @y
 \ifx\undefined\pdfpagewidth
 \else
-  \pdfpagewidth=\pagewd \advance\pdfpagewidth by 2cm
-  \pdfpageheight=\pageht \advance\pdfpageheight by 5cm
+  \pdfpagewidth=\pagewidth \advance\pdfpagewidth by 2cm
+  \pdfpageheight=\pageheight \advance\pdfpageheight by 5cm
   \ifpdflua \pdfhorigin=1cm \pdfvorigin=1cm
   \else \global\hoffset=-1.54cm \global\voffset=-1.54cm \fi
 \fi

@@ -259,16 +259,16 @@
 % \L is Polish letter suppressed-L
 \outer\def\M#1{\def\secno{#1}\startsection\ignorespaces}
 \outer\def\N{\ifvoid\partialpage\lefttrue
-  \else\ifdim\ht\partialpage<\pageht \leftfalse\else\lefttrue\fi\fi\NNN}
+  \else\ifdim\ht\partialpage<\pageheight \leftfalse\else\lefttrue\fi\fi\NNN}
 \outer\def\NN{\ifvoid\partialpage\leftfalse
-  \else\ifdim\ht\partialpage<\pageht \lefttrue\else\leftfalse\fi\fi\NNN}
+  \else\ifdim\ht\partialpage<\pageheight \lefttrue\else\leftfalse\fi\fi\NNN}
 \outer\def\NNN#1#2#3.{% beginning of starred section
   \gdepth=#1\gtitle={#3}\def\secno{#2}
   \ifleft \flushout
     \gdef\rlhead{\let\i=I\uppercase{\ignorespaces#3}} % running left headline
     \global\let\rrhead=\rlhead % running right headline
   \else\global\setbox\partialpage=\vbox{
-          \vbox to\pageht{\unvbox\partialpage\vfill}\break}
+          \vbox to\pageheight{\unvbox\partialpage\vfill}\break}
       \gdef\rrhead{\let\i=I\uppercase{\ignorespaces#3}}
   \fi
   \message{*\secno} % progress report
@@ -315,12 +315,12 @@
 % \count and \toks registers 200--219 are also used to keep track of refs
 \catcode`\@=11
 \newcount\@n \newcount\@m \newcount\@p
-\newdimen\pageht \pageht=19cm
-\newdimen\pagewd \pagewd=13cm
-\newdimen\colwd \colwd=\pagewd
+\newdimen\pageheight \pageheight=19cm
+\newdimen\pagewidth \pagewidth=13cm
+\newdimen\colwd \colwd=\pagewidth
  \advance\colwd by -2pc \divide\colwd by 3 % for three columns
-\newdimen\fullpageht \fullpageht=\pageht \advance\fullpageht by 4pc
-\newdimen\pagethresh \pagethresh=2\pageht
+\newdimen\fullpageheight \fullpageheight=\pageheight \advance\fullpageheight by 4pc
+\newdimen\pagethresh \pagethresh=2\pageheight
 \newdimen\nsize \newdimen\msize
 \newskip\intersecskip \intersecskip=8pt plus 2pt minus 3pt
 \newbox\partialpage
@@ -331,7 +331,7 @@
 \newif\iftitle \newif\ifleft
 
 \def\flushout{\ifvoid\partialpage\else
-    \setbox0=\vsplit\partialpage to \pageht
+    \setbox0=\vsplit\partialpage to \pageheight
     \shipout\vbox{
       \vbox to 3pc{\leftheadline\vfill}
       \nointerlineskip\box0}
@@ -345,7 +345,7 @@
       \hyphenpenalty 10000 \exhyphenpenalty 10000
       \noindent\vbox to1pt{}\par % 1pt = \topskip - \ninept
       \readin}
-    \shipout\vbox to\fullpageht{
+    \shipout\vbox to\fullpageheight{
       \vbox to 3pc{\rightheadline\vfill}
       \unvbox\partialpage
       \vfill
@@ -364,10 +364,10 @@
     \@n=199 \loop \ifnum\@n<222 \toks\@n={} \count\@n=0 \advance\@n 1 \repeat
     \nrefs=0
     \baseno=\secno}}
-\def\leftheadline{\hbox to\pagewd{\vbox to10pt{}%
+\def\leftheadline{\hbox to\pagewidth{\vbox to10pt{}%
   \iftitle\global\titlefalse\else\ninerm\title:\enspace \eightsl\rlhead\fi
   \hfil\eightrm\folio}}
-\def\rightheadline{\hbox to\pagewd{\vbox to10pt{}%
+\def\rightheadline{\hbox to\pagewidth{\vbox to10pt{}%
   \eightrm\folio\hfil\ninerm\title:\enspace \eightsl\rrhead\/}}
 
 \def\mini{\begingroup \obeylines \globaldefs=1 \newrefs=\bgroup}
@@ -448,7 +448,7 @@
 \def\donewithpage#1 {\let\readin=\relax}
 \catcode`\@=12
 
-\hsize=\pagewd \vsize=\maxdimen \output={\twillout}
+\hsize=\pagewidth \vsize=\maxdimen \output={\twillout}
 
 \def\inx{\flushout\end}
 \def\fin{\parfillskip 0pt plus 1fil
