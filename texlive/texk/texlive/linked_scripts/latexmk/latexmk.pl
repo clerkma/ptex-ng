@@ -47,8 +47,8 @@ BEGIN {
     # blocks.
     $my_name = 'latexmk';
     $My_name = 'Latexmk';
-    $version_num = '4.86';
-    $version_details = "$My_name, John Collins, 11 Dec. 2024. Version $version_num";
+    $version_num = '4.86a';
+    $version_details = "$My_name, John Collins, 27 Dec. 2024. Version $version_num";
 }
 
 # Ensure that when STDERR and STDOUT are both redirected, the results are
