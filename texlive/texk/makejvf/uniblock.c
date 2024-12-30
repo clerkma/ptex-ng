@@ -16,8 +16,8 @@ struct ublock {
 /*
  References:
  [1] http://www.unicode.org/Public/UNIDATA/Blocks.txt
-        Blocks-15.1.0.txt
-        Date: 2023-07-28, 15:47:20 GMT
+        Blocks-16.0.0.txt
+        Date: 2024-02-02
  [2] CMap files
      https://github.com/adobe-type-tools/cmap-resources/
      Adobe-CNS1-7/                  Adobe-CNS1-7 materials
@@ -224,6 +224,7 @@ static struct ublock ublock_data[] = {
   {0x10500, 0x1052F, ENTRY_NO  , 0}, /* Elbasan */
   {0x10530, 0x1056F, ENTRY_NO  , 0}, /* Caucasian Albanian */
   {0x10570, 0x105BF, ENTRY_NO  , 0}, /* Vithkuqi */
+  {0x105C0, 0x105FF, ENTRY_NO  , 0}, /* Todhri */
   {0x10600, 0x1077F, ENTRY_NO  , 0}, /* Linear A */
   {0x10780, 0x107BF, ENTRY_NO  , 0}, /* Latin Extended-F */
   {0x10800, 0x1083F, ENTRY_NO  , 0}, /* Cypriot Syllabary */
@@ -246,6 +247,7 @@ static struct ublock ublock_data[] = {
   {0x10C00, 0x10C4F, ENTRY_NO  , 0}, /* Old Turkic */
   {0x10C80, 0x10CFF, ENTRY_NO  , 0}, /* Old Hungarian */
   {0x10D00, 0x10D3F, ENTRY_NO  , 0}, /* Hanifi Rohingya */
+  {0x10D40, 0x10D8F, ENTRY_NO  , 0}, /* Garay */
   {0x10E60, 0x10E7F, ENTRY_NO  , 0}, /* Rumi Numeral Symbols */
   {0x10E80, 0x10EBF, ENTRY_NO  , 0}, /* Yezidi */
   {0x10EC0, 0x10EFF, ENTRY_NO  , 0}, /* Arabic Extended-C */
@@ -265,12 +267,14 @@ static struct ublock ublock_data[] = {
   {0x11280, 0x112AF, ENTRY_NO  , 0}, /* Multani */
   {0x112B0, 0x112FF, ENTRY_NO  , 0}, /* Khudawadi */
   {0x11300, 0x1137F, ENTRY_NO  , 0}, /* Grantha */
+  {0x11380, 0x113FF, ENTRY_NO  , 0}, /* Tulu-Tigalari */
   {0x11400, 0x1147F, ENTRY_NO  , 0}, /* Newa */
   {0x11480, 0x114DF, ENTRY_NO  , 0}, /* Tirhuta */
   {0x11580, 0x115FF, ENTRY_NO  , 0}, /* Siddham */
   {0x11600, 0x1165F, ENTRY_NO  , 0}, /* Modi */
   {0x11660, 0x1167F, ENTRY_NO  , 0}, /* Mongolian Supplement */
   {0x11680, 0x116CF, ENTRY_NO  , 0}, /* Takri */
+  {0x116D0, 0x116FF, ENTRY_NO  , 0}, /* Myanmar Extended-C */
   {0x11700, 0x1174F, ENTRY_NO  , 0}, /* Ahom */
   {0x11800, 0x1184F, ENTRY_NO  , 0}, /* Dogra */
   {0x118A0, 0x118FF, ENTRY_NO  , 0}, /* Warang Citi */
@@ -281,6 +285,7 @@ static struct ublock ublock_data[] = {
   {0x11AB0, 0x11ABF, ENTRY_NO  , 0}, /* Unified Canadian Aboriginal Syllabics Extended-A */
   {0x11AC0, 0x11AFF, ENTRY_NO  , 0}, /* Pau Cin Hau */
   {0x11B00, 0x11B5F, ENTRY_NO  , 0}, /* Devanagari Extended-A */
+  {0x11BC0, 0x11BFF, ENTRY_NO  , 0}, /* Sunuwar */
   {0x11C00, 0x11C6F, ENTRY_NO  , 0}, /* Bhaiksuki */
   {0x11C70, 0x11CBF, ENTRY_NO  , 0}, /* Marchen */
   {0x11D00, 0x11D5F, ENTRY_NO  , 0}, /* Masaram Gondi */
@@ -295,12 +300,15 @@ static struct ublock ublock_data[] = {
   {0x12F90, 0x12FFF, ENTRY_NO  , 0}, /* Cypro-Minoan */
   {0x13000, 0x1342F, ENTRY_NO  , 0}, /* Egyptian Hieroglyphs */
   {0x13430, 0x1345F, ENTRY_NO  , 0}, /* Egyptian Hieroglyph Format Controls */
+  {0x13460, 0x143FF, ENTRY_NO  , 0}, /* Egyptian Hieroglyphs Extended-A */
   {0x14400, 0x1467F, ENTRY_NO  , 0}, /* Anatolian Hieroglyphs */
+  {0x16100, 0x1613F, ENTRY_NO  , 0}, /* Gurung Khema */
   {0x16800, 0x16A3F, ENTRY_NO  , 0}, /* Bamum Supplement */
   {0x16A40, 0x16A6F, ENTRY_NO  , 0}, /* Mro */
   {0x16A70, 0x16ACF, ENTRY_NO  , 0}, /* Tangsa */
   {0x16AD0, 0x16AFF, ENTRY_NO  , 0}, /* Bassa Vah */
   {0x16B00, 0x16B8F, ENTRY_NO  , 0}, /* Pahawh Hmong */
+  {0x16D40, 0x16D7F, ENTRY_NO  , 0}, /* Kirat Rai */
   {0x16E40, 0x16E9F, ENTRY_NO  , 0}, /* Medefaidrin */
   {0x16F00, 0x16F9F, ENTRY_NO  , 0}, /* Miao */
   {0x16FE0, 0x16FFF, ENTRY_NO  , 0}, /* Ideographic Symbols and Punctuation */
@@ -315,6 +323,7 @@ static struct ublock ublock_data[] = {
   {0x1B170, 0x1B2FF, ENTRY_NO  , 0}, /* Nushu */
   {0x1BC00, 0x1BC9F, ENTRY_NO  , 0}, /* Duployan */
   {0x1BCA0, 0x1BCAF, ENTRY_NO  , 0}, /* Shorthand Format Controls */
+  {0x1CC00, 0x1CEBF, ENTRY_NO  , 0}, /* Symbols for Legacy Computing Supplement */
   {0x1CF00, 0x1CFCF, ENTRY_NO  , 0}, /* Znamenny Musical Notation */
   {0x1D000, 0x1D0FF, ENTRY_NO  , 0}, /* Byzantine Musical Symbols */
   {0x1D100, 0x1D1FF, ENTRY_NO  , 0}, /* Musical Symbols */
@@ -332,6 +341,7 @@ static struct ublock ublock_data[] = {
   {0x1E290, 0x1E2BF, ENTRY_NO  , 0}, /* Toto */
   {0x1E2C0, 0x1E2FF, ENTRY_NO  , 0}, /* Wancho */
   {0x1E4D0, 0x1E4FF, ENTRY_NO  , 0}, /* Nag Mundari */
+  {0x1E5D0, 0x1E5FF, ENTRY_NO  , 0}, /* Ol Onal */
   {0x1E7E0, 0x1E7FF, ENTRY_NO  , 0}, /* Ethiopic Extended-B */
   {0x1E800, 0x1E8DF, ENTRY_NO  , 0}, /* Mende Kikakui */
   {0x1E900, 0x1E95F, ENTRY_NO  , 0}, /* Adlam */
