@@ -1,8 +1,20 @@
+2024-12-30 Luigi Scarso <luigi.scarso@gmail.com>
+	* Increment tally in tprint also when doterm is true (thanks to user202729@protonmail.com).
+	* LuaTeX 1.19.4
+
+
+
+2024-12-30 Luigi Scarso <luigi.scarso@gmail.com>
+	* Avoid useless 0 beginbfrange endbfrange in pdf 
+	* LuaTeX 1.19.3
+
+
 2024-12-24 Luigi Scarso <luigi.scarso@gmail.com>
 	* For PNG, we no longer set the attr on the mask. If we get a report about dropping this 
           we could add a 'maskattr' feature, but one should consider
           to include a correct pdf of the image instead, it's more robust.
 	* LuaTeX 1.19.2
+
 
 2024-11-02  Luigi Scarso <luigi.scarso@gmail.com>
 	* Fixed a memory leak in token.put_next()  (thanks to user202729@protonmail.com)

@@ -504,14 +504,13 @@
 \hsize=\pagewidth \vsize=\maxdimen \output={\twillout}
 
 %\let\page=\pagebody \raggedbottom
-% \def\page{\box255 }\normalbottom % faster, but loses plain TeX footnotes
-%\def\normaloutput#1#2#3{\ifodd\pageno\hoffset=\pageshift\fi
- %\shipout\vbox{
-  %\vbox to\fullpageheight{
-  %\iftitle\global\titlefalse
-  %\else\hbox to\pagewidth{\vbox to10pt{}\ifodd\pageno #3\else#2\fi}\fi
-  %\vfill#1}} % parameter #1 is the page itself
-  %\global\advance\pageno by1}
+\def\page{\box255 }\normalbottom % faster, but loses plain TeX footnotes
+\def\normaloutput#1#2#3{\shipout\vbox{\vbox to\fullpageheight{%
+  \iftitle\global\titlefalse
+  \else\hbox to\pagewidth{\vbox to10pt{}%
+    \ifodd\pageno\vbox to3pc{#3\vfill}\else\vbox to3pc{#2\vfill}\fi}\fi
+  #1\vfill}} % parameter #1 is the page itself
+  \global\advance\pageno by1}
 %\def\topofcontents{\centerline{\titlefont\title}\vskip.7in
   %\vfill} % this material will start the table of contents page
 %\def\botofcontents{\vfill
@@ -520,7 +519,7 @@
 \def\contentspagenumber{0} % default page number for table of contents
 %\newdimen\pageshift \pageshift=\hoffset
    %% shift righthand pages wrt lefthand ones (changed in version 3.70)
-%\def\setpage{\hsize\pagewidth\vsize\pageheight} % use after changing page size
+\def\setpage{\hsize\pagewidth\vsize\pageheight} % use after changing page size
 \def\contentsfile{\jobname.toc} % file that gets table of contents info
 \def\readcontents{\input \contentsfile}
 \def\readsections{\input \jobname.scn}
@@ -536,16 +535,24 @@
     \immediate\write\cont{\catcode `\noexpand\@=12\relax} % \makeatother
     \immediate\closeout\cont % the contents information has been fully gathered
   \fi}
-\def\fin{\ifacro \message{Section names:}
-  \def\U##1.{} \def\Us##1.{} \def\Q##1.{} \def\Qs##1.{} \let\I=\relax \let\*=*
-  \newrefs={} \output={\shipout\box255}
+\def\fin{\ifacro \message{Section names:} \let\Xpdf\X
+  \def\note##1##2.{\quad{\eightrm##1~\pdfnote##2.}}
+  \def\Q{\note{Cited in section}} % crossref for mention of a section
+  \def\Qs{\note{Cited in sections}} % crossref for mentions of a section
+  \def\U{\note{Used in section}} % crossref for use of a section
+  \def\Us{\note{Used in sections}} % crossref for uses of a section
+  \def\I{\par\hangindent 2em\noindent}\let\*=*
+  \def\rlhead{NAMES OF THE SECTIONS} % running left headline
+  \let\rrhead=\rlhead % running right headline
+  \output={\normaloutput\page\rightheadline\leftheadline}
+  \setpage
   \def\outsecname{Names of the sections}
   \ifpdflua \makebookmarks \countsections
     \pdfdest name {NOS} fith
     \pdfoutline goto name {NOS} count -\the\countNOS {\outsecname}
   \else \special{pdf: outline -1 << /Title (\outsecname)
       /Dest [ @thispage /FitH @ypos ] >>}\fi
-  \def\X##1:##2\X{\firstsecno##1.%
+  \def\X##1:##2\X{\Xpdf##1:##2\X \firstsecno##1.%
     {\makeoutlinetoks##2\outlinedone}%
     \ifpdflua \pdfoutline goto num \the\toksA \expandafter{\the\toksE}
     \else \special{pdf: outline 0 << /Title (\the\toksE)
