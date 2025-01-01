@@ -1,3 +1,30 @@
+2025-01-01  Andreas Scherer  <https://ascherer.github.io>
+
+	* Makefile,
+	* comm-{mac,mini,ql,w2c}.ch,
+	* comm-w2c.h,
+	* common.h,
+	* common.w,
+	* ctang-{bs,pc,ql,vms,w2c,w32}.ch,
+	* ctangle.c,
+	* ctangle.w,
+	* ctwill-w2c.ch,
+	* cweav-{bs,pc,ql,vms,w2c,w32}.ch,
+	* cweave.w,
+	* cwebacromac.tex,
+	* cwebmac.tex,
+	* cwebman-w2c.ch,
+	* cwebman.tex,
+	* po/cweb-tl.pot,
+	* po/cweb.pot,
+	* po/de/cweb-tl.po,
+	* po/de/cweb.po,
+	* po/de/web2c-help.po,
+	* po/it/cweb.po,
+	* po/web2c-help.pot,
+	* prod-{cweave,twill}.w,
+	* prod.w: CWEB 4.12.1 release.
+
 2024-12-31  Andreas Scherer  <https://ascherer.github.io>
 
 	* texinputs/pdfctwimac.tex: Append 'Names of the sections'.
