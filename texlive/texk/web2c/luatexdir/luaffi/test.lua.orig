@@ -22,7 +22,7 @@ local function loadlib(lib)
 end
 
 if ffi.debug then
-    dlls.__cdecl = ffi.load('./libffitest')
+    dlls.__cdecl = ffi.load('ffi/libffitest')
 end
 
 if ffi.arch == 'x86' and ffi.os == 'Windows' then

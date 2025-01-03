@@ -1,0 +1,88 @@
+%#!euptex
+\font\cmr=cmr10\cmr
+\ifx\kanjiskip\undefined\else
+  \ifnum\jis"2121="3000
+    \jfont\jpy=umin10 at 10pt\jpy
+  \else
+    \jfont\jpy=min10 at 10pt\jpy
+  \fi
+\fi
+
+\def\TEST#1{{\setbox0=\vbox{\noindent
+  ああああああ%
+  \ifx\scantokens\undefined\else\scantokens\fi
+  {#1}}\showboxbreadth10000\showboxdepth10000\tracingonline1\showbox0}}
+
+\message{TEST}
+
+\chardef\CR=`す
+\TEST{す{\kcatcode`す=18 す}「。}
+\TEST{\CR。}
+\ifx\Ucharcat\undefined\else
+\TEST{\Ucharcat`す 16。}
+\TEST{\Ucharcat`す 17。}
+\TEST{\Ucharcat`す 18。}
+\TEST{\Ucharcat`す 19。}
+\fi
+
+\TEST{す。}
+\TEST{す\char\kuten"0103}
+\ifx\kchar\undefined\else
+\TEST{す\kchar\kuten"0103}
+\fi
+
+\TEST{\char\kuten"0419。}
+\TEST{\char\kuten"0419\char\kuten"0103}
+\ifx\kchar\undefined\else
+\TEST{\char\kuten"0419\kchar\kuten"0103}
+
+\kchardef\KR=`す
+\TEST{\KR。}
+\TEST{\kchar\kuten"0419。}
+\TEST{\kchar\kuten"0419\char\kuten"0103}
+\TEST{\kchar\kuten"0419\kchar\kuten"0103}
+\fi
+
+{\kcatcode`α=15
+\ifx\kchar\undefined\else
+  \message{KCHAR"3B1, kcatcode=15}
+  \def\S{\kchar"03B1}
+  \TEST{い\kchar"03B1。}
+  \TEST{\kchar"03B1。}
+  \TEST{\relax\kchar"03B1。}
+  \TEST{\vrule\kchar"03B1。}
+  \TEST{b\kchar"03B1。}
+  \TEST{い\S。}
+\fi
+
+  \message{CHAR"3B1, kcatcode=15}
+  \def\S{\char"03B1}
+  \TEST{い\char"03B1。}
+  \TEST{\char"03B1。}
+  \TEST{\relax\char"03B1。}
+  \TEST{\vrule\char"03B1。}
+  \TEST{b\char"03B1。}
+  \TEST{い\S。}
+
+\ifx\kchardef\undefined\else
+  \message{KCHARDEF"3B1, kcatcode=15}
+  \kchardef\KA="3B1
+  \TEST{い\KA 。}
+  \TEST{\KA 。}
+  \TEST{\relax\KA 。}
+  \TEST{\vrule\KA 。}
+  \TEST{b\KA 。}
+  \TEST{い\S。}
+\fi
+
+  \message{CHARDEF"3B1, kcatcode=15}
+  \chardef\CA="3B1
+  \TEST{い\CA 。}
+  \TEST{\CA 。}
+  \TEST{\relax\CA 。}
+  \TEST{\vrule\CA 。}
+  \TEST{b\CA 。}
+}
+
+\bye
+

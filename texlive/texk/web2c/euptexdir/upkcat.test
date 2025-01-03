@@ -1,6 +1,6 @@
 #! /bin/sh -vx
-# $Id: upkcat.test 69812 2024-02-11 23:09:24Z karl $
-# Copyright 2022 TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+# $Id: upkcat.test 73271 2025-01-02 12:27:29Z takuji $
+# Copyright 2022-2025 TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 # You may freely use, modify and/or distribute this file.
 
 BinDir=${BinDir:-.}
@@ -12,8 +12,18 @@ LC_ALL=C; export LC_ALL;  LANGUAGE=C; export LANGUAGE
 TEXMFCNF=$srcdir/../kpathsea; export TEXMFCNF
 TEXINPUTS="$srcdir/uptexdir/tests;."; export TEXINPUTS
 
-$_euptex -ini -etex -interaction batchmode -jobname upkcat-log kcat.tex || exit 1
-grep '::' upkcat-log.log > upkcat-log_ed.log \
-  && diff upkcat-log_ed.log $srcdir/uptexdir/tests/upkcat.txt || exit 2
+rm -f eupkcat*log*.log
+
+$_euptex -ini -etex -interaction batchmode -jobname eupkcat-log kcat.tex || exit 1
+grep '::' eupkcat-log.log > eupkcat-log_ed.log \
+  && diff eupkcat-log_ed.log $srcdir/uptexdir/tests/upkcat.txt || exit 2
+
+$_euptex -ini -etex -interaction batchmode -jobname eupkcat-e-log -kanji-internal=euc kcat.tex || exit 3
+grep '::' eupkcat-e-log.log > eupkcat-e-log_ed.log \
+  && diff eupkcat-e-log_ed.log $srcdir/uptexdir/tests/upkcat-e.txt || exit 4
+
+$_euptex -ini -etex -interaction batchmode -jobname eupkcat-s-log -kanji-internal=sjis kcat.tex || exit 5
+grep '::' eupkcat-s-log.log > eupkcat-s-log_ed.log \
+  && diff eupkcat-s-log_ed.log $srcdir/uptexdir/tests/upkcat-s.txt || exit 6
 
 exit 0

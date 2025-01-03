@@ -19,8 +19,22 @@
 #include <errno.h>
 #endif
 
+#if __STDC_VERSION__+0 >= 199901L 
 #include <complex.h>
+
 #define HAVE_COMPLEX
+typedef double _Complex double_complex;
+typedef float _Complex float_complex;
+#else
+typedef struct{
+    float re;
+    float im;
+} float_complex;
+typedef struct{
+    double re;
+    double im;
+} double_complex;
+#endif
 
 #ifdef __cplusplus
 # define EXTERN_C extern "C"
@@ -90,8 +104,11 @@ ADD(uint64_t, add_u64)
 ADD(double, add_d)
 ADD(float, add_f)
 #ifdef HAVE_COMPLEX
-ADD(double complex, add_dc)
-ADD(float complex, add_fc)
+ADD(double_complex, add_dc)
+ADD(float_complex, add_fc)
+#else
+EXPORT double_complex add_dc(double_complex a, double_complex b) { return (double_complex){a.re + b.re,a.im+b.im}; }
+EXPORT float_complex add_fc(float_complex a, float_complex b) { return (float_complex){a.re + b.re,a.im+b.im}; }
 #endif
 
 EXPORT enum e8 inc_e8(enum e8 v);
@@ -127,12 +144,26 @@ PRINT(enum e8, print_e8, "d")
 PRINT(enum e16, print_e16, "d")
 PRINT(enum e32, print_e32, "d")
 
-#ifdef HAVE_COMPLEX
-EXPORT int print_dc(char* buf, double complex val);
-EXPORT int print_fc(char* buf, float complex val);
-int print_dc(char* buf, double complex val) {return sprintf(buf, "%g+%gi", creal(val), cimag(val));}
-int print_fc(char* buf, float complex val) {return sprintf(buf, "%g+%gi", creal(val), cimag(val));}
-#endif
+
+EXPORT int print_dc(char* buf, double_complex val);
+EXPORT int print_fc(char* buf, float_complex val);
+/*
+static double creal(double_complex a){
+    return *((double*)&a);
+}
+static double cimag(double_complex a){
+    return ((double*)&a)[1];
+}
+static float crealf(float_complex a){
+    return *((float *)&a);
+}
+static float cimagf(float_complex a){
+    return ((float*)&a)[1];
+}
+*/
+int print_dc(char* buf, double_complex val) {return sprintf(buf, "%g+%gi", creal(val), cimag(val));}
+int print_fc(char* buf, float_complex val) {return sprintf(buf, "%g+%gi", crealf(val), cimagf(val));}
+
 
 EXPORT int print_b(char* buf, _Bool val);
 EXPORT int print_b2(char* buf, _Bool val);
@@ -140,7 +171,7 @@ int print_b(char* buf, _Bool val) {return sprintf(buf, "%s", val ? "true" : "fal
 int print_b2(char* buf, _Bool val) {return sprintf(buf, "%s", val ? "true" : "false");}
 
 EXPORT bool (*ret_fp(bool (*val)(bool)))(bool);
-bool (*ret_fp(bool (*val)(bool)))(bool)
+bool (*ret_fp(bool (*val)(bool)))(bool b)
 {return val;}
 
 #define OFFSETOF(STRUCT, MEMBER) ((int) ((char*) &STRUCT.MEMBER - (char*) &S - 1))
@@ -160,13 +191,10 @@ bool (*ret_fp(bool (*val)(bool)))(bool)
         return print_##SUFFIX(buf+off, p->v); \
     }
 
-#ifdef HAVE_COMPLEX
+
 #define COMPLEX_ALIGN(ALIGNMENT, ATTR) \
-    ALIGN_UP(ATTR(double complex), ALIGNMENT, dc) \
-    ALIGN_UP(ATTR(float complex), ALIGNMENT, fc)
-#else
-#define COMPLEX_ALIGN(ALIGNMENT, ATTR)
-#endif
+    ALIGN_UP(ATTR(double_complex), ALIGNMENT, dc) \
+    ALIGN_UP(ATTR(float_complex), ALIGNMENT, fc)
 
 /* MSVC doesn't support __declspec(aligned(#)) on enums see C4329 */
 #define ENUM_ALIGN2(ALIGNMENT, ATTR) \
@@ -230,8 +258,11 @@ ALIGN_NO_ATTR(16)
 #define ATTR4(TYPE) ATTR_(TYPE, 4)
 #define ATTR8(TYPE) ATTR_(TYPE, 8)
 #define ATTR16(TYPE) ATTR_(TYPE, 16)
-
+#if defined __clang__ && (defined __arm__ || defined __ARM__ || defined ARM || defined __ARM || defined __arm)
+#define ATTR_DEF(TYPE) TYPE v __attribute__((aligned(__BIGGEST_ALIGNMENT__)))
+#else
 #define ATTR_DEF(TYPE) TYPE v __attribute__((aligned))
+#endif
 
 ALIGN2(attr_1, ATTR1)
 ALIGN2(attr_2, ATTR2)
@@ -588,10 +619,10 @@ CALL(_Bool, b)
 CALL(enum e8, e8)
 CALL(enum e16, e16)
 CALL(enum e32, e32)
-#ifdef HAVE_COMPLEX
-CALL(double complex, dc)
-CALL(float complex, fc)
-#endif
+
+CALL(double_complex, dc)
+CALL(float_complex, fc)
+
 
 struct fptr {
 #ifdef _MSC_VER
@@ -618,10 +649,9 @@ EXPORT uint32_t g_u32;
 EXPORT uint64_t g_u64;
 EXPORT float g_f;
 EXPORT double g_d;
-#ifdef HAVE_COMPLEX
-EXPORT double complex g_dc;
-EXPORT float complex g_fc;
-#endif
+EXPORT double_complex g_dc;
+EXPORT float_complex g_fc;
+
 EXPORT bool (*g_fp)(bool);
 EXPORT const char g_s[];
 EXPORT const char* g_sp;
@@ -643,8 +673,11 @@ uint64_t g_u64 = 64;
 float g_f = 3;
 double g_d = 5;
 #ifdef HAVE_COMPLEX
-double complex g_dc = 7+8i;
-float complex g_fc = 6+9i;
+double_complex g_dc = 7+8i;
+float_complex g_fc = 6+9i;
+#else
+double_complex g_dc = {7,8};
+float_complex g_fc = {6,9};
 #endif
 bool (*g_fp)(bool) = &not_b;
 void* g_p = (void*) &not_b;
@@ -691,30 +724,65 @@ void test_call_echo(char* c)
 EXPORT void test_call_pppppii(void* a, void* b, void* c, void* d, void* e, int f, int g);
 void test_call_pppppii(void* a, void* b, void* c, void* d, void* e, int f, int g)
 {
-    sprintf(buf, "%p %p %p %p %p %d %d", a, b, c, d, e, f, g);
+    sprintf(buf, "%lu %lu %lu %lu %lu %d %d", (unsigned long)a, (unsigned long)b, (unsigned long)c, (unsigned long)d, (unsigned long)e, f, g);
 }
 
 EXPORT void test_call_pppppiiiiii(void* p1, void* p2, void* p3, void* p4, void* p5, int i1, int i2, int i3, int i4, int i5, int i6);
 void test_call_pppppiiiiii(void* p1, void* p2, void* p3, void* p4, void* p5, int i1, int i2, int i3, int i4, int i5, int i6)
 {
-    sprintf(buf, "%p %p %p %p %p %d %d %d %d %d %d", p1, p2, p3, p4, p5, i1, i2, i3, i4, i5, i6);
+    sprintf(buf, "%lu %lu %lu %lu %lu %d %d %d %d %d %d", (unsigned long)p1, (unsigned long)p2, (unsigned long)p3, (unsigned long)p4, (unsigned long)p5, i1, i2, i3, i4, i5, i6);
 }
 
 EXPORT void test_call_pppppffffff(void* p1, void* p2, void* p3, void* p4, void* p5, float f1, float f2, float f3, float f4, float f5, float f6);
 void test_call_pppppffffff(void* p1, void* p2, void* p3, void* p4, void* p5, float f1, float f2, float f3, float f4, float f5, float f6)
 {
-    sprintf(buf, "%p %p %p %p %p %0.1f %0.1f %0.1f %0.1f %0.1f %0.1f", p1, p2, p3, p4, p5, f1, f2, f3, f4, f5, f6);
+    sprintf(buf, "%lu %lu %lu %lu %lu %0.1f %0.1f %0.1f %0.1f %0.1f %0.1f", (unsigned long)p1, (unsigned long)p2, (unsigned long)p3, (unsigned long)p4, (unsigned long)p5, f1, f2, f3, f4, f5, f6);
 }
 
 EXPORT void test_call_pppppiifiii(void* p1, void* p2, void* p3, void* p4, void* p5, int i1, int i2, float f3, int i4, int i5, int i6);
 void test_call_pppppiifiii(void* p1, void* p2, void* p3, void* p4, void* p5, int i1, int i2, float f3, int i4, int i5, int i6)
 {
-    sprintf(buf, "%p %p %p %p %p %d %d %0.1f %d %d %d", p1, p2, p3, p4, p5, i1, i2, f3, i4, i5, i6);
+    sprintf(buf, "%lu %lu %lu %lu %lu %d %d %0.1f %d %d %d", (unsigned long)p1, (unsigned long)p2, (unsigned long)p3, (unsigned long)p4, (unsigned long)p5, i1, i2, f3, i4, i5, i6);
 }
 
 EXPORT void test_call_pppppiiifii(void* p1, void* p2, void* p3, void* p4, void* p5, int i1, int i2, int i3, float f4, int i5, int i6);
 void test_call_pppppiiifii(void* p1, void* p2, void* p3, void* p4, void* p5, int i1, int i2, int i3, float f4, int i5, int i6)
 {
-    sprintf(buf, "%p %p %p %p %p %d %d %d %0.1f %d %d", p1, p2, p3, p4, p5, i1, i2, i3, f4, i5, i6);
+    sprintf(buf, "%lu %lu %lu %lu %lu %d %d %d %0.1f %d %d", (unsigned long)p1, (unsigned long)p2, (unsigned long)p3, (unsigned long)p4, (unsigned long)p5, i1, i2, i3, f4, i5, i6);
+}
+#define ADD_STRUCT_FUNC(type,count)\
+struct type##count{\
+    type ele[count];\
+};\
+EXPORT struct type##count test_call_##type##count##type##count(struct type##count (*f)(struct type##count),struct type##count p){\
+    return f(p);\
 }
 
+ADD_STRUCT_FUNC(float,1)
+ADD_STRUCT_FUNC(float,2)
+ADD_STRUCT_FUNC(float,3)
+ADD_STRUCT_FUNC(float,4)
+ADD_STRUCT_FUNC(float,5)
+ADD_STRUCT_FUNC(double,1)
+ADD_STRUCT_FUNC(double,2)
+ADD_STRUCT_FUNC(double,3)
+ADD_STRUCT_FUNC(double,4)
+ADD_STRUCT_FUNC(double,5)
+ADD_STRUCT_FUNC(int,1)
+ADD_STRUCT_FUNC(int64_t ,1)
+ADD_STRUCT_FUNC(int64_t ,2)
+ADD_STRUCT_FUNC(int64_t ,3)
+
+EXPORT struct int64_t2 test_call_int64_t2_stack1(
+        struct int64_t2 (*f)(struct int64_t2),int64_t i1,int64_t i2,int64_t i3,int64_t i4,int64_t i5,int64_t i6,struct int64_t2 p){
+    return f(p);
+}
+EXPORT struct double2 test_call_double2_stack1(
+        struct double2 (*f)(struct double2),double d1,double d2,double d3,double d4,double d5,double d6,double d7,struct double2 p){
+    p= f(p);
+    return p;
+}
+EXPORT struct int64_t2 test_call_int64_t2_stack2(
+        struct int64_t2 (*f)(struct int64_t2),int64_t i1,int64_t i2,int64_t i3,int64_t i4,struct int64_t2 p){
+    return f(p);
+}

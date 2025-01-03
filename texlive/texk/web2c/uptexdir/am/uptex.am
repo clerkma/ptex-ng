@@ -1,4 +1,4 @@
-## $Id: uptex.am 72600 2024-10-20 06:53:25Z takuji $
+## $Id: uptex.am 73271 2025-01-02 12:27:29Z takuji $
 ## texk/web2c/uptexdir/am/uptex.am: Makefile fragment for upTeX.
 ##
 ## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
@@ -173,13 +173,15 @@ uptex_tests = \
 	uptexdir/upkcat.test \
 	uptexdir/wcfname.test uptexdir/wcfname0.test \
 	uptexdir/uptex-ofm.test uptexdir/uptex-prim.test \
-	uptexdir/uptex-lmr.test uptexdir/uptex-noto.test
+	uptexdir/uptex-lmr.test uptexdir/uptex-noto.test \
+	uptexdir/uptex-widow.test
 uptexdir/uptriptest.log uptexdir/ptriptest.log: \
 	uptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
 uptexdir/upver.log uptexdir/upkcat.log \
 	uptexdir/wcfname.log uptexdir/wcfname0.log \
 	uptexdir/uptex-ofm.log uptexdir/uptex-prim.log \
-	uptexdir/uptex-lmr.log uptexdir/uptex-noto.log: uptex$(EXEEXT)
+	uptexdir/uptex-lmr.log uptexdir/uptex-noto.log \
+	uptexdir/uptex-widow.log: uptex$(EXEEXT)
 upweb_tests = \
 	uptexdir/upbibtex.test \
 	uptexdir/updvitype.test \
@@ -283,6 +285,9 @@ DISTCLEANFILES += up-lmr*.*
 ## uptexdir/uptex-noto.test
 EXTRA_DIST += uptexdir/tests/noto1.tex uptexdir/tests/up-noto1.log
 DISTCLEANFILES += up-noto*.*
+## uptexdir/uptex-widow.test
+EXTRA_DIST += uptexdir/tests/jchwidow.tex uptexdir/tests/up-jchwidow.log
+DISTCLEANFILES += up-jchwidow.*
 
 uptrip.diffs: uptex$(EXEEXT) dvitype$(EXEEXT) pltotf$(EXEEXT) tftopl$(EXEEXT)
 	$(triptrap_diffs) $@

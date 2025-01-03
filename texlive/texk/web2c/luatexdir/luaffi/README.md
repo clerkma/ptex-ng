@@ -1,36 +1,54 @@
-[![Build Status](https://travis-ci.org/facebook/luaffifb.svg?branch=master)](https://travis-ci.org/facebook/luaffifb)
-
 About
 -----
-This is a library for calling C function and manipulating C types from lua. It
-is designed to be interface compatible with the FFI library in LuaJIT (see
-http://luajit.org/ext_ffi.html). It can parse C function declarations and
-struct definitions that have been directly copied out of C header files and
+This is a library for calling C function and manipulating C types from [Ravi](https://github.com/dibyendumajumdar/ravi). It
+is designed to be interface compatible with the FFI library in [LuaJIT's ffi](http://luajit.org/ext_ffi.html). 
+It can parse C function declarations and struct definitions that have been directly copied out of C header files and
 into lua source as a string.
 
-This is a fork of https://github.com/jmckaskill/luaffi
+This project is a fork of https://github.com/facebook/luaffifb which is a fork of https://github.com/jmckaskill/luaffi.
 
 Source
 ------
-https://github.com/facebook/luaffifb
+https://github.com/dibyendumajumdar/ravi-ffi
 
 Platforms
 ---------
-Currently supported:
-- Linux x86/x64
-- OS X x86/x64
+Currently being developed for:
+- Linux x64 - builds and tests pass
+- OS X x64 - builds and tests pass
+- Windows 10 x64 - builds and tests pass
 
-Runs with Lua 5.1, 5.2, and 5.3
+Ravi and Lua 5.3 are supported. 
 
 Build
 -----
-In a terminal:
+This project requires:
+
+* CMake installation
+* Ravi 5.3 installation
+
+Windows 10
+----------
+* Note that only Visual Studio 2017 is supported. 
+* Note that only x86-64 is supported
+
+In the instructions below, we assume that Ravi was installed under `c:/Software/ravi`.
 
 ```bash
-git clone https://github.com/facebook/luaffifb
-cd luaffifb
-luarocks make
+git clone https://github.com/dibyendumajumdar/ravi-ffi
+cd ravi-ffi
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/Software/Ravi -G "Visual Studio 15 2017 Win64" ..
 ```
+
+Above creates Visual Studio projects which can be used to build and install. Note that the install prefix ensures that the DLL files will be installed under /Software/ravi/bin so that they can be found by the library.
+
+To build for Lua, change above to:
+```
+cmake -DCMAKE_INSTALL_PREFIX=/Software/lua53 -DUSE_LUA53=ON -G "Visual Studio 15 2017 Win64" ..
+```
+This assumes Lua 5.3 installation under `/Software/lua53'.
 
 Documentation
 -------------

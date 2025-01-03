@@ -16,6 +16,9 @@
 % other_kchar=18 {cjk symbol codes}
 % hangul=19 {hangul codes}
 
+\ifnum\jis"2121="3000
+% upTeX, UCS code
+
 % separate in blocks
 \write16{0x00C0::\the\kcatcode"00C0}% U+00C0 "Latin-1 Letters" in Latin-1 Supplement
 \write16{§::\the\kcatcode"00A7}% U+00A7 Latin-1 Supplement
@@ -48,8 +51,6 @@
 \write16{丽::\the\kcatcode"2F800}% U+2F800 CJK Compatibility Ideographs Supplement
 \write16{𰀀::\the\kcatcode"30000}% U+30000 CJK Unified Ideographs Extension G
 \write16{𱍐::\the\kcatcode"31350}% U+31350 CJK Unified Ideographs Extension H
-\write16{逸︀::\the\kcatcode"409038}% U+9038 U+FE00 Standardized Variation Sequence
-\write16{逸󠄀::\the\kcatcode"809038}% U+9038 U+E0100 Ideographic Variation Sequence
 
 % kana=17 {hiragana, katakana}
 \write16{あ::\the\kcatcode"3042}% U+3042 Hiragana
@@ -59,8 +60,6 @@
 \write16{𛀀::\the\kcatcode"1B000}% U+1B000 Kana Supplement
 \write16{𛄀::\the\kcatcode"1B100}% U+1B100 Kana Extended-A
 \write16{𛅐::\the\kcatcode"1B150}% U+1B150 Small Kana Extension
-\write16{あ゙::\the\kcatcode"223042}% U+3042 U+3099 Kana with Voiced Sound Mark
-\write16{か゚::\the\kcatcode"24304B}% U+304B U+309A Kana with Semi-Voiced Sound Mark
 
 % other_kchar=18 {cjk symbol codes}
 \write16{※::\the\kcatcode"203B}% U+203B General Punctuation
@@ -75,9 +74,6 @@
 \write16{〠::\the\kcatcode"3020}% U+3020 CJK Symbols and Punctuation
 \write16{㋐::\the\kcatcode"32D0}% U+32D0 Enclosed CJK Letters and Months
 \write16{㍿::\the\kcatcode"337F}% U+337F CJK Compatibility
-\write16{🇯🇵::\the\kcatcode"25EFF5}% U+1F1EF U+1F1F5 Emoji Flag Sequence
-\write16{👶🏽::\the\kcatcode"2BF476}% U+1F476 U+1F3FD Emoji with Modifier Fitzpatrick
-\write16{0x800030::\the\kcatcode"800030}% U+0030 U+FE0F U+20E3 Emoji Keycap Sequence
 
 % hangul=19 {hangul codes}
 \write16{ᄀ::\the\kcatcode"1100}% U+1100 Hangul Jamo
@@ -93,5 +89,69 @@
 \write16{🏻::\the\kcatcode"1F3FB}% U+1F3FB Emoji Modifier Fitzpatrick
 \write16{︀::\the\kcatcode"FE00}% U+FE00 Variation Selector
 \write16{󠄀::\the\kcatcode"E0100}% U+E0100 Variation Selector
+
+\else
+% pTeX-compatible, EUC / Shift_JIS code, 1..94ku
+
+\write16{1区::\the\expandafter\kcatcode\jis"2121}
+\write16{2区::\the\expandafter\kcatcode\jis"2221}
+\write16{3区::\the\expandafter\kcatcode\jis"2321}
+\write16{4区::\the\expandafter\kcatcode\jis"2421}
+\write16{5区::\the\expandafter\kcatcode\jis"2521}
+\write16{6区::\the\expandafter\kcatcode\jis"2621}
+\write16{7区::\the\expandafter\kcatcode\jis"2721}
+\write16{8区::\the\expandafter\kcatcode\jis"2821}
+\write16{9区::\the\expandafter\kcatcode\jis"2921}
+\write16{10区::\the\expandafter\kcatcode\jis"2A21}
+\write16{11区::\the\expandafter\kcatcode\jis"2B21}
+\write16{12区::\the\expandafter\kcatcode\jis"2C21}
+\write16{13区::\the\expandafter\kcatcode\jis"2D21}
+\write16{14区::\the\expandafter\kcatcode\jis"2E21}
+\write16{15区::\the\expandafter\kcatcode\jis"2F21}
+\write16{16区::\the\expandafter\kcatcode\jis"3021}
+\write16{17区::\the\expandafter\kcatcode\jis"3121}
+\write16{18区::\the\expandafter\kcatcode\jis"3221}
+\write16{19区::\the\expandafter\kcatcode\jis"3321}
+\write16{20区::\the\expandafter\kcatcode\jis"3421}
+\write16{21区::\the\expandafter\kcatcode\jis"3521}
+\write16{22区::\the\expandafter\kcatcode\jis"3621}
+\write16{23区::\the\expandafter\kcatcode\jis"3721}
+\write16{24区::\the\expandafter\kcatcode\jis"3821}
+\write16{80区::\the\expandafter\kcatcode\jis"7021}
+\write16{81区::\the\expandafter\kcatcode\jis"7121}
+\write16{82区::\the\expandafter\kcatcode\jis"7221}
+\write16{83区::\the\expandafter\kcatcode\jis"7321}
+\write16{84区::\the\expandafter\kcatcode\jis"7421}
+\write16{90区::\the\expandafter\kcatcode\jis"7A21}
+\write16{91区::\the\expandafter\kcatcode\jis"7B21}
+\write16{92区::\the\expandafter\kcatcode\jis"7C21}
+\write16{93区::\the\expandafter\kcatcode\jis"7D21}
+\write16{94区::\the\expandafter\kcatcode\jis"7E21}
+\ifnum\jis"2121="8140
+% extended Shift_JIS code, 95..120ku
+\write16{95区(ext)::\the\expandafter\kcatcode\sjis"F040}
+\write16{96区(ext)::\the\expandafter\kcatcode\sjis"F09F}
+\write16{97区(ext)::\the\expandafter\kcatcode\sjis"F140}
+\write16{98区(ext)::\the\expandafter\kcatcode\sjis"F19F}
+\write16{117区(ext)::\the\expandafter\kcatcode\sjis"FB40}
+\write16{118区(ext)::\the\expandafter\kcatcode\sjis"FB9F}
+\write16{119区(ext)::\the\expandafter\kcatcode\sjis"FC40}
+\write16{120区(ext)::\the\expandafter\kcatcode\sjis"FC9F}
+\fi
+\fi
+
+% upTeX internal encoding
+
+\write16{0x110000::\the\kcatcode"110000}% japanese-otf-uptex
+\write16{0x120000::\the\kcatcode"120000}% japanese-otf-uptex
+\write16{0x130000::\the\kcatcode"130000}% japanese-otf-uptex
+\write16{0x140000::\the\kcatcode"140000}% japanese-otf-uptex
+\write16{あ゙::\the\kcatcode"223042}% U+3042 U+3099 Kana with Voiced Sound Mark
+\write16{か゚::\the\kcatcode"24304B}% U+304B U+309A Kana with Semi-Voiced Sound Mark
+\write16{🇯🇵::\the\kcatcode"25EFF5}% U+1F1EF U+1F1F5 Emoji Flag Sequence
+\write16{👶🏽::\the\kcatcode"2BF476}% U+1F476 U+1F3FD Emoji with Modifier Fitzpatrick
+\write16{0x800030::\the\kcatcode"800030}% U+0030 U+FE0F U+20E3 Emoji Keycap Sequence
+\write16{逸︀::\the\kcatcode"409038}% U+9038 U+FE00 Standardized Variation Sequence
+\write16{逸󠄀::\the\kcatcode"809038}% U+9038 U+E0100 Ideographic Variation Sequence
 
 \relax\end

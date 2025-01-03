@@ -1,7 +1,11 @@
+2025-01-01 Luigi Scarso <luigi.scarso@gmail.com>
+	* New luaffi, support for aarch64.
+	* LuaTeX 1.20.0
+
+
 2024-12-30 Luigi Scarso <luigi.scarso@gmail.com>
 	* Increment tally in tprint also when doterm is true (thanks to user202729@protonmail.com).
 	* LuaTeX 1.19.4
-
 
 
 2024-12-30 Luigi Scarso <luigi.scarso@gmail.com>

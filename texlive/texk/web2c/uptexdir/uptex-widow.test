@@ -1,0 +1,32 @@
+#! /bin/sh -vx
+# Copyright 2025 Japanese TeX Development Community <issue@texjp.org>
+# You may freely use, modify and/or distribute this file.
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_uptex=$BinDir/uptex$ExeExt
+
+LC_ALL=C; export LC_ALL;  LANGUAGE=C; export LANGUAGE
+
+TEXMFCNF=$srcdir/../kpathsea;export TEXMFCNF
+TEXINPUTS=".;$srcdir/tests"; export TEXINPUTS
+TEXFONTS=".;$srcdir//tests"; export TEXFONTS
+TEXFORMATS=.; export TEXFORMATS
+
+# get same filename in log
+rm -f up-jchwidow.*
+$LN_S $srcdir/uptexdir/tests/jchwidow.tex ./up-jchwidow.tex
+
+if test ! -f ./up-basic.tex; then
+  cp $srcdir/tests/dump-basic.tex ./up-basic.tex
+fi
+if test ! -f ./up-basic.fmt; then
+  $_uptex -ini up-basic || exit 1
+fi
+
+$_uptex -fmt=up-basic -interaction=batchmode up-jchwidow || :
+
+sed 1d up-jchwidow.log >up-jchwidow.out
+
+diff $srcdir/uptexdir/tests/up-jchwidow.log up-jchwidow.out || exit 3
+
