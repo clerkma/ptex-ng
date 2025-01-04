@@ -3,6 +3,8 @@
 	* kanji.c, uptex-m.ch:
 	Accept extended upTeX internal encoding also in internal
 	encoding EUC/SJIS (pTeX-compatible mode).
+	Set default kcatcode for japanese-otf-uptex macros
+	to 16 (kanji).
 	* upkcat.test, tests/kcat.tex, tests/upkcat{,-{e,s}}.txt:
 	Update tests.
 	* uptex-widow.test, tests/jchwidow.tex, tests/up-jchwidow.log,
