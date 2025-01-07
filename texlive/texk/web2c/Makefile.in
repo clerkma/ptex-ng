@@ -21823,7 +21823,7 @@ mfluajittrap.diffs: mfluajit$(EXEEXT) gftype$(EXEEXT) tftopl$(EXEEXT)
 mfluajittrap-clean:
 	rm -rf mfluajittrapdir
 
-$(libmfluajitlpeg_a_OBJECTS): $(LUA_DEPEND)
+$(libmfluajitlpeg_a_OBJECTS): $(LUAJIT_DEPEND)
 
 .PHONY: install-mpost-links uninstall-mpost-links
 @WIN32_TRUE@install-mpost-links: call_mpost$(EXEEXT)

@@ -1,3 +1,9 @@
+2025-01-06  J. Neuschaefer <j.neuschaefer@gmx.net>
+
+	* am/mfluajitlpeg.am (libmfluajitlpeg_a_OBJECTS): $(LUAJIT_DEPEND)
+	not $(LUA_DEPEND).
+	https://tug.org/pipermail/tex-live/2025-January/051035.html
+
 2024-03-10  Karl Berry  <karl@tug.org>
 
 	* TL'24 release.
