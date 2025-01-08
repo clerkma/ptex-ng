@@ -4,7 +4,7 @@
 
 ----------------------------------------------------------------------------
 
-    Copyright (C) 2005-2023 Marc Penninga.
+    Copyright (C) 2005-2025 Marc Penninga.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@ use Getopt::Long ();
 use Pod::Usage ();
 use POSIX ();
 
-my $VERSION = '20231230';
+my $VERSION = '20250107';
 
 my ($d, $m, $y) = (localtime time)[3 .. 5];
 my $TODAY = sprintf "%04d/%02d/%02d", $y + 1900, $m + 1, $d;
@@ -168,7 +168,6 @@ my %FULL_FORM = (
     comp    =>  'compressed',
     cond    =>  'condensed',
     demi    =>  'demibold',
-    exp     =>  'expanded',
     extcond =>  'extracondensed',
     hair    =>  'hairline',
     incline =>  'inclined',
@@ -285,7 +284,7 @@ my @WIDTH = (
     c   =>  [ qw( condensed ) ],
     sc  =>  [ qw( semicondensed narrow ) ],
     ''  =>  [ qw( regular ) ],
-    sx  =>  [ qw( semiextended semiexpanded wide ) ],
+    sx  =>  [ qw( semiextended semiexpanded wide) ],
     x   =>  [ qw( extended expanded ) ],
     ex  =>  [],
     ux  =>  [],
@@ -317,6 +316,57 @@ for my $code (@WIDTH) {
 
 my @allwidths = grep { $_ ne 'regular' } map { @{$_} } values %WIDTH;
 @allwidths = Util::sort_desc_length(@allwidths);
+
+
+=begin Comment
+
+    The next two tables, DEFAULT_WEIGHT and DEFAULT_WIDTH, map
+    weight_class and width_class indicators (from a font's OS/2 table)
+    to default weight and width names. We use these names as a last resort
+    if font metadata parsing fails.
+
+    The mapping from weight_class and width_class to weight or width names
+    is taken from the OpenType specification (see 5.2.8.3 and 5.2.8.4).
+
+=end Comment
+
+=cut
+
+my %DEFAULT_WEIGHT = (
+    100 =>  'thin',
+    200 =>  'extralight',
+    300 =>  'light',
+    400 =>  'regular',
+    500 =>  'medium',
+    600 =>  'semibold',
+    700 =>  'bold',
+    800 =>  'extrabold',
+    900 =>  'black',
+);
+
+sub get_default_weight {
+    my $weight_class = shift;
+
+    return $DEFAULT_WEIGHT{$weight_class};
+}
+
+my %DEFAULT_WIDTH = (
+    1   =>  'ultracondensed',
+    2   =>  'extracondensed',
+    3   =>  'condensed',
+    4   =>  'semicondensed',
+    5   =>  'regular',
+    6   =>  'semiexpanded',
+    7   =>  'expanded',
+    8   =>  'extraexpanded',
+    9   =>  'ultraexpanded',
+);
+
+sub get_default_width {
+    my $width_class = shift;
+
+    return $DEFAULT_WIDTH{$width_class};
+}
 
 
 =begin Comment
@@ -530,6 +580,22 @@ sub map_nfss_codes {
         $from_nfss->{width}{$nfsswidth} = [];
     }
 
+    # Warn if we (still) don't have a regular weight or width
+    if (!@{$from_nfss->{weight}{''}}) {
+        warn <<"END_NO_REGULAR_WEIGHT";
+[WARNING]   I could not find a 'Regular' weight;
+            consider using the '-nfssweight=m=...' option
+            (see the documentation).
+END_NO_REGULAR_WEIGHT
+    }
+    if (!@{$from_nfss->{width}{''}}) {
+        warn <<"END_NO_REGULAR_WIDTH";
+[WARNING]   I could not find a 'Regular' width;
+            consider using the '-nfsswidth=m=...' option
+            (see the documentation).
+END_NO_REGULAR_WIDTH
+    }
+
     # Reverse the %from_nfss mapping to get %to_nfss
     my %to_nfss;
     NFSSWEIGHT:
@@ -592,9 +658,9 @@ sub parse {
 
     my $metadata = _get_metadata($filename);
 
+    $self->_get_missing_metadata($filename);
+
     $self->_parse_metadata($metadata)
-         ->_parse_cffdata()
-         ->_parse_os2data()
          ->_parse_featuredata()
          ->_parse_sizedata()
          ->_parse_nfss_classification()
@@ -623,6 +689,87 @@ sub _get_metadata {
         or die "[ERROR]     '$cmd' failed";
 
     return \%data;
+}
+
+
+# --------------------------------------------------------------------------
+#   Get some missing metadata from the font file.
+#
+#   otfinfo doesn't extract all the metadata we need, so we parse some of
+#   the raw tables from the font file ourselves to get the missing metadata.
+# --------------------------------------------------------------------------
+sub _get_missing_metadata {
+    my ($self, $filename) = @_;
+
+    my $tables;
+    eval {
+        my $cmd = qq(otfinfo --tables "$filename");
+        open my $otfinfo, '-|:raw', $cmd
+            or die "could not fork(): $!";
+        $tables = do { local $/; <$otfinfo> };
+        close $otfinfo
+            or die "'$cmd' failed";
+    } or warn "[WARNING]   $@";
+
+    # We need the cff_name because cfftot1 uses that instead of
+    # the font's PostScript name.
+    $self->{cff_name} = '';
+    if (index($tables, 'CFF') > -1) {
+        my $cff_table;
+        eval {
+            my $cmd = qq(otfinfo --dump-table "CFF" "$filename");
+            open my $otfinfo, '-|:raw', $cmd
+                or die "could not fork(): $!";
+            $cff_table = do { local $/; <$otfinfo> };
+            close $otfinfo
+                or die "'$cmd' failed";
+        } or warn "[WARNING]   $@";
+
+        my ($name_index) = unpack '@8C/Z', $cff_table;
+
+        $self->{cff_name} = $name_index;
+    }
+
+    # WeightClass and WidthClass contain (numerical) indications
+    # of the font's weight and width
+    $self->{weight_class} = 400;
+    $self->{width_class}  = 5;
+    if (index($tables, 'OS/2') > -1) {
+        my $os2_table;
+        eval {
+            my $cmd = qq(otfinfo --dump-table "OS/2" "$filename");
+            open my $otfinfo, '-|:raw', $cmd
+                or die "could not fork(): $!";
+            $os2_table = do { local $/; <$otfinfo> };
+            close $otfinfo
+                or die "'$cmd' failed";
+        } or warn "[WARNING]   $@";
+
+        my ($weight_class, $width_class) = unpack '@4n @6n', $os2_table;
+
+        $self->{weight_class} = $weight_class;
+        $self->{width_class}  = $width_class;
+    }
+
+    # isFixedPitch does (or at least should) indicate whether
+    # the font is fixed-pitch (i.e., monospaced).
+    if (index($tables, 'post') > -1) {
+        my $post_table;
+        eval {
+            my $cmd = qq(otfinfo --dump-table "post" "$self->{filename}");
+            open my $otfinfo, '-|:raw', $cmd
+                or die "could not fork(): $!";
+            $post_table = do { local $/; <$otfinfo> };
+            close $otfinfo
+                or die "'$cmd' failed";
+        } or warn "[WARNING]   $@";
+
+        my $is_fixed_pitch = unpack '@12N', $post_table;
+
+        $self->{is_fixed_pitch} = $is_fixed_pitch;
+    }
+
+    return $self;
 }
 
 
@@ -662,11 +809,18 @@ END_ERR_METADATA_MISSING
         $data->{subfamily} =~ s/\A (?: ST | T | SD | D)//xms;
     }
 
-    # move Adobe's optical size from family to subfamily
-    for my $optical (qw(Caption SmText SmallText Subhead Display)) {
-        if ($data->{family} =~ s/$optical\z//xms) {
-            $data->{subfamily} .= $optical;
-            last;
+    # Adobe's Source Serif 4 family name contains the name of the optical master;
+    # we don't want this, as all these fonts should be part of the same family,
+    # with different values for the optical size range.
+    # We therefore move the optical master name from the family to the subfamily.
+    # We don't discard this information entirely, since we need it later on
+    # in _parse_sizedata().
+    if ($data->{family} =~ m/SourceSerifFour/xmsi) {
+        for my $optical (qw(Caption SmText SmallText Subhead Display)) {
+            if ($data->{family} =~ s/$optical\z//xms) {
+                $data->{subfamily} .= $optical;
+                last;
+            }
         }
     }
 
@@ -802,6 +956,31 @@ END_ERR_METADATA_MISSING
 
     $self->{basicshape} = Attr::to_nfss($self->{shape});
 
+    # Work around a bug(?) in League Mono: the Regular width has
+    # a WidthClass of 6 instead of 5; that would cause our test below
+    # to (mis)classify it as SemiCondensed.
+    if ($self->{family} eq 'LeagueMono'
+            and $self->{width} eq 'regular'
+            and $self->{width_class} == 6) {
+        $self->{width_class} = 5;
+    }
+
+    # A last-resort approach: if we couldn't parse weight or width,
+    # we use the WeightClass and WidthClass indicators to derive
+    # a default value for weight or width.
+    # The reason we only use this as a last resort is that some fonts
+    # contain non-standard or otherwise non-meaningful values
+    # for these indicators.
+    if ($self->{weight} eq 'regular'
+            and $self->{weight_class} != 400) {
+        $self->{weight} = Attr::get_default_weight($self->{weight_class}) // 'regular';
+    }
+
+    if ($self->{width} eq 'regular'
+            and $self->{width_class} != 5) {
+        $self->{width} = Attr::get_default_width($self->{width_class}) // 'regular';
+    }
+
     # We define 'series' as 'weight + width'. This matches NFSS,
     # but contradicts how most fonts are named (which is 'width + weight').
     $self->{series}
@@ -810,71 +989,7 @@ END_ERR_METADATA_MISSING
         :                                  $self->{weight} . $self->{width}
         ;
 
-    return $self;
-}
-
-
-# --------------------------------------------------------------------------
-#   Reads the 'Name INDEX' entry from the CFF table, if that exists.
-#
-#   We need this entry only because cfftot1 uses it instead of
-# --------------------------------------------------------------------------
-sub _parse_cffdata {
-    my $self = shift;
-
-    my $tables;
-    eval {
-        my $cmd = qq(otfinfo --tables "$self->{filename}");
-        open my $otfinfo, '-|:raw', $cmd
-            or die "could not fork(): $!";
-        $tables = do { local $/; <$otfinfo> };
-        close $otfinfo
-            or die "'$cmd' failed";
-    } or warn "[WARNING]   $@";
-
-    if (index($tables, 'CFF') == -1) {
-        $self->{cff_name} = $self->{name};
-        return $self;
-    }
-
-    my $cff_table;
-    eval {
-        my $cmd = qq(otfinfo --dump-table "CFF" "$self->{filename}");
-        open my $otfinfo, '-|:raw', $cmd
-            or die "could not fork(): $!";
-        $cff_table = do { local $/; <$otfinfo> };
-        close $otfinfo
-            or die "'$cmd' failed";
-    } or warn "[WARNING]   $@";
-
-    my ($name_index) = unpack '@8C/Z', $cff_table;
-
-    $self->{cff_name} = $name_index;
-
-    return $self;
-}
-
-
-# --------------------------------------------------------------------------
-#   Parses usWeightClass and usWidthClass from the OS/2 table.
-# --------------------------------------------------------------------------
-sub _parse_os2data {
-    my $self = shift;
-
-    my $os2_table;
-    eval {
-        my $cmd = qq(otfinfo --dump-table "OS/2" "$self->{filename}");
-        open my $otfinfo, '-|:raw', $cmd
-            or die "could not fork(): $!";
-        $os2_table = do { local $/; <$otfinfo> };
-        close $otfinfo
-            or die "'$cmd' failed";
-    } or warn "[WARNING]   $@";
-
-    my ($weight_class, $width_class) = unpack '@4n @6n', $os2_table;
-
-    $self->{weight_class} = $weight_class;
-    $self->{width_class}  = $width_class;
+    $self->{cff_name} ||= $self->{name};
 
     return $self;
 }
@@ -952,6 +1067,10 @@ sub _parse_sizedata {
         && $minsize == 8.9 && $maxsize == 13.9) {
         ($minsize, $maxsize) = (23, 72);
     }
+    # Adobe's Source Serif 4 follows the latest version of the OpenType
+    # spec and keeps its optical size info in the STAT (Style Attributes)
+    # table rather than in the OS/2 table. This isn't (yet?) supported
+    # by otfinfo, so we add the missing size info here.
     elsif ($self->{family} eq 'SourceSerifFour'
         && $minsize == 0 && $maxsize == 0) {
         if ($self->{subfamily} eq 'Caption') {
@@ -986,23 +1105,11 @@ sub _parse_sizedata {
 sub _parse_nfss_classification {
     my $self = shift;
 
-    my $classification;
-    eval {
-        my $cmd = qq(otfinfo --dump-table "post" "$self->{filename}");
-        open my $otfinfo, '-|:raw', $cmd
-            or die "could not fork(): $!";
-        my $post_table = do { local $/; <$otfinfo> };
-        close $otfinfo
-            or die "'$cmd' failed";
-
-        my $is_fixed_pitch = unpack '@12N', $post_table;
-
-        $self->{nfss} = $is_fixed_pitch                          ? 'tt'
-                      : $self->{filename} =~ m/mono(?!type)/xmsi ? 'tt'
-                      : $self->{filename} =~ m/sans/xmsi         ? 'sf'
-                      :                                            'rm'
-                      ;
-    } or warn "[WARNING]   $@";
+    $self->{nfss} = $self->{is_fixed_pitch}                     ? 'tt'
+                    : $self->{filename} =~ m/mono(?!type)/xmsi  ? 'tt'
+                    : $self->{filename} =~ m/sans/xmsi          ? 'sf'
+                    :                                             'rm'
+                    ;
 
     return $self;
 }
@@ -4279,7 +4386,7 @@ don't paraphase.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005-2023 Marc Penninga.
+Copyright (C) 2005-2025 Marc Penninga.
 
 
 =head1 LICENSE
@@ -4302,7 +4409,7 @@ GNU General Public License for more details.
 
 =head1 VERSION
 
-This document describes B<autoinst> version 20231230.
+This document describes B<autoinst> version 20250107.
 
 
 =head1 RECENT CHANGES
@@ -4310,6 +4417,22 @@ This document describes B<autoinst> version 20231230.
 (See the source for the full story, all the way back to 2005.)
 
 =over 12
+
+=item I<2025-01-07>
+
+The 'fix' in font metadata parsing that we introduced
+for Source Serif 4 was biting Libertinus Serif Display
+(and maybe other fonts as well),
+so we now test if the family is actually Source Serif 4
+before applying that fix.
+
+=item I<2024-01-04>
+
+We take a more generic approach to font metadata parsing;
+this should work better for fonts with unusually named weights
+or widths.
+We now also warn in font metadata parsing could not find
+a 'Regular' weight or width.
 
 =item I<2023-12-30>
 

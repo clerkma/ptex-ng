@@ -1,6 +1,6 @@
 #!/usr/bin/env wish
 
-# Copyright 2017-2024 Siep Kroonenberg
+# Copyright 2017-2025 Siep Kroonenberg
 
 # This file is licensed under the GNU General Public License version 2
 # or any later version.
@@ -873,7 +873,7 @@ proc splash_loading {} {
   wm title .loading [__ "Loading"]
 
   # wallpaper
-  pack [ttk::frame .loading.bg -padding 3pt] -fill both -expand 1
+  pack [ttk::frame .loading.bg -padding 3p] -fill both -expand 1
 
   set lbl [__ \
        "If loading takes too long, press Abort and choose another repository."]
@@ -1357,10 +1357,10 @@ proc repository_dialog {} {
   ### add/remove tlcontrib ###
   ttk::label .tlr.contribt -text [__ "tlcontrib additional repository"] \
       -font bfont
-  pack .tlr.contribt -in .tlr.bg -anchor w -padx 3pt -pady [list 10pt 3pt]
-  pack [ttk::label .tlr.contribl] -in .tlr.bg -anchor w -padx 3pt -pady 3pt
+  pack .tlr.contribt -in .tlr.bg -anchor w -padx 3p -pady [list 10p 3p]
+  pack [ttk::label .tlr.contribl] -in .tlr.bg -anchor w -padx 3p -pady 3p
   ttk::checkbutton .tlr.contribb -variable ::toggle_contrib
-  pack .tlr.contribb -in .tlr.bg -anchor w -padx 3pt -pady [list 3pt 10pt]
+  pack .tlr.contribb -in .tlr.bg -anchor w -padx 3p -pady [list 3p 10p]
   set ::toggle_contrib 0
   set has_contrib 0
   foreach nm [array names ::repos] {
@@ -1379,7 +1379,7 @@ proc repository_dialog {} {
   }
 
   # two ways to close the dialog
-  pack [ttk::frame .tlr.closebuttons] -pady [list 10pt 0pt] -in .tlr.bg -fill x
+  pack [ttk::frame .tlr.closebuttons] -pady [list 10p 0p] -in .tlr.bg -fill x
   ttk::button .tlr.save -text [__ "Save and Load"] -command save_load_repo
   ppack .tlr.save -in .tlr.closebuttons -side right
   dis_enable_reposave
@@ -2787,7 +2787,7 @@ proc populate_main {} {
   # with the default ttk::frame color, which seems to work
   # everywhere.
   pack [ttk::frame .bg] -expand 1 -fill both
-  .bg configure -padding 5pt
+  .bg configure -padding 5p
 
   # bottom of main window
   pack [ttk::frame .endbuttons] -in .bg -side bottom -fill x
@@ -2820,7 +2820,7 @@ proc populate_main {} {
   pack [ttk::frame .toprepo] -in .topfl -side top -anchor w
 
   # various info (left frame)
-  pack [ttk::frame .topfll] -in .topfl -side top -anchor nw -pady {6pt 0pt}
+  pack [ttk::frame .topfll] -in .topfl -side top -anchor nw -pady {6p 0p}
   ttk::label .topfll.lluptodate -text [__ "TL Manager up to date?"] -anchor w
   pgrid .topfll.lluptodate -row 2 -column 0 -sticky w
   ttk::label .topfll.luptodate -text [__ "Unknown"] -anchor w
@@ -2844,7 +2844,7 @@ proc populate_main {} {
   pack [ttk::label .topfr.lshell] -side top -anchor e
 
   pack [ttk::separator .sp -orient horizontal] \
-      -in .bg -side top -fill x -pady 3pt
+      -in .bg -side top -fill x -pady 3p
 
   # controls frame, between info frame and package list
   pack [ttk::frame .middle] -in .bg -side top -fill x
@@ -2854,17 +2854,17 @@ proc populate_main {} {
   # package list display options
   ttk::label .lpack -text [string toupper [__ "Package list"]] \
       -font hfont
-  pack .lpack -in .pkcontrol -side top -padx 3pt -pady {6pt 6pt} -anchor w
+  pack .lpack -in .pkcontrol -side top -padx 3p -pady {6p 6p} -anchor w
 
-  pack [ttk::frame .pkfilter -relief groove -borderwidth 2 -padding 3pt] \
+  pack [ttk::frame .pkfilter -relief groove -borderwidth 2 -padding 3p] \
     -in .pkcontrol -side top -anchor nw
   # on my current linux, groove works only with a dimensionless borderwidth
 
   # separator columns
-  grid columnconfigure .pkfilter 1 -minsize 20pt
+  grid columnconfigure .pkfilter 1 -minsize 20p
   grid [ttk::separator .pkfilter.sep1 -orient vertical] \
     -column 1 -row 0 -rowspan 5 -sticky ns
-  grid columnconfigure .pkfilter 3 -minsize 20pt
+  grid columnconfigure .pkfilter 3 -minsize 20p
   grid [ttk::separator .pkfilter.sep3 -orient vertical] \
     -column 3 -row 0 -rowspan 5 -sticky ns
 
@@ -2887,7 +2887,7 @@ proc populate_main {} {
         if {! $::have_remote} get_packages_info_remote
         collect_and_display_filtered
       }
-  grid  .pkfilter.lstat  -column 0 -row 0 -sticky w -padx {3pt 50pt}
+  grid  .pkfilter.lstat  -column 0 -row 0 -sticky w -padx {3p 50p}
   pgrid .pkfilter.inst   -column 0 -row 1 -sticky w
   pgrid .pkfilter.notins -column 0 -row 2 -sticky w
   pgrid .pkfilter.alls   -column 0 -row 3 -sticky w
@@ -2947,14 +2947,14 @@ proc populate_main {} {
 
   # marking all/none
   pack [ttk::frame .pksel] \
-      -in .bg -pady 6pt -side top -fill x
+      -in .bg -pady 6p -side top -fill x
   pack [ttk::button .mrk_all -text [__ "Mark all displayed"] \
        -command mark_displayed] -in .pksel -side left
   pack [ttk::button .mrk_none -text [__ "Mark none"] -command unmark_all] \
-      -in .pksel -padx 6pt -side left
+      -in .pksel -padx 6p -side left
   ttk::label .binwarn \
     -text [__ "Only packages for installed platforms are displayed"]
-  pack .binwarn -in .pksel -padx 3pt -side right -anchor s
+  pack .binwarn -in .pksel -padx 3p -side right -anchor s
 
   # packages list itself
   pack [ttk::frame .fpkg] -in .bg -side top -fill both -expand 1
