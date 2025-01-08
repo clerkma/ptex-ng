@@ -1,5 +1,5 @@
-Changes applied to the libpng-1.6.44/ tree as obtained from:
-	https://sourceforge.net/projects/libpng/files/libpng16/1.6.44/
+Changes applied to the libpng-1.6.45/ tree as obtained from:
+	https://sourceforge.net/projects/libpng/files/libpng16/1.6.45/
 
 Copied:
 	scripts/pnglibconf.h.prebuilt -> pnglibconf.h
@@ -7,7 +7,9 @@ Copied:
 Removed:
 	.github (dir)
 	.appveyor.yml
+	.cmake-format.yaml
 	.editorconfig
+	.editorconfig-checker.json
 	.gitignore
 	.travis.yml
 	.yamllint.yml
