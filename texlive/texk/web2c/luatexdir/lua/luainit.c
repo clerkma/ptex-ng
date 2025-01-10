@@ -69,7 +69,7 @@ const_string LUATEX_IHELP[] = {
     "",
     "  The following regular options are understood: ",
     "",
-    "   --cnf-line =STRING            parse STRING as a configuration file line",
+    "   --cnf-line=STRING             parse STRING as a configuration file line",
     "   --credits                     display credits and exit",
     "   --debug-format                enable format debugging",
     "   --draftmode                   switch on draft mode (generates no output PDF)",

@@ -1,4 +1,8 @@
 2025-01-04 Luigi Scarso <luigi.scarso@gmail.com>
+	* replaced # error with # define UNSUPPORTED_ARCH in ffi.[ch]
+	* LuaTeX 1.20.3
+
+2025-01-04 Luigi Scarso <luigi.scarso@gmail.com>
 	* ffi.h: do not assume that struct cdata is aligned(16). 
 	* More fixes for luaffi.
 	* LuaTeX 1.20.2
