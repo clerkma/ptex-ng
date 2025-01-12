@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# $Id: ctwill-proofsort 69852 2024-02-14 08:19:45Z ascherer $
+# $Id: ctwill-proofsort 73408 2025-01-11 11:42:54Z ascherer $
 # Public domain.  Originally written by Andreas Scherer, 2023.
 
 use strict;
@@ -39,7 +39,7 @@ sub help_handler {
 }
 ## version()
 sub version {
-  return $progname.' $Revision: 69852 $ $Date: 2024-02-14 16:19:45 +0800 (Wed, 14 Feb 2024) $'."\n";
+  return $progname.' $Revision: 73408 $ $Date: 2025-01-11 19:42:54 +0800 (Sat, 11 Jan 2025) $'."\n";
 }
 
 # Read input from the console and look for blocks like
@@ -61,10 +61,14 @@ foreach my $line (<STDIN>)
 		$print_index = 1;
 		%mini_index = (); # reset mini-index storage
 	} elsif ("}\\FI\n" eq $line) { # end of mini-index
-		foreach my $key ($collator ?
+		foreach my $key ($collator ?  # (I) sort by second column
 			$collator->sort(keys %mini_index) :
 			sort {"\L$a" cmp "\L$b"} keys %mini_index) {
-			print $mini_index{$key};
+			print sort { # (II) sort by third and first column
+				my ($a_loc,undef,$a_id) = split / /, $a, 3;
+				my ($b_loc,undef,$b_id) = split / /, $b, 3;
+				$a_id cmp $b_id || $a_loc cmp $b_loc }
+			@{ $mini_index{$key} };
 		}
 		$print_index = 0;
 	} elsif ($print_index) { # mini-index entry
@@ -72,7 +76,7 @@ foreach my $line (<STDIN>)
 		$key =~ s/\\//g; # strip internal TeX escape(s)
 		$key =~ m/\w*\{(\w+)\}/; # extract plain key from control seq.
 		$key =~ m/\$(\w+)\$/ unless defined $1; # extract @f TeX key
-		$mini_index{$1} = $line; # store index entry
+		push @{ $mini_index{$1} }, $line; # store index entry
 		next; # print later
 	}
 
