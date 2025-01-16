@@ -1,6 +1,6 @@
-# $Id: kpse-pkgs.m4 69664 2024-02-01 22:56:12Z karl $
+# $Id: kpse-pkgs.m4 73471 2025-01-15 22:51:07Z karl $
 # Private Autoconf macros for the TeX Live (TL) tree.
-# Copyright 2016-2024 Karl Berry <tex-live@tug.org>
+# Copyright 2016-2025 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 #
 # This file is free software; the copyright holder
@@ -77,6 +77,7 @@ AC_REQUIRE([KPSE_GRAPHITE2_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_TECKIT_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_ICU_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_HARFBUZZ_SYSTEM_FLAGS])[]dnl
+AC_REQUIRE([KPSE_LUAJIT_SYSTEM_FLAGS])[]dnl
 ]) # KPSE_ALL_SYSTEM_FLAGS
 
 # KPSE_UTILS_PKGS()
