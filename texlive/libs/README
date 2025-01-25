@@ -1,4 +1,4 @@
-$Id: README 73427 2025-01-11 23:22:13Z kakuto $
+$Id: README 73588 2025-01-25 02:34:51Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -37,7 +37,7 @@ icu 76.1 - checked 27oct24 (requires C++17, e.g., g++13)
 libpaper 1.1.29 - checked 07jan24
   https://ftp.debian.org/debian/pool/main/libp/libpaper/
 
-libpng 1.6.45 - checked 08jan25
+libpng 1.6.46 - checked 25jan25
   https://sourceforge.net/projects/libpng/files/ - used by many
 
 lua 5.2.4
