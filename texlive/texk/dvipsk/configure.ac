@@ -1,14 +1,14 @@
-dnl $Id: configure.ac 69711 2024-02-05 17:23:27Z karl $
+dnl $Id: configure.ac 73591 2025-01-25 18:41:15Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl   Copyright 2016-2024 Karl Berry <tex-live@tug.org>
+dnl   Copyright 2016-2025 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
 dnl   This file is free software; the copyright holder
 dnl   gives unlimited permission to copy and/or distribute it,
 dnl   with or without modifications, as long as this notice is preserved.
 dnl
-AC_INIT([dvipsk (TeX Live)], [2024.1], [tex-k@tug.org])
+AC_INIT([dvipsk (TeX Live)], [2025.1], [tex-k@tug.org])
 AC_PREREQ([2.65])
 AC_CONFIG_SRCDIR([dvips.c])
 AC_CONFIG_AUX_DIR([../../build-aux])
