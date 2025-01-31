@@ -1,7 +1,7 @@
-## $Id: uptex.am 73540 2025-01-21 15:14:18Z karl $
+## $Id: uptex.am 73613 2025-01-27 22:01:50Z karl $
 ## texk/web2c/uptexdir/am/uptex.am: Makefile fragment for upTeX.
 ##
-## Copyright 2016-2024 Karl Berry <tex-live@tug.org>
+## Copyright 2016-2025 Karl Berry <tex-live@tug.org>
 ## Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 
@@ -49,7 +49,7 @@ uptex-web2c: uptex.p $(web2c_texmf) uptexdir/uptex.defines
 	@$(web2c) uptex
 
 uptex-pool.c: uptex.pool uptexd.h $(makecpool_stamp)
-	$(makecpool) uptex >$@ || rm -f $@
+	$(makecpool) uptex >$@ || { rm -f $@; exit 1; }
 
 # Tangling upTeX
 uptex.p uptex.pool: uptex-tangle

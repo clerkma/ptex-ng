@@ -1,4 +1,4 @@
-## $Id: Makefile.am 73378 2025-01-08 21:19:18Z karl $
+## $Id: Makefile.am 73628 2025-01-28 21:17:08Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2025 Karl Berry <tex-live@tug.org>
@@ -190,6 +190,7 @@ texmf_other_scripts = \
 	m-tx/m-tx.lua \
 	makedtx/makedtx.pl \
 	make4ht/make4ht \
+	markdown/markdown2tex.lua \
 	match_parens/match_parens \
 	mathspic/mathspic.pl \
 	memoize/memoize-clean.pl \
