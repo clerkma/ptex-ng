@@ -1,6 +1,6 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014-2024 Clerk Ma
+   Copyright 2014-2025 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20166,7 +20166,20 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
       if (s >= 0)
         z = s;
       else
+      {
+        save_arith_error = arith_error;
+        sw = z;
         z = xn_over_d(z, -s, 1000);
+        if (arith_error || z >= 01000000000)
+        {
+          start_font_error_message();
+          prints(" scaled to 2048pt or higher");
+          help1("I will ignore the scaling factor.");
+          error();
+          z = sw;
+        }
+        arith_error = save_arith_error;
+      }
     }
 
     font_size[f] = z;

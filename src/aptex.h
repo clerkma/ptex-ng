@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2024 Clerk Ma
+   Copyright 2014-2025 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -784,6 +784,7 @@ EXTERN pointer first_char;                    // {first printable character}
 EXTERN pointer last_char;                     // {last printable character}
 EXTERN boolean find_first_char;               // {find for a first printable character?}
 EXTERN int fbyte;
+EXTERN boolean save_arith_error;
 
 // eTeX
 EXTERN boolean is_print_utf8;
