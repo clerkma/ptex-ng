@@ -31,6 +31,7 @@ if exist *.lib (del *.lib)
 cl -nologo -MD -Feptex-ng-wrap.exe -DEXEPROG=\"ptex-ng.exe\" %TL_ROOT%\texk\texlive\windows_wrapper\callexe.c
 copy ptex-ng-wrap.exe platex-ng.exe
 copy ptex-ng-wrap.exe platex-dev-ng.exe
+del callexe.obj
 exit /B 0
 
 :build

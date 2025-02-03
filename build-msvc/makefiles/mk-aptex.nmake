@@ -2,9 +2,9 @@ CC = cl
 AR = lib
 LINK = link
 CFLAGS = $(APTEX_CFLAGS) -DWIN32 -DNO_KPSE_DLL -DNO_PTENC_DLL \
-	-Ibuild/ -Ibuild/zlib -I$(TL_ROOT)/texk \
-	-I$(TL_ROOT)/texk/ptexenc -I$(TL_ROOT)/libs/zlib/zlib-src \
-	-I$(TL_ROOT)/texk/web2c/libmd5
+	-Ibuild -Ibuild\zlib -I$(TL_ROOT)\texk \
+	-I$(TL_ROOT)\texk\ptexenc -I$(TL_ROOT)\libs\zlib\zlib-src \
+	-I$(TL_ROOT)\texk\web2c\libmd5
 ROOT = $(APTEX_ROOT)
 OBJS = aptex.obj aptex-utils.obj aptex-src.obj
 LIBS = libdpx.lib libpng.lib zlib.lib ptexenc.lib kpathsea.lib \
@@ -14,9 +14,9 @@ all: $(OBJS)
 	$(CC) -nologo -Fe:aptex.exe $(OBJS) $(LIBS)
 	copy aptex.exe ptex-ng.exe
 
-aptex.obj: $(ROOT)/aptex.c
-	$(CC) $(CFLAGS) $(ROOT)/aptex.c
-aptex-utils.obj: $(ROOT)/aptex-utils.c
-	$(CC) $(CFLAGS) $(ROOT)/aptex-utils.c
-aptex-src.obj: $(ROOT)/aptex-src.c
-	$(CC) $(CFLAGS) $(ROOT)/aptex-src.c
+aptex.obj: $(ROOT)\aptex.c
+	$(CC) $(CFLAGS) $(ROOT)\aptex.c
+aptex-utils.obj: $(ROOT)\aptex-utils.c
+	$(CC) $(CFLAGS) $(ROOT)\aptex-utils.c
+aptex-src.obj: $(ROOT)\aptex-src.c
+	$(CC) $(CFLAGS) $(ROOT)\aptex-src.c

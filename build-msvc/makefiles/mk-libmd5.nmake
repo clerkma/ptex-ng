@@ -1,11 +1,11 @@
 CC = cl
 AR = lib
-CFLAGS = $(APTEX_CFLAGS) -I$(TL_ROOT)/texk/web2c/libmd5
-ROOT = $(TL_ROOT)/texk/web2c/libmd5
+CFLAGS = $(APTEX_CFLAGS) -I$(TL_ROOT)\texk\web2c\libmd5
+ROOT = $(TL_ROOT)\texk\web2c\libmd5
 OBJS = libmd5-md5.obj
 
 all: $(OBJS)
 	$(AR) -nologo -out:libmd5.lib $(OBJS)
 
-libmd5-md5.obj: $(ROOT)/md5.c
-	$(CC) $(CFLAGS) -Folibmd5-md5.obj $(ROOT)/md5.c
+libmd5-md5.obj: $(ROOT)\md5.c
+	$(CC) $(CFLAGS) -Folibmd5-md5.obj $(ROOT)\md5.c
