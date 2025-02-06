@@ -1,4 +1,4 @@
-$Id: README 73430 2025-01-12 14:58:51Z karl $
+$Id: README 73743 2025-02-05 23:12:41Z karl $
 Copyright 2006-2024 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -54,8 +54,9 @@ dvipdfm-x - maintained here, by us, contains
   dvipdfmx and xdvipdfmx.
     old info: https://project.ktug.org/dvipdfmx/
 
-dvipng 1.17 - checked 31may22
+dvipng 1.17 - checked 5feb25
   https://mirror.ctan.org/dviware/dvipng/
+  aka https://mirror.ctan.org/dviware/dvipng.zip
 
 dvipos - maintained here, by us
 
