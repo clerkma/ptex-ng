@@ -4,6 +4,11 @@
 
   \indexspace
 
+  \item encap-escape1 aaa@bbb|ccc!ddd"eee{fff}, \ppp{11}, 10--12
+  \item encap-escape2, \aaa@bbb|ccc!ddd"eee{fff}{20--22}
+
+  \indexspace
+
   \item implicit-range, 10--12
   \item incons-encaps, \ii{6}, 5--7
   \item incons-encaps2, \ii{5}, 5
