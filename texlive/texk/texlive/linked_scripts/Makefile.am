@@ -1,4 +1,4 @@
-## $Id: Makefile.am 73628 2025-01-28 21:17:08Z karl $
+## $Id: Makefile.am 73916 2025-02-12 14:58:30Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2025 Karl Berry <tex-live@tug.org>
@@ -284,6 +284,7 @@ bin_links = \
 	cluttex:clxelatex \
 	cluttex:cllualatex \
 	epstopdf:repstopdf \
+	extractbb:ebb \
 	fmtutil:mktexfmt \
 	kpsetool:kpsexpand \
 	kpsetool:kpsepath \
