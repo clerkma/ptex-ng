@@ -4,6 +4,7 @@ MACHINE=`uname -m`
 UNIVERSAL=$1
 NG_SRC_DIR=`pwd`
 export TLROOT=`pwd`/texlive
+export CFLAGS=-Wno-deprecated-non-prototype
 
 export have_brotli=no
 export with_brotli=no
