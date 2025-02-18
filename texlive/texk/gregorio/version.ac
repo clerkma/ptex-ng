@@ -1,4 +1,4 @@
-dnl $Id: version.ac 74024 2025-02-15 22:47:39Z karl $
+dnl $Id: version.ac 74075 2025-02-17 21:23:41Z karl $
 dnl   Copyright 2016-2025 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
@@ -9,4 +9,4 @@ dnl
 dnl --------------------------------------------------------
 dnl
 dnl  m4-include this file to define the current gregorio version
-m4_define([gregorio_version], [6.0.0])
+m4_define([gregorio_version], [6.1.0-beta1])
