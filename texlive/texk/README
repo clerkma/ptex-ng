@@ -1,4 +1,4 @@
-$Id: README 74025 2025-02-15 22:48:13Z karl $
+$Id: README 74112 2025-02-18 21:53:39Z karl $
 Copyright 2006-2025 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -67,8 +67,8 @@ dvisvgm 3.4.3 - checked 11jan25
   https://github.com/mgieseki/dvisvgm
   https://ctan.org/pkg/dvisvgm
 
-gregorio 6.1.0beta1 - checked 15feb25
-  https://mirror.ctan.org/support/gregoriotex/gregorio-6.1.0-beta1.zip
+gregorio 6.1.0beta2 - checked 18feb25
+  https://mirror.ctan.org/support/gregoriotex/
 
 gsftopk - from Paul Vojta's xdvi.
 
