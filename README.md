@@ -29,6 +29,6 @@ Run the shell script:
 
 ## Source
 
-* `texlive`: TeX Live 2025/dev (`http://tug.org/svn/texlive/trunk/Build/source/`)
+* `texlive`: TeX Live 2025 (`http://tug.org/svn/texlive/trunk/Build/source/`)
   * `svn co svn://tug.org/texlive/trunk/Build/source texlive`
 
