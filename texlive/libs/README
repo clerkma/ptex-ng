@@ -1,4 +1,4 @@
-$Id: README 73588 2025-01-25 02:34:51Z kakuto $
+$Id: README 74131 2025-02-19 04:34:49Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -40,7 +40,6 @@ libpaper 1.1.29 - checked 07jan24
 libpng 1.6.46 - checked 25jan25
   https://sourceforge.net/projects/libpng/files/ - used by many
 
-lua 5.2.4
 lua 5.3.6 - checked 04oct20
   https://www.lua.org/ftp/
   Lua updates must be done carefully, by the LuaTeX maintainer,
