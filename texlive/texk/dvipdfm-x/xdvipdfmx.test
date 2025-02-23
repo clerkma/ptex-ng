@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: xdvipdfmx.test 67884 2023-08-11 14:25:13Z takuji $
+# $Id: xdvipdfmx.test 74206 2025-02-22 18:41:57Z karl $
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2013, 2014 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.

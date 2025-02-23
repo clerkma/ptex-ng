@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: dvipdfmx-lmr0.test 74206 2025-02-22 18:41:57Z karl $
 # Copyright 2024 Japanese TeX Development Community <issue@texjp.org>
 # You may freely use, modify and/or distribute this file.
 
