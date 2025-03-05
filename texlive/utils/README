@@ -1,4 +1,4 @@
-$Id: README 74242 2025-02-23 23:13:34Z karl $
+$Id: README 74435 2025-03-04 17:01:16Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
@@ -8,6 +8,11 @@ asymptote 3.01 - checked 24feb25
   update TL from CTAN, to include prebuilt doc, Windows binaries, etc.
   See https://tug.org/texlive/build.html#asymptote
   and tlpkg/bin/tl-update-asy
+
+  Special builders for asy:
+    aarch64-linux - Johannes Hielscher
+    *solaris, as well as darwinlegacy - Mojca
+    windows - from asy dist, including dlls
 
 autosp 2023-10-07 - checked 07jan24
   https://ctan.org/pkg/autosp
