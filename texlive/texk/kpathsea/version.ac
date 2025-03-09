@@ -1,4 +1,4 @@
-dnl $Id: version.ac 73591 2025-01-25 18:41:15Z karl $
+dnl $Id: version.ac 74529 2025-03-08 18:17:45Z karl $
 dnl   Copyright 2016-2025 Karl Berry <tex-live@tug.org>
 dnl   Copyright 2011-2015 Peter Breitenlohner <tex-live@tug.org>
 dnl
@@ -23,4 +23,4 @@ dnl   releases.
 dnl --------------------------------------------------------
 dnl
 dnl This file is m4-included from configure.ac.
-m4_define([kpse_version], [6.4.1])
+m4_define([kpse_version], [6.4.2/dev])
