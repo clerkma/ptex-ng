@@ -1,4 +1,4 @@
-/*   $Id: afm2tfm.c 73591 2025-01-25 18:41:15Z karl $  */
+/*   $Id: afm2tfm.c 74888 2025-04-08 22:40:48Z karl $  */
 
 /*   Public domain, originally written by Tom Rokicki.
  *   This program converts AFM files to TeX TFM files, and optionally
@@ -68,7 +68,6 @@ extern char ascii2ebcdic[];
 /* debug.h redefines fopen to my_real_fopen, but it's still a FILE * */
 #ifdef fopen
 #undef fopen
-extern FILE *fopen ();
 #endif
 
 struct encoding {

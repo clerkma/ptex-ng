@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: yokotate.test 67990 2023-08-20 14:26:56Z takuji $
+# $Id: yokotate.test 75026 2025-04-26 08:08:19Z takuji $
 # Copyright 2022 Japanese TeX Development Community <issue@texjp.org>
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
@@ -31,7 +31,7 @@ done
 
 
 # Test inputs
-testdir=$srcdir/ptexdir/tests
+testdir=$srcdir/uptexdir/tests
 
 # Testing pPLtoTF/pTFtoPL compatible mode for character range & encoding.
 for font in chcode; do

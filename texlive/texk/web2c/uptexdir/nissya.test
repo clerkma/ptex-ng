@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: nissya.test 69812 2024-02-11 23:09:24Z karl $
+# $Id: nissya.test 75026 2025-04-26 08:08:19Z takuji $
 # Copyright 2022 Japanese TeX Development Community <issue@texjp.org>
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2010-2013 Peter Breitenlohner <tex-live@tug.org>
@@ -13,16 +13,16 @@ _upbibtex=$BinDir/upbibtex$ExeExt
 
 test -d uptests || mkdir -p uptests
 
-cp $srcdir/ptexdir/tests/nissya_bib.aux uptests/nissya_bib.aux
+cp $srcdir/uptexdir/tests/nissya_bib.aux uptests/nissya_bib.aux
 
 TEXMFCNF=$srcdir/../kpathsea \
-  BSTINPUTS=$srcdir/ptexdir/tests \
-  BIBINPUTS=$srcdir/ptexdir/tests \
+  BSTINPUTS=$srcdir/uptexdir/tests \
+  BIBINPUTS=$srcdir/uptexdir/tests \
   $_upbibtex -kanji-internal=euc uptests/nissya_bib || exit 1
-  diff $srcdir/ptexdir/tests/nissya_bib.bbl uptests/nissya_bib.bbl || exit 2
+  diff $srcdir/uptexdir/tests/nissya_bib.bbl uptests/nissya_bib.bbl || exit 2
 
 TEXMFCNF=$srcdir/../kpathsea \
-  BSTINPUTS=$srcdir/ptexdir/tests \
-  BIBINPUTS=$srcdir/ptexdir/tests \
+  BSTINPUTS=$srcdir/uptexdir/tests \
+  BIBINPUTS=$srcdir/uptexdir/tests \
   $_upbibtex uptests/nissya_bib || exit 3
 

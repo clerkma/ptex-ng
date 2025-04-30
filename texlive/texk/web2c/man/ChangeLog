@@ -1,3 +1,13 @@
+2025-04-30  Andreas Scherer  <https://ascherer.github.io>
+
+	* ctwill.man,
+	* cweb.man: Restore 'verbose' diagnostics in CWEB.
+
+2025-04-09  Karl Berry  <karl@freefriends.org>
+
+	* latex-dev.man: wording.
+	* latex.man: add [ first-line ]; update LaTeX Companion to 3rd edition.
+
 2025-03-07  Karl Berry  <karl@tug.org>
 
 	* TL'25 release.

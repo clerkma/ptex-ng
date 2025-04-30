@@ -193,9 +193,8 @@ quarter) with its two-byte encoding \.{c2 bc}.
 @z
 
 @x [6.59] l.708
-    if ((eight_bits)(*j)<0200) C_putc(*j);
+    if (ishigh(*j)) C_printf("%s",translit[(eight_bits)(*j)-0200]);
 @^high-bit character handling@>
-    else C_printf("%s",translit[(eight_bits)(*j)-0200]);
 @y
     if (ishigh(*j)) {
 @^high-bit character handling@>
@@ -206,7 +205,6 @@ quarter) with its two-byte encoding \.{c2 bc}.
       }
       C_printf("%s",translit[(eight_bits)(*j)-0200]);
     }
-    else C_putc(*j);
 @z
 
 @x [7.67] l.840
@@ -429,7 +427,7 @@ if((C_file=fopen(C_file_name,"r"))!=NULL) {
   rename(check_file_name,C_file_name); /* This was the first run */
 
 @ @<Set up the comparison of temporary output@>=
-  boolean comparison=false;
+  bool comparison=false;
 
   if((check_file=fopen(check_file_name,"r"))==NULL)
     fatal(_("! Cannot open output file "),check_file_name);
@@ -520,14 +518,14 @@ else {
 @ No copying necessary, just remove the temporary output file.
 
 @<Redirect temporary output to \.{/dev/null}@>={
-  boolean comparison=true;
+  bool comparison=true;
   @<Create the secondary output...@>@;
 }
 
 @ @<Setup system redirection@>=
 char in_buf[BUFSIZ+1];
 int in_size;
-boolean comparison=true;
+bool comparison=true;
 if((check_file=fopen(check_file_name,"r"))==NULL)
   fatal(_("! Cannot open output file "),check_file_name);
 @.Cannot open output file@>

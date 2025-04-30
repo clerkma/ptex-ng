@@ -88,12 +88,6 @@ Section 2.
 Section 5.
 
 @x
-For backward compatibility with pre-{\mc ANSI} compilers, we replace the
-@y
-And we replace the
-@z
-
-@x
 @d _(s) gettext(s)
 @y
 @d _(s) gettext(s)
@@ -1657,9 +1651,12 @@ Section 212--213.
 Section 215.
 
 @x
-@<Append a \9{s}string or...@>={@+ int count=-1; /* characters remaining before string break */
+  if (count==0) { /* insert a discretionary break in a long string */
+     app_str(@q(@>@q{@>"}\\)\\.{"@q}@>); count=20;
 @y
-@<Append a \9{s}string or...@>={@+ int count=-1; /* characters remaining before string break */
+  if (count==0) {
+     count=20; @/ /* insert a discretionary break in a long string */
+     app_str(@q(@>@q{@>"}\\)\\.{"@q}@>);
 @z
 
 Section 220.
@@ -1903,14 +1900,22 @@ Section 247.
 @ @<Translate the \9{c}current section@>= @+ {
 @z
 
+Section 249.
+
+@x
+    case section_name: loc-=2; next_control=get_next(); /* reprocess */
+@y
+    case section_name: @/ loc-=2; @/ next_control=get_next(); /* reprocess */
+@z
+
 Section 251.
 
 @x
 finish_C( /* finishes a definition or a \CEE/ part */
-  boolean visible) /* |true| if we should produce \TeX\ output */
+  bool visible) /* |true| if we should produce \TeX\ output */
 @y
 finish_C( /* finishes a definition or a \CEE/ part */
-  boolean visible) /* |true| if we should produce \TeX\ output */
+  bool visible) /* |true| if we should produce \TeX\ output */
 @-finish_C@>
 @$finish_C {CTWILL}251 \&{static} \&{void} (\,)@>
 @z
@@ -1918,9 +1923,9 @@ finish_C( /* finishes a definition or a \CEE/ part */
 Section 252.
 
 @x
-@ @<Predecl...@>=@+static void finish_C(boolean);
+@ @<Predecl...@>=@+static void finish_C(bool);
 @y
-@ @<Predecl...@>=@+static void finish_C(boolean);
+@ @<Predecl...@>=@+static void finish_C(bool);
 @-finish_C@>
 @z
 
@@ -2218,9 +2223,9 @@ static struct perm_meaning {
 Section 300.
 
 @x
-@ @<Predec...@>=@+static boolean app_supp(text_pointer);
+@ @<Predec...@>=@+static bool app_supp(text_pointer);
 @y
-@ @<Predec...@>=@+static boolean app_supp(text_pointer);
+@ @<Predec...@>=@+static bool app_supp(text_pointer);
 @-app_supp@>
 @z
 

@@ -1,4 +1,4 @@
-## $Id: Makefile.am 74729 2025-03-24 00:38:36Z kakuto $
+## $Id: Makefile.am 74964 2025-04-16 21:56:14Z kakuto $
 ## Proxy Makefile.am to install harfbuzz headers for TeX Live.
 ##
 ##   Copyright 2015-2016 Karl Berry <tex-live@tug.org>
@@ -27,6 +27,7 @@ hdr_links = \
 	$(HARFBUZZ_SRC)/hb-map.h \
 	$(HARFBUZZ_SRC)/hb-ot-deprecated.h \
 	$(HARFBUZZ_SRC)/hb-paint.h \
+	$(HARFBUZZ_SRC)/hb-script-list.h \
 	$(HARFBUZZ_SRC)/hb-set.h \
 	$(HARFBUZZ_SRC)/hb-shape.h \
 	$(HARFBUZZ_SRC)/hb-shape-plan.h \

@@ -33,10 +33,9 @@ First comes general stuff:
 @d cweave true
 
 @<Common code...@>=@^system dependencies@>
-typedef bool boolean;
 typedef uint8_t eight_bits;
 typedef uint16_t sixteen_bits;
-extern boolean program; /* \.{CWEAVE} or \.{CTANGLE}? */
+extern bool program; /* \.{CWEAVE} or \.{CTANGLE}? */
 extern int phase; /* which phase are we in? */
 
 @ The procedure that gets everything rolling:
@@ -57,21 +56,36 @@ extern void common_init(void);
 @ Code related to the character set:
 @^ASCII code dependencies@>
 
-@d and_and 04 /* `\.{\&\&}'\,; corresponds to MIT's {\tentex\char'4} */
-@d lt_lt 020 /* `\.{<<}'\,; corresponds to MIT's {\tentex\char'20} */
-@d gt_gt 021 /* `\.{>>}'\,; corresponds to MIT's {\tentex\char'21} */
-@d plus_plus 013 /* `\.{++}'\,; corresponds to MIT's {\tentex\char'13} */
-@d minus_minus 01 /* `\.{--}'\,; corresponds to MIT's {\tentex\char'1} */
-@d minus_gt 031 /* `\.{->}'\,; corresponds to MIT's {\tentex\char'31} */
-@d non_eq 032 /* `\.{!=}'\,; corresponds to MIT's {\tentex\char'32} */
-@d lt_eq 034 /* `\.{<=}'\,; corresponds to MIT's {\tentex\char'34} */
-@d gt_eq 035 /* `\.{>=}'\,; corresponds to MIT's {\tentex\char'35} */
-@d eq_eq 036 /* `\.{==}'\,; corresponds to MIT's {\tentex\char'36} */
-@d or_or 037 /* `\.{\v\v}'\,; corresponds to MIT's {\tentex\char'37} */
-@d dot_dot_dot 016 /* `\.{...}'\,; corresponds to MIT's {\tentex\char'16} */
-@d colon_colon 06 /* `\.{::}'\,; corresponds to MIT's {\tentex\char'6} */
-@d period_ast 026 /* `\.{.*}'\,; corresponds to MIT's {\tentex\char'26} */
-@d minus_gt_ast 027 /* `\.{->*}'\,; corresponds to MIT's {\tentex\char'27} */
+@d and_and 04 /* `\.{\&\&}'\,; corresponds to MIT's {\tentex\char'4}
+  and ASCII~\.{EOT} */
+@d lt_lt 020 /* `\.{<<}'\,; corresponds to MIT's {\tentex\char'20}
+  and ASCII~\.{DLE} */
+@d gt_gt 021 /* `\.{>>}'\,; corresponds to MIT's {\tentex\char'21}
+  and ASCII~\.{DC1} */
+@d plus_plus 013 /* `\.{++}'\,; corresponds to MIT's {\tentex\char'13}
+  and ASCII~\.{VT} aka~|'\v'|  */
+@d minus_minus 01 /* `\.{--}'\,; corresponds to MIT's {\tentex\char'1}
+  and ASCII~\.{SOH} */
+@d minus_gt 031 /* `\.{->}'\,; corresponds to MIT's {\tentex\char'31}
+  and ASCII~\.{EM} */
+@d non_eq 032 /* `\.{!=}'\,; corresponds to MIT's {\tentex\char'32}
+  and ASCII~\.{SUB} */
+@d lt_eq 034 /* `\.{<=}'\,; corresponds to MIT's {\tentex\char'34}
+  and ASCII~\.{FS} */
+@d gt_eq 035 /* `\.{>=}'\,; corresponds to MIT's {\tentex\char'35}
+  and ASCII~\.{GS} */
+@d eq_eq 036 /* `\.{==}'\,; corresponds to MIT's {\tentex\char'36}
+  and ASCII~\.{RS} */
+@d or_or 037 /* `\.{\v\v}'\,; corresponds to MIT's {\tentex\char'37}
+  and ASCII~\.{US} */
+@d dot_dot_dot 016 /* `\.{...}'\,; corresponds to MIT's {\tentex\char'16}
+  and ASCII~\.{SO} */
+@d colon_colon 06 /* `\.{::}'\,; corresponds to MIT's {\tentex\char'6}
+  and ASCII~\.{ACK} */
+@d period_ast 026 /* `\.{.*}'\,; corresponds to MIT's {\tentex\char'26}
+  and ASCII~\.{SYN} */
+@d minus_gt_ast 027 /* `\.{->*}'\,; corresponds to MIT's {\tentex\char'27}
+  and ASCII~\.{ETB} */
 @#
 @d compress(c) if (loc++<=limit) return c
 
@@ -82,12 +96,12 @@ extern char *id_first; /* where the current identifier begins in the buffer */
 extern char *id_loc; /* just after the current identifier in the buffer */
 
 @ Code related to input routines:
-@d xisalpha(c) (isalpha((int)(c))&&((eight_bits)(c)<0200))
-@d xisdigit(c) (isdigit((int)(c))&&((eight_bits)(c)<0200))
-@d xisspace(c) (isspace((int)(c))&&((eight_bits)(c)<0200))
-@d xislower(c) (islower((int)(c))&&((eight_bits)(c)<0200))
-@d xisupper(c) (isupper((int)(c))&&((eight_bits)(c)<0200))
-@d xisxdigit(c) (isxdigit((int)(c))&&((eight_bits)(c)<0200))
+@d xisalpha(c) (isalpha((int)(c))&&!ishigh(c))
+@d xisdigit(c) (isdigit((int)(c))&&!ishigh(c))
+@d xisspace(c) (isspace((int)(c))&&!ishigh(c))
+@d xislower(c) (islower((int)(c))&&!ishigh(c))
+@d xisupper(c) (isupper((int)(c))&&!ishigh(c))
+@d xisxdigit(c) (isxdigit((int)(c))&&!ishigh(c))
 @d isxalpha(c) ((c)=='_' || (c)=='$')
   /* non-alpha characters allowed in identifier */
 @d ishigh(c) ((eight_bits)(c)>0177)
@@ -120,21 +134,21 @@ extern char change_file_name[]; /* name of change file */
 extern int line[]; /* number of current line in the stacked files */
 extern int change_line; /* number of current line in change file */
 extern int change_depth; /* where \.{@@y} originated during a change */
-extern boolean input_has_ended; /* if there is no more input */
-extern boolean changing; /* if the current line is from |change_file| */
-extern boolean web_file_open; /* if the web file is being read */
+extern bool input_has_ended; /* if there is no more input */
+extern bool changing; /* if the current line is from |change_file| */
+extern bool web_file_open; /* if the web file is being read */
 
 @ @<Predecl...@>=
-extern boolean get_line(void); /* inputs the next line */
+extern bool get_line(void); /* inputs the next line */
 extern void check_complete(void); /* checks that all changes were picked up */
 extern void reset_input(void); /* initialize to read the web file and change file */
 
 @ Code related to section numbers:
 @<Common code...@>=
 extern sixteen_bits section_count; /* the current section number */
-extern boolean changed_section[]; /* is the section changed? */
-extern boolean change_pending; /* is a decision about change still unclear? */
-extern boolean print_where; /* tells \.{CTANGLE} to print line and file info */
+extern bool changed_section[]; /* is the section changed? */
+extern bool change_pending; /* is a decision about change still unclear? */
+extern bool print_where; /* tells \.{CTANGLE} to print line and file info */
 
 @ Code related to identifier and section name storage:
 @d length(c) (size_t)((c+1)->byte_start-(c)->byte_start) /* the length of a name */
@@ -171,12 +185,12 @@ extern hash_pointer hash_ptr; /* index into hash-head array */
 @ @<Predecl...@>=
 extern name_pointer id_lookup(const char *,const char *,eight_bits);
    /* looks up a string in the identifier table */
-extern name_pointer section_lookup(char *,char *,boolean); /* finds section name */
+extern name_pointer section_lookup(char *,char *,bool); /* finds section name */
 extern void print_prefix_name(name_pointer);@/
 extern void print_section_name(name_pointer);@/
 extern void sprint_section_name(char *,name_pointer);
 @#
-extern boolean names_match(name_pointer,const char *,size_t,eight_bits);
+extern bool names_match(name_pointer,const char *,size_t,eight_bits);
 /* two routines defined in \.{ctangle.w} and \.{cweave.w} */
 extern void init_node(name_pointer);
 
@@ -215,7 +229,7 @@ extern char C_file_name[]; /* name of |C_file| */
 extern char tex_file_name[]; /* name of |tex_file| */
 extern char idx_file_name[]; /* name of |idx_file| */
 extern char scn_file_name[]; /* name of |scn_file| */
-extern boolean flags[]; /* an option for each 7-bit code */
+extern bool flags[]; /* an option for each 7-bit code */
 
 @ Code related to output:
 @d update_terminal() fflush(stdout) /* empty the terminal output buffer */

@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: skipjfmp.test 69812 2024-02-11 23:09:24Z karl $
+# $Id: skipjfmp.test 75026 2025-04-26 08:08:19Z takuji $
 # Copyright 2018-2022 Japanese TeX Development Community <issue@texjp.org>
 # Copyright 2018 Karl Berry <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
@@ -12,7 +12,7 @@ _uptftopl=$BinDir/uptftopl$ExeExt
 test -d uptests || mkdir -p uptests
 
 # Test inputs
-testdir=$srcdir/ptexdir/tests
+testdir=$srcdir/uptexdir/tests
 
 # Testing pPLtoTF/pTFtoPL compatible mode for SKIP property in GLUEKERN.
 for font in skipjfmp; do
