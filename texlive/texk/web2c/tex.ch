@@ -1,4 +1,4 @@
-% $Id: tex.ch 73679 2025-02-01 22:56:43Z karl $
+% $Id: tex.ch 75108 2025-05-05 17:39:26Z karl $
 % tex.ch for C compilation with web2c, derived from various other change files.
 % By Tim Morgan, UC Irvine ICS Department, and many others.
 %
@@ -1585,6 +1585,22 @@ decr(expand_depth_count);
 if t>=cs_token_flag then
 @y
 if (t>=cs_token_flag)and(t<>end_write_token) then
+@z
+
+% Original report: https://tug.org/pipermail/tex-k/2025-January/004150.html
+% TeX bug entry: https://tug.org/texmfbug/newbug.html#B182muerror
+% Test file: tests/invalidmu.tex
+@x [26.449] l.8878 - recover better from \mkern <non-mu-dimen-or-skip>
+  @<Coerce glue to a dimension@>;
+  if cur_val_level=mu_val then goto attach_sign;
+  if cur_val_level<>int_val then mu_error;
+@y
+  if cur_val_level<>int_val then
+    begin
+    @<Coerce glue to a dimension@>;
+    if cur_val_level<>mu_val then mu_error;
+    goto attach_sign;
+    end;
 @z
 
 % See above change "term_input: set limit when fatal_error" for references.
