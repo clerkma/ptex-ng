@@ -16,7 +16,6 @@ Run the shell script:
 #### Compile with nmake
 
     cd build-msvc
-    build-mruby.bat
     build-aptex.bat
 
 #### Compile with jom
@@ -24,7 +23,6 @@ Run the shell script:
 [Jom](https://wiki.qt.io/Jom)
 
     cd build-msvc
-    build-mruby.bat
     build-aptex.bat jom
 
 ## Source

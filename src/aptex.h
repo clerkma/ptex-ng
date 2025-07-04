@@ -58,6 +58,7 @@
   #pragma warning(disable:4701) // potentially uninitialized local variable 'name' used
   #pragma warning(disable:4135) // conversion between different integral types
   #pragma warning(disable:4127) // conditional expression is constant
+  #pragma warning(disable:5287) // operands are different enum types 'type 1' and 'type 2'; use an explicit cast to silence this warning
 
 #elif defined (__clang__)
   // Clang
