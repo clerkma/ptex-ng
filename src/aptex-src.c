@@ -122,7 +122,7 @@ static void print_aptex_usage (void)
 
 static void print_aptex_version (void)
 {
-  printf("Copyright 2014-2024 Clerk Ma.\n"
+  printf("Copyright 2014-2025 Clerk Ma.\n"
     "banner: \"%s\"\n"
     "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n",
     banner, pTeX_version_string, upTeX_version_string);
@@ -21259,7 +21259,7 @@ static void ship_out (pointer p)
 #ifndef APTEX_DVI_ONLY
     {
       struct pdf_setting aptex_pdf_setting;
-      char * aptex_producer = "Asiatic pTeX 2024";
+      char * aptex_producer = "Asiatic pTeX 2025";
       int aptex_pdf_version;
       unsigned char aptex_id1[16], aptex_id2[16];
 
