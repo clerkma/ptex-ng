@@ -1,3 +1,20 @@
+2025-06-10  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* fwrite.c: Better treatment of Ŋ,ŋ in Finnish.
+	Better treatment of Þ,þ in Danish, Norwegian, Swedish and Finnish.
+	Better treatment of Ę,ę in Norwegian and Swedish.
+	Better treatment of Ð,ð,Đ,đ in Danish, Norwegian, Finnish, Swedish
+	and Icelandic.
+	Better treatment of Ü,ü,Ű,ű in Danish, Norwegian, Swedish and Finnish.
+	Better treatment of Ö,ö,Ø,ø,Ő,ő,Ô,ô,Œ,œ,Æ,æ,Ä,ä in Swedish.
+
+2025-06-01  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
+
+	* fwrite.c: Support digraph AA and
+	better treatment of Ø,ø,Ö,ö,Æ,æ,Ä,ä in Danish and Norwegian.
+	Better treatment of Ø,ø,Ö,ö,Æ,æ,Ä,ä in Icelandic.
+	Better treatment of Ö,ö,Ø,ø,Ő,ő,Õ,õ,Ü,ü,Ű,ű,Œ,œ,Æ,æ,Ä,ä in Finnish.
+
 2025-05-29  TANAKA Takuji  <ttk@t-lab.opal.ne.jp>
 
 	* version 1.20  Stable version.
@@ -15,7 +32,7 @@
 	Enhance treatment of S,T comma below in Romanian.
 	Support V-W ordering in Finnish traditional collation.
 	* sort.c:
-	Prepare to support CJK Unified Ideographs Extention J in Unicode 17.0.
+	Prepare to support CJK Unified Ideographs Extension J in Unicode 17.0.
 	It will work with future version of ICU.
 	Treat U+3192..3195, U+3280..3289, U+A830..A835 as "other number".
 

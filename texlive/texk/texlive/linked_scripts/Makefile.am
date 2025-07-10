@@ -1,4 +1,4 @@
-## $Id: Makefile.am 73916 2025-02-12 14:58:30Z karl $
+## $Id: Makefile.am 75482 2025-06-11 21:06:08Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2025 Karl Berry <tex-live@tug.org>
@@ -230,6 +230,7 @@ texmf_other_scripts = \
 	pythontex/pythontex.py \
 	rubik/rubikrotation.pl \
 	runtexshebang/runtexshebang.lua \
+	show-pdf-tags/show-pdf-tags.lua \
 	spix/spix.py \
 	splitindex/splitindex.pl \
 	sqltex/sqltex \

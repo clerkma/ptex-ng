@@ -1,4 +1,4 @@
-$Id: README 66510 2023-03-09 23:07:06Z karl $	
+$Id: README 75569 2025-06-21 23:51:25Z kakuto $	
 This README file and the graphics are public domain.
 
 This directory is for the generic TeX Live wrapper on Windows that is
@@ -44,3 +44,6 @@ rem turn resource script plus icon into a binary resource:
 ResourceHacker -open name.rc -save name.res -action compile
 rem add resource to binary:
 ResourceHacker -open name-bk.exe -save name.exe -action add -res name.res
+
+utf8runscript.exe is made by embedding a manifest
+utf8runscript.exe.manifest into runscript.exe.
