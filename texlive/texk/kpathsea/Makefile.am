@@ -1,4 +1,4 @@
-## $Id: Makefile.am 69416 2024-01-14 18:27:55Z karl $
+## $Id: Makefile.am 75766 2025-07-13 16:30:15Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/kpathsea/
 ##
 ## Copyright 2015-2024 Karl Berry <tex-live@tug.org>
@@ -275,7 +275,7 @@ uninstall-local:
 AM_TESTS_ENVIRONMENT  = LN_S='$(LN_S)'; export LN_S;
 AM_TESTS_ENVIRONMENT += LT_OBJDIR='$(LT_OBJDIR)'; export LT_OBJDIR;
 #
-TESTS  = tests/cnfline.test tests/cnfnewline.test
+TESTS  = tests/cnfline.test tests/cnfnewline.test tests/cnfnlink.test
 TESTS += tests/cnfnull.test tests/cnfprog.test
 TESTS += tests/kpseaccess.test
 TESTS += tests/kpsereadlink.test
