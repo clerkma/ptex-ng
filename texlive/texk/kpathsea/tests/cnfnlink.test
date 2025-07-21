@@ -1,5 +1,5 @@
 #!/bin/sh -vx
-# $Id: cnfnlink.test 75813 2025-07-17 22:41:36Z karl $
+# $Id: cnfnlink.test 75834 2025-07-20 14:16:29Z karl $
 # Copyright 2025 Karl Berry <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 # 
@@ -29,7 +29,7 @@ KPATHSEA_WARNING=0; export KPATHSEA_WARNING
 #ls -lR
 
 # recurse into nlinka subdir.
-TEXINPUTS=nlinka//
+TEXINPUTS=nlinka//; export TEXINPUTS
 
 # optimism.
 fail=0
@@ -80,6 +80,7 @@ else
   fail=1
 fi
 
+#exit 1
 exit $fail
 
 # BTW, to run just this one test:
