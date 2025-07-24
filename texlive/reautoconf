@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: reautoconf 73472 2025-01-15 22:51:19Z karl $
+# $Id: reautoconf 75857 2025-07-22 16:56:22Z karl $
 # This "reautoconf" script at the root of the TeX Live source tree 
 # runs autoreconf (from PATH) in all relevant TL directories.
 #
@@ -47,7 +47,7 @@ source tree.
 Report bugs (and any other discussion) to:
   tlbuild@tug.org (https://lists.tug.org/tlbuild)
 
-Version: $Id: reautoconf 73472 2025-01-15 22:51:19Z karl $
+Version: $Id: reautoconf 75857 2025-07-22 16:56:22Z karl $
 "
 
 do_cmd=eval
@@ -103,6 +103,9 @@ do_it () {
   fi
 }
 
+# use the presence of an ac/ subdir to determine if it's a package
+# directory in which we should run autoreconf. Would be better to
+# extract from kpse-pkgs.m4, if we ever get an autoconf-only package.
 if test "x$list" = x; then
   list=". auxdir/auxsub libs utils texk \
         `find libs utils texk -type d -name ac | sed 's,/ac\$,,'`"
