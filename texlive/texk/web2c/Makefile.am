@@ -1,4 +1,4 @@
-## $Id: Makefile.am 72216 2024-09-07 16:42:07Z karl $
+## $Id: Makefile.am 76016 2025-08-10 03:33:31Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/.
 ##
 ## Copyright 2017-2024 Karl Berry <tex-live@tug.org>
@@ -268,9 +268,6 @@ include $(srcdir)/mplibdir/am/libmplib.am
 
 ## e-TeX
 include $(srcdir)/etexdir/am/etex.am
-
-## pTeX
-include $(srcdir)/ptexdir/am/ptex.am
 
 ## upTeX
 include $(srcdir)/uptexdir/am/uptex.am

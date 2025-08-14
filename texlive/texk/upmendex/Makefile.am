@@ -1,4 +1,4 @@
-## $Id: Makefile.am 73836 2025-02-09 23:42:04Z takuji $
+## $Id: Makefile.am 76025 2025-08-11 02:00:45Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/upmendex/
 ##
 ## Copyright 2015-2019 Karl Berry <tex-live@tug.org>
@@ -67,8 +67,8 @@ EXTRA_DIST += tests/foo.idx tests/foo.ind \
 DISTCLEANFILES = foo.* uni.* tort*.*
 ## tests/pprec.test
 EXTRA_DIST += tests/range.idx \
-	tests/range1.ist tests/range2.ist tests/range3.ist \
-	tests/range1.ind tests/range2.ind tests/range3.ind \
+	tests/range1.ist tests/range2.ist tests/range3.ist tests/range4.ist \
+	tests/range1.ind tests/range2.ind tests/range3.ind tests/range4.ind \
 	tests/pprec0.ist tests/pprec1.ist tests/pprec2.ist tests/pprec3.ist \
 	tests/pprec4.ist tests/pprec5.ist tests/pprec6.ist tests/pprec7.ist \
 	tests/pprecA.idx tests/pprecA-0.ind tests/pprecA-1.ind tests/pprecA-2.ind \

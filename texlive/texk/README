@@ -1,4 +1,4 @@
-$Id: README 75455 2025-06-08 22:11:06Z karl $
+$Id: README 76025 2025-08-11 02:00:45Z takuji $
 Copyright 2006-2025 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -110,7 +110,7 @@ ttf2pk2 - maintained here, by us
 
 ttfdump - maintained here, by us, since Taiwan upstream apparently gone.
 
-upmendex 1.20 - by Takuji Tanaka
+upmendex 1.21 - by Takuji Tanaka
   https://ctan.org/pkg/upmendex
   https://github.com/t-tk/upmendex-package
 
@@ -133,10 +133,10 @@ web2c - maintained here, by us - core web2c, plain tex, etc.
       luatex - https://luatex.org/
       pdftex - https://pdftex.org/
    [u]pmpost - nothing current, see README for old info
-        ptex - https://github.com/texjporg/tex-jp-build
-               old info: https://asciidwango.github.io/ptex/
      synctex - maintained here, but also https://github.com/jlaurens/synctex
-       uptex - https://www.t-lab.opal.ne.jp/tex/uptex_en.html
+       uptex - https://github.com/texjporg/tex-jp-build
+               also: https://www.t-lab.opal.ne.jp/tex/uptex_en.html
+               old info: https://asciidwango.github.io/ptex/
        xetex - https://tug.org/xetex/
    
 xdvik 22.87.06 - checked 31may22

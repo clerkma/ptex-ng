@@ -1,4 +1,4 @@
-## $Id: uptex.am 75026 2025-04-26 08:08:19Z takuji $
+## $Id: uptex.am 76016 2025-08-10 03:33:31Z takuji $
 ## texk/web2c/uptexdir/am/uptex.am: Makefile fragment for upTeX.
 ##
 ## Copyright 2016-2025 Karl Berry <tex-live@tug.org>
@@ -11,6 +11,14 @@ uptex_dependencies = libukanji.a $(pproglib) $(PTEXENC_DEPEND) $(ZLIB_DEPEND) $(
 up_tangle = $(tangle_silent)WEBINPUTS=.:$(srcdir)/uptexdir:$(srcdir) $(buildenv) $(TANGLE)
 
 upweb_programs = upbibtex updvitype uppltotf uptftopl
+
+
+## pTeX library
+##
+pproglib = lib/libp.a
+# Rebuild $(pproglib)
+$(pproglib): $(KPATHSEA_DEPEND) ${srcdir}/lib/*.c
+	cd lib && $(MAKE) $(AM_MAKEFLAGS) libp.a
 
 ## libukanji.a for upTeX and e-upTeX
 ##
@@ -78,9 +86,9 @@ uptex.ch: tie$(EXEEXT) uptex.web $(uptex_ch_srcs)
 	$(tie_c) uptex.web $(uptex_ch_srcs)
 uptex_ch_srcs = \
 	uptexdir/ptex-base.ch \
-	unbalanced-braces.ch \
 	uptexdir/uptex-m.ch \
 	$(uptex_ch_synctex) \
+	unbalanced-braces.ch \
 	tex-binpool.ch
 
 EXTRA_DIST += $(uptex_web_srcs) $(uptex_ch_srcs) uptexdir/uptex.defines

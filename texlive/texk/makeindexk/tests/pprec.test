@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: pprec.test 72804 2024-11-09 10:39:22Z takuji $
+# $Id: pprec.test 76023 2025-08-11 02:00:32Z takuji $
 # Copyright 2021-2024 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
 # Copyright 2017 Karl Berry <tex-live@tug.org>
 # Copyright 2012 Peter Breitenlohner <tex-live@tug.org>
@@ -17,7 +17,7 @@ rc=0
 
 # test for range suffix_2p, suffix_3p, suffix_mp
 
-for num in 1 2 3; do
+for num in 1 2 3 4; do
 $_makeindex -s $srcdir/tests/range$num.ist $srcdir/tests/range.idx \
 	-o range$num.ind1 -t range$num.ilg \
 	&& diff $srcdir/tests/range$num.ind range$num.ind1 || rc=6
