@@ -1,4 +1,4 @@
-$Id: README 76191 2025-08-30 22:43:20Z kakuto $
+$Id: README 76252 2025-09-07 22:21:36Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -15,7 +15,7 @@ cairo 1.16.0 - no longer checked
   Since cairo is only used by MetaPost (for png output), and 1.16.0
   seems fine for that, not taking the time and trouble to update.
 
-freetype2 2.13.3 - checked 13aug24
+freetype2 2.14.0 - checked 08sep25
   https://download.savannah.gnu.org/releases/freetype/
 
 gd 2.3.3 - checked 13sep21
