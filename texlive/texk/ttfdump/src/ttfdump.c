@@ -1,3 +1,9 @@
+/* ttfdump - dump contents of a TrueType font file
+   $Id: ttfdump.c 76318 2025-09-14 21:35:18Z karl $
+   Originally written by Li-Da Lho, now maintained as part of TeX Live.
+   Released under the GNU GPL (any version).
+*/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -28,7 +34,7 @@
 #include "ttfutil.h"
 #include "ttc.h"
 
-/* $Id: ttfdump.c,v 1.2 1998/07/04 13:17:52 werner Exp $  */
+/* $Id: ttfdump.c 76318 2025-09-14 21:35:18Z karl $  */
 
 #define MAXLEN 256
 #define ALL_GLYF -1
@@ -78,7 +84,7 @@ int
 main(int argc, char *argv[])
 {
   FILE *dp_file;
-  TTCHeaderPtr ttc = NULL;	/* avoid uninitialized warning */
+  TTCHeaderPtr ttc;
 
   int c;
   extern int optind;
@@ -172,13 +178,11 @@ main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  if (strstr (ttfname, "ttc") != NULL || strstr (ttfname, "TTC") != NULL)
+  /* Try to load as a ttc file. */
+  ttc = ttfLoadTTCHeader(ttfname);
+
+  if (ttc != NULL)
   {
-    ttc = ttfLoadTTCHeader(ttfname);
-
-    if (ttc == NULL)
-      exit(EXIT_FAILURE);
-
     if (collection < ttc->DirCount)
       font = ttc->font + collection;
     else
@@ -186,13 +190,14 @@ main(int argc, char *argv[])
                "should between 0 and %d\n", ttc->DirCount - 1);
   }
   else
+    /* If ttc failed, try to load as a ttf. */
     font = ttfInitFont(ttfname);
 
   if (font == NULL)
     exit(EXIT_FAILURE);
 
   print_prologue(dp_file);
-  if (strstr(ttfname, "ttc") != NULL || strstr(ttfname, "TTC") != NULL)
+  if (ttc != NULL)
   {
     print_ttc(ttc, dp_file);
   }
@@ -228,7 +233,7 @@ main(int argc, char *argv[])
     }
   }
 
-  if (strstr(ttfname, "ttc") != NULL || strstr(ttfname, "TTC") != NULL)
+  if (ttc != NULL)
   {
     ttfFreeTTCFont(ttc);
   }
