@@ -1,4 +1,4 @@
-/* Copyright 2014 Clerk Ma
+/* Copyright 2014-2025 Clerk Ma
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ static void ng_special_out (SIGNED_QUAD len, unsigned char **start, unsigned cha
         double spc_h = 0.000015202 * h;
         double spc_v = 0.000015202 * v;
         graphics_mode();
-        spc_exec_special(buffer, len, spc_h, spc_v, 1.0);
+        spc_exec_special((const char *)buffer, len, spc_h, spc_v, 1.0);
       }
     }
 
