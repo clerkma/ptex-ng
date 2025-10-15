@@ -96,6 +96,8 @@ static void print_aptex_usage (void)
       "    execute string of mruby\n"
 #endif /* USE_MRUBY */
       "\n"
+      "  --interaction=mode\n"
+      "    set interaction mode, (mode=batchmode|nonstopmode|scrollmode|errorstopmode)\n"
       "  --jobname=str\n"
       "    set the job name to str, e.g.: '--jobname=book2016'\n"
       "  --progname=str\n"
@@ -1323,6 +1325,8 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.aptex_src             = NULL;
   aptex_env.aptex_map             = NULL;
 
+  aptex_env.opt_int = -1;
+
   aptex_env.flag_initex               = false;
   aptex_env.flag_suppress_f_ligs      = false;
   aptex_env.flag_reset_trie           = false;
@@ -1374,6 +1378,7 @@ static void aptex_commands_init (int ac, char **av)
       { "trie-size",      required_argument, NULL, 0 },
       { "percent-grow",   required_argument, NULL, 0 },
       { "progname",       required_argument, NULL, 0 },
+      { "interaction",    required_argument, NULL, 0 },
       { "jobname",        required_argument, NULL, 0 },
       { "synctex",        required_argument, NULL, 0 },
       { "fontmap",        required_argument, NULL, 0 },
@@ -1401,6 +1406,18 @@ static void aptex_commands_init (int ac, char **av)
 #else
         ;
 #endif
+      else if (ARGUMENT_IS("interaction")) {
+        if (!strcmp(optarg, "batchmode"))
+          aptex_env.opt_int = batch_mode;
+        else if (!strcmp(optarg, "nonstopmode"))
+          aptex_env.opt_int = nonstop_mode;
+        else if (!strcmp(optarg, "scrollmode"))
+          aptex_env.opt_int = scroll_mode;
+        else if (!strcmp(optarg, "errorstopmode"))
+          aptex_env.opt_int = error_stop_mode;
+        else
+          fprintf(stderr, "warning: Ignoring unknown argument `%s' to --interaction.\n", optarg);
+      }
       else if (ARGUMENT_IS("jobname"))
         aptex_env.aptex_job = strdup(optarg);
       else if (ARGUMENT_IS("fontmap"))
@@ -2398,6 +2415,7 @@ static boolean b_open_input (byte_file * f)
 
 #ifdef USE_KPATHSEA
   file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tfm_format, true);
+  printf("This file is %s",file_name_kpse);
 #else
   file_name_kpse = file_name_mbcs;
 #endif
@@ -5117,6 +5135,8 @@ start_of_TEX:
     random_seed = (microseconds * 1000) + (epochseconds % 1000000);
     init_randoms(random_seed);
     magic_offset = str_start[886] - 9 * ord_noad; /* math_spacing = 886 */
+    if (aptex_env.opt_int >= 0)
+      interaction = aptex_env.opt_int;
 
     // @<Initialize the print |selector| based on |interaction|@>;
     if (interaction == batch_mode)
