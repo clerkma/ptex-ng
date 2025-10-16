@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: Build 75072 2025-04-30 20:41:35Z karl $
+# $Id: Build 76582 2025-10-15 21:01:12Z karl $
 # Public domain.  Originally written many years ago by Sebastian Rahtz.
 # The basic idea is to run configure && make, but with a multitude of
 # environment variables to allow overriding everything.
@@ -165,6 +165,9 @@ if test -d "$bindir"; then
   if test "$count" -gt 0; then
     echo
     echo "$0: $count executables in $bindir."
+    echo "$0: These binaries do not constitute a directly usable system."
+    echo "$0: If you're trying to create a runnable TeX, please see:"
+    echo "$0: https://tug.org/texinfohtml/tlbuild.html#Installing"
   else
     echo "$0: Build failed, no executables under $bindir."
     echo "$0: Full log in: `pwd`/build.log"
