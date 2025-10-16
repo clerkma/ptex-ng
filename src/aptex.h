@@ -806,6 +806,8 @@ EXTERN struct {
   char * aptex_src;
   char * aptex_job;
   char * aptex_map;
+  // options
+  int opt_int;
   // time variables
   clock_t time_start;
   clock_t time_main;
