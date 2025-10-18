@@ -22,8 +22,8 @@
 
 #define pTeX_version 4
 #define pTeX_minor_version 1
-#define pTeX_revision ".1"
-#define pTeX_version_string "-p4.1.1"
+#define pTeX_revision ".2"
+#define pTeX_version_string "-p4.1.2"
 
 #define upTeX_version 1
 #define upTeX_revision ".30"
@@ -896,8 +896,8 @@ enum
 #define pdf_page_height_code          26
 #define dimen_pars                    27
 #define scaled_base                   (dimen_base + dimen_pars)     // {table of 256 user-defined \.{\\dimen} registers}
-#define kinsoku_penalty_base          (scaled_base + 256)           // {table of 256 kinsoku registers}
-#define eqtb_size                     (kinsoku_penalty_base + 255)  // {largest subscript of |eqtb|}
+#define kinsoku_penalty_base          (scaled_base + 256)            // {table of 1024 kinsoku registers}
+#define eqtb_size                     (kinsoku_penalty_base + 1023)  // {largest subscript of |eqtb|}
 // #
 #define dimen(a)                      eqtb[scaled_base + a].sc
 #define dimen_par(a)                  eqtb[dimen_base + a].sc   // {a scaled quantity}
@@ -924,6 +924,12 @@ enum
 #define v_offset                      dimen_par(v_offset_code)
 #define t_baseline_shift              dimen_par(t_baseline_shift_code)
 #define y_baseline_shift              dimen_par(y_baseline_shift_code)
+// #
+enum
+{
+  enc_jis = 1,
+  enc_ucs = 2
+};
 #define emergency_stretch             dimen_par(emergency_stretch_code)
 #define pdf_h_origin                  dimen_par(pdf_h_origin_code)
 #define pdf_v_origin                  dimen_par(pdf_v_origin_code)
