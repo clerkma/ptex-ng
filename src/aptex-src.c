@@ -2415,7 +2415,6 @@ static boolean b_open_input (byte_file * f)
 
 #ifdef USE_KPATHSEA
   file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tfm_format, true);
-  printf("This file is %s",file_name_kpse);
 #else
   file_name_kpse = file_name_mbcs;
 #endif
@@ -9381,9 +9380,9 @@ static void print_font_dir_and_enc (internal_font_number f)
     prints("/TATE");
   else if (font_dir[f] == dir_yoko)
     prints("/YOKO");
-  if (font_enc[f] == 2)
+  if (font_enc[f] == enc_ucs)
     prints("+Unicode");
-  else if (font_enc[f] == 1)
+  else if (font_enc[f] == enc_jis)
     prints("+JIS");
 }
 
@@ -20211,9 +20210,9 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
     {
       fget();
       read_twentyfourx(cx);
-      if (jfm_enc == 2) // {Unicode TFM}
+      if (jfm_enc == enc_ucs) // {Unicode TFM}
         font_info[k].hh.rh = toDVI(fromUCS(cx));
-      else if (jfm_enc == 1) // {JIS-encoded TFM}
+      else if (jfm_enc == enc_jis) // {JIS-encoded TFM}
         font_info[k].hh.rh = toDVI(fromJIS(cx));
       else
         font_info[k].hh.rh = tokanji(cx); // {|kchar_code|}
@@ -21734,9 +21733,9 @@ reswitch:
         p = link(p);
         jc = KANJI(info(p)) % max_cjk_val;
 
-        if (font_enc[f] == 2)
+        if (font_enc[f] == enc_ucs)
           jc = toUCS(jc);
-        else if (font_enc[f] == 1)
+        else if (font_enc[f] == enc_jis)
         {
           if (toJIS(jc) == 0)
             char_warning_jis(f, jc);
@@ -34261,9 +34260,9 @@ void new_font (small_number a)
     if (scan_keyword_noexpand("in"))
     {
       if (scan_keyword_noexpand("jis"))
-        jfm_enc = 1;
+        jfm_enc = enc_jis;
       else if (scan_keyword_noexpand("ucs"))
-        jfm_enc = 2;
+        jfm_enc = enc_ucs;
       else 
       {
         print_err("Unknown TFM encoding");
