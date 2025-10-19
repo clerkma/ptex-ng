@@ -40049,10 +40049,12 @@ void synctex_start_input (void)
     char * name_mbcs = utf8_mbcs(take_str_string(name));
 #ifdef USE_KPATHSEA
     synctex_root_name = kpse_find_file(name_mbcs, kpse_tex_format, false);
+    if (synctex_root_name == NULL)
+      synctex_root_name = name_mbcs;
+    else free(name_mbcs);
 #else
     synctex_root_name = name_mbcs;
 #endif
-    free(name_mbcs);
 
     if (!strlen(synctex_root_name))
     {
