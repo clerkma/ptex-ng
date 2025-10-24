@@ -19598,13 +19598,13 @@ static void pack_buffered_name (small_number n, integer a, integer b)
   k = 0;
 
   for (j = 1; j <= n; j++)
-    append_to_name(xord[TEX_format_default[j]]);
+    append_to_name(xord[(unsigned char)TEX_format_default[j]]);
 
   for (j = a; j <= b; j++)
     append_to_name(buffer[j]);
 
   for (j = format_default_length - 3; j <= format_default_length; j++)
-    append_to_name(xord[TEX_format_default[j]]);
+    append_to_name(xord[(unsigned char)TEX_format_default[j]]);
 
   if (k < file_name_size)
     name_length = k;
