@@ -39825,6 +39825,20 @@ static boolean synctex_flag_warn    = false;
 static boolean synctex_flag_quoted  = false;
 static boolean synctex_flag_redir   = false;
 
+char *synctex_get_current_name()
+{
+   char * name_mbcs = utf8_mbcs(take_str_string(cur_input.name_field));
+#ifdef USE_KPATHSEA
+   char * tmp = kpse_find_file(name_mbcs, kpse_tex_format, false);
+   if (tmp == NULL)
+     return name_mbcs;
+   else free(name_mbcs);
+   return tmp;
+#else
+   return name_mbcs;
+#endif
+}
+
 void synctex_init (void)
 {
   if (synctex_flag_read)
@@ -40046,15 +40060,7 @@ void synctex_start_input (void)
 
   if (synctex_tag_counter == 1)
   {
-    char * name_mbcs = utf8_mbcs(take_str_string(name));
-#ifdef USE_KPATHSEA
-    synctex_root_name = kpse_find_file(name_mbcs, kpse_tex_format, false);
-    if (synctex_root_name == NULL)
-      synctex_root_name = name_mbcs;
-    else free(name_mbcs);
-#else
-    synctex_root_name = name_mbcs;
-#endif
+    synctex_root_name = synctex_get_current_name();
 
     if (!strlen(synctex_root_name))
     {
@@ -40067,8 +40073,7 @@ void synctex_start_input (void)
 
   if (synctex_file || (synctex_dot_open() != NULL))
   {
-    char * tmp = calloc(1, name_length + 1);
-    strncpy(tmp, (const char *) name_of_file + 1, name_length);
+    char * tmp = synctex_get_current_name();
     synctex_record_input(synctex_tag, tmp);
     synctex_free(tmp);
   }
@@ -40076,7 +40081,9 @@ void synctex_start_input (void)
 
 void synctex_terminate (void)
 {
-  char * tmp = utf8_mbcs(take_str_string(job_name));
+  /* In version 1, the jobname was used but it caused problems
+     regarding spaces in file names. */
+  char * tmp = utf8_mbcs(take_str_string(log_name));
   char * the_real_syncname = NULL;
 
   if (log_opened && (tmp != NULL))
@@ -40551,13 +40558,6 @@ void synctex_char (halfword p, halfword this_box)
 
 #undef SYNCTEX_IGNORE
 #define SYNCTEX_IGNORE(NODE) (synctex_flag_off || !synctex || !synctex_file)
-#define SYNCTEX_RECORD_LEN_OR_RETURN_ERR do {   \
-    if (len > 0) {                              \
-      synctex_total_length += len;              \
-      incr(synctex_count);                      \
-    } else {                                    \
-      return -1;                                \
-    } } while(false)
 #define SYNCTEX_RECORD_LEN_AND_RETURN_NOERR do {    \
     if (len > 0) {                                  \
       synctex_total_length += len;                  \
@@ -40657,13 +40657,7 @@ static int synctex_record_sheet (integer sheet)
   if (SYNCTEX_NOERR == synctex_record_anchor())
   {
     int len = synctex_writer(synctex_file, "{%"PRId64"\n", sheet);
-
-    if (len > 0)
-    {
-      synctex_total_length += len;
-      incr(synctex_count);
-      return SYNCTEX_NOERR;
-    }
+    SYNCTEX_RECORD_LEN_AND_RETURN_NOERR;
   }
 
   synctex_abort();
