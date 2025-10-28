@@ -24,6 +24,10 @@
   #define EXTERN static
 #endif
 
+#ifndef EXPORT
+  #define EXPORT
+#endif
+
 // macro for dynamic allocation
 #define APTEX_EXTENSION
 
@@ -345,7 +349,11 @@ EXTERN integer spec_log[29];                  // {special logarithms}
 
 EXTERN halfword temp_ptr;                     // {a pointer variable for occasional emergency use}
 
+#pragma push_macro("EXTERN")
+#undef  EXTERN
+#define EXTERN EXPORT
 def_array(mem, memory_word, mem_max - mem_bot + 1);
+#pragma pop_macro("EXTERN")
 
 EXTERN memory_word * main_memory;
 EXTERN pointer lo_mem_max;                    // {the largest location of variable-size memory in use}
@@ -386,7 +394,7 @@ EXTERN int shown_mode;                        // {most recent mode shown by \.{\
 EXTERN int old_setting;
 EXTERN integer sys_time, sys_day, sys_month, sys_year; // {date and time supplied by external system}
 
-EXTERN memory_word eqtb[eqtb_size + 1];
+EXPORT memory_word eqtb[eqtb_size + 1];
 EXTERN quarterword zzzad[eqtb_size - int_base + 1];
 #define xeq_level (zzzad - int_base)
 EXTERN two_halves zzzae[undefined_control_sequence - hash_base];
@@ -418,7 +426,7 @@ def_array(input_stack, in_state_record, stack_size + 1);
 EXTERN integer input_ptr;                     // {first unused location of |input_stack|}
 EXTERN integer max_in_stack;                  // {largest value of |input_ptr| when pushing}
 EXTERN integer high_in_open;
-EXTERN in_state_record cur_input;             // {the ``top'' input state, according to convention (1)}
+EXPORT in_state_record cur_input;             // {the ``top'' input state, according to convention (1)}
 
 EXTERN int in_open;                           // {the number of lines in the buffer, less one}
 EXTERN integer open_parens;                   // {the number of open text files}
@@ -524,7 +532,7 @@ EXTERN integer param_base[font_max + 1];      // {base addresses for font parame
 
 EXTERN four_quarters null_character;          // {nonexistent character information}
 
-EXTERN integer total_pages;                   // {the number of pages that have been shipped out}
+EXPORT integer total_pages;                   // {the number of pages that have been shipped out}
 EXTERN scaled max_v;                          // {maximum height-plus-depth of pages shipped so far}
 EXTERN scaled max_h;                          // {maximum width of pages shipped so far}
 EXTERN integer max_push;                      // {deepest nesting of |push| commands encountered so far}
@@ -534,7 +542,7 @@ EXTERN boolean doing_leaders;                 // {are we inside a leader box?}
 
 EXTERN quarterword c, f;
 EXTERN boolean dir_used;                      // {Is this dvi extended?}
-EXTERN scaled rule_ht, rule_dp, rule_wd;      // {size of current rule being output}
+EXPORT scaled rule_ht, rule_dp, rule_wd;      // {size of current rule being output}
 EXTERN pointer g;                             // {current glue specification}
 EXTERN integer lq, lr;                        // {quantities used in calculations for leaders}
 EXTERN eight_bits dvi_buf[dvi_buf_size + 4];  // {buffer for \.{DVI} output}
@@ -547,7 +555,7 @@ EXTERN integer dvi_gone;                      // {the number of bytes already ou
 EXTERN pointer down_ptr, right_ptr;           // {heads of the down and right stacks}
 
 EXTERN scaled dvi_h, dvi_v;                   // {a \.{DVI} reader program thinks we are here}
-EXTERN scaled cur_h, cur_v;                   // {\TeX\ thinks we are here}
+EXPORT scaled cur_h, cur_v;                   // {\TeX\ thinks we are here}
 EXTERN internal_font_number dvi_f;            // {the current font}
 EXTERN integer cur_s;                         // {current depth of output box nesting, initially $-1$}
 
@@ -794,7 +802,7 @@ EXTERN integer epochseconds;
 EXTERN integer microseconds;
 
 // for SyncTeX
-EXTERN integer synctex_option;
+EXPORT integer synctex_option;
 EXTERN boolean stop_at_space;
 EXTERN boolean is_in_csname;
 
@@ -827,7 +835,9 @@ EXTERN struct {
   boolean flag_merge_kanji_baseline;
 } aptex_env;
 
+#ifndef __SyncTeX__
 #include "aptex-funs.h"
+#endif
 
 #ifdef __cplusplus
 }

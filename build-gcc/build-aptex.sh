@@ -63,7 +63,7 @@ cp .libs/libptexenc.a $NG_SRC_DIR/src
 #
 cd $NG_SRC_DIR/src/libdpx && make -j || exit 1
 cp libdpx.a $NG_SRC_DIR/src
-cd $NG_SRC_DIR/src/libmd5 && make -j || exit 1
-cp libmd5.a $NG_SRC_DIR/src
+cd $NG_SRC_DIR/src/libw2c && make -j || exit 1
+cp libw2c.a $NG_SRC_DIR/src
 #
 cd $NG_SRC_DIR/src && make -j
