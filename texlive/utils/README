@@ -1,4 +1,4 @@
-$Id: README 75323 2025-05-26 20:39:17Z karl $
+$Id: README 76670 2025-10-28 02:05:09Z kakuto $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
@@ -16,7 +16,7 @@ asymptote 3.04 - checked 26may25
     *solaris, as well as darwinlegacy - Mojca (no longer done)
     windows - installed from asy dist, including dlls
 
-autosp 2023-10-07 - checked 07jan24
+autosp 2025-10-26 - checked 28oct25
   https://ctan.org/pkg/autosp
 
 axodraw2 2.1.1c - checked 5mar21
