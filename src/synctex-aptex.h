@@ -1,6 +1,6 @@
 #include <kpathsea/c-fopen.h>
 #define __SyncTeX__
-#define EXTERN extern
+#define EXPORT extern
 #include "aptex.h"
 extern char *synctex_get_job_name();
 extern char *synctex_get_log_name();
