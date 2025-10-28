@@ -8,7 +8,7 @@ OBJS = libw2c-md5.obj libw2c-synctex.obj
 all: $(OBJS)
 	$(AR) -nologo -out:libw2c.lib $(OBJS)
 
-libw2c-md5.obj: $(ROOT)\md5.c
+libw2c-md5.obj: $(ROOT)\libmd5\md5.c
 	$(CC) $(CFLAGS) -Folibw2c-md5.obj $(ROOT)\libmd5\md5.c
 
 libw2c-synctex.obj: $(ROOT)\synctexdir\synctex.c
