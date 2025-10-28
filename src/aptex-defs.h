@@ -1,5 +1,6 @@
 /*
    Copyright 2014-2025 Clerk Ma
+   Copyright 2025 LdBeth
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

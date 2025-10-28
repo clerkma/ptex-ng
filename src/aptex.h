@@ -1,5 +1,6 @@
 /*
    Copyright 2014-2025 Clerk Ma
+   Copyright 2025 LdBeth
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -51,9 +52,11 @@
 
   // https://msdn.microsoft.com/en-us/library/ms175759.aspx
   // Secure Template Overloads
-  #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
-  #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES_COUNT 1
-  #define _USE_MATH_DEFINES 1
+  #ifndef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES
+    #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+    #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES_COUNT 1
+    #define _USE_MATH_DEFINES 1
+  #endif
 
   // https://msdn.microsoft.com/en-us/library/8x5x43k7.aspx
   // C/C++ Build Errors
