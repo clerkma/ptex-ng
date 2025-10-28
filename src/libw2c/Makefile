@@ -12,7 +12,7 @@ libw2c.a: $(objects)
 	ranlib libw2c.a
 
 synctex.o: ../../texlive/texk/web2c/synctexdir/synctex.c
-	$(CC) $(CFLAGS) $(SYNCTEXFLAGS) ../../texlive/texk/web2c/synctexdir/synctex.c
+	$(CC) $(CFLAGS) $(SYNCTEXINCLUDES) ../../texlive/texk/web2c/synctexdir/synctex.c
 
 md5.o: ../../texlive/texk/web2c/libmd5/md5.c
 	$(CC) $(CFLAGS) $(MD5INCLUDES) ../../texlive/texk/web2c/libmd5/md5.c
