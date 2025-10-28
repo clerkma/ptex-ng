@@ -141,7 +141,7 @@ typedef void * word_file;  // stdio/zlib
   #define def_type(sym, t0, t1) \
     typedef t1 sym
   #define def_array(sym, type, size) \
-    EXTERN type * sym
+    type * sym
   #define def_alter(sym, type, val) \
     EXTERN type sym
 #else
@@ -152,7 +152,7 @@ typedef void * word_file;  // stdio/zlib
   #define def_type(sym, t0, t1) \
     typedef t0 sym
   #define def_array(sym, type, size) \
-    EXTERN type sym[size]
+    type sym[size]
   #define def_alter(sym, type, val) \
     enum {sym = val}
 #endif
@@ -293,7 +293,7 @@ EXTERN ASCII_code xchr[256];                  // { specifies conversion of outpu
 EXTERN ASCII_code name_of_file[file_name_size + 4];
 EXTERN integer name_length;                   // {this many characters are actually relevant in |name_of_file| (the rest are blank)}
 
-def_array(buffer, ASCII_code, buf_size + 4);  // {lines of characters being read}
+EXTERN def_array(buffer, ASCII_code, buf_size + 4);  // {lines of characters being read}
 
 EXTERN uint32_t first;                         // {the first unused position in |buffer|}
 EXTERN uint32_t last;                          // {end of the line just input to |buffer|}
@@ -302,8 +302,8 @@ EXTERN uint32_t max_buf_stack;                 // {largest index used in |buffer
 EXTERN alpha_file term_in;                    // {the terminal as an input file}
 EXTERN alpha_file term_out;                   // {the terminal as an output file}
 
-def_array(str_pool, packed_ASCII_code, pool_size + 1);  // {the characters}
-def_array(str_start, pool_pointer, max_strings + 1);    // {the starting pointers}
+EXTERN def_array(str_pool, packed_ASCII_code, pool_size + 1);  // {the characters}
+EXTERN def_array(str_start, pool_pointer, max_strings + 1);    // {the starting pointers}
 
 EXTERN pool_pointer pool_ptr;                 // {first unused position in |str_pool|}
 EXTERN str_number   str_ptr;                  // {number of the current string being created}
@@ -349,11 +349,7 @@ EXTERN integer spec_log[29];                  // {special logarithms}
 
 EXTERN halfword temp_ptr;                     // {a pointer variable for occasional emergency use}
 
-#pragma push_macro("EXTERN")
-#undef  EXTERN
-#define EXTERN EXPORT
-def_array(mem, memory_word, mem_max - mem_bot + 1);
-#pragma pop_macro("EXTERN")
+EXPORT def_array(mem, memory_word, mem_max - mem_bot + 1);
 
 EXTERN memory_word * main_memory;
 EXTERN pointer lo_mem_max;                    // {the largest location of variable-size memory in use}
@@ -384,7 +380,7 @@ EXTERN integer font_in_short_display;         // {an internal font number}
 EXTERN integer depth_threshold;               // {maximum nesting depth in box displays}
 EXTERN integer breadth_max;                   // {maximum number of items shown at the same list level}
 
-def_array(nest, list_state_record, nest_size + 1);
+EXTERN def_array(nest, list_state_record, nest_size + 1);
 
 EXTERN integer nest_ptr;                      // {first unused location of |nest|}
 EXTERN integer max_nest_stack;                // {maximum of |nest_ptr| when pushing}
@@ -406,7 +402,7 @@ EXTERN integer cs_count;                      // {total number of known identifi
 EXTERN two_halves prim[prim_size + 1]; // {the primitives table}
 EXTERN pointer prim_used; // {allocation pointer for |prim|}
 
-def_array(save_stack, memory_word, save_size + 1);
+EXTERN def_array(save_stack, memory_word, save_size + 1);
 
 EXTERN integer save_ptr;                      // {first unused entry on |save_stack|}
 EXTERN integer max_save_stack;                // {maximum usage of save stack}
@@ -421,7 +417,7 @@ EXTERN halfword cur_chr;                      // {operand of current command}
 EXTERN pointer cur_cs;                        // {control sequence found here, zero if none found}
 EXTERN halfword cur_tok;                      // {packed representative of |cur_cmd| and |cur_chr|}
 
-def_array(input_stack, in_state_record, stack_size + 1);
+EXTERN def_array(input_stack, in_state_record, stack_size + 1);
 
 EXTERN integer input_ptr;                     // {first unused location of |input_stack|}
 EXTERN integer max_in_stack;                  // {largest value of |input_ptr| when pushing}
@@ -438,7 +434,7 @@ EXTERN int scanner_status;                    // {can a subfile end now?}
 EXTERN pointer warning_index;                 // {identifier relevant to non-|normal| scanner status}
 EXTERN pointer def_ref;                       // {reference count of token list being defined}
 
-def_array(param_stack, pointer, param_size + 1); // {token list pointers for parameters}
+EXTERN def_array(param_stack, pointer, param_size + 1); // {token list pointers for parameters}
 
 EXTERN integer param_ptr;                     // {first unused entry in |param_stack|}
 EXTERN integer max_param_stack;               // {largest value of |param_ptr|, will be |<=param_size+9|}
@@ -495,7 +491,7 @@ EXTERN str_number log_name;                   // {full name of the log file}
 
 EXTERN byte_file tfm_file;
 
-def_array(font_info, memory_word, font_mem_size + 1); // {pTeX: use halfword for |char_type| table.}
+EXTERN def_array(font_info, memory_word, font_mem_size + 1); // {pTeX: use halfword for |char_type| table.}
 
 EXTERN eight_bits font_dir[font_max + 1];     // {pTeX: direction of fonts, 0 is default, 1 is Yoko, 2 is Tate}
 EXTERN eight_bits font_enc[font_max + 1];     // {pTeX: encoding of fonts, 0 is default, 1 is JIS, 2 is Unicode}
@@ -648,17 +644,17 @@ EXTERN pointer lig_stack;                     // {unfinished business to the rig
 EXTERN boolean ligature_present;              // {should a ligature node be made for |cur_l|?}
 EXTERN boolean lft_hit, rt_hit;               // {did we hit a ligature with a boundary character?}
 
-def_array(trie_trl, halfword, trie_size + 1);
-def_array(trie_tro, halfword, trie_size + 1);
-def_array(trie_trc, quarterword, trie_size + 1);
+EXTERN def_array(trie_trl, halfword, trie_size + 1);
+EXTERN def_array(trie_tro, halfword, trie_size + 1);
+EXTERN def_array(trie_trc, quarterword, trie_size + 1);
 
 EXTERN small_number hyf_distance[trie_op_size + 1]; // {position |k-j| of $n_j$}
 EXTERN small_number hyf_num[trie_op_size + 1];  // {value of $n_j$}
 EXTERN trie_op_code hyf_next[trie_op_size + 1]; // {continuation code}
 EXTERN integer op_start[256];                   // {offset for current language}
 
-def_array(hyph_word, str_number, hyphen_prime + 1); // {exception words}
-def_array(hyph_list, pointer, hyphen_prime + 1);    // {lists of hyphen positions}
+EXTERN def_array(hyph_word, str_number, hyphen_prime + 1); // {exception words}
+EXTERN def_array(hyph_list, pointer, hyphen_prime + 1);    // {lists of hyphen positions}
 
 def_alter(hyphen_prime, integer, 607);
 
@@ -680,12 +676,12 @@ EXTERN hyph_pointer hyph_count;
 EXTERN trie_op_code max_op_used;
 
 #ifdef INITEX
-  def_array(trie_c, packed_ASCII_code, trie_size + 1);  /* characters to match */
-  def_array(trie_o, trie_op_code, trie_size + 1);       /* operations to perform */
-  def_array(trie_l, trie_pointer, trie_size + 1);       /* left subtrie links */
-  def_array(trie_r, trie_pointer, trie_size + 1);       /* right subtrie links */
-  def_array(trie_hash, trie_pointer, trie_size + 1);    /* used to identify equivlent subtries */
-  def_array(trie_taken, char, trie_size + 1); // char / boolean
+  EXTERN def_array(trie_c, packed_ASCII_code, trie_size + 1);  /* characters to match */
+  EXTERN def_array(trie_o, trie_op_code, trie_size + 1);       /* operations to perform */
+  EXTERN def_array(trie_l, trie_pointer, trie_size + 1);       /* left subtrie links */
+  EXTERN def_array(trie_r, trie_pointer, trie_size + 1);       /* right subtrie links */
+  EXTERN def_array(trie_hash, trie_pointer, trie_size + 1);    /* used to identify equivlent subtries */
+  EXTERN def_array(trie_taken, char, trie_size + 1); // char / boolean
   EXTERN trie_pointer trie_ptr;
   EXTERN trie_pointer trie_min[256];
   EXTERN trie_pointer trie_max;
