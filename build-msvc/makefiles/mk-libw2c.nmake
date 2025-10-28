@@ -12,4 +12,4 @@ libw2c-md5.obj: $(ROOT)\libmd5\md5.c
 	$(CC) $(CFLAGS) -Folibw2c-md5.obj $(ROOT)\libmd5\md5.c
 
 libw2c-synctex.obj: $(ROOT)\synctexdir\synctex.c
-	$(CC) $(CFLAGS) -Folibw2c-synctex.obj $(ROOT)\synctexdir\synctex.c
+	$(CC) $(CFLAGS) -DSYNCTEX_ENGINE_H='"synctex-aptex.h"' -Folibw2c-synctex.obj $(ROOT)\synctexdir\synctex.c
