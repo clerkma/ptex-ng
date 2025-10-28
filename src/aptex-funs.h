@@ -49,23 +49,41 @@ static boolean b_open_output (byte_file * f);
 #define w_eof(f)        (aptex_env.flag_compact_fmt == true ? gzeof((gzFile) f) : feof((FILE *) f))
 
 // functions of SyncTeX
-void synctex_init (void);
-void synctex_terminate (void);
-void synctex_start_input (void);
-void synctex_sheet (integer sync_mag);
-void synctex_teehs (void);
-void synctex_vlist (pointer this_box);
-void synctex_tsilv (pointer this_box);
-void synctex_void_vlist (halfword p, halfword this_box);
-void synctex_hlist (halfword this_box);
-void synctex_tsilh (halfword this_box);
-void synctex_void_hlist (halfword p, halfword this_box);
-void synctex_math (halfword p, halfword this_box);
-void synctex_horizontal_rule_or_glue (halfword p, halfword this_box);
-void synctex_kern (halfword p, halfword this_box);
-void synctex_char (halfword p, halfword this_box);
-void synctex_node (halfword p, halfword this_box);
-void synctex_current (void);
+extern void synctexinitcommand(void);
+extern void synctexterminate(int log_opened);
+extern void synctexstartinput(void);
+extern void synctexsheet(integer magnification);
+extern void synctexteehs(void);
+extern void synctexvlist(halfword this_box);
+extern void synctextsilv(halfword this_box);
+extern void synctexvoidvlist(halfword p, halfword this_box);
+extern void synctexhlist(halfword this_box);
+extern void synctextsilh(halfword this_box);
+extern void synctexvoidhlist(halfword p, halfword this_box);
+extern void synctexmath(halfword p, halfword this_box);
+extern void synctexhorizontalruleorglue(halfword p, halfword this_box);
+extern void synctexkern(halfword p, halfword this_box);
+extern void synctexchar(halfword p, halfword this_box);
+extern void synctexnode(halfword p, halfword this_box);
+extern void synctexcurrent(void);
+
+#define synctex_init synctexinitcommand
+#define synctex_terminate synctexterminate
+#define synctex_start_input synctexstartinput
+#define synctex_sheet synctexsheet
+#define synctex_teehs synctexteehs
+#define synctex_vlist synctexvlist
+#define synctex_tsilv synctextsilv
+#define synctex_void_vlist synctexvoidvlist
+#define synctex_hlist synctexhlist
+#define synctex_tsilh synctextsilh
+#define synctex_void_hlist synctexvoidhlist
+#define synctex_math synctexmath
+#define synctex_horizontal_rule_or_glue synctexhorizontalruleorglue
+#define synctex_kern synctexkern
+#define synctex_char synctexchar
+#define synctex_node synctexnode
+#define synctex_current synctexcurrent
 
 // functions of TeX82
 void print_ln (void);
