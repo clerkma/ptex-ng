@@ -346,6 +346,7 @@ EXTERN integer spec_log[29];                  // {special logarithms}
 EXTERN halfword temp_ptr;                     // {a pointer variable for occasional emergency use}
 
 #pragma push_macro("EXTERN")
+#undef  EXTERN
 #define EXTERN
 def_array(mem, memory_word, mem_max - mem_bot + 1);
 #pragma pop_macro("EXTERN")

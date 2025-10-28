@@ -3,13 +3,13 @@ AR = lib
 CFLAGS = $(APTEX_CFLAGS) -I$(TL_ROOT)\texk -I$(TL_ROOT)\texk\ptexenc \
        -I$(TL_ROOT)\texk\web2c\libmd5 -I$(TL_ROOT)\texk\web2c\synctexdir
 ROOT = $(TL_ROOT)\texk\web2c
-OBJS = libsynctex-md5.obj
+OBJS = libw2c-md5.obj libw2c-synctex.obj
 
 all: $(OBJS)
-	$(AR) -nologo -out:libmd5.lib $(OBJS)
+	$(AR) -nologo -out:libw2c.lib $(OBJS)
 
-libsynctex-md5.obj: $(ROOT)\md5.c
+libw2c-md5.obj: $(ROOT)\md5.c
 	$(CC) $(CFLAGS) -Folibmd5-md5.obj $(ROOT)\libmd5\md5.c
 
-libsynctex-synctex.obj: $(ROOT)\md5.c
+libw2c-synctex.obj: $(ROOT)\md5.c
 	$(CC) $(CFLAGS) -Folibmd5-md5.obj $(ROOT)\md5.c
