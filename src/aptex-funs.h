@@ -459,6 +459,21 @@ static inline void ensure_dvi_open (void)
     output_file_name = b_make_name_string(dvi_file);
   }
 }
+static inline void ensure_pdf_open (void)
+{
+  if (output_file_name == 0)
+  {
+    if (job_name == 0)
+      open_log_file();
+
+    pack_job_name(".pdf");
+
+    while (!b_open_out(dvi_file))
+      prompt_file_name("file name for output", ".pdf");
+
+    output_file_name = b_make_name_string(dvi_file);
+  }
+}
 /* sec 0616 */
 static inline void synch_h (void)
 {

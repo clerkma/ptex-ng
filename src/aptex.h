@@ -832,6 +832,7 @@ EXTERN struct {
   boolean flag_reset_hyphen;
   boolean flag_suppress_f_ligs;
   boolean flag_merge_kanji_baseline;
+  boolean flag_pdf_output;
 } aptex_env;
 
 #ifndef __SyncTeX__

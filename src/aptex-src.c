@@ -28,6 +28,22 @@
   #define xfclose(a, b) fclose(a)
 #endif
 
+#ifdef APTEX_DVI_ONLY
+
+#define BEGIN_APTEX_DVI_OUT
+#define END_APTEX_DVI_OUT
+
+#define APTEX_PDF_OUT(...)
+
+#else
+
+#define BEGIN_APTEX_DVI_OUT if(!aptex_env.flag_pdf_output) {
+#define END_APTEX_DVI_OUT }
+
+#define APTEX_PDF_OUT(...) if(aptex_env.flag_pdf_output) { __VA_ARGS__ }
+
+#endif
+
 static int mem_initex;
 static int new_hyphen_prime;
 static char * format_name;
@@ -109,6 +125,8 @@ static void print_aptex_usage (void)
       "    +mapfile (append mode), !mapfile (replace mode), e.g.: '--fontmap=!replace.map'\n"
       "  --format=fmt\n"
       "    set preloaded format, e.g.: 'aptex --format=plain name.tex'\n"
+      "  --output-format=fmt\n"
+      "    set output format, (fmt=dvi|pdf)\n"
       "\n"
       "  --patterns\n"
       "    (INITEX only) allow use of \\patterns after loading format\n"
@@ -1336,6 +1354,7 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.flag_tex82                = false;
   aptex_env.flag_compact_fmt          = true;
   aptex_env.flag_merge_kanji_baseline = false;
+  aptex_env.flag_pdf_output           = true;
 
   aptex_env.trace_realloc         = true;
   aptex_env.trace_mem             = false;
@@ -1386,6 +1405,7 @@ static void aptex_commands_init (int ac, char **av)
       { "format",         required_argument, NULL, 0 },
       { "mrb-load-file",  required_argument, NULL, 0 },
       { "mrb-load-string",required_argument, NULL, 0 },
+      { "output-format",  required_argument, NULL, 0 },
       { "shell-escape",   no_argument, NULL, 0 },
       { "merge-kanji-baseline", no_argument, NULL, 0 },
       { "patterns",       no_argument, NULL, 0 },
@@ -1435,6 +1455,14 @@ static void aptex_commands_init (int ac, char **av)
         aptex_env.flag_shell_escape = true;
       else if (ARGUMENT_IS("merge-kanji-baseline"))
         aptex_env.flag_merge_kanji_baseline = true;
+      else if (ARGUMENT_IS("output-format")) {
+        if (!strcmp(optarg, "dvi"))
+          aptex_env.flag_pdf_output = false;
+        else if (!strcmp(optarg, "pdf"))
+          aptex_env.flag_pdf_output = true;
+        else
+          fprintf(stderr, "warning: Ignoring unknown argument `%s' to --output-format.\n", optarg);
+      }
       else if (ARGUMENT_IS("patterns"))
         aptex_env.flag_reset_trie = true;
       else if (ARGUMENT_IS("trace"))
@@ -20605,14 +20633,18 @@ void dvi_swap (void)
 {
   if (dvi_limit == dvi_buf_size)
   {
+BEGIN_APTEX_DVI_OUT
     write_dvi(0, half_buf - 1);
+END_APTEX_DVI_OUT
     dvi_limit = half_buf;
     dvi_offset = dvi_offset + dvi_buf_size;
     dvi_ptr = 0;
   }
   else
   {
+BEGIN_APTEX_DVI_OUT
     write_dvi(half_buf, dvi_buf_size - 1);
+END_APTEX_DVI_OUT
     dvi_limit = dvi_buf_size;
   }
 
@@ -20882,7 +20914,7 @@ done:
 
 #include "aptex-dpx.h"
 
-static void dpx_compute_id_string (unsigned char * id, const char * producer, const char * dvi_file_name, const char * pdf_file_name)
+static void dpx_compute_id_string (unsigned char * id, const char * producer, const char * pdf_file_name)
 {
   char datestr[32];
   MD5_CONTEXT md5;
@@ -20891,7 +20923,6 @@ static void dpx_compute_id_string (unsigned char * id, const char * producer, co
   dpx_util_format_asn_date(datestr, 0);
   MD5_write(&md5, (const unsigned char *) datestr, strlen(datestr));
   MD5_write(&md5, (const unsigned char *) producer, strlen(producer));
-  MD5_write(&md5, (const unsigned char *) dvi_file_name, strlen(dvi_file_name));
   MD5_write(&md5, (const unsigned char *) pdf_file_name, strlen(pdf_file_name));
   MD5_final(id, &md5);
 }
@@ -20899,7 +20930,7 @@ static void dpx_compute_id_string (unsigned char * id, const char * producer, co
 static const double sp2bp = 0.000015202;
 static int     font_id[65536];
 static char * output_pdf_name;
-static char * output_dvi_name;
+static boolean pdf_output;
 
 static void pdf_locate_font (internal_font_number f)
 {
@@ -20999,57 +21030,14 @@ static void aptex_dpx_eop (void)
   pdf_doc_end_page();
 }
 
-#endif
-
-// ship out part
-static void dvi_font_def (internal_font_number f)
-{
-  pool_pointer k;
-
-#ifdef APTEX_EXTENSION
-  if (f <= 256)
-  {
-    dvi_out(fnt_def1);
-    dvi_out(f - 1);
-  }
-  else
-  {
-    dvi_out(fnt_def2);
-    dvi_out(((f - 1) >> 8));
-    dvi_out(((f - 1) & 255));
-  }
-#else
-  dvi_out(fnt_def1);
-  dvi_out(f - 1);
-#endif
-
-  dvi_out(font_check[f].b0);
-  dvi_out(font_check[f].b1);
-  dvi_out(font_check[f].b2);
-  dvi_out(font_check[f].b3);
-  dvi_four(font_size[f]);
-  dvi_four(font_dsize[f]);
-  dvi_out(length(font_area[f]));
-  dvi_out(length(font_name[f]));
-
-  for (k = str_start[font_area[f]]; k <= str_start[font_area[f] + 1] - 1; k++)
-    dvi_out(str_pool[k]);
-
-  for (k = str_start[font_name[f]]; k <= str_start[font_name[f] + 1] - 1; k++)
-    dvi_out(str_pool[k]);
-}
-
-#ifndef APTEX_DVI_ONLY
-static void pdf_ship_out() {
+static void pdf_prepare_ship_out() {
   struct pdf_setting aptex_pdf_setting;
   char * aptex_producer = "Asiatic pTeX 2025";
   int aptex_pdf_version;
   unsigned char aptex_id1[16], aptex_id2[16];
 
-  output_dvi_name = take_str_string(output_file_name);
   output_pdf_name = take_str_string(output_file_name);
-  memcpy(output_pdf_name + length(output_file_name) - 4, ".pdf", 4);
-  dpx_compute_id_string(aptex_id1, aptex_producer, output_dvi_name, output_pdf_name);
+  dpx_compute_id_string(aptex_id1, aptex_producer, output_pdf_name);
   memcpy(aptex_id2, aptex_id1, 16);
 
   aptex_pdf_version = 10 * pdf_major_version + pdf_minor_version;
@@ -21118,10 +21106,53 @@ static void pdf_ship_out() {
   aptex_dpx_init_page(pdf_page_width, pdf_page_height);
   spc_exec_at_begin_document();
 }
+
 #endif
 
+// ship out part
+static void dvi_font_def (internal_font_number f)
+{
+  pool_pointer k;
+
+#ifdef APTEX_EXTENSION
+  if (f <= 256)
+  {
+    dvi_out(fnt_def1);
+    dvi_out(f - 1);
+  }
+  else
+  {
+    dvi_out(fnt_def2);
+    dvi_out(((f - 1) >> 8));
+    dvi_out(((f - 1) & 255));
+  }
+#else
+  dvi_out(fnt_def1);
+  dvi_out(f - 1);
+#endif
+
+  dvi_out(font_check[f].b0);
+  dvi_out(font_check[f].b1);
+  dvi_out(font_check[f].b2);
+  dvi_out(font_check[f].b3);
+  dvi_four(font_size[f]);
+  dvi_four(font_dsize[f]);
+  dvi_out(length(font_area[f]));
+  dvi_out(length(font_name[f]));
+
+  for (k = str_start[font_area[f]]; k <= str_start[font_area[f] + 1] - 1; k++)
+    dvi_out(str_pool[k]);
+
+  for (k = str_start[font_name[f]]; k <= str_start[font_name[f] + 1] - 1; k++)
+    dvi_out(str_pool[k]);
+}
+
 // {output the box |p|}
+#ifdef APTEX_DVI_ONLY
 static void ship_out (pointer p)
+#else
+static void dvi_ship_out (pointer p)
+#endif
 {
   integer page_loc; // {location of the current |bop|}
   pointer del_node; // {used when delete the |dir_node| continued box}
@@ -21258,15 +21289,8 @@ static void ship_out (pointer p)
       dvi_out(str_pool[s]);
 
     pool_ptr = str_start[str_ptr];
-
-#ifndef APTEX_DVI_ONLY
-    pdf_ship_out();
-#endif
   }
 
-#ifndef APTEX_DVI_ONLY
-  aptex_dpx_bop(total_pages + 1, pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
-#endif
   page_loc = dvi_offset + dvi_ptr;
   dvi_out(bop);
 
@@ -21293,9 +21317,6 @@ static void ship_out (pointer p)
       break;
   }
 
-#ifndef APTEX_DVI_ONLY
-  aptex_dpx_eop();
-#endif
   dvi_out(eop);
 
   incr(total_pages);
@@ -21348,6 +21369,222 @@ done:
   }
 #endif
 }
+
+#ifndef APTEX_DVI_ONLY
+static void pdf_ship_out (pointer p)
+{
+  integer page_loc; // {location of the current |bop|}
+  pointer del_node; // {used when delete the |dir_node| continued box}
+  char j, k;  // {indices to first ten count registers}
+  pool_pointer s; // {index into |str_pool|}
+  char old_setting; // {saved |selector| setting}
+
+  // @<Start sheet {\sl Sync\TeX} information record@>
+  synctex_sheet(mag);
+
+  if (tracing_output > 0)
+  {
+    print_nl("");
+    print_ln();
+    prints("Completed box being shipped out");
+  }
+
+  if (term_offset > max_print_line - 9)
+    print_ln();
+  else if ((term_offset > 0) || (file_offset > 0))
+    print_char(' ');
+
+  print_char('[');
+  j = 9;
+
+  while ((count(j) == 0) && (j > 0))
+    decr(j);
+
+  for (k = 0; k <= j; k++)
+  {
+    print_int(count(k));
+
+    if (k < j)
+      print_char('.');
+  }
+
+  update_terminal();
+
+  if (tracing_output > 0)
+  {
+    print_char(']');
+    begin_diagnostic();
+    show_box(p);
+    end_diagnostic(true);
+  }
+
+  if (type(p) == dir_node)
+  {
+    del_node = p;
+    p = list_ptr(p);
+    delete_glue_ref(space_ptr(del_node));
+    delete_glue_ref(xspace_ptr(del_node));
+    free_node(del_node, box_node_size);
+  }
+
+  flush_node_list(link(p));
+  link(p) = null;
+
+  if (abs(box_dir(p)) != dir_yoko)
+    p = new_dir_node(p, dir_yoko);
+
+  if ((height(p) > max_dimen) || (depth(p) > max_dimen) ||
+    (height(p) + depth(p) + v_offset > max_dimen) ||
+    (width(p) + h_offset > max_dimen))
+  {
+    print_err("Huge page cannot be shipped out");
+    help2("The page just created is more than 18 feet tall or",
+      "more than 18 feet wide, so I suspect something went wrong.");
+    error();
+
+    if (tracing_output <= 0)
+    {
+      begin_diagnostic();
+      print_nl("The following box has been deleted:");
+      show_box(p);
+      end_diagnostic(true);
+    }
+
+    goto done;
+  }
+
+  if (height(p) + depth(p) + v_offset > max_v)
+    max_v = height(p) + depth(p) + v_offset;
+
+  if (width(p) + h_offset > max_h)
+    max_h = width(p) + h_offset;
+
+  dvi_h = 0;
+  dvi_v = 0;
+  cur_h = h_offset;
+  dvi_f = null_font;
+  dvi_dir = dir_yoko;
+  cur_dir_hv = dvi_dir;
+
+  if (pdf_page_height != 0)
+    cur_page_height = pdf_page_height;
+  else if ((box_dir(p) == dir_tate) || (box_dir(p) == dir_dtou))
+    cur_page_height = width(p) + 2 * v_offset + 2 * 4736286;
+  else
+    cur_page_height = height(p) + depth(p) + 2 * v_offset + 2 * 4736286;
+
+  if (pdf_page_width != 0)
+    cur_page_width = pdf_page_width;
+  else if ((box_dir(p) == dir_tate) || (box_dir(p) == dir_dtou))
+    cur_page_width = height(p) + depth(p) + 2 * h_offset + 2 * 4736286;
+  else
+    cur_page_width = width(p) + 2 * h_offset + 2 * 4736286;
+
+  ensure_pdf_open();
+
+  if (total_pages == 0)
+  {
+    prepare_mag();
+    old_setting = selector;
+    selector = new_string;
+    prints(" TeX output ");
+    print_int(year);
+    print_char('.');
+    print_two(month);
+    print_char('.');
+    print_two(day);
+    print_char(':');
+    print_two(tex_time / 60);
+    print_two(tex_time % 60);
+    selector = old_setting;
+
+    pool_ptr = str_start[str_ptr];
+
+    pdf_prepare_ship_out();
+  }
+
+  aptex_dpx_bop(total_pages + 1, pdf_page_width, pdf_page_height, pdf_h_origin, pdf_v_origin);
+  page_loc = dvi_offset + dvi_ptr;
+
+  last_bop = page_loc;
+  cur_v = height(p) + v_offset;
+  temp_ptr = p;
+
+  switch (type(p))
+  {
+    case hlist_node:
+      hlist_out();
+      break;
+
+    case vlist_node:
+      vlist_out();
+      break;
+
+    case dir_node:
+      dir_out();
+      break;
+  }
+
+  aptex_dpx_eop();
+
+  incr(total_pages);
+  cur_s = -1;
+
+  if (eTeX_ex)
+  {
+    if (LR_problems > 0)
+    {
+      report_LR_problems();
+      print_char(')');
+      print_ln();
+    }
+
+    if ((LR_ptr != null) || (cur_dir != left_to_right))
+      confusion("LR3");
+  }
+
+done:
+  if (tracing_output <= 0)
+    print_char(']');
+
+  dead_cycles = 0;
+  update_terminal();
+  synctex_teehs();
+
+#ifdef STAT
+  if (tracing_stats > 1)
+  {
+    print_nl("Memory usage before: ");
+    print_int(var_used);
+    print_char('&');
+    print_int(dyn_used);
+    print_char(';');
+  }
+#endif
+
+  flush_node_list(p);
+
+#ifdef STAT
+  if (tracing_stats > 1)
+  {
+    prints(" after: ");
+    print_int(var_used);
+    print_char('&');
+    print_int(dyn_used);
+    prints("; still utouched: ");
+    print_int(hi_mem_min - lo_mem_max - 1);
+    print_ln();
+  }
+#endif
+}
+
+static void ship_out (pointer p) {
+  if(aptex_env.flag_pdf_output)
+    pdf_ship_out(p);
+  else
+    dvi_ship_out(p);
+}
+#endif // APTEX_DVI_ONLY
 
 static void synch_dir (void)
 {
@@ -21462,7 +21699,11 @@ static void synch_dir (void)
 }
 
 // output an |hlist_node| box
+#ifdef APTEX_DVI_ONLY
 void hlist_out (void)
+#else
+void dvi_hlist_out (void)
+#endif
 {
   scaled base_line; // {the baseline coordinate for this box}
   scaled disp;  // {displacement}
@@ -21543,7 +21784,7 @@ void hlist_out (void)
   left_edge = cur_h;
   // @<Start hlist {\sl Sync\TeX} information record@>
   synctex_hlist(this_box);
- 
+
   /*
     @<Output node |p| for |hlist_out| and move to the next node,
     maintaining the condition |cur_v=base_line|@>
@@ -21566,9 +21807,6 @@ reswitch:
         if (!font_used[f])
         {
           dvi_font_def(f);
-#ifndef APTEX_DVI_ONLY
-          pdf_locate_font(f);
-#endif
           font_used[f] = true;
         }
 
@@ -21606,9 +21844,6 @@ reswitch:
 
         dvi_out(c);
 
-#ifndef APTEX_DVI_ONLY
-        pdf_char_out(dvi_f, c);
-#endif
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
       else
@@ -21664,9 +21899,6 @@ reswitch:
         dvi_out(BYTE3(jc));
         dvi_out(BYTE4(jc));
 
-#ifndef APTEX_DVI_ONLY
-        pdf_kanji_out(dvi_f, jc);
-#endif
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
 
@@ -21968,12 +22200,501 @@ reswitch:
       synch_h();
       cur_v = base_line + rule_dp;
       synch_v();
-      dvi_out(set_rule);
-      dvi_four(rule_ht);
-      dvi_four(rule_wd);
+      cur_v = base_line;
+      dvi_h = dvi_h + rule_wd;
+    }
+
+move_past:
+    cur_h = cur_h + rule_wd;
+    // @<Record horizontal |rule_node| or |glue_node| {\sl Sync\TeX} information@>
+    synctex_horizontal_rule_or_glue(p, this_box);
+
+next_p:
+    prev_p = p;
+    p = link(p);
+  }
+
+  if (eTeX_ex)
+  {
+    {
+      while (info(LR_ptr) != before)
+      {
+        if (info(LR_ptr) > L_code)
+          LR_problems = LR_problems + 10000;
+
+        pop_LR();
+      }
+
+      pop_LR();
+    }
+
+    if (box_lr(this_box) == dlist)
+      cur_dir = right_to_left;
+  }
+
+  synctex_tsilh(this_box);
+  prune_movements(save_loc);
+
+  decr(cur_s);
+}
+
 #ifndef APTEX_DVI_ONLY
+void pdf_hlist_out (void)
+{
+  scaled base_line; // {the baseline coordinate for this box}
+  scaled disp;  // {displacement}
+  eight_bits save_dir;  // {what |dvi_dir| should pop to}
+  KANJI_code jc;  // {temporary register for KANJI codes}
+  pointer ksp_ptr;  // {position of |auto_spacing_glue| in the hlist}
+  scaled left_edge; // {the left coordinate for this box}
+  scaled save_h, save_v;  // {what |dvi_h| and |dvi_v| should pop to}
+  pointer this_box; // {pointer to containing box}
+  // glue_ord g_order;
+  int g_order;  // {applicable order of infinity for glue}
+  // char g_sign;
+  int g_sign; // {selects type of glue}
+  pointer p;  // {current position in the hlist}
+  integer save_loc; // {\.{DVI} byte location upon entry}
+  pointer leader_box; // {the leader box being replicated}
+  scaled leader_wd; // {width of leader box being replicated}
+  scaled lx;  // {extra space between leader boxes}
+  boolean outer_doing_leaders;  // {were we doing leaders?}
+  scaled edge;  // {right edge of sub-box or leader space}
+  pointer prev_p; // {one step behind |p|}
+  real glue_temp; // {glue value before rounding}
+  real cur_glue;  // {glue seen so far}
+  scaled cur_g; // {rounded equivalent of |cur_glue| times the glue ratio}
+
+  cur_g = 0;
+  cur_glue = 0.0;
+  this_box = temp_ptr;
+  g_order = glue_order(this_box);
+  g_sign = glue_sign(this_box);
+  p = list_ptr(this_box);
+  ksp_ptr = space_ptr(this_box);
+  incr(cur_s);
+
+  if (cur_s > max_push)
+    max_push = cur_s;
+
+  save_loc = dvi_offset + dvi_ptr;
+  synch_dir();
+  base_line = cur_v;
+  disp = 0;
+  revdisp = 0;
+  prev_p = this_box + list_offset;
+
+  // @<Initialize |hlist_out| for mixed direction typesetting@>
+  if (eTeX_ex)
+  {
+    put_LR(before);
+
+    if (box_lr(this_box) == dlist)
+    {
+      if (cur_dir == right_to_left)
+      {
+        cur_dir = left_to_right;
+        cur_h = cur_h - width(this_box);
+      }
+      else
+        set_box_lr(this_box, 0);
+    }
+
+    if ((cur_dir == right_to_left) && (box_lr(this_box) != reversed))
+    {
+      save_h = cur_h;
+      temp_ptr = p;
+      p = new_kern(0);
+      link(prev_p) = p;
+      cur_h = 0;
+      link(p) = reverse(this_box, null, cur_g, cur_glue);
+      width(p) = -cur_h;
+      cur_h = save_h;
+      set_box_lr(this_box, reversed);
+    }
+  }
+
+  left_edge = cur_h;
+  // @<Start hlist {\sl Sync\TeX} information record@>
+  synctex_hlist(this_box);
+
+  /*
+    @<Output node |p| for |hlist_out| and move to the next node,
+    maintaining the condition |cur_v=base_line|@>
+  */
+  while (p != null)
+reswitch:
+  if (is_char_node(p))
+  {
+    synch_h();
+    synch_v();
+    chain = false;
+
+    do {
+      f = font(p);
+      c = character(p);
+
+      // @<Change font |dvi_f| to |f|@>
+      if (f != dvi_f)
+      {
+        if (!font_used[f])
+        {
+          pdf_locate_font(f);
+          font_used[f] = true;
+        }
+
+        dvi_f = f;
+      }
+
+      if (font_dir[f] == dir_default)
+      {
+        chain = false;
+        pdf_char_out(dvi_f, c);
+        cur_h = cur_h + char_width(f, char_info(f, c));
+      }
+      else
+      {
+        if (chain == false)
+          chain = true;
+        else
+        {
+          cur_h = cur_h + width(ksp_ptr);
+
+          if (g_sign != normal)
+          {
+            if (g_sign == stretching)
+            {
+              if (stretch_order(ksp_ptr) == g_order)
+                cur_h = cur_h + round(tex_float(glue_set(this_box)) * stretch(ksp_ptr));
+            }
+            else
+            {
+              if (shrink_order(ksp_ptr) == g_order)
+                cur_h = cur_h - round(tex_float(glue_set(this_box)) * shrink(ksp_ptr));
+            }
+          }
+
+          synch_h();
+        }
+
+        prev_p = link(prev_p);  // {N.B.: not |prev_p:=p|, |p| might be |lig_trick|}
+        p = link(p);
+        jc = KANJI(info(p)) % max_cjk_val;
+
+        if (font_enc[f] == enc_ucs)
+          jc = toUCS(jc);
+        else if (font_enc[f] == enc_jis)
+        {
+          if (toJIS(jc) == 0)
+            char_warning_jis(f, jc);
+          jc = toJIS(jc);
+        }
+        else
+          jc = toDVI(jc);
+
+        pdf_kanji_out(dvi_f, jc);
+        cur_h = cur_h + char_width(f, char_info(f, c));
+      }
+
+      dvi_h = cur_h;
+      prev_p = link(prev_p);
+      p = link(p);
+    } while (!(!is_char_node(p)));
+
+    // @<Record current point {\sl Sync\TeX} information@>
+    synctex_current();
+    chain = false;
+  }
+  else
+  {
+    switch (type(p))
+    {
+      case hlist_node:
+      case vlist_node:
+      case dir_node:
+        // @<Output a box in an hlist@>
+        if (list_ptr(p) == null)
+        {
+          if (type(p) != dir_node)
+          {
+            // @<Record void list {\sl Sync\TeX} information@>
+            if (type(p) == vlist_node)
+              synctex_void_vlist(p, this_box);
+            else
+              synctex_void_hlist(p, this_box);
+          }
+
+          cur_h = cur_h + width(p);
+        }
+        else
+        {
+          save_h = dvi_h;
+          save_v = dvi_v;
+          save_dir = dvi_dir;
+          cur_v = base_line + disp + shift_amount(p); // {shift the box down}
+          temp_ptr = p;
+          edge = cur_h + width(p);
+
+          if (cur_dir == right_to_left)
+            cur_h = edge;
+
+          switch (type(p))
+          {
+            case hlist_node:
+              hlist_out();
+              break;
+
+            case vlist_node:
+              vlist_out();
+              break;
+
+            case dir_node:
+              dir_out();
+              break;
+          }
+
+          dvi_h = save_h;
+          dvi_v = save_v;
+          dvi_dir = save_dir;
+          cur_h = edge;
+          cur_v = base_line + disp;
+          cur_dir_hv = save_dir;
+        }
+        break;
+
+      case rule_node:
+        {
+          rule_ht = height(p);
+          rule_dp = depth(p);
+          rule_wd = width(p);
+          goto fin_rule;
+        }
+        break;
+
+      case whatsit_node:
+        // @<Output the whatsit node |p| in an hlist@>
+        out_what(p);
+        break;
+
+      case disp_node:
+        {
+          disp = disp_dimen(p);
+          revdisp = disp;
+          cur_v = base_line + disp;
+        }
+        break;
+
+      case glue_node:
+        // @<Move right or output leaders@>
+        {
+          round_glue();
+
+          if (eTeX_ex)
+            handle_a_glue_node();
+
+          /*
+            @<Output leaders in an hlist, |goto fin_rule| if a rule
+            or to |next_p| if done@>
+          */
+          if (subtype(p) >= a_leaders)
+          {
+            leader_box = leader_ptr(p);
+
+            if (type(leader_box) == rule_node)
+            {
+              rule_ht = height(leader_box);
+              rule_dp = depth(leader_box);
+              goto fin_rule;
+            }
+
+            leader_wd = width(leader_box);
+
+            if ((leader_wd > 0) && (rule_wd > 0))
+            {
+              rule_wd = rule_wd + 10; // {compensate for floating-point rounding}
+
+              if (cur_dir == right_to_left)
+                cur_h = cur_h - 10;
+
+              edge = cur_h + rule_wd;
+              lx = 0;
+
+              /*
+                @<Let |cur_h| be the position of the first box, and set |leader_wd+lx|
+                to the spacing between corresponding parts of boxes@>
+              */
+              if (subtype(p) == a_leaders)
+              {
+                save_h = cur_h;
+                cur_h = left_edge + leader_wd * ((cur_h - left_edge) / leader_wd);
+
+                if (cur_h < save_h)
+                  cur_h = cur_h + leader_wd;
+              }
+              else
+              {
+                lq = rule_wd / leader_wd; // {the number of box copies}
+                lr = rule_wd % leader_wd; // {the remaining space}
+
+                if (subtype(p) == c_leaders)
+                  cur_h = cur_h + (lr / 2);
+                else
+                {
+                  lx = lr / (lq + 1);
+                  cur_h = cur_h + ((lr - (lq - 1) * lx) / 2);
+                }
+              }
+
+              while (cur_h + leader_wd <= edge)
+              {
+                /*
+                  @<Output a leader box at |cur_h|,
+                  then advance |cur_h| by |leader_wd+lx|@>
+                */
+                cur_v = base_line + disp + shift_amount(leader_box);
+                synch_v();
+                save_v = dvi_v;
+                synch_h();
+                save_h = dvi_h;
+                save_dir = dvi_dir;
+                temp_ptr = leader_box;
+
+                if (cur_dir == right_to_left)
+                  cur_h = cur_h + leader_wd;
+
+                outer_doing_leaders = doing_leaders;
+                doing_leaders = true;
+
+                switch (type(leader_box))
+                {
+                  case hlist_node:
+                    hlist_out();
+                    break;
+
+                  case vlist_node:
+                    vlist_out();
+                    break;
+
+                  case dir_node:
+                    dir_out();
+                    break;
+                }
+
+                doing_leaders = outer_doing_leaders;
+                dvi_v = save_v;
+                dvi_h = save_h;
+                dvi_dir = save_dir;
+                cur_v = base_line;
+                cur_h = save_h + leader_wd + lx;
+                cur_dir_hv = save_dir;
+              }
+
+              if (cur_dir == right_to_left)
+                cur_h = edge;
+              else
+                cur_h = edge - 10;
+
+              goto next_p;
+            }
+          }
+
+          goto move_past;
+        }
+        break;
+
+      case kern_node:
+        // @<Record |kern_node| {\sl Sync\TeX} information@>
+        synctex_kern(p, this_box);
+        cur_h = cur_h + width(p);
+        break;
+
+      case math_node:
+        {
+          // @<Record |math_node| {\sl Sync\TeX} information@>
+          synctex_math(p, this_box);
+
+          // @<Handle a math node in |hlist_out|@>
+          if (eTeX_ex)
+          {
+            if (end_LR(p))
+            {
+              if (info(LR_ptr) == end_LR_type(p))
+                pop_LR();
+              else
+              {
+                if (subtype(p) > L_code)
+                  incr(LR_problems);
+              }
+            }
+            else
+            {
+              push_LR(p);
+
+              if (LR_dir(p) != cur_dir)
+              {
+                save_h = cur_h;
+                temp_ptr = link(p);
+                rule_wd = width(p);
+                free_node(p, small_node_size);
+                cur_dir = reflected;
+                p = new_edge(cur_dir, rule_wd);
+                link(prev_p) = p;
+                cur_h = cur_h - left_edge + rule_wd;
+                link(p) = reverse(this_box, new_edge(reflected, 0), cur_g, cur_glue);
+                edge_dist(p) = cur_h;
+                cur_dir = reflected;
+                cur_h = save_h;
+                goto reswitch;
+              }
+            }
+
+            type(p) = kern_node;
+          }
+
+          cur_h = cur_h + width(p);
+        }
+        break;
+
+      case ligature_node:
+        // @<Make node |p| look like a |char_node| and |goto reswitch|@>
+        {
+          mem[lig_trick] = mem[lig_char(p)];
+          link(lig_trick) = link(p);
+          p = lig_trick;
+          goto reswitch;
+        }
+        break;
+
+      case edge_node:
+        {
+          cur_h = cur_h + width(p);
+          left_edge = cur_h + edge_dist(p);
+          cur_dir = subtype(p);
+        }
+
+      default:
+        do_nothing();
+        break;
+    }
+
+    goto next_p;
+
+  fin_rule:
+    // @<Output a rule in an hlist@>
+    if (is_running(rule_ht))
+      rule_ht = height(this_box) + disp;
+
+    if (is_running(rule_dp))
+      rule_dp = depth(this_box) - disp;
+
+    rule_ht = rule_ht + rule_dp;
+
+    if ((rule_ht > 0) && (rule_wd > 0))
+    {
+      synch_h();
+      cur_v = base_line + rule_dp;
+      synch_v();
       pdf_rule_out(rule_wd, rule_ht);
-#endif
       cur_v = base_line;
       dvi_h = dvi_h + rule_wd;
     }
@@ -22014,6 +22735,14 @@ next_p:
 
   decr(cur_s);
 }
+
+void hlist_out (void) {
+  if(aptex_env.flag_pdf_output)
+    pdf_hlist_out();
+  else
+    dvi_hlist_out();
+}
+#endif // APTEX_DVI_ONLY
 
 // output an |vlist_node| box
 void vlist_out (void)
@@ -22301,12 +23030,12 @@ fin_rule:
 
         synch_h();
         synch_v();
+BEGIN_APTEX_DVI_OUT
         dvi_out(put_rule);
         dvi_four(rule_ht);
         dvi_four(rule_wd);
-#ifndef APTEX_DVI_ONLY
-        pdf_rule_out(rule_wd, rule_ht);
-#endif
+END_APTEX_DVI_OUT
+  APTEX_PDF_OUT(pdf_rule_out(rule_wd, rule_ht);)
         cur_h = left_edge;
       }
 
@@ -22449,8 +23178,7 @@ static void special_out (pointer p)
 
   for (k = str_start[str_ptr]; k <= pool_ptr - 1; k++)
     dvi_out(str_pool[k]);
-#ifndef APTEX_DVI_ONLY
-  {
+  APTEX_PDF_OUT(
     const char * spc_str = (const char *) str_pool + str_start[str_ptr];
     scaled spc_h, spc_v;
 
@@ -22481,8 +23209,7 @@ static void special_out (pointer p)
       spc_exec_special(spc_str, cur_length,
         spc_h * sp2bp, spc_v * sp2bp, mag / 1000.0, &is_drawable, &rect);
     }
-  }
-#endif
+               )
   pool_ptr = str_start[str_ptr];
 }
 
@@ -36438,6 +37165,7 @@ void close_files_and_terminate (void)
 
   // @<Finish the \.{DVI} file@>
   {
+BEGIN_APTEX_DVI_OUT
     while (cur_s > -1)
     {
       if (cur_s > 0)
@@ -36450,11 +37178,14 @@ void close_files_and_terminate (void)
 
       decr(cur_s);
     }
+END_APTEX_DVI_OUT
 
     if (total_pages == 0)
       print_nl("No pages of output.");
     else
     {
+
+BEGIN_APTEX_DVI_OUT
       dvi_out(post);  // {beginning of the postamble}
       dvi_four(last_bop);
       last_bop = dvi_offset + dvi_ptr - 5;  // {|post| location}
@@ -36514,9 +37245,9 @@ void close_files_and_terminate (void)
       print_int(dvi_offset + dvi_ptr);
       prints(" bytes).");
       b_close(dvi_file);
+END_APTEX_DVI_OUT
 
-#ifndef APTEX_DVI_ONLY
-      {
+  APTEX_PDF_OUT(
         spc_exec_at_end_document();
         pdf_close_document();
         pdf_close_fontmaps();
@@ -36527,7 +37258,6 @@ void close_files_and_terminate (void)
         print_int(total_pages);
         prints(" page");
         free(output_pdf_name);
-        free(output_dvi_name);
 
         if (total_pages != 1)
           print_char('s');
@@ -36535,8 +37265,7 @@ void close_files_and_terminate (void)
         prints(", ");
         print_int(pdf_output_stats());
         prints(" bytes).");
-      }
-#endif
+               )
     }
   }
 
