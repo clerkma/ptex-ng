@@ -1,11 +1,10 @@
 // Copyright 2025 LdBeth, Clerk Ma.
 #include <kpathsea/c-fopen.h>
 #define __SyncTeX__
-#ifndef EXTERN
-#define EXTERN //
-#endif /* EXTERN */
+#define EXTERN extern
 #define EXPORT extern
 #include "aptex.h"
+#undef EXTERN
 extern char *synctex_get_job_name();
 extern char *synctex_get_log_name();
 extern char *synctex_get_current_name();
