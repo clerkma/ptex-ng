@@ -125,6 +125,8 @@ static void print_aptex_usage (void)
       "    +mapfile (append mode), !mapfile (replace mode), e.g.: '--fontmap=!replace.map'\n"
       "  --format=fmt\n"
       "    set preloaded format, e.g.: 'aptex --format=plain name.tex'\n"
+      "  --output-format=fmt\n"
+      "    set output format, (fmt=dvi|pdf)\n"
       "\n"
       "  --patterns\n"
       "    (INITEX only) allow use of \\patterns after loading format\n"
