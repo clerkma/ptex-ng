@@ -1,4 +1,7 @@
+//
+// This is a bridge header over dvipdfm-x.
 // PDF output functions from texlive/texk/dvipdfm-x
+//
 
 /* from "dvipdfm-x/fontmap.h" */
 extern void pdf_init_fontmaps (void);

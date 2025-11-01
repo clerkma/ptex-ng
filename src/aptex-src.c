@@ -126,6 +126,7 @@ static void print_aptex_usage (void)
 static void print_aptex_version (void)
 {
   printf("Copyright 2014-2025 Clerk Ma.\n"
+    "          2025 LdBeth.\n"
     "banner: \"%s\"\n"
     "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n",
     banner, pTeX_version_string, upTeX_version_string);
@@ -21070,7 +21071,7 @@ static void pdf_ship_out() {
 
   pdf_init_fontmaps();
 
-      /* TeX Live */
+  /* TeX Live (pdftex and dvipdfmx) */
 #ifdef USE_KPATHSEA
   if (kpse_find_file("pdftex.map", kpse_fontmap_format, false) != NULL)
     pdf_load_fontmap_file("pdftex.map", '+');
@@ -21078,7 +21079,7 @@ static void pdf_ship_out() {
     pdf_load_fontmap_file("kanjix.map", '+');
   if (kpse_find_file("ckx.map", kpse_fontmap_format, false) != NULL)
     pdf_load_fontmap_file("ckx.map", '+');
-  /* W32TeX */
+  /* W32TeX (legacy) */
   if (kpse_find_file("dlbase14.map", kpse_fontmap_format, false) != NULL)
     pdf_load_fontmap_file("dlbase14.map", '+');
   if (kpse_find_file("dvipdfm.map", kpse_fontmap_format, false) != NULL)
