@@ -22235,6 +22235,9 @@ next_p:
   synctex_tsilh(this_box);
   prune_movements(save_loc);
 
+  if (cur_s > 0)
+    dvi_pop(save_loc);
+
   decr(cur_s);
 }
 
