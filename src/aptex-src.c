@@ -20930,7 +20930,6 @@ static void dpx_compute_id_string (unsigned char * id, const char * producer, co
 static const double sp2bp = 0.000015202;
 static int     font_id[65536];
 static char * output_pdf_name;
-static boolean pdf_output;
 
 static void pdf_locate_font (internal_font_number f)
 {
@@ -22402,7 +22401,7 @@ reswitch:
       dvi_h = cur_h;
       prev_p = link(prev_p);
       p = link(p);
-    } while (!(!is_char_node(p)));
+    } while (is_char_node(p));
 
     // @<Record current point {\sl Sync\TeX} information@>
     synctex_current();
@@ -22732,9 +22731,6 @@ next_p:
 
   synctex_tsilh(this_box);
   prune_movements(save_loc);
-
-  if (cur_s > 0)
-    dvi_pop(save_loc);
 
   decr(cur_s);
 }
