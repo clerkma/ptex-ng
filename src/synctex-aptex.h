@@ -1,6 +1,9 @@
+// Copyright 2025 LdBeth, Clerk Ma.
 #include <kpathsea/c-fopen.h>
 #define __SyncTeX__
+#ifndef EXTERN
 #define EXTERN //
+#endif /* EXTERN */
 #define EXPORT extern
 #include "aptex.h"
 extern char *synctex_get_job_name();
