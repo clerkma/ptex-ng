@@ -8,7 +8,7 @@ MD5INCLUDES = -I../../texlive/texk/web2c/libmd5
 objects = synctex.o md5.o
 
 libw2c.a: $(objects)
-	$(AR) cru libw2c.a $(objects)
+	$(AR) cr libw2c.a $(objects)
 	ranlib libw2c.a
 
 synctex.o: ../../texlive/texk/web2c/synctexdir/synctex.c
