@@ -37,10 +37,10 @@
 
 #else
 
-#define BEGIN_APTEX_DVI_OUT if(!aptex_env.flag_pdf_output) {
+#define BEGIN_APTEX_DVI_OUT if(pdf_output <= 0) {
 #define END_APTEX_DVI_OUT }
 
-#define APTEX_PDF_OUT(...) if(aptex_env.flag_pdf_output) { __VA_ARGS__ }
+#define APTEX_PDF_OUT(...) if(pdf_output > 0) { __VA_ARGS__ }
 
 #endif
 
@@ -58,6 +58,8 @@ static int hps_overfull;
 // vpack stats
 static int vps_underfull;
 static int vps_overfull;
+// pdf output
+static int pdf_output_value;
 
 #if   defined (__clang__)
 static const char * compiler = "Clang";
@@ -1354,7 +1356,7 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.flag_tex82                = false;
   aptex_env.flag_compact_fmt          = true;
   aptex_env.flag_merge_kanji_baseline = false;
-  aptex_env.flag_pdf_output           = true;
+  aptex_env.flag_pdf_output           = false;
 
   aptex_env.trace_realloc         = true;
   aptex_env.trace_mem             = false;
@@ -1457,9 +1459,9 @@ static void aptex_commands_init (int ac, char **av)
         aptex_env.flag_merge_kanji_baseline = true;
       else if (ARGUMENT_IS("output-format")) {
         if (!strcmp(optarg, "dvi"))
-          aptex_env.flag_pdf_output = false;
+          aptex_env.flag_pdf_output = true, pdf_output_value = 0;
         else if (!strcmp(optarg, "pdf"))
-          aptex_env.flag_pdf_output = true;
+          aptex_env.flag_pdf_output = true, pdf_output_value = 1;
         else
           fprintf(stderr, "warning: Ignoring unknown argument `%s' to --output-format.\n", optarg);
       }
@@ -5151,6 +5153,9 @@ start_of_TEX:
         incr(loc);
     }
 
+    if (aptex_env.flag_pdf_output)
+      pdf_output = pdf_output_value;
+
     if (eTeX_ex)
       printf("entering extended mode\n");
 
@@ -6471,6 +6476,7 @@ static void init_prim (void)
   primitive("scriptscriptbaselineshiftfactor", assign_int, int_base + scriptscript_baseline_shift_factor_code);
   primitive("ptexlineendmode", assign_int, int_base + ptex_lineend_code);
   primitive("ptextracingfonts", assign_int, int_base + ptex_tracing_fonts_code);
+  primitive("dpxoutput", assign_int, int_base + pdf_output_code);
   primitive("pdfcompresslevel", assign_int, int_base + pdf_compress_level_code);
   primitive("pdfmajorversion", assign_int, int_base + pdf_major_version_code);
   primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
@@ -11352,6 +11358,10 @@ static void print_param (integer n)
 
     case eTeX_state_code + TeXXeT_code:
       print_esc("TeXXeTstate");
+      break;
+
+    case pdf_output_code:
+      print_esc("dpxoutput");
       break;
 
     case pdf_compress_level_code:
@@ -21578,7 +21588,7 @@ done:
 }
 
 static void ship_out (pointer p) {
-  if(aptex_env.flag_pdf_output)
+  if(pdf_output > 0)
     pdf_ship_out(p);
   else
     dvi_ship_out(p);
@@ -22736,7 +22746,7 @@ next_p:
 }
 
 void hlist_out (void) {
-  if(aptex_env.flag_pdf_output)
+  if(pdf_output > 0)
     pdf_hlist_out();
   else
     dvi_hlist_out();

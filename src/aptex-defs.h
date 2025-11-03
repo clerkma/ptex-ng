@@ -771,14 +771,15 @@ enum
 #define saving_hyph_codes_code        70  // {save hyphenation codes for languages}
 #define eTeX_state_code               71  // {\eTeX\ state variables}
 #define tracing_fontloaders_code      72
-#define pdf_compress_level_code       73
-#define pdf_major_version_code        74
-#define pdf_minor_version_code        75
-#define synctex_code                  76
-#define tracing_stack_levels_code     77
-#define partoken_context_code         78
-#define show_stream_code              79
-#define int_pars                      80
+#define pdf_output_code               73
+#define pdf_compress_level_code       74
+#define pdf_major_version_code        75
+#define pdf_minor_version_code        76
+#define synctex_code                  77
+#define tracing_stack_levels_code     78
+#define partoken_context_code         79
+#define show_stream_code              80
+#define int_pars                      81
 #define count_base                    (int_base + int_pars) // {256 user \.{\\count} registers}
 #define del_code_base                 (count_base + 256)    // {256 delimiter code mappings}
 #define dimen_base                    (del_code_base + 256) // {beginning of region 6}
@@ -860,6 +861,7 @@ enum
 #define last_line_fit                 int_par(last_line_fit_code)
 #define saving_vdiscards              int_par(saving_vdiscards_code)
 #define saving_hyph_codes             int_par(saving_hyph_codes_code)
+#define pdf_output                    int_par(pdf_output_code)
 #define pdf_compress_level            int_par(pdf_compress_level_code)
 #define pdf_major_version             int_par(pdf_major_version_code)
 #define pdf_minor_version             int_par(pdf_minor_version_code)
