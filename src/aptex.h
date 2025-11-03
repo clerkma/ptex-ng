@@ -815,6 +815,7 @@ EXTERN struct {
   char * aptex_map;
   // options
   int opt_int;
+  int opt_pdf_output_value;
   // time variables
   clock_t time_start;
   clock_t time_main;

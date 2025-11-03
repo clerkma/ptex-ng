@@ -58,8 +58,14 @@ static int hps_overfull;
 // vpack stats
 static int vps_underfull;
 static int vps_overfull;
-// pdf output
-static int pdf_output_value;
+#ifndef APTEX_DVI_ONLY
+// pdf consistency check
+static int fixed_pdf_major_version;
+static int fixed_pdf_minor_version;
+static boolean pdf_version_written;
+static int fixed_pdfoutput;
+static boolean fixed_pdfoutput_set;
+#endif
 
 #if   defined (__clang__)
 static const char * compiler = "Clang";
@@ -1347,6 +1353,7 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.aptex_map             = NULL;
 
   aptex_env.opt_int = -1;
+  aptex_env.opt_pdf_output_value = 0;
 
   aptex_env.flag_initex               = false;
   aptex_env.flag_suppress_f_ligs      = false;
@@ -1459,9 +1466,9 @@ static void aptex_commands_init (int ac, char **av)
         aptex_env.flag_merge_kanji_baseline = true;
       else if (ARGUMENT_IS("output-format")) {
         if (!strcmp(optarg, "dvi"))
-          aptex_env.flag_pdf_output = true, pdf_output_value = 0;
+          aptex_env.flag_pdf_output = true;
         else if (!strcmp(optarg, "pdf"))
-          aptex_env.flag_pdf_output = true, pdf_output_value = 1;
+          aptex_env.flag_pdf_output = true, aptex_env.opt_pdf_output_value = 1;
         else
           fprintf(stderr, "warning: Ignoring unknown argument `%s' to --output-format.\n", optarg);
       }
@@ -4340,6 +4347,11 @@ static void initialize (void)
   aptex_utils_get_seconds_and_micros(&epochseconds, &microseconds);
   aptex_utils_init_start_time();
 
+#ifndef APTEX_DVI_ONLY
+  pdf_version_written = false;
+  fixed_pdfoutput_set = false;
+#endif
+
   if (aptex_env.flag_initex)
     do_initex();
 }
@@ -5154,7 +5166,7 @@ start_of_TEX:
     }
 
     if (aptex_env.flag_pdf_output)
-      pdf_output = pdf_output_value;
+      pdf_output = aptex_env.opt_pdf_output_value;
 
     if (eTeX_ex)
       printf("entering extended mode\n");
@@ -21039,6 +21051,17 @@ static void aptex_dpx_eop (void)
   pdf_doc_end_page();
 }
 
+static void check_pdfversion (void)
+{
+  if (!pdf_version_written) {
+    pdf_version_written = true;
+    fixed_pdf_major_version = pdf_major_version;
+    fixed_pdf_minor_version = pdf_minor_version;
+  } else if (fixed_pdf_major_version != pdf_major_version ||
+             fixed_pdf_minor_version != pdf_minor_version)
+    aptex_error("setup", "PDF version cannot be changed after data is written to the pdf file");
+}
+
 static void pdf_prepare_ship_out() {
   struct pdf_setting aptex_pdf_setting;
   char * aptex_producer = "Asiatic pTeX 2025";
@@ -21380,6 +21403,16 @@ done:
 }
 
 #ifndef APTEX_DVI_ONLY
+static inline void fix_pdfoutput(void)
+{
+  if (!fixed_pdfoutput_set) {
+    fixed_pdfoutput = pdf_output;
+    fixed_pdfoutput_set = true;
+  } else if (fixed_pdfoutput != pdf_output)
+    aptex_error("setup",
+                "\\dpxoutput can only be changed before anything is written to the output");
+}
+
 static void pdf_ship_out (pointer p)
 {
   integer page_loc; // {location of the current |bop|}
@@ -21462,6 +21495,8 @@ static void pdf_ship_out (pointer p)
     goto done;
   }
 
+  fix_pdfoutput();
+
   if (height(p) + depth(p) + v_offset > max_v)
     max_v = height(p) + depth(p) + v_offset;
 
@@ -21490,6 +21525,7 @@ static void pdf_ship_out (pointer p)
     cur_page_width = width(p) + 2 * h_offset + 2 * 4736286;
 
   ensure_pdf_open();
+  check_pdfversion();
 
   if (total_pages == 0)
   {
@@ -21588,6 +21624,7 @@ done:
 }
 
 static void ship_out (pointer p) {
+  fix_pdfoutput();
   if(pdf_output > 0)
     pdf_ship_out(p);
   else
@@ -22453,7 +22490,7 @@ reswitch:
           switch (type(p))
           {
             case hlist_node:
-              hlist_out();
+              pdf_hlist_out();
               break;
 
             case vlist_node:
@@ -22580,7 +22617,7 @@ reswitch:
                 switch (type(leader_box))
                 {
                   case hlist_node:
-                    hlist_out();
+                    pdf_hlist_out();
                     break;
 
                   case vlist_node:
