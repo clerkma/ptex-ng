@@ -1,3 +1,0 @@
-TEXINPUTS.platex-ng=$TEXMFDOTDIR;$TEXMF/tex/{uplatex,platex,latex,generic,}//
-TEXINPUTS.platex-dev-ng=$TEXMFDOTDIR;$TEXMF/tex/{latex-dev,uplatex,platex,latex,generic,}//
-TEXINPUTS.ptex-ng=$TEXMFDOTDIR;$TEXMF/tex/{uptex,ptex,plain,generic,latex,}//
