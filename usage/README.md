@@ -1,5 +1,7 @@
 
-## Usage (2024/09/19)
+# Management of Formats
+
+##  By Hand
 
 ### Setup Variables
 
@@ -12,16 +14,22 @@ tlmgr conf texmf TEXINPUTS.aptex "$TEXMFDOTDIR;$TEXMF/tex/{uptex,ptex,plain,gene
 ### Generate All Formats
 
 ```
-cd usage
+cd usage/static
 fmtutil-sys --cnffile fmt-aptex.cnf --all
 ```
 
-### Compile Your Document
+## By Script
 
+### Setup Variables and Generate All Formats
 
 ```
-ptex-ng +[fmt] doc.tex
+python3 tool.py
+```
+
+# Compile Your Document
+
+```
+aptex +[fmt] doc.tex
 ```
 
 `fmt`: `aplatex`, `platex-ng`, `platex-dev-ng`
-
