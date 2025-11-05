@@ -12,7 +12,6 @@ LIBS = libdpx.lib libpng.lib zlib.lib ptexenc.lib kpathsea.lib \
 
 all: $(OBJS)
 	$(CC) -nologo -Fe:aptex.exe $(OBJS) $(LIBS)
-	copy aptex.exe ptex-ng.exe
 
 aptex.obj: $(ROOT)\aptex.c
 	$(CC) $(CFLAGS) $(ROOT)\aptex.c

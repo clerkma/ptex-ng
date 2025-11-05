@@ -1634,7 +1634,7 @@ void aptex_run (int argc, char ** argv)
   kpse_set_program_name(aptex_env.argv[0], NULL);
   kpse_set_program_enabled(kpse_fontmap_format, true, kpse_src_texmf_cnf);
   // for engine name
-  xputenv("engine", "ptex-ng");
+  xputenv("engine", "aptex");
 #endif
   // for ptexenc init: encoding
   init_default_kanji("utf8", "uptex");

@@ -22,7 +22,6 @@ all: aptex
 
 aptex: $(objects)
 	$(CC) $(LDFLAGS) aptex $(objects) $(LDLIBS)
-	cp aptex ptex-ng
 
 aptex.o: aptex.c $(headers)
 	$(CC) $(CFLAGS) $(INCLUDES) aptex.c
@@ -36,4 +35,4 @@ aptex-src.o: aptex-src.c $(headers)
 .PHONY: clean
 
 clean:
-	rm aptex ptex-ng lsotfea *.o
+	rm aptex lsotfea *.o
