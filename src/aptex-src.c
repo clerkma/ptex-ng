@@ -20656,18 +20656,14 @@ void dvi_swap (void)
 {
   if (dvi_limit == dvi_buf_size)
   {
-BEGIN_APTEX_DVI_OUT
     write_dvi(0, half_buf - 1);
-END_APTEX_DVI_OUT
     dvi_limit = half_buf;
     dvi_offset = dvi_offset + dvi_buf_size;
     dvi_ptr = 0;
   }
   else
   {
-BEGIN_APTEX_DVI_OUT
     write_dvi(half_buf, dvi_buf_size - 1);
-END_APTEX_DVI_OUT
     dvi_limit = dvi_buf_size;
   }
 
@@ -23589,40 +23585,65 @@ static void special_out (pointer p)
 
   for (k = str_start[str_ptr]; k <= pool_ptr - 1; k++)
     dvi_out(str_pool[k]);
-  APTEX_PDF_OUT(
-    const char * spc_str = (const char *) str_pool + str_start[str_ptr];
-    scaled spc_h, spc_v;
 
-    switch (cur_dir_hv)
-    {
-      case dir_yoko:
-        spc_h = cur_h;
-        spc_v = -cur_v;
-        break;
-
-      case dir_tate:
-        spc_h = -cur_v;
-        spc_v = -cur_h;
-        break;
-
-      case dir_dtou:
-        spc_h = cur_v;
-        spc_v = cur_h;
-        break;
-    }
-
-    {
-      int is_drawable = 0;
-      pdf_rect rect = {0.0, 0.0, 0.0, 0.0};
-
-      graphics_mode();
-      spc_moveto(cur_h * sp2bp / 1.5202, cur_v * sp2bp / 1.5202);
-      spc_exec_special(spc_str, cur_length,
-        spc_h * sp2bp, spc_v * sp2bp, mag / 1000.0, &is_drawable, &rect);
-    }
-               )
   pool_ptr = str_start[str_ptr];
 }
+
+#ifndef APTEX_DVI_ONLY
+static void pdf_special_out (pointer p)
+{
+  char old_setting;
+  pool_pointer k;
+
+  old_setting = selector;
+  selector = new_string;
+
+#ifdef APTEX_EXTENSION
+  if (pool_ptr + 32000 > current_pool_size)
+    str_pool = realloc_str_pool (increment_pool_size);
+
+  show_token_list(link(write_tokens(p)), 0, 10000000L);
+#else
+  show_token_list(link(write_tokens(p)), 0, pool_size - pool_ptr);
+#endif
+
+  selector = old_setting;
+  str_room(1);
+
+  const char * spc_str = (const char *) str_pool + str_start[str_ptr];
+  scaled spc_h, spc_v;
+
+  switch (cur_dir_hv)
+    {
+    case dir_yoko:
+      spc_h = cur_h;
+      spc_v = -cur_v;
+      break;
+
+    case dir_tate:
+      spc_h = -cur_v;
+      spc_v = -cur_h;
+      break;
+
+    case dir_dtou:
+      spc_h = cur_v;
+      spc_v = cur_h;
+      break;
+    }
+
+  {
+    int is_drawable = 0;
+    pdf_rect rect = {0.0, 0.0, 0.0, 0.0};
+
+    graphics_mode();
+    spc_moveto(cur_h * sp2bp / 1.5202, cur_v * sp2bp / 1.5202);
+    spc_exec_special(spc_str, cur_length,
+                     spc_h * sp2bp, spc_v * sp2bp, mag / 1000.0, &is_drawable, &rect);
+  }
+
+  pool_ptr = str_start[str_ptr];
+}
+#endif
 
 static void write_out (pointer p)
 {
@@ -23795,7 +23816,14 @@ void out_what (pointer p)
       break;
 
     case special_node:
+#ifdef APTEX_DVI_ONLY
       special_out(p);
+#else
+      if(pdf_output > 0)
+        pdf_special_out(p);
+      else
+        special_out(p);
+#endif
       break;
 
     case language_node:
