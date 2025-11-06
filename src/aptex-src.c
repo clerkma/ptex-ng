@@ -7539,7 +7539,6 @@ void print_kanji (KANJI_code s)
   print_char(BYTE4(s));
 }
 
-// todo: noreturn
 _Noreturn void jump_out (void)
 {
   close_files_and_terminate();
@@ -16658,7 +16657,7 @@ start_cs:
                   }
                   if (cat == letter)
                     state = skip_blanks;
-                } while (((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)) || (k > limit));
+                } while (!(!((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)) || (k > limit)));
 
                 if (!((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)))
                   decr(k);
