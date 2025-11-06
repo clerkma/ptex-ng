@@ -67,6 +67,8 @@
   #pragma warning(disable:4127) // conditional expression is constant
   #pragma warning(disable:5287) // operands are different enum types 'type 1' and 'type 2'; use an explicit cast to silence this warning
 
+  // https://learn.microsoft.com/en-us/cpp/cpp/noreturn?view=msvc-170
+  #define _Noreturn __declspec(noreturn)
 #elif defined (__clang__)
   // Clang
   //  http://clang.llvm.org/docs/UsersManual.html
