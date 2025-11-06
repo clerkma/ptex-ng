@@ -48,7 +48,7 @@ def update_variables():
     }
     for k, v in update_task.items():
         value = v
-        if platform.platform != "Windows":
+        if platform.system() in ["Linux", "Darwin"]:
             value = v.replace("$", "\\$")
         command = f"tlmgr conf texmf TEXINPUTS.{k} \"{value}\""
         os.system(command)
@@ -63,7 +63,7 @@ stub_config = r"""
 """
 stub_aplatex = r"""
 \begingroup  \catcode`\{=1  \catcode`\}=2%
-  \immediate\write20{<<< making "uplatex with Babel" format >>>}
+  \immediate\write20{<<< making "uplatex (ApTeX) with Babel" format >>>}
 \endgroup
 \scrollmode
 \input aptex-config.tex
