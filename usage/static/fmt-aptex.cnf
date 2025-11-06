@@ -1,5 +1,5 @@
 # plain
-aptex ptex-ng language.def *aptex.ini
+aptex aptex language.def *aptex.ini
 # LaTeX
-aplatex ptex-ng language.dat *aplatex.ini
+aplatex aptex language.dat *aplatex.ini
 # fmtutil-sys --cnffile fmt-ptex-ng.cnf --all
