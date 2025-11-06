@@ -1,4 +1,4 @@
-## $Id: hitex.am 76762 2025-11-05 09:41:50Z mruckert $
+## $Id: hitex.am 76769 2025-11-05 23:32:54Z karl $
 ## texk/web2c/hitexdir/am/hitex.am: Makefile fragment for HiTeX
 ##
 ## Copyright 2021-2022 Martin Ruckert <ruckert@cs.hm.edu>
@@ -7,6 +7,9 @@
 if HITEX
 bin_PROGRAMS += hitex hishrink histretch
 noinst_PROGRAMS += himktables
+
+# Force Automake to use CXXLD for linking
+nodist_EXTRA_hitex_SOURCES = dummy.cxx
 
 # convenience target to build all the programs here.
 hiall: hitex hishrink histretch
