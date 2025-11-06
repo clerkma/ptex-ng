@@ -23616,16 +23616,19 @@ static void pdf_special_out (pointer p)
   switch (cur_dir_hv)
     {
     case dir_yoko:
+      pdf_dev_set_dirmode(dvi_yoko);
       spc_h = cur_h;
       spc_v = -cur_v;
       break;
 
     case dir_tate:
+      pdf_dev_set_dirmode(dvi_tate);
       spc_h = -cur_v;
       spc_v = -cur_h;
       break;
 
     case dir_dtou:
+      pdf_dev_set_dirmode(dvi_dtou);
       spc_h = cur_v;
       spc_v = cur_h;
       break;
