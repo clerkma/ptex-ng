@@ -99,7 +99,7 @@ void print_esc (const char * s);
 void sprint_esc (str_number s);
 void print_int (integer n);
 void print_file_name (integer n, integer a, integer e);
-void jump_out (void);
+_Noreturn void jump_out (void);
 void error (void);
 void overflow (const char * s, integer n);
 
@@ -374,7 +374,7 @@ static inline void tex_help (unsigned int n, ...)
   va_end(help_arg);
 }
 /* sec 0093 */
-static inline void succumb (void)
+_Noreturn static inline void succumb (void)
 {
   if (interaction == error_stop_mode)
     interaction = scroll_mode;

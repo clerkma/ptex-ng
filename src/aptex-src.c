@@ -93,7 +93,7 @@ static const char * dist = "Unknown";
 
 static const char * banner = "This is Asiatic pTeX, Version 3.141592653";
 
-static void aptex_utils_exit (int unix_code)
+_Noreturn static void aptex_utils_exit (int unix_code)
 {
   update_terminal();
   exit(unix_code);
@@ -7540,7 +7540,7 @@ void print_kanji (KANJI_code s)
 }
 
 // todo: noreturn
-void jump_out (void)
+_Noreturn void jump_out (void)
 {
   close_files_and_terminate();
   aptex_utils_exit(do_final_end());
@@ -7823,7 +7823,7 @@ void overflow (const char * s, integer n)
 }
 
 // consistency check violated; |s| tells where
-static void confusion (const char * s)
+_Noreturn static void confusion (const char * s)
 {
   normalize_selector();
 
@@ -8656,6 +8656,7 @@ static halfword badness (scaled t, scaled s)
   }
 }
 
+#ifdef APTEX_DEBUG
 static void print_word (memory_word w)
 { 
   print_int(w.cint); 
@@ -8680,6 +8681,7 @@ static void print_word (memory_word w)
   print_char(':');
   print_int(w.qqqq.b3);
 }
+#endif
 
 void show_token_list (integer p, integer q, integer l)
 {
@@ -16656,7 +16658,7 @@ start_cs:
                   }
                   if (cat == letter)
                     state = skip_blanks;
-                } while (!(!((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)) || (k > limit)));
+                } while (((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)) || (k > limit));
 
                 if (!((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)))
                   decr(k);
@@ -21418,7 +21420,6 @@ static void pdf_ship_out (pointer p)
   integer page_loc; // {location of the current |bop|}
   pointer del_node; // {used when delete the |dir_node| continued box}
   char j, k;  // {indices to first ten count registers}
-  pool_pointer s; // {index into |str_pool|}
   char old_setting; // {saved |selector| setting}
 
   // @<Start sheet {\sl Sync\TeX} information record@>
@@ -21951,7 +21952,7 @@ reswitch:
       dvi_h = cur_h;
       prev_p = link(prev_p);
       p = link(p);
-    } while (!(!is_char_node(p)));
+    } while (is_char_node(p));
 
     // @<Record current point {\sl Sync\TeX} information@>
     synctex_current();
@@ -22829,7 +22830,6 @@ void vlist_out (void)
 
   save_loc = dvi_offset + dvi_ptr;
   synch_dir();
-  left_edge = cur_h;
   left_edge = cur_h;
   // @<Start vlist {\sl Sync\TeX} information record@>
   synctex_vlist(this_box);
@@ -27458,7 +27458,7 @@ static void line_break (boolean d)
           }
 
           cur_p = post_p;
-        } while (!(!is_char_node(cur_p)));
+        } while (is_char_node(cur_p));
 
         chain = false;
       }
@@ -29604,7 +29604,7 @@ common_ending:
         s = major_tail;
         hyphen_passed = j - 1;
         link(hold_head) = null;
-      } while (!(!odd(hyf[j - 1])));
+      } while (odd(hyf[j - 1]));
   } while (!(j > hn));
 
   link(s) = q;
@@ -37769,7 +37769,7 @@ boolean check_box (pointer box_p)
 
         if (p == null)
           goto done;
-      } while (!(!is_char_node(p)));
+      } while (is_char_node(p));
     }
 
     switch (type(p))
@@ -37944,7 +37944,7 @@ void adjust_hlist (pointer p, boolean pf)
 
           v = link(v);
         }
-      } while (!(!is_char_node(p)));
+      } while (is_char_node(p));
     }
     else
     {
@@ -38635,7 +38635,7 @@ reswitch:
           l = p;
           p = q;
         }
-      } while (!(!is_char_node(p)));
+      } while (is_char_node(p));
     }
     else
     {
@@ -38949,7 +38949,7 @@ void just_reverse (pointer p)
         q = link(p);
         link(p) = l;
         l = p;
-      } while (!(!is_char_node(q)));
+      } while (is_char_node(q));
     }
     else
     {
