@@ -166,6 +166,10 @@ void dvi_swap (void);
 void movement (scaled w, eight_bits o);
 void hlist_out (void);
 void vlist_out (void);
+#ifndef APTEX_DVI_ONLY
+void pdf_hlist_out (void);
+void pdf_vlist_out (void);
+#endif
 
 void prune_movements (integer l);
 void out_what (pointer p);

@@ -21630,6 +21630,100 @@ static void ship_out (pointer p) {
   else
     dvi_ship_out(p);
 }
+
+static void pdf_synch_dir (void)
+{
+  scaled tmp; // {temporary resister}
+
+  switch (cur_dir_hv)
+  {
+    case dir_yoko:
+      if (dvi_dir != cur_dir_hv)
+      {
+        dir_used = true;
+
+        switch (dvi_dir)
+        {
+          case dir_tate:
+            {
+              tmp = cur_h;
+              cur_h = -cur_v;
+              cur_v = tmp;
+            }
+            break;
+
+          case dir_dtou:
+            {
+              tmp = cur_h;
+              cur_h = cur_v;
+              cur_v = -tmp;
+            }
+            break;
+        }
+
+        dvi_dir = cur_dir_hv;
+      }
+      break;
+
+    case dir_tate:
+      if (dvi_dir != cur_dir_hv)
+      {
+        dir_used = true;
+
+        switch (dvi_dir)
+        {
+          case dir_yoko:
+            {
+              tmp = cur_h;
+              cur_h = cur_v;
+              cur_v = -tmp;
+            }
+            break;
+
+          case dir_dtou:
+            {
+              cur_v = -cur_v;
+              cur_h = -cur_h;
+            }
+            break;
+        }
+
+        dvi_dir = cur_dir_hv;
+      }
+      break;
+
+    case dir_dtou:
+      if (dvi_dir != cur_dir_hv)
+      {
+        dir_used = true;
+
+        switch (dvi_dir)
+        {
+          case dir_yoko:
+            {
+              tmp = cur_h;
+              cur_h = -cur_v;
+              cur_v = tmp;
+            }
+            break;
+
+          case dir_tate:
+            {
+              cur_v = -cur_v;
+              cur_h = -cur_h;
+            }
+            break;
+        }
+
+        dvi_dir = cur_dir_hv;
+      }
+      break;
+
+    default:
+      confusion("synch_dir");
+      break;
+  }
+}
 #endif // APTEX_DVI_ONLY
 
 static void synch_dir (void)
@@ -22296,14 +22390,13 @@ void pdf_hlist_out (void)
   KANJI_code jc;  // {temporary register for KANJI codes}
   pointer ksp_ptr;  // {position of |auto_spacing_glue| in the hlist}
   scaled left_edge; // {the left coordinate for this box}
-  scaled save_h, save_v;  // {what |dvi_h| and |dvi_v| should pop to}
+  scaled save_h;  // {what |dvi_h| and |dvi_v| should pop to}
   pointer this_box; // {pointer to containing box}
   // glue_ord g_order;
   int g_order;  // {applicable order of infinity for glue}
   // char g_sign;
   int g_sign; // {selects type of glue}
   pointer p;  // {current position in the hlist}
-  integer save_loc; // {\.{DVI} byte location upon entry}
   pointer leader_box; // {the leader box being replicated}
   scaled leader_wd; // {width of leader box being replicated}
   scaled lx;  // {extra space between leader boxes}
@@ -22323,11 +22416,7 @@ void pdf_hlist_out (void)
   ksp_ptr = space_ptr(this_box);
   incr(cur_s);
 
-  if (cur_s > max_push)
-    max_push = cur_s;
-
-  save_loc = dvi_offset + dvi_ptr;
-  synch_dir();
+  pdf_synch_dir();
   base_line = cur_v;
   disp = 0;
   revdisp = 0;
@@ -22375,8 +22464,6 @@ void pdf_hlist_out (void)
 reswitch:
   if (is_char_node(p))
   {
-    synch_h();
-    synch_v();
     chain = false;
 
     do {
@@ -22423,7 +22510,6 @@ reswitch:
             }
           }
 
-          synch_h();
         }
 
         prev_p = link(prev_p);  // {N.B.: not |prev_p:=p|, |p| might be |lig_trick|}
@@ -22445,7 +22531,6 @@ reswitch:
         cur_h = cur_h + char_width(f, char_info(f, c));
       }
 
-      dvi_h = cur_h;
       prev_p = link(prev_p);
       p = link(p);
     } while (is_char_node(p));
@@ -22477,8 +22562,6 @@ reswitch:
         }
         else
         {
-          save_h = dvi_h;
-          save_v = dvi_v;
           save_dir = dvi_dir;
           cur_v = base_line + disp + shift_amount(p); // {shift the box down}
           temp_ptr = p;
@@ -22494,7 +22577,7 @@ reswitch:
               break;
 
             case vlist_node:
-              vlist_out();
+              pdf_vlist_out();
               break;
 
             case dir_node:
@@ -22502,8 +22585,6 @@ reswitch:
               break;
           }
 
-          dvi_h = save_h;
-          dvi_v = save_v;
           dvi_dir = save_dir;
           cur_h = edge;
           cur_v = base_line + disp;
@@ -22601,10 +22682,7 @@ reswitch:
                   then advance |cur_h| by |leader_wd+lx|@>
                 */
                 cur_v = base_line + disp + shift_amount(leader_box);
-                synch_v();
-                save_v = dvi_v;
-                synch_h();
-                save_h = dvi_h;
+                save_h = cur_h;
                 save_dir = dvi_dir;
                 temp_ptr = leader_box;
 
@@ -22621,7 +22699,7 @@ reswitch:
                     break;
 
                   case vlist_node:
-                    vlist_out();
+                    pdf_vlist_out();
                     break;
 
                   case dir_node:
@@ -22630,8 +22708,6 @@ reswitch:
                 }
 
                 doing_leaders = outer_doing_leaders;
-                dvi_v = save_v;
-                dvi_h = save_h;
                 dvi_dir = save_dir;
                 cur_v = base_line;
                 cur_h = save_h + leader_wd + lx;
@@ -22740,12 +22816,9 @@ reswitch:
 
     if ((rule_ht > 0) && (rule_wd > 0))
     {
-      synch_h();
       cur_v = base_line + rule_dp;
-      synch_v();
       pdf_rule_out(rule_wd, rule_ht);
       cur_v = base_line;
-      dvi_h = dvi_h + rule_wd;
     }
 
 move_past:
@@ -22777,7 +22850,6 @@ next_p:
   }
 
   synctex_tsilh(this_box);
-  prune_movements(save_loc);
 
   decr(cur_s);
 }
@@ -22791,7 +22863,11 @@ void hlist_out (void) {
 #endif // APTEX_DVI_ONLY
 
 // output an |vlist_node| box
+#ifdef APTEX_DVI_ONLY
 void vlist_out (void)
+#else
+void dvi_vlist_out (void)
+#endif
 {
   scaled left_edge; // {the left coordinate for this box}
   scaled top_edge;  // {the top coordinate for this box}
@@ -23075,12 +23151,9 @@ fin_rule:
 
         synch_h();
         synch_v();
-BEGIN_APTEX_DVI_OUT
         dvi_out(put_rule);
         dvi_four(rule_ht);
         dvi_four(rule_wd);
-END_APTEX_DVI_OUT
-  APTEX_PDF_OUT(pdf_rule_out(rule_wd, rule_ht);)
         cur_h = left_edge;
       }
 
@@ -23103,6 +23176,299 @@ next_p:
 
   decr(cur_s);
 }
+
+#ifndef APTEX_DVI_ONLY
+void pdf_vlist_out (void)
+{
+  scaled left_edge; // {the left coordinate for this box}
+  scaled top_edge;  // {the top coordinate for this box}
+  scaled save_v;  // {what |dvi_h| and |dvi_v| should pop to}
+  pointer this_box; // {pointer to containing box}
+  // glue_ord g_order;
+  int g_order;  // {applicable order of infinity for glue}
+  // char g_sign;
+  int g_sign; // {selects type of glue}
+  pointer p;  // {current position in the vlist}
+  pointer leader_box; // {the leader box being replicated}
+  scaled leader_ht; // {height of leader box being replicated}
+  scaled lx;  // {extra space between leader boxes}
+  boolean outer_doing_leaders;  // {were we doing leaders?}
+  scaled edge;  // {bottom boundary of leader space}
+  real glue_temp; // {glue value before rounding}
+  real cur_glue;  // {glue seen so far}
+  scaled cur_g; // {rounded equivalent of |cur_glue| times the glue ratio}
+  integer save_dir; // {what |dvi_dir| should pop to}
+
+  cur_g = 0;
+  cur_glue = 0.0;
+  this_box = temp_ptr;
+  g_order = glue_order(this_box);
+  g_sign = glue_sign(this_box);
+  p = list_ptr(this_box);
+  incr(cur_s);
+
+  pdf_synch_dir();
+  left_edge = cur_h;
+  // @<Start vlist {\sl Sync\TeX} information record@>
+  synctex_vlist(this_box);
+  cur_v = cur_v - height(this_box);
+  top_edge = cur_v;
+
+  while (p != null)
+  {
+    /*
+      @<Output node |p| for |vlist_out| and move to the next node,
+      maintaining the condition |cur_h=left_edge|@>
+    */
+    if (is_char_node(p))
+      confusion("vlistout");
+    else
+    {
+      switch (type(p))
+      {
+        case hlist_node:
+        case vlist_node:
+        case dir_node:
+          // @<Output a box in a vlist@>
+          if (list_ptr(p) == null)
+          {
+            cur_v = cur_v + height(p);
+
+            if (type(p) != dir_node)
+            {
+              // @<Record void list {\sl Sync\TeX} information@>
+              if (type(p) == vlist_node)
+                synctex_void_vlist(p, this_box);
+              else
+                synctex_void_hlist(p, this_box);
+            }
+
+            cur_v = cur_v + depth(p);
+          }
+          else
+          {
+            cur_v = cur_v + height(p);
+            save_v = cur_v;
+            save_dir = dvi_dir;
+
+            if (cur_dir == right_to_left)
+              cur_h = left_edge - shift_amount(p);
+            else
+              cur_h = left_edge + shift_amount(p);  // {shift the box right}
+
+            temp_ptr = p;
+
+            switch (type(p))
+            {
+              case hlist_node:
+                pdf_hlist_out();
+                break;
+
+              case vlist_node:
+                pdf_vlist_out();
+                break;
+
+              case dir_node:
+                dir_out();
+                break;
+            }
+
+            dvi_dir = save_dir;
+            cur_v = save_v + depth(p);
+            cur_h = left_edge;
+            cur_dir_hv = save_dir;
+          }
+          break;
+
+        case rule_node:
+          {
+            rule_ht = height(p);
+            rule_dp = depth(p);
+            rule_wd = width(p);
+            goto fin_rule;
+          }
+          break;
+
+        case whatsit_node:
+          // @<Output the whatsit node |p| in a vlist@>
+          out_what(p);
+          break;
+
+        case glue_node:
+          // @<Move down or output leaders@>
+          {
+            g = glue_ptr(p);
+            rule_ht = width(g) - cur_g;
+
+            if (g_sign != normal)
+            {
+              if (g_sign == stretching)
+              {
+                if (stretch_order(g) == g_order)
+                {
+                  cur_glue = cur_glue + stretch(g);
+                  vet_glue(glue_set(this_box) * cur_glue);
+                  cur_g = round(glue_temp);
+                }
+              }
+              else if (shrink_order(g) == g_order)
+              {
+                cur_glue = cur_glue - shrink(g);
+                vet_glue(glue_set(this_box) * cur_glue);
+                cur_g = round(glue_temp);
+              }
+            }
+
+            rule_ht = rule_ht + cur_g;
+
+            /*
+              @<Output leaders in a vlist, |goto fin_rule| if a rule
+              or to |next_p| if done@>
+            */
+            if (subtype(p) >= a_leaders)
+            {
+              leader_box = leader_ptr(p);
+
+              if (type(leader_box) == rule_node)
+              {
+                rule_wd = width(leader_box);
+                rule_dp = 0;
+                goto fin_rule;
+              }
+
+              leader_ht = height(leader_box) + depth(leader_box);
+
+              if ((leader_ht > 0) && (rule_ht > 0))
+              {
+                rule_ht = rule_ht + 10; // {compensate for floating-point rounding}
+                edge = cur_v + rule_ht;
+                lx = 0;
+
+                /*
+                  @<Let |cur_v| be the position of the first box, and set |leader_ht+lx|
+                  to the spacing between corresponding parts of boxes@>
+                */
+                if (subtype(p) == a_leaders)
+                {
+                  save_v = cur_v;
+                  cur_v = top_edge + leader_ht * ((cur_v - top_edge) / leader_ht);
+
+                  if (cur_v < save_v)
+                    cur_v = cur_v + leader_ht;
+                }
+                else
+                {
+                  lq = rule_ht / leader_ht; // {the number of box copies}
+                  lr = rule_ht % leader_ht; // {the remaining space}
+
+                  if (subtype(p) == c_leaders)
+                    cur_v = cur_v + (lr / 2);
+                  else
+                  {
+                    lx = lr / (lq + 1);
+                    cur_v = cur_v + ((lr - (lq - 1) * lx) / 2);
+                  }
+                }
+
+                /*
+                  @<Output a leader box at |cur_v|,
+                  then advance |cur_v| by |leader_ht+lx|@>
+                */
+                while (cur_v + leader_ht <= edge)
+                {
+                  if (cur_dir == right_to_left)
+                    cur_h = left_edge - shift_amount(leader_box);
+                  else
+                    cur_h = left_edge + shift_amount(leader_box);
+
+                  cur_v = cur_v + height(leader_box);
+                  save_dir = dvi_dir;
+                  temp_ptr = leader_box;
+                  outer_doing_leaders = doing_leaders;
+                  doing_leaders = true;
+
+                  switch (type(leader_box))
+                  {
+                    case hlist_node:
+                      pdf_hlist_out();
+                      break;
+
+                    case vlist_node:
+                      pdf_vlist_out();
+                      break;
+
+                    case dir_node:
+                      dir_out();
+                      break;
+                  }
+
+                  doing_leaders = outer_doing_leaders;
+                  dvi_dir = save_dir;
+                  cur_h = left_edge;
+                  cur_v = save_v - height(leader_box) + leader_ht + lx;
+                  cur_dir_hv = save_dir;
+                }
+
+                cur_v = edge - 10;
+                goto next_p;
+              }
+            }
+
+            goto move_past;
+          }
+          break;
+
+        case kern_node:
+          cur_v = cur_v + width(p);
+          break;
+
+        default:
+          do_nothing();
+          break;
+      }
+
+      goto next_p;
+
+fin_rule:
+      // @<Output a rule in a vlist, |goto next_p|@>
+      if (is_running(rule_wd))
+        rule_wd = width(this_box);
+
+      rule_ht = rule_ht + rule_dp;  // {this is the rule thickness}
+      cur_v = cur_v + rule_ht;
+
+      if ((rule_ht > 0) && (rule_wd > 0)) // {we don't output empty rules}
+      {
+        if (cur_dir == right_to_left)
+          cur_h = cur_h - rule_wd;
+
+        pdf_rule_out(rule_wd, rule_ht);
+        cur_h = left_edge;
+      }
+
+      goto next_p;
+
+move_past:
+      cur_v = cur_v + rule_ht;
+    }
+
+next_p:
+    p = link(p);
+  }
+
+  // @<Finish vlist {\sl Sync\TeX} information record@>
+  synctex_tsilv(this_box);
+
+  decr(cur_s);
+}
+
+void vlist_out (void) {
+  if(pdf_output > 0)
+    pdf_vlist_out();
+  else
+    dvi_vlist_out();
+}
+#endif
 
 void dir_out (void)
 {
