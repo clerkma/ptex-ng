@@ -62,8 +62,8 @@ static time_t start_time = 0;
 static char start_time_str[38];
 static char time_str[38];
 
-static uint32_t SOURCE_DATE_EPOCH_set = 0;
-static uint32_t FORCE_SOURCE_DATE_set = 0;
+// static uint32_t SOURCE_DATE_EPOCH_set = 0;
+// static uint32_t FORCE_SOURCE_DATE_set = 0;
 
 /* see PDF-1.7-8.3.1, PDF-2.0-7.9.4 */
 static void make_asn1_date (time_t t, char * time_str, int32_t utc)
@@ -137,7 +137,7 @@ void aptex_utils_init_start_time (void)
       }
 
       start_time = epoch;
-      SOURCE_DATE_EPOCH_set = 1;
+      // SOURCE_DATE_EPOCH_set = 1;
     }
     else
     {

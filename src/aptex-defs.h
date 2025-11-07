@@ -2329,6 +2329,8 @@ while (0)
 #define dvi_tate 1
 #define dvi_dtou 3
 
+#define dir_to_dvi(d) (4 - d)
+
 #define no_skip     0
 #define after_schar 1
 #define after_wchar 2

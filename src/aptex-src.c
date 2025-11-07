@@ -1353,7 +1353,7 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.aptex_map             = NULL;
 
   aptex_env.opt_int = -1;
-  aptex_env.opt_pdf_output_value = 0;
+  aptex_env.opt_pdf_output_value = -1;
 
   aptex_env.flag_initex               = false;
   aptex_env.flag_suppress_f_ligs      = false;
@@ -1363,7 +1363,6 @@ static void aptex_commands_init (int ac, char **av)
   aptex_env.flag_tex82                = false;
   aptex_env.flag_compact_fmt          = true;
   aptex_env.flag_merge_kanji_baseline = false;
-  aptex_env.flag_pdf_output           = false;
 
   aptex_env.trace_realloc         = true;
   aptex_env.trace_mem             = false;
@@ -1466,9 +1465,9 @@ static void aptex_commands_init (int ac, char **av)
         aptex_env.flag_merge_kanji_baseline = true;
       else if (ARGUMENT_IS("output-format")) {
         if (!strcmp(optarg, "dvi"))
-          aptex_env.flag_pdf_output = true;
+          aptex_env.opt_pdf_output_value = 0;
         else if (!strcmp(optarg, "pdf"))
-          aptex_env.flag_pdf_output = true, aptex_env.opt_pdf_output_value = 1;
+          aptex_env.opt_pdf_output_value = 1;
         else
           fprintf(stderr, "warning: Ignoring unknown argument `%s' to --output-format.\n", optarg);
       }
@@ -1696,10 +1695,7 @@ static integer aptex_utils_round (real r)
     i = 2147483647;
   else if (r < -2147483647.0)
     i = -2147483647;
-  else if (r >= 0.0)
-    i = (integer) (r + 0.5);
-  else
-    i = (integer) (r - 0.5);
+  else i = lround(r);
 
   return i;
 }
@@ -5165,7 +5161,7 @@ start_of_TEX:
         incr(loc);
     }
 
-    if (aptex_env.flag_pdf_output)
+    if (aptex_env.opt_pdf_output_value >= 0)
       pdf_output = aptex_env.opt_pdf_output_value;
 
     if (eTeX_ex)
@@ -20959,20 +20955,18 @@ static void pdf_locate_font (internal_font_number f)
 
 static void pdf_char_out (internal_font_number f, ASCII_code c)
 {
+  pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
   switch (cur_dir_hv)
   {
     case dir_yoko:
-      pdf_dev_set_dirmode(dvi_yoko);
       ng_set(c, font_id[f], cur_h, -cur_v);
       break;
 
     case dir_tate:
-      pdf_dev_set_dirmode(dvi_tate);
       ng_set(c, font_id[f], -cur_v, -cur_h);
       break;
 
     case dir_dtou:
-      pdf_dev_set_dirmode(dvi_dtou);
       ng_set(c, font_id[f], cur_v, cur_h);
       break;
   }
@@ -20980,20 +20974,18 @@ static void pdf_char_out (internal_font_number f, ASCII_code c)
 
 static void pdf_kanji_out (internal_font_number f, KANJI_code c)
 {
+  pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
   switch (cur_dir_hv)
   {
     case dir_yoko:
-      pdf_dev_set_dirmode(dvi_yoko);
       ng_set(c, font_id[f], cur_h, -cur_v);
       break;
 
     case dir_tate:
-      pdf_dev_set_dirmode(dvi_tate);
       ng_set(c, font_id[f], -cur_v, -cur_h);
       break;
 
     case dir_dtou:
-      pdf_dev_set_dirmode(dvi_dtou);
       ng_set(c, font_id[f], cur_v, cur_h);
       break;
   }
@@ -23615,22 +23607,20 @@ static void pdf_special_out (pointer p)
   const char * spc_str = (const char *) str_pool + str_start[str_ptr];
   scaled spc_h, spc_v;
 
+  pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
   switch (cur_dir_hv)
     {
     case dir_yoko:
-      pdf_dev_set_dirmode(dvi_yoko);
       spc_h = cur_h;
       spc_v = -cur_v;
       break;
 
     case dir_tate:
-      pdf_dev_set_dirmode(dvi_tate);
       spc_h = -cur_v;
       spc_v = -cur_h;
       break;
 
     case dir_dtou:
-      pdf_dev_set_dirmode(dvi_dtou);
       spc_h = cur_v;
       spc_v = cur_h;
       break;
@@ -38525,18 +38515,12 @@ done:
 
 boolean check_kcat_code (integer ct)
 {
-  if (((ct >= kanji) && (enable_cjk_token == 0)) || (enable_cjk_token == 2))
-    return true;
-  else
-    return false;
+  return ((ct >= kanji) && (enable_cjk_token == 0)) || (enable_cjk_token == 2);
 }
 
 boolean check_echar_range (integer c)
 {
-  if ((c >= 0) && (c < 256))
-    return true;
-  else
-    return false;
+  return (c >= 0) && (c < 256);
 }
 
 // for eTeX
