@@ -1,6 +1,18 @@
 
 # Management of Formats
 
+## Setup ApTeX
+
+Shell:
+```shell
+cp aptex `kpsewhich -var-value SELFAUTOLOC`
+```
+
+CMD:
+```batch
+for /f "usebackq" %i in (`kpsewhich -var-value SELFAUTOLOC`) do (copy build-msvc\aptex.exe "%i" /Y)
+```
+
 ##  By Hand
 
 ### Setup Variables
