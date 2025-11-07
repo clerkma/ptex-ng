@@ -22313,6 +22313,7 @@ reswitch:
           left_edge = cur_h + edge_dist(p);
           cur_dir = subtype(p);
         }
+        break;
 
       default:
         do_nothing();
@@ -22792,6 +22793,7 @@ reswitch:
           left_edge = cur_h + edge_dist(p);
           cur_dir = subtype(p);
         }
+        break;
 
       default:
         do_nothing();
