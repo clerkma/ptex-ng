@@ -1,0 +1,4 @@
+fmt/*.fmt
+fmt/*.log
+*.log
+*.dvi
