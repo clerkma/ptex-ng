@@ -15,6 +15,8 @@ jobs:
         run: sudo apt install automake autoconf libtool texinfo texi2html gcc ruby make
       - name: build
         run: ./build-gcc/build-aptex.sh
+      - name: test
+        run: cd test && sh run.sh
   build-macos:
     runs-on: macos-latest
     steps:
