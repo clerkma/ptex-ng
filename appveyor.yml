@@ -10,3 +10,5 @@ build_script:
   - cmd: build-aptex.bat
 test_script:
   - cmd: aptex.exe --version
+  - cmd: cd test
+  - cmd: run.bat

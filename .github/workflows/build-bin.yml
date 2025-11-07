@@ -21,3 +21,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: build
         run: ./build-gcc/build-aptex.sh
+      - name: test
+        run: cd test && sh run.sh
