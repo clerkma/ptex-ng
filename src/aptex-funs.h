@@ -101,7 +101,7 @@ void print_int (integer n);
 void print_file_name (integer n, integer a, integer e);
 _Noreturn void jump_out (void);
 void error (void);
-void overflow (const char * s, integer n);
+_Noreturn static void overflow (const char * s, integer n);
 
 boolean init_terminal (void);
 str_number make_string (void);
@@ -549,9 +549,7 @@ static inline void dvi_out (ASCII_code op)
 /* sec 0934 */
 static inline void set_cur_lang (void)
 {
-  if (language <= 0)
-    cur_lang = 0;
-  else if (language > 255)
+  if (language <= 0 || language > 255)
     cur_lang = 0;
   else
     cur_lang = language;
@@ -567,7 +565,7 @@ static inline void print_plus (int i, const char * s)
   }
 }
 
-static inline void aptex_error (const char * t, const char * p)
+_Noreturn static inline void aptex_error (const char * t, const char * p)
 {
   normalize_selector();
   print_err("Asiatic pTeX error");

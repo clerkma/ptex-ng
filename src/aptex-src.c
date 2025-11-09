@@ -7124,11 +7124,8 @@ void sprint_esc (str_number s)
 
   c = escape_char;
 
-  if (c >= 0)
-  {
-    if (c < 256)
-      print(c);
-  }
+  if (c >= 0 && c < 256)
+    print(c);
 
   print(s);
 }
@@ -7771,7 +7768,7 @@ continu:
 }
 
 // prints |s|, and that's it
-static void fatal_error (const char * s)
+_Noreturn static void fatal_error (const char * s)
 {
   normalize_selector();
   print_err("Emergency stop");
@@ -7780,7 +7777,7 @@ static void fatal_error (const char * s)
 }
 
 // stop due to finiteness
-void overflow (const char * s, integer n)
+_Noreturn static void overflow (const char * s, integer n)
 {
   normalize_selector();
   print_err("TeX capacity exceeded, sorry [");
@@ -8179,7 +8176,7 @@ static integer ab_vs_cd (integer a, integer b, integer c, integer d)
     return c == 0 ? 0 : -1;
   }
 
-  while (1)
+  while (true)
   {
     q = a / d;
     r = c / b;
@@ -8448,10 +8445,7 @@ void pause_for_instructions (void)
 
 static integer half (integer x)
 {
-  if (odd(x))
-    return ((x + 1) / 2);
-  else
-    return (x / 2);
+  return odd(x) ? ((x + 1) / 2) : (x / 2);
 }
 
 static scaled round_decimals (small_number k)
@@ -20916,9 +20910,8 @@ static void pdf_locate_font (internal_font_number f)
   free(lfont_name);
 }
 
-static void pdf_char_out (internal_font_number f, ASCII_code c)
+static inline void pdf_char_out (internal_font_number f, ASCII_code c)
 {
-  pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
   switch (cur_dir_hv)
   {
     case dir_yoko:
@@ -20935,9 +20928,8 @@ static void pdf_char_out (internal_font_number f, ASCII_code c)
   }
 }
 
-static void pdf_kanji_out (internal_font_number f, KANJI_code c)
+static inline void pdf_kanji_out (internal_font_number f, KANJI_code c)
 {
-  pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
   switch (cur_dir_hv)
   {
     case dir_yoko:
@@ -21586,6 +21578,7 @@ static void pdf_synch_dir (void)
 {
   scaled tmp; // {temporary resister}
 
+  pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
   switch (cur_dir_hv)
   {
     case dir_yoko:
@@ -23569,7 +23562,6 @@ static void pdf_special_out (pointer p)
   const char * spc_str = (const char *) str_pool + str_start[str_ptr];
   scaled spc_h, spc_v;
 
-  pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
   switch (cur_dir_hv)
     {
     case dir_yoko:
