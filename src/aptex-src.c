@@ -7955,8 +7955,6 @@ static inline integer halfp (integer x)
   return x / 2;
 }
 
-#define _double(f) f = f + f
-
 static integer make_frac (integer p, integer q)
 {
   integer f; // {the fraction bits, with a leading 1 bit}
@@ -8005,10 +8003,10 @@ static integer make_frac (integer p, integer q)
         f = f + f + 1;
       else
       {
-        _double(f);
+        f += f;
         p = p + q;
       }
-    } while (!(f >= fraction_one));
+    } while (f < fraction_one);
 
     be_careful = p - q;
 
@@ -8118,7 +8116,7 @@ static integer m_log (integer x)
 
     while (x < fraction_four)
     {
-      _double(x);
+      x += x;
       y = y - 93032639;
       z = z - 48782;
     }
@@ -8165,53 +8163,35 @@ static integer ab_vs_cd (integer a, integer b, integer c, integer d)
   if (d <= 0)
   {
     if (b >= 0) 
-      if (((a == 0) || (b == 0)) && ((c == 0) || (d == 0)))
-        return 0;
-      else
-        return 1;
+      return (((a == 0) || (b == 0)) && ((c == 0) || (d == 0))) ? 0 : 1;
 
     if (d == 0)
-      if (a == 0)
-        return 0;
-      else
-        return -1;
+      return a == 0 ? 0 : -1;
     
-    get_microinterval();
     q = a;
     a = c; c = q; q = -b; b = -d; d = q;
   }
   else if (b <= 0)
   {
-    if (b < 0)
-      if (a > 0)
-        return -1;
-
-    if (c == 0)
-      return 0;
-    else
+    if (b < 0 && a > 0)
       return -1;
+
+    return c == 0 ? 0 : -1;
   }
 
-  for (;;)
+  while (1)
   {
     q = a / d;
     r = c / b;
 
     if (q != r)
-      if (q > r)
-        return 1;
-      else
-        return -1;
+      return (q > r ? 1 : -1);
 
     q = a % d;
     r = c % b;
 
     if (r == 0)
-      if (q == 0)
-        return 0;
-      else
-        return 1;
-
+      return (q == 0 ? 0 : 1);
     if (q == 0)
       return -1;
 
@@ -8314,11 +8294,11 @@ static integer norm_rand()
       // {$2^{16}\sqrt{8/e}\approx 112428.82793$}
       next_random();
       u = randoms[j_random];
-    } while (!(abs(x) < u));
+    } while (abs(x) >= u);
 
     x = make_frac(x,u);
     l = 139548960 - m_log(u); // {$2^{24}\cdot12\ln2\approx139548959.6165$}
-  } while (!(ab_vs_cd(1024,l,x,x) >= 0));
+  } while (ab_vs_cd(1024,l,x,x) < 0);
 
   return x;  
 }
