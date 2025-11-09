@@ -28,22 +28,6 @@
   #define xfclose(a, b) fclose(a)
 #endif
 
-#ifdef APTEX_DVI_ONLY
-
-#define BEGIN_APTEX_DVI_OUT
-#define END_APTEX_DVI_OUT
-
-#define APTEX_PDF_OUT(...)
-
-#else
-
-#define BEGIN_APTEX_DVI_OUT if(pdf_output <= 0) {
-#define END_APTEX_DVI_OUT }
-
-#define APTEX_PDF_OUT(...) if(pdf_output > 0) { __VA_ARGS__ }
-
-#endif
-
 static int mem_initex;
 static int new_hyphen_prime;
 static char * format_name;
@@ -6484,7 +6468,8 @@ static void init_prim (void)
   primitive("scriptscriptbaselineshiftfactor", assign_int, int_base + scriptscript_baseline_shift_factor_code);
   primitive("ptexlineendmode", assign_int, int_base + ptex_lineend_code);
   primitive("ptextracingfonts", assign_int, int_base + ptex_tracing_fonts_code);
-  primitive("dpxoutput", assign_int, int_base + pdf_output_code);
+#define PDFOUTPUT "dpxoutput"
+  primitive(PDFOUTPUT, assign_int, int_base + pdf_output_code);
   primitive("pdfcompresslevel", assign_int, int_base + pdf_compress_level_code);
   primitive("pdfmajorversion", assign_int, int_base + pdf_major_version_code);
   primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
@@ -11370,7 +11355,7 @@ static void print_param (integer n)
       break;
 
     case pdf_output_code:
-      print_esc("dpxoutput");
+      print_esc(PDFOUTPUT);
       break;
 
     case pdf_compress_level_code:
@@ -19781,10 +19766,8 @@ static void scan_file_name_braced (void)
   pointer save_def_ref; // {|def_ref| upon entry, important if inside `\.{\\message}}
   pointer save_cur_cs;
   str_number s; // {temp string}
-  pointer p; // {temp pointer}
   integer i; // {loop tally}
   boolean save_stop_at_space; // {this should be in tex.ch}
-  boolean dummy; //{Initialising}
 
   save_scanner_status = scanner_status; // {|scan_toks| sets |scanner_status| to |absorbing|}
   save_def_ref = def_ref; // {|scan_toks| uses |def_ref| to point to the token list just read}
@@ -19814,7 +19797,7 @@ static void scan_file_name_braced (void)
   begin_name();
 
   for (i = str_start[s]; i <= str_start[s + 1] - 1; i++)
-    dummy = more_name(str_pool[i]); // {add each read character to the current file name}
+    more_name(str_pool[i]); // {add each read character to the current file name}
 
   stop_at_space = save_stop_at_space; // {restore |stop_at_space|}
 }
@@ -21399,7 +21382,7 @@ static inline void fix_pdfoutput(void)
     fixed_pdfoutput_set = true;
   } else if (fixed_pdfoutput != pdf_output)
     aptex_error("setup",
-                "\\dpxoutput can only be changed before anything is written to the output");
+                "\\" PDFOUTPUT " can only be changed before anything is written to the output");
 }
 
 static void pdf_ship_out (pointer p)
@@ -23587,7 +23570,6 @@ static void special_out (pointer p)
 static void pdf_special_out (pointer p)
 {
   char old_setting;
-  pool_pointer k;
 
   old_setting = selector;
   selector = new_string;
@@ -37597,91 +37579,16 @@ void close_files_and_terminate (void)
   
   wake_up_terminal();
 
-  // @<Finish the \.{DVI} file@>
-  {
-BEGIN_APTEX_DVI_OUT
-    while (cur_s > -1)
-    {
-      if (cur_s > 0)
-        dvi_out(pop);
-      else
-      {
-        dvi_out(eop);
-        incr(total_pages);
-      }
-
-      decr(cur_s);
-    }
-END_APTEX_DVI_OUT
-
-    if (total_pages == 0)
+#ifndef APTEX_DVI_ONLY
+  if (!fixed_pdfoutput_set) fix_pdfoutput();
+  if (fixed_pdfoutput > 0) {
+    if (history == fatal_error_stop)
+      print_err(" ==> Fatal error occurred, the output PDF file is not finished!");
+    else {
+      // @<Finish the PDF file@>
+      if (total_pages == 0)
       print_nl("No pages of output.");
-    else
-    {
-
-BEGIN_APTEX_DVI_OUT
-      dvi_out(post);  // {beginning of the postamble}
-      dvi_four(last_bop);
-      last_bop = dvi_offset + dvi_ptr - 5;  // {|post| location}
-      dvi_four(25400000);
-      dvi_four(473628672);  // {conversion ratio for sp}
-      prepare_mag();
-      dvi_four(mag);  // {magnification factor}
-      dvi_four(max_v);
-      dvi_four(max_h);
-      dvi_out(max_push / 256);
-      dvi_out(max_push % 256);
-      dvi_out((total_pages / 256) % 256);
-      dvi_out(total_pages % 256);
-
-      // @<Output the font definitions for all fonts that were used@>
-      while (font_ptr > font_base)
-      {
-        if (font_used[font_ptr])
-          dvi_font_def(font_ptr);
-
-        decr(font_ptr);
-      }
-
-      dvi_out(post_post);
-      dvi_four(last_bop);
-
-      if (dir_used)
-        dvi_out(ex_id_byte);
-      else
-        dvi_out(id_byte);
-
-      k = 4 + ((dvi_buf_size - dvi_ptr) % 4); // {the number of 223's}
-
-      while (k > 0)
-      {
-        dvi_out(223);
-        decr(k);
-      }
-
-      // @<Empty the last bytes out of |dvi_buf|@>
-      if (dvi_limit == half_buf)
-        write_dvi(half_buf, dvi_buf_size - 1);
-
-      if (dvi_ptr > 0)
-        write_dvi(0, dvi_ptr - 1);
-
-      print_nl("Output written on ");
-      slow_print(output_file_name);
-      prints(" (");
-      print_int(total_pages);
-      prints(" page");
-
-      if (total_pages != 1)
-        print_char('s');
-
-      prints(", ");
-      print_int(dvi_offset + dvi_ptr);
-      prints(" bytes).");
-      b_close(dvi_file);
-END_APTEX_DVI_OUT
-
-  APTEX_PDF_OUT(
+      else {
         spc_exec_at_end_document();
         pdf_close_document();
         pdf_close_fontmaps();
@@ -37699,9 +37606,91 @@ END_APTEX_DVI_OUT
         prints(", ");
         print_int(pdf_output_stats());
         prints(" bytes).");
-               )
+      }
     }
-  }
+  } else
+#endif
+    // @<Finish the \.{DVI} file@>
+    {
+      while (cur_s > -1)
+        {
+          if (cur_s > 0)
+            dvi_out(pop);
+          else
+            {
+              dvi_out(eop);
+              incr(total_pages);
+            }
+
+          decr(cur_s);
+        }
+
+      if (total_pages == 0)
+        print_nl("No pages of output.");
+      else
+        {
+
+          dvi_out(post);  // {beginning of the postamble}
+          dvi_four(last_bop);
+          last_bop = dvi_offset + dvi_ptr - 5;  // {|post| location}
+          dvi_four(25400000);
+          dvi_four(473628672);  // {conversion ratio for sp}
+          prepare_mag();
+          dvi_four(mag);  // {magnification factor}
+          dvi_four(max_v);
+          dvi_four(max_h);
+          dvi_out(max_push / 256);
+          dvi_out(max_push % 256);
+          dvi_out((total_pages / 256) % 256);
+          dvi_out(total_pages % 256);
+
+          // @<Output the font definitions for all fonts that were used@>
+          while (font_ptr > font_base)
+            {
+              if (font_used[font_ptr])
+                dvi_font_def(font_ptr);
+
+              decr(font_ptr);
+            }
+
+          dvi_out(post_post);
+          dvi_four(last_bop);
+
+          if (dir_used)
+            dvi_out(ex_id_byte);
+          else
+            dvi_out(id_byte);
+
+          k = 4 + ((dvi_buf_size - dvi_ptr) % 4); // {the number of 223's}
+
+          while (k > 0)
+            {
+              dvi_out(223);
+              decr(k);
+            }
+
+          // @<Empty the last bytes out of |dvi_buf|@>
+          if (dvi_limit == half_buf)
+            write_dvi(half_buf, dvi_buf_size - 1);
+
+          if (dvi_ptr > 0)
+            write_dvi(0, dvi_ptr - 1);
+
+          print_nl("Output written on ");
+          slow_print(output_file_name);
+          prints(" (");
+          print_int(total_pages);
+          prints(" page");
+
+          if (total_pages != 1)
+            print_char('s');
+
+          prints(", ");
+          print_int(dvi_offset + dvi_ptr);
+          prints(" bytes).");
+          b_close(dvi_file);
+        }
+    }
 
   // @<Close {\sl Sync\TeX} file and write status@>
   synctex_terminate(log_opened);
