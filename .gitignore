@@ -4,6 +4,7 @@
 *~
 *.exe
 *.pdb
+.vscode
 GPATH
 GRTAGS
 GSYMS
