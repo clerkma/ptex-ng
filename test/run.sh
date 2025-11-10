@@ -1,6 +1,3 @@
-export TEXINPUTS=.:`pwd`/tex
-export TFMFONTS=.:`pwd`/tfm
-export TEXFORMATS=.:`pwd`/fmt
 export TEXMFCNF=`pwd`/cnf
 ../src/aptex -ini "\input plain\dump"
 mv plain.fmt fmt

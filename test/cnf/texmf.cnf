@@ -1,1 +1,5 @@
-# TODO, just a dummy file
+# dummy texmf.cnf
+TEXMFDOTDIR = .
+TEXINPUTS   = $TEXMFDOTDIR;$SELFAUTODIR/test/tex//
+TFMFONTS    = $TEXMFDOTDIR;$SELFAUTODIR/test/tfm//
+TEXFORMATS  = $TEXMFDOTDIR;$SELFAUTODIR/test/fmt//
