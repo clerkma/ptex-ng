@@ -20010,6 +20010,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
   char beta;
 
   g = null_font;
+  // @<Open |tfm_file| for input@>
   file_opened = false;
   pack_file_name(nom, aire, 805); /* .tfm */
 
@@ -20039,7 +20040,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
     goto bad_tfm;
 
   file_opened = true;
-
+  // @<Read the {\.{TFM}} size fields@>
   {
     read_sixteen(lf);
     fget();
@@ -20115,6 +20116,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
       goto bad_tfm;
   }
 
+  // @<Use size fields to allocate font information@>
   if (jfm_flag != dir_default)
     lf = lf - 7 - lh;
   else
@@ -20159,6 +20161,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
   exten_base[f] = kern_base[f] + kern_base_offset + nk;
   param_base[f] = exten_base[f] + ne;
 
+  // @<Read the {\.{TFM}} header@>
   {
     if (lh < 2)
       goto bad_tfm;
@@ -20209,6 +20212,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
     font_size[f] = z;
   }
 
+  // @<Read character data@>
   if (jfm_flag != dir_default)
   {
     for (k = ctype_base[f]; k <= ctype_base[f] + nt - 1; k++)
@@ -20272,6 +20276,7 @@ not_found:;
     }
   }
 
+  // @<Read box dimensions@>
   {
     {
       alpha = 16;
@@ -20302,6 +20307,7 @@ not_found:;
       goto bad_tfm;
   }
 
+  // @<Read ligature/kern program@>
   bch_label = 077777;
   bchar = 256;
 
@@ -20351,6 +20357,7 @@ not_found:;
   for (k = kern_base[f] + kern_base_offset; k <= exten_base[f] - 1; k++)
     store_scaled(font_info[k].sc);
 
+  // @<Read extensible character recipes@>
   if (jfm_flag != dir_default)
   {
     for (k = exten_base[f]; k <= param_base[f] - 1; k++)
@@ -20372,6 +20379,7 @@ not_found:;
     check_existence(d);
   }
 
+  // @<Read font parameters@>
   {
     for (k = 1; k <= np; k++)
     {
@@ -20401,6 +20409,7 @@ not_found:;
       font_info[param_base[f] + k - 1].sc = 0;
   }
 
+  // @<Make final adjustments and |goto done|@>
   if (np >= 7)
     font_params[f] = np;
   else
@@ -22410,6 +22419,7 @@ reswitch:
   if (is_char_node(p))
   {
     chain = false;
+    pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
 
     do {
       f = font(p);
