@@ -1,6 +1,7 @@
 export TEXMFCNF=`pwd`/cnf
-../src/aptex -ini "\input plain\dump"
+export APTEX=../src/aptex
+$APTEX -ini plain.ini
 mv plain.fmt fmt
 mv plain.log fmt
-../src/aptex +plain test.tex
+$APTEX +plain test.tex
 rm *.log *.dvi

@@ -1,15 +1,17 @@
 @echo off
 @REM set web2c variables
 set TEXMFCNF=%CD%\cnf
+set APTEX=..\build-msvc\aptex
 @echo on
-..\build-msvc\aptex -ini "\input plain\dump"
+%APTEX% -ini plain.ini
 @echo off
 move /Y plain.fmt fmt
 move /Y plain.log fmt
 @echo on
-..\build-msvc\aptex +plain test.tex
+%APTEX% +plain test.tex
 @echo off
 del *.log *.dvi
 @REM recover variables (to make texlive safe)
 set TEXMFCNF=
+set APTEX=
 @echo on
