@@ -244,7 +244,7 @@ void just_copy(pointer p, pointer h, pointer t);
 void just_reverse(pointer p);
 void app_display(pointer j, pointer b, scaled d);
 void pseudo_start(void);
-boolean pseudo_input();
+boolean pseudo_input(void);
 void pseudo_close(void);
 void get_x_or_protected(void);
 void group_warning(void);
@@ -582,7 +582,7 @@ _Noreturn static inline void aptex_error (const char * t, const char * p)
   succumb();
 }
 
-static inline integer get_microinterval()
+static inline integer get_microinterval(void)
 {
   integer s, m;
 

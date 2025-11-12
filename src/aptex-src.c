@@ -3623,7 +3623,7 @@ static const char * pool_file_arr[] =
 /* 1294 */  "", //"output file name",
 };
 
-static str_number load_pool_strings (integer spare_size)
+static str_number load_pool_strings (size_t spare_size)
 {
   str_number g;
   size_t k, l, i = 0;
@@ -3689,27 +3689,27 @@ static pointer prim_lookup(str_number s);
 static void primitive_(str_number s, quarterword c, halfword o);
 static void fix_date_and_time(void);
 
-static int aptex_dump_put (void * out_file, void * p, int item_size)
+static int aptex_dump_put (void * out_file, void * p, size_t item_size)
 {
-  boolean fmt_stat; int nitems = 1;
+  boolean fmt_stat; size_t nitems = 1;
 
   if (aptex_env.flag_compact_fmt)
-    fmt_stat = (gzwrite(out_file, p, (item_size * nitems)) != (item_size * nitems));
+    fmt_stat = ((size_t)gzwrite(out_file, p, (item_size * nitems)) != (item_size * nitems));
   else
     fmt_stat = (fwrite(p, item_size, nitems, out_file) != nitems);
 
   if (fmt_stat)
   {
-    printf("\n! ApTeX: Could not write %d %d-byte item%s.\n", nitems, item_size, (nitems > 1) ? "s" : "");
+    printf("\n! ApTeX: Could not write %zu %zu-byte item%s.\n", nitems, item_size, (nitems > 1) ? "s" : "");
     aptex_utils_exit(EXIT_FAILURE);
   }
 
   return 0;
 }
 
-static int aptex_dump_get (void * in_file, void * p, int item_size)
+static int aptex_dump_get (void * in_file, void * p, size_t item_size)
 {
-  boolean fmt_stat; int nitems = 1;
+  boolean fmt_stat; size_t nitems = 1;
  
   if (aptex_env.flag_compact_fmt)
     fmt_stat = (gzread(in_file, p, (item_size * nitems)) <= 0);
@@ -3718,7 +3718,7 @@ static int aptex_dump_get (void * in_file, void * p, int item_size)
 
   if (fmt_stat)
   {
-    printf("\n! ApTeX: Could not read %d %d-byte item%s.\n", nitems, item_size, (nitems > 1) ? "s" : "");
+    printf("\n! ApTeX: Could not read %zu %zu-byte item%s.\n", nitems, item_size, (nitems > 1) ? "s" : "");
     aptex_utils_exit(EXIT_FAILURE);
   }
 
@@ -8207,7 +8207,7 @@ do {                  \
     decr(j_random);   \
 } while (0)
 
-static void new_randoms()
+static void new_randoms(void)
 {
   uint32_t k; // {index into |randoms|}
   integer x; // {accumulator}
@@ -8279,7 +8279,7 @@ static integer unif_rand (integer x)
     return -y;
 }
 
-static integer norm_rand()
+static integer norm_rand(void)
 {
   integer x, u, l; // {what the book would call $2^{16}X$, $2^{28}U$,
                    //  and $-2^{24}\ln U$}
@@ -8917,9 +8917,7 @@ restart:
     return max_halfword;
   }
 
-  if (lo_mem_max + 2 < hi_mem_min)
-  {
-    if (lo_mem_max + 2 <= mem_bot + max_halfword)
+  if ((lo_mem_max + 2 < hi_mem_min) && (lo_mem_max + 2 <= mem_bot + max_halfword))
     {
       if (hi_mem_min - lo_mem_max >= (block_size + block_size - 2))
         t = lo_mem_max + block_size;
@@ -8944,7 +8942,6 @@ restart:
       rover = q;
       goto restart;
     }
-  }
 
   /* extend lower memory downwards */
   if (mem_min - (block_size + 1) <= mem_start)
@@ -13547,6 +13544,7 @@ static void eq_destroy (memory_word w)
       if ((equiv_field(w) < mem_bot) || (equiv_field(w) > lo_mem_stat_max))
         delete_sa_ref(equiv_field(w));
 
+      break;
     default:
       do_nothing();
       break;
@@ -21015,7 +21013,7 @@ static void check_pdfversion (void)
     aptex_error("setup", "PDF version cannot be changed after data is written to the pdf file");
 }
 
-static void pdf_prepare_ship_out() {
+static void pdf_prepare_ship_out(void) {
   struct pdf_setting aptex_pdf_setting;
   char * aptex_producer = "Asiatic pTeX 2025";
   int aptex_pdf_version;
@@ -38660,7 +38658,7 @@ void show_save_groups (void)
         decr(p);
       else
         m = vmode;
-    } while (!(m != hmode));
+    } while (m == hmode);
 
     prints(" (");
 
@@ -39819,7 +39817,7 @@ continu:
 
   do {
     get_x_token();
-  } while (!(cur_cmd != spacer));
+  } while (cur_cmd == spacer);
 
   if (cur_tok == other_token + '(')
   {
@@ -39851,7 +39849,7 @@ continu:
 found:
   do {
     get_x_token();
-  } while (!(cur_cmd != spacer));
+  } while (cur_cmd == spacer);
 
   if (cur_tok == other_token + '+')
     o = expr_add;
@@ -40798,15 +40796,15 @@ void sa_restore (void)
   authorization from the copyright holder.
 */
 
-char *synctex_get_job_name()
+char *synctex_get_job_name(void)
 {
    return utf8_mbcs(take_str_string(job_name));
 }
-char *synctex_get_log_name()
+char *synctex_get_log_name(void)
 {
    return utf8_mbcs(take_str_string(log_name));
 }
-char *synctex_get_current_name()
+char *synctex_get_current_name(void)
 {
    char * name_mbcs = utf8_mbcs(take_str_string(cur_input.name_field));
 #ifdef USE_KPATHSEA
