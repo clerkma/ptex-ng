@@ -531,6 +531,22 @@ EXTERN integer kern_base[font_max + 1];       // {base addresses for kerns}
 EXTERN integer exten_base[font_max + 1];      // {base addresses for extensible recipes}
 EXTERN integer param_base[font_max + 1];      // {base addresses for font parameters}
 
+EXTERN internal_font_number pdf_font_blink[font_max + 1]; // {link to base font (used for expanded fonts only)}
+EXTERN internal_font_number pdf_font_elink[font_max + 1]; // {link to expanded fonts (used for base fonts only)}
+EXTERN integer pdf_font_stretch[font_max + 1];            // {limit of stretching}
+EXTERN integer pdf_font_shrink[font_max + 1];             // {limit of shrinking}
+EXTERN integer pdf_font_step[font_max + 1];               // {amount of one step of expansion}
+EXTERN integer pdf_font_expand_ratio[font_max + 1];       // {expansion ratio of a particular font}
+EXTERN boolean pdf_font_auto_expand[font_max + 1];        // {this font is auto-expanded?}
+EXTERN integer pdf_font_lp_base[font_max + 1];            // {base of left-protruding factor}
+EXTERN integer pdf_font_rp_base[font_max + 1];            // {base of right-protruding factor}
+EXTERN integer pdf_font_ef_base[font_max + 1];            // {base of font expansion factor}
+EXTERN integer font_expand_ratio;                         // {current expansion ratio}
+EXTERN pointer last_leftmost_char;
+EXTERN pointer last_rightmost_char;
+EXTERN pointer hlist_stack[max_hlist_stack];
+EXTERN short hlist_stack_level;
+
 EXTERN four_quarters null_character;          // {nonexistent character information}
 
 EXPORT integer total_pages;                   // {the number of pages that have been shipped out}

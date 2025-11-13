@@ -6473,6 +6473,8 @@ static void init_prim (void)
   primitive("pdfcompresslevel", assign_int, int_base + pdf_compress_level_code);
   primitive("pdfmajorversion", assign_int, int_base + pdf_major_version_code);
   primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
+  primitive("pdfadjustspacing", assign_int,int_base + pdf_adjust_spacing_code);
+  primitive("pdfprotrudechars", assign_int,int_base + pdf_protrude_chars_code);
   primitive("synctex", assign_int, int_base + synctex_code);
   primitive("tracingstacklevels", assign_int, int_base + tracing_stack_levels_code);
   primitive("partokenname", partoken_name, 0);
@@ -10048,6 +10050,14 @@ void show_node_list (integer p)
           }
         }
         break;
+    case margin_kern_node:
+      print_esc("kern");
+      print_scaled(width(p));
+      if (subtype(p) == left_side)
+        prints(" (left margin)");
+      else
+        prints(" (right margin)");
+      break;
 
       case kern_node:
         if (subtype(p) != mu_glue)
@@ -10492,11 +10502,15 @@ void flush_node_list (pointer p)
         case kern_node:
         case math_node:
         case penalty_node:
-          {
             free_node(p, medium_node_size);
             goto done;
-          }
           break;
+
+      case margin_kern_node:
+        free_avail(margin_char(p));
+        free_node(p, margin_kern_node_size);
+        goto done;
+        break;
 
         case ligature_node:
           flush_node_list(lig_ptr(p));
@@ -10733,6 +10747,14 @@ static pointer copy_node_list (pointer p)
           words = medium_node_size;
         }
         break;
+
+    case margin_kern_node:
+      r = get_node(margin_kern_node_size);
+      fast_get_avail(margin_char(r));
+      font(margin_char(r)) = font(margin_char(p));
+      character(margin_char(r))=character(margin_char(p));
+      words=small_node_size;
+      break;
 
       case ligature_node:
         {
@@ -11340,6 +11362,14 @@ static void print_param (integer n)
     case pdf_minor_version_code:
       print_esc("pdfminorversion");
       break;
+
+  case pdf_adjust_spacing_code:
+    print_esc("pdfadjustspacing");
+    break;
+
+  case pdf_protrude_chars_code:
+    print_esc("pdfprotrudechars");
+    break;
 
     case synctex_code:
       print_esc("synctex");

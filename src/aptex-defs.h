@@ -297,6 +297,17 @@ enum
 #define explicit  1                             // {|subtype| of kern nodes from \.{\\kern}}
 #define acc_kern  2                             // {|subtype| of kern nodes from accents}
 #define ita_kern  3                             // {|subtype| of kern nodes from \.{\\/}}
+/* HZ extension */
+// {memory structure for marginal kerns}
+#define margin_kern_node 40
+#define margin_kern_node_size 3
+#define margin_char(c) info(c+2)
+#define left_side  0
+#define right_side 1
+#define lp_code_base 2
+#define rp_code_base 3
+#define ef_code_base 4
+#define max_hlist_stack 512
 /* sec 0157 */
 #define penalty_node  14                        // {|type| of a penalty node}
 #define widow_pena    1                         // {|subtype| of penalty nodes from \.{\\jcharwidowpenalty}}
@@ -775,11 +786,13 @@ enum
 #define pdf_compress_level_code       74
 #define pdf_major_version_code        75
 #define pdf_minor_version_code        76
-#define synctex_code                  77
-#define tracing_stack_levels_code     78
-#define partoken_context_code         79
-#define show_stream_code              80
-#define int_pars                      81
+#define pdf_adjust_spacing_code       77  // {level of spacing adjusting}
+#define pdf_protrude_chars_code       78  // {protrude chars at left/right edge of paragraphs}
+#define synctex_code                  79
+#define tracing_stack_levels_code     80
+#define partoken_context_code         81
+#define show_stream_code              82
+#define int_pars                      83
 #define count_base                    (int_base + int_pars) // {256 user \.{\\count} registers}
 #define del_code_base                 (count_base + 256)    // {256 delimiter code mappings}
 #define dimen_base                    (del_code_base + 256) // {beginning of region 6}
@@ -865,6 +878,8 @@ enum
 #define pdf_compress_level            int_par(pdf_compress_level_code)
 #define pdf_major_version             int_par(pdf_major_version_code)
 #define pdf_minor_version             int_par(pdf_minor_version_code)
+#define pdf_adjust_spacing            int_par(pdf_adjust_spacing_code)
+#define pdf_protrude_chars            int_par(pdf_protrude_chars_code)
 #define synctex                       int_par(synctex_code)
 #define tracing_stack_levels          int_par(tracing_stack_levels_code)
 #define partoken_context              int_par(partoken_context_code)
@@ -969,7 +984,13 @@ do {                                            \
       print_font_dir_and_enc(font(p));          \
     }                                           \
     prints(")");                                \
-  }                                             \
+  } else if (pdf_font_expand_ratio[font(p)] != 0) { \
+    prints(" (");                                   \
+    if (pdf_font_expand_ratio[font(p)] > 0)         \
+      prints("+");                                  \
+    print_int(pdf_font_expand_ratio[font(p)]);      \
+    prints(")");                                    \
+  }                                                 \
 } while (0)
 /* sec 0268 */
 #define save_type(a)      save_stack[a].hh.b0 // {classifies a |save_stack| entry}
