@@ -1297,7 +1297,10 @@ do {                          \
 #define expanded_code            27 // {command code for \.{\\expanded}}
 #define Uchar_convert_code       28 // {command code for \.{\\Uchar}}
 #define Ucharcat_convert_code    29 // {command code for \.{\\Ucharcat}}
-#define job_name_code            30 // {command code for \.{\\jobname}}
+/* HZ */
+#define left_margin_kern_code    30
+#define right_margin_kern_code   31
+#define job_name_code            32 // {command code for \.{\\jobname}}
 /* sec 0480 */
 #define closed    2
 #define just_open 1

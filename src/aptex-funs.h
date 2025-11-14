@@ -710,4 +710,33 @@ static inline void write_ln (alpha_file f)
   (void) fputc('\n', f.file_data);
 }
 
+/* HZ */
+// TODO
+static inline integer get_lp_code(internal_font_number f, integer c) {
+  return 0;
+}
+static inline integer get_rp_code(internal_font_number f, integer c) {
+  return 0;
+}
+static inline integer get_ef_code(internal_font_number f, integer c) {
+  return 0;
+}
+// #define get_lp_code(f, c) (pdf_font_lp_base[f] == 0 ? 0 : mem[pdf_font_lp_base[f] + c])
+// #define get_rp_code(f, c) (pdf_font_rp_base[f] == 0 ? 0 : mem[pdf_font_rp_base[f] + c])
+// #define get_ef_code(f, c) (pdf_font_ef_base[f] == 0 ? 1000 : mem[pdf_font_ef_base[f] + c])
+
+static pointer prev_rightmost(pointer s, pointer e) {
+  /* {finds the node preceding the rightmost node |e|; |s| is some node
+     before |e|} */
+  pointer p;
+  p = s;
+  if (p == null)
+    return null;
+  while (link(p) != e) {
+    p = link(p);
+    if (p == null)
+      return null;
+  }
+  return p;
+}
 #endif

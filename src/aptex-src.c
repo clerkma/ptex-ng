@@ -6625,6 +6625,8 @@ static void init_prim (void)
   primitive("expanded", convert, expanded_code);
   primitive("Uchar", convert, Uchar_convert_code);
   primitive("Ucharcat", convert, Ucharcat_convert_code);
+  primitive("leftmarginkern", convert, left_margin_kern_code);
+  primitive("rightmarginkern", convert, right_margin_kern_code);
   primitive("jobname", convert, job_name_code);
   primitive("if", if_test, if_char_code);
   primitive("ifcat", if_test, if_cat_code);
@@ -12319,6 +12321,14 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("Ucharcat");
           break;
 
+      case left_margin_kern_code:
+        print_esc("leftmarginkern");
+        break;
+
+      case right_margin_kern_code:
+        print_esc("rightmarginkern");
+        break;
+
         default:
           print_esc("jobname");
           break;
@@ -15593,6 +15603,7 @@ static void scan_something_internal (small_number level, boolean negative)
   pointer tx;
   halfword qx;
   four_quarters i;
+  integer n, k;
   integer p;
 
 restart:
@@ -15881,8 +15892,24 @@ restart:
 
         if (m == 0)
           scanned_result(hyphen_char[cur_val], int_val);
-        else
+        else if (m == 1)
           scanned_result(skew_char[cur_val], int_val);
+        else {
+          n = cur_val;
+          scan_char_num();
+          k = cur_val;
+          switch (m) {
+          case lp_code_base:
+            scanned_result(get_lp_code(n,k), int_val);
+            break;
+          case rp_code_base:
+            scanned_result(get_rp_code(n,k), int_val);
+            break;
+          case ef_code_base:
+            scanned_result(get_ef_code(n,k), int_val);
+            break;
+          }
+        }
       }
       break;
 
@@ -18077,6 +18104,7 @@ static void get_file_dump (str_number s, integer i, integer j)
 
 void conv_toks (void)
 {
+  pointer p,q;
   char old_setting;
   KANJI_code cx;
   char c;
@@ -18395,6 +18423,13 @@ void conv_toks (void)
       }
       break;
 
+  case left_margin_kern_code:
+  case right_margin_kern_code:
+    scan_int();
+    if ((box(cur_val) == null) || (type(box(cur_val)) != hlist_node))
+      aptex_error("marginkern", "a non-empty hbox expected");
+    break;
+
     case job_name_code:
       if (job_name == 0)
         open_log_file();
@@ -18573,6 +18608,35 @@ void conv_toks (void)
       else
         print_kanji(cur_val);
       break;
+
+  case left_margin_kern_code:
+    p = list_ptr(box(cur_val));
+    if ((p != null) && (!is_char_node(p)) &&
+        (type(p) == glue_node) && (subtype(p) == left_skip_code + 1))
+      p = link(p);
+    if ((p != null) && (!is_char_node(p)) &&
+        (type(p) == margin_kern_node) && (subtype(p) == left_side))
+      print_scaled(width(p));
+    else
+      print("0");
+    print("pt");
+    break;
+  case right_margin_kern_code:
+    q = list_ptr(box(cur_val));
+    p = null;
+    if (q != null) {
+        p = prev_rightmost(q, null);
+        if ((p != null) && (!is_char_node(p)) &&
+            (type(p) == glue_node) && (subtype(p) == right_skip_code + 1))
+          p = prev_rightmost(q, p);
+    }
+    if ((p != null) && (!is_char_node(p)) &&
+        (type(p) == margin_kern_node) && (subtype(p) == right_side))
+      print_scaled(width(p));
+    else
+      print("0");
+    print("pt");
+    break;
 
     case job_name_code:
       print(job_name);
@@ -22229,6 +22293,7 @@ reswitch:
         }
         break;
 
+    case margin_kern_node:
       case kern_node:
         // @<Record |kern_node| {\sl Sync\TeX} information@>
         synctex_kern(p, this_box);
