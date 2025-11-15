@@ -739,4 +739,43 @@ static pointer prev_rightmost(pointer s, pointer e) {
   }
   return p;
 }
+
+static scaled round_xn_over_d(scaled x, int n, integer d)
+{
+    boolean positive = true;
+    nonnegative_integer t, u, v;
+    if (x < 0) {
+        positive = !positive;
+        x = -(x);
+    }
+    if (n < 0) {
+        positive = !positive;
+        n = -(n);
+    }
+    t = ((x % 0100000) * n);
+    u = ((x / 0100000) * n + (t / 0100000));
+    v = (u % d) * 0100000 + (t % 0100000);
+    if (u / d >= 0100000)
+        arith_error = true;
+    else
+        u = 0100000 * (u / d) + (v / d);
+    v = v % d;
+    if (2 * v >= d)
+        u++;
+    if (positive)
+        return (scaled) u;
+    else
+        return (-(scaled) u);
+}
+
+// TODO
+static void set_lp_code
+(internal_font_number f, eight_bits c, integer i) {
+}
+static void set_rp_code
+(internal_font_number f, eight_bits c, integer i) {
+}
+static void set_ef_code
+(internal_font_number f, eight_bits c, integer i) {
+}
 #endif

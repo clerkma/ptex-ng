@@ -618,6 +618,24 @@ EXTERN scaled cur_active_width[8];            // {distance from current active n
 EXTERN scaled background[8];                  // {length of an ``empty'' line}
 EXTERN scaled break_width[8];                 // {length being computed after current break}
 
+EXTERN boolean auto_breaking; // {make |auto_breaking| accessible out of |line_break|}
+EXTERN pointer prev_p;        // {make |prev_p| accessible out of |line_break|}
+EXTERN pointer first_p;       // {to access the first node of the paragraph}
+EXTERN pointer prev_char_p;   // {pointer to the previous char of an implicit kern}
+EXTERN pointer next_char_p;   // {pointer to the next char of an implicit kern}
+
+EXTERN boolean try_prev_break;                /* force break at the previous legal breakpoint? */
+EXTERN pointer prev_legal;                  /* the previous legal breakpoint */
+EXTERN pointer prev_prev_legal;             /* to save |prev_p| corresponding to |prev_legal| */
+EXTERN boolean prev_auto_breaking;            /* to save |auto_breaking| corresponding to |prev_legal| */
+// EXTERN scaled prev_active_width[8];        /* to save |active_width| corresponding to |prev_legal| - NOTE: Index 0 in C corresponds to 1 in Pascal */
+EXTERN pointer rejected_cur_p;             /* the last |cur_p| that has been rejected */
+EXTERN boolean before_rejected_cur_p;         /* |cur_p| is still before |rejected_cur_p|? */
+
+EXTERN integer max_stretch_ratio;              /* maximal stretch ratio of expanded fonts */
+EXTERN integer max_shrink_ratio;                /* maximal shrink ratio of expanded fonts */
+EXTERN integer cur_font_step;                   /* the current step of expanded fonts */
+
 EXTERN boolean no_shrink_error_yet;           // {have we complained about infinite shrinkage?}
 
 EXTERN pointer cur_p;                         // {the current breakpoint under consideration}

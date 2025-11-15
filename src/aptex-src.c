@@ -23955,6 +23955,66 @@ found:
   scan_left_brace();
 }
 
+/* HZ */
+static boolean check_expand_pars(internal_font_number f) {
+  internal_font_number k;
+  // check_expand_pars = false;
+  if ((pdf_font_step[f] == 0) ||
+      ((pdf_font_stretch[f] == null_font) &&
+       (pdf_font_shrink[f] == null_font)))
+    return false;
+  if (pdf_font_step[f] < 0)
+    cur_font_step = pdf_font_step[f];
+  else if (cur_font_step != pdf_font_step[f])
+    aptex_error("font expansion",
+                "using fonts with different step of expansion in one paragraph is not allowed");
+  k = pdf_font_stretch[f];
+  if (k != null_font) {
+    if (max_stretch_ratio < 0)
+      max_stretch_ratio = pdf_font_expand_ratio[k];
+    else if (max_stretch_ratio != pdf_font_expand_ratio[k])
+      aptex_error("font expansion",
+                  "using fonts with different limit of expansion in one paragraph is not allowed");
+  }
+  k = pdf_font_shrink[f];
+   if (k != null_font) {
+    if (max_shrink_ratio < 0)
+      max_shrink_ratio = pdf_font_expand_ratio[k];
+    else if (max_shrink_ratio != pdf_font_expand_ratio[k])
+      aptex_error("font expansion",
+                  "using fonts with different limit of expansion in one paragraph is not allowed");
+  }
+  return true;
+}
+
+static scaled char_stretch(internal_font_number f, eight_bits c) {
+  internal_font_number k;
+  scaled dw;
+  integer ef;
+  k = pdf_font_stretch[f];
+  ef = get_ef_code(f, c);
+  if ((k != null_font) && (ef > 0)) {
+    dw = char_width(k,char_info(k,c)) - char_width(f,char_info(f,c));
+    if (dw > 0)
+      return round_xn_over_d(dw, ef, 1000);
+  }
+  return 0;
+}
+
+static scaled char_shrink(internal_font_number f, eight_bits c) {
+  internal_font_number k;
+  scaled dw;
+  integer ef;
+  k = pdf_font_shrink[f];
+  ef = get_ef_code(f, c);
+  if ((k != null_font) && (ef > 0)) {
+    dw = char_width(k,char_info(f,c)) - char_width(f,char_info(k,c));
+    if (dw > 0)
+      return round_xn_over_d(dw, ef, 1000);
+  }
+  return 0;
+}
+
 static pointer hpack (pointer p, scaled w, small_number m)
 {
   pointer r;              // {the box node that will be returned}
@@ -24772,6 +24832,8 @@ static pointer var_delimiter (pointer d, small_number s, scaled v)
   eight_bits hd;            // {height-depth byte}
   four_quarters r;          // {extensible pieces}
   small_number z;           // {runs through font family members}
+  scaled margin_kern_stretch, margin_kern_shrink;
+  pointer lp, rp, cp;
   boolean large_attempt;    // {are we trying the ``large'' variant?}
 
   f = null_font;

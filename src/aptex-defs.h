@@ -3559,3 +3559,21 @@ do {                                            \
     selector = show_stream;                     \
 } while (0)
 #endif
+
+/* HZ */
+#define cal_margin_kern_var(a)                                          \
+  do {                                                                  \
+    character(cp) = character(a);                                       \
+    font(cp) = font(a); do_subst_font(cp,1000);                         \
+    if (font(cp) != font(a))                                            \
+      margin_kern_stretch = margin_kern_stretch + left_pw(a) - left_pw(cp); \
+    font(cp) = font(a); do_subst_font(cp,-1000);                        \
+    if (font(cp) != font(a))                                            \
+      margin_kern_shrink = margin_kern_shrink + left_pw(cp) - left_pw(a); \
+  } while (0)
+
+#define cal_expand_ratio 2
+#define subst_ex_font 3
+#define substituted 3
+#define left_pw(c) char_pw(c,left_side)
+#define right_pw(c) char_pw(c,right_side)
