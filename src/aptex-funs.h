@@ -768,6 +768,38 @@ static scaled round_xn_over_d(scaled x, int n, integer d)
         return (-(scaled) u);
 }
 
+scaled divide_scaled(scaled s, scaled m, integer dd)
+{
+    scaled q;
+    scaled r;
+    integer i;
+    integer sign = 1;
+    if (s < 0) {
+        sign = -sign;
+        s = -s;
+    }
+    if (m < 0) {
+        sign = -sign;
+        m = -m;
+    }
+    if (m == 0) {
+        aptex_error("arithmetic", "divided by zero");
+    } else if (m >= (0x7FFFFFFF / 10)) {
+        aptex_error("arithmetic", "number too big");
+    }
+    q = s / m;
+    r = s % m;
+    for (i = 1; i <= dd; i++) {
+        q = 10 * q + (10 * r) / m;
+        r = (10 * r) % m;
+    }
+    /*tex Rounding: */
+    if (2 * r >= m) {
+        q++;
+    }
+    return sign * q;
+}
+
 // TODO
 static void set_lp_code
 (internal_font_number f, eight_bits c, integer i) {
@@ -778,4 +810,72 @@ static void set_rp_code
 static void set_ef_code
 (internal_font_number f, eight_bits c, integer i) {
 }
+
+static internal_font_number load_expand_font(internal_font_number f, integer e) {
+  return 0;
+}
+
+static integer fix_expand_value(integer f, integer e) {
+  /* return the multiple of |pdf_font_step[f]| that is nearest to |e| */
+  integer step;
+  integer max_expand;
+  integer neg;
+
+  if (e == 0) return 0;
+
+  if (e < 0) {
+    e = -e;
+    neg = 1;
+    max_expand = -pdf_font_expand_ratio[pdf_font_shrink[f]];
+  } else {
+    neg = 0;
+    max_expand = pdf_font_expand_ratio[pdf_font_stretch[f]];
+  }
+
+  if (e > max_expand) {
+    e = max_expand;
+  } else {
+    step = pdf_font_step[f];
+    if (e % step > 0) {
+      e = step * round_xn_over_d(e, 1, step);
+    }
+  }
+
+  if (neg) {
+    e = -e;
+  }
+
+  return e;
+}
+
+static integer get_expand_font(integer f, integer e) {
+    /* look up and create if not found an expanded version of |f|; |f| is an
+       expandable font; |e| is nonzero and is a multiple of |pdf_font_step[f]| */
+    integer k;
+
+    k = pdf_font_elink[f];
+    while (k != null_font) {
+        if (pdf_font_expand_ratio[k] == e) {
+            return k;
+        }
+        k = pdf_font_elink[k];
+    }
+
+    k = load_expand_font(f, e);
+    pdf_font_elink[k] = pdf_font_elink[f];
+    pdf_font_elink[f] = k;
+    return k;
+}
+
+static internal_font_number expand_font(internal_font_number f, integer e) {
+  /* looks up for font |f| expanded by |e| thousandths, |e| is an arbitrary value
+     between max stretch and max shrink of |f|; if not found then creates it */
+  if (e == 0) return f;
+  e = fix_expand_value(f, e);
+  if (e == 0) return f;
+  if (pdf_font_elink[f] == null_font)
+    aptex_error("font expansion", "uninitialized pdf_font_elink");
+  return get_expand_font(f, e);
+}
+
 #endif
