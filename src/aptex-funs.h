@@ -711,6 +711,12 @@ static inline void write_ln (alpha_file f)
 }
 
 /* HZ */
+
+static inline integer fix_int(integer val, integer min, integer max)
+{
+  return (val < min ? min : (val > max ? max : val));
+}
+
 // TODO
 static inline integer get_lp_code(internal_font_number f, integer c) {
   return 0;

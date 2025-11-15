@@ -1730,7 +1730,7 @@ do {                    \
 #define prev_break        llink // {points to passive node that should precede this one}
 #define serial            info  // {serial number for symbolic identification}
 /* sec 0822 */
-#define delta_node_size 7 // {number of words in a delta node}
+#define delta_node_size 9 // {number of words in a delta node}
 #define delta_node      2 // {|type| field in a delta node}
 /* sec 0823 */
 #define do_all_six(a) \
@@ -3577,3 +3577,6 @@ do {                                            \
 #define substituted 3
 #define left_pw(c) char_pw(c,left_side)
 #define right_pw(c) char_pw(c,right_side)
+
+#define add_char_stretch(a, b) a = a + char_stretch(f, b)
+#define add_char_shrink(a, b) a = a + char_shrink(f, b)

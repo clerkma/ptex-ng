@@ -24224,6 +24224,7 @@ static pointer hpack (pointer p, scaled w, small_number m)
   internal_font_number f; //  {the font in a |char_node|}
   four_quarters i;        // {font information about a |char_node|}
   eight_bits hd;          // {height and depth indices for a character}
+  scaled font_stretch, font_shrink;
 
   last_badness = 0;
   r = get_node(box_node_size);
@@ -24238,6 +24239,13 @@ static pointer hpack (pointer p, scaled w, small_number m)
   k = cur_kanji_skip;
   q = r + list_offset;
   link(q) = p;
+  /* [649] - font expansion */
+  if (m == cal_expand_ratio) {
+    prev_char_p = null;
+    font_stretch = 0;
+    font_shrink = 0;
+    font_expand_ratio = 0;
+  }
   h = 0;
   d = 0;
   x = 0;
@@ -24260,7 +24268,19 @@ reswitch:
     chain = false;
 
     while (is_char_node(p))
+      /* Incorporate character dimensions into the dimensions of the hbox that will
+         contain it, then move to the next node */
     {
+      /* [654] - font expansion */
+      if (m >= cal_expand_ratio) {
+        prev_char_p = p;
+        if (m == cal_expand_ratio) {
+          f = font(p);
+          add_char_stretch(font_stretch, character(p));
+          add_char_shrink(font_shrink, character(p));
+        } else if (m == subst_ex_font)
+          do_subst_font(p, font_expand_ratio);
+      }
       f = font(p);
       i = char_info(f, character(p));
       hd = height_depth(i);
@@ -24384,9 +24404,58 @@ reswitch:
           }
           break;
 
-        case kern_node:
-          x = x + width(p);
-          break;
+          /* [651] - font expansion */
+      case margin_kern_node:
+        if (m == cal_expand_ratio) {
+          f = font(margin_char(p));
+
+          do_subst_font(margin_char(p), 1000);
+          if (f != font(margin_char(p))) {
+            font_stretch = font_stretch - width(p) -
+              char_pw(margin_char(p), subtype(p));
+          }
+          font(margin_char(p)) = f;
+
+          do_subst_font(margin_char(p), -1000);
+          if (f != font(margin_char(p))) {
+            font_shrink = font_shrink - width(p) -
+              char_pw(margin_char(p), subtype(p));
+          }
+          font(margin_char(p)) = f;
+        } else if (m == subst_ex_font) {
+          do_subst_font(margin_char(p), font_expand_ratio);
+          width(p) = -char_pw(margin_char(p), subtype(p));
+        }
+
+        x = x + width(p);
+        break;
+
+      case kern_node:
+        if ((m == cal_expand_ratio) && (subtype(p) == normal)) {
+          scaled k = kern_stretch(p);
+          if (k != 0) {
+            subtype(p) = substituted;
+            font_stretch = font_stretch + k;
+          }
+          k = kern_shrink(p);
+          if (k != 0) {
+            subtype(p) = substituted;
+            font_shrink = font_shrink + k;
+          }
+        } else if ((m == subst_ex_font) && (subtype(p) == substituted)) {
+          if (type(link(p)) == ligature_node) {
+            width(p) = get_kern(font(prev_char_p),
+                                character(prev_char_p),
+                                character(lig_char(link(p))));
+          } else {
+            width(p) = get_kern(font(prev_char_p),
+                                character(prev_char_p),
+                                character(link(p)));
+          }
+        }
+
+        x = x + width(p);
+        break;
 
         case math_node:
           {
@@ -24411,7 +24480,10 @@ reswitch:
           }
           break;
 
+          /* [651] - font expansion */
         case ligature_node:
+          if (m == subst_ex_font)
+            do_subst_font(p, font_expand_ratio);
           {
             mem[lig_trick] = mem[lig_char(p)];
             link(lig_trick) = link(p);
@@ -24419,6 +24491,10 @@ reswitch:
             goto reswitch;
           }
           break;
+      case disc_node:
+        if (m == subst_ex_font)
+            do_subst_font(p, font_expand_ratio);
+        break;
 
         default:
           do_nothing();
@@ -24449,7 +24525,8 @@ reswitch:
     goto exit;
   }
   else if (x > 0)
-  {
+  { /* @<Determine horizontal glue stretch setting, then |return|
+       or \hbox{|goto common_ending|}@> */
     if (total_stretch[filll] != 0)
       o = filll;
     else if (total_stretch[fill] != 0)
@@ -24459,6 +24536,11 @@ reswitch:
     else
       o = normal;
 
+    /* [658] - font expansion */
+    if ((m == cal_expand_ratio) && (o == normal) && (font_shrink > 0)) {
+      font_expand_ratio = divide_scaled(x, font_shrink, 3);
+      goto exit;
+    }
     glue_order(r) = o;
     glue_sign(r) = stretching;
 
@@ -24497,7 +24579,8 @@ reswitch:
     goto exit;
   }
   else
-  {
+  { /* @<Determine horizontal glue shrink setting, then |return|
+       or \hbox{|goto common_ending|}@> */
     if (total_shrink[filll] != 0)
       o = filll;
     else if (total_shrink[fill] != 0)
@@ -24507,6 +24590,11 @@ reswitch:
     else
       o = normal;
 
+    /* [664] - font expansion */
+    if ((m == cal_expand_ratio) && (o == normal) && (font_shrink > 0)) {
+      font_expand_ratio = divide_scaled(x, font_shrink, 3);
+      goto exit;
+    }
     glue_order(r) = o;
     glue_sign(r) = shrinking;
 
@@ -24618,6 +24706,14 @@ exit:
 
     if (LR_ptr != null)
       confusion("LR1");
+  }
+
+  /* [649] - font expansion */
+  if ((m == cal_expand_ratio) && (font_expand_ratio != 0)) {
+    font_expand_ratio = fix_int(font_expand_ratio, -1000, 1000);
+    q = list_ptr(r);
+    free_node(r, box_node_size);
+    r = hpack(q, w, subst_ex_font);
   }
 
   return r;
