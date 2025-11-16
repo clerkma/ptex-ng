@@ -6789,6 +6789,9 @@ static void init_prim (void)
   primitive("patterns", hyph_data, 1);
   primitive("hyphenchar", assign_font_int, 0);
   primitive("skewchar", assign_font_int, 1);
+  primitive("lpcode", assign_font_int, lp_code_base);
+  primitive("rpcode", assign_font_int, rp_code_base);
+  primitive("efcode", assign_font_int, ef_code_base);
   primitive("batchmode", set_interaction, batch_mode);
   primitive("nonstopmode", set_interaction, nonstop_mode);
   primitive("scrollmode", set_interaction, scroll_mode);
@@ -6811,6 +6814,7 @@ static void init_prim (void)
   primitive("special", extension, special_node);
   primitive("immediate", extension, immediate_code);
   primitive("setlanguage", extension, set_language_code);
+  primitive("pdffontexpand", extension, pdf_font_expand_code);
   primitive("pdfsavepos", extension, pdf_save_pos_node);
   primitive("pdfresettimer", extension, reset_timer_code);
   primitive("pdfsetrandomseed", extension, set_random_seed_code);
@@ -12941,10 +12945,13 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case assign_font_int:
-      if (chr_code == 0)
-        print_esc("hyphenchar");
-      else
-        print_esc("skewchar");
+      switch (chr_code) {
+      case 0: print_esc("hyphenchar"); break;
+      case 1: print_esc("skewchar"); break;
+      case lp_code_base: print_esc("lpcode"); break;
+      case rp_code_base: print_esc("rpcode"); break;
+      case ef_code_base: print_esc("efcode"); break;
+      }
       break;
 
     case set_font:
@@ -13100,6 +13107,10 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
         case set_language_code:
           print_esc("setlanguage");
           break;
+
+      case pdf_font_expand_code:
+        print_esc("pdffontexpand");
+        break;
 
         case pdf_save_pos_node:
           print_esc("pdfsavepos");
@@ -21186,6 +21197,144 @@ static void pdf_prepare_ship_out(void) {
 
 #endif
 
+/* Here come some subroutines to deal with expanded fonts for HZ-algorithm. */
+// TODO
+
+static internal_font_number load_expand_font(internal_font_number f, integer e) {
+  return 0;
+}
+
+static integer fix_expand_value(integer f, integer e) {
+  /* return the multiple of |pdf_font_step[f]| that is nearest to |e| */
+  integer step;
+  integer max_expand;
+  integer neg;
+
+  if (e == 0) return 0;
+
+  if (e < 0) {
+    e = -e;
+    neg = 1;
+    max_expand = -pdf_font_expand_ratio[pdf_font_shrink[f]];
+  } else {
+    neg = 0;
+    max_expand = pdf_font_expand_ratio[pdf_font_stretch[f]];
+  }
+
+  if (e > max_expand) {
+    e = max_expand;
+  } else {
+    step = pdf_font_step[f];
+    if (e % step > 0) {
+      e = step * round_xn_over_d(e, 1, step);
+    }
+  }
+
+  if (neg) {
+    e = -e;
+  }
+
+  return e;
+}
+
+static integer get_expand_font(integer f, integer e) {
+    /* look up and create if not found an expanded version of |f|; |f| is an
+       expandable font; |e| is nonzero and is a multiple of |pdf_font_step[f]| */
+    integer k;
+
+    k = pdf_font_elink[f];
+    while (k != null_font) {
+        if (pdf_font_expand_ratio[k] == e) {
+            return k;
+        }
+        k = pdf_font_elink[k];
+    }
+
+    k = load_expand_font(f, e);
+    pdf_font_elink[k] = pdf_font_elink[f];
+    pdf_font_elink[f] = k;
+    return k;
+}
+
+static internal_font_number expand_font(internal_font_number f, integer e) {
+  /* looks up for font |f| expanded by |e| thousandths, |e| is an arbitrary value
+     between max stretch and max shrink of |f|; if not found then creates it */
+  if (e == 0) return f;
+  e = fix_expand_value(f, e);
+  if (e == 0) return f;
+  if (pdf_font_elink[f] == null_font)
+    aptex_error("font expansion", "uninitialized pdf_font_elink");
+  return get_expand_font(f, e);
+}
+
+static void read_expand_font(void) // {read font expansion spec and load expanded font}
+{
+  integer font_stretch, font_shrink, font_step;
+  internal_font_number f;
+  boolean auto_expand;
+  scan_font_ident();
+  f = cur_val;
+  if (f == null_font) {
+    aptex_error("font expansion", "invalid font identifier");
+  }
+  scan_optional_equals();
+  scan_int();
+  font_stretch = fix_int(cur_val, 0, 1000);
+  scan_int();
+  font_shrink = fix_int(cur_val, 0, 1000);
+  scan_int();
+  font_step = fix_int(cur_val, 0, 1000);
+  if (font_step == 0) {
+    aptex_error("font expansion", "invalid step");
+  }
+  font_stretch = font_stretch - font_stretch % font_step;
+  if (font_stretch < 0)
+    font_stretch = 0;
+  font_shrink = font_shrink - font_shrink % font_step;
+  if (font_shrink < 0)
+    font_shrink = 0;
+  if (font_shrink == 1000)
+    font_shrink = font_shrink - font_step; /* don't allow zero-width font */
+  if ((font_stretch == 0) && (font_shrink == 0)) {
+    aptex_error("font expansion", "invalid limit");
+  }
+  auto_expand = false;
+  if (scan_keyword("autoexpand")) {
+    auto_expand = true;
+    // @<Scan an optional space@>
+    get_x_token();
+
+    if (cur_cmd != spacer)
+      back_input();
+  }
+  /* check if the font can be expanded */
+  if (pdf_font_expand_ratio[f] != 0) {
+    aptex_error("font expansion", "this font has been expanded by another font so it cannot be used now");
+  }
+  if (pdf_font_step[f] != 0) {
+    /* this font has been expanded, ensure the expansion parameters are identical */
+    if ((pdf_font_step[f] != font_step) ||
+        ((pdf_font_stretch[f] == null_font) && (font_stretch != 0)) ||
+        ((pdf_font_stretch[f] != null_font) &&
+         (pdf_font_expand_ratio[pdf_font_stretch[f]] != font_stretch)) ||
+        ((pdf_font_shrink[f] == null_font) && (font_shrink != 0)) ||
+        ((pdf_font_shrink[f] != null_font) &&
+         (pdf_font_expand_ratio[pdf_font_shrink[f]] != -font_shrink)) ||
+        (pdf_font_auto_expand[f] != auto_expand)) {
+      aptex_error("font expansion", "font has been expanded with different parameters");
+    }
+  } else {
+    pdf_font_step[f] = font_step;
+    pdf_font_auto_expand[f] = auto_expand;
+    if (font_stretch > 0) {
+      pdf_font_stretch[f] = get_expand_font(f, font_stretch);
+    }
+    if (font_shrink > 0) {
+      pdf_font_shrink[f] = get_expand_font(f, -font_shrink);
+    }
+  }
+}
+
 // ship out part
 static void dvi_font_def (internal_font_number f)
 {
@@ -28171,6 +28320,8 @@ static void line_break (boolean d)
       */
       if (is_char_node(cur_p))
       {
+        /* @<Advance \(c)|cur_p| to the node following the present string...@> */
+        /* [867] - font expansion TODO */
         chain = false;
 
         if (is_char_node(cur_p))
@@ -28537,14 +28688,26 @@ done1:;
         case kern_node:
           if ((subtype(cur_p) == explicit) || (subtype(cur_p) == ita_kern))
             kern_break();
-          else
+          else {
             act_width = act_width + width(cur_p);
+            /* [666] - font expansion */
+            if ((pdf_adjust_spacing > 1) && (subtype(cur_p) == normal)) {
+              add_kern_stretch(active_width[7], cur_p);
+              add_kern_shrink(active_width[8], cur_p);
+            }
+          }
           break;
 
         case ligature_node:
           {
             f = font(lig_char(cur_p));
             act_width = act_width + char_width(f, char_info(f, character(lig_char(cur_p))));
+            /* [866] - font expansion */
+            if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+              prev_char_p = cur_p;
+              add_char_stretch(active_width[7], character(lig_char(cur_p)));
+              add_char_shrink(active_width[8], character(lig_char(cur_p)));
+            }
           }
           break;
 
@@ -28628,12 +28791,12 @@ done1:;
               if (is_char_node(s))
               {
                 f = font(s);
-                /* [867] - font expansion */
+                /* [871] - font expansion */
                 act_width = act_width + char_width(f, char_info(f, character(s)));
                 if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
-                  prev_char_p = cur_p;
-                  add_char_stretch(active_width[7], character(cur_p));
-                  add_char_shrink(active_width[8], character(cur_p));
+                  prev_char_p = s;
+                  add_char_stretch(active_width[7], character(s));
+                  add_char_shrink(active_width[8], character(s));
                 }
                 if (font_dir[f] != dir_default)
                   s = link(s);
@@ -28643,12 +28806,12 @@ done1:;
                 case ligature_node:
                   {
                     f = font(lig_char(s));
-                    /* [866] - font expansion */
+                    /* [871] - font expansion */
                     act_width = act_width + char_width(f, char_info(f, character(lig_char(s))));
                     if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
-                      prev_char_p = cur_p;
-                      add_char_stretch(active_width[7], character(lig_char(cur_p)));
-                      add_char_shrink(active_width[8], character(lig_char(cur_p)));
+                      prev_char_p = s;
+                      add_char_stretch(active_width[7], character(lig_char(s)));
+                      add_char_shrink(active_width[8], character(lig_char(s)));
                     }
                   }
                   break;
@@ -28659,6 +28822,12 @@ done1:;
                 case rule_node:
                 case kern_node:
                   act_width = act_width + width(s);
+                  /* [871] - font expansion */
+                  if (type(s) == kern_node &&
+                      pdf_adjust_spacing > 1 && subtype(s) == normal) {
+                    add_kern_stretch(active_width[7], s);
+                    add_kern_shrink(active_width[8], s);
+                  }
                   break;
 
                 case disp_node:
@@ -29804,6 +29973,10 @@ exit:
 void post_line_break (boolean d)
 {
   pointer q, r, s;          // {temporary registers for list manipulation}
+  /* [877] - margin kerning */
+  boolean glue_break;       // {was a break at glue?}
+  pointer p, k;
+  scaled w;
   boolean disc_break;       // {was the current break at a discretionary node?}
   boolean post_disc_break;  // {and did it have a nonempty post-break part?}
   scaled cur_width;         // {width of line number |cur_line|}
@@ -29860,6 +30033,8 @@ void post_line_break (boolean d)
     q = cur_break(cur_p);
     disc_break = false;
     post_disc_break = false;
+    /* [881] - margin kerning */
+    glue_break = false;
 
     if (q != null)
     {
@@ -29870,6 +30045,8 @@ void post_line_break (boolean d)
           glue_ptr(q) = right_skip;
           subtype(q) = right_skip_code + 1;
           add_glue_ref(right_skip);
+          /* [881] - margin kerning */
+          glue_break = true;
           goto done;
         }
         else
@@ -29944,12 +30121,42 @@ void post_line_break (boolean d)
         q = link(q);
     }
 
-    r = new_param_glue(right_skip_code);
-    link(r) = link(q);
-    link(q) = r;
-    q = r;
-
 done:
+    /* [881] - margin kerning */
+    /* at this point `q' is the rightmost breakpoint; the only exception is the
+     * case of a discretionary break with non-empty `pre_break', then `q' has been
+     * changed to the last node of the `pre_break' list */
+    if (pdf_protrude_chars > 0) {
+      pointer ptmp;
+      if (disc_break && (is_char_node(q) || (type(q) != disc_node))) {
+        /* {|q| has been reset to the last node of |pre_break|} */
+        p = q;
+        ptmp = p;
+      } else {
+        p = prev_rightmost(temp_head, q); /* get `link(p) = q' */
+        ptmp = p;
+        p = find_protchar_right(temp_head, p);
+      }
+      w = right_pw(p);
+      if (w != 0) /* we have found a marginal kern, append it after `ptmp' */
+        {
+          k = new_margin_kern(-w, last_rightmost_char, right_side);
+          link(k) = link(ptmp);
+          link(ptmp) = k;
+          if (ptmp == q)
+            q = link(q);
+        }
+    }
+    /* if `q' was not a breakpoint at glue and has been reset to `rightskip' then
+     * we append `rightskip' after `q' now */
+    if (!glue_break) {
+      /* @<Put the \(r)\.{\\rightskip} glue after node |q|@>; */
+      r = new_param_glue(right_skip_code);
+      link(r) = link(q);
+      link(q) = r;
+      q = r;
+    }
+
     if (TeXXeT_en)
       if (LR_ptr != null)
       {
@@ -29988,6 +30195,19 @@ done:
       link(r) = q;
       q = r;
       disp_called = true;
+    }
+
+    /* [887] - margin kerning */
+    /* at this point `q' is the leftmost node; all discardable nodes have been discarded */
+    if (pdf_protrude_chars > 0) {
+      p = q;
+      p = find_protchar_left(p, false); /* no more discardables */
+      w = left_pw(p);
+      if (w != 0) {
+        k = new_margin_kern(-w, last_leftmost_char, left_side);
+        link(k) = q;
+        q = k;
+      }
     }
 
     if (left_skip != zero_glue)
@@ -32905,6 +33125,8 @@ static void delete_last (void)
 static void unpackage (void)
 {
   pointer p;  // {the box}
+  /* [1110] - margin kerning */
+  pointer r;  // {to remove marginal kern nodes}
   char c;     // {should we copy?}
   scaled disp;
 
@@ -32975,6 +33197,13 @@ done:
   while (link(tail) != null)
   {
     p = tail;
+    /* [1110] - margin kerning */
+    r = link(tail);
+    if (!is_char_node(r) && type(r) == margin_kern_node) {
+      link(tail) = link(r);
+      free_avail(margin_char(r));
+      free_node(r, margin_kern_node_size);
+    }
     tail = link(tail);
 
     if (is_char_node(tail))
@@ -33663,6 +33892,10 @@ reswitch:
               goto reswitch;
             }
             break;
+
+        case margin_kern_node:
+          d = width(p);
+          break;
 
           case kern_node:
             d = width(p);
@@ -35387,18 +35620,36 @@ static void prefixed_command (void)
       }
       break;
 
+      /* [1253] - font expansion */
     case assign_font_int:
       {
         n = cur_chr;
         scan_font_ident();
         f = cur_val;
-        scan_optional_equals();
-        scan_int();
-
-        if (n == 0)
-          hyphen_char[f] = cur_val;
-        else
-          skew_char[f] = cur_val;
+        if (n < lp_code_base) {
+          scan_optional_equals();
+          scan_int();
+          if (n == 0)
+            hyphen_char[f] = cur_val + '@';
+          else
+            skew_char[f] = cur_val;
+        } else {
+          scan_char_num();
+          p = cur_val;
+          scan_optional_equals();
+          scan_int();
+          switch (n) {
+          case lp_code_base:
+            set_lp_code(f, p, cur_val);
+            break;
+          case rp_code_base:
+            set_rp_code(f, p, cur_val);
+            break;
+          case ef_code_base:
+            set_ef_code(f, p, cur_val);
+            break;
+          }
+        }
       }
       break;
 
@@ -36611,6 +36862,10 @@ static void do_extension (void)
         what_rhm(tail) = norm_min(right_hyphen_min);
       }
       break;
+
+  case pdf_font_expand_code:
+    read_expand_font();
+    break;
 
     case pdf_save_pos_node:
       {

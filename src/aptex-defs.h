@@ -2066,9 +2066,10 @@ do {                                        \
 /* sec 1344 */
 #define immediate_code    4 // {command modifier for \.{\\immediate}}
 #define set_language_code 5 // {command modifier for \.{\\setlanguage}}
-#define pdf_save_pos_node 6
-#define reset_timer_code  7
-#define set_random_seed_code 8
+#define pdf_font_expand_code 6
+#define pdf_save_pos_node 7
+#define reset_timer_code  8
+#define set_random_seed_code 9
 /* sec 1371 */
 #define end_write_token (cs_token_flag + end_write)
 // macros of pTeX
