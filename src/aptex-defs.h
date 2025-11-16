@@ -1532,7 +1532,7 @@ do {                        \
 #define z1        167 // {move down and set |z|}
 #define fnt_num_0 171 // {set current font to 0}
 #define fnt1      235 // {set current font}
-#define fnt2      236 // 
+#define fnt2      236 //
 #define xxx1      239 // {extension to \.{DVI} primitives}
 #define xxx4      242 // {potentially long extension to \.{DVI} primitives}
 #define fnt_def1  243 // {define the meaning of a font number}
@@ -1545,7 +1545,7 @@ do {                        \
 #define id_byte    2
 #define ex_id_byte 3
 /* sec 0605 */
-#define movement_node_size  3 // {number of words per entry in the down and right stacks} 
+#define movement_node_size  3 // {number of words per entry in the down and right stacks}
 #define location(a)         mem[a + 2].cint // {\.{DVI} byte number for a movement command}
 /* sec 0608 */
 #define y_here  1 // {|info| when the movement entry points to a |y| command}
@@ -3414,7 +3414,7 @@ do {                    \
   put_sa_ptr(cur_ptr);  \
   incr(sa_used(q));     \
 } while (0)
- 
+
 #define delete_sa_ptr() \
 do {                    \
   put_sa_ptr(null);     \
@@ -3422,9 +3422,9 @@ do {                    \
 } while (0)
 //
 #define sa_lev            sa_used
-#define pointer_node_size 2 
-#define sa_type(a)        (sa_index(a) / 16) 
-#define sa_ref(a)         info(a + 1) 
+#define pointer_node_size 2
+#define sa_type(a)        (sa_index(a) / 16)
+#define sa_ref(a)         info(a + 1)
 #define sa_ptr(a)         link(a + 1)
 //
 #define word_node_size  3
@@ -3580,3 +3580,23 @@ do {                                            \
 
 #define add_char_stretch(a, b) a = a + char_stretch(f, b)
 #define add_char_shrink(a, b) a = a + char_shrink(f, b)
+
+#define cp_skipable(n)                                                  \
+  ((!is_char_node(n)) &&                                                \
+   ((type(n) = ins_node)                                                \
+    || (type(n) = mark_node)                                            \
+    || (type(n) = adjust_node)                                          \
+    || (type(n) = penalty_node)                                         \
+    || (type(n) = whatsit_node)                                         \
+    || ((type(n) = disc_node) &&                                        \
+        (pre_break(n) = null) &&                                        \
+        (post_break(n) = null) &&                                       \
+        (replace_count(n) = 0))                                         \
+    || ((type(n) = math_node) && (width(n) = 0))                        \
+    || ((type(n) = kern_node) &&                                        \
+        ((width(n) = 0) || (subtype(n) = normal)))                      \
+    || ((type(n) = glue_node) && (glue_ptr(n) = zero_glue))             \
+    || ((type(n) = hlist_node) && (width(n) = 0) && (height(n) = 0) &&  \
+        (depth(n) = 0) && (list_ptr(n) = null))))
+
+#define do_all_eight(a) do_all_six(a);if (pdf_adjust_spacing > 1) { a(7);a(8); }

@@ -27990,6 +27990,15 @@ static void line_break (boolean d)
   background[2 + stretch_order(q)] = stretch(q);
   background[2 + stretch_order(r)] = background[2 + stretch_order(r)] + stretch(r);
   background[6] = shrink(q) + shrink(r);
+  /* [827] - font expansion */
+  if (pdf_adjust_spacing > 1) {
+    background[7] = 0;
+    background[8] = 0;
+    max_stretch_ratio = -1;
+    max_shrink_ratio = -1;
+    cur_font_step = -1;
+    prev_char_p = null;
+  }
   do_last_line_fit = false;
   active_node_size = active_node_size_normal;
 
@@ -28857,9 +28866,156 @@ pointer finite_shrink (pointer p)
   return q;
 }
 
+static void push_node(pointer p) {
+  if (hlist_stack_level > max_hlist_stack)
+    aptex_error("push_node", "stack overflow");
+  hlist_stack[hlist_stack_level] = p;
+  hlist_stack_level++;
+}
+
+static pointer pop_node(void) {
+  hlist_stack_level--;
+  if (hlist_stack_level < 0) // {would point to some bug}
+    aptex_error("pop_node", "stack underflow (internal error)");
+  return hlist_stack[hlist_stack_level];
+}
+
+static pointer
+find_protchar_left(pointer l, boolean d)
+{
+  pointer t;
+  boolean run;
+  if ((link(l) != null) &&
+      (type(l) == hlist_node) &&
+      (width(l) == 0) &&
+      (height(l) == 0) &&
+      (depth(l) == 0) &&
+      (list_ptr(l) == null)) {
+    l = link(l); /* for paragraph start with \.{\\parindent = 0pt} */
+  } else if (d) {
+    while (link(l) != null &&
+           (!is_char_node(l) && !non_discardable(l))) {
+      l = link(l); /* std.\ discardables at line break, \TeX book, p 95 */
+    }
+  }
+  hlist_stack_level = 0;
+  run = true;
+  do {
+    t = l;
+    while (run && (type(l) == hlist_node) &&
+           (list_ptr(l) != null)) {
+      push_node(l);
+      l = list_ptr(l);
+    }
+    while (run && cp_skipable(l)) {
+      while (link(l) == null && hlist_stack_level > 0) {
+        l = pop_node(); /* don't visit this node again */
+      }
+      if (link(l) != null)
+        l = link(l);
+      else if (hlist_stack_level == 0)
+        run = false;
+    }
+  } while (t != l);
+  return l;
+}
+
+static pointer
+find_protchar_right(pointer l, pointer r)
+{
+  pointer t;
+  boolean run;
+  if (r == null) {
+    return null;
+  }
+  hlist_stack_level = 0;
+  run = true;
+  do {
+    t = r;
+    while (run &&
+           (type(r) == hlist_node) &&
+           (list_ptr(r) != null)) {
+      push_node(r);
+      push_node(l);
+      l = list_ptr(r);
+      r = l;
+      while (link(r) != null) {
+        r = link(r);
+      }
+    }
+    while (run && cp_skipable(r)) {
+      while (r == l && hlist_stack_level > 0) {
+        r = pop_node(); /* don't visit this node again */
+        l = pop_node();
+      }
+      if (r != l && r != null)
+        r = prev_rightmost(l, r);
+      else if (r == l && hlist_stack_level == 0)
+        run = false;
+    }
+  } while (t != r);
+  return r;
+}
+
+static scaled
+total_pw(pointer q, pointer p)
+{
+  pointer l, r, s;
+  integer n;
+  if (break_node(q) == null)
+    l = first_p;
+  else
+    l = cur_break(break_node(q));
+  r = prev_rightmost(prev_p, p); /* get `link(r)=p' */
+  /* let's look at the right margin first */
+  /*
+    short_display_n(r, 2);
+    print("&");
+    short_display_n(p, 2);
+    print_ln;
+  */
+  if (p != null && type(p) == disc_node && pre_break(p) != null)
+    /* a `disc_node' with non-empty `pre_break', protrude the last char
+     * of `pre_break' */
+    {
+      r = pre_break(p);
+      while (link(r) != null)
+        r = link(r);
+    } else r = find_protchar_right(l, r);
+  /* now the left margin */
+  /*
+     breadth_max := 10;
+     depth_threshold := 2;
+     show_node_list(l);
+     print_ln;
+  */
+  if (l != null && type(l) == disc_node) {
+    if (post_break(l) != null) {
+      l = post_break(l); /* protrude the first char */
+      goto done;
+    } else /* discard `replace_count(l)' nodes */
+      {
+        n = replace_count(l);
+        l = link(l);
+        while (n > 0) {
+          if (link(l) != null)
+            l = link(l);
+          n--;
+        }
+      }
+  }
+  l = find_protchar_left(l, true);
+ done:
+  return left_pw(l) + right_pw(r);
+}
+
+
 void try_break (integer pi, small_number break_type)
 {
   pointer r;                    // {runs through the active list}
+  scaled margin_kern_stretch;
+  scaled margin_kern_shrink;
+  pointer lp, rp, cp;
   pointer prev_r;               // {stays a step behind |r|}
   halfword old_l;               // {maximum line number in current equivalence class of lines}
   boolean no_break_yet;         // {have we found a feasible break at |cur_p|?}
@@ -28890,7 +29046,8 @@ void try_break (integer pi, small_number break_type)
   no_break_yet = true;
   prev_r = active;
   old_l = 0;
-  do_all_six(copy_to_cur_active);
+  /* [829] - font expansion */
+  do_all_eight(copy_to_cur_active);
 
   while (true)
   {
@@ -28904,7 +29061,8 @@ continu:
 
     if (type(r) == delta_node)
     {
-      do_all_six(update_width);
+      /* [832] - font expansion */
+      do_all_eight(update_width);
       prev_prev_r = prev_r;
       prev_r = r;
       goto continu;
@@ -28925,7 +29083,8 @@ continu:
           if (no_break_yet)
           {
             no_break_yet = false;
-            do_all_six(set_break_width_to_background);
+            /* [837] - font expansion */
+            do_all_eight(set_break_width_to_background);
             s = cur_p;
 
             if (break_type > unhyphenated)
