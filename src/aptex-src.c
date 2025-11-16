@@ -15614,7 +15614,6 @@ static void scan_something_internal (small_number level, boolean negative)
   pointer tx;
   halfword qx;
   four_quarters i;
-  integer n, k;
   integer p;
 
 restart:
@@ -15906,9 +15905,9 @@ restart:
         else if (m == 1)
           scanned_result(skew_char[cur_val], int_val);
         else {
-          n = cur_val;
+          integer n = cur_val;
           scan_char_num();
-          k = cur_val;
+          integer k = cur_val;
           switch (m) {
           case lp_code_base:
             scanned_result(get_lp_code(n,k), int_val);
@@ -21208,16 +21207,16 @@ static integer fix_expand_value(integer f, integer e) {
   /* return the multiple of |pdf_font_step[f]| that is nearest to |e| */
   integer step;
   integer max_expand;
-  integer neg;
+  boolean neg;
 
   if (e == 0) return 0;
 
   if (e < 0) {
     e = -e;
-    neg = 1;
+    neg = true;
     max_expand = -pdf_font_expand_ratio[pdf_font_shrink[f]];
   } else {
-    neg = 0;
+    neg = false;
     max_expand = pdf_font_expand_ratio[pdf_font_stretch[f]];
   }
 
@@ -21230,9 +21229,7 @@ static integer fix_expand_value(integer f, integer e) {
     }
   }
 
-  if (neg) {
-    e = -e;
-  }
+  if (neg) e = -e;
 
   return e;
 }
@@ -21269,7 +21266,7 @@ static internal_font_number expand_font(internal_font_number f, integer e) {
 
 static void read_expand_font(void) // {read font expansion spec and load expanded font}
 {
-  integer font_stretch, font_shrink, font_step;
+  integer shrink_limit, stretch_limit, font_step;
   internal_font_number f;
   boolean auto_expand;
   scan_font_ident();
@@ -21277,25 +21274,26 @@ static void read_expand_font(void) // {read font expansion spec and load expande
   if (f == null_font) {
     aptex_error("font expansion", "invalid font identifier");
   }
+  if (pdf_font_blink[f] != null_font) {
+    aptex_error("font expansion", "\\pdffontexpand cannot be used this way (the base font has been expanded)");
+  }
   scan_optional_equals();
   scan_int();
-  font_stretch = fix_int(cur_val, 0, 1000);
+  stretch_limit = fix_int(cur_val, 0, 1000);
   scan_int();
-  font_shrink = fix_int(cur_val, 0, 1000);
+  shrink_limit = fix_int(cur_val, 0, 1000);
   scan_int();
   font_step = fix_int(cur_val, 0, 1000);
   if (font_step == 0) {
     aptex_error("font expansion", "invalid step");
   }
-  font_stretch = font_stretch - font_stretch % font_step;
-  if (font_stretch < 0)
-    font_stretch = 0;
-  font_shrink = font_shrink - font_shrink % font_step;
-  if (font_shrink < 0)
-    font_shrink = 0;
-  if (font_shrink == 1000)
-    font_shrink = font_shrink - font_step; /* don't allow zero-width font */
-  if ((font_stretch == 0) && (font_shrink == 0)) {
+  stretch_limit -= stretch_limit % font_step;
+  if (stretch_limit < 0)
+    stretch_limit = 0;
+  shrink_limit -= shrink_limit % font_step;
+  if (shrink_limit < 0)
+    shrink_limit = 0;
+  if ((shrink_limit == 0) && (stretch_limit == 0)) {
     aptex_error("font expansion", "invalid limit");
   }
   auto_expand = false;
@@ -21303,7 +21301,6 @@ static void read_expand_font(void) // {read font expansion spec and load expande
     auto_expand = true;
     // @<Scan an optional space@>
     get_x_token();
-
     if (cur_cmd != spacer)
       back_input();
   }
@@ -21313,24 +21310,34 @@ static void read_expand_font(void) // {read font expansion spec and load expande
   }
   if (pdf_font_step[f] != 0) {
     /* this font has been expanded, ensure the expansion parameters are identical */
-    if ((pdf_font_step[f] != font_step) ||
-        ((pdf_font_stretch[f] == null_font) && (font_stretch != 0)) ||
-        ((pdf_font_stretch[f] != null_font) &&
-         (pdf_font_expand_ratio[pdf_font_stretch[f]] != font_stretch)) ||
-        ((pdf_font_shrink[f] == null_font) && (font_shrink != 0)) ||
-        ((pdf_font_shrink[f] != null_font) &&
-         (pdf_font_expand_ratio[pdf_font_shrink[f]] != -font_shrink)) ||
-        (pdf_font_auto_expand[f] != auto_expand)) {
-      aptex_error("font expansion", "font has been expanded with different parameters");
+    if (pdf_font_step[f] != font_step) {
+      aptex_error("font expansion", "font has been expanded with different expansion step");
+    }
+    if ((pdf_font_stretch[f] == null_font) && (stretch_limit != 0)) {
+      aptex_error("font expansion", "font has been expanded with different stretch limit");
+    }
+    if ((pdf_font_stretch[f] != null_font) &&
+        (pdf_font_expand_ratio[pdf_font_stretch[f]] != stretch_limit)) {
+      aptex_error("font expansion", "font has been expanded with different stretch limit");
+    }
+    if ((pdf_font_shrink[f] == null_font) && (shrink_limit != 0)) {
+      aptex_error("font expansion", "font has been expanded with different shrink limit");
+    }
+    if ((pdf_font_shrink[f] != null_font) &&
+        (-pdf_font_expand_ratio[pdf_font_shrink[f]] != shrink_limit)) {
+      aptex_error("font expansion", "font has been expanded with different shrink limit");
+    }
+    if (pdf_font_auto_expand[f] != auto_expand) {
+      aptex_error("font expansion", "font has been expanded with different auto expansion value");
     }
   } else {
     pdf_font_step[f] = font_step;
     pdf_font_auto_expand[f] = auto_expand;
-    if (font_stretch > 0) {
-      pdf_font_stretch[f] = get_expand_font(f, font_stretch);
+    if (stretch_limit > 0) {
+      pdf_font_stretch[f] = get_expand_font(f, stretch_limit);
     }
-    if (font_shrink > 0) {
-      pdf_font_shrink[f] = get_expand_font(f, -font_shrink);
+    if (shrink_limit > 0) {
+      pdf_font_shrink[f] = get_expand_font(f, -shrink_limit);
     }
   }
 }
@@ -24167,19 +24174,17 @@ static scaled char_shrink(internal_font_number f, eight_bits c) {
 scaled get_kern(internal_font_number f, eight_bits lc, eight_bits rc) {
   four_quarters i,j;
   font_index k;
-  pointer p;
-  integer s;
   i = char_info(f,lc);
   if (char_tag(i) != lig_tag)
     return 0;
   k = lig_kern_start(f,i);
   j = font_info[k].qqqq;
   if (skip_byte(j) <= stop_flag)
-    goto continuep1;
+    goto continue1;
   k = lig_kern_restart(f,j);
-continue1:
+continue0:
   j = font_info[k].qqqq;
-continuep1:
+continue1:
   if ((next_char(j) == rc) && (skip_byte(j) <= stop_flag) &&
       (op_byte(j) >= kern_flag)) {
     return char_kern(f,j);
@@ -24191,7 +24196,7 @@ continuep1:
       return 0;
     k = k + skip_byte(j) + 1;
   }
-    goto continue1;
+    goto continue0;
 }
 
 scaled kern_stretch(pointer p) {
@@ -25273,8 +25278,6 @@ static pointer var_delimiter (pointer d, small_number s, scaled v)
   eight_bits hd;            // {height-depth byte}
   four_quarters r;          // {extensible pieces}
   small_number z;           // {runs through font family members}
-  scaled margin_kern_stretch, margin_kern_shrink;
-  pointer lp, rp, cp;
   boolean large_attempt;    // {are we trying the ``large'' variant?}
 
   f = null_font;
@@ -29169,7 +29172,7 @@ find_protchar_right(pointer l, pointer r)
 static scaled
 total_pw(pointer q, pointer p)
 {
-  pointer l, r, s;
+  pointer l, r;
   integer n;
   if (break_node(q) == null)
     l = first_p;

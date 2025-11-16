@@ -582,6 +582,20 @@ _Noreturn static inline void aptex_error (const char * t, const char * p)
   succumb();
 }
 
+static inline void aptex_warning (const char * t, const char * p)
+{
+  if (interaction == error_stop_mode)
+    wake_up_terminal();
+  print("Asiatic pTeX warning");
+  if (t != 0) {
+    prints(" (");
+    prints(t);
+    prints(")");
+  }
+  prints(": "); prints(p);
+  if (history==spotless) history=warning_issued;
+}
+
 static inline integer get_microinterval(void)
 {
   integer s, m;
@@ -746,7 +760,7 @@ static pointer prev_rightmost(pointer s, pointer e) {
   return p;
 }
 
-static scaled round_xn_over_d(scaled x, int n, integer d)
+static scaled round_xn_over_d(scaled x, integer n, integer d)
 {
     boolean positive = true;
     nonnegative_integer t, u, v;
