@@ -27926,8 +27926,8 @@ restart:
 /* sec 0815 */
 static void line_break (boolean d)
 {
-  boolean auto_breaking;  // {is node |cur_p| outside a formula?}
-  pointer prev_p; // {helps to determine when glue nodes are breakpoints}
+  // boolean auto_breaking;  // {is node |cur_p| outside a formula?}
+  // pointer prev_p; // {helps to determine when glue nodes are breakpoints}
   pointer q, r, s, prev_s;  // {miscellaneous nodes of temporary interest}
   internal_font_number f, post_f; // {used when calculating character widths}
   pointer post_p;
@@ -28142,7 +28142,8 @@ static void line_break (boolean d)
     }
 
     act_width = background[1];
-    do_all_six(store_background);
+    /* [864] - font expansion */
+    do_all_eight(store_background);
     passive = null;
     printed_node = temp_head;
     pass_number = 0;
@@ -28151,6 +28152,14 @@ static void line_break (boolean d)
     auto_breaking = true;
     prev_p = cur_p; // {glue at beginning is not a legal breakpoint}
 
+    /* [863] - margin kerning, avoiding overfull boxes */
+    prev_char_p = null;
+    prev_legal = null;
+    rejected_cur_p = null;
+    try_prev_break = false;
+    before_rejected_cur_p = false;
+    first_p = cur_p; /* to access the first node of paragraph as the first active
+                     node has `break_node=null' */
     while ((cur_p != null) && (link(active) != last_active))
     {
       /*
@@ -28542,7 +28551,8 @@ done1:;
         case disc_node:
           {
             s = pre_break(cur_p);
-            disc_width = 0;
+            /* [869] - font expansion */
+            do_one_seven_eight(reset_disc_width);
 
             if (s == null)
               try_break(ex_hyphen_penalty, hyphenated);
@@ -28552,7 +28562,13 @@ done1:;
                 if (is_char_node(s))
                 {
                   f = font(s);
-                  disc_width = disc_width + char_width(f, char_info(f, character(s)));
+                  /* [870] - font expansion */
+                  disc_width[1] = disc_width[1] + char_width(f, char_info(f, character(s)));
+                  if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                    prev_char_p = s;
+                    add_char_stretch(disc_width[7], character(s));
+                    add_char_shrink(disc_width[8], character(s));
+                  }
 
                   if (font_dir[f] != dir_default)
                     s = link(s);
@@ -28562,7 +28578,13 @@ done1:;
                   case ligature_node:
                     {
                       f = font(lig_char(s));
-                      disc_width = disc_width + char_width(f, char_info(f, character(lig_char(s))));
+                      /* [870] - font expansion */
+                      disc_width[1] = disc_width[1] + char_width(f, char_info(f, character(lig_char(s))));
+                      if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                        prev_char_p = s;
+                        add_char_stretch(disc_width[7], character(lig_char(s)));
+                        add_char_shrink(disc_width[8], character(lig_char(s)));
+                      }
                     }
                     break;
 
@@ -28571,7 +28593,13 @@ done1:;
                   case dir_node:
                   case rule_node:
                   case kern_node:
-                    disc_width = disc_width + width(s);
+                    /* [870] - font expansion */
+                    disc_width[1] = disc_width[1] + width(s);
+                    if (type(s) == kern_node &&
+                        pdf_adjust_spacing > 1 && subtype(s) == normal) {
+                      add_kern_stretch(disc_width[7], s);
+                      add_kern_shrink(disc_width[8], s);
+                    }
                     break;
 
                   case disp_node:
@@ -28586,9 +28614,10 @@ done1:;
                 s = link(s);
               } while (!(s == null));
 
-              act_width = act_width + disc_width;
+              /* [869] - font expansion */
+              do_one_seven_eight(add_disc_width_to_active_width);
               try_break(hyphen_penalty, hyphenated);
-              act_width = act_width - disc_width;
+              do_one_seven_eight(sub_disc_width_from_active_width);
             }
 
             r = replace_count(cur_p);
@@ -28599,8 +28628,13 @@ done1:;
               if (is_char_node(s))
               {
                 f = font(s);
+                /* [867] - font expansion */
                 act_width = act_width + char_width(f, char_info(f, character(s)));
-
+                if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                  prev_char_p = cur_p;
+                  add_char_stretch(active_width[7], character(cur_p));
+                  add_char_shrink(active_width[8], character(cur_p));
+                }
                 if (font_dir[f] != dir_default)
                   s = link(s);
               }
@@ -28609,7 +28643,13 @@ done1:;
                 case ligature_node:
                   {
                     f = font(lig_char(s));
+                    /* [866] - font expansion */
                     act_width = act_width + char_width(f, char_info(f, character(lig_char(s))));
+                    if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                      prev_char_p = cur_p;
+                      add_char_stretch(active_width[7], character(lig_char(cur_p)));
+                      add_char_shrink(active_width[8], character(lig_char(cur_p)));
+                    }
                   }
                   break;
 
@@ -29103,6 +29143,12 @@ continu:
                   {
                     f = font(v);
                     break_width[1] = break_width[1] - char_width(f, char_info(f, character(v)));
+                    /* [841] - font expansion */
+                    if ((pdf_adjust_spacing > 1) && check_expand_pars(f)) {
+                      prev_char_p = v;
+                      sub_char_stretch(break_width[7], character(v));
+                      sub_char_shrink(break_width[8], character(v));
+                    }
 
                     if (font_dir[f] != dir_default)
                       v = link(v);
@@ -29113,6 +29159,12 @@ continu:
                       {
                         f = font(lig_char(v));
                         break_width[1] = break_width[1] - char_width(f, char_info(f, character(lig_char(v))));
+                        /* [841] - font expansion */
+                        if ((pdf_adjust_spacing > 1) && check_expand_pars(f)) {
+                          prev_char_p = v;
+                          sub_char_stretch(break_width[7], character(lig_char(v)));
+                          sub_char_shrink(break_width[8], character(lig_char(v)));
+                        }
                       }
                       break;
 
@@ -29122,6 +29174,12 @@ continu:
                     case rule_node:
                     case kern_node:
                       break_width[1] = break_width[1] - width(v);
+                      /* [841] - font expansion */
+                      if (type(v) == kern_node &&
+                          pdf_adjust_spacing > 1 && subtype(v) == normal) {
+                        sub_kern_stretch(break_width[7], v);
+                        sub_kern_shrink(break_width[8], v);
+                      }
                       break;
 
                     case disp_node:
@@ -29140,6 +29198,12 @@ continu:
                   {
                     f = font(s);
                     break_width[1] = break_width[1] + char_width(f, char_info(f, character(s)));
+                    /* [842] - font expansion */
+                    if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                      prev_char_p = s;
+                      add_char_stretch(break_width[7], character(s));
+                      add_char_shrink(break_width[8], character(s));
+                    }
 
                     if (font_dir[f] != dir_default)
                       s = link(s);
@@ -29150,6 +29214,12 @@ continu:
                       {
                         f = font(lig_char(s));
                         break_width[1] = break_width[1] + char_width(f, char_info(f, character(lig_char(s))));
+                        /* [842] - font expansion */
+                        if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                          prev_char_p = s;
+                          add_char_stretch(break_width[7], character(lig_char(s)));
+                          add_char_shrink(break_width[8], character(lig_char(s)));
+                        }
                       }
                       break;
 
@@ -29159,6 +29229,12 @@ continu:
                     case rule_node:
                     case kern_node:
                       break_width[1] = break_width[1] + width(s);
+                      /* [842] - font expansion */
+                      if (type(s) == kern_node &&
+                          pdf_adjust_spacing > 1 && subtype(s) == normal) {
+                        add_kern_stretch(break_width[7], s);
+                        add_kern_shrink(break_width[8], s);
+                      }
                       break;
 
                     case disp_node:
@@ -29173,7 +29249,8 @@ continu:
                   s = link(s);
                 }
 
-                break_width[1] = break_width[1] + disc_width;
+                /* [840] - font expansion */
+                do_one_seven_eight(add_disc_width_to_break_width);
 
                 if (post_break(cur_p) == null)
                   s = link(v);
@@ -29231,20 +29308,21 @@ done:;
           }
 
           if (type(prev_r) == delta_node)
-          {
-            do_all_six(convert_to_break_width);
-          }
+            { /* [843] - font expansion */
+              do_all_eight(convert_to_break_width);
+            }
           else if (prev_r == active)
-          {
-            do_all_six(store_break_width);
-          }
+            { /* [843] - font expansion */
+              do_all_eight(store_break_width);
+            }
           else
           {
             q = get_node(delta_node_size);
             link(q) = r;
             type(q) = delta_node;
             subtype(q) = 0;
-            do_all_six(new_delta_to_break_width);
+            /* [843] - font expansion */
+            do_all_eight(new_delta_to_break_width);
             link(prev_r) = q;
             prev_prev_r = prev_r;
             prev_r = q;
@@ -29337,7 +29415,8 @@ done:;
             link(q) = r;
             type(q) = delta_node;
             subtype(q) = 0;
-            do_all_six(new_delta_from_break_width);
+            /* [844] - font expansion */
+            do_all_eight(new_delta_from_break_width);
             link(prev_r) = q;
             prev_prev_r = prev_r;
             prev_r = q;
@@ -29368,7 +29447,39 @@ done:;
 
     {
       artificial_demerits = false;
-      shortfall = line_width - cur_active_width[1];
+      shortfall = line_width - cur_active_width[1]; // {we're this much too short}
+      /* [851] - font expansion, margin kerning */
+      if (pdf_protrude_chars > 1)
+        shortfall += total_pw(r, cur_p);
+      if (pdf_adjust_spacing > 1 && shortfall != 0) {
+        margin_kern_stretch = 0;
+        margin_kern_shrink = 0;
+        if (pdf_protrude_chars > 1) {
+          /* @<Calculate variations of marginal kerns@> */
+          lp = last_leftmost_char;
+          rp = last_rightmost_char;
+          fast_get_avail(cp);
+          if (lp != null)
+            cal_margin_kern_var(lp);
+          if (rp != null)
+            cal_margin_kern_var(rp);
+          free_avail(cp);
+        }
+        if (shortfall > 0 && (total_font_stretch + margin_kern_stretch) > 0) {
+          if (total_font_stretch + margin_kern_stretch > shortfall) {
+            shortfall = ((total_font_stretch + margin_kern_stretch) /
+                         (max_stretch_ratio / cur_font_step)) / 2;
+          } else
+            shortfall -= (total_font_stretch + margin_kern_stretch);
+        } else if (shortfall < 0 && (total_font_shrink + margin_kern_shrink) > 0) {
+          if ((total_font_shrink + margin_kern_shrink) > -shortfall) {
+            shortfall = -(total_font_shrink + margin_kern_shrink) /
+              (max_shrink_ratio / cur_font_step) / 2;
+          } else
+            shortfall += (total_font_shrink + margin_kern_shrink);
+        }
+      }
+
 
       if (shortfall > 0)
         if ((cur_active_width[3] != 0) || (cur_active_width[4] != 0) ||
@@ -29641,10 +29752,10 @@ deactivate:
       {
         r = link(active);
 
-        if (type(r) == delta_node)
-        {
-          do_all_six(update_active);
-          do_all_six(copy_to_cur_active);
+        if (type(r) == delta_node) {
+          /* [861] - font expansion */
+          do_all_eight(update_active);
+          do_all_eight(copy_to_cur_active);
           link(active) = link(r);
           free_node(r, delta_node_size);
         }
@@ -29655,15 +29766,17 @@ deactivate:
 
         if (r == last_active)
         {
-          do_all_six(downdate_width);
+          /* [860] - font expansion */
+          do_all_eight(downdate_width);
           link(prev_prev_r) = last_active;
           free_node(prev_r, delta_node_size);
           prev_r = prev_prev_r;
         }
         else if (type(r) == delta_node)
         {
-          do_all_six(update_width);
-          do_all_six(combine_two_deltas);
+          /* [860] - font expansion */
+          do_all_eight(update_width);
+          do_all_eight(combine_two_deltas);
           link(prev_r) = link(r);
           free_node(r, delta_node_size);
         }

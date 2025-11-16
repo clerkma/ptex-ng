@@ -644,7 +644,7 @@ EXTERN boolean second_pass;                   // {is this our second attempt to 
 EXTERN boolean final_pass;                    // {is this our final attempt to break this paragraph?}
 EXTERN integer threshold;                     // {maximum badness on feasible lines}
 
-EXTERN scaled disc_width;                     // {the length of discretionary material preceding a break}
+EXTERN scaled disc_width[8+1];                // {the length of discretionary material preceding a break}
 
 EXTERN halfword easy_line;                    // {line numbers |>easy_line| are equivalent in break nodes}
 EXTERN halfword last_special_line;            // {line numbers |>last_special_line| all have the same width}

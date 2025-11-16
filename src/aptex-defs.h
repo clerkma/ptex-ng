@@ -3578,8 +3578,14 @@ do {                                            \
 #define left_pw(c) char_pw(c,left_side)
 #define right_pw(c) char_pw(c,right_side)
 
-#define add_char_stretch(a, b) a = a + char_stretch(f, b)
-#define add_char_shrink(a, b) a = a + char_shrink(f, b)
+#define add_char_stretch(a, b) a += char_stretch(f, b)
+#define add_char_shrink(a, b) a += char_shrink(f, b)
+#define sub_char_stretch(a, b) a -= char_stretch(f, b)
+#define sub_char_shrink(a, b) a -= char_shrink(f, b)
+#define add_kern_stretch(a, b) a += kern_stretch(b)
+#define add_kern_shrink(a, b) a += kern_shrink(b)
+#define sub_kern_stretch(a, b) a -= kern_stretch(b)
+#define sub_kern_shrink(a, b) a -= kern_shrink(b)
 
 #define cp_skipable(n)                                                  \
   ((!is_char_node(n)) &&                                                \
@@ -3599,4 +3605,15 @@ do {                                            \
     || ((type(n) = hlist_node) && (width(n) = 0) && (height(n) = 0) &&  \
         (depth(n) = 0) && (list_ptr(n) = null))))
 
-#define do_all_eight(a) do_all_six(a);if (pdf_adjust_spacing > 1) { a(7);a(8); }
+#define reset_disc_width(n) disc_width[n] = 0
+
+#define add_disc_width_to_break_width(n) break_width[n] += disc_width[n]
+#define add_disc_width_to_active_width(n) active_width[n] += disc_width[n]
+#define sub_disc_width_from_active_width(n) active_width[n] -= disc_width[n]
+
+#define do_seven_eight(a) if (pdf_adjust_spacing > 1) { a(7);a(8); }
+#define do_all_eight(a) do_all_six(a); do_seven_eight(a)
+#define do_one_seven_eight(a) a(1); do_seven_eight(a)
+
+#define total_font_stretch cur_active_width[7]
+#define total_font_shrink cur_active_width[8]
