@@ -21197,10 +21197,130 @@ static void pdf_prepare_ship_out(void) {
 #endif
 
 /* Here come some subroutines to deal with expanded fonts for HZ-algorithm. */
-// TODO
+
+static str_number expand_font_name(integer f, integer e) {
+  integer old_setting;
+
+  old_setting = selector;
+  selector = new_string;
+  prints(font_name[f]);
+  if (e > 0)
+    prints("+"); // {minus sign will be printed by `print_int`}
+  print_int(e);
+  selector = old_setting;
+  return make_string();
+}
+
+static internal_font_number auto_expand_font(internal_font_number f, integer e) {
+  internal_font_number k;
+  integer nw, ni, nk, i, j;
+
+  k = font_ptr + 1;
+  incr(font_ptr);
+  if (font_ptr >= font_max) {
+    overflow("maximum internal font number (font_max)", font_max);
+  }
+  font_name[k] = expand_font_name(f, e);
+  font_area[k] = font_area[f];
+  font_id_text(k) = font_id_text(f);
+  hyphen_char[k] = hyphen_char[f];
+  skew_char[k] = skew_char[f];
+  font_bchar[k] = font_bchar[f];
+  font_false_bchar[k] = font_false_bchar[f];
+  font_bc[k] = font_bc[f];
+  font_ec[k] = font_ec[f];
+  font_size[k] = font_size[f];
+  font_dsize[k] = font_dsize[f];
+  font_params[k] = font_params[f];
+  font_glue[k] = font_glue[f];
+  bchar_label[k] = bchar_label[f];
+
+  char_base[k] = char_base[f];
+  height_base[k] = height_base[f];
+  depth_base[k] = depth_base[f];
+  lig_kern_base[k] = lig_kern_base[f];
+  exten_base[k] = exten_base[f];
+  param_base[k] = param_base[f];
+
+  nw = height_base[f] - width_base[f];
+  ni = lig_kern_base[f] - italic_base[f];
+  nk = exten_base[f] - (kern_base[f] + kern_base_offset);
+  if (fmem_ptr + nw + ni + nk >= font_mem_size) {
+    overflow("number of words of font memory (font_mem_size)", font_mem_size);
+  }
+  width_base[k] = fmem_ptr;
+  italic_base[k] = width_base[k] + nw;
+  kern_base[k] = italic_base[k] + ni - kern_base_offset;
+  fmem_ptr = fmem_ptr + nw + ni + nk;
+
+  for (i = 0; i < nw; i++) {
+    font_info[width_base[k] + i].sc =
+      round_xn_over_d(font_info[width_base[f] + i].sc, 1000 + e, 1000);
+  }
+  for (i = 0; i < ni; i++) {
+    font_info[italic_base[k] + i].sc =
+      round_xn_over_d(font_info[italic_base[f] + i].sc, 1000 + e, 1000);
+  }
+  for (i = 0; i < nk; i++) {
+    font_info[kern_base[k] + kern_base_offset + i].sc =
+      round_xn_over_d(font_info[kern_base[f] + kern_base_offset + i].sc, 1000 + e, 1000);
+  }
+
+  return k;
+}
+
+static void set_expand_param(internal_font_number k, internal_font_number f, integer e) {
+  integer i, j;
+
+  if (pdf_font_rp_base[f] == 0)
+    pdf_font_rp_base[f] = init_font_base(0);
+  if (pdf_font_lp_base[f] == 0)
+    pdf_font_lp_base[f] = init_font_base(0);
+  if (pdf_font_ef_base[f] == 0)
+    pdf_font_ef_base[f] = init_font_base(1000);
+  pdf_font_expand_ratio[k] = e;
+  pdf_font_step[k] = pdf_font_step[f];
+  pdf_font_auto_expand[k] = pdf_font_auto_expand[f];
+  pdf_font_blink[k] = f; /* ??? */
+  pdf_font_lp_base[k] = pdf_font_lp_base[f];
+  pdf_font_rp_base[k] = pdf_font_rp_base[f];
+  pdf_font_ef_base[k] = pdf_font_ef_base[f];
+}
+
+static internal_font_number tfm_lookup(str_number s, scaled fs) {
+  internal_font_number k;
+
+  if (fs != 0)
+    for (k = font_base + 1; k <= font_ptr; k++) {
+      if (str_eq_str(font_name[k], s) && (font_size[k] == fs)) {
+        flush_str(s);
+        return k;
+      }
+    }
+  else
+    for (k = font_base + 1; k <= font_ptr; k++) {
+      if (str_eq_str(font_name[k], s)) {
+        flush_str(s);
+        return k;
+      }
+    }
+  return null_font;
+}
 
 static internal_font_number load_expand_font(internal_font_number f, integer e) {
-  return 0;
+  str_number s; // {font name}
+  internal_font_number k;
+  s = expand_font_name(f, e);
+  k = tfm_lookup(s, font_size[f]);
+  if (k == null_font) {
+    if (pdf_font_auto_expand[f]) {
+      k = auto_expand_font(f, e);
+    } else {
+      k = read_font_info(null_cs, s, 335 /* "" */, font_size[f]);
+    }
+  }
+  set_expand_param(k, f, e);
+  return k;
 }
 
 static integer fix_expand_value(integer f, integer e) {
@@ -21241,9 +21361,8 @@ static integer get_expand_font(integer f, integer e) {
 
     k = pdf_font_elink[f];
     while (k != null_font) {
-        if (pdf_font_expand_ratio[k] == e) {
-            return k;
-        }
+        if (pdf_font_expand_ratio[k] == e)
+          return k;
         k = pdf_font_elink[k];
     }
 

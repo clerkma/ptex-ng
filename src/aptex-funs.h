@@ -821,6 +821,10 @@ scaled divide_scaled(scaled s, scaled m, integer dd)
 }
 
 // TODO
+static integer init_font_base(integer v) {
+  return 0;
+}
+
 static void set_lp_code
 (internal_font_number f, eight_bits c, integer i) {
 }
