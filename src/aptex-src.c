@@ -28443,7 +28443,6 @@ static void line_break (boolean d)
       if (is_char_node(cur_p))
       {
         /* @<Advance \(c)|cur_p| to the node following the present string...@> */
-        /* [867] - font expansion TODO */
         chain = false;
 
         if (is_char_node(cur_p))
@@ -28481,6 +28480,12 @@ static void line_break (boolean d)
           f = post_f;
           cc = character(post_p);
           act_width = act_width + char_width(f, char_info(f, cc));
+          /* [867] - font expansion */
+          if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+            prev_char_p = cur_p;
+            add_char_stretch(active_width[7], cc);
+            add_char_shrink(active_width[8], cc);
+          }
           post_p = link(cur_p);
 
           if (font_dir[f] != dir_default)
