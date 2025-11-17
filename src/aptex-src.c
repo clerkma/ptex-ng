@@ -28477,7 +28477,7 @@ static void line_break (boolean d)
           act_width = act_width + char_width(f, char_info(f, cc));
           /* [867] - font expansion */
           if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
-            prev_char_p = cur_p;
+            prev_char_p = post_p;
             add_char_stretch(active_width[7], cc);
             add_char_shrink(active_width[8], cc);
           }
@@ -30304,23 +30304,14 @@ done:
         link(s) = q;
       }
 
+    /* @<Put the \(l)\.{\\leftskip} glue at the left and detach this line@> */
     r = link(q);
     link(q) = null;
     q = link(temp_head);
     link(temp_head) = r;
 
-    if (last_disp != 0)
-    {
-      r = get_node(small_node_size);
-      type(r) = disp_node;
-      disp_dimen(r) = last_disp;
-      link(r) = q;
-      q = r;
-      disp_called = true;
-    }
-
     /* [887] - margin kerning */
-    /* at this point `q' is the leftmost node; all discardable nodes have been discarded */
+    /* at this point |q| is the leftmost node; all discardable nodes have been discarded */
     if (pdf_protrude_chars > 0) {
       pointer p = q;
       p = find_protchar_left(p, false); /* no more discardables */
@@ -30332,8 +30323,17 @@ done:
       }
     }
 
-    if (left_skip != zero_glue)
+    if (last_disp != 0)
     {
+      r = get_node(small_node_size);
+      type(r) = disp_node;
+      disp_dimen(r) = last_disp;
+      link(r) = q;
+      q = r;
+      disp_called = true;
+    }
+
+    if (left_skip != zero_glue) {
       r = new_param_glue(left_skip_code);
       link(r) = q;
       q = r;
@@ -30356,7 +30356,11 @@ done:
     }
 
     adjust_tail = adjust_head;
-    just_box = hpack(q, cur_width, exactly);
+    /* [889] - font expansion, pre vadjust */
+    if (pdf_adjust_spacing > 0)
+      just_box = hpack(q, cur_width, cal_expand_ratio);
+    else
+      just_box = hpack(q, cur_width, exactly);
     shift_amount(just_box) = cur_indent;
     append_to_vlist(just_box);
 
@@ -33247,8 +33251,6 @@ static void delete_last (void)
 static void unpackage (void)
 {
   pointer p;  // {the box}
-  /* [1110] - margin kerning */
-  pointer r;  // {to remove marginal kern nodes}
   char c;     // {should we copy?}
   scaled disp;
 
@@ -33320,7 +33322,7 @@ done:
   {
     p = tail;
     /* [1110] - margin kerning */
-    r = link(tail);
+    pointer r = link(tail); // {to remove marginal kern nodes}
     if (!is_char_node(r) && type(r) == margin_kern_node) {
       link(tail) = link(r);
       free_avail(margin_char(r));
@@ -34015,10 +34017,9 @@ reswitch:
             }
             break;
 
-        case margin_kern_node:
-          d = width(p);
-          break;
 
+            /* [1147] - margin kerning */
+        case margin_kern_node:
           case kern_node:
             d = width(p);
             break;
