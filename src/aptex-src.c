@@ -35752,7 +35752,7 @@ static void prefixed_command (void)
           scan_optional_equals();
           scan_int();
           if (n == 0)
-            hyphen_char[f] = cur_val + '@';
+            hyphen_char[f] = cur_val;
           else
             skew_char[f] = cur_val;
         } else {
