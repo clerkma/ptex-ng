@@ -731,19 +731,15 @@ static inline integer fix_int(integer val, integer min, integer max)
   return (val < min ? min : (val > max ? max : val));
 }
 
-// TODO
 static inline integer get_lp_code(internal_font_number f, integer c) {
-  return 0;
+  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f][c].lp;
 }
 static inline integer get_rp_code(internal_font_number f, integer c) {
-  return 0;
+  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f][c].rp;
 }
 static inline integer get_ef_code(internal_font_number f, integer c) {
-  return 0;
+  return pdf_font_base[f] == NULL ? 1000 : pdf_font_base[f][c].ef;
 }
-// #define get_lp_code(f, c) (pdf_font_lp_base[f] == 0 ? 0 : mem[pdf_font_lp_base[f] + c])
-// #define get_rp_code(f, c) (pdf_font_rp_base[f] == 0 ? 0 : mem[pdf_font_rp_base[f] + c])
-// #define get_ef_code(f, c) (pdf_font_ef_base[f] == 0 ? 1000 : mem[pdf_font_ef_base[f] + c])
 
 static pointer prev_rightmost(pointer s, pointer e) {
   /* {finds the node preceding the rightmost node |e|; |s| is some node
@@ -821,18 +817,33 @@ scaled divide_scaled(scaled s, scaled m, integer dd)
 }
 
 // TODO
-static integer init_font_base(integer v) {
-  return 0;
+static charinfo *init_font_base() {
+  charinfo *f = malloc(256 * sizeof(charinfo));
+  for (size_t i = 0; i<256; i++) {
+    f[i].lp = 0;
+    f[i].rp = 0;
+    f[i].ef = 1000;
+  }
+  return f;
 }
 
 static void set_lp_code
 (internal_font_number f, eight_bits c, integer i) {
+  if (pdf_font_base[f] == NULL)
+    pdf_font_base[f] = init_font_base();
+  pdf_font_base[f][c].lp = i;
 }
 static void set_rp_code
 (internal_font_number f, eight_bits c, integer i) {
+  if (pdf_font_base[f] == NULL)
+    pdf_font_base[f] = init_font_base();
+  pdf_font_base[f][c].rp = i;
 }
 static void set_ef_code
 (internal_font_number f, eight_bits c, integer i) {
+  if (pdf_font_base[f] == NULL)
+    pdf_font_base[f] = init_font_base();
+  pdf_font_base[f][c].ef = i;
 }
 
 #endif

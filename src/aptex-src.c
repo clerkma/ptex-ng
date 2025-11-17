@@ -138,8 +138,8 @@ static void print_aptex_version (void)
   printf("Copyright 2014-2025 Clerk Ma.\n"
     "          2025 LdBeth.\n"
     "banner: \"%s\"\n"
-    "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s\n",
-    banner, pTeX_version_string, upTeX_version_string);
+    "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s, HZ%s\n",
+         banner, pTeX_version_string, upTeX_version_string, hz_version_string);
 #ifdef USE_KPATHSEA
   printf("Compiled with %s\n", kpathsea_version_string);
 #endif
@@ -21203,7 +21203,7 @@ static str_number expand_font_name(integer f, integer e) {
 
   old_setting = selector;
   selector = new_string;
-  prints(font_name[f]);
+  print(font_name[f]);
   if (e > 0)
     prints("+"); // {minus sign will be printed by `print_int`}
   print_int(e);
@@ -21213,7 +21213,7 @@ static str_number expand_font_name(integer f, integer e) {
 
 static internal_font_number auto_expand_font(internal_font_number f, integer e) {
   internal_font_number k;
-  integer nw, ni, nk, i, j;
+  integer nw, ni, nk, i;
 
   k = font_ptr + 1;
   incr(font_ptr);
@@ -21270,21 +21270,16 @@ static internal_font_number auto_expand_font(internal_font_number f, integer e) 
 }
 
 static void set_expand_param(internal_font_number k, internal_font_number f, integer e) {
-  integer i, j;
-
-  if (pdf_font_rp_base[f] == 0)
-    pdf_font_rp_base[f] = init_font_base(0);
-  if (pdf_font_lp_base[f] == 0)
-    pdf_font_lp_base[f] = init_font_base(0);
-  if (pdf_font_ef_base[f] == 0)
-    pdf_font_ef_base[f] = init_font_base(1000);
+  /* if (pdf_font_ef_base[f] == 0)
+     pdf_font_ef_base[f] = init_font_base(1000);
+  */
+  if (pdf_font_base[f] == NULL)
+    pdf_font_base[f] = init_font_base();
   pdf_font_expand_ratio[k] = e;
   pdf_font_step[k] = pdf_font_step[f];
   pdf_font_auto_expand[k] = pdf_font_auto_expand[f];
   pdf_font_blink[k] = f; /* ??? */
-  pdf_font_lp_base[k] = pdf_font_lp_base[f];
-  pdf_font_rp_base[k] = pdf_font_rp_base[f];
-  pdf_font_ef_base[k] = pdf_font_ef_base[f];
+  pdf_font_base[k] = pdf_font_base[f];
 }
 
 static internal_font_number tfm_lookup(str_number s, scaled fs) {

@@ -37,6 +37,8 @@
 #define epTeX_version_string "-210218"
 #define epTeX_version_number 210218
 
+#define hz_version_string "-1.30"
+
 #define TeXXeT_code         0         // {the \TeXXeT\ feature is optional}
 #define eTeX_states         1         // {number of \eTeX\ state variables in |eqtb|}
 

@@ -538,9 +538,13 @@ EXTERN integer pdf_font_shrink[font_max + 1];             // {limit of shrinking
 EXTERN integer pdf_font_step[font_max + 1];               // {amount of one step of expansion}
 EXTERN integer pdf_font_expand_ratio[font_max + 1];       // {expansion ratio of a particular font}
 EXTERN boolean pdf_font_auto_expand[font_max + 1];        // {this font is auto-expanded?}
-EXTERN integer pdf_font_lp_base[font_max + 1];            // {base of left-protruding factor}
-EXTERN integer pdf_font_rp_base[font_max + 1];            // {base of right-protruding factor}
-EXTERN integer pdf_font_ef_base[font_max + 1];            // {base of font expansion factor}
+// HZ charinfo
+typedef struct charinfo {
+  integer ef;                     /* font expansion factor */
+  integer lp;                     /* left protruding factor */
+  integer rp;                     /* right protruding factor */
+} charinfo;
+EXTERN charinfo *pdf_font_base[font_max + 1];
 EXTERN integer font_expand_ratio;                         // {current expansion ratio}
 EXTERN pointer last_leftmost_char;
 EXTERN pointer last_rightmost_char;
@@ -625,16 +629,16 @@ EXTERN pointer prev_char_p;   // {pointer to the previous char of an implicit ke
 EXTERN pointer next_char_p;   // {pointer to the next char of an implicit kern}
 
 EXTERN boolean try_prev_break;                /* force break at the previous legal breakpoint? */
-EXTERN pointer prev_legal;                  /* the previous legal breakpoint */
-EXTERN pointer prev_prev_legal;             /* to save |prev_p| corresponding to |prev_legal| */
+EXTERN pointer prev_legal;                    /* the previous legal breakpoint */
+EXTERN pointer prev_prev_legal;               /* to save |prev_p| corresponding to |prev_legal| */
 EXTERN boolean prev_auto_breaking;            /* to save |auto_breaking| corresponding to |prev_legal| */
-EXTERN scaled prev_active_width[8+1];        /* to save |active_width| corresponding to |prev_legal| - NOTE: Index 0 in C corresponds to 1 in Pascal */
-EXTERN pointer rejected_cur_p;             /* the last |cur_p| that has been rejected */
+EXTERN scaled prev_active_width[8+1];         /* to save |active_width| corresponding to |prev_legal| */
+EXTERN pointer rejected_cur_p;                /* the last |cur_p| that has been rejected */
 EXTERN boolean before_rejected_cur_p;         /* |cur_p| is still before |rejected_cur_p|? */
 
-EXTERN integer max_stretch_ratio;              /* maximal stretch ratio of expanded fonts */
-EXTERN integer max_shrink_ratio;                /* maximal shrink ratio of expanded fonts */
-EXTERN integer cur_font_step;                   /* the current step of expanded fonts */
+EXTERN integer max_stretch_ratio;             /* maximal stretch ratio of expanded fonts */
+EXTERN integer max_shrink_ratio;              /* maximal shrink ratio of expanded fonts */
+EXTERN integer cur_font_step;                 /* the current step of expanded fonts */
 
 EXTERN boolean no_shrink_error_yet;           // {have we complained about infinite shrinkage?}
 
