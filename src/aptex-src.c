@@ -30097,7 +30097,7 @@ void post_line_break (boolean d)
   pointer q, r, s;          // {temporary registers for list manipulation}
   /* [877] - margin kerning */
   boolean glue_break;       // {was a break at glue?}
-  pointer p, k;
+  pointer k;
   scaled w;
   boolean disc_break;       // {was the current break at a discretionary node?}
   boolean post_disc_break;  // {and did it have a nonempty post-break part?}
@@ -30249,7 +30249,7 @@ done:
      * case of a discretionary break with non-empty `pre_break', then `q' has been
      * changed to the last node of the `pre_break' list */
     if (pdf_protrude_chars > 0) {
-      pointer ptmp;
+      pointer ptmp; pointer p;
       if (disc_break && (is_char_node(q) || (type(q) != disc_node))) {
         /* {|q| has been reset to the last node of |pre_break|} */
         p = q;
@@ -30273,10 +30273,10 @@ done:
      * we append `rightskip' after `q' now */
     if (!glue_break) {
       /* @<Put the \(r)\.{\\rightskip} glue after node |q|@>; */
-      r = new_param_glue(right_skip_code);
-      link(r) = link(q);
-      link(q) = r;
-      q = r;
+      pointer r1 = new_param_glue(right_skip_code);
+      link(r1) = link(q);
+      link(q) = r1;
+      q = r1;
     }
 
     if (TeXXeT_en)
@@ -30322,7 +30322,7 @@ done:
     /* [887] - margin kerning */
     /* at this point `q' is the leftmost node; all discardable nodes have been discarded */
     if (pdf_protrude_chars > 0) {
-      p = q;
+      pointer p = q;
       p = find_protchar_left(p, false); /* no more discardables */
       w = left_pw(p);
       if (w != 0) {

@@ -816,7 +816,7 @@ scaled divide_scaled(scaled s, scaled m, integer dd)
     return sign * q;
 }
 
-// TODO
+// TODO handle the memory leak
 static charinfo *init_font_base() {
   charinfo *f = malloc(256 * sizeof(charinfo));
   for (size_t i = 0; i<256; i++) {
