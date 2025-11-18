@@ -24284,7 +24284,7 @@ static scaled char_shrink(internal_font_number f, eight_bits c) {
   return 0;
 }
 
-scaled get_kern(internal_font_number f, eight_bits lc, eight_bits rc) {
+static scaled get_kern(internal_font_number f, eight_bits lc, eight_bits rc) {
   four_quarters i,j;
   font_index k;
   i = char_info(f,lc);
@@ -24295,9 +24295,9 @@ scaled get_kern(internal_font_number f, eight_bits lc, eight_bits rc) {
   if (skip_byte(j) <= stop_flag)
     goto continue1;
   k = lig_kern_restart(f,j);
-continue0:
+ continue0:
   j = font_info[k].qqqq;
-continue1:
+ continue1:
   if ((next_char(j) == rc) && (skip_byte(j) <= stop_flag) &&
       (op_byte(j) >= kern_flag)) {
     return char_kern(f,j);
@@ -24309,7 +24309,7 @@ continue1:
       return 0;
     k = k + skip_byte(j) + 1;
   }
-    goto continue0;
+  goto continue0;
 }
 
 scaled kern_stretch(pointer p) {
@@ -24347,13 +24347,18 @@ scaled kern_shrink(pointer p) {
   l = prev_char_p;
   r = link(p);
 
-  if (type(l) == ligature_node)
-    l = lig_char(l);
-  if (type(r) == ligature_node)
-    r = lig_char(r);
+  if (!is_char_node(l)) {
+    if (type(l) == ligature_node)
+      l = lig_char(l);
+    else return 0;
+  }
+  if (!is_char_node(l)) {
+    if (type(r) == ligature_node)
+      r = lig_char(r);
+    else return 0;
+  }
 
-  if (!(is_char_node(l) && is_char_node(r) &&
-        (font(l) == font(r)) &&
+  if (!((font(l) == font(r)) &&
         (pdf_font_shrink[font(l)] != null_font)))
     return 0;
 
