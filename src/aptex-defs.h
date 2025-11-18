@@ -303,13 +303,17 @@ enum
 // {memory structure for marginal kerns}
 #define margin_kern_node 40
 #define margin_kern_node_size 3
-#define margin_char(c) info(c+2)
+#define margin_char(c) info(c + 2)
+// {|subtype| of marginal kerns}
 #define left_side  0
 #define right_side 1
+// {base for lp/rp/ef codes starts from 2:
+//  0 for |hyphen_char|,
+//  1 for |skew_char|}
 #define lp_code_base 2
 #define rp_code_base 3
 #define ef_code_base 4
-#define max_hlist_stack 512
+#define max_hlist_stack 512 // {maximum fill level for |hlist_stack|}
 /* sec 0157 */
 #define penalty_node  14                        // {|type| of a penalty node}
 #define widow_pena    1                         // {|subtype| of penalty nodes from \.{\\jcharwidowpenalty}}
@@ -1300,8 +1304,8 @@ do {                          \
 #define Uchar_convert_code       28 // {command code for \.{\\Uchar}}
 #define Ucharcat_convert_code    29 // {command code for \.{\\Ucharcat}}
 /* HZ */
-#define left_margin_kern_code    30
-#define right_margin_kern_code   31
+#define left_margin_kern_code    30 // {command code for \.{\\leftmarginkern}}
+#define right_margin_kern_code   31 // {command code for \.{\\rightmarginkern}}
 #define job_name_code            32 // {command code for \.{\\jobname}}
 /* sec 0480 */
 #define closed    2
@@ -3574,11 +3578,12 @@ do {                                            \
       margin_kern_shrink = margin_kern_shrink + left_pw(cp) - left_pw(a); \
   } while (0)
 
-#define cal_expand_ratio 2
-#define subst_ex_font 3
-#define substituted 3
-#define left_pw(c) char_pw(c,left_side)
-#define right_pw(c) char_pw(c,right_side)
+#define cal_expand_ratio 2 // {calculate amount for font expansion after breaking
+                           //  paragraph into lines}
+#define subst_ex_font 3    // {substitute fonts}
+#define substituted 3      // {|subtype| of kern nodes that should be substituted}
+#define left_pw(c) char_pw(c, left_side)
+#define right_pw(c) char_pw(c, right_side)
 
 #define add_char_stretch(a, b) a += char_stretch(f, b)
 #define add_char_shrink(a, b) a += char_shrink(f, b)
@@ -3589,23 +3594,24 @@ do {                                            \
 #define sub_kern_stretch(a, b) a -= kern_stretch(b)
 #define sub_kern_shrink(a, b) a -= kern_shrink(b)
 
+// {skipable nodes at the margins during character protrusion}
 #define cp_skipable(n)                                                  \
   ((!is_char_node(n)) &&                                                \
-   ((type(n) = ins_node)                                                \
-    || (type(n) = mark_node)                                            \
-    || (type(n) = adjust_node)                                          \
-    || (type(n) = penalty_node)                                         \
-    || (type(n) = whatsit_node)                                         \
-    || ((type(n) = disc_node) &&                                        \
-        (pre_break(n) = null) &&                                        \
-        (post_break(n) = null) &&                                       \
-        (replace_count(n) = 0))                                         \
-    || ((type(n) = math_node) && (width(n) = 0))                        \
-    || ((type(n) = kern_node) &&                                        \
-        ((width(n) = 0) || (subtype(n) = normal)))                      \
-    || ((type(n) = glue_node) && (glue_ptr(n) = zero_glue))             \
-    || ((type(n) = hlist_node) && (width(n) = 0) && (height(n) = 0) &&  \
-        (depth(n) = 0) && (list_ptr(n) = null))))
+   ((type(n) == ins_node)                                                \
+    || (type(n) == mark_node)                                            \
+    || (type(n) == adjust_node)                                          \
+    || (type(n) == penalty_node)                                         \
+    || (type(n) == whatsit_node)                                         \
+    || ((type(n) == disc_node) &&                                        \
+        (pre_break(n) == null) &&                                        \
+        (post_break(n) == null) &&                                       \
+        (replace_count(n) == 0))                                         \
+    || ((type(n) == math_node) && (width(n) == 0))                        \
+    || ((type(n) == kern_node) &&                                        \
+        ((width(n) == 0) || (subtype(n) == normal)))                      \
+    || ((type(n) == glue_node) && (glue_ptr(n) == zero_glue))             \
+    || ((type(n) == hlist_node) && (width(n) == 0) && (height(n) == 0) &&  \
+        (depth(n) == 0) && (list_ptr(n) == null))))
 
 #define reset_disc_width(n) disc_width[n] = 0
 

@@ -9,6 +9,7 @@ move /Y plain.fmt fmt
 move /Y plain.log fmt
 @echo on
 %APTEX% +plain test.tex
+%APTEX% +plain test-hz.tex
 @echo off
 del *.log *.dvi
 @REM recover variables (to make texlive safe)
