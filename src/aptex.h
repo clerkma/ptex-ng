@@ -544,7 +544,12 @@ typedef struct charinfo {
   integer lp;                     /* left protruding factor */
   integer rp;                     /* right protruding factor */
 } charinfo;
-EXTERN charinfo *pdf_font_base[font_max + 1];
+typedef struct fontinfo {
+  charinfo c[256];
+  struct fontinfo *next;
+} fontinfo;
+static fontinfo *fontinfo_root = NULL;
+EXTERN fontinfo *pdf_font_base[font_max + 1];
 EXTERN integer font_expand_ratio;                         // {current expansion ratio}
 EXTERN pointer last_leftmost_char;
 EXTERN pointer last_rightmost_char;

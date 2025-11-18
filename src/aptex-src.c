@@ -1317,6 +1317,7 @@ do {                  \
   safe_free(save_stack);
 #endif
 
+  free_font_base();
   safe_free(TEX_format_default);
 }
 
@@ -21216,9 +21217,8 @@ static internal_font_number auto_expand_font(internal_font_number f, integer e) 
 
   k = font_ptr + 1;
   incr(font_ptr);
-  if (font_ptr >= font_max) {
+  if (font_ptr >= font_max)
     overflow("maximum internal font number (font_max)", font_max);
-  }
   font_name[k] = expand_font_name(f, e);
   font_area[k] = font_area[f];
   font_id_text(k) = font_id_text(f);

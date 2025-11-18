@@ -732,13 +732,13 @@ static inline integer fix_int(integer val, integer min, integer max)
 }
 
 static inline integer get_lp_code(internal_font_number f, integer c) {
-  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f][c].lp;
+  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->c[c].lp;
 }
 static inline integer get_rp_code(internal_font_number f, integer c) {
-  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f][c].rp;
+  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->c[c].rp;
 }
 static inline integer get_ef_code(internal_font_number f, integer c) {
-  return pdf_font_base[f] == NULL ? 1000 : pdf_font_base[f][c].ef;
+  return pdf_font_base[f] == NULL ? 1000 : pdf_font_base[f]->c[c].ef;
 }
 
 static pointer prev_rightmost(pointer s, pointer e) {
@@ -816,14 +816,14 @@ scaled divide_scaled(scaled s, scaled m, integer dd)
     return sign * q;
 }
 
-// TODO handle the memory leak
-static charinfo *init_font_base() {
-  charinfo *f = malloc(256 * sizeof(charinfo));
+static fontinfo *init_font_base() {
+  fontinfo *f = malloc(sizeof(fontinfo));
   for (size_t i = 0; i<256; i++) {
-    f[i].lp = 0;
-    f[i].rp = 0;
-    f[i].ef = 1000;
+    f->c[i].lp = 0;
+    f->c[i].rp = 0;
+    f->c[i].ef = 1000;
   }
+  f->next = fontinfo_root;
   return f;
 }
 
@@ -831,19 +831,27 @@ static void set_lp_code
 (internal_font_number f, eight_bits c, integer i) {
   if (pdf_font_base[f] == NULL)
     pdf_font_base[f] = init_font_base();
-  pdf_font_base[f][c].lp = i;
+  pdf_font_base[f]->c[c].lp = fix_int(i, -1000, 1000);
 }
 static void set_rp_code
 (internal_font_number f, eight_bits c, integer i) {
   if (pdf_font_base[f] == NULL)
     pdf_font_base[f] = init_font_base();
-  pdf_font_base[f][c].rp = i;
+  pdf_font_base[f]->c[c].rp = fix_int(i, -1000, 1000);
 }
 static void set_ef_code
 (internal_font_number f, eight_bits c, integer i) {
   if (pdf_font_base[f] == NULL)
     pdf_font_base[f] = init_font_base();
-  pdf_font_base[f][c].ef = i;
+  pdf_font_base[f]->c[c].ef = fix_int(i, 0, 1000);
+}
+
+static void free_font_base(void) {
+  while (fontinfo_root != NULL) {
+    fontinfo *f = fontinfo_root;
+    fontinfo_root = f->next;
+    free(f);
+  }
 }
 
 #endif
