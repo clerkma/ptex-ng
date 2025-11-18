@@ -7743,7 +7743,6 @@ continu:
       }
   }
 
-
   incr(error_count);
 
   if (error_count == 100)
@@ -17969,7 +17968,6 @@ do {                        \
   scan_toks(false, true);   \
 } while (0)
 
-
 static char * aptex_find_file (str_number s)
 {
   char * file_name_kpse = NULL;
@@ -27801,7 +27799,6 @@ static void fin_align (void)
             set_box_dir(u, direction);
           }
 
-
           if (mode == -vmode)
           {
             height(r) = height(q);
@@ -29341,7 +29338,6 @@ total_pw(pointer q, pointer p)
   return left_pw(l) + right_pw(r);
 }
 
-
 void try_break (integer pi, small_number break_type)
 {
   pointer r;                    // {runs through the active list}
@@ -29771,7 +29767,6 @@ done:;
             shortfall += (total_font_shrink + margin_kern_shrink);
         }
       }
-
 
       if (shortfall > 0)
         if ((cur_active_width[3] != 0) || (cur_active_width[4] != 0) ||
@@ -34018,9 +34013,8 @@ reswitch:
             }
             break;
 
-
-            /* [1147] - margin kerning */
-        case margin_kern_node:
+          /* [1147] - margin kerning */
+          case margin_kern_node:
           case kern_node:
             d = width(p);
             break;
@@ -38791,7 +38785,6 @@ void close_files_and_terminate (void)
 
   print_ln();
 }
-
 
 #ifdef APTEX_DEBUG
 

@@ -2020,7 +2020,6 @@ do {                              \
     vc = x;                       \
 } while (0)
 
-
 #define dump_things(base, len)    aptex_dump_put (fmt_file, &(base), sizeof(base) * (int) (len))
 #define undump_things(base, len)  aptex_dump_get (fmt_file, &(base), sizeof(base) * (int) (len))
 #define generic_dump(x)           aptex_dump_put (fmt_file, &(x),    sizeof(x)) //dump_things(x, 1)
