@@ -218,8 +218,8 @@ static void print_aptex_time (clock_t inter_val)
 
   if (inter_val >= CLOCKS_PER_SEC * 10)
   {
-    tenths = (inter_val * 10 + CLOCKS_PER_SEC / 2) / CLOCKS_PER_SEC; 
-    seconds = tenths / 10; 
+    tenths = (inter_val * 10 + CLOCKS_PER_SEC / 2) / CLOCKS_PER_SEC;
+    seconds = tenths / 10;
     tenths = tenths % 10;
     printf("%d.%d", seconds, tenths);
   }
@@ -468,7 +468,7 @@ static memory_word * allocate_mem (int size)
 /* returns NULL if it fails */
 
 static memory_word * realloc_mem (int lo_size, int hi_size)
-{  
+{
   int k, min_size;
   int new_size = 0;
   int n = 0;
@@ -563,7 +563,7 @@ static memory_word * realloc_mem (int lo_size, int hi_size)
     aptex_trace("memmove %p %p %ld \n", new_memory + lo_size,
           new_memory, (current_mem_size + 1) * sizeof(memory_word));
     /* shift everything upward to make space for new low area */
-    memmove (new_memory + lo_size, new_memory, 
+    memmove (new_memory + lo_size, new_memory,
       (current_mem_size + 1) * sizeof(memory_word));
     /* could reduce words moved by (mem_max - mem_end) */
   }
@@ -799,14 +799,14 @@ static int allocate_ini (int size)
   trie_r = (trie_pointer *) malloc (roundup(nr));
   trie_hash = (trie_pointer *) malloc (roundup(nh));
   trie_taken = (char *) malloc (roundup(nt));
-  
+
   if (trie_c == NULL || trie_o == NULL || trie_l == NULL || trie_r == NULL ||
       trie_hash == NULL || trie_taken == NULL)
   {
     aptex_memory_error("initex hyphen trie", n);
     return -1;
   }
-  
+
   aptex_trace("Addresses: trie_l %p trie_o %p trie_c %p\n", trie_l, trie_o, trie_c);
   aptex_trace("Addresses: trie_r %p trie_hash %p trie_taken %p\n", trie_r, trie_hash, trie_taken);
   aptex_memory_update_statistics ((intptr_t) trie_l, nl, 0);
@@ -3710,7 +3710,7 @@ static int aptex_dump_put (void * out_file, void * p, size_t item_size)
 static int aptex_dump_get (void * in_file, void * p, size_t item_size)
 {
   boolean fmt_stat; size_t nitems = 1;
- 
+
   if (aptex_env.flag_compact_fmt)
     fmt_stat = (gzread(in_file, p, (item_size * nitems)) <= 0);
   else
@@ -3916,7 +3916,7 @@ static void do_initex (void)
   if (is_internalUPTEX())
   {
     kcat_code(0x0) = not_cjk; // { default: other_kchar }
- 
+
     for (k = 0x2; k <= 0x3; k++)
       kcat_code(k) = not_cjk; // { Latin Extended-A, Latin Extended-B }
 
@@ -3950,7 +3950,7 @@ static void do_initex (void)
     // { Kana Extended-B .. Small Kana Extension }
     for (k = 0x10D; k <= 0x110; k++)
       kcat_code(k) = kana;
- 
+
     // { CJK Unified Ideographs Extension B .. H }
     for (k = 0x13B; k <= 0x143; k++)
       kcat_code(k) = kanji;
@@ -4022,7 +4022,7 @@ static void do_initex (void)
   font_name[null_font]        = 795; /* nullfont */
   font_area[null_font]        = 335; /* "" */
   hyphen_char[null_font]      = '-';
-  skew_char[null_font]        = -1; 
+  skew_char[null_font]        = -1;
   bchar_label[null_font]      = non_address;
   font_bchar[null_font]       = non_char;
   font_false_bchar[null_font] = non_char;
@@ -4435,7 +4435,7 @@ static boolean load_fmt_file (void)
     undump_int(x); /* pool_size */
 
     if (x < 0)
-      goto bad_fmt; 
+      goto bad_fmt;
 
 #ifdef APTEX_EXTENSION
     if (x > current_pool_size)
@@ -5377,7 +5377,7 @@ static void fix_date_and_time (void)
 }
 /* sec 0264 */
 static void primitive_ (str_number s, quarterword c, halfword o)
-{ 
+{
   pool_pointer k; // {index into |str_pool|}
   integer prim_val; // {needed to fill |prim_eqtb|}
   int j;
@@ -5584,7 +5584,7 @@ found:
         ll = z;
       else
         ll = 256;
-      
+
       do {
         trie_min[l] = r;
         incr(l);
@@ -6103,7 +6103,7 @@ static void store_fmt_file (void)
 
   x = x + lo_mem_max + 1 - p;
   dump_int(hi_mem_min);
-  dump_int(avail); 
+  dump_int(avail);
 
   for (k = hi_mem_min; k <= mem_end; k++)
     dump_wd(mem[k]);
@@ -6521,7 +6521,7 @@ static void init_prim (void)
   primitive("endcsname", end_cs_name, 0);
   primitive("endgroup", end_group, 0);
   text(frozen_end_group) = make_str_string("endgroup");
-  eqtb[frozen_end_group] = eqtb[cur_val]; 
+  eqtb[frozen_end_group] = eqtb[cur_val];
   primitive("expandafter", expand_after, 0);
   primitive("font", def_font, 0);
   primitive("jfont", def_jfont, 0);
@@ -6558,7 +6558,7 @@ static void init_prim (void)
   primitive("vcenter", vcenter, 0);
   primitive("vrule", vrule, 0);
   primitive("par", par_end, 256);
-  par_loc = cur_val; 
+  par_loc = cur_val;
   par_token = cs_token_flag + par_loc;
   primitive("input", input, 0);
   primitive("endinput", input, 1);
@@ -6667,9 +6667,9 @@ static void init_prim (void)
   text(frozen_end_template) = make_str_string("endtemplate");
   text(frozen_endv) = make_str_string("endtemplate");
   eq_type(frozen_endv) = endv;
-  equiv(frozen_endv) = null_list; 
-  eq_level(frozen_endv) = level_one; 
-  eqtb[frozen_end_template] = eqtb[frozen_endv]; 
+  equiv(frozen_endv) = null_list;
+  eq_level(frozen_endv) = level_one;
+  eqtb[frozen_end_template] = eqtb[frozen_endv];
   eq_type(frozen_end_template) = end_template;
   primitive("pagegoal", set_page_dimen, 0);
   primitive("pagetotal", set_page_dimen, 1);
@@ -6752,7 +6752,7 @@ static void init_prim (void)
   primitive("left", left_right, left_noad);
   primitive("right", left_right, right_noad);
   text(frozen_right) = make_str_string("right");
-  eqtb[frozen_right] = eqtb[cur_val]; 
+  eqtb[frozen_right] = eqtb[cur_val];
   primitive("long", prefix, 1);
   primitive("outer", prefix, 2);
   primitive("global", prefix, 4);
@@ -6823,7 +6823,7 @@ static void init_prim (void)
   primitive("inhibitxspcode", assign_inhibit_xsp_code, inhibit_xsp_code_base);
   primitive("prebreakpenalty", assign_kinsoku, pre_break_penalty_code);
   primitive("postbreakpenalty", assign_kinsoku, post_break_penalty_code);
-  no_new_control_sequence = true; 
+  no_new_control_sequence = true;
 }
 #endif
 
@@ -7763,7 +7763,7 @@ continu:
 
   if (interaction > batch_mode)
     incr(selector); // {re-enable terminal output}
-  
+
   print_ln();
 }
 
@@ -8058,7 +8058,7 @@ static integer take_frac (integer q, integer f)
   f = f + fraction_one;
   // @<Compute $p=\lfloor qf/2^{28}+{1\over2}\rfloor-q$@>;
   p = fraction_half; // {that's $2^{27}$; the invariants hold now with $k=28$}
-  if (q < fraction_four) 
+  if (q < fraction_four)
     do {
       if (odd(f))
         p = halfp(p + q);
@@ -8076,10 +8076,10 @@ static integer take_frac (integer q, integer f)
 
       f = halfp(f);
     } while (!(f == 1));
-  
+
   be_careful = n - el_gordo;
 
-  if (be_careful + p > 0) 
+  if (be_careful + p > 0)
   {
     arith_error = true;
     n = el_gordo - p;
@@ -8145,7 +8145,7 @@ static integer ab_vs_cd (integer a, integer b, integer c, integer d)
   integer q, r; // {temporary registers}
 
   //@<Reduce to the case that |a,c>=0|, |b,d>0|@>;
-  if (a < 0) 
+  if (a < 0)
   {
     negate(a);
     negate(b);
@@ -8159,12 +8159,12 @@ static integer ab_vs_cd (integer a, integer b, integer c, integer d)
 
   if (d <= 0)
   {
-    if (b >= 0) 
+    if (b >= 0)
       return (((a == 0) || (b == 0)) && ((c == 0) || (d == 0))) ? 0 : 1;
 
     if (d == 0)
       return a == 0 ? 0 : -1;
-    
+
     q = a;
     a = c; c = q; q = -b; b = -d; d = q;
   }
@@ -8297,7 +8297,7 @@ static integer norm_rand(void)
     l = 139548960 - m_log(u); // {$2^{24}\cdot12\ln2\approx139548959.6165$}
   } while (ab_vs_cd(1024,l,x,x) < 0);
 
-  return x;  
+  return x;
 }
 
 // prints a positive integer in hexadecimal form
@@ -8382,7 +8382,7 @@ static void print_current_string (void)
 
 // gets a line from the terminal
 void term_input (void)
-{ 
+{
   uint32_t k; // {index into |buffer|}
 
   update_terminal();
@@ -8459,7 +8459,7 @@ static scaled round_decimals (small_number k)
     decr(k);
     a = (a + dig[k] * two) / 10;
   }
-  
+
   return ((a + 1) / 2);
 }
 
@@ -8500,7 +8500,7 @@ static scaled mult_and_add (integer n, scaled x, scaled y, scaled max_answer)
   if (n == 0)
     return y;
   else if (((x <= (max_answer - y) / n) && (-x <= (max_answer + y) / n)))
-    return (n * x + y); 
+    return (n * x + y);
   else
   {
     arith_error = true;
@@ -8564,10 +8564,10 @@ static scaled xn_over_d (scaled x, integer n, integer d)
 
   t = (x % 0100000) * n;
   u = (x / 0100000) * n + (t / 0100000);
-  v = (u % d) * 0100000 + (t % 0100000); 
+  v = (u % d) * 0100000 + (t % 0100000);
 
   if (u / d >= 0100000)
-    arith_error = true; 
+    arith_error = true;
   else
     u = 0100000 * (u / d) + (v / d);
 
@@ -8612,10 +8612,10 @@ static halfword badness (scaled t, scaled s)
 
 #ifdef APTEX_DEBUG
 static void print_word (memory_word w)
-{ 
-  print_int(w.cint); 
+{
+  print_int(w.cint);
   print_char(' ');
-  print_scaled(w.cint); 
+  print_scaled(w.cint);
   print_char(' ');
   print_scaled(round(unity * w.gr));
   print_ln();
@@ -8627,11 +8627,11 @@ static void print_word (memory_word w)
   print_char(';');
   print_int(w.hh.rh);
   print_char(' ');
-  print_int(w.qqqq.b0); 
+  print_int(w.qqqq.b0);
   print_char(':');
-  print_int(w.qqqq.b1); 
+  print_int(w.qqqq.b1);
   print_char(':');
-  print_int(w.qqqq.b2); 
+  print_int(w.qqqq.b2);
   print_char(':');
   print_int(w.qqqq.b3);
 }
@@ -8729,7 +8729,7 @@ void show_token_list (integer p, integer q, integer l)
               return;
           }
           break;
-        
+
         case end_match:
           if (c == 0)
             prints("->");
@@ -8837,11 +8837,11 @@ pointer get_avail (void)
 #endif
 
   return p;
-} 
+}
 
 // makes list of single-word nodes
 void flush_list (pointer p)
-{ 
+{
   pointer q, r; // {list traversers}
 
   if (p != null)
@@ -8889,7 +8889,7 @@ restart:
 
     r = q - s;
 
-    if (r > p + 1) 
+    if (r > p + 1)
     {
       node_size(p) = r - p;
       rover = p;
@@ -9683,7 +9683,7 @@ static void print_skip_param (integer n)
 
     case baseline_skip_code:
       print_esc("baselineskip");
-      break; 
+      break;
 
     case par_skip_code:
       print_esc("parskip");
@@ -10077,7 +10077,7 @@ void show_node_list (integer p)
             print_esc("end");
           else
             print_esc("begin");
-          
+
           if (subtype(p) > R_code)
             print_char('R');
           else if (subtype(p) > L_code)
@@ -10791,7 +10791,7 @@ static pointer copy_node_list (pointer p)
 
 // prints the mode represented by |m|
 static void print_mode (integer m)
-{ 
+{
   if (m > 0)
   {
     switch (m / (max_command + 1))
@@ -10836,7 +10836,7 @@ static void print_mode (integer m)
 }
 
 // enter a new semantic level, save the old
-static void push_nest (void) 
+static void push_nest (void)
 {
   if (nest_ptr > max_nest_stack)
   {
@@ -10868,7 +10868,7 @@ static void push_nest (void)
 }
 
 // leave a semantic level, re-enter the old
-void pop_nest (void) 
+void pop_nest (void)
 {
   fast_delete_glue_ref(space_ptr(head));
   fast_delete_glue_ref(xspace_ptr(head));
@@ -10923,7 +10923,7 @@ static void show_activities (void)
       if (page_head != page_tail)
       {
         print_nl("### current page:");
-        
+
         if (output_active)
           prints(" (held over for next output)");
 
@@ -11264,7 +11264,7 @@ static void print_param (integer n)
     case jchr_widow_penalty_code:
       print_esc("jcharwidowpenalty");
       break;
-    
+
     case text_baseline_shift_factor_code:
       print_esc("textbaselineshiftfactor");
       break;
@@ -11854,7 +11854,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
     case toks_register:
       {
         print_esc("toks");
-      
+
         if (chr_code != mem_bot)
           print_sa_num(chr_code);
       }
@@ -12891,7 +12891,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
     case def_family:
       print_size(chr_code - math_font_base);
-      break; 
+      break;
 
     case hyph_data:
       if (chr_code == 1)
@@ -13142,7 +13142,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
 
 #ifdef STAT
 static void show_eqtb (pointer n)
-{ 
+{
   if (n < active_base)
     print_char('?');
   else if (n < glue_base)
@@ -13197,7 +13197,7 @@ static void show_eqtb (pointer n)
         print_int(penalty(equiv(n)));
         print_char(' ');
         print_int(penalty(equiv(n) + 1));
-        
+
         if (penalty(equiv(n)) > 1)
           print_esc("ETC.");
       }
@@ -13368,7 +13368,7 @@ static void show_eqtb (pointer n)
       print_esc("delcode");
       print_int(n - del_code_base);
     }
-    
+
     print_char('=');
     print_int(eqtb[n].cint);
   }
@@ -13642,7 +13642,7 @@ static void geq_word_define (pointer p, integer w)
 }
 
 static void save_for_after (halfword t)
-{ 
+{
   if (cur_level > level_one)
   {
     check_full_save_stack();
@@ -13803,7 +13803,7 @@ done:
     confusion("curlevel");
 }
 
-static void prepare_mag (void) 
+static void prepare_mag (void)
 {
   if ((mag_set > 0) && (mag != mag_set))
   {
@@ -14305,7 +14305,7 @@ void back_error (void)
 }
 
 // back up one inserted token and call |error|
-static void ins_error (void) 
+static void ins_error (void)
 {
   OK_to_interrupt = false;
   back_input();
@@ -15039,11 +15039,11 @@ reswitch:
 
           do {
             get_x_token();
-  
+
             if (cur_cs == 0)
               store_new_token(cur_tok);
           } while (!(cur_cs != 0));
-          
+
           if (cur_cmd != end_cs_name)
           {
             print_err("Missing ");
@@ -15085,7 +15085,7 @@ reswitch:
                 buffer[j] = BYTE1(t);
                 incr(j);
               }
-              
+
               if (BYTE2(t) != 0)
               {
                 buffer[j] = BYTE2(t);
@@ -15473,7 +15473,7 @@ void scan_font_ident (void)
   else if (cur_cmd == def_jfont)
     f = cur_jfont;
   else if (cur_cmd == set_font)
-    f = cur_chr; 
+    f = cur_chr;
   else if (cur_cmd == def_family)
   {
     m = cur_chr;
@@ -15992,11 +15992,11 @@ restart:
                 if (font_dir[q] != dir_default)
                 {
                   scan_int();
-                  
+
                   if (cur_val >= 0)
                   {
                     if (is_char_kanji(cur_val))
-                      cur_val = get_jfm_pos(KANJI(cur_val), q); 
+                      cur_val = get_jfm_pos(KANJI(cur_val), q);
                     else
                       cur_val = -1;
                   }
@@ -16415,7 +16415,7 @@ restart:
 
     decr(cur_val_level);
   }
- 
+
   if (negative)
   {
     if (cur_val_level >= glue_val)
@@ -16562,7 +16562,7 @@ start_cs:
                     cat = cat_code(cur_chr);
                     incr(k);
                   }
-                  
+
                   while ((buffer[k] == cur_chr) && (cat == sup_mark) && (k < limit))
                   {
                     c = buffer[k + 1];
@@ -17285,7 +17285,7 @@ done:
         "(If you can't figure out why I needed to see a number,",
         "look up `weird error' in the index to The TeXbook.)");
       back_error();
-    } 
+    }
     else if (cur_cmd != spacer)
       back_input();
   }
@@ -17809,7 +17809,7 @@ static pointer the_toks (void)
       token_show(p);
       flush_list(p);
       selector = old_setting;
-     
+
       return str_toks(b);
     }
   }
@@ -17877,8 +17877,8 @@ static pointer the_toks (void)
   }
 }
 
-void ins_the_toks (void) 
-{ 
+void ins_the_toks (void)
+{
   link(garbage) = the_toks();
   ins_list(link(temp_head));
 }
@@ -19029,7 +19029,7 @@ void conditional (void)
         }
 
         if (this_if == if_char_code)
-          b = (n == cur_chr); 
+          b = (n == cur_chr);
         else
           b = (m == cur_cmd);
       }
@@ -19062,7 +19062,7 @@ void conditional (void)
 
         if (this_if == if_int_code)
           scan_int();
-        else 
+        else
           scan_normal_dimen();
 
         switch (r)
@@ -19390,7 +19390,7 @@ void conditional (void)
         {
           begin_diagnostic();
           prints("{case ");
-          print_int(n); 
+          print_int(n);
           print_char('}');
           end_diagnostic(false);
         }
@@ -19403,7 +19403,7 @@ void conditional (void)
           {
             if (cur_chr == or_code)
               decr(n);
-            else 
+            else
               goto common_ending;
           }
           else if (cur_chr == fi_code)
@@ -19506,20 +19506,20 @@ static boolean more_name (ASCII_code c)
     return false;
   else if (c == '"')
   {
-    quoted_file_name = !quoted_file_name; // catch next space character 
+    quoted_file_name = !quoted_file_name; // catch next space character
     return true;     // accept ending quote, but throw away
   }
   else
-  {   
+  {
     str_room(1);
     append_char(c);
 
     //  for DOS/Windows
-    if ((c == '/' || c == '\\' || c == ':')) 
+    if ((c == '/' || c == '\\' || c == ':'))
     {
       area_delimiter = cur_length;
       ext_delimiter = 0;
-    } 
+    }
     else if (c == '.')
       ext_delimiter = cur_length;
 
@@ -19527,7 +19527,7 @@ static boolean more_name (ASCII_code c)
   }
 }
 
-static void end_name (void) 
+static void end_name (void)
 {
 #ifdef APTEX_EXTENSION
   if (str_ptr + 3 > current_max_strings)
@@ -19553,7 +19553,7 @@ static void end_name (void)
   {
     cur_ext = 335;
     cur_name = make_string();
-  } 
+  }
   else
   {
     cur_name = str_ptr;
@@ -19658,7 +19658,7 @@ static str_number a_make_name_string (alpha_file f)
 str_number b_make_name_string (byte_file f)
 {
   (void) f;
-  return make_name_string(); 
+  return make_name_string();
 }
 
 str_number w_make_name_string (word_file f)
@@ -19690,7 +19690,7 @@ static void scan_file_name (void)
     begin_name();
 
     do {
-      get_x_token(); 
+      get_x_token();
     } while (!(cur_cmd != spacer));
 
     skip_mode = false;
@@ -19713,10 +19713,10 @@ static void scan_file_name (void)
 
         append_char(BYTE4(cur_chr));
       }
-      else if ((cur_cmd > other_char) || (cur_chr > 255)) 
+      else if ((cur_cmd > other_char) || (cur_chr > 255))
       {
         back_input();
-        goto done; 
+        goto done;
       }
       else if (((cur_chr == ' ') && (state != token_list) && (loc > limit)) || !more_name(cur_chr))
         goto done;
@@ -19750,7 +19750,7 @@ static void scan_file_name_braced (void)
 
   if (scan_toks(false, true) != 0)
     do_nothing(); // {actually do the scanning}
- 
+
   // {s := tokens_to_string(def_ref);}
   old_setting = selector;
   selector = new_string;
@@ -20255,7 +20255,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
           while (d < current_character_being_worked_on)
           {
             qw = char_info(f, d);
- 
+
             if (char_tag(qw) != list_tag)
               goto not_found;
 
@@ -20631,7 +20631,7 @@ void dvi_swap (void)
 }
 
 static void dvi_four (integer x)
-{ 
+{
   if (x >= 0)
     dvi_out(x / 0100000000);
   else
@@ -21846,7 +21846,7 @@ void dvi_hlist_out (void)
   if (eTeX_ex)
   {
     put_LR(before);
-  
+
     if (box_lr(this_box) == dlist)
     {
       if (cur_dir == right_to_left)
@@ -22095,7 +22095,7 @@ reswitch:
           */
           if (subtype(p) >= a_leaders)
           {
-            leader_box = leader_ptr(p); 
+            leader_box = leader_ptr(p);
 
             if (type(leader_box) == rule_node)
             {
@@ -23756,7 +23756,7 @@ void out_what (pointer p)
           {
             cur_name = open_name(p);
             cur_area = open_area(p);
-            cur_ext = open_ext(p); 
+            cur_ext = open_ext(p);
 
             if (cur_ext == 335) /* "" */
               cur_ext = 785;    /* ".tex" */
@@ -24178,16 +24178,16 @@ reswitch:
         {
           while (link(q) != null)
             q = link(q);
-          
+
           link(q) = new_rule();
           width(link(q)) = overfull_rule;
         }
-        
+
         print_ln();
         print_nl("Overfull \\hbox (");
         print_scaled(-x - total_shrink[normal]);
         prints("pt too wide");
-        
+
         hps_overfull++;
         goto common_ending;
       }
@@ -24715,7 +24715,7 @@ static pointer var_delimiter (pointer d, small_number s, scaled v)
           {
 continu:
             q = char_info(g, y);
-            
+
             if (char_exists(q))
             {
               if (char_tag(q) == ext_tag)
@@ -24830,7 +24830,7 @@ found:
 
       if (c != min_quarterword)
         stack_into_box(b, f, c);
-      
+
       depth(b) = w - height(b);
     }
     else
@@ -24876,7 +24876,7 @@ static pointer rebox (pointer b, scaled w)
       {
         f = font(p);
         v = char_width(f, char_info(f, character(p)));
-        
+
         if (v != width(b))
           link(p) = new_kern(width(b) - v);
       }
@@ -24994,7 +24994,7 @@ static pointer shift_sub_exp_box (pointer q)
     shift_amount(info(q)) = shift_amount(info(q)) - d;
   }
   math_type(q) = sub_box;
-  
+
   return info(q);
 }
 
@@ -25163,7 +25163,7 @@ static void make_under (pointer q)
 }
 
 static void make_vcenter (pointer q)
-{ 
+{
   pointer v;    // {the box that should be centered vertically}
   scaled delta; // {its height plus depth}
 
@@ -25343,7 +25343,7 @@ static void make_fraction (pointer q)
 {
   pointer p, v, x, y, z; // {temporary registers for box construction}
   scaled delta, delta1, delta2, shift_up, shift_down, clr; // {dimensions for box calculations}
-  
+
   if (thickness(q) == default_code)
     thickness(q) = default_rule_thickness;
 
@@ -25592,19 +25592,19 @@ restart:
           {
             math_type(nucleus(q)) = math_text_char;
             fetch(nucleus(q));
-            
+
             if (char_tag(cur_i) == lig_tag)
             {
               a = lig_kern_start(cur_f, cur_i);
               cur_c = character(nucleus(p));
               cur_i = font_info[a].qqqq;
-              
+
               if (skip_byte(cur_i) > stop_flag)
               {
                 a = lig_kern_restart(cur_f, cur_i);
                 cur_i = font_info[a].qqqq;
               }
-              
+
               /*
                 @<If instruction |cur_i| is a kern with |cur_c|, attach
                 the kern after~|q|; or if it is a ligature with |cur_c|, combine
@@ -25704,7 +25704,7 @@ restart:
                 a = glue_kern_restart(cur_f, cur_i);
                 cur_i = font_info[a].qqqq;
               }
-              
+
               while (true)
               {
                 if (next_char(cur_i) == cur_c)
@@ -25713,7 +25713,7 @@ restart:
                     {
                       gp = font_glue[cur_f];
                       rr = op_byte(cur_i) * 256 + rem_byte(cur_i);
-                        
+
                       if (gp != null)
                       {
                         while ((type(gp) != rr) && (link(gp) != null))
@@ -26278,7 +26278,7 @@ reswitch:
         confusion("mlist2");
         break;
     }
-  
+
     new_hlist(q) = p;
 
     if ((math_type(subscr(q)) == empty) && (math_type(supscr(q)) == empty))
@@ -26328,7 +26328,7 @@ done_with_node:
   // @<Convert \(a)a final |bin_noad| to an |ord_noad|@>;
   if (r_type == bin_noad)
     type(r) = ord_noad;
-  
+
   /*
     @<Make a second pass over the mlist, removing all noads and inserting the
     proper spacing and penalties@>;
@@ -26549,7 +26549,7 @@ delete_q:
     free_node(r, s);
 done:;
   }
-  
+
   p = new_null_box();
   link(p) = link(temp_head);
   adjust_hlist(p, false);
@@ -27084,7 +27084,6 @@ static void fin_align (void)
 
             set_box_dir(u, direction);
           }
-            
 
           if (mode == -vmode)
           {
@@ -27930,7 +27929,7 @@ done2:
                 hyf_char = hyphen_char[hf];
 
                 if (hyf_char < 0)
-                  goto done1; 
+                  goto done1;
 
                 if (hyf_char > 255)
                   goto done1;
@@ -28025,7 +28024,7 @@ done3:
                       case ligature_node:
                         do_nothing();
                         break;
-    
+
                       case kern_node:
                         if (subtype(s) != normal)
                           goto done4;
@@ -28812,7 +28811,7 @@ done:;
                   }
 
                 b = badness(g, cur_active_width[2]);
-                  
+
                 if (b > 12)
                   if (b > 99)
                     fit_class = very_loose_fit;
@@ -29435,10 +29434,10 @@ static small_number reconstitute (small_number j, small_number n, halfword bchar
   if (j == 0)
   {
     ligature_present = init_lig;
-    p = init_list; 
+    p = init_list;
 
     if (ligature_present)
-      lft_hit = init_lft; 
+      lft_hit = init_lft;
 
     while (p != null)
     {
@@ -29606,7 +29605,7 @@ continu:
         cur_rh = non_char;
         goto continu;
       }
-      
+
     k = k + skip_byte(q) + 1;
     q = font_info[k].qqqq;
   }
@@ -30449,7 +30448,7 @@ static pointer vsplit (halfword n, scaled h)
 done:
   q = prune_page_top(q, saving_vdiscards > 0);
   p = list_ptr(v);
- 
+
   if (q != null)
   {
     q = vpackage(q, 0, 1, max_dimen);
@@ -30811,7 +30810,7 @@ static void fire_up (pointer c)
     free_node(r, page_ins_node_size);
     r = q;
   }
- 
+
   link(page_ins_head) = page_ins_head;
 
   if (sa_mark != null)
@@ -31186,10 +31185,10 @@ continu:
           b = awful_bad;
         else
           b = badness(page_total - page_goal, page_shrink);
-  
+
       if (b < awful_bad)
         if (pi <= eject_penalty)
-          c = pi; 
+          c = pi;
         else if (b < inf_bad)
           c = b + pi + insert_penalties;
         else
@@ -31330,7 +31329,7 @@ done:;
     tail = contrib_head;
   else
     contrib_tail = contrib_head;
-} 
+}
 
 // handle spaces when |space_factor<>1000
 static void app_space (void)
@@ -31489,7 +31488,7 @@ static void append_glue (void)
 }
 
 static void append_kern (void)
-{ 
+{
   quarterword s;  // {|subtype| of the kern node}
 
   s = cur_chr;
@@ -31926,7 +31925,7 @@ done:;
 void scan_box (integer box_context)
 {
   do {
-    get_x_token(); 
+    get_x_token();
   } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
 
   if (cur_cmd == make_box)
@@ -32800,7 +32799,7 @@ static void cs_error (void)
 {
   print_err("Extra ");
   print_esc("endcsname");
-  help1("I'm ignoring this, since I wasn't doing a \\csname."); 
+  help1("I'm ignoring this, since I wasn't doing a \\csname.");
   error();
 }
 
@@ -34519,7 +34518,7 @@ static void prefixed_command (void)
           define(p, data, cur_val);
         else if (p < del_code_base)
           define(p, data, cur_val);
-        else 
+        else
           word_define(p, cur_val);
       }
       break;
@@ -34731,7 +34730,7 @@ static void prefixed_command (void)
           p = auto_xspacing_code;
           cur_chr = (cur_chr % 2);
         }
-        
+
         define(p, data, cur_chr);
       }
       break;
@@ -35293,7 +35292,7 @@ void new_font (small_number a)
         jfm_enc = enc_jis;
       else if (scan_keyword_noexpand("ucs"))
         jfm_enc = enc_ucs;
-      else 
+      else
       {
         print_err("Unknown TFM encoding");
         help1("TFM encoding specification is ignored.");
@@ -35334,7 +35333,7 @@ void new_font (small_number a)
   {
     // @<Put the \(p)(positive) `at' size into |s|@>
     scan_normal_dimen();
-    s = cur_val; 
+    s = cur_val;
 
     if ((s <= 0) || (s >= 01000000000))
     {
@@ -35538,7 +35537,7 @@ static void shift_case (void)
 
   while (p != 0)
   {
-    t = info(p); 
+    t = info(p);
 
     if ((t < cs_token_flag + single_base) && !check_kanji(t))
     {
@@ -35928,7 +35927,7 @@ static void fix_language (void)
   int l;
 
   if (language <= 0)
-    l = 0; 
+    l = 0;
   else if (language > 255)
     l = 0;
   else
@@ -36263,7 +36262,7 @@ static void handle_right_brace (void)
 }
 
 // governs \TeX's activities
-void main_control (void) 
+void main_control (void)
 {
   integer t;      // {general-purpose temporary variable}
   KANJI_code cx;  // {kanji character}
@@ -36801,7 +36800,7 @@ reswitch:
         set_math_kchar(cur_chr);
         break;
 
-      case mmode + kchar_num: 
+      case mmode + kchar_num:
         {
           scan_char_num();
           cur_chr = cur_val;
@@ -37032,7 +37031,7 @@ main_loop:
   cur_l = non_char;
   goto main_lig_loop_1;
 
-main_loop_wrapup: 
+main_loop_wrapup:
   wrapup(rt_hit);
 
 main_loop_move:
@@ -37063,7 +37062,7 @@ main_loop_move_2:
   {
     char_warning(main_f, cur_chr);
     free_avail(lig_stack);
-    goto big_switch; 
+    goto big_switch;
   }
 
   link(tail) = lig_stack;
@@ -37276,7 +37275,7 @@ main_lig_loop_2:
           {
             cur_l = rem_byte(main_j);
             ligature_present = true;
- 
+
             if (lig_stack == 0)
               goto main_loop_wrapup;
             else
@@ -37395,7 +37394,7 @@ boolean open_fmt_file (void)
 
     if (w_open_in(fmt_file))
       goto found;
-  
+
     if (aptex_env.flag_tex82)
     {
       wake_up_terminal();
@@ -37556,7 +37555,7 @@ void close_files_and_terminate (void)
     }
   }
 #endif
-  
+
   wake_up_terminal();
 
 #ifndef APTEX_DVI_ONLY
@@ -37702,7 +37701,7 @@ void close_files_and_terminate (void)
 #endif
 
 /* sec 1338 */
-void debug_help (void) 
+void debug_help (void)
 {
   integer k, l, m, n;
 
@@ -37732,11 +37731,11 @@ void debug_help (void)
         case 2:
           print_int(info(n));
           break;
-          
+
         case 3:
           print_int(link(n));
           break;
-        
+
         case 4:
           print_word(eqtb[n]);
           break;
@@ -37744,15 +37743,15 @@ void debug_help (void)
         case 5:
           print_word(font_info[n]);
           break;
-        
+
         case 6:
           print_word(save_stack[n]);
           break;
-          
+
         case 7:
           show_box(n);
           break;
-        
+
         case 8:
           {
             breadth_max = 10000;
@@ -37767,48 +37766,48 @@ void debug_help (void)
             show_node_list(n);
           }
           break;
-        
+
         case 9:
           show_token_list(n, 0, 1000);
           break;
-        
+
         case 10:
           slow_print(n);
           break;
-        
+
         case 11:
           //check_mem(n > 0);
           break;
-        
+
         case 12:
           //search_mem(n);
           break;
-        
+
         case 13:
           {
             scanf("%"PRId64, &l); //read(stdin, l);
             print_cmd_chr(n, l);
           }
           break;
-        
+
         case 14:
           {
             for (k = 0; k <= n; k++)
               print(buffer[k]);
           }
           break;
-        
+
         case 15:
           {
             font_in_short_display = 0;
             short_display(n);
           }
           break;
-        
+
         case 16:
           panicking = !panicking;
           break;
-        
+
         default:
           print('?');
           break;
@@ -37842,7 +37841,7 @@ pointer new_dir_node (pointer b, eight_bits dir)
             height(p) = width(b) - depth(p);
           }
           break;
- 
+
         case dir_dtou:
           {
             width(p) = height(b) + depth(b);
@@ -37850,7 +37849,7 @@ pointer new_dir_node (pointer b, eight_bits dir)
             height(p) = width(b);
           }
           break;
- 
+
         default:
           confusion("new_dir_node:y->?");
           break;
@@ -37987,7 +37986,7 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
           p = pp;
         goto done;
       }
-      
+
       if (inhibit_xsp_type(p) == inhibit_unused)
       {
         if (pp == no_entry)
@@ -37995,7 +37994,7 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
       }
 
       incr(p);
-      
+
       if (p > 1023)
         p = 0;
     } while (!(s == p));
@@ -38121,7 +38120,7 @@ boolean check_box (pointer box_p)
 
         if (font_dir[font(p)] != dir_default)
           p = link(p);
-          
+
         p = link(p);
 
         if (p == null)
@@ -38502,7 +38501,7 @@ boolean eTeX_enabled (boolean b, quarterword j, halfword k)
     help1("Sorry, this optional e-TeX feature has been disabled.");
     error();
   }
-  
+
   return b;
 }
 
@@ -38725,11 +38724,11 @@ void show_save_groups (void)
           goto found;
         }
         break;
-    
+
       case math_group:
         goto found2;
         break;
-    
+
       case disc_group:
       case math_choice_group:
         {
@@ -39078,13 +39077,13 @@ reswitch:
         case edge_node:
           confusion("LR2");
           break;
-          
+
         case disp_node:
           {
             disp2 = disp_dimen(p);
             disp_dimen(p) = disp;
             disp = disp2;
-          
+
             if (!disped)
               disped = true;
           }
@@ -39452,7 +39451,7 @@ void pseudo_start (void)
   str_number s; // {string to be converted into a pseudo file}
   pool_pointer l, m;  // {indices into |str_pool|}
   pointer p, q, r;  // {for list construction}
-  four_quarters w;  // 
+  four_quarters w;  //
   integer nl, sz; // {four ASCII codes}
 
   scan_general_text();
@@ -40664,7 +40663,7 @@ void sa_w_def (pointer p, integer w)
     sa_lev(p) = cur_level;
     sa_int(p) = w;
 
-#ifdef STAT 
+#ifdef STAT
     if (tracing_assigns > 0)
       show_sa(p, "into");
 #endif
