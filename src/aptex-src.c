@@ -7735,7 +7735,6 @@ continu:
       }
   }
 
-
   incr(error_count);
 
   if (error_count == 100)
@@ -17901,7 +17900,6 @@ do {                          \
 do {                        \
   scan_toks(false, true);   \
 } while (0)
-
 
 static char * aptex_find_file (str_number s)
 {
@@ -37690,7 +37688,6 @@ void close_files_and_terminate (void)
 
   print_ln();
 }
-
 
 #ifdef APTEX_DEBUG
 
