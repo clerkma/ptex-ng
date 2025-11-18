@@ -18113,7 +18113,6 @@ static void get_file_dump (str_number s, integer i, integer j)
 
 void conv_toks (void)
 {
-  pointer p,q;
   char old_setting;
   KANJI_code cx;
   char c;
@@ -18619,33 +18618,37 @@ void conv_toks (void)
       break;
 
     case left_margin_kern_code:
-      p = list_ptr(box(cur_val));
-      if ((p != null) && (!is_char_node(p)) &&
-          (type(p) == glue_node) && (subtype(p) == left_skip_code + 1))
-        p = link(p);
-      if ((p != null) && (!is_char_node(p)) &&
-          (type(p) == margin_kern_node) && (subtype(p) == left_side))
-        print_scaled(width(p));
-      else
+      {
+        pointer p = list_ptr(box(cur_val));
+        if ((p != null) && (!is_char_node(p)) &&
+            (type(p) == glue_node) && (subtype(p) == left_skip_code + 1))
+          p = link(p);
+        if ((p != null) && (!is_char_node(p)) &&
+            (type(p) == margin_kern_node) && (subtype(p) == left_side))
+          print_scaled(width(p));
+        else
         prints_("0");
-      prints_("pt");
+        prints_("pt");
+      }
       break;
 
     case right_margin_kern_code:
-      q = list_ptr(box(cur_val));
-      p = null;
-      if (q != null) {
-        p = prev_rightmost(q, null);
+      {
+        pointer q = list_ptr(box(cur_val));
+        pointer p = null;
+        if (q != null) {
+          p = prev_rightmost(q, null);
+          if ((p != null) && (!is_char_node(p)) &&
+              (type(p) == glue_node) && (subtype(p) == right_skip_code + 1))
+            p = prev_rightmost(q, p);
+        }
         if ((p != null) && (!is_char_node(p)) &&
-            (type(p) == glue_node) && (subtype(p) == right_skip_code + 1))
-          p = prev_rightmost(q, p);
+            (type(p) == margin_kern_node) && (subtype(p) == right_side))
+          print_scaled(width(p));
+        else
+          prints_("0");
+        prints_("pt");
       }
-      if ((p != null) && (!is_char_node(p)) &&
-          (type(p) == margin_kern_node) && (subtype(p) == right_side))
-        print_scaled(width(p));
-      else
-        prints_("0");
-      prints_("pt");
       break;
 
     case job_name_code:
@@ -21268,16 +21271,13 @@ static internal_font_number auto_expand_font(internal_font_number f, integer e) 
   return k;
 }
 
-static void set_expand_param(internal_font_number k, internal_font_number f, integer e) {
-  /* if (pdf_font_ef_base[f] == 0)
-     pdf_font_ef_base[f] = init_font_base(1000);
-  */
+static void copy_expand_param(internal_font_number k, internal_font_number f, integer e) {
   if (pdf_font_base[f] == NULL)
     pdf_font_base[f] = init_font_base();
   pdf_font_expand_ratio[k] = e;
   pdf_font_step[k] = pdf_font_step[f];
   pdf_font_auto_expand[k] = pdf_font_auto_expand[f];
-  pdf_font_blink[k] = f; /* ??? */
+  pdf_font_blink[k] = f;
   pdf_font_base[k] = pdf_font_base[f];
 }
 
@@ -21313,7 +21313,8 @@ static internal_font_number load_expand_font(internal_font_number f, integer e) 
       k = read_font_info(null_cs, s, 335 /* "" */, font_size[f]);
     }
   }
-  set_expand_param(k, f, e);
+  if (k != null_font)
+    copy_expand_param(k, f, e);
   return k;
 }
 
@@ -24247,8 +24248,8 @@ static boolean check_expand_pars(internal_font_number f) {
   k = pdf_font_shrink[f];
    if (k != null_font) {
     if (max_shrink_ratio < 0)
-      max_shrink_ratio = pdf_font_expand_ratio[k];
-    else if (max_shrink_ratio != pdf_font_expand_ratio[k])
+      max_shrink_ratio = -pdf_font_expand_ratio[k];
+    else if (max_shrink_ratio != -pdf_font_expand_ratio[k])
       aptex_error("font expansion",
                   "using fonts with different limit of expansion in one paragraph is not allowed");
   }

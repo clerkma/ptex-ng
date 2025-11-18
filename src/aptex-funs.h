@@ -758,62 +758,62 @@ static pointer prev_rightmost(pointer s, pointer e) {
 
 static scaled round_xn_over_d(scaled x, integer n, integer d)
 {
-    boolean positive = true;
-    nonnegative_integer t, u, v;
-    if (x < 0) {
-        positive = !positive;
-        x = -(x);
-    }
-    if (n < 0) {
-        positive = !positive;
-        n = -(n);
-    }
-    t = ((x % 0100000) * n);
-    u = ((x / 0100000) * n + (t / 0100000));
-    v = (u % d) * 0100000 + (t % 0100000);
-    if (u / d >= 0100000)
-        arith_error = true;
-    else
-        u = 0100000 * (u / d) + (v / d);
-    v = v % d;
-    if (2 * v >= d)
-        u++;
-    if (positive)
-        return (scaled) u;
-    else
-        return (-(scaled) u);
+  boolean positive = true;
+  nonnegative_integer t, u, v;
+  if (x < 0) {
+    positive = !positive;
+    x = -(x);
+  }
+  if (n < 0) {
+    positive = !positive;
+    n = -(n);
+  }
+  t = ((x % 0100000) * n);
+  u = ((x / 0100000) * n + (t / 0100000));
+  v = (u % d) * 0100000 + (t % 0100000);
+  if (u / d >= 0100000)
+    arith_error = true;
+  else
+    u = 0100000 * (u / d) + (v / d);
+  v = v % d;
+  if (2 * v >= d)
+    u++;
+  if (positive)
+    return (scaled) u;
+  else
+    return (-(scaled) u);
 }
 
 scaled divide_scaled(scaled s, scaled m, integer dd)
 {
-    scaled q;
-    scaled r;
-    integer i;
-    integer sign = 1;
-    if (s < 0) {
-        sign = -sign;
-        s = -s;
-    }
-    if (m < 0) {
-        sign = -sign;
-        m = -m;
-    }
-    if (m == 0) {
-        aptex_error("arithmetic", "divided by zero");
-    } else if (m >= (0x7FFFFFFF / 10)) {
-        aptex_error("arithmetic", "number too big");
-    }
-    q = s / m;
-    r = s % m;
-    for (i = 1; i <= dd; i++) {
-        q = 10 * q + (10 * r) / m;
-        r = (10 * r) % m;
-    }
-    /*tex Rounding: */
-    if (2 * r >= m) {
-        q++;
-    }
-    return sign * q;
+  scaled q;
+  scaled r;
+  integer i;
+  integer sign = 1;
+  if (s < 0) {
+    sign = -sign;
+    s = -s;
+  }
+  if (m < 0) {
+    sign = -sign;
+    m = -m;
+  }
+  if (m == 0) {
+    aptex_error("arithmetic", "divided by zero");
+  } else if (m >= (0x7FFFFFFF / 10)) {
+    aptex_error("arithmetic", "number too big");
+  }
+  q = s / m;
+  r = s % m;
+  for (i = 1; i <= dd; i++) {
+    q = 10 * q + (10 * r) / m;
+    r = (10 * r) % m;
+  }
+  /*tex Rounding: */
+  if (2 * r >= m) {
+    q++;
+  }
+  return sign * q;
 }
 
 static fontinfo *init_font_base() {
