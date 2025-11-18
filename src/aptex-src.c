@@ -11369,13 +11369,13 @@ static void print_param (integer n)
       print_esc("pdfminorversion");
       break;
 
-  case pdf_adjust_spacing_code:
-    print_esc("pdfadjustspacing");
-    break;
+    case pdf_adjust_spacing_code:
+      print_esc("pdfadjustspacing");
+      break;
 
-  case pdf_protrude_chars_code:
-    print_esc("pdfprotrudechars");
-    break;
+    case pdf_protrude_chars_code:
+      print_esc("pdfprotrudechars");
+      break;
 
     case synctex_code:
       print_esc("synctex");
@@ -12325,13 +12325,13 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("Ucharcat");
           break;
 
-      case left_margin_kern_code:
-        print_esc("leftmarginkern");
-        break;
+        case left_margin_kern_code:
+          print_esc("leftmarginkern");
+          break;
 
-      case right_margin_kern_code:
-        print_esc("rightmarginkern");
-        break;
+        case right_margin_kern_code:
+          print_esc("rightmarginkern");
+          break;
 
         default:
           print_esc("jobname");
@@ -13108,9 +13108,9 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("setlanguage");
           break;
 
-      case pdf_font_expand_code:
-        print_esc("pdffontexpand");
-        break;
+        case pdf_font_expand_code:
+          print_esc("pdffontexpand");
+          break;
 
         case pdf_save_pos_node:
           print_esc("pdfsavepos");
@@ -18433,12 +18433,12 @@ void conv_toks (void)
       }
       break;
 
-  case left_margin_kern_code:
-  case right_margin_kern_code:
-    scan_int();
-    if ((box(cur_val) == null) || (type(box(cur_val)) != hlist_node))
-      aptex_error("marginkern", "a non-empty hbox expected");
-    break;
+    case left_margin_kern_code:
+    case right_margin_kern_code:
+      scan_int();
+      if ((box(cur_val) == null) || (type(box(cur_val)) != hlist_node))
+        aptex_error("marginkern", "a non-empty hbox expected");
+      break;
 
     case job_name_code:
       if (job_name == 0)
@@ -18619,34 +18619,35 @@ void conv_toks (void)
         print_kanji(cur_val);
       break;
 
-  case left_margin_kern_code:
-    p = list_ptr(box(cur_val));
-    if ((p != null) && (!is_char_node(p)) &&
-        (type(p) == glue_node) && (subtype(p) == left_skip_code + 1))
-      p = link(p);
-    if ((p != null) && (!is_char_node(p)) &&
-        (type(p) == margin_kern_node) && (subtype(p) == left_side))
-      print_scaled(width(p));
-    else
-      print("0");
-    print("pt");
-    break;
-  case right_margin_kern_code:
-    q = list_ptr(box(cur_val));
-    p = null;
-    if (q != null) {
+    case left_margin_kern_code:
+      p = list_ptr(box(cur_val));
+      if ((p != null) && (!is_char_node(p)) &&
+          (type(p) == glue_node) && (subtype(p) == left_skip_code + 1))
+        p = link(p);
+      if ((p != null) && (!is_char_node(p)) &&
+          (type(p) == margin_kern_node) && (subtype(p) == left_side))
+        print_scaled(width(p));
+      else
+        prints_("0");
+      prints_("pt");
+      break;
+
+    case right_margin_kern_code:
+      q = list_ptr(box(cur_val));
+      p = null;
+      if (q != null) {
         p = prev_rightmost(q, null);
         if ((p != null) && (!is_char_node(p)) &&
             (type(p) == glue_node) && (subtype(p) == right_skip_code + 1))
           p = prev_rightmost(q, p);
-    }
-    if ((p != null) && (!is_char_node(p)) &&
-        (type(p) == margin_kern_node) && (subtype(p) == right_side))
-      print_scaled(width(p));
-    else
-      print("0");
-    print("pt");
-    break;
+      }
+      if ((p != null) && (!is_char_node(p)) &&
+          (type(p) == margin_kern_node) && (subtype(p) == right_side))
+        print_scaled(width(p));
+      else
+        prints_("0");
+      prints_("pt");
+      break;
 
     case job_name_code:
       print(job_name);
@@ -29301,7 +29302,7 @@ total_pw(pointer q, pointer p)
   /* let's look at the right margin first */
   /*
     short_display_n(r, 2);
-    print("&");
+    prints_("&");
     short_display_n(p, 2);
     print_ln;
   */
