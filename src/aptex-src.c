@@ -24227,12 +24227,11 @@ found:
 /* HZ */
 static boolean check_expand_pars(internal_font_number f) {
   internal_font_number k;
-  // check_expand_pars = false;
   if ((pdf_font_step[f] == 0) ||
       ((pdf_font_stretch[f] == null_font) &&
        (pdf_font_shrink[f] == null_font)))
     return false;
-  if (pdf_font_step[f] < 0)
+  if (cur_font_step < 0)
     cur_font_step = pdf_font_step[f];
   else if (cur_font_step != pdf_font_step[f])
     aptex_error("font expansion",

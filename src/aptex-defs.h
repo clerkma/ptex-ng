@@ -3597,20 +3597,20 @@ do {                                            \
 // {skipable nodes at the margins during character protrusion}
 #define cp_skipable(n)                                                  \
   ((!is_char_node(n)) &&                                                \
-   ((type(n) == ins_node)                                                \
-    || (type(n) == mark_node)                                            \
-    || (type(n) == adjust_node)                                          \
-    || (type(n) == penalty_node)                                         \
-    || (type(n) == whatsit_node)                                         \
-    || ((type(n) == disc_node) &&                                        \
-        (pre_break(n) == null) &&                                        \
-        (post_break(n) == null) &&                                       \
-        (replace_count(n) == 0))                                         \
-    || ((type(n) == math_node) && (width(n) == 0))                        \
-    || ((type(n) == kern_node) &&                                        \
-        ((width(n) == 0) || (subtype(n) == normal)))                      \
-    || ((type(n) == glue_node) && (glue_ptr(n) == zero_glue))             \
-    || ((type(n) == hlist_node) && (width(n) == 0) && (height(n) == 0) &&  \
+   ((type(n) == ins_node)                                               \
+    || (type(n) == mark_node)                                           \
+    || (type(n) == adjust_node)                                         \
+    || (type(n) == penalty_node)                                        \
+    || (type(n) == whatsit_node)                                        \
+    || ((type(n) == disc_node) &&                                       \
+        (pre_break(n) == null) &&                                       \
+        (post_break(n) == null) &&                                      \
+        (replace_count(n) == 0))                                        \
+    || ((type(n) == math_node) && (width(n) == 0))                      \
+    || ((type(n) == kern_node) &&                                       \
+        ((width(n) == 0) || (subtype(n) == normal)))                    \
+    || ((type(n) == glue_node) && (glue_ptr(n) == zero_glue))           \
+    || ((type(n) == hlist_node) && (width(n) == 0) && (height(n) == 0) && \
         (depth(n) == 0) && (list_ptr(n) == null))))
 
 #define reset_disc_width(n) disc_width[n] = 0
