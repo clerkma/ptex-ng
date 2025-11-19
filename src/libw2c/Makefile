@@ -1,21 +1,30 @@
+#
+# Copyright (c) 2025 LdBeth, Clerk Ma
+#
+# You may freely use, modify and/or distribute this file.
+#
+
 CC = gcc
 AR = ar
-CFLAGS += -c -O2
-SYNCTEXINCLUDES = -I.. -I../../texlive/texk -I../../texlive/texk/ptexenc \
-	-I../../texlive/texk/web2c/synctexdir \
+CFLAGS += $(CDEBUG) -c -O2
+SYNCTEXINCLUDES = -I.. \
+	-I $(TLROOT)/texk \
+	-I $(TLROOT)/texk/ptexenc \
+	-I $(TLROOT)/libs/zlib/include \
+	-I $(TLROOT)/texk/web2c/synctexdir \
 	-DSYNCTEX_ENGINE_H='"synctex-aptex.h"'
-MD5INCLUDES = -I../../texlive/texk/web2c/libmd5
+MD5INCLUDES = -I $(TLROOT)/texk/web2c/libmd5
 objects = synctex.o md5.o
 
 libw2c.a: $(objects)
 	$(AR) cr libw2c.a $(objects)
 	ranlib libw2c.a
 
-synctex.o: ../../texlive/texk/web2c/synctexdir/synctex.c
-	$(CC) $(CFLAGS) $(SYNCTEXINCLUDES) ../../texlive/texk/web2c/synctexdir/synctex.c
+synctex.o: $(TLROOT)/texk/web2c/synctexdir/synctex.c
+	$(CC) $(CFLAGS) $(SYNCTEXINCLUDES) $<
 
-md5.o: ../../texlive/texk/web2c/libmd5/md5.c
-	$(CC) $(CFLAGS) $(MD5INCLUDES) ../../texlive/texk/web2c/libmd5/md5.c
+md5.o: $(TLROOT)/texk/web2c/libmd5/md5.c
+	$(CC) $(CFLAGS) $(MD5INCLUDES) $<
 
 .PHONY: clean
 

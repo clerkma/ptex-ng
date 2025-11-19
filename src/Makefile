@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014-2024 Clerk Ma
+# Copyright (c) 2014-2025 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #
@@ -8,8 +8,8 @@ CC = gcc
 CDEBUG =
 CFLAGS += $(CDEBUG) -Werror -c -O2
 INCLUDES = \
-	-I $(TLROOT)/texk/ptexenc/ \
 	-I $(TLROOT)/texk/ \
+	-I $(TLROOT)/texk/ptexenc/ \
 	-I $(TLROOT)/libs/zlib/include \
 	-I $(TLROOT)/texk/web2c/libmd5
 LDLIBS = libdpx.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libw2c.a -lm
