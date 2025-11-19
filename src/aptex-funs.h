@@ -784,6 +784,7 @@ static scaled round_xn_over_d(scaled x, integer n, integer d)
     return (-(scaled) u);
 }
 
+#define max_integer 0x7FFFFFFF
 scaled divide_scaled(scaled s, scaled m, integer dd)
 {
   scaled q;
@@ -800,7 +801,7 @@ scaled divide_scaled(scaled s, scaled m, integer dd)
   }
   if (m == 0) {
     aptex_error("arithmetic", "divided by zero");
-  } else if (m >= (0x7FFFFFFF / 10)) {
+  } else if (m >= (max_integer / 10)) {
     aptex_error("arithmetic", "number too big");
   }
   q = s / m;
@@ -814,6 +815,18 @@ scaled divide_scaled(scaled s, scaled m, integer dd)
     q++;
   }
   return sign * q;
+}
+
+static scaled ext_xn_over_d(scaled x, scaled n, scaled d)
+{
+  double r = (((double) x) * ((double) n)) / ((double) d);
+  if (r > DBL_EPSILON)
+    r += 0.5;
+  else
+    r -= 0.5;
+  if (r >= (double) max_integer || r <= -(double) max_integer)
+    aptex_error("arithmetic", "number too big");
+  return (scaled) r;
 }
 
 static fontinfo *init_font_base() {

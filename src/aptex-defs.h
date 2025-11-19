@@ -243,6 +243,7 @@ enum
 /* sec 0142 */
 #define adjust_node     7                       // {|type| of an adjust node}
 #define adjust_ptr(a)   mem[a + 1].cint         // {vertical list to be moved out of horizontal list}
+#define adjust_pre subtype
 /* sec 0143 */
 #define ligature_node   8                       // {|type| of a ligature node}
 #define lig_char(a)     (a + 1)                 // {the word where the ligature is to be found}
@@ -348,8 +349,9 @@ enum
 #define lig_trick         (mem_top - 12)                      // {a ligature masquerading as a |char_node|}
 #define garbage           (mem_top - 12)                      // {used for scrap information}
 #define backup_head       (mem_top - 13)                      // {head of token list built by |scan_keyword|}
-#define hi_mem_stat_min   (mem_top - 13)                      // {smallest statically allocated word in the one-word |mem|}
-#define hi_mem_stat_usage 14                                  // {the number of one-word nodes always present}
+#define pre_adjust_head   (mem_top - 14)                      // {head of pre-adjustment list returned by |hpack|}
+#define hi_mem_stat_min   (mem_top - 14)                      // {smallest statically allocated word in the one-word |mem|}
+#define hi_mem_stat_usage 15                                  // {the number of one-word nodes always present}
 /* sec 0200 */
 #define token_ref_count(a) info(a)                            // {reference count preceding a token list}
 /* sec 0203 */
@@ -1705,7 +1707,7 @@ do {                    \
 } while (0)
 /* sec 0770 */
 #define preamble              link(align_head)
-#define align_stack_node_size 5
+#define align_stack_node_size 6
 /* sec 0780 */
 #define span_code          256
 #define cr_code            257
@@ -3625,3 +3627,13 @@ do {                                            \
 
 #define total_font_stretch cur_active_width[7]
 #define total_font_shrink cur_active_width[8]
+
+/* \vadjust pre */
+#define update_adjust_list(l) do {              \
+  if (l == null) confusion("pre vadjust");      \
+  link(l) = adjust_ptr(p);                      \
+  while (link(l) != null)                       \
+    l = link(l);                                \
+  } while (0)
+
+#define append_list(a, b) do { link(tail) = link(a); tail = b; } while (0)

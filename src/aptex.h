@@ -591,6 +591,7 @@ EXTERN integer last_badness;                  // {badness of the most recently p
 EXTERN integer pack_begin_line;               // {source file line where the current paragraph or alignment began; a negative value denotes alignment}
 
 EXTERN pointer adjust_tail;                   // {tail of adjustment list}
+EXTERN pointer pre_adjust_tail;
 EXTERN scaled last_disp;                      // {displacement at end of list}
 EXTERN pointer cur_kanji_skip;
 EXTERN pointer cur_xkanji_skip;
@@ -615,6 +616,7 @@ EXTERN pointer cur_span;                      // {start of currently spanned col
 EXTERN pointer cur_loop;                      // {place to copy when extending a periodic preamble}
 EXTERN pointer align_ptr;                     // {most recently pushed-down alignment stack node}
 EXTERN pointer cur_head, cur_tail;            // {adjustment list pointers}
+EXTERN pointer cur_pre_head, cur_pre_tail;    // {pre-adjustment list pointers}
 
 EXTERN pointer just_box;                      // {the |hlist_node| for the last line of the new paragraph}
 

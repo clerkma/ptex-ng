@@ -4271,6 +4271,7 @@ static void initialize (void)
   down_ptr = 0;
   right_ptr = 0;
   adjust_tail = 0;
+  pre_adjust_tail = 0;
   last_badness = 0;
   cur_kanji_skip = zero_glue;
   cur_xkanji_skip = zero_glue;
@@ -4285,8 +4286,10 @@ static void initialize (void)
   cur_align = 0;
   cur_span = 0;
   cur_loop = 0;
-  cur_head = 0;
-  cur_tail = 0;
+  cur_head = null;
+  cur_tail = null;
+  cur_pre_head = null;
+  cur_pre_tail = null;
 
 /* *not* OK with APTEX_EXTENSION, since may not be allocated yet */
 #ifndef APTEX_EXTENSION
@@ -10182,6 +10185,7 @@ void show_node_list (integer p)
       case adjust_node:
         {
           print_esc("vadjust");
+          if (adjust_pre(p) != 0) prints(" pre ");
           node_list_display(adjust_ptr(p));
         }
         break;
@@ -24398,7 +24402,6 @@ void do_subst_font(pointer p, int ex_ratio) {
   } else {
     /* {|short_display_n(p, 5);|} */
     aptex_error("font expansion", "invalid node type");
-    return;
   }
 
   f = font(r);
@@ -24406,13 +24409,13 @@ void do_subst_font(pointer p, int ex_ratio) {
   if (ef == 0) return;
 
   if ((pdf_font_stretch[f] != null_font) && (ex_ratio > 0)) {
-    k = expand_font(f, divide_scaled(ex_ratio *
-                                     pdf_font_expand_ratio[pdf_font_stretch[f]] * ef,
-                                     1000000, 0));
+    k = expand_font(f, ext_xn_over_d(ex_ratio*ef,
+                                     pdf_font_expand_ratio[pdf_font_stretch[f]],
+                                     1000000));
   } else if ((pdf_font_shrink[f] != null_font) && (ex_ratio < 0)) {
-    k = expand_font(f, -divide_scaled(ex_ratio *
-                                      pdf_font_expand_ratio[pdf_font_shrink[f]] * ef,
-                                      1000000, 0));
+    k = expand_font(f, ext_xn_over_d(ex_ratio*ef,
+                                     -pdf_font_expand_ratio[pdf_font_shrink[f]],
+                                     1000000));
   } else {
     k = f;
   }
@@ -24440,9 +24443,7 @@ scaled char_pw(pointer p, small_number side) {
     last_rightmost_char = null;
   }
 
-  if (p == null) {
-    return 0;
-  }
+  if (p == null) return 0;
 
   if (!is_char_node(p)) {
     if (type(p) == ligature_node)
@@ -24616,18 +24617,17 @@ reswitch:
         case ins_node:
         case mark_node:
         case adjust_node:
-          if (adjust_tail != null)
-          {
+          if (adjust_tail != null || pre_adjust_tail != null) {
+            /* @<Transfer node |p| to the adjustment list@> */
             while (link(q) != p)
               q = link(q);
 
             if (type(p) == adjust_node)
             {
-              link(adjust_tail) = adjust_ptr(p);
-
-              while (link(adjust_tail) != null)
-                adjust_tail = link(adjust_tail);
-
+              if (adjust_pre(p) != 0)
+                update_adjust_list(pre_adjust_tail);
+              else
+                update_adjust_list(adjust_tail);
               p = link(p);
               free_node(link(q), small_node_size);
             }
@@ -24779,6 +24779,8 @@ reswitch:
 
   if (adjust_tail != null)
     link(adjust_tail) = null;
+  if (pre_adjust_tail != null)
+    link(pre_adjust_tail) = null;
 
   height(r) = h;
   depth(r) = d;
@@ -27295,8 +27297,11 @@ static void push_alignment (void)
   mem[p + 3].cint = align_state;
   info(p + 4) = cur_head;
   link(p + 4) = cur_tail;
+  info(p + 5) = cur_pre_head;
+  link(p + 5) = cur_pre_tail;
   align_ptr = p;
   cur_head = get_avail();
+  cur_pre_head = get_avail();
 }
 
 static void pop_alignment (void)
@@ -27304,9 +27309,12 @@ static void pop_alignment (void)
   pointer p;  // {the top alignment stack node}
 
   free_avail(cur_head);
+  free_avail(cur_pre_head);
   p = align_ptr;
   cur_tail = link(p + 4);
   cur_head = info(p + 4);
+  cur_pre_tail = link(p + 5);
+  cur_pre_head = info(p + 5);
   align_state = mem[p + 3].cint;
   cur_loop = mem[p + 2].cint;
   cur_span = rlink(p);
@@ -27518,6 +27526,7 @@ static void init_row (void)
   subtype(tail) = tab_skip_code + 1;
   cur_align = link(preamble);
   cur_tail = cur_head;
+  cur_pre_tail = cur_pre_head;
   init_span(cur_align);
 }
 
@@ -27550,13 +27559,11 @@ static void fin_row (void)
     add_glue_ref(cur_xkanji_skip);
     p = hpack(link(head), 0, 1);
     pop_nest();
+    if (cur_pre_head != cur_pre_tail)
+      append_list(cur_pre_head, cur_pre_tail);
     append_to_vlist(p);
-
     if (cur_head != cur_tail)
-    {
-      link(tail) = link(cur_head);
-      tail = cur_tail;
-    }
+      append_list(cur_head, cur_tail);
   }
   else
   {
@@ -28059,6 +28066,7 @@ static boolean fin_col (void)
       if (mode == -hmode)
       {
         adjust_tail = cur_tail;
+        pre_adjust_tail = cur_pre_tail;
         adjust_hlist(head, false);
         delete_glue_ref(cur_kanji_skip);
         delete_glue_ref(cur_xkanji_skip);
@@ -28070,6 +28078,8 @@ static boolean fin_col (void)
         w = width(u);
         cur_tail = adjust_tail;
         adjust_tail = null;
+        cur_pre_tail = pre_adjust_tail;
+        pre_adjust_tail = null;
       }
       else
       {
@@ -30357,6 +30367,7 @@ done:
     }
 
     adjust_tail = adjust_head;
+    pre_adjust_tail = pre_adjust_head;
     /* [889] - font expansion, pre vadjust */
     if (pdf_adjust_spacing > 0)
       just_box = hpack(q, cur_width, cal_expand_ratio);
@@ -30365,11 +30376,12 @@ done:
     shift_amount(just_box) = cur_indent;
     append_to_vlist(just_box);
 
+    if (pre_adjust_head != pre_adjust_tail)
+      append_list(pre_adjust_head, pre_adjust_tail);
+    pre_adjust_tail = null;
+    append_to_vlist(just_box);
     if (adjust_head != adjust_tail)
-    {
-      link(tail) = link(adjust_head);
-      tail = adjust_tail;
-    }
+      append_list(adjust_head, adjust_tail);
 
     adjust_tail = null;
 
