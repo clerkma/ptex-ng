@@ -24709,14 +24709,14 @@ reswitch:
             font_shrink = font_shrink + kern_shrink(p);
           }
           else if (m == subst_ex_font) {
-            scaled k;
+            scaled k1;
             if (font_expand_ratio > 0)
-              k = kern_stretch(p);
+              k1 = kern_stretch(p);
             else if (font_expand_ratio < 0)
-              k = kern_shrink(p);
+              k1 = kern_shrink(p);
             else
               confusion("kern");
-            if (k != 0) {
+            if (k1 != 0) {
               if (is_char_node(link(p)))
                 width(p) = get_kern(font(prev_char_p),
                                     character(prev_char_p),
