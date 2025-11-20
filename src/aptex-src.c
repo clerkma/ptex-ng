@@ -21023,7 +21023,11 @@ static char * output_pdf_name;
 
 static void pdf_locate_font (internal_font_number f)
 {
-  char * lfont_name = take_str_string(font_name[f]);
+  char * lfont_name;
+  // TODO: actually expand glyph.
+  if (pdf_font_auto_expand[f] && pdf_font_blink[f] != null_font) {
+    lfont_name = take_str_string(font_name[pdf_font_blink[f]]);
+  } else lfont_name = take_str_string(font_name[f]);
   font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
   free(lfont_name);
 }
