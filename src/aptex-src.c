@@ -30374,7 +30374,8 @@ done:
     else
       just_box = hpack(q, cur_width, exactly);
     shift_amount(just_box) = cur_indent;
-    append_to_vlist(just_box);
+    /* @<Append the new box to the current vertical list, followed by the list of
+       special nodes taken out of the box by the packager@>; */
 
     if (pre_adjust_head != pre_adjust_tail)
       append_list(pre_adjust_head, pre_adjust_tail);
@@ -32741,21 +32742,19 @@ static void box_end (integer box_context)
 
       if (abs(mode) == vmode)
       {
+        if (pre_adjust_tail != null) {
+          if (pre_adjust_head != pre_adjust_tail)
+            append_list(pre_adjust_head, pre_adjust_tail);
+          pre_adjust_tail = null;
+        }
         append_to_vlist(cur_box);
-
-        if (adjust_tail != 0)
-        {
+        if (adjust_tail != null) {
           if (adjust_head != adjust_tail)
-          {
-            link(tail) = link(adjust_head);
-            tail = adjust_tail;
-          }
-
-          adjust_tail = 0;
+            append_list(adjust_head, adjust_tail);
+          adjust_tail = null;
         }
 
-        if (mode > 0)
-          build_page();
+        if (mode > 0) build_page();
       }
       else
       {
@@ -33167,7 +33166,11 @@ static void begin_insert_or_adjust (void)
   }
 
   saved(0) = cur_val;
-  incr(save_ptr);
+  if (cur_cmd == vadjust && scan_keyword("pre"))
+    saved(1) = 1;
+  else
+    saved(1) = 0;
+  save_ptr += 2;
   inhibit_glue_flag = false;
   new_save_level(insert_group);
   scan_left_brace();
@@ -34829,6 +34832,7 @@ static void after_math (void)
   small_number g1, g2;  // {glue parameter codes for before and after}
   pointer r;  // {kern node used to position the display}
   pointer t;  // {tail of adjustment list}
+  pointer pre_t; // {tail of pre-adjustment list}
   pointer j;  // {prototype box}
 
   danger = false;
@@ -34995,10 +34999,13 @@ static void after_math (void)
     mlist_to_hlist();
     p = link(temp_head);
     adjust_tail = adjust_head;
-    b = hpack(p, 0, 1);
+    pre_adjust_tail = pre_adjust_head;
+    b = hpack(p, natural);
     p = list_ptr(b);
     t = adjust_tail;
     adjust_tail = null;
+    pre_t = pre_adjust_tail;
+    pre_adjust_tail = null;
     w = width(b);
     z = display_width;
     s = display_indent;
@@ -35118,6 +35125,11 @@ static void after_math (void)
     {
       link(tail) = link(adjust_head);
       tail = t;
+    }
+    if (pre_t != pre_adjust_head)
+    {
+      link(tail) = link(pre_adjust_head);
+      tail = pre_t;
     }
 
     tail_append(new_penalty(post_display_penalty));
@@ -37095,6 +37107,7 @@ static void handle_right_brace (void)
       {
         adjust_hlist(head, false);
         adjust_tail = adjust_head;
+        pre_adjust_tail = pre_adjust_head;
         package(0);
       }
       break;
@@ -37145,8 +37158,8 @@ static void handle_right_brace (void)
         d = split_max_depth;
         f = floating_penalty;
         unsave();
-        decr(save_ptr);
-        p = vpackage(link(head), 0, 1, max_dimen);
+        save_ptr -= 2;
+        p = vpackage(link(head), natural, max_dimen);
         set_box_dir(p, direction);
         pop_nest();
 
@@ -37180,7 +37193,7 @@ static void handle_right_brace (void)
           {
             r = get_node(small_node_size);
             type(r) = adjust_node;
-            subtype(r) = 0; // {the |subtype| is not used}
+            adjust_pre(r) = saved(1); // the |subtype| is used for |adjust_pre|
             adjust_ptr(r) = list_ptr(p);
             delete_glue_ref(q);
 
