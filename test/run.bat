@@ -10,6 +10,9 @@ move /Y plain.log fmt
 @echo on
 %APTEX% +plain test.tex
 %APTEX% +plain test-hz.tex
+%APTEX% +plain test-lpcode-rpcode.tex
+%APTEX% +plain test-pdffontexpand.tex
+%APTEX% +plain test-pdfprotrudechars.tex
 @echo off
 del *.log *.dvi
 @REM recover variables (to make texlive safe)
