@@ -37,6 +37,8 @@
 #define epTeX_version_string "-210218"
 #define epTeX_version_number 210218
 
+#define hz_version_string "-1.30"
+
 #define TeXXeT_code         0         // {the \TeXXeT\ feature is optional}
 #define eTeX_states         1         // {number of \eTeX\ state variables in |eqtb|}
 
@@ -241,6 +243,7 @@ enum
 /* sec 0142 */
 #define adjust_node     7                       // {|type| of an adjust node}
 #define adjust_ptr(a)   mem[a + 1].cint         // {vertical list to be moved out of horizontal list}
+#define adjust_pre subtype
 /* sec 0143 */
 #define ligature_node   8                       // {|type| of a ligature node}
 #define lig_char(a)     (a + 1)                 // {the word where the ligature is to be found}
@@ -297,6 +300,21 @@ enum
 #define explicit  1                             // {|subtype| of kern nodes from \.{\\kern}}
 #define acc_kern  2                             // {|subtype| of kern nodes from accents}
 #define ita_kern  3                             // {|subtype| of kern nodes from \.{\\/}}
+/* HZ extension */
+// {memory structure for marginal kerns}
+#define margin_kern_node 40
+#define margin_kern_node_size 3
+#define margin_char(c) info(c + 2)
+// {|subtype| of marginal kerns}
+#define left_side  0
+#define right_side 1
+// {base for lp/rp/ef codes starts from 2:
+//  0 for |hyphen_char|,
+//  1 for |skew_char|}
+#define lp_code_base 2
+#define rp_code_base 3
+#define ef_code_base 4
+#define max_hlist_stack 512 // {maximum fill level for |hlist_stack|}
 /* sec 0157 */
 #define penalty_node  14                        // {|type| of a penalty node}
 #define widow_pena    1                         // {|subtype| of penalty nodes from \.{\\jcharwidowpenalty}}
@@ -331,8 +349,9 @@ enum
 #define lig_trick         (mem_top - 12)                      // {a ligature masquerading as a |char_node|}
 #define garbage           (mem_top - 12)                      // {used for scrap information}
 #define backup_head       (mem_top - 13)                      // {head of token list built by |scan_keyword|}
-#define hi_mem_stat_min   (mem_top - 13)                      // {smallest statically allocated word in the one-word |mem|}
-#define hi_mem_stat_usage 14                                  // {the number of one-word nodes always present}
+#define pre_adjust_head   (mem_top - 14)                      // {head of pre-adjustment list returned by |hpack|}
+#define hi_mem_stat_min   (mem_top - 14)                      // {smallest statically allocated word in the one-word |mem|}
+#define hi_mem_stat_usage 15                                  // {the number of one-word nodes always present}
 /* sec 0200 */
 #define token_ref_count(a) info(a)                            // {reference count preceding a token list}
 /* sec 0203 */
@@ -775,11 +794,13 @@ enum
 #define pdf_compress_level_code       74
 #define pdf_major_version_code        75
 #define pdf_minor_version_code        76
-#define synctex_code                  77
-#define tracing_stack_levels_code     78
-#define partoken_context_code         79
-#define show_stream_code              80
-#define int_pars                      81
+#define pdf_adjust_spacing_code       77  // {level of spacing adjusting}
+#define pdf_protrude_chars_code       78  // {protrude chars at left/right edge of paragraphs}
+#define synctex_code                  79
+#define tracing_stack_levels_code     80
+#define partoken_context_code         81
+#define show_stream_code              82
+#define int_pars                      83
 #define count_base                    (int_base + int_pars) // {256 user \.{\\count} registers}
 #define del_code_base                 (count_base + 256)    // {256 delimiter code mappings}
 #define dimen_base                    (del_code_base + 256) // {beginning of region 6}
@@ -865,6 +886,8 @@ enum
 #define pdf_compress_level            int_par(pdf_compress_level_code)
 #define pdf_major_version             int_par(pdf_major_version_code)
 #define pdf_minor_version             int_par(pdf_minor_version_code)
+#define pdf_adjust_spacing            int_par(pdf_adjust_spacing_code)
+#define pdf_protrude_chars            int_par(pdf_protrude_chars_code)
 #define synctex                       int_par(synctex_code)
 #define tracing_stack_levels          int_par(tracing_stack_levels_code)
 #define partoken_context              int_par(partoken_context_code)
@@ -969,7 +992,13 @@ do {                                            \
       print_font_dir_and_enc(font(p));          \
     }                                           \
     prints(")");                                \
-  }                                             \
+  } else if (pdf_font_expand_ratio[font(p)] != 0) { \
+    prints(" (");                                   \
+    if (pdf_font_expand_ratio[font(p)] > 0)         \
+      prints("+");                                  \
+    print_int(pdf_font_expand_ratio[font(p)]);      \
+    prints(")");                                    \
+  }                                                 \
 } while (0)
 /* sec 0268 */
 #define save_type(a)      save_stack[a].hh.b0 // {classifies a |save_stack| entry}
@@ -1276,7 +1305,10 @@ do {                          \
 #define expanded_code            27 // {command code for \.{\\expanded}}
 #define Uchar_convert_code       28 // {command code for \.{\\Uchar}}
 #define Ucharcat_convert_code    29 // {command code for \.{\\Ucharcat}}
-#define job_name_code            30 // {command code for \.{\\jobname}}
+/* HZ */
+#define left_margin_kern_code    30 // {command code for \.{\\leftmarginkern}}
+#define right_margin_kern_code   31 // {command code for \.{\\rightmarginkern}}
+#define job_name_code            32 // {command code for \.{\\jobname}}
 /* sec 0480 */
 #define closed    2
 #define just_open 1
@@ -1675,7 +1707,7 @@ do {                    \
 } while (0)
 /* sec 0770 */
 #define preamble              link(align_head)
-#define align_stack_node_size 5
+#define align_stack_node_size 6
 /* sec 0780 */
 #define span_code          256
 #define cr_code            257
@@ -1706,7 +1738,7 @@ do {                    \
 #define prev_break        llink // {points to passive node that should precede this one}
 #define serial            info  // {serial number for symbolic identification}
 /* sec 0822 */
-#define delta_node_size 7 // {number of words in a delta node}
+#define delta_node_size 9 // {number of words in a delta node}
 #define delta_node      2 // {|type| field in a delta node}
 /* sec 0823 */
 #define do_all_six(a) \
@@ -2041,9 +2073,10 @@ do {                                        \
 /* sec 1344 */
 #define immediate_code    4 // {command modifier for \.{\\immediate}}
 #define set_language_code 5 // {command modifier for \.{\\setlanguage}}
-#define pdf_save_pos_node 6
-#define reset_timer_code  7
-#define set_random_seed_code 8
+#define pdf_font_expand_code 6
+#define pdf_save_pos_node 7
+#define reset_timer_code  8
+#define set_random_seed_code 9
 /* sec 1371 */
 #define end_write_token (cs_token_flag + end_write)
 // macros of pTeX
@@ -3534,3 +3567,73 @@ do {                                            \
     selector = show_stream;                     \
 } while (0)
 #endif
+
+/* HZ */
+#define cal_margin_kern_var(a)                                          \
+  do {                                                                  \
+    character(cp) = character(a);                                       \
+    font(cp) = font(a); do_subst_font(cp,1000);                         \
+    if (font(cp) != font(a))                                            \
+      margin_kern_stretch = margin_kern_stretch + left_pw(a) - left_pw(cp); \
+    font(cp) = font(a); do_subst_font(cp,-1000);                        \
+    if (font(cp) != font(a))                                            \
+      margin_kern_shrink = margin_kern_shrink + left_pw(cp) - left_pw(a); \
+  } while (0)
+
+#define cal_expand_ratio 2 // {calculate amount for font expansion after breaking
+                           //  paragraph into lines}
+#define subst_ex_font 3    // {substitute fonts}
+#define substituted 3      // {|subtype| of kern nodes that should be substituted}
+#define left_pw(c) char_pw(c, left_side)
+#define right_pw(c) char_pw(c, right_side)
+
+#define add_char_stretch(a, b) a += char_stretch(f, b)
+#define add_char_shrink(a, b) a += char_shrink(f, b)
+#define sub_char_stretch(a, b) a -= char_stretch(f, b)
+#define sub_char_shrink(a, b) a -= char_shrink(f, b)
+#define add_kern_stretch(a, b) a += kern_stretch(b)
+#define add_kern_shrink(a, b) a += kern_shrink(b)
+#define sub_kern_stretch(a, b) a -= kern_stretch(b)
+#define sub_kern_shrink(a, b) a -= kern_shrink(b)
+
+// {skipable nodes at the margins during character protrusion}
+#define cp_skipable(n)                                                  \
+  ((!is_char_node(n)) &&                                                \
+   ((type(n) == ins_node)                                               \
+    || (type(n) == mark_node)                                           \
+    || (type(n) == adjust_node)                                         \
+    || (type(n) == penalty_node)                                        \
+    || (type(n) == whatsit_node)                                        \
+    || ((type(n) == disc_node) &&                                       \
+        (pre_break(n) == null) &&                                       \
+        (post_break(n) == null) &&                                      \
+        (replace_count(n) == 0))                                        \
+    || ((type(n) == math_node) && (width(n) == 0))                      \
+    || ((type(n) == kern_node) &&                                       \
+        ((width(n) == 0) || (subtype(n) == normal)))                    \
+    || ((type(n) == glue_node) && (glue_ptr(n) == zero_glue))           \
+    || ((type(n) == hlist_node) && (width(n) == 0) && (height(n) == 0) && \
+        (depth(n) == 0) && (list_ptr(n) == null))))
+
+#define reset_disc_width(n) disc_width[n] = 0
+
+#define add_disc_width_to_break_width(n) break_width[n] += disc_width[n]
+#define add_disc_width_to_active_width(n) active_width[n] += disc_width[n]
+#define sub_disc_width_from_active_width(n) active_width[n] -= disc_width[n]
+
+#define do_seven_eight(a) if (pdf_adjust_spacing > 1) { a(7);a(8); }
+#define do_all_eight(a) do_all_six(a); do_seven_eight(a)
+#define do_one_seven_eight(a) a(1); do_seven_eight(a)
+
+#define total_font_stretch cur_active_width[7]
+#define total_font_shrink cur_active_width[8]
+
+/* \vadjust pre */
+#define update_adjust_list(l) do {              \
+  if (l == null) confusion("pre vadjust");      \
+  link(l) = adjust_ptr(p);                      \
+  while (link(l) != null)                       \
+    l = link(l);                                \
+  } while (0)
+
+#define append_list(a, b) do { link(tail) = link(a); tail = b; } while (0)

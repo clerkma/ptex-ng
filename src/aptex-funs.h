@@ -582,6 +582,20 @@ _Noreturn static inline void aptex_error (const char * t, const char * p)
   succumb();
 }
 
+static inline void aptex_warning (const char * t, const char * p)
+{
+  if (interaction == error_stop_mode)
+    wake_up_terminal();
+  print("Asiatic pTeX warning");
+  if (t != 0) {
+    prints(" (");
+    prints(t);
+    prints(")");
+  }
+  prints(": "); prints(p);
+  if (history==spotless) history=warning_issued;
+}
+
 static inline integer get_microinterval(void)
 {
   integer s, m;
@@ -708,6 +722,149 @@ static inline void wlog_cr (void)
 static inline void write_ln (alpha_file f)
 {
   (void) fputc('\n', f.file_data);
+}
+
+/* HZ */
+
+static inline integer fix_int(integer val, integer min, integer max)
+{
+  return (val < min ? min : (val > max ? max : val));
+}
+
+static inline integer get_lp_code(internal_font_number f, integer c) {
+  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->c[c].lp;
+}
+static inline integer get_rp_code(internal_font_number f, integer c) {
+  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->c[c].rp;
+}
+static inline integer get_ef_code(internal_font_number f, integer c) {
+  return pdf_font_base[f] == NULL ? 1000 : pdf_font_base[f]->c[c].ef;
+}
+
+static pointer prev_rightmost(pointer s, pointer e) {
+  /* {finds the node preceding the rightmost node |e|; |s| is some node
+     before |e|} */
+  pointer p;
+  p = s;
+  if (p == null)
+    return null;
+  while (link(p) != e) {
+    p = link(p);
+    if (p == null)
+      return null;
+  }
+  return p;
+}
+
+static scaled round_xn_over_d(scaled x, integer n, integer d)
+{
+  boolean positive = true;
+  nonnegative_integer t, u, v;
+  if (x < 0) {
+    positive = !positive;
+    x = -(x);
+  }
+  if (n < 0) {
+    positive = !positive;
+    n = -(n);
+  }
+  t = ((x % 0100000) * n);
+  u = ((x / 0100000) * n + (t / 0100000));
+  v = (u % d) * 0100000 + (t % 0100000);
+  if (u / d >= 0100000)
+    arith_error = true;
+  else
+    u = 0100000 * (u / d) + (v / d);
+  v = v % d;
+  if (2 * v >= d)
+    u++;
+  if (positive)
+    return (scaled) u;
+  else
+    return (-(scaled) u);
+}
+
+#define max_integer 0x7FFFFFFF
+scaled divide_scaled(scaled s, scaled m, integer dd)
+{
+  scaled q;
+  scaled r;
+  integer i;
+  integer sign = 1;
+  if (s < 0) {
+    sign = -sign;
+    s = -s;
+  }
+  if (m < 0) {
+    sign = -sign;
+    m = -m;
+  }
+  if (m == 0) {
+    aptex_error("arithmetic", "divided by zero");
+  } else if (m >= (max_integer / 10)) {
+    aptex_error("arithmetic", "number too big");
+  }
+  q = s / m;
+  r = s % m;
+  for (i = 1; i <= dd; i++) {
+    q = 10 * q + (10 * r) / m;
+    r = (10 * r) % m;
+  }
+  /*tex Rounding: */
+  if (2 * r >= m) {
+    q++;
+  }
+  return sign * q;
+}
+
+static scaled ext_xn_over_d(scaled x, scaled n, scaled d)
+{
+  double r = (((double) x) * ((double) n)) / ((double) d);
+  if (r > DBL_EPSILON)
+    r += 0.5;
+  else
+    r -= 0.5;
+  if (r >= (double) max_integer || r <= -(double) max_integer)
+    aptex_error("arithmetic", "number too big");
+  return (scaled) r;
+}
+
+static fontinfo *init_font_base() {
+  fontinfo *f = malloc(sizeof(fontinfo));
+  for (size_t i = 0; i<256; i++) {
+    f->c[i].lp = 0;
+    f->c[i].rp = 0;
+    f->c[i].ef = 1000;
+  }
+  f->next = fontinfo_root;
+  return f;
+}
+
+static void set_lp_code
+(internal_font_number f, eight_bits c, integer i) {
+  if (pdf_font_base[f] == NULL)
+    pdf_font_base[f] = init_font_base();
+  pdf_font_base[f]->c[c].lp = fix_int(i, -1000, 1000);
+}
+static void set_rp_code
+(internal_font_number f, eight_bits c, integer i) {
+  if (pdf_font_base[f] == NULL)
+    pdf_font_base[f] = init_font_base();
+  pdf_font_base[f]->c[c].rp = fix_int(i, -1000, 1000);
+}
+static void set_ef_code
+(internal_font_number f, eight_bits c, integer i) {
+  if (pdf_font_base[f] == NULL)
+    pdf_font_base[f] = init_font_base();
+  pdf_font_base[f]->c[c].ef = fix_int(i, 0, 1000);
+}
+
+static void free_font_base(void) {
+  while (fontinfo_root != NULL) {
+    fontinfo *f = fontinfo_root;
+    fontinfo_root = f->next;
+    free(f);
+  }
 }
 
 #endif

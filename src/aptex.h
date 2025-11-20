@@ -531,6 +531,31 @@ EXTERN integer kern_base[font_max + 1];       // {base addresses for kerns}
 EXTERN integer exten_base[font_max + 1];      // {base addresses for extensible recipes}
 EXTERN integer param_base[font_max + 1];      // {base addresses for font parameters}
 
+EXTERN internal_font_number pdf_font_blink[font_max + 1]; // {link to base font (used for expanded fonts only)}
+EXTERN internal_font_number pdf_font_elink[font_max + 1]; // {link to expanded fonts (used for base fonts only)}
+EXTERN integer pdf_font_stretch[font_max + 1];            // {limit of stretching}
+EXTERN integer pdf_font_shrink[font_max + 1];             // {limit of shrinking}
+EXTERN integer pdf_font_step[font_max + 1];               // {amount of one step of expansion}
+EXTERN integer pdf_font_expand_ratio[font_max + 1];       // {expansion ratio of a particular font}
+EXTERN boolean pdf_font_auto_expand[font_max + 1];        // {this font is auto-expanded?}
+// HZ charinfo
+typedef struct charinfo {
+  integer ef;                     /* font expansion factor */
+  integer lp;                     /* left protruding factor */
+  integer rp;                     /* right protruding factor */
+} charinfo;
+typedef struct fontinfo {
+  charinfo c[256];
+  struct fontinfo *next;
+} fontinfo;
+static fontinfo *fontinfo_root = NULL;
+EXTERN fontinfo *pdf_font_base[font_max + 1];
+EXTERN integer font_expand_ratio;                         // {current expansion ratio}
+EXTERN pointer last_leftmost_char;
+EXTERN pointer last_rightmost_char;
+EXTERN pointer hlist_stack[max_hlist_stack];
+EXTERN short hlist_stack_level;
+
 EXTERN four_quarters null_character;          // {nonexistent character information}
 
 EXPORT integer total_pages;                   // {the number of pages that have been shipped out}
@@ -566,6 +591,7 @@ EXTERN integer last_badness;                  // {badness of the most recently p
 EXTERN integer pack_begin_line;               // {source file line where the current paragraph or alignment began; a negative value denotes alignment}
 
 EXTERN pointer adjust_tail;                   // {tail of adjustment list}
+EXTERN pointer pre_adjust_tail;
 EXTERN scaled last_disp;                      // {displacement at end of list}
 EXTERN pointer cur_kanji_skip;
 EXTERN pointer cur_xkanji_skip;
@@ -590,6 +616,7 @@ EXTERN pointer cur_span;                      // {start of currently spanned col
 EXTERN pointer cur_loop;                      // {place to copy when extending a periodic preamble}
 EXTERN pointer align_ptr;                     // {most recently pushed-down alignment stack node}
 EXTERN pointer cur_head, cur_tail;            // {adjustment list pointers}
+EXTERN pointer cur_pre_head, cur_pre_tail;    // {pre-adjustment list pointers}
 
 EXTERN pointer just_box;                      // {the |hlist_node| for the last line of the new paragraph}
 
@@ -597,10 +624,28 @@ EXTERN pointer passive;                       // {most recent node on passive li
 EXTERN pointer printed_node;                  // {most recent node that has been printed}
 EXTERN halfword pass_number;                  // {the number of passive nodes allocated on this pass}
 
-EXTERN scaled active_width[8];                // {distance from first active node to~|cur_p|}
-EXTERN scaled cur_active_width[8];            // {distance from current active node}
-EXTERN scaled background[8];                  // {length of an ``empty'' line}
-EXTERN scaled break_width[8];                 // {length being computed after current break}
+EXTERN scaled active_width[8+1];              // {distance from first active node to~|cur_p|}
+EXTERN scaled cur_active_width[8+1];          // {distance from current active node}
+EXTERN scaled background[8+1];                // {length of an ``empty'' line}
+EXTERN scaled break_width[8+1];               // {length being computed after current break}
+
+EXTERN boolean auto_breaking; // {make |auto_breaking| accessible out of |line_break|}
+EXTERN pointer prev_p;        // {make |prev_p| accessible out of |line_break|}
+EXTERN pointer first_p;       // {to access the first node of the paragraph}
+EXTERN pointer prev_char_p;   // {pointer to the previous char of an implicit kern}
+EXTERN pointer next_char_p;   // {pointer to the next char of an implicit kern}
+
+EXTERN boolean try_prev_break;                /* force break at the previous legal breakpoint? */
+EXTERN pointer prev_legal;                    /* the previous legal breakpoint */
+EXTERN pointer prev_prev_legal;               /* to save |prev_p| corresponding to |prev_legal| */
+EXTERN boolean prev_auto_breaking;            /* to save |auto_breaking| corresponding to |prev_legal| */
+EXTERN scaled prev_active_width[8+1];         /* to save |active_width| corresponding to |prev_legal| */
+EXTERN pointer rejected_cur_p;                /* the last |cur_p| that has been rejected */
+EXTERN boolean before_rejected_cur_p;         /* |cur_p| is still before |rejected_cur_p|? */
+
+EXTERN integer max_stretch_ratio;             /* maximal stretch ratio of expanded fonts */
+EXTERN integer max_shrink_ratio;              /* maximal shrink ratio of expanded fonts */
+EXTERN integer cur_font_step;                 /* the current step of expanded fonts */
 
 EXTERN boolean no_shrink_error_yet;           // {have we complained about infinite shrinkage?}
 
@@ -610,7 +655,7 @@ EXTERN boolean second_pass;                   // {is this our second attempt to 
 EXTERN boolean final_pass;                    // {is this our final attempt to break this paragraph?}
 EXTERN integer threshold;                     // {maximum badness on feasible lines}
 
-EXTERN scaled disc_width;                     // {the length of discretionary material preceding a break}
+EXTERN scaled disc_width[8+1];                // {the length of discretionary material preceding a break}
 
 EXTERN halfword easy_line;                    // {line numbers |>easy_line| are equivalent in break nodes}
 EXTERN halfword last_special_line;            // {line numbers |>last_special_line| all have the same width}
