@@ -21432,35 +21432,28 @@ static void read_expand_font(void) // {read font expansion spec and load expande
   }
   if (pdf_font_step[f] != 0) {
     /* this font has been expanded, ensure the expansion parameters are identical */
-    if (pdf_font_step[f] != font_step) {
+    if (pdf_font_step[f] != font_step)
       aptex_error("font expansion", "font has been expanded with different expansion step");
-    }
-    if ((pdf_font_stretch[f] == null_font) && (stretch_limit != 0)) {
+
+    if (((pdf_font_stretch[f] = null_font) && (stretch_limit != 0)) ||
+        ((pdf_font_stretch[f] != null_font) &&
+         (pdf_font_expand_ratio[pdf_font_stretch[f]] != stretch_limit)))
       aptex_error("font expansion", "font has been expanded with different stretch limit");
-    }
-    if ((pdf_font_stretch[f] != null_font) &&
-        (pdf_font_expand_ratio[pdf_font_stretch[f]] != stretch_limit)) {
-      aptex_error("font expansion", "font has been expanded with different stretch limit");
-    }
-    if ((pdf_font_shrink[f] == null_font) && (shrink_limit != 0)) {
+
+    if (((pdf_font_shrink[f] = null_font) && (shrink_limit != 0)) ||
+        ((pdf_font_shrink[f] != null_font) &&
+         (-pdf_font_expand_ratio[pdf_font_shrink[f]] != shrink_limit)))
       aptex_error("font expansion", "font has been expanded with different shrink limit");
-    }
-    if ((pdf_font_shrink[f] != null_font) &&
-        (-pdf_font_expand_ratio[pdf_font_shrink[f]] != shrink_limit)) {
-      aptex_error("font expansion", "font has been expanded with different shrink limit");
-    }
-    if (pdf_font_auto_expand[f] != auto_expand) {
+
+    if (pdf_font_auto_expand[f] != auto_expand)
       aptex_error("font expansion", "font has been expanded with different auto expansion value");
-    }
   } else {
     pdf_font_step[f] = font_step;
     pdf_font_auto_expand[f] = auto_expand;
-    if (stretch_limit > 0) {
+    if (stretch_limit > 0)
       pdf_font_stretch[f] = get_expand_font(f, stretch_limit);
-    }
-    if (shrink_limit > 0) {
+    if (shrink_limit > 0)
       pdf_font_shrink[f] = get_expand_font(f, -shrink_limit);
-    }
   }
 }
 
@@ -24285,7 +24278,7 @@ static scaled char_shrink(internal_font_number f, eight_bits c) {
   k = pdf_font_shrink[f];
   ef = get_ef_code(f, c);
   if ((k != null_font) && (ef > 0)) {
-    dw = char_width(k,char_info(f,c)) - char_width(f,char_info(k,c));
+    dw = char_width(f,char_info(f,c)) - char_width(k,char_info(k,c));
     if (dw > 0)
       return round_xn_over_d(dw, ef, 1000);
   }
@@ -24526,6 +24519,7 @@ static pointer hpack (pointer p, scaled w, small_number m)
   h = 0;
   d = 0;
   x = 0;
+  /* printf("x reset\n"); */
   total_stretch[normal] = 0;
   total_shrink[normal] = 0;
   total_stretch[fil] = 0;
@@ -24562,22 +24556,17 @@ reswitch:
       i = char_info(f, character(p));
       hd = height_depth(i);
       x = x + char_width(f, i);
+
       s = char_height(f, hd) - disp;
-
-      if (s > h)
-        h = s;
-
+      if (s > h) h = s;
       s = char_depth(f, hd) + disp;
-
-      if (s > d)
-        d = s;
+      if (s > d) d = s;
 
       if (font_dir[f] != dir_default)
       {
         p = link(p);
 
-        if (chain)
-        {
+        if (chain) {
           x = x + width(k);
           o = stretch_order(k);
           total_stretch[o] = total_stretch[o] + stretch(k);
@@ -24592,6 +24581,10 @@ reswitch:
 
       p = link(p);
     }
+    /* printf("x1: %lld\n",x);
+    if (x == 14632737) {
+      printf("OK\n");
+      } */
 
     if (p != null)
     {
@@ -24711,8 +24704,7 @@ reswitch:
           if (m == cal_expand_ratio) {
             font_stretch = font_stretch + kern_stretch(p);
             font_shrink = font_shrink + kern_shrink(p);
-          }
-          else if (m == subst_ex_font) {
+          } else if (m == subst_ex_font) {
             scaled k1;
             if (font_expand_ratio > 0)
               k1 = kern_stretch(p);
@@ -24797,7 +24789,7 @@ reswitch:
 
   width(r) = w;
   x = w - x;
-
+  // printf("x is: %lld, m is %d\n",x,m);
   if (x == 0)
   {
     glue_sign(r) = normal;
@@ -24818,8 +24810,9 @@ reswitch:
       o = normal;
 
     /* [658] - font expansion */
-    if ((m == cal_expand_ratio) && (o == normal) && (font_shrink > 0)) {
-      font_expand_ratio = divide_scaled(x, font_shrink, 3);
+    if ((m == cal_expand_ratio) && (o == normal) && (font_stretch > 0)) {
+      font_expand_ratio = divide_scaled(x, font_stretch, 3);
+      printf("x: %lld fstretch %lld\n", x, font_stretch);
       goto exit;
     }
     glue_order(r) = o;
@@ -24874,6 +24867,7 @@ reswitch:
     /* [664] - font expansion */
     if ((m == cal_expand_ratio) && (o == normal) && (font_shrink > 0)) {
       font_expand_ratio = divide_scaled(x, font_shrink, 3);
+      printf("x: %lld shrink %lld\n", x, font_shrink);
       goto exit;
     }
     glue_order(r) = o;
@@ -24996,7 +24990,6 @@ exit:
     free_node(r, box_node_size);
     r = hpack(q, w, subst_ex_font);
   }
-
   return r;
 }
 
