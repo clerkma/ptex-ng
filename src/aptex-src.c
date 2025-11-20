@@ -21152,6 +21152,10 @@ static void pdf_prepare_ship_out(void) {
     aptex_pdf_setting.object.compression_level = pdf_compress_level;
 
   pdf_init_fontmaps();
+#define font_dpi 600
+  kpse_init_prog("", font_dpi, NULL, NULL);
+  kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);
+  pdf_font_set_dpi(font_dpi);
 
   /* TeX Live (pdftex and dvipdfmx) */
 #ifdef USE_KPATHSEA

@@ -55,6 +55,9 @@ typedef struct pdf_rect {
 } pdf_rect;
 extern void pdf_doc_set_mediabox (unsigned page_no, const pdf_rect *mediabox);
 
+/* from "dvipdfm-x/pdffont.h" */
+extern void pdf_font_set_dpi (int font_dpi);
+
 /* from "dvipdfm-x/pdfobj.h" */
 extern long pdf_output_stats (void);
 
