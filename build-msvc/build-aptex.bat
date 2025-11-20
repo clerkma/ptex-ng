@@ -12,6 +12,7 @@ goto start_build
 set MAKE=jom
 
 :start_build
+set BUILD=build
 set TL_ROOT=..\texlive
 set APTEX_ROOT=..\src
 set APTEX_CFLAGS=-nologo -c -O2 -Oy
@@ -37,7 +38,7 @@ exit /B 0
 
 :build
 @ECHO ON
-@ECHO Building %~1 ...
+@ECHO [31mBuilding %~1 ...[0m
 @ECHO OFF
 %CLEAN%
 %MAKE% -s -nologo -f makefiles\mk-%~1.nmake

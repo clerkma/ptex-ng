@@ -1,6 +1,6 @@
 CC = cl
 AR = lib
-CFLAGS = $(APTEX_CFLAGS) -DWIN32 -DNO_KPSE_DLL -DNO_PTENC_DLL -Ibuild -I$(TL_ROOT)\texk -I$(TL_ROOT)\texk\ptexenc
+CFLAGS = $(APTEX_CFLAGS) -DWIN32 -DNO_KPSE_DLL -DNO_PTENC_DLL -I$(BUILD) -I$(TL_ROOT)\texk -I$(TL_ROOT)\texk\ptexenc
 ROOT = $(TL_ROOT)\texk\ptexenc
 OBJS = kanjicnv.obj ptexenc.obj unicode.obj unicode-jp.obj
 

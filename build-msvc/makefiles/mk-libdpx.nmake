@@ -1,8 +1,14 @@
 CC = cl
 AR = lib
-CFLAGS = $(APTEX_CFLAGS) -D_CRT_DECLARE_NONSTDC_NAMES=0 -DHAVE_CONFIG_H -DWIN32 -DNO_KPSE_DLL -Ibuild\libdpx \
-	-Ibuild -Ibuild\zlib -I$(TL_ROOT)\libs\zlib\zlib-src -I$(TL_ROOT)\libs\libpng\libpng-src -I$(TL_ROOT)\texk\ \
-	-I$(TL_ROOT)\texk\dvipdfm-x -I$(APTEX_ROOT)\libdpx\ng
+CFLAGS = $(APTEX_CFLAGS) -D_CRT_DECLARE_NONSTDC_NAMES=0 -DHAVE_CONFIG_H -DWIN32 -DNO_KPSE_DLL \
+	-I$(BUILD) \
+	-I$(BUILD)\libdpx \
+	-I$(BUILD)\zlib \
+	-I$(TL_ROOT)\libs\zlib\zlib-src \
+	-I$(TL_ROOT)\libs\libpng\libpng-src \
+	-I$(TL_ROOT)\texk\ \
+	-I$(TL_ROOT)\texk\dvipdfm-x \
+	-I$(APTEX_ROOT)\libdpx\ng
 ROOT = $(TL_ROOT)\texk\dvipdfm-x
 OBJS = libdpx-agl.obj libdpx-bmpimage.obj libdpx-cff.obj libdpx-cff_dict.obj libdpx-cid.obj libdpx-cidtype0.obj \
 	libdpx-cidtype2.obj libdpx-cmap.obj libdpx-cmap_read.obj libdpx-cmap_write.obj libdpx-cs_type2.obj \

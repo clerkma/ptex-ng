@@ -1,6 +1,6 @@
 CC = cl
 AR = lib
-CFLAGS = $(APTEX_CFLAGS) -Ibuild\zlib -I$(TL_ROOT)\libs\libpng\libpng-src -I$(TL_ROOT)\libs\zlib\zlib-src
+CFLAGS = $(APTEX_CFLAGS) -I$(BUILD)\zlib -I$(TL_ROOT)\libs\libpng\libpng-src -I$(TL_ROOT)\libs\zlib\zlib-src
 ROOT = $(TL_ROOT)\libs\libpng\libpng-src
 DEPS = $(ROOT)\png.h $(ROOT)\pngconf.h $(ROOT)\pnglibconf.h $(ROOT)\pngpriv.h $(ROOT)\pngstruct.h \
 	$(ROOT)\pnginfo.h $(ROOT)\pngdebug.h

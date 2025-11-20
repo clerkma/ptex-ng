@@ -2,8 +2,11 @@ CC = cl
 AR = lib
 LINK = link
 CFLAGS = $(APTEX_CFLAGS) -DWIN32 -DNO_KPSE_DLL -DNO_PTENC_DLL \
-	-Ibuild -Ibuild\zlib -I$(TL_ROOT)\texk \
-	-I$(TL_ROOT)\texk\ptexenc -I$(TL_ROOT)\libs\zlib\zlib-src \
+	-I$(BUILD) \
+	-I$(BUILD)\zlib \
+	-I$(TL_ROOT)\libs\zlib\zlib-src \
+	-I$(TL_ROOT)\texk \
+	-I$(TL_ROOT)\texk\ptexenc \
 	-I$(TL_ROOT)\texk\web2c\libmd5
 ROOT = $(APTEX_ROOT)
 OBJS = aptex.obj aptex-utils.obj aptex-src.obj

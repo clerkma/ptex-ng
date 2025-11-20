@@ -1,6 +1,6 @@
 CC = cl
 AR = lib
-CFLAGS = $(APTEX_CFLAGS) -Ibuild\zlib
+CFLAGS = $(APTEX_CFLAGS) -I$(BUILD)\zlib
 ROOT = $(TL_ROOT)\libs\zlib\zlib-src
 OBJS = adler32.obj compress.obj crc32.obj deflate.obj gzclose.obj gzlib.obj gzread.obj gzwrite.obj infback.obj \
 	inflate.obj inftrees.obj inffast.obj trees.obj uncompr.obj zutil.obj

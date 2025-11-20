@@ -1,8 +1,14 @@
 CC = cl
 AR = lib
-CFLAGS = $(APTEX_CFLAGS) -I$(TL_ROOT)\texk -I$(TL_ROOT)\texk\ptexenc \
-       -I$(TL_ROOT)\texk\web2c\libmd5 -I$(TL_ROOT)\texk\web2c\synctexdir \
-	   -I$(APTEX_ROOT) -Ibuild -Ibuild\zlib -I$(TL_ROOT)\libs\zlib\zlib-src
+CFLAGS = $(APTEX_CFLAGS) \
+	-I$(BUILD) \
+	-I$(BUILD)\zlib \
+	-I$(TL_ROOT)\libs\zlib\zlib-src\
+	-I$(TL_ROOT)\texk \
+	-I$(TL_ROOT)\texk\ptexenc \
+	-I$(TL_ROOT)\texk\web2c\libmd5 \
+	-I$(TL_ROOT)\texk\web2c\synctexdir \
+	-I$(APTEX_ROOT)
 ROOT = $(TL_ROOT)\texk\web2c
 OBJS = libw2c-md5.obj libw2c-synctex.obj
 
