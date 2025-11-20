@@ -96,6 +96,7 @@
 #include <kpathsea/tex-file.h> // kpse_find_file
 #include <kpathsea/types.h>    // RPId64
 #include <kpathsea/version.h>  // kpathsea_version_string
+#include <kpathsea/proginit.h> // kpse_init_prog
 #define USE_KPATHSEA
 
 // ptexenc for kanji processing
