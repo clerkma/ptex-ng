@@ -19929,12 +19929,8 @@ void prompt_file_name_ (const char * s, str_number e)
 
     while (true)
     {
-      if (k == last)
+      if (k == last || !more_name(buffer[k]))
         goto done;
-
-      if (!more_name(buffer[k]))
-        goto done;
-
       incr(k);
     }
 
@@ -24707,26 +24703,29 @@ reswitch:
         break;
 
       case kern_node:
-        if ((m == cal_expand_ratio) && (subtype(p) == normal)) {
-          scaled k = kern_stretch(p);
-          if (k != 0) {
-            subtype(p) = substituted;
-            font_stretch = font_stretch + k;
+        if (subtype(p) == normal) {
+          if (m == cal_expand_ratio) {
+            font_stretch = font_stretch + kern_stretch(p);
+            font_shrink = font_shrink + kern_shrink(p);
           }
-          k = kern_shrink(p);
-          if (k != 0) {
-            subtype(p) = substituted;
-            font_shrink = font_shrink + k;
-          }
-        } else if ((m == subst_ex_font) && (subtype(p) == substituted)) {
-          if (type(link(p)) == ligature_node) {
-            width(p) = get_kern(font(prev_char_p),
-                                character(prev_char_p),
-                                character(lig_char(link(p))));
-          } else {
-            width(p) = get_kern(font(prev_char_p),
-                                character(prev_char_p),
-                                character(link(p)));
+          else if (m == subst_ex_font) {
+            scaled k;
+            if (font_expand_ratio > 0)
+              k = kern_stretch(p);
+            else if (font_expand_ratio < 0)
+              k = kern_shrink(p);
+            else
+              confusion("kern");
+            if (k != 0) {
+              if (is_char_node(link(p)))
+                width(p) = get_kern(font(prev_char_p),
+                                    character(prev_char_p),
+                                    character(link(p)));
+              else if (type(link(p)) == ligature_node)
+                width(p) = get_kern(font(prev_char_p),
+                                    character(prev_char_p),
+                                    character(lig_char(link(p))));
+            }
           }
         }
 
