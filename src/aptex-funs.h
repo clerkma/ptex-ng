@@ -123,8 +123,8 @@ void search_mem (pointer p);
 #endif
 
 void show_node_list (integer p);
-void delete_token_ref (pointer p);
-void delete_glue_ref (pointer p);
+static inline void delete_token_ref (pointer p);
+static inline void delete_glue_ref (pointer p);
 #define fast_delete_glue_ref(p) delete_glue_ref((pointer) (p))
 void flush_node_list (pointer p);
 void print_cmd_chr (quarterword cmd, halfword chr_code);
@@ -228,7 +228,7 @@ void group_trace (boolean e);
 void show_save_groups (void);
 void scan_general_text (void);
 
-static inline void print_if_line (integer val)
+static void print_if_line (integer val)
 {
   if (val != 0)
   {
@@ -300,7 +300,7 @@ static inline void wake_up_terminal(void)
 }
 
 // functions of WEB2C
-static inline int do_final_end (void)
+static int do_final_end (void)
 {
   update_terminal();
   ready_already = 0;
@@ -311,7 +311,7 @@ static inline int do_final_end (void)
     return 0;
 }
 /* sec 0073 */
-static inline void print_err (const char * s)
+static void print_err (const char * s)
 {
   if (interaction == error_stop_mode)
     wake_up_terminal();
@@ -354,14 +354,14 @@ static inline void append_lc_hex (ASCII_code c)
     append_char(c - 10 + 'a');
 }
 /* sec 0071 */
-static inline void prompt_input (const char * s)
+static void prompt_input (const char * s)
 {
   wake_up_terminal();
   prints(s);
   term_input();
 }
 /* sec 0079 */
-static inline void tex_help (unsigned int n, ...)
+static void tex_help (unsigned int n, ...)
 {
   int i;
   va_list help_arg;
@@ -378,7 +378,7 @@ static inline void tex_help (unsigned int n, ...)
   va_end(help_arg);
 }
 /* sec 0093 */
-_Noreturn static inline void succumb (void)
+_Noreturn static void succumb (void)
 {
   if (interaction == error_stop_mode)
     interaction = scroll_mode;
@@ -555,7 +555,7 @@ static inline void set_cur_lang (void)
     cur_lang = language;
 }
 /* sec 0985 */
-static inline void print_plus (int i, const char * s)
+static void print_plus (int i, const char * s)
 {
   if (page_so_far[i] != 0)
   {
@@ -565,7 +565,7 @@ static inline void print_plus (int i, const char * s)
   }
 }
 
-_Noreturn static inline void aptex_error (const char * t, const char * p)
+_Noreturn static void aptex_error (const char * t, const char * p)
 {
   normalize_selector();
   print_err("Asiatic pTeX error");
@@ -582,7 +582,7 @@ _Noreturn static inline void aptex_error (const char * t, const char * p)
   succumb();
 }
 
-static inline void aptex_warning (const char * t, const char * p)
+static void aptex_warning (const char * t, const char * p)
 {
   if (interaction == error_stop_mode)
     wake_up_terminal();
@@ -610,7 +610,7 @@ static inline integer get_microinterval(void)
     return ((s - epochseconds) * 65536) + (((m - microseconds) / 100) * 65536) / 10000;
 }
 
-static inline str_number tokens_to_string (pointer p)
+static str_number tokens_to_string (pointer p)
 {
   if (selector == new_string)
     aptex_error("tokens", "tokens_to_string() called while selector = new_string");
@@ -631,7 +631,7 @@ static inline void flush_str (str_number s)
     flush_string();
 }
 
-static inline void compare_strings (void)
+static void compare_strings (void)
 {
   str_number s1, s2;
   pool_pointer i1, i2, j1, j2;

@@ -1672,17 +1672,13 @@ void aptex_run (int argc, char ** argv)
   safe_free(aptex_env.aptex_map);
 }
 
-static integer aptex_utils_round (real r)
+static inline integer aptex_utils_round (real r)
 {
-  integer i;
-
   if (r > 2147483647.0)
-    i = 2147483647;
+    return 2147483647;
   else if (r < -2147483647.0)
-    i = -2147483647;
-  else i = lround(r);
-
-  return i;
+    return -2147483647;
+  else return lround(r);
 }
 
 #define XXHi(x) BYTE1(x)
@@ -1691,12 +1687,12 @@ static integer aptex_utils_round (real r)
 #define nrestmultichr(x)  ((x) != 0 ? ((x) / 8) + 2 - ((x) % 8) : -1)
 #define CJK_TOKEN_FLAG  0xFFFFFF
 
-static boolean is_char_ascii (integer c)
+static inline boolean is_char_ascii (integer c)
 {
   return (0 <= c && c < 0x100);
 }
 
-static boolean is_char_kanji (integer c)
+static inline boolean is_char_kanji (integer c)
 {
   if (is_internalUPTEX())
     return (c >= 0);
@@ -1704,7 +1700,7 @@ static boolean is_char_kanji (integer c)
     return iskanji1(Hi(c)) && iskanji2(Lo(c));
 }
 
-static boolean check_kanji (integer c)
+static inline boolean check_kanji (integer c)
 {
   if (c >= cs_token_flag)
     return false;
@@ -1728,15 +1724,13 @@ static boolean ismultiprn (integer c)
   return false;
 }
 
-static integer calc_pos (integer c)
+static inline integer calc_pos (integer c)
 {
-  unsigned char c1, c2;
-
   if (c >= 0 && c <= 255)
     return(c);
 
-  c1 = Hi(c);
-  c2 = Lo(c);
+  unsigned char c1 = Hi(c);
+  unsigned char c2 = Lo(c);
 
   c1 = (c1 % 4) * 64;  // c1 = 0, 64, 128, 192
   c2 = c2 % 64;        // c2 = 0..63
@@ -24317,7 +24311,7 @@ static scaled get_kern(internal_font_number f, eight_bits lc, eight_bits rc) {
   goto continue0;
 }
 
-scaled kern_stretch(pointer p) {
+static scaled kern_stretch(pointer p) {
   pointer l, r;
   scaled d;
 
@@ -24342,7 +24336,7 @@ scaled kern_stretch(pointer p) {
                          get_ef_code(font(l), character(l)), 1000);
 }
 
-scaled kern_shrink(pointer p) {
+static scaled kern_shrink(pointer p) {
   pointer l, r;
   scaled d;
 
@@ -24372,8 +24366,7 @@ scaled kern_shrink(pointer p) {
                          get_ef_code(font(l), character(l)), 1000);
 }
 
-void do_subst_font(pointer p, int ex_ratio) {
-  internal_font_number f, k;
+static void do_subst_font(pointer p, int ex_ratio) {
   pointer r;
   int ef;
 
@@ -24396,19 +24389,20 @@ void do_subst_font(pointer p, int ex_ratio) {
     return;
   }
 
-  if (is_char_node(p)) {
+  if (is_char_node(p))
     r = p;
-  } else if (type(p) == ligature_node) {
+  else if (type(p) == ligature_node)
     r = lig_char(p);
-  } else {
+  else {
     /* {|short_display_n(p, 5);|} */
     aptex_error("font expansion", "invalid node type");
   }
 
-  f = font(r);
+  internal_font_number f = font(r);
   ef = get_ef_code(f, character(r));
   if (ef == 0) return;
 
+  internal_font_number k;
   if ((pdf_font_stretch[f] != null_font) && (ex_ratio > 0)) {
     k = expand_font(f, ext_xn_over_d(ex_ratio*ef,
                                      pdf_font_expand_ratio[pdf_font_stretch[f]],
@@ -24434,15 +24428,13 @@ void do_subst_font(pointer p, int ex_ratio) {
   }
 }
 
-scaled char_pw(pointer p, small_number side) {
-  integer f;
+static scaled char_pw(pointer p, small_number side) {
   integer c;
 
-  if (side == left_side) {
+  if (side == left_side)
     last_leftmost_char = null;
-  } else {
+  else
     last_rightmost_char = null;
-  }
 
   if (p == null) return 0;
 
@@ -24452,7 +24444,7 @@ scaled char_pw(pointer p, small_number side) {
     else return 0;
   }
 
-  f = font(p);
+  integer f = font(p);
   if (side == left_side) {
     c = get_lp_code(f, character(p));
     last_leftmost_char = p;
@@ -24466,10 +24458,9 @@ scaled char_pw(pointer p, small_number side) {
   return round_xn_over_d(quad(f), c, 1000);
 }
 
-pointer new_margin_kern(scaled w, pointer p, small_number side) {
-  pointer k;
+static pointer new_margin_kern(scaled w, pointer p, small_number side) {
 
-  k = get_node(margin_kern_node_size);
+  pointer k = get_node(margin_kern_node_size);
   type(k) = margin_kern_node;
   subtype(k) = side;
   width(k) = w;
@@ -24498,7 +24489,7 @@ static pointer hpack (pointer p, scaled w, small_number m)
   internal_font_number f; //  {the font in a |char_node|}
   four_quarters i;        // {font information about a |char_node|}
   eight_bits hd;          // {height and depth indices for a character}
-  scaled font_stretch, font_shrink;
+  static scaled font_stretch, font_shrink;
 
   last_badness = 0;
   r = get_node(box_node_size);
@@ -24656,9 +24647,9 @@ reswitch:
             g = glue_ptr(p);
             x = x + width(g);
             o = stretch_order(g);
-            total_stretch[o] = total_stretch[o] + stretch(g);
+            total_stretch[o] += stretch(g);
             o = shrink_order(g);
-            total_shrink[o] = total_shrink[o] + shrink(g);
+            total_shrink[o] += shrink(g);
 
             if (subtype(p) >= a_leaders)
             {
@@ -24702,8 +24693,8 @@ reswitch:
       case kern_node:
         if (subtype(p) == normal) {
           if (m == cal_expand_ratio) {
-            font_stretch = font_stretch + kern_stretch(p);
-            font_shrink = font_shrink + kern_shrink(p);
+            font_stretch += kern_stretch(p);
+            font_shrink += kern_shrink(p);
           } else if (m == subst_ex_font) {
             scaled k1;
             if (font_expand_ratio > 0)
