@@ -39216,8 +39216,8 @@ done:
 
 boolean check_box (pointer box_p)
 {
-  pointer p;
-  boolean flag;
+  pointer p; // {run through the current box}
+  boolean flag; // {found any printable character?}
 
   flag = false;
   p = box_p;
@@ -39345,13 +39345,11 @@ void adjust_hlist (pointer p, boolean pf)
 {
   pointer q, s, t, u, v, x, z;
   halfword i, k;
-  pointer a;
+  pointer a; // { temporary pointer for accent }
   int insert_skip;
-  KANJI_code cx;
-  ASCII_code ax;
-  boolean do_ins;
-
-  k = 0;
+  KANJI_code cx; // {temporary register for KANJI character}
+  ASCII_code ax; // {temporary register for ASCII character}
+  boolean do_ins; // {for inserting |xkanji_skip| into previous (or after) KANJI}
 
   if (link(p) == null)
     goto exit;
@@ -39390,7 +39388,7 @@ void adjust_hlist (pointer p, boolean pf)
       {
         link(link(p)) = link(v);
         fast_delete_glue_ref(glue_ptr(v));
-        free_node(v,small_node_size);
+        free_node(v, small_node_size);
       }
     }
 
@@ -39513,8 +39511,7 @@ void adjust_hlist (pointer p, boolean pf)
     }
   }
 
-  if (!is_char_node(q) && (type(q) == glue_node) &&
-    (subtype(q) == jfm_skip + 1))
+  if (!is_char_node(q) && (type(q) == glue_node) && (subtype(q) == jfm_skip + 1))
   {
     fast_delete_glue_ref(glue_ptr(q));
     glue_ptr(q) = zero_glue;
