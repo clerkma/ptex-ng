@@ -24519,7 +24519,7 @@ static pointer hpack (pointer p, scaled w, small_number m)
   h = 0;
   d = 0;
   x = 0;
-  /* printf("x reset\n"); */
+  printf("x reset\n");
   total_stretch[normal] = 0;
   total_shrink[normal] = 0;
   total_stretch[fil] = 0;
@@ -24556,6 +24556,7 @@ reswitch:
       i = char_info(f, character(p));
       hd = height_depth(i);
       x = x + char_width(f, i);
+      printf("w: %lld, char %d\n",char_width(f, i), character(p));
 
       s = char_height(f, hd) - disp;
       if (s > h) h = s;
@@ -24581,10 +24582,10 @@ reswitch:
 
       p = link(p);
     }
-    /* printf("x1: %lld\n",x);
+    printf("x1: %lld\n",x);
     if (x == 14632737) {
       printf("OK\n");
-      } */
+    }
 
     if (p != null)
     {
@@ -24789,7 +24790,7 @@ reswitch:
 
   width(r) = w;
   x = w - x;
-  // printf("x is: %lld, m is %d\n",x,m);
+  printf("x is: %lld, m is %d\n",x,m);
   if (x == 0)
   {
     glue_sign(r) = normal;
@@ -24812,7 +24813,6 @@ reswitch:
     /* [658] - font expansion */
     if ((m == cal_expand_ratio) && (o == normal) && (font_stretch > 0)) {
       font_expand_ratio = divide_scaled(x, font_stretch, 3);
-      printf("x: %lld fstretch %lld\n", x, font_stretch);
       goto exit;
     }
     glue_order(r) = o;
@@ -24867,7 +24867,6 @@ reswitch:
     /* [664] - font expansion */
     if ((m == cal_expand_ratio) && (o == normal) && (font_shrink > 0)) {
       font_expand_ratio = divide_scaled(x, font_shrink, 3);
-      printf("x: %lld shrink %lld\n", x, font_shrink);
       goto exit;
     }
     glue_order(r) = o;
@@ -30321,6 +30320,16 @@ done:
     q = link(temp_head);
     link(temp_head) = r;
 
+    if (last_disp != 0)
+    {
+      r = get_node(small_node_size);
+      type(r) = disp_node;
+      disp_dimen(r) = last_disp;
+      link(r) = q;
+      q = r;
+      disp_called = true;
+    }
+
     /* [887] - margin kerning */
     /* at this point |q| is the leftmost node; all discardable nodes have been discarded */
     if (pdf_protrude_chars > 0) {
@@ -30332,16 +30341,6 @@ done:
         link(k) = q;
         q = k;
       }
-    }
-
-    if (last_disp != 0)
-    {
-      r = get_node(small_node_size);
-      type(r) = disp_node;
-      disp_dimen(r) = last_disp;
-      link(r) = q;
-      q = r;
-      disp_called = true;
     }
 
     if (left_skip != zero_glue) {
