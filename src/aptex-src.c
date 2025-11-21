@@ -24523,7 +24523,7 @@ static pointer hpack (pointer p, scaled w, small_number m)
   h = 0;
   d = 0;
   x = 0;
-  printf("x reset\n");
+
   total_stretch[normal] = 0;
   total_shrink[normal] = 0;
   total_stretch[fil] = 0;
@@ -24560,7 +24560,6 @@ reswitch:
       i = char_info(f, character(p));
       hd = height_depth(i);
       x = x + char_width(f, i);
-      printf("w: %lld, char %c\n",char_width(f, i), character(p));
 
       s = char_height(f, hd) - disp;
       if (s > h) h = s;
@@ -24586,7 +24585,6 @@ reswitch:
 
       p = link(p);
     }
-    printf("x1: %lld\n",x);
 
     if (p != null)
     {
@@ -24789,7 +24787,7 @@ reswitch:
 
   width(r) = w;
   x = w - x;
-  printf("x is: %lld, m is %d\n",x,m);
+
   if (x == 0)
   {
     glue_sign(r) = normal;
