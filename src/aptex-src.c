@@ -18624,8 +18624,10 @@ void conv_toks (void)
     case left_margin_kern_code:
       {
         pointer p = list_ptr(box(cur_val));
-        if ((p != null) && (!is_char_node(p)) &&
-            (type(p) == glue_node) && (subtype(p) == left_skip_code + 1))
+        while ((p != null) &&
+               (cp_skipable(p) ||
+                (!is_char_node(p) && (type(p) == glue_node)
+                 && (subtype(p) == left_skip_code + 1))))
           p = link(p);
         if ((p != null) && (!is_char_node(p)) &&
             (type(p) == margin_kern_node) && (subtype(p) == left_side))
@@ -18639,13 +18641,12 @@ void conv_toks (void)
     case right_margin_kern_code:
       {
         pointer q = list_ptr(box(cur_val));
-        pointer p = null;
-        if (q != null) {
-          p = prev_rightmost(q, null);
-          if ((p != null) && (!is_char_node(p)) &&
-              (type(p) == glue_node) && (subtype(p) == right_skip_code + 1))
-            p = prev_rightmost(q, p);
-        }
+        pointer p = prev_rightmost(q, null);
+        while ((p != null) &&
+               (cp_skipable(p) ||
+                (!is_char_node(p) && (type(p) == glue_node)
+                 && (subtype(p) == left_skip_code + 1))))
+          p = prev_rightmost(q, p);
         if ((p != null) && (!is_char_node(p)) &&
             (type(p) == margin_kern_node) && (subtype(p) == right_side))
           print_scaled(width(p));
@@ -22658,6 +22659,9 @@ reswitch:
       synch_h();
       cur_v = base_line + rule_dp;
       synch_v();
+      dvi_out(set_rule);
+      dvi_four(rule_ht);
+      dvi_four(rule_wd);
       cur_v = base_line;
       dvi_h = dvi_h + rule_wd;
     }
@@ -24556,7 +24560,7 @@ reswitch:
       i = char_info(f, character(p));
       hd = height_depth(i);
       x = x + char_width(f, i);
-      printf("w: %lld, char %d\n",char_width(f, i), character(p));
+      printf("w: %lld, char %c\n",char_width(f, i), character(p));
 
       s = char_height(f, hd) - disp;
       if (s > h) h = s;
@@ -24583,9 +24587,6 @@ reswitch:
       p = link(p);
     }
     printf("x1: %lld\n",x);
-    if (x == 14632737) {
-      printf("OK\n");
-    }
 
     if (p != null)
     {
@@ -24674,7 +24675,7 @@ reswitch:
           }
           break;
 
-          /* [651] - font expansion */
+      /* [651] - font expansion */
       case margin_kern_node:
         if (m == cal_expand_ratio) {
           f = font(margin_char(p));
@@ -24752,17 +24753,15 @@ reswitch:
           }
           break;
 
-          /* [651] - font expansion */
-        case ligature_node:
-          if (m == subst_ex_font)
-            do_subst_font(p, font_expand_ratio);
-          {
-            mem[lig_trick] = mem[lig_char(p)];
-            link(lig_trick) = link(p);
-            p = lig_trick;
-            goto reswitch;
-          }
-          break;
+      /* [651] - font expansion */
+      case ligature_node:
+        if (m == subst_ex_font)
+          do_subst_font(p, font_expand_ratio);
+        mem[lig_trick] = mem[lig_char(p)];
+        link(lig_trick) = link(p);
+        p = lig_trick;
+        goto reswitch;
+        break;
       case disc_node:
         if (m == subst_ex_font)
             do_subst_font(p, font_expand_ratio);
@@ -28938,15 +28937,13 @@ done1:;
               else switch (type(s))
               {
                 case ligature_node:
-                  {
-                    f = font(lig_char(s));
-                    /* [871] - font expansion */
-                    act_width = act_width + char_width(f, char_info(f, character(lig_char(s))));
-                    if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
-                      prev_char_p = s;
-                      add_char_stretch(active_width[7], character(lig_char(s)));
-                      add_char_shrink(active_width[8], character(lig_char(s)));
-                    }
+                  f = font(lig_char(s));
+                  /* [871] - font expansion */
+                  act_width = act_width + char_width(f, char_info(f, character(lig_char(s))));
+                  if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                    prev_char_p = s;
+                    add_char_stretch(active_width[7], character(lig_char(s)));
+                    add_char_shrink(active_width[8], character(lig_char(s)));
                   }
                   break;
 
@@ -29775,8 +29772,8 @@ done:;
             shortfall -= (total_font_stretch + margin_kern_stretch);
         } else if (shortfall < 0 && (total_font_shrink + margin_kern_shrink) > 0) {
           if ((total_font_shrink + margin_kern_shrink) > -shortfall) {
-            shortfall = -(total_font_shrink + margin_kern_shrink) /
-              (max_shrink_ratio / cur_font_step) / 2;
+            shortfall = -((total_font_shrink + margin_kern_shrink) /
+                          (max_shrink_ratio / cur_font_step)) / 2;
           } else
             shortfall += (total_font_shrink + margin_kern_shrink);
         }
