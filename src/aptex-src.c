@@ -10053,14 +10053,15 @@ void show_node_list (integer p)
           }
         }
         break;
-    case margin_kern_node:
-      print_esc("kern");
-      print_scaled(width(p));
-      if (subtype(p) == left_side)
-        prints(" (left margin)");
-      else
-        prints(" (right margin)");
-      break;
+
+      case margin_kern_node:
+        print_esc("kern");
+        print_scaled(width(p));
+        if (subtype(p) == left_side)
+          prints(" (left margin)");
+        else
+          prints(" (right margin)");
+        break;
 
       case kern_node:
         if (subtype(p) != mu_glue)
@@ -10510,11 +10511,11 @@ void flush_node_list (pointer p)
             goto done;
           break;
 
-      case margin_kern_node:
-        free_avail(margin_char(p));
-        free_node(p, margin_kern_node_size);
-        goto done;
-        break;
+        case margin_kern_node:
+          free_avail(margin_char(p));
+          free_node(p, margin_kern_node_size);
+          goto done;
+          break;
 
         case ligature_node:
           flush_node_list(lig_ptr(p));
@@ -10752,13 +10753,13 @@ static pointer copy_node_list (pointer p)
         }
         break;
 
-    case margin_kern_node:
-      r = get_node(margin_kern_node_size);
-      fast_get_avail(margin_char(r));
-      font(margin_char(r)) = font(margin_char(p));
-      character(margin_char(r))=character(margin_char(p));
-      words=small_node_size;
-      break;
+      case margin_kern_node:
+        r = get_node(margin_kern_node_size);
+        fast_get_avail(margin_char(r));
+        font(margin_char(r)) = font(margin_char(p));
+        character(margin_char(r)) = character(margin_char(p));
+        words = small_node_size;
+        break;
 
       case ligature_node:
         {
@@ -10880,7 +10881,7 @@ static void push_nest (void)
 #endif
   }
 
-  nest[nest_ptr] = cur_list;
+  nest[nest_ptr] = cur_list; // {stack the record}
   incr(nest_ptr);
   head = new_null_box();
   tail = head;
@@ -12943,12 +12944,27 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case assign_font_int:
-      switch (chr_code) {
-      case 0: print_esc("hyphenchar"); break;
-      case 1: print_esc("skewchar"); break;
-      case lp_code_base: print_esc("lpcode"); break;
-      case rp_code_base: print_esc("rpcode"); break;
-      case ef_code_base: print_esc("efcode"); break;
+      switch (chr_code)
+      {
+        case 0:
+          print_esc("hyphenchar");
+          break;
+
+        case 1:
+          print_esc("skewchar");
+          break;
+
+        case lp_code_base:
+          print_esc("lpcode");
+          break;
+
+        case rp_code_base:
+          print_esc("rpcode");
+          break;
+
+        case ef_code_base:
+          print_esc("efcode");
+          break;
       }
       break;
 
