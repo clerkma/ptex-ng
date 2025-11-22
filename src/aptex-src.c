@@ -33237,7 +33237,7 @@ static void append_penalty (void)
   if (mode == vmode)
     build_page();
 }
-
+// checked
 static void delete_last (void)
 {
   pointer p, q; // {run through the current list}
@@ -33279,7 +33279,7 @@ static void delete_last (void)
       }
   }
 }
-
+// checked
 static void unpackage (void)
 {
   pointer p;  // {the box}
@@ -33414,12 +33414,12 @@ done:
     }
   }
 }
-
+// checked
 static void append_italic_correction (void)
 {
-  pointer p;
-  internal_font_number f;
-  pointer d;
+  pointer p; // {|char_node| at the tail of the current list}
+  internal_font_number f; // {the font in the |char_node|}
+  pointer d; // {|disp_node|}
 
   if (tail != head)
   {
@@ -33451,10 +33451,10 @@ static void append_italic_correction (void)
     }
   }
 }
-
+// checked
 static void append_discretionary (void)
 {
-  integer c;
+  integer c; // {hyphen character}
 
   tail_append(new_disc());
   inhibit_glue_flag = false;
@@ -33478,19 +33478,19 @@ static void append_discretionary (void)
     space_factor = 1000;
   }
 }
-
+// checked
 static void build_discretionary (void)
 {
-  pointer p, q;
-  integer n;
-  integer d;
+  pointer p, q; // {for link manipulation}
+  integer n; // {length of discretionary list}
+  integer d; // {direction}
 
   unsave();
   q = head;
   p = link(q);
   n = 0;
 
-  while (p != 0)
+  while (p != null)
   {
     if (!is_char_node(p))
       if ((type(p) > rule_node) && (type(p) != kern_node) &&
@@ -33511,7 +33511,7 @@ static void build_discretionary (void)
           show_box(p);
           end_diagnostic(true);
           flush_node_list(p);
-          link(q) = 0;
+          link(q) = null;
           goto done;
         }
 
@@ -33615,17 +33615,17 @@ done:
 /* sec 1123 */
 static void make_accent (void)
 {
-  real s, t;
-  scaled disp;
-  KANJI_code cx;
-  pointer p, q, r;
-  internal_font_number f;
-  scaled a, h, x, w, delta;
-  four_quarters i;
+  real s, t; // {amount of slant}
+  scaled disp; // {displacement}
+  KANJI_code cx; // {temporary register for KANJI}
+  pointer p, q, r; // {character, box, and kern nodes}
+  internal_font_number f; // {relevant font}
+  scaled a, h, x, w, delta; // {heights and widths, as explained above}
+  four_quarters i; // {character information}
 
   scan_char_num();
 
-  if (check_echar_range(cur_val) == false)
+  if (check_echar_range(cur_val) == 0)
   {
     KANJI(cx) = cur_val;
 
@@ -33654,9 +33654,10 @@ static void make_accent (void)
     s = slant(f) / float_constant(65536);
     a = char_width(f, char_info(f, character(p)));
     do_assignments();
-    q = 0;
+    // @<Create a character node |q| for the next...@>
+    q = null;
     f = cur_font;
-    KANJI(cx) = 0;
+    KANJI(cx) = empty;
 
     if ((cur_cmd == letter) || (cur_cmd == other_char))
       q = new_character(f, cur_chr);
@@ -33747,7 +33748,7 @@ static void make_accent (void)
 
     append_disp_node_at_begin();
 
-    if (KANJI(cx) != 0)
+    if (KANJI(cx) != empty)
     {
       q = new_character(f, get_jfm_pos(KANJI(cx), f));
       link(q) = get_avail();
@@ -33757,6 +33758,7 @@ static void make_accent (void)
 
     if (q != null)
     {
+      // @<Append the accent with appropriate kerns...@>
       t = slant(f) / float_constant(65536);
       i = char_info(f, character(q));
       w = char_width(f, i);
@@ -33764,6 +33766,7 @@ static void make_accent (void)
 
       if (h != x)
       {
+        // {the accent must be shifted up or down}
         delete_glue_ref(cur_kanji_skip);
         delete_glue_ref(cur_xkanji_skip);
         cur_kanji_skip = zero_glue;
