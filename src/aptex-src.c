@@ -32903,7 +32903,7 @@ static void begin_box (integer box_context)
 
     case last_box_code:
       {
-        cur_box = 0;
+        cur_box = null;
 
         if (abs(mode) == mmode)
         {
@@ -33131,7 +33131,7 @@ static void head_for_vmode (void)
     token_type = inserted;
   }
 }
-
+// checked
 static void end_graf (void)
 {
   if (mode == hmode)
@@ -33161,7 +33161,7 @@ static void end_graf (void)
     error_count = 0;
   }
 }
-
+// checked
 static void begin_insert_or_adjust (void)
 {
   if (cur_cmd == vadjust)
@@ -33196,11 +33196,11 @@ static void begin_insert_or_adjust (void)
   direction = adjust_dir;
   prev_depth = ignore_depth;
 }
-
+// checked
 static void make_mark (void)
 {
-  pointer p;
-  halfword c;
+  pointer p; // {new node}
+  halfword c; // {the mark class}
 
   if (cur_chr == 0)
     c = 0;
@@ -33214,7 +33214,7 @@ static void make_mark (void)
   p = get_node(small_node_size);
   mark_class(p) = c;
   type(p) = mark_node;
-  subtype(p) = 0;
+  subtype(p) = 0; // {the |subtype| is not used}
   inhibit_glue_flag = false;
   mark_ptr(p) = def_ref;
 
@@ -33223,7 +33223,7 @@ static void make_mark (void)
   else
     tail_append(p);
 }
-
+// checked
 static void append_penalty (void)
 {
   scan_int();
@@ -33240,16 +33240,16 @@ static void append_penalty (void)
 
 static void delete_last (void)
 {
-  pointer p, q;
-  pointer r;
-  pointer s;
+  pointer p, q; // {run through the current list}
+  pointer r; // {running behind |p|}
+  pointer s; // {running behind |r|}
   pointer t;
-  integer fm;
-  integer gm;
-  boolean fd, gd;
-  scaled disp, pdisp;
-  pointer tx;
-  quarterword m;
+  integer fm; // {a final \.{\\beginM} \.{\\endM} node pair?}
+  integer gm; // {1: if |link(q)|, 2: if |q| is an  \.{\\endM} node}
+  boolean fd, gd; // {same for |disp_node|}
+  scaled disp, pdisp; // {displacement}
+  pointer tx; // {effective tail node}
+  quarterword m; // {the length of a replacement list}
 
   if ((mode == vmode) && (tail == head))
   {
