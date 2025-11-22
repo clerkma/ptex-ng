@@ -125,7 +125,7 @@ enum
 #define set_glue_ratio_one(a)  (a) = 1.0
 #define tex_float(a)           (a)
 #define unfloat(a)             (a)
-#define float_constant(a)      (real) (a)
+#define float_constant(a)      ((real) (a))
 /* sec 0115 */
 #define null min_halfword  // {the null pointer}
 /* sec 0118 */

@@ -9874,16 +9874,16 @@ void show_node_list (integer p)
           {
             g = glue_set(p);
 
-            if ((g != 0.0) && (glue_sign(p) != normal))
+            if ((g != float_constant(0)) && (glue_sign(p) != normal))
             {
               prints(", glue set ");
 
               if (glue_sign(p) == shrinking)
                 prints("- ");
 
-              if (fabs(g) > 20000.0)
+              if (fabs(g) > float_constant(20000))
               {
-                if (g > 0.0)
+                if (g > float_constant(0))
                   print_char('>');
                 else
                   prints("< -");
@@ -22197,7 +22197,7 @@ void dvi_hlist_out (void)
   scaled cur_g; // {rounded equivalent of |cur_glue| times the glue ratio}
 
   cur_g = 0;
-  cur_glue = 0.0;
+  cur_glue = float_constant(0);
   this_box = temp_ptr;
   g_order = glue_order(this_box);
   g_sign = glue_sign(this_box);
@@ -23224,7 +23224,7 @@ void dvi_vlist_out (void)
   integer save_dir; // {what |dvi_dir| should pop to}
 
   cur_g = 0;
-  cur_glue = 0.0;
+  cur_glue = float_constant(0);
   this_box = temp_ptr;
   g_order = glue_order(this_box);
   g_sign = glue_sign(this_box);
@@ -24521,7 +24521,8 @@ static pointer hpack (pointer p, scaled w, small_number m)
   q = r + list_offset;
   link(q) = p;
   /* [649] - font expansion */
-  if (m == cal_expand_ratio) {
+  if (m == cal_expand_ratio)
+  {
     prev_char_p = null;
     font_stretch = 0;
     font_shrink = 0;
@@ -24554,13 +24555,16 @@ reswitch:
          contain it, then move to the next node */
     {
       /* [654] - font expansion */
-      if (m >= cal_expand_ratio) {
+      if (m >= cal_expand_ratio)
+      {
         prev_char_p = p;
-        if (m == cal_expand_ratio) {
+        if (m == cal_expand_ratio)
+        {
           f = font(p);
           add_char_stretch(font_stretch, character(p));
           add_char_shrink(font_shrink, character(p));
-        } else if (m == subst_ex_font)
+        }
+        else if (m == subst_ex_font)
           do_subst_font(p, font_expand_ratio);
       }
       f = font(p);
@@ -33280,7 +33284,7 @@ static void unpackage (void)
 {
   pointer p;  // {the box}
   char c;     // {should we copy?}
-  scaled disp;
+  scaled disp; // {displacement}
 
   if (cur_chr > copy_code)
   {
@@ -33293,7 +33297,7 @@ static void unpackage (void)
   scan_register_num();
   fetch_box(p);
 
-  if (p == 0)
+  if (p == null)
     return;
 
   if (type(p) == dir_node)
@@ -33351,7 +33355,8 @@ done:
     p = tail;
     /* [1110] - margin kerning */
     pointer r = link(tail); // {to remove marginal kern nodes}
-    if (!is_char_node(r) && type(r) == margin_kern_node) {
+    if (!is_char_node(r) && type(r) == margin_kern_node)
+    {
       link(tail) = link(r);
       free_avail(margin_char(r));
       free_node(r, margin_kern_node_size);
@@ -33643,10 +33648,10 @@ static void make_accent (void)
     p = new_character(f, cur_val);
   }
 
-  if (p != 0)
+  if (p != null)
   {
     x = x_height(f);
-    s = slant(f) / ((real) 65536.0);
+    s = slant(f) / float_constant(65536);
     a = char_width(f, char_info(f, character(p)));
     do_assignments();
     q = 0;
@@ -33750,9 +33755,9 @@ static void make_accent (void)
       last_jchr = q;
     }
 
-    if (q != 0)
+    if (q != null)
     {
-      t = slant(f) / ((real) 65536.0);
+      t = slant(f) / float_constant(65536);
       i = char_info(f, character(q));
       w = char_width(f, i);
       h = char_height(f, height_depth(i));
@@ -33769,7 +33774,7 @@ static void make_accent (void)
         shift_amount(p) = x - h;
       }
 
-      delta = round((w - a) / ((real) 2.0) + h * t - x * s);
+      delta = round((w - a) / float_constant(2) + h * t - x * s);
       r = new_kern(delta);
       subtype(r) = acc_kern;
       link(tail) = r;
