@@ -540,13 +540,10 @@ EXTERN integer pdf_font_step[font_max + 1];               // {amount of one step
 EXTERN integer pdf_font_expand_ratio[font_max + 1];       // {expansion ratio of a particular font}
 EXTERN boolean pdf_font_auto_expand[font_max + 1];        // {this font is auto-expanded?}
 // HZ charinfo
-typedef struct charinfo {
-  integer ef;                     /* font expansion factor */
-  integer lp;                     /* left protruding factor */
-  integer rp;                     /* right protruding factor */
-} charinfo;
 typedef struct fontinfo {
-  charinfo c[256];
+  integer ef[256]; /* font expansion factor */
+  integer lp[256]; /* left protruding factor */
+  integer rp[256]; /* right protruding factor */
   struct fontinfo *next;
 } fontinfo;
 static fontinfo *fontinfo_root = NULL;

@@ -18,6 +18,7 @@
 /* output a vf packet */
 #define SIGNED_QUAD int32_t
 static int ng_stack_ptr = 0;
+
 static SIGNED_QUAD ng_dvi_h[101];
 static SIGNED_QUAD ng_dvi_v[101];
 static SIGNED_QUAD ng_dvi_w[101];

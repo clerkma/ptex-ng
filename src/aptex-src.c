@@ -5586,11 +5586,11 @@ found:
       do {
         trie_min[l] = r;
         incr(l);
-      } while (!(l == ll));
+      } while (l != ll);
     }
 
     q = trie_r[q];
-  } while (!(q == 0));
+  } while (q != 0);
 }
 /* sec 0957 */
 static void trie_pack (trie_pointer p)
@@ -7073,7 +7073,7 @@ void print_ (integer s)
 }
 
 // string version print.
-void prints_ (const char * s)
+__attribute__((flatten)) void prints_ (const char * s)
 {
   while (*s)
     print_char(*s++);
@@ -17203,16 +17203,15 @@ void scan_int (void)
   negative = false;
 
   do {
-    do {
-      get_x_token();
-    } while (!(cur_cmd != spacer));
+    do get_x_token();
+    while (cur_cmd == spacer);
 
     if (cur_tok == other_token + '-')
     {
       negative = !negative;
       cur_tok = other_token + '+';
     }
-  } while (!(cur_tok != other_token + '+'));
+  } while (cur_tok == other_token + '+');
 
 restart:
   if (cur_tok == alpha_token)
@@ -17397,16 +17396,15 @@ void scan_dimen (boolean mu, boolean inf, boolean shortcut)
     negative = false;
 
     do {
-      do {
-        get_x_token();
-      } while (!(cur_cmd != spacer));
+      do get_x_token();
+      while (cur_cmd == spacer);
 
       if (cur_tok == other_token + '-')
       {
         negative = !negative;
         cur_tok = other_token + '+';
       }
-    } while (!(cur_tok != other_token + '+'));
+    } while (cur_tok == other_token + '+');
 
     if ((cur_cmd >= min_internal) && (cur_cmd <= max_internal))
     {
@@ -17710,16 +17708,15 @@ void scan_glue (small_number level)
   negative = false;
 
   do {
-    do {
-      get_x_token();
-    } while (!(cur_cmd != spacer));
+    do get_x_token();
+    while (cur_cmd == spacer);
 
     if (cur_tok == other_token + '-')
     {
       negative = !negative;
       cur_tok = other_token + '+';
     }
-  } while (!(cur_tok != other_token + '+'));
+  } while (cur_tok == other_token + '+');
 
   if ((cur_cmd >= min_internal) && (cur_cmd <= max_internal))
   {
@@ -17860,7 +17857,7 @@ static pointer str_toks_cat (pool_pointer b, uint32_t cat)
   return p;
 }
 
-static pointer str_toks (pool_pointer b)
+static inline pointer str_toks (pool_pointer b)
 {
   return str_toks_cat(b, 0);
 }
@@ -19771,19 +19768,19 @@ static str_number make_name_string (void)
   }
 }
 
-static str_number a_make_name_string (alpha_file f)
+static inline str_number a_make_name_string (alpha_file f)
 {
   (void) f;
   return make_name_string();
 }
 
-str_number b_make_name_string (byte_file f)
+static inline str_number b_make_name_string (byte_file f)
 {
   (void) f;
   return make_name_string();
 }
 
-str_number w_make_name_string (word_file f)
+static inline str_number w_make_name_string (word_file f)
 {
   (void) f;
   return make_name_string();

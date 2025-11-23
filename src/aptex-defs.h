@@ -72,31 +72,31 @@
 #define cur_length    (pool_ptr - str_start[str_ptr])
 #define flush_char()  decr(pool_ptr)
 /* sec 0054 */
-enum
+enum selector
 {
   no_print     = 16,  // {|selector| setting that makes data disappear}
-  term_only    = 17,  // {printing is destined for the terminal only}
-  log_only     = 18,  // {printing is destined for the transcript file only}
-  term_and_log = 19,  // {normal |selector| setting}
-  pseudo       = 20,  // {special |selector| setting for |show_context|}
-  new_string   = 21,  // {printing is deflected to the string pool}
+  term_only    /* 17 */,  // {printing is destined for the terminal only}
+  log_only     /* 18 */,  // {printing is destined for the transcript file only}
+  term_and_log /* 19 */,  // {normal |selector| setting}
+  pseudo       /* 20 */,  // {special |selector| setting for |show_context|}
+  new_string   /* 21 */,  // {printing is deflected to the string pool}
   max_selector = 21,  // {highest selector setting}
 };
 /* sec 0073 */
-enum
+enum imode
 {
-  batch_mode      = 0,  // {omits all stops and omits terminal output}
-  nonstop_mode    = 1,  // {omits all stops}
-  scroll_mode     = 2,  // {omits error stops}
-  error_stop_mode = 3,  // {stops at every opportunity to interact}
+  batch_mode     ,  // {omits all stops and omits terminal output}
+  nonstop_mode   ,  // {omits all stops}
+  scroll_mode    ,  // {omits error stops}
+  error_stop_mode,  // {stops at every opportunity to interact}
 };
 /* sec 0076 */
-enum
+enum history
 {
-  spotless             = 0, // {|history| value when nothing has been amiss yet}
-  warning_issued       = 1, // {|history| value when |begin_diagnostic| has been called}
-  error_message_issued = 2, // {|history| value when |error| has been called}
-  fatal_error_stop     = 3, // {|history| value when termination was premature}
+  spotless            , // {|history| value when nothing has been amiss yet}
+  warning_issued      , // {|history| value when |begin_diagnostic| has been called}
+  error_message_issued, // {|history| value when |error| has been called}
+  fatal_error_stop    , // {|history| value when termination was premature}
 };
 /* sec 0079 */
 #define help0()     tex_help(0)
