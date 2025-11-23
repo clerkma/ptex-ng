@@ -28249,7 +28249,6 @@ static void line_break (boolean d)
   unsigned int c; // {character being considered for hyphenation}
 
   pack_begin_line = mode_line;  // {this is for over/underfull box messages}
-
   // @<Get ready to start line breaking@>;
   first_use = true;
   chain = false;
@@ -28287,6 +28286,7 @@ static void line_break (boolean d)
   init_l_hyf = prev_graf / 020000000;
   init_r_hyf = (prev_graf / 0200000) % 0100;
   pop_nest();
+  // @<Get ready to start...@>=
   no_shrink_error_yet = true;
   check_shrinkage(left_skip);
   check_shrinkage(right_skip);
@@ -28301,7 +28301,8 @@ static void line_break (boolean d)
   background[2 + stretch_order(r)] = background[2 + stretch_order(r)] + stretch(r);
   background[6] = shrink(q) + shrink(r);
   /* [827] - font expansion */
-  if (pdf_adjust_spacing > 1) {
+  if (pdf_adjust_spacing > 1)
+  {
     background[7] = 0;
     background[8] = 0;
     max_stretch_ratio = -1;
@@ -28309,8 +28310,9 @@ static void line_break (boolean d)
     cur_font_step = -1;
     prev_char_p = null;
   }
+  // @<Check for special...@>=
   do_last_line_fit = false;
-  active_node_size = active_node_size_normal;
+  active_node_size = active_node_size_normal; // {just in case}
 
   if (last_line_fit > 0)
   {
@@ -28329,13 +28331,13 @@ static void line_break (boolean d)
       }
     }
   }
-
+  // @<Get ready to start...@>=
   minimum_demerits = awful_bad;
   minimal_demerits[tight_fit] = awful_bad;
   minimal_demerits[decent_fit] = awful_bad;
   minimal_demerits[loose_fit] = awful_bad;
   minimal_demerits[very_loose_fit] = awful_bad;
-
+  // @<Get ready to start...@>=
   if (par_shape_ptr == null)
   {
     if (hang_indent == 0)
@@ -28385,7 +28387,6 @@ static void line_break (boolean d)
     easy_line = last_special_line;
   else
     easy_line = max_halfword;
-
   // @<Find optimal breakpoints@>;
   threshold = pretolerance;
 
@@ -28398,7 +28399,6 @@ static void line_break (boolean d)
       print_nl("@firstpass");
     }
 #endif
-
     second_pass = false;
     final_pass = false;
     lbs_pass_fst++;
@@ -28408,7 +28408,6 @@ static void line_break (boolean d)
     threshold = tolerance;
     second_pass = true;
     final_pass = (emergency_stretch <= 0);
-
 #ifdef STAT
     if (tracing_paragraphs > 0)
       begin_diagnostic();
@@ -28451,13 +28450,13 @@ static void line_break (boolean d)
       active_glue(q) = 0;
     }
 
-    act_width = background[1];
     /* [864] - font expansion */
     do_all_eight(store_background);
     passive = null;
     printed_node = temp_head;
     pass_number = 0;
     font_in_short_display = null_font;
+    //
     cur_p = link(temp_head);
     auto_breaking = true;
     prev_p = cur_p; // {glue at beginning is not a legal breakpoint}
@@ -28520,11 +28519,13 @@ static void line_break (boolean d)
           cc = character(post_p);
           act_width = act_width + char_width(f, char_info(f, cc));
           /* [867] - font expansion */
-          if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+          if (pdf_adjust_spacing > 1 && check_expand_pars(f))
+          {
             prev_char_p = post_p;
             add_char_stretch(active_width[7], cc);
             add_char_shrink(active_width[8], cc);
           }
+          //
           post_p = link(cur_p);
 
           if (font_dir[f] != dir_default)
@@ -28607,6 +28608,7 @@ static void line_break (boolean d)
           break;
 
         case whatsit_node:
+          // @<Advance \(p)past a whatsit node in the \(l)|line_break| loop@>
           if (subtype(cur_p) == language_node)
           {
             cur_lang = what_lang(cur_p);
@@ -28625,10 +28627,8 @@ static void line_break (boolean d)
               else if (precedes_break(prev_p))
                 try_break(0, unhyphenated);
               else if (type(prev_p) == kern_node)
-              {
                 if ((subtype(prev_p) != explicit) && (subtype(prev_p) != ita_kern))
                   try_break(0, unhyphenated);
-              }
             }
 
             check_shrinkage(glue_ptr(cur_p));
@@ -28644,6 +28644,7 @@ static void line_break (boolean d)
 
               if (s != null)
               {
+                // @<Skip to node |ha|, or |goto done1|...@>
                 while (true)
                 {
                   if (is_char_node(s))
@@ -28661,13 +28662,9 @@ static void line_break (boolean d)
                       c = character(s);
                   }
                   else if (type(s) == disp_node)
-                  {
                     goto continu;
-                  }
                   else if ((type(s) == penalty_node) && (subtype(s) != normal))
-                  {
                     goto continu;
-                  }
                   else if (type(s) == ligature_node)
                   {
                     if (lig_ptr(s) == null)
@@ -28685,6 +28682,7 @@ static void line_break (boolean d)
                     goto continu;
                   else if (type(s) == whatsit_node)
                   {
+                    // @<Advance \(p)past a whatsit node in the \(p)pre-hyphenation loop@>
                     if (subtype(s) == language_node)
                     {
                       cur_lang = what_lang(s);
@@ -28723,7 +28721,7 @@ done2:
 
                 if (l_hyf + r_hyf > 63)
                   goto done1;
-
+                // @<Skip to node |hb|, putting letters...@>
                 hn = 0;
 
                 while (true)
@@ -28752,6 +28750,7 @@ done2:
                   }
                   else if (type(s) == ligature_node)
                   {
+                    // @<Move the characters of a ligature node to |hu| and |hc|...@
                     if (font(lig_char(s)) != hf)
                       goto done3;
 
@@ -28797,8 +28796,9 @@ done2:
                   s = link(s);
                 }
 done3:
+                // @<Check that the nodes following |hb| permit hyphenation...@>
                 if (hn < l_hyf + r_hyf)
-                  goto done1;
+                  goto done1; // {|l_hyf| and |r_hyf| are |>=1|}
 
                 while (true)
                 {
@@ -28854,10 +28854,12 @@ done1:;
         case kern_node:
           if ((subtype(cur_p) == explicit) || (subtype(cur_p) == ita_kern))
             kern_break();
-          else {
+          else
+          {
             act_width = act_width + width(cur_p);
             /* [666] - font expansion */
-            if ((pdf_adjust_spacing > 1) && (subtype(cur_p) == normal)) {
+            if ((pdf_adjust_spacing > 1) && (subtype(cur_p) == normal))
+            {
               add_kern_stretch(active_width[7], cur_p);
               add_kern_shrink(active_width[8], cur_p);
             }
@@ -28869,7 +28871,8 @@ done1:;
             f = font(lig_char(cur_p));
             act_width = act_width + char_width(f, char_info(f, character(lig_char(cur_p))));
             /* [866] - font expansion */
-            if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+            if (pdf_adjust_spacing > 1 && check_expand_pars(f))
+            {
               prev_char_p = cur_p;
               add_char_stretch(active_width[7], character(lig_char(cur_p)));
               add_char_shrink(active_width[8], character(lig_char(cur_p)));
@@ -28879,6 +28882,7 @@ done1:;
 
         case disc_node:
           {
+            // @<Try to break after a discretionary fragment...@>
             s = pre_break(cur_p);
             /* [869] - font expansion */
             do_one_seven_eight(reset_disc_width);
@@ -28888,12 +28892,14 @@ done1:;
             else
             {
               do {
+                // @<Add the width of node |s| to |disc_width|@>
                 if (is_char_node(s))
                 {
                   f = font(s);
                   /* [870] - font expansion */
                   disc_width[1] = disc_width[1] + char_width(f, char_info(f, character(s)));
-                  if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                  if (pdf_adjust_spacing > 1 && check_expand_pars(f))
+                  {
                     prev_char_p = s;
                     add_char_stretch(disc_width[7], character(s));
                     add_char_shrink(disc_width[8], character(s));
@@ -28909,7 +28915,8 @@ done1:;
                       f = font(lig_char(s));
                       /* [870] - font expansion */
                       disc_width[1] = disc_width[1] + char_width(f, char_info(f, character(lig_char(s))));
-                      if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                      if (pdf_adjust_spacing > 1 && check_expand_pars(f))
+                      {
                         prev_char_p = s;
                         add_char_stretch(disc_width[7], character(lig_char(s)));
                         add_char_shrink(disc_width[8], character(lig_char(s)));
@@ -28925,7 +28932,8 @@ done1:;
                     /* [870] - font expansion */
                     disc_width[1] = disc_width[1] + width(s);
                     if (type(s) == kern_node &&
-                        pdf_adjust_spacing > 1 && subtype(s) == normal) {
+                        pdf_adjust_spacing > 1 && subtype(s) == normal)
+                    {
                       add_kern_stretch(disc_width[7], s);
                       add_kern_shrink(disc_width[8], s);
                     }
@@ -28954,12 +28962,14 @@ done1:;
 
             while (r > 0)
             {
+              // @<Add the width of node |s| to |act_width|@>
               if (is_char_node(s))
               {
                 f = font(s);
                 /* [871] - font expansion */
                 act_width = act_width + char_width(f, char_info(f, character(s)));
-                if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                if (pdf_adjust_spacing > 1 && check_expand_pars(f))
+                {
                   prev_char_p = s;
                   add_char_stretch(active_width[7], character(s));
                   add_char_shrink(active_width[8], character(s));
@@ -28973,7 +28983,8 @@ done1:;
                   f = font(lig_char(s));
                   /* [871] - font expansion */
                   act_width = act_width + char_width(f, char_info(f, character(lig_char(s))));
-                  if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                  if (pdf_adjust_spacing > 1 && check_expand_pars(f))
+                  {
                     prev_char_p = s;
                     add_char_stretch(active_width[7], character(lig_char(s)));
                     add_char_shrink(active_width[8], character(lig_char(s)));
@@ -28988,7 +28999,8 @@ done1:;
                   act_width = act_width + width(s);
                   /* [871] - font expansion */
                   if (type(s) == kern_node &&
-                      pdf_adjust_spacing > 1 && subtype(s) == normal) {
+                      pdf_adjust_spacing > 1 && subtype(s) == normal)
+                  {
                     add_kern_stretch(active_width[7], s);
                     add_kern_shrink(active_width[8], s);
                   }
@@ -29041,13 +29053,15 @@ done1:;
       cur_p = link(cur_p);
 done5:;
     }
-
+    // END of @<Call |try_break| if |cur_p| is a legal breakpoint...@>
     if (cur_p == null)
     {
+      // @<Try the final line break at the end of the paragraph...@>
       try_break(eject_penalty, hyphenated);
 
       if (link(active) != active)
       {
+        // @<Find an active node...@>
         r = link(active);
         fewest_demerits = awful_bad;
 
@@ -29065,12 +29079,10 @@ done5:;
         } while (!(r == active));
 
         best_line = line_number(best_bet);
-
+        // END of @<Find an active node...@>
         if (looseness == 0)
-        {
           goto done;
-        }
-
+        // @<Find the best active node...@>
         {
           r = link(active);
           actual_looseness = 0;
@@ -29099,17 +29111,15 @@ done5:;
 
           best_line = line_number(best_bet);
         }
-
+        // END of @<Find the best active node...@>
         if ((actual_looseness == looseness) || final_pass)
-        {
           goto done;
-        }
       }
     }
-
+    // @<Clean...@>
     q = link(active);
 
-    while (q != active)
+    while (q != last_active)
     {
       cur_p = link(q);
 
@@ -29166,7 +29176,7 @@ done:
     normalize_selector();
   }
 #endif
-
+  // @<Adjust \(t)the final line of the paragraph@>=
   if (do_last_line_fit)
   {
     if (active_short(best_bet) == 0)
@@ -29176,14 +29186,16 @@ done:
       q = new_spec(glue_ptr(last_line_fill));
       delete_glue_ref(glue_ptr(last_line_fill));
       width(q) = width(q) + active_short(best_bet) - active_glue(best_bet);
-      stretch(q) = 0; glue_ptr(last_line_fill) = q;
+      stretch(q) = 0;
+      glue_ptr(last_line_fill) = q;
     }
   }
 
   post_line_break(d);
+  // @<Clean...@>
   q = link(active);
 
-  while (q != active)
+  while (q != last_active)
   {
     cur_p = link(q);
 
@@ -29206,7 +29218,7 @@ done:
 
   pack_begin_line = 0;
 }
-
+// checked
 // recovers from infinite shrinkage
 pointer finite_shrink (pointer p)
 {
@@ -29239,14 +29251,16 @@ pointer finite_shrink (pointer p)
   return q;
 }
 
-static void push_node(pointer p) {
+static void push_node(pointer p)
+{
   if (hlist_stack_level > max_hlist_stack)
     aptex_error("push_node", "stack overflow");
   hlist_stack[hlist_stack_level] = p;
   hlist_stack_level++;
 }
 
-static pointer pop_node(void) {
+static pointer pop_node(void)
+{
   hlist_stack_level--;
   if (hlist_stack_level < 0) // {would point to some bug}
     aptex_error("pop_node", "stack underflow (internal error)");
@@ -29430,7 +29444,6 @@ continu:
       @<If node |r| is of type |delta_node|, update |cur_active_width|,
       set |prev_r| and |prev_prev_r|, then |goto continue|@>
     */
-
     if (type(r) == delta_node)
     {
       /* [832] - font expansion */
@@ -29476,7 +29489,8 @@ continu:
                     f = font(v);
                     break_width[1] = break_width[1] - char_width(f, char_info(f, character(v)));
                     /* [841] - font expansion */
-                    if ((pdf_adjust_spacing > 1) && check_expand_pars(f)) {
+                    if ((pdf_adjust_spacing > 1) && check_expand_pars(f))
+                    {
                       prev_char_p = v;
                       sub_char_stretch(break_width[7], character(v));
                       sub_char_shrink(break_width[8], character(v));
@@ -29492,7 +29506,8 @@ continu:
                         f = font(lig_char(v));
                         break_width[1] = break_width[1] - char_width(f, char_info(f, character(lig_char(v))));
                         /* [841] - font expansion */
-                        if ((pdf_adjust_spacing > 1) && check_expand_pars(f)) {
+                        if ((pdf_adjust_spacing > 1) && check_expand_pars(f))
+                        {
                           prev_char_p = v;
                           sub_char_stretch(break_width[7], character(lig_char(v)));
                           sub_char_shrink(break_width[8], character(lig_char(v)));
@@ -29508,7 +29523,8 @@ continu:
                       break_width[1] = break_width[1] - width(v);
                       /* [841] - font expansion */
                       if (type(v) == kern_node &&
-                          pdf_adjust_spacing > 1 && subtype(v) == normal) {
+                          pdf_adjust_spacing > 1 && subtype(v) == normal)
+                      {
                         sub_kern_stretch(break_width[7], v);
                         sub_kern_shrink(break_width[8], v);
                       }
@@ -29531,7 +29547,8 @@ continu:
                     f = font(s);
                     break_width[1] = break_width[1] + char_width(f, char_info(f, character(s)));
                     /* [842] - font expansion */
-                    if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                    if (pdf_adjust_spacing > 1 && check_expand_pars(f))
+                    {
                       prev_char_p = s;
                       add_char_stretch(break_width[7], character(s));
                       add_char_shrink(break_width[8], character(s));
@@ -29547,7 +29564,8 @@ continu:
                         f = font(lig_char(s));
                         break_width[1] = break_width[1] + char_width(f, char_info(f, character(lig_char(s))));
                         /* [842] - font expansion */
-                        if (pdf_adjust_spacing > 1 && check_expand_pars(f)) {
+                        if (pdf_adjust_spacing > 1 && check_expand_pars(f))
+                        {
                           prev_char_p = s;
                           add_char_stretch(break_width[7], character(lig_char(s)));
                           add_char_shrink(break_width[8], character(lig_char(s)));
@@ -29563,7 +29581,8 @@ continu:
                       break_width[1] = break_width[1] + width(s);
                       /* [842] - font expansion */
                       if (type(s) == kern_node &&
-                          pdf_adjust_spacing > 1 && subtype(s) == normal) {
+                          pdf_adjust_spacing > 1 && subtype(s) == normal)
+                      {
                         add_kern_stretch(break_width[7], s);
                         add_kern_shrink(break_width[8], s);
                       }
@@ -29639,14 +29658,16 @@ continu:
 done:;
           }
 
+          /* [843] - font expansion */
           if (type(prev_r) == delta_node)
-            { /* [843] - font expansion */
-              do_all_eight(convert_to_break_width);
-            }
+          { 
+            do_all_eight(convert_to_break_width);
+          }
+          /* [843] - font expansion */
           else if (prev_r == active)
-            { /* [843] - font expansion */
-              do_all_eight(store_break_width);
-            }
+          {
+            do_all_eight(store_break_width);
+          }
           else
           {
             q = get_node(delta_node_size);
@@ -29673,12 +29694,10 @@ done:;
               link(q) = passive;
               passive = q;
               cur_break(q) = cur_p;
-
 #ifdef STAT
               incr(pass_number);
               serial(q) = pass_number;
 #endif
-
               prev_break(q) = best_place[fit_class];
               q = get_node(active_node_size);
               break_node(q) = passive;
@@ -29689,6 +29708,7 @@ done:;
 
               if (do_last_line_fit)
               {
+                // @<Store \(a)additional data in the new active node@>
                 active_short(q) = best_pl_short[fit_class];
                 active_glue(q) = best_pl_glue[fit_class];
               }
@@ -29696,10 +29716,10 @@ done:;
               link(q) = r;
               link(prev_r) = q;
               prev_r = q;
-
 #ifdef STAT
               if (tracing_paragraphs > 0)
               {
+                // @<Print a symbolic description of the new break node@>
                 print_nl("@@");
                 print_int(serial(passive));
                 prints(": line ");
@@ -29715,6 +29735,7 @@ done:;
 
                 if (do_last_line_fit)
                 {
+                  // @<Print additional data in the new active node@>
                   prints(" s=");
                   print_scaled(active_short(q));
 
@@ -29740,13 +29761,13 @@ done:;
           }
 
           minimum_demerits = awful_bad;
-
-          if (r != active)
+          // @<Insert a delta node to prepare for the next active node@>
+          if (r != last_active)
           {
             q = get_node(delta_node_size);
             link(q) = r;
             type(q) = delta_node;
-            subtype(q) = 0;
+            subtype(q) = 0; // {the |subtype| is not used}
             /* [844] - font expansion */
             do_all_eight(new_delta_from_break_width);
             link(prev_r) = q;
@@ -29755,9 +29776,9 @@ done:;
           }
         }
 
-        if (r == active)
-          goto exit;
-
+        if (r == last_active)
+          return;
+        // @<Compute the new line width@>
         if (l > easy_line)
         {
           line_width = second_width;
@@ -29769,24 +29790,26 @@ done:;
 
           if (l > last_special_line)
             line_width = second_width;
-          else if (par_shape_ptr == 0)
+          else if (par_shape_ptr == null)
             line_width = first_width;
           else
             line_width = mem[par_shape_ptr + 2 * l].sc;
         }
       }
     }
-
+    // @<Consider the demerits for a line from |r| to |cur_p|...@>
     {
       artificial_demerits = false;
       shortfall = line_width - cur_active_width[1]; // {we're this much too short}
       /* [851] - font expansion, margin kerning */
       if (pdf_protrude_chars > 1)
         shortfall += total_pw(r, cur_p);
-      if (pdf_adjust_spacing > 1 && shortfall != 0) {
+      if (pdf_adjust_spacing > 1 && shortfall != 0)
+      {
         margin_kern_stretch = 0;
         margin_kern_shrink = 0;
-        if (pdf_protrude_chars > 1) {
+        if (pdf_protrude_chars > 1)
+        {
           /* @<Calculate variations of marginal kerns@> */
           lp = last_leftmost_char;
           rp = last_rightmost_char;
@@ -29797,37 +29820,45 @@ done:;
             cal_margin_kern_var(rp);
           free_avail(cp);
         }
-        if (shortfall > 0 && (total_font_stretch + margin_kern_stretch) > 0) {
-          if (total_font_stretch + margin_kern_stretch > shortfall) {
+        if (shortfall > 0 && (total_font_stretch + margin_kern_stretch) > 0)
+        {
+          if (total_font_stretch + margin_kern_stretch > shortfall)
+          {
             shortfall = ((total_font_stretch + margin_kern_stretch) /
                          (max_stretch_ratio / cur_font_step)) / 2;
           } else
             shortfall -= (total_font_stretch + margin_kern_stretch);
-        } else if (shortfall < 0 && (total_font_shrink + margin_kern_shrink) > 0) {
-          if ((total_font_shrink + margin_kern_shrink) > -shortfall) {
+        }
+        else if (shortfall < 0 && (total_font_shrink + margin_kern_shrink) > 0)
+        {
+          if ((total_font_shrink + margin_kern_shrink) > -shortfall)
+          {
             shortfall = -((total_font_shrink + margin_kern_shrink) /
                           (max_shrink_ratio / cur_font_step)) / 2;
-          } else
+          }
+          else
             shortfall += (total_font_shrink + margin_kern_shrink);
         }
       }
 
       if (shortfall > 0)
-        if ((cur_active_width[3] != 0) || (cur_active_width[4] != 0) ||
-          (cur_active_width[5] != 0))
+        // @<Set the value of |b| to the badness for stretching...@>
+        if ((cur_active_width[3] != 0) || (cur_active_width[4] != 0) || (cur_active_width[5] != 0))
         {
           if (do_last_line_fit)
           {
             if (cur_p == null)
             {
+              // {the last line of a paragraph}
+              // @<Perform computations for last line and |goto found|@>
               if ((active_short(r) == 0) || (active_glue(r) <= 0))
                 goto not_found;
-
+              // {previous line was neither stretched nor shrunk, or was infinitely bad}
               if ((cur_active_width[3] != fill_width[0]) ||
                 (cur_active_width[4] != fill_width[1]) ||
                 (cur_active_width[5] != fill_width[2]))
                 goto not_found;
-
+              // {infinite stretch of this line not entirely due to |par_fill_skip|}
               if (active_short(r) > 0)
                 g = cur_active_width[2];
               else
@@ -29835,7 +29866,7 @@ done:;
 
               if (g <= 0)
                 goto not_found;
-
+              // {no finite stretch resp.\ no shrink}
               arith_error = false;
               g = fract(g, active_short(r), active_glue(r), max_dimen);
 
@@ -29850,6 +29881,7 @@ done:;
 
               if (g > 0)
               {
+                // @<Set the value of |b| to the badness of the last line for str...@>
                 if (g > shortfall)
                   g = shortfall;
 
@@ -29875,6 +29907,7 @@ done:;
               }
               else if (g < 0)
               {
+                // @<Set the value of |b| to the badness of the last line for shr...@>
                 if (-g > cur_active_width[6])
                   g = -cur_active_width[6];
 
@@ -29887,7 +29920,6 @@ done:;
 
                 goto found;
               }
-
 not_found:;
             }
 
@@ -29895,7 +29927,7 @@ not_found:;
           }
 
           b = 0;
-          fit_class = decent_fit;
+          fit_class = decent_fit; // {infinite stretch}
         }
         else
         {
@@ -29920,6 +29952,7 @@ done1:;
         }
       else
       {
+        // @<Set the value of |b| to the badness for shrinking...@>
         if (-shortfall > cur_active_width[6])
           b = inf_bad + 1;
         else
@@ -29933,6 +29966,7 @@ done1:;
 
       if (do_last_line_fit)
       {
+        // @<Adjust \(t)the additional data for last line@>
         if (cur_p == null)
           shortfall = 0;
 
@@ -29943,13 +29977,13 @@ done1:;
         else
           g = 0;
       }
-
 found:
       if ((b > inf_bad) || (pi == eject_penalty))
       {
+        // @<Prepare to deactivate node~|r|, and |goto deactivate| unless...@>
         if (final_pass && (minimum_demerits == awful_bad) &&
-          (link(r) == active) && (prev_r == active))
-          artificial_demerits = true;
+          (link(r) == last_active) && (prev_r == active))
+          artificial_demerits = true; // {set demerits zero, this break is forced}
         else if (b > threshold)
           goto deactivate;
 
@@ -29964,7 +29998,7 @@ found:
 
         node_r_stays_active = true;
       }
-
+      // @<Record a new feasible break@>
       if (artificial_demerits)
         d = 0;
       else
@@ -29991,12 +30025,13 @@ found:
         if (abs(fit_class - fitness(r)) > 1)
           d = d + adj_demerits;
       }
-
 #ifdef STAT
       if (tracing_paragraphs > 0)
       {
+        // @<Print a symbolic description of this feasible break@>
         if (printed_node != cur_p)
         {
+          // @<Print the list between |printed_node| and |cur_p|...@>
           print_nl("");
 
           if (cur_p == null)
@@ -30054,7 +30089,9 @@ found:
       }
 #endif
 
-      d = d + total_demerits(r);
+      d = d + total_demerits(r); 
+      // {this is the minimum total demerits
+      // from the beginning to |cur_p| via |r|}
 
       if (d <= minimal_demerits[fit_class])
       {
@@ -30064,6 +30101,7 @@ found:
 
         if (do_last_line_fit)
         {
+          // @<Store \(a)additional data for this feasible break@>
           best_pl_short[fit_class] = shortfall;
           best_pl_glue[fit_class] = g;
         }
@@ -30073,17 +30111,20 @@ found:
       }
 
       if (node_r_stays_active)
-        goto continu;
+        goto continu; // {|prev_r| has been set to |r|}
 
 deactivate:
+      // @<Deactivate node |r|@>
       link(prev_r) = link(r);
       free_node(r, active_node_size);
 
       if (prev_r == active)
       {
+        // @<Update the active widths,...@>
         r = link(active);
 
-        if (type(r) == delta_node) {
+        if (type(r) == delta_node)
+        {
           /* [861] - font expansion */
           do_all_eight(update_active);
           do_all_eight(copy_to_cur_active);
@@ -30117,6 +30158,7 @@ deactivate:
 
 exit:
 #ifdef STAT
+  // @<Update the value of |printed_node|...@>
   if (cur_p == printed_node)
     if (cur_p != null)
       if (type(cur_p) == disc_node)
@@ -30415,6 +30457,7 @@ done:
 
     adjust_tail = null;
 
+    // @<Append a penalty node, if a nonzero penalty is appropriate@>
     if (cur_line + 1 != best_line)
     {
       q = inter_line_penalties_ptr;
