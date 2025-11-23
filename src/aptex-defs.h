@@ -3062,7 +3062,6 @@ do {                                                              \
                                                                   \
   if (inhibit_glue_flag != true)                                  \
   {                                                               \
-    /*{ prints("IF"); print_int(cur_l); }*/                       \
     if (cur_l < 0) cur_l = 0; else inhibit_glue_flag = false;     \
     if ((tail == link(head)) && (!is_char_node(tail))             \
       && (type(tail) == disp_node))                               \
@@ -3074,13 +3073,14 @@ do {                                                              \
         main_k = glue_kern_start(main_f, main_i);                 \
         main_j = font_info[main_k].qqqq;                          \
                                                                   \
-        if (skip_byte(main_j)>stop_flag)                          \
+        if (skip_byte(main_j) > stop_flag)                        \
         {                                                         \
           main_k = glue_kern_restart(main_f, main_j);             \
           main_j = font_info[main_k].qqqq;                        \
         }                                                         \
                                                                   \
-        while (true) {                                            \
+        while (true)                                              \
+        {                                                         \
           if (next_char(main_j) == cur_l)                         \
             if (skip_byte(main_j) <= stop_flag)                   \
           {                                                       \
@@ -3092,10 +3092,7 @@ do {                                                              \
               if (gp != null)                                     \
               {                                                   \
                 while ((type(gp) != cur_r) && (link(gp) != null)) \
-                {                                                 \
                   gp = link(gp);                                  \
-                }                                                 \
-                                                                  \
                 gq = glue_ptr(gp);                                \
               }                                                   \
               else                                                \
@@ -3111,9 +3108,9 @@ do {                                                              \
                 gq = new_spec(zero_glue);                         \
                 glue_ptr(gp) = gq;                                \
                 main_k = exten_base[main_f] + (cur_r * 3);        \
-                width(gq) = font_info[main_k].cint;               \
-                stretch(gq) = font_info[main_k + 1].cint;         \
-                shrink(gq) = font_info[main_k + 2].cint;          \
+                width(gq) = font_info[main_k].sc;                 \
+                stretch(gq) = font_info[main_k + 1].sc;           \
+                shrink(gq) = font_info[main_k + 2].sc;            \
                 add_glue_ref(gq);                                 \
                 link(gp) = get_node(small_node_size);             \
                 gp = link(gp);                                    \
@@ -3141,7 +3138,6 @@ do {                                                              \
   }                                                               \
   else                                                            \
   {                                                               \
-    /*{ prints("IF"); print_int(cur_l); }*/                       \
     if (cur_l < 0) cur_l = 0; else inhibit_glue_flag = false;     \
   }                                                               \
 skip_loop: do_nothing();                                          \

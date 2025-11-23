@@ -27301,7 +27301,7 @@ done:;
 #if defined (_MSC_VER)
   #pragma optimize("", on)
 #endif
-
+// checked
 static void push_alignment (void)
 {
   pointer p;  // {the new alignment stack node}
@@ -27321,7 +27321,7 @@ static void push_alignment (void)
   cur_head = get_avail();
   cur_pre_head = get_avail();
 }
-
+// checked
 static void pop_alignment (void)
 {
   pointer p;  // {the top alignment stack node}
@@ -27341,7 +27341,7 @@ static void pop_alignment (void)
   align_ptr = link(p);
   free_node(p, align_stack_node_size);
 }
-
+// checked
 static void get_preamble_token (void)
 {
 restart:
@@ -27374,7 +27374,7 @@ restart:
     goto restart;
   }
 }
-
+// checked
 static void init_align (void)
 {
   pointer save_cs_ptr;  // {|warning_index| value for error messages}
@@ -27417,6 +27417,7 @@ static void init_align (void)
   scanner_status = aligning;
   warning_index = save_cs_ptr;
   align_state = -1000000;
+  // {at this point, |cur_cmd=left_brace|}
 
   while (true)
   {
@@ -27463,8 +27464,8 @@ static void init_align (void)
         info(p) = cur_tok;
       }
     }
-
 done1:
+    // end of section
     link(cur_align) = new_null_box();
     cur_align = link(cur_align);  // {a new alignrecord}
     info(cur_align) = end_span;
@@ -27496,24 +27497,23 @@ continu:
       p = link(p);
       info(p) = cur_tok;
     }
-
 done2:
     link(p) = get_avail();
     p = link(p);
     info(p) = end_template_token; // {put \.{\\endtemplate} at the end}
+    // end of section
     v_part(cur_align) = link(hold_head);
   }
-
 done:
   scanner_status = normal;
+  // end of section
   new_save_level(align_group);
-
   if (every_cr != null)
     begin_token_list(every_cr, every_cr_text);
 
   align_peek(); // {look for \.{\\noalign} or \.{\\omit}}
 }
-
+// checked
 static void init_span (pointer p)
 {
   push_nest();
@@ -27529,7 +27529,7 @@ static void init_span (pointer p)
   inhibit_glue_flag = false;
   cur_span = p;
 }
-
+// checked
 static void init_row (void)
 {
   push_nest();
@@ -27547,7 +27547,7 @@ static void init_row (void)
   cur_pre_tail = cur_pre_head;
   init_span(cur_align);
 }
-
+// checked
 static void init_col (void)
 {
   extra_info(cur_align) = cur_cmd;
@@ -27561,7 +27561,7 @@ static void init_col (void)
   }
   // {now |align_state=1000000|}
 }
-
+// checked
 static void fin_row (void)
 {
   pointer p;  // {the new unset box}
@@ -27602,7 +27602,7 @@ static void fin_row (void)
   align_peek();
   // {note that |glue_shrink(p)=0| since |glue_shrink==shift_amount|}
 }
-
+// checked
 static void fin_align (void)
 {
   pointer p, q, r, s, u, v, z;  // {registers for the list operations}
@@ -27631,7 +27631,6 @@ static void fin_align (void)
     @<Go through the preamble list, determining the column widths and
     changing the alignrecords to dummy unset boxes@>
   */
-
   q = link(preamble);
 
   do {
@@ -27694,7 +27693,7 @@ static void fin_align (void)
         r = u;
       } while (!(r == end_span));
     }
-
+    // end of section
     type(q) = unset_node;
     span_count(q) = min_quarterword;
     height(q) = 0;
@@ -27710,7 +27709,6 @@ static void fin_align (void)
     @<Package the preamble list, to determine the actual tabskip glue amounts,
     and let |p| point to this prototype box@>
   */
-
   save_ptr = save_ptr - 2;
   pack_begin_line = -mode_line;
 
@@ -27763,13 +27761,14 @@ static void fin_align (void)
     if (!is_char_node(q))
       if (type(q) == unset_node)
       {
+        // @<Set the unset box |q| and the unset boxes in it@>
         if (mode == -vmode)
         {
           type(q) = hlist_node;
           width(q) = width(p);
 
           if (nest[nest_ptr - 1].mode_field == mmode)
-            set_box_lr(q, dlist);
+            set_box_lr(q, dlist); // {for |ship_out|}
         }
         else
         {
@@ -27786,15 +27785,18 @@ static void fin_align (void)
         s = link(list_ptr(p));
 
         do {
+          // @<Set the glue in node |r| and change it from an unset node@>
           n = span_count(r);
           t = width(s);
           w = t;
           u = hold_head;
-          set_box_lr(r, 0);
+          set_box_lr(r, 0); // {for |ship_out|}
 
           while (n > min_quarterword)
           {
             decr(n);
+            // @<Append tabskip glue and an empty box to list |u|,
+            //   and update |s| and |t| as the prototype nodes are passed@>;
             s = link(s);
             v = glue_ptr(s);
             link(u) = new_glue(v);
@@ -27831,6 +27833,7 @@ static void fin_align (void)
 
           if (mode == -vmode)
           {
+            // @<Make the unset node |r| into an |hlist_node| of width |w|...@>
             height(r) = height(q);
             depth(r) = depth(q);
 
@@ -27868,6 +27871,7 @@ static void fin_align (void)
           }
           else
           {
+            // @<Make the unset node |r| into a |vlist_node| of height |w|...@>
             width(r) = width(q);
 
             if (t == height(r))
@@ -27900,24 +27904,26 @@ static void fin_align (void)
 
             height(r) = w;
             type(r) = vlist_node;
-            set_box_dir(r, abs(direction));
+            set_box_dir(r, direction);
           }
 
           shift_amount(r) = 0;
 
           if (u != hold_head)
           {
+            // {append blank boxes to account for spanned nodes}
             link(u) = link(r);
             link(r) = link(hold_head);
             r = u;
           }
-
+          // end of section
           r = link(link(r));
           s = link(link(s));
-        } while (!(r == 0));
+        } while (!(r == null));
       }
       else if (type(q) == rule_node)
       {
+        // @<Make the running dimensions in rule |q| extend...@>
         if (is_running(width(q)))
           width(q) = width(p);
 
@@ -27930,14 +27936,14 @@ static void fin_align (void)
         if (o != 0)
         {
           r = link(q);
-          link(q) = 0;
+          link(q) = null;
           q = hpack(q, 0, 1);
           shift_amount(q) = o;
           link(q) = r;
           link(s) = q;
         }
       }
-
+    // end of section
     s = q;
     q = link(q);
   }
@@ -27952,10 +27958,12 @@ static void fin_align (void)
 
   if (mode == mmode)
   {
+    // @<Finish an alignment in a display@>
     do_assignments();
 
     if (cur_cmd != math_shift)
     {
+      // @<Pontificate...@>
       print_err("Missing $$ inserted");
       help2("Displays can use special alignments (like \\eqalignno)",
           "only if nothing but the alignment itself is between $$'s.");
@@ -27963,6 +27971,7 @@ static void fin_align (void)
     }
     else
     {
+      // @<Check that another \.\$ follows@>
       get_x_token();
 
       if (cur_cmd != math_shift)
@@ -27980,7 +27989,7 @@ static void fin_align (void)
     tail_append(new_param_glue(above_display_skip_code));
     link(tail) = p;
 
-    if (p != 0)
+    if (p != null)
       tail = q;
 
     tail_append(new_penalty(post_display_penalty));
@@ -27993,14 +28002,14 @@ static void fin_align (void)
     aux = aux_save;
     link(tail) = p;
 
-    if (p != 0)
+    if (p != null)
       tail = q;
 
     if (mode == vmode)
       build_page();
   }
 }
-
+// checked
 static boolean fin_col (void)
 {
   pointer p;  // {the alignrecord after the current one}
@@ -28028,11 +28037,13 @@ static boolean fin_col (void)
   if ((p == null) && (extra_info(cur_align) < cr_code))
     if (cur_loop != null)
     {
+      // @<Lengthen the preamble...@>
       link(q) = new_null_box();
       p = link(q);  // {a new alignrecord}
       info(p) = end_span;
       width(p) = null_flag;
       cur_loop = link(cur_loop);
+      // @<Copy the templates from node |cur_loop| into node |p|@>
       q = hold_head;
       r = u_part(cur_loop);
 
@@ -28059,6 +28070,7 @@ static boolean fin_col (void)
 
       link(q) = null;
       v_part(p) = link(hold_head);
+      // end of section
       cur_loop = link(cur_loop);
       link(p) = new_glue(glue_ptr(cur_loop));
       subtype(link(p)) = tab_skip_code + 1;
@@ -28105,10 +28117,11 @@ static boolean fin_col (void)
         w = height(u);
       }
 
-      n = min_quarterword;
+      n = min_quarterword; // {this represents a span count of 1}
 
       if (cur_span != cur_align)
       {
+        // @<Update width entry for spanned columns@>
         q = cur_span;
 
         do {
@@ -28117,7 +28130,7 @@ static boolean fin_col (void)
         } while (!(q == cur_align));
 
         if (n > max_quarterword)
-          confusion("256 spans");
+          confusion("256 spans"); // {this can happen, but won't}
 
         q = cur_span;
 
@@ -28140,7 +28153,7 @@ static boolean fin_col (void)
 
       type(u) = unset_node;
       span_count(u) = n;
-
+      // @<Determine the stretch order@>
       if (total_stretch[filll] != 0)
         o = filll;
       else if (total_stretch[fill] != 0)
@@ -28152,7 +28165,7 @@ static boolean fin_col (void)
 
       glue_order(u) = o;
       glue_stretch(u) = total_stretch[o];
-
+      // @<Determine the shrink order@>
       if (total_shrink[filll] != 0)
         o = filll;
       else if (total_shrink[fill] != 0)
@@ -28168,7 +28181,7 @@ static boolean fin_col (void)
       link(tail) = u;
       tail = u;
     }
-
+    // @<Copy the tabskip glue...@>
     tail_append(new_glue(glue_ptr(link(cur_align))));
     subtype(tail) = tab_skip_code + 1;
 
@@ -28191,7 +28204,7 @@ static boolean fin_col (void)
 
   return false;
 }
-
+// checked
 void align_peek (void)
 {
 restart:
