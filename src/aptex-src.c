@@ -21778,10 +21778,12 @@ done:
 #ifndef APTEX_DVI_ONLY
 static inline void fix_pdfoutput(void)
 {
-  if (!fixed_pdfoutput_set) {
+  if (!fixed_pdfoutput_set)
+  {
     fixed_pdfoutput = pdf_output;
     fixed_pdfoutput_set = true;
-  } else if (fixed_pdfoutput != pdf_output)
+  }
+  else if (fixed_pdfoutput != pdf_output)
     aptex_error("setup",
                 "\\" PDFOUTPUT " can only be changed before anything is written to the output");
 }
@@ -21995,9 +21997,10 @@ done:
 #endif
 }
 
-static void ship_out (pointer p) {
+static void ship_out (pointer p)
+{
   fix_pdfoutput();
-  if(pdf_output > 0)
+  if (pdf_output > 0)
     pdf_ship_out(p);
   else
     dvi_ship_out(p);
@@ -22739,10 +22742,8 @@ next_p:
       {
         if (info(LR_ptr) > L_code)
           LR_problems = LR_problems + 10000;
-
         pop_LR();
       }
-
       pop_LR();
     }
 
@@ -23218,10 +23219,8 @@ next_p:
       {
         if (info(LR_ptr) > L_code)
           LR_problems = LR_problems + 10000;
-
         pop_LR();
       }
-
       pop_LR();
     }
 
@@ -23234,7 +23233,8 @@ next_p:
   decr(cur_s);
 }
 
-void hlist_out (void) {
+void hlist_out (void)
+{
   if(pdf_output > 0)
     pdf_hlist_out();
   else
@@ -23842,7 +23842,8 @@ next_p:
   decr(cur_s);
 }
 
-void vlist_out (void) {
+void vlist_out (void)
+{
   if(pdf_output > 0)
     pdf_vlist_out();
   else
@@ -24287,7 +24288,8 @@ found:
 }
 
 /* HZ */
-static boolean check_expand_pars(internal_font_number f) {
+static boolean check_expand_pars (internal_font_number f)
+{
   internal_font_number k;
   if ((pdf_font_step[f] == 0) ||
       ((pdf_font_stretch[f] == null_font) &&
@@ -24299,7 +24301,8 @@ static boolean check_expand_pars(internal_font_number f) {
     aptex_error("font expansion",
                 "using fonts with different step of expansion in one paragraph is not allowed");
   k = pdf_font_stretch[f];
-  if (k != null_font) {
+  if (k != null_font)
+  {
     if (max_stretch_ratio < 0)
       max_stretch_ratio = pdf_font_expand_ratio[k];
     else if (max_stretch_ratio != pdf_font_expand_ratio[k])
@@ -24307,7 +24310,8 @@ static boolean check_expand_pars(internal_font_number f) {
                   "using fonts with different limit of expansion in one paragraph is not allowed");
   }
   k = pdf_font_shrink[f];
-   if (k != null_font) {
+   if (k != null_font)
+   {
     if (max_shrink_ratio < 0)
       max_shrink_ratio = -pdf_font_expand_ratio[k];
     else if (max_shrink_ratio != -pdf_font_expand_ratio[k])
@@ -24317,13 +24321,15 @@ static boolean check_expand_pars(internal_font_number f) {
   return true;
 }
 
-static scaled char_stretch(internal_font_number f, eight_bits c) {
+static scaled char_stretch (internal_font_number f, eight_bits c)
+{
   internal_font_number k;
   scaled dw;
   integer ef;
   k = pdf_font_stretch[f];
   ef = get_ef_code(f, c);
-  if ((k != null_font) && (ef > 0)) {
+  if ((k != null_font) && (ef > 0))
+  {
     dw = char_width(k,char_info(k,c)) - char_width(f,char_info(f,c));
     if (dw > 0)
       return round_xn_over_d(dw, ef, 1000);
@@ -24331,7 +24337,8 @@ static scaled char_stretch(internal_font_number f, eight_bits c) {
   return 0;
 }
 
-static scaled char_shrink(internal_font_number f, eight_bits c) {
+static scaled char_shrink (internal_font_number f, eight_bits c)
+{
   internal_font_number k;
   scaled dw;
   integer ef;
@@ -24345,7 +24352,8 @@ static scaled char_shrink(internal_font_number f, eight_bits c) {
   return 0;
 }
 
-static scaled get_kern(internal_font_number f, eight_bits lc, eight_bits rc) {
+static scaled get_kern (internal_font_number f, eight_bits lc, eight_bits rc)
+{
   four_quarters i,j;
   font_index k;
   i = char_info(f,lc);
@@ -24360,12 +24368,14 @@ static scaled get_kern(internal_font_number f, eight_bits lc, eight_bits rc) {
   j = font_info[k].qqqq;
  continue1:
   if ((next_char(j) == rc) && (skip_byte(j) <= stop_flag) &&
-      (op_byte(j) >= kern_flag)) {
+      (op_byte(j) >= kern_flag))
+  {
     return char_kern(f,j);
   }
   if (skip_byte(j) == 0)
     incr(k);
-  else {
+  else
+  {
     if (skip_byte(j) >= stop_flag)
       return 0;
     k = k + skip_byte(j) + 1;
@@ -24373,7 +24383,8 @@ static scaled get_kern(internal_font_number f, eight_bits lc, eight_bits rc) {
   goto continue0;
 }
 
-static scaled kern_stretch(pointer p) {
+static scaled kern_stretch (pointer p)
+{
   pointer l, r;
   scaled d;
 
@@ -24398,7 +24409,8 @@ static scaled kern_stretch(pointer p) {
                          get_ef_code(font(l), character(l)), 1000);
 }
 
-static scaled kern_shrink(pointer p) {
+static scaled kern_shrink (pointer p)
+{
   pointer l, r;
   scaled d;
 
@@ -24408,12 +24420,14 @@ static scaled kern_shrink(pointer p) {
   l = prev_char_p;
   r = link(p);
 
-  if (!is_char_node(l)) {
+  if (!is_char_node(l))
+  {
     if (type(l) == ligature_node)
       l = lig_char(l);
     else return 0;
   }
-  if (!is_char_node(l)) {
+  if (!is_char_node(l))
+  {
     if (type(r) == ligature_node)
       r = lig_char(r);
     else return 0;
@@ -24428,22 +24442,28 @@ static scaled kern_shrink(pointer p) {
                          get_ef_code(font(l), character(l)), 1000);
 }
 
-static void do_subst_font(pointer p, int ex_ratio) {
+static void do_subst_font (pointer p, int ex_ratio)
+{
   pointer r;
   int ef;
 
-  if (!is_char_node(p) && (type(p) == disc_node)) {
+  if (!is_char_node(p) && (type(p) == disc_node))
+  {
     r = pre_break(p);
-    while (r != null) {
-      if (is_char_node(r) || (type(r) == ligature_node)) {
+    while (r != null)
+    {
+      if (is_char_node(r) || (type(r) == ligature_node))
+      {
         do_subst_font(r, ex_ratio);
       }
       r = link(r);
     }
 
     r = post_break(p);
-    while (r != null) {
-      if (is_char_node(r) || (type(r) == ligature_node)) {
+    while (r != null)
+    {
+      if (is_char_node(r) || (type(r) == ligature_node))
+      {
         do_subst_font(r, ex_ratio);
       }
       r = link(r);
@@ -24455,7 +24475,8 @@ static void do_subst_font(pointer p, int ex_ratio) {
     r = p;
   else if (type(p) == ligature_node)
     r = lig_char(p);
-  else {
+  else
+  {
     /* {|short_display_n(p, 5);|} */
     aptex_error("font expansion", "invalid node type");
   }
@@ -24465,24 +24486,32 @@ static void do_subst_font(pointer p, int ex_ratio) {
   if (ef == 0) return;
 
   internal_font_number k;
-  if ((pdf_font_stretch[f] != null_font) && (ex_ratio > 0)) {
+  if ((pdf_font_stretch[f] != null_font) && (ex_ratio > 0))
+  {
     k = expand_font(f, ext_xn_over_d(ex_ratio*ef,
                                      pdf_font_expand_ratio[pdf_font_stretch[f]],
                                      1000000));
-  } else if ((pdf_font_shrink[f] != null_font) && (ex_ratio < 0)) {
+  }
+  else if ((pdf_font_shrink[f] != null_font) && (ex_ratio < 0))
+  {
     k = expand_font(f, ext_xn_over_d(ex_ratio*ef,
                                      -pdf_font_expand_ratio[pdf_font_shrink[f]],
                                      1000000));
-  } else {
+  }
+  else
+  {
     k = f;
   }
 
-  if (k != f) {
+  if (k != f)
+  {
     font(r) = k;
 
-    if (!is_char_node(p)) {
+    if (!is_char_node(p))
+    {
       r = lig_ptr(p);
-      while (r != null) {
+      while (r != null)
+      {
         font(r) = k;
         r = link(r);
       }
@@ -24490,7 +24519,8 @@ static void do_subst_font(pointer p, int ex_ratio) {
   }
 }
 
-static scaled char_pw(pointer p, small_number side) {
+static scaled char_pw (pointer p, small_number side)
+{
   integer c;
 
   if (side == left_side)
@@ -24500,17 +24530,22 @@ static scaled char_pw(pointer p, small_number side) {
 
   if (p == null) return 0;
 
-  if (!is_char_node(p)) {
+  if (!is_char_node(p))
+  {
     if (type(p) == ligature_node)
       p = lig_char(p);
-    else return 0;
+    else
+      return 0;
   }
 
   integer f = font(p);
-  if (side == left_side) {
+  if (side == left_side)
+  {
     c = get_lp_code(f, character(p));
     last_leftmost_char = p;
-  } else {
+  }
+  else
+  {
     c = get_rp_code(f, character(p));
     last_rightmost_char = p;
   }
@@ -24520,14 +24555,15 @@ static scaled char_pw(pointer p, small_number side) {
   return round_xn_over_d(quad(f), c, 1000);
 }
 
-static pointer new_margin_kern(scaled w, pointer p, small_number side) {
-
+static pointer new_margin_kern (scaled w, pointer p, small_number side)
+{
   pointer k = get_node(margin_kern_node_size);
   type(k) = margin_kern_node;
   subtype(k) = side;
   width(k) = w;
 
-  if (p == null) {
+  if (p == null)
+  {
     aptex_error("margin kerning", "invalid pointer to marginal char node");
   }
 
