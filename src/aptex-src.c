@@ -4296,6 +4296,7 @@ static void initialize (void)
 
   hyph_count = 0;
   output_active = false;
+  output_can_end = false;
   insert_penalties = 0;
   ligature_present = false;
   cancel_boundary = false;
@@ -11384,6 +11385,10 @@ static void print_param (integer n)
       print_esc("tracingstacklevels");
       break;
 
+    case partoken_context_code:
+      print_esc("partokencontext");
+      break;
+
     case show_stream_code:
       print_esc("showstream");
       break;
@@ -14308,18 +14313,22 @@ void end_token_list (void)
 {
   if (token_type >= backed_up)
   {
+    // {token list to be deleted}
     if (token_type <= inserted)
       flush_list(start);
     else
     {
-      delete_token_ref(start);
+      delete_token_ref(start); // {update reference count}
 
       if (token_type == macro)
+        //{parameters must be flushed}
         while (param_ptr > param_start)
         {
           decr(param_ptr);
           flush_list(param_stack[param_ptr]);
         }
+      else if ((token_type == output_text) && (!output_can_end))
+        fatal_error("Unbalanced output routine");
     }
   }
   else if (token_type == u_template)
@@ -36346,7 +36355,7 @@ void alter_prev_graf (void)
     cur_list = nest[nest_ptr];
   }
 }
-
+// checked
 void alter_page_so_far (void)
 {
   uint32_t c; // {index into |page_so_far|}
@@ -36356,7 +36365,7 @@ void alter_page_so_far (void)
   scan_normal_dimen();
   page_so_far[c] = cur_val;
 }
-
+// checked
 void alter_integer (void)
 {
   small_number c; // {0 for \.{\\deadcycles}, 1 for \.{\\insertpenalties}, etc.}
@@ -36367,6 +36376,7 @@ void alter_integer (void)
 
   if (c == 0)
     dead_cycles = cur_val;
+  // @<Cases for |alter_integer|@>
   else if (c == 2)
   {
     if ((cur_val < batch_mode) || (cur_val > error_stop_mode))
@@ -36385,7 +36395,7 @@ void alter_integer (void)
   else
     insert_penalties = cur_val;
 }
-
+// checked
 void alter_box_dimen (void)
 {
   small_number c; // {|width_offset| or |height_offset| or |depth_offset|}
@@ -36421,11 +36431,11 @@ void alter_box_dimen (void)
       link(b) = q;
     }
 
-    mem[q + c].cint = cur_val;
+    mem[q + c].sc = cur_val;
   }
 }
-
-static boolean scan_keyword_noexpand(const char * s)
+// checked
+static boolean scan_keyword_noexpand (const char * s)
 {
   pointer p; // {tail of the backup list}
   pointer q; // {new node being added to the token list via |store_new_token|}
@@ -36437,7 +36447,7 @@ static boolean scan_keyword_noexpand(const char * s)
 
   while (*k)
   {
-    get_token();
+    get_token(); // {no expansion}
     if ((cur_cs == 0) && ((cur_chr == (*k)) || (cur_chr == (*k) - 'a' + 'A')))
     {
       store_new_token(cur_tok);
@@ -36580,7 +36590,7 @@ common_ending:
   eqtb[font_id_base + f] = eqtb[u];
   font_id_text(f) = t;
 }
-
+// checked
 void new_interaction (void)
 {
   print_ln();
@@ -36595,7 +36605,7 @@ void new_interaction (void)
   if (log_opened)
     selector = selector + 2;
 }
-
+// checked
 void do_assignments (void)
 {
   while (true)
@@ -36654,7 +36664,7 @@ static void open_or_close_in (void)
     }
   }
 }
-
+// checked
 static void issue_message (void)
 {
   char old_setting; // {holds |selector| setting}
@@ -36673,6 +36683,7 @@ static void issue_message (void)
 
   if (c == 0)
   {
+    // @<Print string |s| on the terminal@>
     if (term_offset + length(s) > max_print_line - 2)
       print_ln();
     else if ((term_offset > 0) || (file_offset > 0))
@@ -36683,10 +36694,11 @@ static void issue_message (void)
   }
   else
   {
+    // @<Print string |s| as an error message@>
     print_err("");
     slow_print(s);
 
-    if (err_help != 0)
+    if (err_help != null)
       use_err_help = true;
     else if (long_help_seen)
       help1("(That was another \\errmessage.)");
@@ -36707,20 +36719,21 @@ static void issue_message (void)
 
   flush_string();
 }
-
+// checked
 static void shift_case (void)
 {
-  pointer b;
-  pointer p;
-  halfword t;
-  eight_bits c;
+  pointer b; // {|lc_code_base| or |uc_code_base|}
+  pointer p; // {runs through the token list}
+  halfword t; // {token}
+  eight_bits c; // {character code}
 
   b = cur_chr;
   p = scan_toks(false, false);
   p = link(def_ref);
 
-  while (p != 0)
+  while (p != null)
   {
+    // @<Change the case of the token in |p|, if a change is appropriate@>
     t = info(p);
 
     if ((t < cs_token_flag + single_base) && !check_kanji(t))
@@ -36735,9 +36748,9 @@ static void shift_case (void)
   }
 
   back_list(link(def_ref));
-  free_avail(def_ref);
+  free_avail(def_ref); // {omit reference count}
 }
-
+// checked
 static void show_whatever (void)
 {
   pointer p;  // {tail of a token list to show}
@@ -36802,6 +36815,8 @@ static void show_whatever (void)
     case show_mode:
       // @<Show the current japanese processing mode@>
       {
+        // @<Adjust |selector| based on |show_stream|@>
+        adjust_selector_based_on_show_stream();
         print_nl("> ");
 
         if (auto_spacing > 0)
@@ -36949,7 +36964,7 @@ common_ending:
     error();
   }
 }
-
+// checked
 static void new_whatsit (small_number s, small_number w)
 {
   pointer p;  // {the new node}
@@ -36980,7 +36995,7 @@ static void new_write_whatsit (small_number w)
   write_stream(tail) = cur_val;
   inhibit_glue_flag = false;
 }
-
+// checked
 static void do_extension (void)
 {
   integer k;  // {all-purpose integers}
@@ -37015,7 +37030,7 @@ static void do_extension (void)
       // @<Implement \.{\\closeout}@>
       {
         new_write_whatsit(write_node_size);
-        write_tokens(tail) = 0;
+        write_tokens(tail) = null;
       }
       break;
 
@@ -37039,8 +37054,8 @@ static void do_extension (void)
         {
           k = inhibit_glue_flag;
           p = tail;
-          do_extension();
-          out_what(tail);
+          do_extension(); // {append a whatsit node}
+          out_what(tail); // {do the action immediately}
           flush_node_list(tail);
           tail = p;
           link(p) = null;
@@ -37074,9 +37089,9 @@ static void do_extension (void)
       }
       break;
 
-  case pdf_font_expand_code:
-    read_expand_font();
-    break;
+    case pdf_font_expand_code:
+      read_expand_font();
+      break;
 
     case pdf_save_pos_node:
       {
@@ -37108,11 +37123,11 @@ static void do_extension (void)
       break;
   }
 }
-
+// checked
 static void fix_language (void)
 {
   /* ASCII_code l; */
-  int l;
+  int l; // {the new current language}
 
   if (language <= 0)
     l = 0;
@@ -37131,7 +37146,7 @@ static void fix_language (void)
     what_rhm(tail) = norm_min(right_hyphen_min);
   }
 }
-
+// checked
 static void handle_right_brace (void)
 {
   pointer p, q; // {for short-term use}
@@ -37222,7 +37237,8 @@ static void handle_right_brace (void)
         d = split_max_depth;
         f = floating_penalty;
         unsave();
-        save_ptr -= 2;
+        save_ptr = save_ptr - 2;
+        // {now |saved(0)| is the insertion number, or 255 for |vadjust|}
         p = vpackage(link(head), natural, max_dimen);
         set_box_dir(p, direction);
         pop_nest();
@@ -37257,7 +37273,7 @@ static void handle_right_brace (void)
           {
             r = get_node(small_node_size);
             type(r) = adjust_node;
-            adjust_pre(r) = saved(1); // the |subtype| is used for |adjust_pre|
+            adjust_pre(r) = saved(1); // {the |subtype| is used for |adjust_pre|}
             adjust_ptr(r) = list_ptr(p);
             delete_glue_ref(q);
 
@@ -37287,8 +37303,11 @@ static void handle_right_brace (void)
       }
       else
       {
-        if ((loc != 0) || ((token_type != output_text) && (token_type != backed_up)))
+        while ((state == token_list) && (loc == null) && (token_type == backed_up))
+          end_token_list(); // {output-ending brace may have been backed-up}
+        if ((state != token_list) || (loc != null) || (token_type != output_text))
         {
+          // @<Recover from an unbalanced output routine@>
           print_err("Unbalanced output routine");
           help2("Your sneaky output routine has problematic {'s and/or }'s.",
             "I can't handle that very well; good luck.");
@@ -37296,16 +37315,20 @@ static void handle_right_brace (void)
 
           do {
             get_token();
-          } while (!(loc == 0));
+          } while (!(loc == null));
+          // {loops forever if reading from a file, since |null=min_halfword<=0|}
         }
 
-        end_token_list();
+        output_can_end = true;
+        end_token_list(); // {conserve stack space in case more outputs are triggered}
+        output_can_end = false;
         end_graf();
         unsave();
         output_active = false;
         insert_penalties = 0;
 
-        if (box(255) != 0)
+        // @<Ensure that box 255 is empty after output@>
+        if (box(255) != null)
         {
           print_err("Output routine didn't use all of ");
           print_esc("box");
@@ -37318,18 +37341,20 @@ static void handle_right_brace (void)
 
         if (tail != head)
         {
+          // {current list goes after heldover insertions}
           link(page_tail) = link(head);
           page_tail = tail;
         }
 
-        if (link(page_head) != 0)
+        if (link(page_head) != null)
         {
-          if (link(contrib_head) == 0)
+          // {and both go before heldover contributions}
+          if (link(contrib_head) == null)
             contrib_tail = page_tail;
 
           link(page_tail) = link(contrib_head);
           link(contrib_head) = link(page_head);
-          link(page_head) = 0;
+          link(page_head) = null;
           page_tail = page_head;
         }
 
@@ -37408,16 +37433,16 @@ static void handle_right_brace (void)
         unsave();
         decr(save_ptr);
         math_type(saved(0)) = sub_mlist;
-        p = fin_mlist(0);
+        p = fin_mlist(null);
         info(saved(0)) = p;
 
-        if (p != 0)
-          if (link(p) == 0)
+        if (p != null)
+          if (link(p) == null)
             if (type(p) == ord_noad)
             {
-              if (math_type(subscr(p)) == 0)
+              if (math_type(subscr(p)) == empty)
               {
-                if ((math_type(supscr(p)) == 0) && (math_kcode(p) == null))
+                if ((math_type(supscr(p)) == empty) && (math_kcode(p) == null))
                 {
                   mem[saved(0)].hh = mem[nucleus(p)].hh;
                   free_node(p, noad_size);
@@ -37430,6 +37455,7 @@ static void handle_right_brace (void)
               {
                 if (type(tail) == ord_noad)
                 {
+                  // @<Replace the tail...@>
                   q = head;
 
                   while (link(q) != tail)

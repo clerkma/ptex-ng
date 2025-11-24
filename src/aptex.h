@@ -757,6 +757,7 @@ EXTERN integer last_node_subtype;             // {used to implement \.{\\lastnod
 EXTERN integer insert_penalties;              // {sum of the penalties for held-over insertions}
 
 EXTERN boolean output_active;                 // {are we in the midst of an output routine?}
+EXTERN boolean output_can_end;                // {is this an auspicious time for it to end?}
 
 EXTERN internal_font_number main_f;           // {the current font}
 EXTERN four_quarters main_i;                  // {character information bytes for |cur_l|}
