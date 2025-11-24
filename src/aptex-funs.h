@@ -153,8 +153,8 @@ pointer scan_toks (boolean macro_def, boolean xpand);
 void pass_text (void);
 void conditional (void);
 void pack_file_name (str_number n, str_number a, str_number e);
-str_number b_make_name_string (byte_file f);
-str_number w_make_name_string (word_file f);
+static inline str_number b_make_name_string (byte_file f);
+static inline str_number w_make_name_string (word_file f);
 void pack_job_name_(str_number s);
 #define pack_job_name(s) pack_job_name_(make_str_string((const char *) (s)))
 void prompt_file_name_(const char * s, str_number e);
@@ -732,13 +732,13 @@ static inline integer fix_int(integer val, integer min, integer max)
 }
 
 static inline integer get_lp_code(internal_font_number f, integer c) {
-  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->c[c].lp;
+  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->lp[c];
 }
 static inline integer get_rp_code(internal_font_number f, integer c) {
-  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->c[c].rp;
+  return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->rp[c];
 }
 static inline integer get_ef_code(internal_font_number f, integer c) {
-  return pdf_font_base[f] == NULL ? 1000 : pdf_font_base[f]->c[c].ef;
+  return pdf_font_base[f] == NULL ? 1000 : pdf_font_base[f]->ef[c];
 }
 
 static pointer prev_rightmost(pointer s, pointer e) {
@@ -817,50 +817,50 @@ scaled divide_scaled(scaled s, scaled m, integer dd)
   return sign * q;
 }
 
-static scaled ext_xn_over_d(scaled x, scaled n, scaled d)
+static inline scaled ext_xn_over_d (scaled x, scaled n, scaled d)
 {
   double r = (((double) x) * ((double) n)) / ((double) d);
-  if (r > DBL_EPSILON)
-    r += 0.5;
-  else
-    r -= 0.5;
   if (r >= (double) max_integer || r <= -(double) max_integer)
     aptex_error("arithmetic", "number too big");
-  return (scaled) r;
+  return (scaled) lround(r);
 }
 
-static fontinfo *init_font_base() {
+static fontinfo *init_font_base (void)
+{
   fontinfo *f = malloc(sizeof(fontinfo));
-  for (size_t i = 0; i<256; i++) {
-    f->c[i].lp = 0;
-    f->c[i].rp = 0;
-    f->c[i].ef = 1000;
+  for (size_t i = 0; i < 256; i++)
+  {
+    f->lp[i] = 0;
+    f->rp[i] = 0;
+    f->ef[i] = 1000;
   }
   f->next = fontinfo_root;
   return f;
 }
 
-static void set_lp_code
-(internal_font_number f, eight_bits c, integer i) {
+static void set_lp_code (internal_font_number f, eight_bits c, integer i)
+{
   if (pdf_font_base[f] == NULL)
     pdf_font_base[f] = init_font_base();
-  pdf_font_base[f]->c[c].lp = fix_int(i, -1000, 1000);
+  pdf_font_base[f]->lp[c] = fix_int(i, -1000, 1000);
 }
-static void set_rp_code
-(internal_font_number f, eight_bits c, integer i) {
+static void set_rp_code (internal_font_number f, eight_bits c, integer i)
+{
   if (pdf_font_base[f] == NULL)
     pdf_font_base[f] = init_font_base();
-  pdf_font_base[f]->c[c].rp = fix_int(i, -1000, 1000);
+  pdf_font_base[f]->rp[c] = fix_int(i, -1000, 1000);
 }
-static void set_ef_code
-(internal_font_number f, eight_bits c, integer i) {
+static void set_ef_code (internal_font_number f, eight_bits c, integer i)
+{
   if (pdf_font_base[f] == NULL)
     pdf_font_base[f] = init_font_base();
-  pdf_font_base[f]->c[c].ef = fix_int(i, 0, 1000);
+  pdf_font_base[f]->ef[c] = fix_int(i, 0, 1000);
 }
 
-static void free_font_base(void) {
-  while (fontinfo_root != NULL) {
+static void free_font_base(void)
+{
+  while (fontinfo_root != NULL)
+  {
     fontinfo *f = fontinfo_root;
     fontinfo_root = f->next;
     free(f);

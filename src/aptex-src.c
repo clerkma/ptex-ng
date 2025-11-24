@@ -7074,7 +7074,7 @@ void print_ (integer s)
 }
 
 // string version print.
-void prints_ (const char * s)
+_Flatten void prints_ (const char * s)
 {
   while (*s)
     print_char(*s++);
@@ -18652,8 +18652,8 @@ void conv_toks (void)
             (type(p) == margin_kern_node) && (subtype(p) == left_side))
           print_scaled(width(p));
         else
-        prints_("0");
-        prints_("pt");
+          prints("0");
+        prints("pt");
       }
       break;
 
@@ -18670,8 +18670,8 @@ void conv_toks (void)
             (type(p) == margin_kern_node) && (subtype(p) == right_side))
           print_scaled(width(p));
         else
-          prints_("0");
-        prints_("pt");
+          prints("0");
+        prints("pt");
       }
       break;
 
@@ -19786,13 +19786,13 @@ static str_number a_make_name_string (alpha_file f)
   return make_name_string();
 }
 
-str_number b_make_name_string (byte_file f)
+static inline str_number b_make_name_string (byte_file f)
 {
   (void) f;
   return make_name_string();
 }
 
-str_number w_make_name_string (word_file f)
+static inline str_number w_make_name_string (word_file f)
 {
   (void) f;
   return make_name_string();
@@ -20084,7 +20084,7 @@ done:
     else
       print_char('~');
 
-    prints_("INPUT "); // slow_print
+    prints("INPUT "); // slow_print
     slow_print(cur_name);
     slow_print(cur_ext);
     print_ln();
@@ -21299,7 +21299,8 @@ static internal_font_number auto_expand_font(internal_font_number f, integer e) 
   return k;
 }
 
-static void copy_expand_param(internal_font_number k, internal_font_number f, integer e) {
+static void copy_expand_param (internal_font_number k, internal_font_number f, integer e)
+{
   if (pdf_font_base[f] == NULL)
     pdf_font_base[f] = init_font_base();
   pdf_font_expand_ratio[k] = e;
@@ -21309,7 +21310,8 @@ static void copy_expand_param(internal_font_number k, internal_font_number f, in
   pdf_font_base[k] = pdf_font_base[f];
 }
 
-static internal_font_number tfm_lookup(str_number s, scaled fs) {
+static internal_font_number tfm_lookup (str_number s, scaled fs)
+{
   internal_font_number k;
 
   if (fs != 0)

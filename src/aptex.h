@@ -75,6 +75,12 @@
   #pragma clang diagnostic ignored "-Wdangling-else"
 #endif
 
+#if defined (_MSC_VER)
+#define _Flatten
+#else
+#define _Flatten __attribute__((flatten))
+#endif
+
 // standard C headers
 #include <stdio.h>
 #include <stdlib.h>
@@ -540,13 +546,10 @@ EXTERN integer pdf_font_step[font_max + 1];               // {amount of one step
 EXTERN integer pdf_font_expand_ratio[font_max + 1];       // {expansion ratio of a particular font}
 EXTERN boolean pdf_font_auto_expand[font_max + 1];        // {this font is auto-expanded?}
 // HZ charinfo
-typedef struct charinfo {
-  integer ef;                     /* font expansion factor */
-  integer lp;                     /* left protruding factor */
-  integer rp;                     /* right protruding factor */
-} charinfo;
 typedef struct fontinfo {
-  charinfo c[256];
+  integer ef[256]; /* font expansion factor */
+  integer lp[256]; /* left protruding factor */
+  integer rp[256]; /* right protruding factor */
   struct fontinfo *next;
 } fontinfo;
 static fontinfo *fontinfo_root = NULL;
