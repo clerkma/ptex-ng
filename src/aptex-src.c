@@ -24573,6 +24573,7 @@ static pointer new_margin_kern (scaled w, pointer p, small_number side)
 
   return k;
 }
+// END of HZ
 
 static pointer hpack (pointer p, scaled w, small_number m)
 {
