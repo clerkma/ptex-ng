@@ -7546,6 +7546,7 @@ void error (void)
 
   if (interaction == error_stop_mode)
   {
+    // @<Get user's advice and |return|@>
     while (true)
     {
 continu:
@@ -7561,7 +7562,7 @@ continu:
 
       if (c >= 'a')
         c = c + 'A' - 'a'; // {convert to uppercase}
-
+      // @<Interpret code |c| and |return| if done@>
       switch (c)
       {
         case '0':
@@ -7574,6 +7575,7 @@ continu:
         case '7':
         case '8':
         case '9':
+          // @<Delete \(c)|c-"0"| tokens and |goto continue|@>
           if (deletions_allowed)
           {
             s1 = cur_tok;
@@ -7583,8 +7585,7 @@ continu:
             align_state = 1000000;
             OK_to_interrupt = false;
 
-            if ((last > first + 1) && (buffer[first + 1] >= '0') &&
-              (buffer[first + 1] <= '9'))
+            if ((last > first + 1) && (buffer[first + 1] >= '0') && (buffer[first + 1] <= '9'))
               c = c * 10 + buffer[first + 1] - '0' * 11;
             else
               c = c - '0';
@@ -7632,6 +7633,7 @@ continu:
           break;
 
         case 'H':
+          // @<Print the help information and |goto continue|@>
           {
             if (use_err_help)
             {
@@ -7660,6 +7662,7 @@ continu:
           break;
 
         case 'I':
+          // @<Introduce new material...@>
           {
             begin_file_reading(); // {enter a new syntactic level for terminal input}
 
@@ -7684,6 +7687,7 @@ continu:
         case 'Q':
         case 'R':
         case 'S':
+          // @<Change the interaction...@>
           {
             error_count = 0;
             interaction = batch_mode + c - 'Q';
@@ -7741,7 +7745,7 @@ continu:
 
         print_nl("H for help, X to quit.");
       }
-      }
+    }
   }
 
   incr(error_count);
@@ -7752,7 +7756,7 @@ continu:
     history = fatal_error_stop;
     jump_out();
   }
-
+  // @<Put help message on the transcript file@>
   if (interaction > batch_mode)
     decr(selector); // {avoid terminal output}
 
@@ -8215,7 +8219,7 @@ do {                  \
     decr(j_random);   \
 } while (0)
 
-static void new_randoms(void)
+static void new_randoms (void)
 {
   uint32_t k; // {index into |randoms|}
   integer x; // {accumulator}
@@ -8287,11 +8291,10 @@ static integer unif_rand (integer x)
     return -y;
 }
 
-static integer norm_rand(void)
+static integer norm_rand (void)
 {
   integer x, u, l; // {what the book would call $2^{16}X$, $2^{28}U$,
                    //  and $-2^{24}\ln U$}
-
   do {
     do {
       next_random();
@@ -9166,7 +9169,7 @@ static pointer new_penalty (integer m)
   pointer p; // {the new node}
 
   p = get_node(medium_node_size);
-  type(p) = penalty_node;
+  type(p) = penalty_node; // {the |subtype| is not used}
   subtype(p) = 0;
   penalty(p) = m;
 
@@ -38879,14 +38882,17 @@ void close_files_and_terminate (void)
 
 #ifndef APTEX_DVI_ONLY
   if (!fixed_pdfoutput_set) fix_pdfoutput();
-  if (fixed_pdfoutput > 0) {
+  if (fixed_pdfoutput > 0)
+  {
     if (history == fatal_error_stop)
       print_err(" ==> Fatal error occurred, the output PDF file is not finished!");
-    else {
+    else
+    {
       // @<Finish the PDF file@>
       if (total_pages == 0)
-      print_nl("No pages of output.");
-      else {
+        print_nl("No pages of output.");
+      else
+      {
         spc_exec_at_end_document();
         pdf_close_document();
         pdf_close_fontmaps();
@@ -38906,89 +38912,89 @@ void close_files_and_terminate (void)
         prints(" bytes).");
       }
     }
-  } else
+  }
+  else
 #endif
-    // @<Finish the \.{DVI} file@>
+  // @<Finish the \.{DVI} file@>
+  {
+    while (cur_s > -1)
     {
-      while (cur_s > -1)
-        {
-          if (cur_s > 0)
-            dvi_out(pop);
-          else
-            {
-              dvi_out(eop);
-              incr(total_pages);
-            }
-
-          decr(cur_s);
-        }
-
-      if (total_pages == 0)
-        print_nl("No pages of output.");
+      if (cur_s > 0)
+        dvi_out(pop);
       else
-        {
+      {
+        dvi_out(eop);
+        incr(total_pages);
+      }
 
-          dvi_out(post);  // {beginning of the postamble}
-          dvi_four(last_bop);
-          last_bop = dvi_offset + dvi_ptr - 5;  // {|post| location}
-          dvi_four(25400000);
-          dvi_four(473628672);  // {conversion ratio for sp}
-          prepare_mag();
-          dvi_four(mag);  // {magnification factor}
-          dvi_four(max_v);
-          dvi_four(max_h);
-          dvi_out(max_push / 256);
-          dvi_out(max_push % 256);
-          dvi_out((total_pages / 256) % 256);
-          dvi_out(total_pages % 256);
-
-          // @<Output the font definitions for all fonts that were used@>
-          while (font_ptr > font_base)
-            {
-              if (font_used[font_ptr])
-                dvi_font_def(font_ptr);
-
-              decr(font_ptr);
-            }
-
-          dvi_out(post_post);
-          dvi_four(last_bop);
-
-          if (dir_used)
-            dvi_out(ex_id_byte);
-          else
-            dvi_out(id_byte);
-
-          k = 4 + ((dvi_buf_size - dvi_ptr) % 4); // {the number of 223's}
-
-          while (k > 0)
-            {
-              dvi_out(223);
-              decr(k);
-            }
-
-          // @<Empty the last bytes out of |dvi_buf|@>
-          if (dvi_limit == half_buf)
-            write_dvi(half_buf, dvi_buf_size - 1);
-
-          if (dvi_ptr > 0)
-            write_dvi(0, dvi_ptr - 1);
-
-          print_nl("Output written on ");
-          slow_print(output_file_name);
-          prints(" (");
-          print_int(total_pages);
-          prints(" page");
-
-          if (total_pages != 1)
-            print_char('s');
-
-          prints(", ");
-          print_int(dvi_offset + dvi_ptr);
-          prints(" bytes).");
-          b_close(dvi_file);
-        }
+      decr(cur_s);
     }
+
+    if (total_pages == 0)
+      print_nl("No pages of output.");
+    else
+    {
+      dvi_out(post);  // {beginning of the postamble}
+      dvi_four(last_bop);
+      last_bop = dvi_offset + dvi_ptr - 5;  // {|post| location}
+      dvi_four(25400000);
+      dvi_four(473628672);  // {conversion ratio for sp}
+      prepare_mag();
+      dvi_four(mag);  // {magnification factor}
+      dvi_four(max_v);
+      dvi_four(max_h);
+      dvi_out(max_push / 256);
+      dvi_out(max_push % 256);
+      dvi_out((total_pages / 256) % 256);
+      dvi_out(total_pages % 256);
+
+      // @<Output the font definitions for all fonts that were used@>
+      while (font_ptr > font_base)
+      {
+        if (font_used[font_ptr])
+          dvi_font_def(font_ptr);
+
+        decr(font_ptr);
+      }
+
+      dvi_out(post_post);
+      dvi_four(last_bop);
+
+      if (dir_used)
+        dvi_out(ex_id_byte);
+      else
+        dvi_out(id_byte);
+
+      k = 4 + ((dvi_buf_size - dvi_ptr) % 4); // {the number of 223's}
+
+      while (k > 0)
+      {
+        dvi_out(223);
+        decr(k);
+      }
+
+      // @<Empty the last bytes out of |dvi_buf|@>
+      if (dvi_limit == half_buf)
+        write_dvi(half_buf, dvi_buf_size - 1);
+
+      if (dvi_ptr > 0)
+        write_dvi(0, dvi_ptr - 1);
+
+      print_nl("Output written on ");
+      slow_print(output_file_name);
+      prints(" (");
+      print_int(total_pages);
+      prints(" page");
+
+      if (total_pages != 1)
+        print_char('s');
+
+      prints(", ");
+      print_int(dvi_offset + dvi_ptr);
+      prints(" bytes).");
+      b_close(dvi_file);
+    }
+  }
 
   // @<Close {\sl Sync\TeX} file and write status@>
   synctex_terminate(log_opened);
