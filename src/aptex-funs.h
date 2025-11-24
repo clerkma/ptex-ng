@@ -381,18 +381,18 @@ static void tex_help (unsigned int n, ...)
 _Noreturn static void succumb (void)
 {
   if (interaction == error_stop_mode)
-    interaction = scroll_mode;
+    interaction = scroll_mode; // {no more interaction}
 
   if (log_opened)
     error();
 
 #ifdef APTEX_DEBUG
-  if (interaction > 0)
+  if (interaction > batch_mode)
     debug_help();
 #endif
 
-  history = error_stop_mode;
-  jump_out();
+  history = fatal_error_stop;
+  jump_out(); // {irrecoverable error}
 }
 /* sec 0096 */
 static inline void check_interrupt (void)
