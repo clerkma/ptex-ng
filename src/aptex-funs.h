@@ -135,7 +135,7 @@ void assign_trace (pointer p, const char * s);
 
 void show_context (void);
 void end_token_list (void);
-void back_input (void);
+static void back_input (void);
 void begin_file_reading (void);
 void end_file_reading (void);
 void clear_for_error_prompt (void);

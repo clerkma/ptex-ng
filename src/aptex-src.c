@@ -8805,7 +8805,7 @@ pointer get_avail (void)
 
   p = avail; // {get top location in the |avail| stack}
 
-  if (p != null)
+  if (likely(p != null))
     avail = link(avail); // {and pop it off}
   else if (mem_end < mem_max) // {or go into virgin territory}
   {
@@ -14272,7 +14272,7 @@ void begin_token_list (pointer p, quarterword t)
   {
     add_token_ref(p);
 
-    if (t == macro)
+    if (likely(t == macro))
       param_start = param_ptr;
     else
     {
@@ -14331,7 +14331,7 @@ void end_token_list (void)
         fatal_error("Unbalanced output routine");
     }
   }
-  else if (token_type == u_template)
+  else if (unlikely(token_type == u_template))
   {
     if (align_state > 500000)
       align_state = 0;
@@ -14344,7 +14344,7 @@ void end_token_list (void)
 }
 
 // undoes one token of input
-void back_input (void)
+static void back_input (void)
 {
   pointer p;  // {a token list of length one}
 
@@ -14597,7 +14597,7 @@ void get_token (void)
 
   if (cur_cs == 0)
   {
-    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+    if (unlikely((cur_cmd >= kanji) && (cur_cmd <= hangul)))
       cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
     else
       cur_tok = (cur_cmd * max_char_val) + cur_chr;
@@ -14631,7 +14631,7 @@ static void macro_call (void)
   r = link(ref_count);
   n = 0;
 
-  if (tracing_macros > 0)
+  if (unlikely(tracing_macros > 0))
   {
     // @<Show the text of the macro being expanded@>
     begin_diagnostic();
@@ -14677,7 +14677,7 @@ static void macro_call (void)
     unbalance = 0;
     long_state = eq_type(cur_cs);
 
-    if (long_state >= outer_call)
+    if (unlikely(long_state >= outer_call))
       long_state = long_state - 2;
 
     do {
@@ -14714,7 +14714,7 @@ continu:
 
       if (s != r)
       {
-        if (s == null)
+        if (unlikely(s == null))
         {
           print_err("Use of ");
           sprint_cs(warning_index);
@@ -14749,7 +14749,7 @@ continu:
                 }
               }
 
-              if (info(u) != info(v))
+              if (likely(info(u) != info(v)))
                 goto done;
 
               u = link(u);
@@ -14763,7 +14763,7 @@ done:
         }
       }
 
-      if (cur_tok == par_token)
+      if (unlikely(cur_tok == par_token))
       {
         if (long_state != long_call)
         {
@@ -14790,7 +14790,7 @@ done:
       }
 
       if (cur_tok < right_brace_limit)
-        if (cur_tok < left_brace_limit)
+        if (likely(cur_tok < left_brace_limit))
         {
           unbalance = 1;
 
@@ -14800,7 +14800,7 @@ done:
             get_token();
 
             if (cur_tok == par_token)
-              if (long_state != long_call)
+              if (unlikely(long_state != long_call))
               {
                 if (long_state == call)
                 {
@@ -14896,7 +14896,7 @@ found:
 
         incr(n);
 
-        if (tracing_macros > 0)
+        if (unlikely(tracing_macros > 0))
           if ((tracing_stack_levels == 0) || (input_ptr < tracing_stack_levels))
           {
             begin_diagnostic();
@@ -14978,7 +14978,7 @@ reswitch:
   {
     // @<Expand a nonmacro@>
 
-    if (tracing_commands > 1)
+    if (unlikely(tracing_commands > 1))
       show_cur_cmd_chr();
 
     switch (cur_cmd)
@@ -15118,7 +15118,7 @@ reswitch:
               store_new_token(cur_tok);
           } while (!(cur_cs != 0));
 
-          if (cur_cmd != end_cs_name)
+          if (unlikely(cur_cmd != end_cs_name))
           {
             print_err("Missing ");
             print_esc("endcsname");
@@ -15221,7 +15221,7 @@ reswitch:
 
       case fi_or_else:
         {
-          if (tracing_ifs > 0)
+          if (unlikely(tracing_ifs > 0))
           {
             if (tracing_commands <= 1)
               show_cur_cmd_chr();
@@ -15283,7 +15283,7 @@ reswitch:
         break;
     }
   }
-  else if (cur_cmd < end_template)
+  else if (likely(cur_cmd < end_template))
     macro_call();
   else
   {
@@ -15304,7 +15304,7 @@ void get_x_token (void)
 restart:
   get_next();
 
-  if (cur_cmd <= max_command)
+  if (likely(cur_cmd <= max_command))
     goto done;
 
   if (cur_cmd >= call)
@@ -15324,9 +15324,9 @@ restart:
   goto restart;
 
 done:
-  if (cur_cs == 0)
+  if (likely(cur_cs == 0))
   {
-    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+    if (unlikely(cur_cmd >= kanji) && (cur_cmd <= hangul))
       cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
     else
       cur_tok = (cur_cmd * max_char_val) + cur_chr;
@@ -15344,7 +15344,7 @@ void x_token (void)
     get_next();
   }
 
-  if (cur_cs == 0)
+  if (likely(cur_cs == 0))
   {
     if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
       cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
@@ -15362,7 +15362,7 @@ void scan_left_brace (void)
     get_x_token();
   } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
 
-  if (cur_cmd != left_brace)
+  if (unlikely(cur_cmd != left_brace))
   {
     print_err("Missing { inserted");
     help4("A left brace was mandatory here, so I've put one in.",
@@ -16538,7 +16538,7 @@ void get_next (void)
 restart:
   cur_cs = 0;
 
-  if (state != token_list)
+  if (unlikely(state != token_list))
   {
 lab_switch:
     if (loc <= limit)
