@@ -587,16 +587,19 @@ static void aptex_warning (const char * t, const char * p)
   if (interaction == error_stop_mode)
     wake_up_terminal();
   print("Asiatic pTeX warning");
-  if (t != 0) {
+  if (t != 0)
+  {
     prints(" (");
     prints(t);
     prints(")");
   }
-  prints(": "); prints(p);
-  if (history==spotless) history=warning_issued;
+  prints(": ");
+  prints(p);
+  if (history == spotless)
+    history = warning_issued;
 }
 
-static inline integer get_microinterval(void)
+static inline integer get_microinterval (void)
 {
   integer s, m;
 
@@ -726,29 +729,36 @@ static inline void write_ln (alpha_file f)
 
 /* HZ */
 
-static inline integer fix_int(integer val, integer min, integer max)
+static inline integer fix_int (integer val, integer min, integer max)
 {
   return (val < min ? min : (val > max ? max : val));
 }
 
-static inline integer get_lp_code(internal_font_number f, integer c) {
+static inline integer get_lp_code (internal_font_number f, integer c)
+{
   return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->lp[c];
 }
-static inline integer get_rp_code(internal_font_number f, integer c) {
+
+static inline integer get_rp_code (internal_font_number f, integer c)
+{
   return pdf_font_base[f] == NULL ? 0 : pdf_font_base[f]->rp[c];
 }
-static inline integer get_ef_code(internal_font_number f, integer c) {
+
+static inline integer get_ef_code (internal_font_number f, integer c)
+{
   return pdf_font_base[f] == NULL ? 1000 : pdf_font_base[f]->ef[c];
 }
 
-static pointer prev_rightmost(pointer s, pointer e) {
+static pointer prev_rightmost (pointer s, pointer e)
+{
   /* {finds the node preceding the rightmost node |e|; |s| is some node
      before |e|} */
   pointer p;
   p = s;
   if (p == null)
     return null;
-  while (link(p) != e) {
+  while (link(p) != e)
+  {
     p = link(p);
     if (p == null)
       return null;
@@ -756,15 +766,17 @@ static pointer prev_rightmost(pointer s, pointer e) {
   return p;
 }
 
-static scaled round_xn_over_d(scaled x, integer n, integer d)
+static scaled round_xn_over_d (scaled x, integer n, integer d)
 {
   boolean positive = true;
   nonnegative_integer t, u, v;
-  if (x < 0) {
+  if (x < 0)
+  {
     positive = !positive;
     x = -(x);
   }
-  if (n < 0) {
+  if (n < 0)
+  {
     positive = !positive;
     n = -(n);
   }
@@ -785,33 +797,40 @@ static scaled round_xn_over_d(scaled x, integer n, integer d)
 }
 
 #define max_integer 0x7FFFFFFF
-scaled divide_scaled(scaled s, scaled m, integer dd)
+static scaled divide_scaled (scaled s, scaled m, integer dd)
 {
   scaled q;
   scaled r;
   integer i;
   integer sign = 1;
-  if (s < 0) {
+  if (s < 0)
+  {
     sign = -sign;
     s = -s;
   }
-  if (m < 0) {
+  if (m < 0)
+  {
     sign = -sign;
     m = -m;
   }
-  if (m == 0) {
+  if (m == 0)
+  {
     aptex_error("arithmetic", "divided by zero");
-  } else if (m >= (max_integer / 10)) {
+  }
+  else if (m >= (max_integer / 10))
+  {
     aptex_error("arithmetic", "number too big");
   }
   q = s / m;
   r = s % m;
-  for (i = 1; i <= dd; i++) {
+  for (i = 1; i <= dd; i++)
+  {
     q = 10 * q + (10 * r) / m;
     r = (10 * r) % m;
   }
   /*tex Rounding: */
-  if (2 * r >= m) {
+  if (2 * r >= m)
+  {
     q++;
   }
   return sign * q;
@@ -844,12 +863,14 @@ static void set_lp_code (internal_font_number f, eight_bits c, integer i)
     pdf_font_base[f] = init_font_base();
   pdf_font_base[f]->lp[c] = fix_int(i, -1000, 1000);
 }
+
 static void set_rp_code (internal_font_number f, eight_bits c, integer i)
 {
   if (pdf_font_base[f] == NULL)
     pdf_font_base[f] = init_font_base();
   pdf_font_base[f]->rp[c] = fix_int(i, -1000, 1000);
 }
+
 static void set_ef_code (internal_font_number f, eight_bits c, integer i)
 {
   if (pdf_font_base[f] == NULL)
@@ -857,7 +878,7 @@ static void set_ef_code (internal_font_number f, eight_bits c, integer i)
   pdf_font_base[f]->ef[c] = fix_int(i, 0, 1000);
 }
 
-static void free_font_base(void)
+static void free_font_base (void)
 {
   while (fontinfo_root != NULL)
   {
