@@ -4760,11 +4760,11 @@ bad_fmt:
 
   return false;
 }
-
+// checked
 /* sec 1335 */
 static void final_cleanup (void)
 {
-  small_number c;
+  small_number c; // {0 for \.{\\end}, 1 for \.{\\dump}}
 
   c = cur_chr;
 
@@ -4850,7 +4850,7 @@ static void final_cleanup (void)
           sa_mark = null;
       }
 
-      for (c = last_box_code; c <= vsplit_code; ++c)
+      for (c = last_box_code; c <= vsplit_code; c++)
         flush_node_list(disc_ptr[c]);
 
       if (last_glue != max_halfword)
@@ -5241,7 +5241,7 @@ static void reset_trie (void)
 }
 
 /* borrowed code from initialize() */
-static void reset_hyphen(void)
+static void reset_hyphen (void)
 {
   hyph_pointer z;
 
@@ -5253,17 +5253,17 @@ static void reset_hyphen(void)
 
   hyph_count = 0;
 }
-
+// checked
 /* sec 0047 */
 static boolean get_strings_started (void)
 {
-  integer k;
-  str_number g;
+  integer k; // {small indices or counters}
+  str_number g; // {garbage}
 
   pool_ptr = 0;
   str_ptr = 0;
   str_start[0] = 0;
-
+  // @<Make the first 256 strings@>
   for (k = 0; k <= 255; k++)
   {
     if (((k < ' ') || (k > '~')) && !(ismultiprn(k)))
@@ -5271,10 +5271,10 @@ static boolean get_strings_started (void)
       append_char('^');
       append_char('^');
 
-      if (k < 64)
-        append_char(k + 64);
-      else if (k < 128)
-        append_char(k - 64);
+      if (k < 0100)
+        append_char(k + 0100);
+      else if (k < 0200)
+        append_char(k - 0100);
       else
       {
         append_lc_hex(k / 16);
@@ -5299,18 +5299,20 @@ static boolean get_strings_started (void)
 }
 
 /* sec 0131 */
+// {sorts the available variable-size nodes by location}
 static void sort_avail (void)
 {
-  pointer p, q, r;
-  pointer old_rover;
+  pointer p, q, r; // {indices into |mem|}
+  pointer old_rover; // {initial |rover| setting}
 
-  p = get_node(010000000000);
+  p = get_node(010000000000); // {merge adjacent free areas}
   p = rlink(rover);
   rlink(rover) = max_halfword;
   old_rover = rover;
 
   while (p != old_rover)
   {
+    // @<Sort \(p)|p|...@>
     if (p < rover)
     {
       q = p;
@@ -5392,7 +5394,6 @@ static void primitive_ (str_number s, quarterword c, halfword o)
   {
     k = str_start[s];
     l = str_start[s + 1] - k;
-
 #ifdef APTEX_EXTENSION
     if (first + l > current_buf_size + 1)
       buffer = realloc_buffer(increment_buf_size);
@@ -5403,7 +5404,6 @@ static void primitive_ (str_number s, quarterword c, halfword o)
     if (first + l > buf_size + 1)
       overflow("buffer size", buf_size);
 #endif
-
     for (j = 0; j <= l - 1; j++)
       buffer[first + j] = str_pool[k + j];
 
@@ -5423,9 +5423,9 @@ static void primitive_ (str_number s, quarterword c, halfword o)
 /* sec 0944 */
 static trie_op_code new_trie_op (small_number d, small_number n, trie_op_code v)
 {
-  integer h;
-  trie_op_code u;
-  integer l;
+  integer h; // {trial hash location}
+  trie_op_code u; // {trial op code}
+  integer l; // {pointer to stored data}
 
   h = abs(n + 313 * d + 361 * v + 1009 * cur_lang) % (trie_op_size + trie_op_size) + neg_trie_op_size;
 
@@ -5472,10 +5472,11 @@ static trie_op_code new_trie_op (small_number d, small_number n, trie_op_code v)
   }
 }
 /* sec 0948 */
+// {converts to a canonical form}
 static trie_pointer trie_node (trie_pointer p)
 {
-  trie_pointer h;
-  trie_pointer q;
+  trie_pointer h; // {trial hash location}
+  trie_pointer q; // {trial trie node}
 
   /* compute hash value */
   h = abs(trie_c[p] + 1009 * trie_o[p] + 2718 * trie_l[p] + 3142 * trie_r[p]) % trie_size;
@@ -5516,17 +5517,18 @@ static trie_pointer compress_trie (trie_pointer p)
   }
 }
 /* sec 0953 */
+// {packs a family into |trie|}
 static void first_fit (trie_pointer p)
 {
-  trie_pointer h;
-  trie_pointer z;
-  trie_pointer q;
-  ASCII_code c;
-  trie_pointer l, r;
-  short ll;
+  trie_pointer h; // {candidate for |trie_ref[p]|}
+  trie_pointer z; // {runs through holes}
+  trie_pointer q; // {runs through the family starting at |p|}
+  ASCII_code c; // {smallest character in the family}
+  trie_pointer l, r; // {left and right neighbors}
+  short ll; // {upper limit of |trie_min| updating}
 
   c = trie_c[p];
-  z = trie_min[c];
+  z = trie_min[c]; // {get the first conceivably good hole}
 
   while (true)
   {
@@ -5838,7 +5840,7 @@ done:
       p = trie_l[q];
       first_child = true;
 
-      for (c = 0; c <= 255; ++c)
+      for (c = 0; c <= 255; c++)
       {
         if ((lc_code(c) > 0) || ((c == 255) && first_child))
         {
@@ -14270,6 +14272,7 @@ void begin_token_list (pointer p, quarterword t)
 
   if (t >= macro)
   {
+    // {the token list starts with a reference count}
     add_token_ref(p);
 
     if (t == macro)
@@ -14307,7 +14310,7 @@ void begin_token_list (pointer p, quarterword t)
   else
     loc = p;
 }
-
+// checked
 // leave a token-list input level
 void end_token_list (void)
 {
@@ -20737,10 +20740,15 @@ static pointer new_character (internal_font_number f, eight_bits c)
   char_warning(f, c);
   return null;
 }
-
+// checked
 // {outputs half of the buffer}
 void dvi_swap (void)
 {
+  if (dvi_ptr > (0x7FFFFFFF - dvi_offset))
+  {
+    cur_s = -2;
+    fatal_error("dvi length exceeds \"7FFFFFFF");
+  }
   if (dvi_limit == dvi_buf_size)
   {
     write_dvi(0, half_buf - 1);
@@ -20782,14 +20790,14 @@ static void dvi_pop (integer l)
   else
     dvi_out(pop);
 }
-
+// checked
 void movement (scaled w, eight_bits o)
 {
-  small_number mstate;
-  pointer p, q;
-  integer k;
+  small_number mstate; // {have we seen a |y| or |z|?}
+  pointer p, q; // {current and top nodes on the stack}
+  integer k; // {index into |dvi_buf|, modulo |dvi_buf_size|}
 
-  q = get_node(movement_node_size);
+  q = get_node(movement_node_size); // {new node for the top of the stack}
   width(q) = w;
   location(q) = dvi_offset + dvi_ptr;
 
@@ -20803,7 +20811,7 @@ void movement (scaled w, eight_bits o)
     link(q) = right_ptr;
     right_ptr = q;
   }
-
+  // @<Look at the other stack entries until deciding...@>
   p = link(q);
   mstate = none_seen;
 
@@ -20811,6 +20819,7 @@ void movement (scaled w, eight_bits o)
   {
     if (width(p) == w)
     {
+      // @<Consider a node with matching width...@>
       switch (mstate + info(p))
       {
         case none_seen + yz_OK:
@@ -20821,6 +20830,7 @@ void movement (scaled w, eight_bits o)
             goto not_found;
           else
           {
+            // @<Change buffered instruction to |y| or |w| and |goto found|@>
             k = location(p) - dvi_offset;
 
             if (k < 0)
@@ -20839,6 +20849,7 @@ void movement (scaled w, eight_bits o)
             goto not_found;
           else
           {
+            // @<Change buffered instruction to |z| or |x| and |goto found|@>
             k = location(p) - dvi_offset;
 
             if (k < 0)
@@ -20889,12 +20900,12 @@ void movement (scaled w, eight_bits o)
   }
 
 not_found:
-
+  // @<Generate a |down| or |right| command for |w| and |return|@>
   info(q) = yz_OK;
 
   if (abs(w) >= 040000000)
   {
-    dvi_out(o + 3);
+    dvi_out(o + 3); // {|down4| or |right4|}
     dvi_four(w);
 
     return;
@@ -20902,7 +20913,7 @@ not_found:
 
   if (abs(w) >= 0100000)
   {
-    dvi_out(o + 2);
+    dvi_out(o + 2); // {|down3| or |right3|}
 
     if (w < 0)
       w = w + 0100000000;
@@ -20913,36 +20924,37 @@ not_found:
     goto lab2;
   }
 
-  if (abs(w) >= 128)
+  if (abs(w) >= 0200)
   {
-    dvi_out(o + 1);
+    dvi_out(o + 1); // {|down2| or |right2|}
 
     if (w < 0)
-      w = w + 65536L;
+      w = w + 0200000;
 
     goto lab2;
   }
 
-  dvi_out(o);
+  dvi_out(o); // {|down1| or |right1|}
 
   if (w < 0)
-    w = w + 256;
+    w = w + 0400;
 
   goto lab1;
 
 lab2:
-  dvi_out(w / 256);
+  dvi_out(w / 0400);
 
 lab1:
-  dvi_out(w % 256);
+  dvi_out(w % 0400);
   return;
 
 found:
+  // @<Generate a |y0| or |z0| command...@>
   info(q) = info(p);
 
   if (info(q) == y_here)
   {
-    dvi_out(o + y0 - down1);
+    dvi_out(o + y0 - down1); // {|y0| or |w0|}
 
     while (link(q) != p)
     {
@@ -20966,7 +20978,7 @@ found:
   }
   else
   {
-    dvi_out(o + z0 - down1);
+    dvi_out(o + z0 - down1); // {|z0| or |x0|}
 
     while (link(q) != p)
     {
@@ -20989,10 +21001,11 @@ found:
     }
   }
 }
-
+// checked
+// {delete movement nodes with |location>=l|}
 void prune_movements (integer l)
 {
-  pointer p;
+  pointer p; // {node being deleted}
 
   while (down_ptr != null)
   {
@@ -21135,7 +21148,8 @@ static void aptex_dpx_eop (void)
 
 static void check_pdfversion (void)
 {
-  if (!pdf_version_written) {
+  if (!pdf_version_written)
+  {
     pdf_version_written = true;
     fixed_pdf_major_version = pdf_major_version;
     fixed_pdf_minor_version = pdf_minor_version;
@@ -21144,7 +21158,8 @@ static void check_pdfversion (void)
     aptex_error("setup", "PDF version cannot be changed after data is written to the pdf file");
 }
 
-static void pdf_prepare_ship_out(void) {
+static void pdf_prepare_ship_out(void)
+{
   struct pdf_setting aptex_pdf_setting;
   char * aptex_producer = "Asiatic pTeX 2025";
   int aptex_pdf_version;
@@ -21156,15 +21171,15 @@ static void pdf_prepare_ship_out(void) {
 
   aptex_pdf_version = 10 * pdf_major_version + pdf_minor_version;
   if ((aptex_pdf_version < PDF_VERSION_MIN) || (aptex_pdf_version > PDF_VERSION_MAX))
-    {
-      aptex_pdf_setting.ver_major = 1;
-      aptex_pdf_setting.ver_minor = 5;
-    }
+  {
+    aptex_pdf_setting.ver_major = 1;
+    aptex_pdf_setting.ver_minor = 5;
+  }
   else
-    {
-      aptex_pdf_setting.ver_major = pdf_major_version;
-      aptex_pdf_setting.ver_minor = pdf_minor_version;
-    }
+  {
+    aptex_pdf_setting.ver_major = pdf_major_version;
+    aptex_pdf_setting.ver_minor = pdf_minor_version;
+  }
 
   if ((pdf_compress_level < 0) || (pdf_compress_level > 9))
     aptex_pdf_setting.object.compression_level = 9;
@@ -21192,19 +21207,19 @@ static void pdf_prepare_ship_out(void) {
     pdf_load_fontmap_file("dvipdfm.map", '+');
 
   if (aptex_env.aptex_map != NULL)
+  {
+    switch (aptex_env.aptex_map[0])
     {
-      switch (aptex_env.aptex_map[0])
-        {
-        case '+':
-          if (kpse_find_file(aptex_env.aptex_map + 1, kpse_fontmap_format, false) != NULL)
-            pdf_load_fontmap_file(aptex_env.aptex_map + 1, '+');
-          break;
-        case '!':
-          if(kpse_find_file(aptex_env.aptex_map + 1, kpse_fontmap_format, false) != NULL)
-            pdf_load_fontmap_file(aptex_env.aptex_map + 1, 0);
-          break;
-        }
+      case '+':
+        if (kpse_find_file(aptex_env.aptex_map + 1, kpse_fontmap_format, false) != NULL)
+          pdf_load_fontmap_file(aptex_env.aptex_map + 1, '+');
+        break;
+      case '!':
+        if(kpse_find_file(aptex_env.aptex_map + 1, kpse_fontmap_format, false) != NULL)
+          pdf_load_fontmap_file(aptex_env.aptex_map + 1, 0);
+        break;
     }
+  }
 #endif /* USE_KPATHSEA */
 
   aptex_pdf_setting.media_width = 595.0;
@@ -21513,23 +21528,23 @@ static void read_expand_font (void) // {read font expansion spec and load expand
       pdf_font_shrink[f] = get_expand_font(f, -shrink_limit);
   }
 }
-
+// checked
 // ship out part
 static void dvi_font_def (internal_font_number f)
 {
-  pool_pointer k;
+  pool_pointer k; // {index into |str_pool|}
 
 #ifdef APTEX_EXTENSION
-  if (f <= 256)
+  if (f <= 256 + font_base)
   {
     dvi_out(fnt_def1);
-    dvi_out(f - 1);
+    dvi_out(f - font_base - 1);
   }
   else
   {
     dvi_out(fnt_def2);
-    dvi_out(((f - 1) >> 8));
-    dvi_out(((f - 1) & 255));
+    dvi_out(((f - font_base - 1) >> 8));
+    dvi_out(((f - font_base - 1) & 255));
   }
 #else
   dvi_out(fnt_def1);
@@ -21544,7 +21559,7 @@ static void dvi_font_def (internal_font_number f)
   dvi_four(font_dsize[f]);
   dvi_out(length(font_area[f]));
   dvi_out(length(font_name[f]));
-
+  // @<Output the font name whose internal number is |f|@>
   for (k = str_start[font_area[f]]; k <= str_start[font_area[f] + 1] - 1; k++)
     dvi_out(str_pool[k]);
 
@@ -24175,10 +24190,13 @@ void out_what (pointer p)
         else
         {
           if (write_open[j])
+          {
             a_close(write_file[j]);
+            write_open[j] = false;
+          }
 
           if (subtype(p) == close_node)
-            write_open[j] = false;
+            do_nothing(); // {already closed}
           else if (j < 16)
           {
             cur_name = open_name(p);
@@ -29339,7 +29357,7 @@ static pointer pop_node(void)
 }
 
 static pointer
-find_protchar_left(pointer l, boolean d)
+find_protchar_left (pointer l, boolean d)
 {
   pointer t;
   boolean run;
@@ -32848,13 +32866,14 @@ void normal_paragraph (void)
 
 static void box_end (integer box_context)
 {
-  pointer p;
-  small_number a;
+  pointer p; // {|ord_noad| for new box in math mode}
+  small_number a; // {global prefix}
   pointer q;
 
   if (box_context < box_flag)
   {
-    if (cur_box != 0)
+    // @<Append box |cur_box| to the current...@>
+    if (cur_box != null)
     {
       p = link(cur_box);
       link(cur_box) = null;
@@ -32885,19 +32904,22 @@ static void box_end (integer box_context)
 
       if (abs(mode) == vmode)
       {
-        if (pre_adjust_tail != null) {
+        if (pre_adjust_tail != null)
+        {
           if (pre_adjust_head != pre_adjust_tail)
             append_list(pre_adjust_head, pre_adjust_tail);
           pre_adjust_tail = null;
         }
         append_to_vlist(cur_box);
-        if (adjust_tail != null) {
+        if (adjust_tail != null)
+        {
           if (adjust_head != adjust_tail)
             append_list(adjust_head, adjust_tail);
           adjust_tail = null;
         }
 
-        if (mode > 0) build_page();
+        if (mode > 0)
+          build_page();
       }
       else
       {
@@ -32937,7 +32959,7 @@ static void box_end (integer box_context)
     else
       sa_def_box();
   }
-  else if (cur_box != 0)
+  else if (cur_box != null)
     if (box_context > ship_out_flag)
     {
       do {
@@ -32993,22 +33015,22 @@ static void box_end (integer box_context)
     else
       ship_out(cur_box);
 }
-
+// checked
 static void begin_box (integer box_context)
 {
-  pointer p, q;
-  pointer r;
-  pointer s;
+  pointer p, q; // {run through the current list}
+  pointer r; // {running behind |p|}
+  pointer s; // {running behind |r|}
   pointer t;
-  integer fm;
-  integer gm;
-  boolean fd, gd;
-  scaled disp, pdisp;
-  eight_bits a_dir;
-  pointer tx;
-  quarterword m;
-  halfword k;
-  halfword n;
+  integer fm; // {1: if |r|, 2: if |p| is a \.{\\beginM} node}
+  integer gm; // {1: if |link(q)|, 2: if |q| is an  \.{\\endM} node}
+  boolean fd, gd; // {same for |disp_node|}
+  scaled disp, pdisp; // {displacement}
+  eight_bits a_dir; // {adjust direction}
+  pointer tx; // {effective tail node}
+  quarterword m; // {the length of a replacement list}
+  halfword k; // {0 or |vmode| or |hmode|}
+  halfword n; // {a box number}
 
   switch (cur_chr)
   {
@@ -33016,7 +33038,7 @@ static void begin_box (integer box_context)
       {
         scan_register_num();
         fetch_box(cur_box);
-        change_box(null);
+        change_box(null); // {the box becomes void, at the same level}
       }
       break;
 
@@ -33030,6 +33052,7 @@ static void begin_box (integer box_context)
 
     case last_box_code:
       {
+        // @<If the current list ends with a box node, delete it...@>
         cur_box = null;
 
         if (abs(mode) == mmode)
@@ -33053,6 +33076,7 @@ static void begin_box (integer box_context)
             if ((type(tx) == hlist_node) || (type(tx) == vlist_node) ||
               (type(tx) == dir_node))
             {
+              // @<Remove the last box...@>
               fetch_effective_tail(goto done);
               cur_box = tx;
               shift_amount(cur_box) = 0;
@@ -33073,6 +33097,7 @@ done:;
 
     case vsplit_code:
       {
+        // @<Split off part of a vertical box, make |cur_box| point to it@>
         scan_register_num();
         n = cur_val;
 
@@ -33141,7 +33166,7 @@ done:;
       break;
   }
 
-  box_end(box_context);
+  box_end(box_context); // {in simple cases, we use the box immediately}
 }
 
 // the next input should specify a box or perhaps a rule
@@ -33269,9 +33294,9 @@ static void end_graf (void)
       tail = head;
       link(head) = null;
     }
-
+    // { |disp_node|-only paragraphs are ignored }
     if (head == tail)
-      pop_nest();
+      pop_nest(); // {null paragraphs are ignored}
     else
     {
       adjust_hlist(head, true);
@@ -33309,11 +33334,11 @@ static void begin_insert_or_adjust (void)
   }
 
   saved(0) = cur_val;
-  if (cur_cmd == vadjust && scan_keyword("pre"))
+  if ((cur_cmd == vadjust) && scan_keyword("pre"))
     saved(1) = 1;
   else
     saved(1) = 0;
-  save_ptr += 2;
+  save_ptr = save_ptr + 2;
   inhibit_glue_flag = false;
   new_save_level(insert_group);
   scan_left_brace();
@@ -33380,6 +33405,7 @@ static void delete_last (void)
 
   if ((mode == vmode) && (tail == head))
   {
+    // @<Apologize for inability to do the operation...@>
     if ((cur_chr != glue_node) || (last_glue != max_halfword))
     {
       you_cant();
@@ -33415,6 +33441,7 @@ static void unpackage (void)
 
   if (cur_chr > copy_code)
   {
+    // @<Handle saved items and |goto done|@>
     link(tail) = disc_ptr[cur_chr];
     disc_ptr[cur_chr] = null;
     goto done;
@@ -33479,6 +33506,8 @@ static void unpackage (void)
 done:
   while (link(tail) != null)
   {
+    // {reset |inhibit_glue_flag| when a node other than |disp_node| is found;
+    //  |disp_node| is always inserted according to tex-jp-build issue 40}
     p = tail;
     /* [1110] - margin kerning */
     pointer r = link(tail); // {to remove marginal kern nodes}
@@ -37377,6 +37406,7 @@ static void handle_right_brace (void)
       }
       else
       {
+        // @<Resume the page builder after an output routine has come to an end@>
         while ((state == token_list) && (loc == null) && (token_type == backed_up))
           end_token_list(); // {output-ending brace may have been backed-up}
         if ((state != token_list) || (loc != null) || (token_type != output_text))
@@ -37912,7 +37942,7 @@ reswitch:
         if (align_state < 0)
           off_save();
 
-        end_graf();
+        end_graf(); // {this takes us to the enclosing mode, if |mode>0|}
 
         if (mode == vmode)
           build_page();
@@ -38144,7 +38174,7 @@ reswitch:
         mode = -vmode;
         prev_depth = ignore_depth;
 
-        if (every_vbox != 0)
+        if (every_vbox != null)
           begin_token_list(every_vbox, every_vbox_text);
       }
       break;

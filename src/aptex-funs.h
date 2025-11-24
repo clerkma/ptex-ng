@@ -406,7 +406,6 @@ static inline void check_full_save_stack (void)
   if (save_ptr > max_save_stack)
   {
     max_save_stack = save_ptr;
-
 #ifdef APTEX_EXTENSION
     if (max_save_stack > current_save_size - 7)
       save_stack = realloc_save_stack(increment_save_size);
@@ -422,10 +421,10 @@ static inline void check_full_save_stack (void)
 /* sec 0321 */
 static inline void push_input (void)
 {
+  // {enter a new input level, save the old}
   if (input_ptr > max_in_stack)
   {
     max_in_stack = input_ptr;
-
 #ifdef APTEX_EXTENSION
     if (input_ptr == current_stack_size)
       input_stack = realloc_input_stack(increment_stack_size);
@@ -437,13 +436,13 @@ static inline void push_input (void)
       overflow("input stack size", stack_size);
 #endif
   }
-
-  input_stack[input_ptr] = cur_input;
+  input_stack[input_ptr] = cur_input; // {stack the record}
   incr(input_ptr);
 }
 /* sec 0322 */
 static inline void pop_input (void)
 {
+  // {leave an input level, re-enter the old}
   decr(input_ptr);
   cur_input = input_stack[input_ptr];
 }
@@ -499,9 +498,9 @@ static inline void synch_v (void)
 /* sec 0121 */
 static inline void free_avail (halfword p)
 {
+  // {single-word node liberation}
   link(p) = avail;
   avail = p;
-
 #ifdef STAT
   decr(dyn_used);
 #endif
@@ -512,6 +511,7 @@ static inline void node_list_display (integer p)
   append_char('.');
   show_node_list(p);
   decr(pool_ptr);
+  // {|str_room| need not be checked; see |show_box| below}
 }
 /* sec 0214 */
 static inline void tail_append (pointer val)
@@ -601,7 +601,7 @@ static void aptex_warning (const char * t, const char * p)
 
 static inline integer get_microinterval (void)
 {
-  integer s, m;
+  integer s, m; // {seconds and microseconds}
 
   aptex_utils_get_seconds_and_micros(&s, &m);
 
@@ -615,6 +615,7 @@ static inline integer get_microinterval (void)
 
 static str_number tokens_to_string (pointer p)
 {
+  // {return a string from tokens list}
   if (selector == new_string)
     aptex_error("tokens", "tokens_to_string() called while selector = new_string");
 
@@ -630,12 +631,14 @@ static str_number tokens_to_string (pointer p)
 
 static inline void flush_str (str_number s)
 {
+  // {flush a string if possible}
   if (flushable(s))
     flush_string();
 }
 
 static void compare_strings (void)
 {
+  // {to implement \.{\\pdfstrcmp}}
   str_number s1, s2;
   pool_pointer i1, i2, j1, j2;
 
