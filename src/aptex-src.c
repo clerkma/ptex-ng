@@ -28609,13 +28609,7 @@ static void line_break (boolean d)
 
         case whatsit_node:
           // @<Advance \(p)past a whatsit node in the \(l)|line_break| loop@>
-          if (subtype(cur_p) == language_node)
-          {
-            cur_lang = what_lang(cur_p);
-            l_hyf = what_lhm(cur_p);
-            r_hyf = what_rhm(cur_p);
-            set_hyph_index();
-          }
+          adv_past(cur_p);
           break;
 
         case glue_node:
@@ -28683,13 +28677,7 @@ static void line_break (boolean d)
                   else if (type(s) == whatsit_node)
                   {
                     // @<Advance \(p)past a whatsit node in the \(p)pre-hyphenation loop@>
-                    if (subtype(s) == language_node)
-                    {
-                      cur_lang = what_lang(s);
-                      l_hyf = what_lhm(s);
-                      r_hyf = what_rhm(s);
-                      set_hyph_index();
-                    }
+                    adv_past(s);
                     goto continu;
                   }
                   else

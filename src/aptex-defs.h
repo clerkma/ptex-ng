@@ -2077,6 +2077,16 @@ do {                                        \
 #define pdf_save_pos_node 7
 #define reset_timer_code  8
 #define set_random_seed_code 9
+#define adv_past(a)                 \
+do {                                \
+  if (subtype(a) == language_node)  \
+  {                                 \
+    cur_lang = what_lang(a);        \
+    l_hyf = what_lhm(a);            \
+    r_hyf = what_rhm(a);            \
+    set_hyph_index();               \
+  }                                 \
+} while (0)
 /* sec 1371 */
 #define end_write_token (cs_token_flag + end_write)
 // macros of pTeX
