@@ -12,7 +12,7 @@ INCLUDES = \
 	-I $(TLROOT)/texk/ptexenc/ \
 	-I $(TLROOT)/libs/zlib/include \
 	-I $(TLROOT)/texk/web2c/libmd5
-LDLIBS = libdpx.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libw2c.a -lm
+LDLIBS = libdpx.a libpng.a libz.a libptexenc.a libkpathsea.a libw2c.a -lm
 LDFLAGS += -flto -o
 
 objects = aptex.o aptex-utils.o aptex-src.o
