@@ -800,7 +800,11 @@ enum
 #define tracing_stack_levels_code     80
 #define partoken_context_code         81
 #define show_stream_code              82
-#define int_pars                      83
+#define suppress_long_error_code      83
+#define suppress_outer_error_code     84
+#define suppress_mathpar_error_code   85
+#define ignore_primitive_error_code   86 // {ignore some primitive/engine errors}
+#define int_pars                      87
 #define count_base                    (int_base + int_pars) // {256 user \.{\\count} registers}
 #define del_code_base                 (count_base + 256)    // {256 delimiter code mappings}
 #define dimen_base                    (del_code_base + 256) // {beginning of region 6}
@@ -892,6 +896,10 @@ enum
 #define tracing_stack_levels          int_par(tracing_stack_levels_code)
 #define partoken_context              int_par(partoken_context_code)
 #define show_stream                   int_par(show_stream_code)
+#define suppress_long_error           int_par(suppress_long_error_code)
+#define suppress_outer_error          int_par(suppress_outer_error_code)
+#define suppress_mathpar_error        int_par(suppress_mathpar_error_code)
+#define ignore_primitive_error        int_par(ignore_primitive_error_code)
 /* sec 0247 */
 #define par_indent_code               0   // {indentation of paragraphs}
 #define math_surround_code            1   // {space around math in text}

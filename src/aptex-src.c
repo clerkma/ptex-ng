@@ -6481,6 +6481,10 @@ static void init_prim (void)
   primitive("partokenname", partoken_name, 0);
   primitive("partokencontext", assign_int, int_base + partoken_context_code);
   primitive("showstream", assign_int, int_base + show_stream_code);
+  primitive("suppresslongerror", assign_int, int_base + suppress_long_error_code);
+  primitive("suppressoutererror", assign_int, int_base + suppress_outer_error_code);
+  primitive("suppressmathparerror", assign_int, int_base + suppress_mathpar_error_code);
+  primitive("ignoreprimitiveerror", assign_int, int_base + ignore_primitive_error_code);
   /* sec 0248 */
   primitive("parindent", assign_dimen, dimen_base + par_indent_code);
   primitive("mathsurround", assign_dimen, dimen_base + math_surround_code);
@@ -8594,6 +8598,21 @@ static scaled xn_over_d (scaled x, integer n, integer d)
   }
 
   return Result;
+}
+
+// {check if $s$-th bit (one-based) of $n$ is set}
+static boolean is_bit_set (integer n, small_number s)
+{
+/*
+  integer m, i;
+
+  m = 1;
+  for (i = 0; i <= s - 1; i++)
+    m = m * 2;
+
+  return (n / m) % 2;
+*/
+  return n & (1 << s);
 }
 
 // compute badness, given |t>=0|
@@ -11396,6 +11415,22 @@ static void print_param (integer n)
 
     case show_stream_code:
       print_esc("showstream");
+      break;
+
+    case suppress_long_error_code:
+      print_esc("suppresslongerror");
+      break;
+
+    case suppress_outer_error_code:
+      print_esc("suppressoutererror");
+      break;
+
+    case suppress_mathpar_error_code:
+      print_esc("suppressmathparerror");
+      break;
+
+    case ignore_primitive_error_code:
+      print_esc("ignoreprimitiveerror");
       break;
 
     default:
@@ -14354,7 +14389,7 @@ void back_input (void)
 {
   pointer p;  // {a token list of length one}
 
-  while ((loc == null) && (token_type != v_template))
+  while ((loc == null) && (token_type != v_template) && (token_type != output_text))
     end_token_list(); // {conserve stack space}
 
   p = get_avail();
@@ -14770,29 +14805,29 @@ done:
       }
 
       if (cur_tok == par_token)
+      if (long_state != long_call)
+      if (suppress_long_error == 0)
+      // @<Report a runaway argument and abort@>
       {
-        if (long_state != long_call)
+        if (long_state == call)
         {
-          if (long_state == call)
-          {
-            runaway();
-            print_err("Paragraph ended before ");
-            sprint_cs(warning_index);
-            prints("was complete");
-            help3("I suspect you've forgotten a `}', causing me to apply this",
-                "control sequence to too much text. How can we recover?",
-                "My plan is to forget the whole thing and hope for the best.");
-            back_error();
-          }
-
-          pstack[n] = link(temp_head);
-          align_state = align_state - unbalance;
-
-          for (m = 0; m <= n; m++)
-            flush_list(pstack[m]);
-
-          goto exit;
+          runaway();
+          print_err("Paragraph ended before ");
+          sprint_cs(warning_index);
+          prints("was complete");
+          help3("I suspect you've forgotten a `}', causing me to apply this",
+              "control sequence to too much text. How can we recover?",
+              "My plan is to forget the whole thing and hope for the best.");
+          back_error();
         }
+
+        pstack[n] = link(temp_head);
+        align_state = align_state - unbalance;
+
+        for (m = 0; m <= n; m++)
+          flush_list(pstack[m]);
+
+        goto exit;
       }
 
       if (cur_tok < right_brace_limit)
@@ -14806,28 +14841,30 @@ done:
             get_token();
 
             if (cur_tok == par_token)
-              if (long_state != long_call)
+            if (long_state != long_call)
+            if (suppress_long_error == 0)
+            // @<Report a runaway argument and abort@>
+            {
+              if (long_state == call)
               {
-                if (long_state == call)
-                {
-                  runaway();
-                  print_err("Paragraph ended before ");
-                  sprint_cs(warning_index);
-                  prints(" was complete");
-                  help3("I suspect you've forgotten a `}', causing me to apply this",
-                      "control sequence to too much text. How can we recover?",
-                      "My plan is to forget the whole thing and hope for the best.");
-                  back_error();
-                }
-
-                pstack[n] = link(temp_head);
-                align_state = align_state - unbalance;
-
-                for (m = 0; m <= n; m++)
-                  flush_list(pstack[m]);
-
-                goto exit;
+                runaway();
+                print_err("Paragraph ended before ");
+                sprint_cs(warning_index);
+                prints(" was complete");
+                help3("I suspect you've forgotten a `}', causing me to apply this",
+                    "control sequence to too much text. How can we recover?",
+                    "My plan is to forget the whole thing and hope for the best.");
+                back_error();
               }
+
+              pstack[n] = link(temp_head);
+              align_state = align_state - unbalance;
+
+              for (m = 0; m <= n; m++)
+                flush_list(pstack[m]);
+
+              goto exit;
+            }
 
             if (cur_tok < right_brace_limit)
             {
@@ -14917,8 +14954,8 @@ found:
     } while (!(info(r) == end_match_token));
   }
 
-  while ((loc == null) && (token_type != v_template))
-    end_token_list();
+  while ((loc == null) && (token_type != v_template) && (token_type != output_text))
+    end_token_list(); // {conserve stack space}
 
   begin_token_list(ref_count, macro);
   name = warning_index;
@@ -16792,7 +16829,7 @@ found:
             cur_cmd = eq_type(cur_cs);
             cur_chr = equiv(cur_cs);
 
-            if (cur_cmd >= outer_call)
+            if ((suppress_outer_error == 0) && (cur_cmd >= outer_call))
               check_outer_validity();
           }
           break;
@@ -16804,7 +16841,7 @@ found:
             cur_chr = equiv(cur_cs);
             state = mid_line;
 
-            if (cur_cmd >= outer_call)
+            if ((suppress_outer_error == 0) && (cur_cmd >= outer_call))
               check_outer_validity();
           }
           break;
@@ -16908,7 +16945,7 @@ found:
             cur_cmd = eq_type(cur_cs);
             cur_chr = equiv(cur_cs);
 
-            if (cur_cmd >= outer_call)
+            if ((suppress_outer_error == 0) && (cur_cmd >= outer_call))
               check_outer_validity();
           }
           break;
@@ -17051,8 +17088,9 @@ found:
           }
 
           force_eof = false;
-          end_file_reading();
-          check_outer_validity();
+          end_file_reading(); // {resume previous level}
+          if (suppress_outer_error == 0)
+            check_outer_validity();
           goto restart;
         }
 
@@ -17138,7 +17176,12 @@ found:
           }
         }
         else
-          check_outer_validity();
+        {
+          if ((cur_cs == end_write) && (mode == 0))
+            fatal_error("Unbalanced write command");
+          if (suppress_outer_error == 0)
+            check_outer_validity();
+        }
       }
     }
     else if (check_kanji(t))
@@ -24049,15 +24092,16 @@ static void pdf_special_out (pointer p)
 
 static void write_out (pointer p)
 {
-  char old_setting;
-  integer old_mode;
+  char old_setting; // {holds print |selector|}
+  integer old_mode; // {saved |mode|}
   /* small_number j; */
-  int j;
-  pointer q, r;
-  integer d;
-  boolean clobbered;
-  integer runsystem_ret;
+  int j;  // {write stream number}
+  pointer q, r; // {temporary variables for list manipulation}
+  integer d; // {number of characters in incomplete current string}
+  boolean clobbered; // {system string is ok?}
+  integer runsystem_ret; // {return value from |runsystem|}
 
+  // @<Expand macros in the token list and...@>
   q = get_avail();
   info(q) = right_brace_token + '}';
   r = get_avail();
@@ -24071,11 +24115,13 @@ static void write_out (pointer p)
   old_mode = mode;
   mode = 0;
   cur_cs = write_loc;
-  q = scan_toks(false, true);
+  q = scan_toks(false, true); // {expand macros, etc.}
+  mode = old_mode;
   get_token();
 
   if (cur_tok != end_write_token)
   {
+    // @<Recover from an unbalanced write command@>
     print_err("Unbalanced write command");
     help2("On this page there's a \\write with fewer real {'s than }'s.",
         "I can't handle that very well; good luck.");
@@ -24086,8 +24132,7 @@ static void write_out (pointer p)
     } while (!(cur_tok == end_write_token));
   }
 
-  mode = old_mode;
-  end_token_list();
+  end_token_list(); // {conserve stack space}
   old_setting = selector;
   j = write_stream(p);
 
@@ -24097,6 +24142,7 @@ static void write_out (pointer p)
     selector = j;
   else
   {
+    // {write to the terminal if file isn't open}
     if ((j == 17) && (selector == term_and_log))
       selector = log_only;
 
@@ -24109,38 +24155,40 @@ static void write_out (pointer p)
   if (j == 18)
   {
     if (tracing_online <= 0)
-      selector = log_only;  //{Show what we're doing in the log file.}
+      selector = log_only;  // {Show what we're doing in the log file.}
     else
-      selector = term_and_log; //{Show what we're doing.}
-    //{If the log file isn't open yet, we can only send output to the terminal.
-    // Calling |open_log_file| from here seems to result in bad data in the log.}
+      selector = term_and_log; // {Show what we're doing.}
+    // {If the log file isn't open yet, we can only send output to the terminal.
+    //  Calling |open_log_file| from here seems to result in bad data in the log.}
     if (!log_opened)
       selector = term_only;
     print_nl("runsystem(");
     for (d = 0; d <= cur_length - 1; d++)
     {
-      //{|print| gives up if passed |str_ptr|, so do it by hand.}
-      print(str_pool[str_start[str_ptr] + d]); //{N.B.: not |print_char|}
+      // {|print| gives up if passed |str_ptr|, so do it by hand.}
+      print(str_pool[str_start[str_ptr] + d]); // {N.B.: not |print_char|}
     }
     prints(")...");
     if (aptex_env.flag_shell_escape)
     {
       str_room(1);
-      append_char(0); //{Append a null byte to the expansion.}
+      append_char(0); // {Append a null byte to the expansion.}
       clobbered = false;
-      for (d = 0; d <= cur_length - 1; d++) //{Convert to external character set.}
+      for (d = 0; d <= cur_length - 1; d++) // {Convert to external character set.}
       {
         str_pool[str_start[str_ptr] + d] = xchr[str_pool[str_start[str_ptr] + d]];
         if ((str_pool[str_start[str_ptr] + d] == null_code) && (d < cur_length - 1))
           clobbered = true;
-        //{minimal checking : NUL not allowed in argument string of |system|()}
+        // {minimal checking : NUL not allowed in argument string of |system|()}
       }
       if (clobbered)
         prints("clobbered");
-      else  /*{We have the command. See if we're allowed to execute it,
-             and report in the log. We don't check the actual exit status of
-             the command, or do anything with the output.}*/
+      else
       {
+        /* {We have the command. See if we're allowed to execute it,
+            and report in the log. We don't check the actual exit status of
+            the command, or do anything with the output.}
+        */
         char * shell_cmd = calloc(cur_length, 1);
         strncpy(shell_cmd, (char *) str_pool + str_start[str_ptr], cur_length);
         runsystem_ret = system(shell_cmd);
@@ -24164,13 +24212,14 @@ static void write_out (pointer p)
     }
     else
     {
-      prints("disabled"); //{|shellenabledp| false}
+      prints("disabled"); // {|shellenabledp| false}
     }
     print_char('.');
     print_nl("");
     print_ln();
-    pool_ptr = str_start[str_ptr]; //{erase the string}
+    pool_ptr = str_start[str_ptr]; // {erase the string}
   }
+
   selector = old_setting;
 }
 
@@ -28074,9 +28123,11 @@ static void fin_align (void)
       back_error();
     }
     else
+    // // @<Check that another \.\$ follows@>
     {
-      // @<Check that another \.\$ follows@>
-      get_x_token();
+      do {
+        get_x_token();
+      } while (!((suppress_mathpar_error == 0) || (cur_cmd != par_end)));
 
       if (cur_cmd != math_shift)
       {
@@ -31561,12 +31612,17 @@ update_heights:
 
       if ((shrink_order(q) != normal) && (shrink(q) != 0))
       {
-        print_err("Infinite glue shrinkage found in box being split");
-        help4("The box you are \\vsplitting contains some infinitely",
+        if (is_bit_set(ignore_primitive_error, 1))
+          print_ignored_err("Infinite glue shrinkage found in box being split");
+        else
+        {
+          print_err("Infinite glue shrinkage found in box being split");
+          help4("The box you are \\vsplitting contains some infinitely",
             "shrinkable glue, e.g., `\\vss' or `\\vskip 0pt minus 1fil'.",
             "Such glue doesn't belong there; but you can safely proceed,",
             "since the offensive shrinkability has been made finite.");
-        error();
+          error();
+        }
         r = new_spec(q);
         shrink_order(r) = normal;
         delete_glue_ref(q);
@@ -35070,7 +35126,9 @@ static void after_math (void)
   {
     // @<Check that another \.\$ follows@>
     {
-      get_x_token();
+      do {
+        get_x_token();
+      } while (!((suppress_mathpar_error == 0) || (cur_cmd != par_end)));
 
       if (cur_cmd != math_shift)
       {
@@ -35160,8 +35218,11 @@ static void after_math (void)
   else
   {
     if (a == null)
+    // @<Check that another \.\$ follows@>
     {
-      get_x_token();
+      do {
+        get_x_token();
+      } while (!((suppress_mathpar_error == 0) || (cur_cmd != par_end)));
 
       if (cur_cmd != math_shift)
       {
@@ -37773,13 +37834,17 @@ reswitch:
     case non_math(mskip):
     case non_math(math_accent):
     case mmode + endv:
-    case mmode + par_end:
     case mmode + stop:
     case mmode + vskip:
     case mmode + un_vbox:
     case mmode + valign:
     case mmode + hrule:
       insert_dollar_sign();
+      break;
+
+    case mmode + par_end:
+      if (suppress_mathpar_error == 0)
+        insert_dollar_sign();
       break;
 
     case vmode + hrule:
