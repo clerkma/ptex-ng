@@ -8855,7 +8855,7 @@ void flush_list (pointer p)
 {
   pointer q, r; // {list traversers}
 
-  if (p != null)
+  if (likely(p != null))
   {
     r = p;
 
@@ -14674,7 +14674,7 @@ static void macro_call (void)
     end_diagnostic(false);
   }
 
-  if (info(r) == protected_token)
+  if (unlikely(info(r) == protected_token))
     r = link(r);
 
   if (info(r) != end_match_token)
@@ -14805,8 +14805,8 @@ done:
             fast_store_new_token(cur_tok);
             get_token();
 
-            if (cur_tok == par_token)
-              if (unlikely(long_state != long_call))
+            if (unlikely(cur_tok == par_token))
+              if (long_state != long_call)
               {
                 if (long_state == call)
                 {
@@ -17141,7 +17141,7 @@ found:
           check_outer_validity();
       }
     }
-    else if (check_kanji(t))
+    else if (unlikely(check_kanji(t)))
     {
       cur_cmd = t / max_cjk_val;
       cur_chr = t % max_cjk_val;
@@ -17180,7 +17180,7 @@ found:
     goto restart;
   }
 
-  if (cur_cmd <= car_ret)
+  if (unlikely(cur_cmd <= car_ret))
   {
     if (cur_cmd >= tab_mark)
     {
