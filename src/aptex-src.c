@@ -2581,7 +2581,7 @@ static const char * pool_file_arr[] =
 /* 0257 */  "", //"pool size",
 /* 0258 */  "", //"number of strings",
 /* 0259 */  "" "?" "?" "?",
-/* 0260 */  "m2d5c2l5x2v5i",
+/* 0260 */  "", // "m2d5c2l5x2v5i",
 /* 0261 */  "", //"End of file on the terminal!",
 /* 0262 */  "", //"! ",
 /* 0263 */  "", //"(That makes 100 errors; please try again.)",
@@ -3217,6 +3217,8 @@ static const char * pool_file_arr[] =
 /* 0893 */  "", //"cr",
 /* 0894 */  "", //"crcr",
 /* 0895 */  "endtemplate",
+/* 0896 */  "FONT",
+#if 0
 /* 0896 */  "", //"alignment tab character ",
 /* 0897 */  "", //"Missing # inserted in alignment preamble",
 /* 0898 */  "", //"There should be exactly one # between &'s, when an",
@@ -3505,7 +3507,7 @@ static const char * pool_file_arr[] =
 /* 1181 */  "", //"definition will be completed without mixing me up too badly.",
 /* 1182 */  "", //"You can recover graciously from this error, if you're",
 /* 1183 */  "", //"careful; see exercise 27.2 in The TeXbook.",
-/* 1184 */  "inaccessible",
+/* 1184 */  "", //"inaccessible",
 /* 1185 */  "", //"let",
 /* 1186 */  "", //"futurelet",
 /* 1187 */  "", //"chardef",
@@ -3572,7 +3574,7 @@ static const char * pool_file_arr[] =
 /* 1248 */  "", //"> \\box",
 /* 1249 */  "", //"OK",
 /* 1250 */  "", //" (see the transcript file)",
-/* 1251 */  " (INITEX)",
+/* 1251 */  "", //" (INITEX) "
 /* 1252 */  "", //"You can't dump inside a group",
 /* 1253 */  "", //"`{...\\dump}' is a no-no.",
 /* 1254 */  "", //" strings of total length ",
@@ -3611,11 +3613,12 @@ static const char * pool_file_arr[] =
 /* 1287 */  "", //"whatsit" "?",
 /* 1288 */  "", //"ext2",
 /* 1289 */  "", //"ext3",
-/* 1290 */  "endwrite",
+/* 1290 */  "", //"endwrite",
 /* 1291 */  "", //"Unbalanced write command",
 /* 1292 */  "", //"On this page there's a \\write with fewer real {'s than }'s.",
 /* 1293 */  "", //"ext4",
 /* 1294 */  "", //"output file name",
+#endif
 };
 
 static str_number load_pool_strings (size_t spare_size)
@@ -4046,9 +4049,9 @@ static void do_initex (void)
   scriptscript_baseline_shift_factor = 500;
 
   reset_trie();
-  text(frozen_protection) = 1184; /* "inaccessible" */
-  format_ident = 1251;            /* " (INITEX)" */
-  text(end_write) = 1290;         /* "endwrite" */
+  text(frozen_protection) = make_str_string("inaccessible");
+  format_ident = make_str_string(" (INITEX) ");
+  text(end_write) = make_str_string("endwrite");
   eq_level(end_write) = level_one;
   eq_type(end_write) = outer_call;
   equiv(end_write) = 0;
@@ -8338,17 +8341,18 @@ static void print_hex_safe (integer n)
 
 static void print_roman_int (integer n)
 {
-  pool_pointer j, k; // {mysterious indices into |str_pool|}
+  size_t j, k; // {mysterious indices into |str|}
   nonnegative_integer u, v; // {mysterious numbers}
 
-  j = str_start[260]; /* m2d5c2l5x2v5i */
+  const char *str = "m2d5c2l5x2v5i";
+  j = 0;
   v = 1000;
 
   while (true)
   {
     while (n >= v)
     {
-      print_char(str_pool[j]);
+      print_char(str[j]);
       n = n - v;
     }
 
@@ -8356,23 +8360,23 @@ static void print_roman_int (integer n)
       return;
 
     k = j + 2;
-    u = v / (str_pool[k - 1] - '0');
+    u = v / (str[k - 1] - '0');
 
-    if (str_pool[k - 1] == '2')
+    if (str[k - 1] == '2')
     {
       k = k + 2;
-      u = u / (str_pool[k - 1] - '0');
+      u = u / (str[k - 1] - '0');
     }
 
     if (n + u >= v)
     {
-      print_char(str_pool[k]);
+      print_char(str[k]);
       n = n + u;
     }
     else
     {
       j = j + 2;
-      v = v / (str_pool[j - 1] - '0');
+      v = v / (str[j - 1] - '0');
     }
   }
 }
@@ -19956,11 +19960,10 @@ void prompt_file_name_ (const char * s, str_number e)
     while (true)
     {
       if (k == last || !more_name(buffer[k]))
-        goto done;
+        break;
       incr(k);
     }
 
-done:
     end_name();
   }
 
@@ -20052,7 +20055,7 @@ void start_input (void)
       goto done;
 
     end_file_reading();
-    prompt_file_name("input file name", ".tex");
+    prompt_file_name_("input file name", 785);
   }
 
 done:
@@ -24212,7 +24215,7 @@ void out_what (pointer p)
             pack_cur_name();
 
             while (!a_open_out(write_file[j]))
-              prompt_file_name("output file name", ".tex");
+              prompt_file_name_("output file name", 785);
 
             write_open[j] = true;
           }
@@ -36608,7 +36611,7 @@ void new_font (small_number a)
   else if (u >= single_base)
   {
     if (u == null_cs)
-      t = 1213; /* FONT */
+      t = 896; /* FONT */
     else
       t = u - single_base;
   }
