@@ -3208,6 +3208,8 @@ static const char * pool_file_arr[] =
 /* 0884 */  "", //"mlist2",
 /* 0885 */  "", //"mlist3",
 /* 0886 */  "0234000122*4000133**3**344*0400400*000000234000111*1111112341011",
+/* 0887 */  "FONT",
+#if 0
 /* 0887 */  "", //"mlist4",
 /* 0888 */  "", //" inside $$'s",
 /* 0889 */  "", //"Displays can use special alignments (like \\eqalignno)",
@@ -3216,9 +3218,7 @@ static const char * pool_file_arr[] =
 /* 0892 */  "", //"span",
 /* 0893 */  "", //"cr",
 /* 0894 */  "", //"crcr",
-/* 0895 */  "endtemplate",
-/* 0896 */  "FONT",
-#if 0
+/* 0895 */  "", //"endtemplate",
 /* 0896 */  "", //"alignment tab character ",
 /* 0897 */  "", //"Missing # inserted in alignment preamble",
 /* 0898 */  "", //"There should be exactly one # between &'s, when an",
@@ -6672,8 +6672,11 @@ static void init_prim (void)
   text(frozen_cr) = make_str_string("cr");
   eqtb[frozen_cr] = eqtb[cur_val];
   primitive("crcr", car_ret, cr_cr_code);
-  text(frozen_end_template) = make_str_string("endtemplate");
-  text(frozen_endv) = make_str_string("endtemplate");
+  {
+    str_number s = make_str_string("endtemplate");
+      text(frozen_end_template) = s;
+      text(frozen_endv) = s;
+  }
   eq_type(frozen_endv) = endv;
   equiv(frozen_endv) = null_list;
   eq_level(frozen_endv) = level_one;
@@ -36611,7 +36614,7 @@ void new_font (small_number a)
   else if (u >= single_base)
   {
     if (u == null_cs)
-      t = 896; /* FONT */
+      t = 887; /* FONT */
     else
       t = u - single_base;
   }
