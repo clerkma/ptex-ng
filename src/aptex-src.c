@@ -28996,12 +28996,12 @@ done:;
                   g = shortfall;
 
                 if (g > 7230584)
-                  if (cur_active_width[2] < 1663497)
-                  {
-                    b = inf_bad;
-                    fit_class = very_loose_fit;
-                    goto found;
-                  }
+                if (cur_active_width[2] < 1663497)
+                {
+                  b = inf_bad;
+                  fit_class = very_loose_fit;
+                  goto found;
+                }
 
                 b = badness(g, cur_active_width[2]);
 
@@ -29113,6 +29113,7 @@ found:
         d = 0;
       else
       {
+        // @<Compute the demerits, |d|, from |r| to |cur_p|@>
         d = line_penalty + b;
 
         if (abs(d) >= 10000)
@@ -29270,17 +29271,17 @@ exit:
 #ifdef STAT
   // @<Update the value of |printed_node|...@>
   if (cur_p == printed_node)
-    if (cur_p != null)
-      if (type(cur_p) == disc_node)
-      {
-        t = replace_count(cur_p);
+  if (cur_p != null)
+  if (type(cur_p) == disc_node)
+  {
+    t = replace_count(cur_p);
 
-        while (t > 0)
-        {
-          decr(t);
-          printed_node = link(printed_node);
-        }
-      }
+    while (t > 0)
+    {
+      decr(t);
+      printed_node = link(printed_node);
+    }
+  }
 #endif
 }
 
@@ -29301,6 +29302,7 @@ void post_line_break (boolean d)
   pointer LR_ptr;           // {stack of LR codes}
 
   LR_ptr = LR_save;
+  // @<Reverse the links of the relevant passive nodes...@>
   q = break_node(best_bet);
   cur_p = null;
 
@@ -29315,8 +29317,10 @@ void post_line_break (boolean d)
   last_disp = 0;
 
   do {
+    // @<Justify the line ending at breakpoint |cur_p|, and append it...@>
     if (TeXXeT_en)
     {
+      // @<Insert LR nodes at the beg...@>
       q = link(temp_head);
 
       if (LR_ptr != null)
@@ -29343,14 +29347,14 @@ void post_line_break (boolean d)
         q = link(q);
       }
     }
-
+    // @<Modify the end of the line...@>
     q = cur_break(cur_p);
     disc_break = false;
     post_disc_break = false;
     /* [881] - margin kerning */
     glue_break = false;
 
-    if (q != null)
+    if (q != null) // {|q| may be a |char_node|}
     {
       if (!is_char_node(q))
         if (type(q) == glue_node)
@@ -29367,8 +29371,9 @@ void post_line_break (boolean d)
         {
           if (type(q) == disc_node)
           {
+            // @<Change discretionary to compulsory...@>
             t = replace_count(q);
-
+            // @<Destroy the |t| nodes following |q|...@>
             if (t == 0)
               r = link(q);
             else
@@ -29387,7 +29392,7 @@ void post_line_break (boolean d)
               flush_node_list(link(q));
               replace_count(q) = 0;
             }
-
+            // @<Transplant the post-break list@>
             if (post_break(q) != null)
             {
               s = post_break(q);
@@ -29400,7 +29405,7 @@ void post_line_break (boolean d)
               post_break(q) = null;
               post_disc_break = true;
             }
-
+            // @<Transplant the pre-break list@>
             if (pre_break(q) != null)
             {
               s = prev_break(q);
@@ -29440,30 +29445,35 @@ done:
     /* at this point `q' is the rightmost breakpoint; the only exception is the
      * case of a discretionary break with non-empty `pre_break', then `q' has been
      * changed to the last node of the `pre_break' list */
-    if (pdf_protrude_chars > 0) {
+    if (pdf_protrude_chars > 0)
+    {
       pointer ptmp; pointer p;
-      if (disc_break && (is_char_node(q) || (type(q) != disc_node))) {
+      if (disc_break && (is_char_node(q) || (type(q) != disc_node)))
+      {
         /* {|q| has been reset to the last node of |pre_break|} */
         p = q;
         ptmp = p;
-      } else {
+      }
+      else
+      {
         p = prev_rightmost(temp_head, q); /* get `link(p) = q' */
         ptmp = p;
         p = find_protchar_right(temp_head, p);
       }
       w = right_pw(p);
       if (w != 0) /* we have found a marginal kern, append it after `ptmp' */
-        {
-          k = new_margin_kern(-w, last_rightmost_char, right_side);
-          link(k) = link(ptmp);
-          link(ptmp) = k;
-          if (ptmp == q)
-            q = link(q);
-        }
+      {
+        k = new_margin_kern(-w, last_rightmost_char, right_side);
+        link(k) = link(ptmp);
+        link(ptmp) = k;
+        if (ptmp == q)
+          q = link(q);
+      }
     }
     /* if `q' was not a breakpoint at glue and has been reset to `rightskip' then
      * we append `rightskip' after `q' now */
-    if (!glue_break) {
+    if (!glue_break)
+    {
       /* @<Put the \(r)\.{\\rightskip} glue after node |q|@>; */
       pointer r1 = new_param_glue(right_skip_code);
       link(r1) = link(q);
@@ -29472,29 +29482,30 @@ done:
     }
 
     if (TeXXeT_en)
-      if (LR_ptr != null)
+    // @<Insert LR nodes at the end...@>
+    if (LR_ptr != null)
+    {
+      s = temp_head;
+      r = link(s);
+
+      while (r != q)
       {
-        s = temp_head;
+        s = r;
         r = link(s);
-
-        while (r != q)
-        {
-          s = r;
-          r = link(s);
-        }
-
-        r = LR_ptr;
-
-        while (r != null)
-        {
-          temp_ptr = new_math(0, info(r));
-          link(s) = temp_ptr;
-          s = temp_ptr;
-          r = link(r);
-        }
-
-        link(s) = q;
       }
+
+      r = LR_ptr;
+
+      while (r != null)
+      {
+        temp_ptr = new_math(0, info(r));
+        link(s) = temp_ptr;
+        s = temp_ptr;
+        r = link(r);
+      }
+
+      link(s) = q;
+    }
 
     /* @<Put the \(l)\.{\\leftskip} glue at the left and detach this line@> */
     r = link(q);
@@ -29514,23 +29525,26 @@ done:
 
     /* [887] - margin kerning */
     /* at this point |q| is the leftmost node; all discardable nodes have been discarded */
-    if (pdf_protrude_chars > 0) {
+    if (pdf_protrude_chars > 0)
+    {
       pointer p = q;
       p = find_protchar_left(p, false); /* no more discardables */
       w = left_pw(p);
-      if (w != 0) {
+      if (w != 0)
+      {
         k = new_margin_kern(-w, last_leftmost_char, left_side);
         link(k) = q;
         q = k;
       }
     }
 
-    if (left_skip != zero_glue) {
+    if (left_skip != zero_glue)
+    {
       r = new_param_glue(left_skip_code);
       link(r) = q;
       q = r;
     }
-
+    // @<Call the packaging subroutine...@>
     if (cur_line > last_special_line)
     {
       cur_width = second_width;
@@ -29557,16 +29571,16 @@ done:
     shift_amount(just_box) = cur_indent;
     /* @<Append the new box to the current vertical list, followed by the list of
        special nodes taken out of the box by the packager@>; */
-
     if (pre_adjust_head != pre_adjust_tail)
       append_list(pre_adjust_head, pre_adjust_tail);
+
     pre_adjust_tail = null;
     append_to_vlist(just_box);
+
     if (adjust_head != adjust_tail)
       append_list(adjust_head, adjust_tail);
 
     adjust_tail = null;
-
     // @<Append a penalty node, if a nonzero penalty is appropriate@>
     if (cur_line + 1 != best_line)
     {
@@ -29633,42 +29647,44 @@ done:
     cur_p = next_break(cur_p);
 
     if (cur_p != null)
-      if (!post_disc_break)
+    if (!post_disc_break)
+    // @<Prune unwanted nodes at the beginning of the next line@>
+    {
+      r = temp_head;
+
+      while (true)
       {
-        r = temp_head;
+        q = link(r);
 
-        while (true)
-        {
-          q = link(r);
+        if (q == cur_break(cur_p))
+          goto done1;
+        // {|cur_break(cur_p)| is the next breakpoint}
+        // {now |q| cannot be |null|}
+        if (is_char_node(q))
+          goto done1;
 
-          if (q == cur_break(cur_p))
+        if (non_discardable(q))
+          goto done1;
+
+        if (type(q) == kern_node)
+          if ((subtype(q) != explicit) && (subtype(q) != ita_kern))
             goto done1;
 
-          if (is_char_node(q))
-            goto done1;
+        r = q; // {now |type(q)=glue_node|, |kern_node|, |math_node|, or |penalty_node|}
 
-          if (non_discardable(q))
-            goto done1;
-
-          if (type(q) == kern_node)
-            if ((subtype(q) != explicit) && (subtype(q) != ita_kern))
-              goto done1;
-
-          r = q;
-
-          if (type(q) == math_node)
-            if (TeXXeT_en)
-              adjust_the_LR_stack_p();
-        }
+        if (type(q) == math_node)
+        if (TeXXeT_en)
+          adjust_the_LR_stack_p();
+      }
 
 done1:
-        if (r != temp_head)
-        {
-          link(r) = null;
-          flush_node_list(link(temp_head));
-          link(temp_head) = q;
-        }
+      if (r != temp_head)
+      {
+        link(r) = null;
+        flush_node_list(link(temp_head));
+        link(temp_head) = q;
       }
+    }
   } while (!(cur_p == null));
 
   if ((cur_line != best_line) || (link(temp_head) != null))
