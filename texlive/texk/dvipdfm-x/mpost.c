@@ -150,7 +150,8 @@ mp_setfont (const char *font_name, double pt_size)
   font->pt_size    = pt_size;
   font->tfm_id     = tfm_open(font_name, 0); /* Need not exist in MP mode */
   font->font_id    = pdf_dev_locate_font(name,
-                                         (spt_t) (pt_size * dev_unit_dviunit()));
+                                         (spt_t) (pt_size * dev_unit_dviunit()),
+                                         0);
 
   if (font->font_id < 0) {
     ERROR("MPOST: No physical font assigned for \"%s\".", font_name);

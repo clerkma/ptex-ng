@@ -1302,13 +1302,14 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize, int extend)
     ERROR("pdf_dev_locate_font() called with the zero ptsize.");
     return -1;
   }
-
+#if 0
   for (i = 0; i < p->num_dev_fonts; i++) {
     if (!strcmp(font_name, p->fonts[i].tex_name) &&
         ptsize == p->fonts[i].sptsize) {
       return i; /* found a dev_font that matches the request */
     }
   }
+#endif
 
   /*
    * Make sure we have room for a new one, even though we may not
@@ -1371,6 +1372,7 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize, int extend)
 
   if (extend != 0)
     font->extend = 1 + (0.001 * (double) extend);
+  printf("expand %f\n", font->extend);
 
   return  p->num_dev_fonts++;
 }

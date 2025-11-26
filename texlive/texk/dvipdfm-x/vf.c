@@ -204,7 +204,7 @@ static void read_a_font_def(FILE *vf_file, int32_t font_id, int thisfont)
   dev_font->dev_id =
     dvi_locate_font (dev_font->name, 
 		     sqxfw (vf_fonts[thisfont].ptsize,
-			    dev_font->size));
+                    dev_font->size), 0);
 #ifdef DEBUG
   fprintf (stderr, "[%s/%s]\n", dev_font -> directory, dev_font -> name);
 #endif
