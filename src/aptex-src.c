@@ -2575,1070 +2575,6 @@ static boolean w_open_output (word_file * f)
   return (*f != NULL);
 }
 
-static const char * pool_file_arr[] =
-{
-/* 0256 */  "", //"buffer size",
-/* 0257 */  "", //"pool size",
-/* 0258 */  "", //"number of strings",
-/* 0259 */  "" "?" "?" "?",
-/* 0260 */  "m2d5c2l5x2v5i",
-/* 0261 */  "", //"End of file on the terminal!",
-/* 0262 */  "", //"! ",
-/* 0263 */  "", //"(That makes 100 errors; please try again.)",
-/* 0264 */  "", // "? ",
-/* 0265 */  "", //"Type <return> to proceed, S to scroll future error messages,",
-/* 0266 */  "", //"R to run without stopping, Q to run quietly,",
-/* 0267 */  "", //"I to insert something, ",
-/* 0268 */  "", //"E to edit your file,",
-/* 0269 */  "", //"1 or ... or 9 to ignore the next 1 to 9 tokens of input,",
-/* 0270 */  "", //"H for help, X to quit.",
-/* 0271 */  "", //"OK, entering ",
-/* 0272 */  "", //"batchmode",
-/* 0273 */  "", //"nonstopmode",
-/* 0274 */  "", //"scrollmode",
-/* 0275 */  "", //"...",
-/* 0276 */  "", //"insert>",
-/* 0277 */  "", //"I have just deleted some text, as you asked.",
-/* 0278 */  "", //"You can now delete more, or insert, or whatever.",
-/* 0279 */  "", //"Sorry, I don't know how to help in this situation.",
-/* 0280 */  "", //"Maybe you should try asking a human" "?",
-/* 0281 */  "", //"Sorry, I already gave what help I could...",
-/* 0282 */  "", //"An error might have occurred before I noticed any problems.",
-/* 0283 */  "", //"``If all else fails, read the instructions.''",
-/* 0284 */  "", //" (",
-/* 0285 */  "", //"Emergency stop",
-/* 0286 */  "", //"TeX capacity exceeded, sorry [",
-/* 0287 */  "", //"If you really absolutely need more capacity,",
-/* 0288 */  "", //"you can ask a wizard to enlarge me.",
-/* 0289 */  "", //"This can't happen (",
-/* 0290 */  "", //"I'm broken. Please show this to someone who can fix can fix",
-/* 0291 */  "", //"I can't go on meeting you like this",
-/* 0292 */  "", //"One of your faux pas seems to have wounded me deeply...",
-/* 0293 */  "", //"in fact, I'm barely conscious. Please fix it and try again.",
-/* 0294 */  "", //"Interruption",
-/* 0295 */  "", //"You rang" "?",
-/* 0296 */  "", //"Try to insert some instructions for me (e.g.,`I\\showlists'),",
-/* 0297 */  "", //"unless you just want to quit by typing `X'.",
-/* 0298 */  "", //"main memory size",
-/* 0299 */  "", //"AVAIL list clobbered at ",
-/* 0300 */  "", //"Double-AVAIL list clobbered at ",
-/* 0301 */  "", //"Doubly free location at ",
-/* 0302 */  "", //"Bad flag at ",
-/* 0303 */  "", //"New busy locs:",
-/* 0304 */  "", //"LINK(",
-/* 0305 */  "", //"INFO(",
-/* 0306 */  "", //"[]",
-/* 0307 */  "", //"CLOBBERED.",
-/* 0308 */  "", //"foul",
-/* 0309 */  "", //"fil",
-/* 0310 */  "", //" plus ",
-/* 0311 */  "", //" minus ",
-/* 0312 */  "", //" []",
-/* 0313 */  "", //"Bad link, display aborted.",
-/* 0314 */  "", //"etc.",
-/* 0315 */  "", //"Unknown node type!",
-/* 0316 */  "", //"unset",
-/* 0317 */  "", //"box(",
-/* 0318 */  "", //")x",
-/* 0319 */  "", //", shifted ",
-/* 0320 */  "", //" columns)",
-/* 0321 */  "", //", stretch ",
-/* 0322 */  "", //", shrink ",
-/* 0323 */  "", //", glue set ",
-/* 0324 */  "", //"- ",
-/* 0325 */  "", //"< -",
-/* 0326 */  "", //"rule(",
-/* 0327 */  "", //"insert",
-/* 0328 */  "", //", natural size ",
-/* 0329 */  "", //"; split(",
-/* 0330 */  "", //"); float cost ",
-/* 0331 */  "", //"glue",
-/* 0332 */  "", //"nonscript",
-/* 0333 */  "", //"mskip",
-/* 0334 */  "", //"mu",
-/* 0335 */  "",
-/* 0336 */  "", //"leaders ",
-/* 0337 */  "", //"kern",
-/* 0338 */  "", //" (for accent)",
-/* 0339 */  "", //"mkern",
-/* 0340 */  "", //"math",
-/* 0341 */  "", //"on",
-/* 0342 */  "", //"off",
-/* 0343 */  "", //", surrounded ",
-/* 0344 */  "", //" (ligature ",
-/* 0345 */  "", //"penalty ",
-/* 0346 */  "", //"discretionary",
-/* 0347 */  "", //" replacing ",
-/* 0348 */  "", //"mark",
-/* 0349 */  "", //"vadjust",
-/* 0350 */  "", //"flushing",
-/* 0351 */  "", //"copying",
-/* 0352 */  "", //"vertical",
-/* 0353 */  "", //"horizontal",
-/* 0354 */  "", //"display math",
-/* 0355 */  "", //"no",
-/* 0356 */  "", //"internal vertical",
-/* 0357 */  "", //"restricted horizontal",
-/* 0358 */  "", //" mode",
-/* 0359 */  "", //"semantic nest size",
-/* 0360 */  "", //"### ",
-/* 0361 */  "", //" entered at line ",
-/* 0362 */  "", //" (language",
-/* 0363 */  "", //":hyphenmin",
-/* 0364 */  "", //" (\\output routine)",
-/* 0365 */  "", //"### recent contributions:",
-/* 0366 */  "", //"prevdepth ",
-/* 0367 */  "", //"ignored",
-/* 0368 */  "", //", prevgraf ",
-/* 0369 */  "", //" line",
-/* 0370 */  "", //"spacefactor ",
-/* 0371 */  "", //", current language ",
-/* 0372 */  "", //"this will be denominator of:",
-/* 0373 */  "", //"lineskip",
-/* 0374 */  "", //"baselineskip",
-/* 0375 */  "", //"parskip",
-/* 0376 */  "", //"abovedisplayskip",
-/* 0377 */  "", //"belowdisplayskip",
-/* 0378 */  "", //"abovedisplayshortskip",
-/* 0379 */  "", //"belowdisplayshortskip",
-/* 0380 */  "", //"leftskip",
-/* 0381 */  "", //"rightskip",
-/* 0382 */  "", //"topskip",
-/* 0383 */  "", //"splittopskip",
-/* 0384 */  "", //"tabskip",
-/* 0385 */  "", //"spaceskip",
-/* 0386 */  "", //"xspaceskip",
-/* 0387 */  "", //"parfillskip",
-/* 0388 */  "", //"thinmuskip",
-/* 0389 */  "", //"medmuskip",
-/* 0390 */  "", //"thickmuskip",
-/* 0391 */  "", //"[unknown glue parameter!]",
-/* 0392 */  "", //"skip",
-/* 0393 */  "", //"muskip",
-/* 0394 */  "", //"pt",
-/* 0395 */  "", //"output",
-/* 0396 */  "", //"everypar",
-/* 0397 */  "", //"everymath",
-/* 0398 */  "", //"everydisplay",
-/* 0399 */  "", //"everyhbox",
-/* 0400 */  "", //"everyvbox",
-/* 0401 */  "", //"everyjob",
-/* 0402 */  "", //"everycr",
-/* 0403 */  "", //"errhelp",
-/* 0404 */  "", //"toks",
-/* 0405 */  "", //"parshape",
-/* 0406 */  "", //"box",
-/* 0407 */  "", //"void",
-/* 0408 */  "", //"current font",
-/* 0409 */  "", //"textfont",
-/* 0410 */  "", //"scriptfont",
-/* 0411 */  "", //"scriptscriptfont",
-/* 0412 */  "", //"catcode",
-/* 0413 */  "", //"lccode",
-/* 0414 */  "", //"uccode",
-/* 0415 */  "", //"sfcode",
-/* 0416 */  "", //"mathcode",
-/* 0417 */  "", //"pretolerance",
-/* 0418 */  "", //"tolerance",
-/* 0419 */  "", //"linepenalty",
-/* 0420 */  "", //"hyphenpenalty",
-/* 0421 */  "", //"exhyphenpenalty",
-/* 0422 */  "", //"clubpenalty",
-/* 0423 */  "", //"widowpenalty",
-/* 0424 */  "", //"displaywidowpenalty",
-/* 0425 */  "", //"brokenpenalty",
-/* 0426 */  "", //"binoppenalty",
-/* 0427 */  "", //"relpenalty",
-/* 0428 */  "", //"predisplaypenalty",
-/* 0429 */  "", //"postdisplaypenalty",
-/* 0430 */  "", //"interlinepenalty",
-/* 0431 */  "", //"doublehyphendemerits",
-/* 0432 */  "", //"finalhyphendemerits",
-/* 0433 */  "", //"adjdemerits",
-/* 0434 */  "", //"mag",
-/* 0435 */  "", //"delimiterfactor",
-/* 0436 */  "", //"looseness",
-/* 0437 */  "", //"time",
-/* 0438 */  "", //"day",
-/* 0439 */  "", //"month",
-/* 0440 */  "", //"year",
-/* 0441 */  "", //"showboxbreadth",
-/* 0442 */  "", //"showboxdepth",
-/* 0443 */  "", //"hbadness",
-/* 0444 */  "", //"vbadness",
-/* 0445 */  "", //"pausing",
-/* 0446 */  "", //"tracingonline",
-/* 0447 */  "", //"tracingmacros",
-/* 0448 */  "", //"tracingstats",
-/* 0449 */  "", //"tracingparagraphs",
-/* 0450 */  "", //"tracingpages",
-/* 0451 */  "", //"tracingoutput",
-/* 0452 */  "", //"tracinglostchars",
-/* 0453 */  "", //"tracingcommands",
-/* 0454 */  "", //"tracingrestores",
-/* 0455 */  "", //"uchyph",
-/* 0456 */  "", //"outputpenalty",
-/* 0457 */  "", //"maxdeadcycles",
-/* 0458 */  "", //"hangafter",
-/* 0459 */  "", //"floatingpenalty",
-/* 0460 */  "", //"globaldefs",
-/* 0461 */  "", //"fam",
-/* 0462 */  "", //"escapechar",
-/* 0463 */  "", //defaulthyphenchar",
-/* 0464 */  "", //"defaultskewchar",
-/* 0465 */  "", //"endlinechar",
-/* 0466 */  "", //"newlinechar",
-/* 0467 */  "", //"language",
-/* 0468 */  "", //"lefthyphenmin",
-/* 0469 */  "", //"righthyphenmin",
-/* 0470 */  "", //"holdinginserts",
-/* 0471 */  "", //"errorcontextlines",
-/* 0472 */  "", //"[unknown integer parameter!]",
-/* 0473 */  "", //"count",
-/* 0474 */  "", //"delcode",
-/* 0475 */  "", //"parindent",
-/* 0476 */  "", //"mathsurround",
-/* 0477 */  "", //"lineskiplimit",
-/* 0478 */  "", //"hsize",
-/* 0479 */  "", //"vsize",
-/* 0480 */  "", //"maxdepth",
-/* 0481 */  "", //"splitmaxdepth",
-/* 0482 */  "", //"boxmaxdepth",
-/* 0483 */  "", //"hfuzz",
-/* 0484 */  "", //"vfuzz",
-/* 0485 */  "", //"delimitershortfall",
-/* 0486 */  "", //"nulldelimiterspace",
-/* 0487 */  "", //"scriptspace",
-/* 0488 */  "", //"predisplaysize",
-/* 0489 */  "", //"displaywidth",
-/* 0490 */  "", //"displayindent",
-/* 0491 */  "", //"overfullrule",
-/* 0492 */  "", //"hangindent",
-/* 0493 */  "", //"hoffset",
-/* 0494 */  "", //"voffset",
-/* 0495 */  "", //"emergencystretch",
-/* 0496 */  "", //"[unknown dimen parameter!]",
-/* 0497 */  "", //"dimen",
-/* 0498 */  "", //"EQUIV(",
-/* 0499 */  "notexpanded:",
-/* 0500 */  "", //"hash size",
-/* 0501 */  "", //"csname",
-/* 0502 */  "", //"endcsname",
-/* 0503 */  "", //"IMPOSSIBLE.",
-/* 0504 */  "", //"NONEXISTENT.",
-/* 0505 */  "", //"accent",
-/* 0506 */  "", //"advance",
-/* 0507 */  "", //"afterassignment",
-/* 0508 */  "", //"aftergroup",
-/* 0509 */  "", //"begingroup",
-/* 0510 */  "", //"char",
-/* 0511 */  "", //"delimiter",
-/* 0512 */  "", //"divide",
-/* 0513 */  "", //"endgroup",
-/* 0514 */  "", //"expandafter",
-/* 0515 */  "", //"font",
-/* 0516 */  "", //"fontdimen",
-/* 0517 */  "", //"halign",
-/* 0518 */  "", //"hrule",
-/* 0519 */  "", //"ignorespaces",
-/* 0520 */  "", //"mathaccent",
-/* 0521 */  "", //"mathchar",
-/* 0522 */  "", //"mathchoice",
-/* 0523 */  "", //"multiply",
-/* 0524 */  "", //"noalign",
-/* 0525 */  "", //"noboundary",
-/* 0526 */  "", //"noexpand",
-/* 0527 */  "", //"omit",
-/* 0528 */  "", //"penalty",
-/* 0529 */  "", //"prevgraf",
-/* 0530 */  "", //"radical",
-/* 0531 */  "", //"read",
-/* 0532 */  "", //"relax",
-/* 0533 */  "", //"setbox",
-/* 0534 */  "", //"the",
-/* 0535 */  "", //"valign",
-/* 0536 */  "", //"vcenter",
-/* 0537 */  "", //"vrule",
-/* 0538 */  "", //"save size",
-/* 0539 */  "", //"grouping levels",
-/* 0540 */  "", //"curlevel",
-/* 0541 */  "", //"retaining",
-/* 0542 */  "", //"restoring",
-/* 0543 */  "", //"SAVE(",
-/* 0544 */  "", //"Incompatible magnification (",
-/* 0545 */  "", //");",
-/* 0546 */  "", //" the previous value will be retained",
-/* 0547 */  "", //"I can handle only one magnification ratio per job. So I've",
-/* 0548 */  "", //"reverted to the magnification you used earlier on this run.",
-/* 0549 */  "", //"Illegal magnification has been changed to 1000",
-/* 0550 */  "", //"The magnification ratio must be between 1 and 32768.",
-/* 0551 */  "", //"ETC.",
-/* 0552 */  "", //"BAD.",
-/* 0553 */  "", //"->",
-/* 0554 */  "", //"begin-group character ",
-/* 0555 */  "", //"end-group character ",
-/* 0556 */  "", //"math shift character ",
-/* 0557 */  "", //"macro parameter character ",
-/* 0558 */  "", //"superscript character ",
-/* 0559 */  "", //"subscript character ",
-/* 0560 */  "", //"end of alignment template",
-/* 0561 */  "", //"blank space ",
-/* 0562 */  "", //"the letter ",
-/* 0563 */  "", //"the character ",
-/* 0564 */  "", //"[unknown command code!]",
-/* 0565 */  "", //": ",
-/* 0566 */  "", //"Runaway ",
-/* 0567 */  "", //"definition",
-/* 0568 */  "", //"argument",
-/* 0569 */  "", //"preamble",
-/* 0570 */  "", //"text",
-/* 0571 */  "", //"<*>",
-/* 0572 */  "", //"<insert> ",
-/* 0573 */  "", //"<read ",
-/* 0574 */  "", //"l.",
-/* 0575 */  "", //"<argument> ",
-/* 0576 */  "", //"<template> ",
-/* 0577 */  "", //"<recently read> ",
-/* 0578 */  "", //"<to be read again> ",
-/* 0579 */  "", //"<inserted text> ",
-/* 0580 */  "", //"<output> ",
-/* 0581 */  "", //"<everypar> ",
-/* 0582 */  "", //"<everymath> ",
-/* 0583 */  "", //"<everydisplay> ",
-/* 0584 */  "", //"<everyhbox> ",
-/* 0585 */  "", //"<everyvbox> ",
-/* 0586 */  "", //"<everyjob> ",
-/* 0587 */  "", //"<everycr> ",
-/* 0588 */  "", //"<mark> ",
-/* 0589 */  "", //"<write> ",
-/* 0590 */  "", //"input stack size",
-/* 0591 */  "", //"write",
-/* 0592 */  "", //"(interwoven alignment preambles are not allowed)",
-/* 0593 */  "", //"text input levels",
-/* 0594 */  "", //"par",
-/* 0595 */  "", //"Incomplete ",
-/* 0596 */  "", //"; all text was ignored after line ",
-/* 0597 */  "", //"A forbidden control sequence occurred in skipped text.",
-/* 0598 */  "", //"This kind of error happens when you say `\\if...' and forget",
-/* 0599 */  "", //"the matching `\\fi'. I've inserted a `\\fi'; this might work.",
-/* 0600 */  "", //"The file ended while I was skipping conditional text.",
-/* 0601 */  "", //"File ended",
-/* 0602 */  "", //"Forbidden control sequence found",
-/* 0603 */  "", //" while scanning ",
-/* 0604 */  "", //" of ",
-/* 0605 */  "", //"I suspect you have forgotten a `}', causing me",
-/* 0606 */  "", //"to read past where you wanted me to stop.",
-/* 0607 */  "", //"I'll try to recover; but if the error is serious,",
-/* 0608 */  "", //"you'd better type `E' or `X' now and fix your file.",
-/* 0609 */  "", //"use",
-/* 0610 */  "", //"Text line contains an invalid character",
-/* 0611 */  "", //"A funny symbol that I can't read has just been input.",
-/* 0612 */  "", //"Continue, and I'll forget that it ever happened.",
-/* 0613 */  "", //"(Please type a command or say `\\end')",
-/* 0614 */  "", //"*** (job aborted, no legal \\end found)",
-/* 0615 */  "", //"=>",
-/* 0616 */  "", //"Undefined control sequence",
-/* 0617 */  "", //"The control sequence at the end of the top line",
-/* 0618 */  "", //"of your error message was never \\def'ed. If you have",
-/* 0619 */  "", //"misspelled it (e.g., `\\hobx'), type `I' and the correct",
-/* 0620 */  "", //"spelling (e.g., `I\\hbox'). Otherwise just continue,",
-/* 0621 */  "", //"and I'll forget about whatever was undefined.",
-/* 0622 */  "", //"Missing ",
-/* 0623 */  "", //" inserted",
-/* 0624 */  "", //"The control sequence marked <to be read again> should",
-/* 0625 */  "", //"not appear between \\csname and \\endcsname.",
-/* 0626 */  "", //"input",
-/* 0627 */  "", //"endinput",
-/* 0628 */  "", //"topmark",
-/* 0629 */  "", //"firstmark",
-/* 0630 */  "", //"botmark",
-/* 0631 */  "", //"splitfirstmark",
-/* 0632 */  "", //"splitbotmark",
-/* 0633 */  "", //"parameter stack size",
-/* 0634 */  "", //"Argument of ",
-/* 0635 */  "", //" has an extra }",
-/* 0636 */  "", //"I've run across a `}' that doesn't seem to match anything.",
-/* 0637 */  "", //"For example, `\\def\\a#1{...}' and `\\a}' would produce",
-/* 0638 */  "", //"this error. If you simply proceed now, the `\\par' that",
-/* 0639 */  "", //"I've just inserted will cause me to report a runaway",
-/* 0640 */  "", //"argument that might be the root of the problem. But if",
-/* 0641 */  "", //"your `}' was spurious, just type `2' and it will go away.",
-/* 0642 */  "", //"Paragraph ended before ",
-/* 0643 */  "", //" was complete",
-/* 0644 */  "", //"I suspect you've forgotten a `}', causing me to apply this",
-/* 0645 */  "", //"control sequence to too much text. How can we recover" "?",
-/* 0646 */  "", //"My plan is to forget the whole thing and hope for the best.",
-/* 0647 */  "", //"Use of ",
-/* 0648 */  "", //" doesn't match its definition",
-/* 0649 */  "", //"If you say, e.g., `\\def\\a1{...}', then you must always",
-/* 0650 */  "", //"put `1' after `\\a', since control sequence names are",
-/* 0651 */  "", //"made up of letters only. The macro here has not been",
-/* 0652 */  "", //"followed by the required stuff, so I'm ignoring it.",
-/* 0653 */  "", //"<-",
-/* 0654 */  "", //"Missing { inserted",
-/* 0655 */  "", //"A left brace was mandatory here, so I've put one in.",
-/* 0656 */  "", //"You might want to delete and/or insert some corrections",
-/* 0657 */  "", //"so that I will find a matching right brace soon.",
-/* 0658 */  "", //"(If you're confused by all this, try typing `I}' now.)",
-/* 0659 */  "", //"Incompatible glue units",
-/* 0660 */  "", //"I'm going to assume that 1mu=1pt when they're mixed.",
-/* 0661 */  "", //"Missing number, treated as zero",
-/* 0662 */  "", //"A number should have been here; I inserted `0'.",
-/* 0663 */  "", //"(If you can't figure out why I needed to see a number,",
-/* 0664 */  "", //"look up `weird error' in the index to The TeXbook.)",
-/* 0665 */  "", //"spacefactor",
-/* 0666 */  "", //"prevdepth",
-/* 0667 */  "", //"deadcycles",
-/* 0668 */  "", //"insertpenalties",
-/* 0669 */  "", //"wd",
-/* 0670 */  "", //"ht",
-/* 0671 */  "", //"dp",
-/* 0672 */  "", //"lastpenalty",
-/* 0673 */  "", //"lastkern",
-/* 0674 */  "", //"lastskip",
-/* 0675 */  "", //"inputlineno",
-/* 0676 */  "", //"badness",
-/* 0677 */  "", //"Improper ",
-/* 0678 */  "", //"You can refer to \\spacefactor only in horizontal mode;",
-/* 0679 */  "", //"you can refer to \\prevdepth only in vertical mode; and",
-/* 0680 */  "", //"neither of these is meaningful inside \\write. So",
-/* 0681 */  "", //"I'm forgetting what you said and using zero instead.",
-/* 0682 */  "", //"You can't use `",
-/* 0683 */  "", //"' after ",
-/* 0684 */  "", //"Bad register code",
-/* 0685 */  "", //"A register number must be between 0 and 255.",
-/* 0686 */  "", //"I changed this one to zero.",
-/* 0687 */  "", //"Bad character code",
-/* 0688 */  "", //"A character number must be between 0 and 255.",
-/* 0689 */  "", //"Bad number",
-/* 0690 */  "", //"Since I expected to read a number between 0 and 15,",
-/* 0691 */  "", //"Bad mathchar",
-/* 0692 */  "", //"A mathchar number must be between 0 and 32767.",
-/* 0693 */  "", //"Bad delimiter code",
-/* 0694 */  "", //"A numeric delimiter code must be between 0 and 2^{27}-1.",
-/* 0695 */  "", //"Improper alphabetic constant",
-/* 0696 */  "", //"A one-character control sequence belongs after a ` mark.",
-/* 0697 */  "", //"So I'm essentially inserting \\0 here.",
-/* 0698 */  "", //"Number too big",
-/* 0699 */  "", //"I can only go up to 2147483647='17777777777=\"7FFFFFFF,",
-/* 0700 */  "", //"so I'm using that number instead of yours.",
-/* 0701 */  "", //"true",
-/* 0702 */  "", //"Illegal unit of measure (",
-/* 0703 */  "", //"replaced by filll)",
-/* 0704 */  "", //"I dddon't go any higher than filll.",
-/* 0705 */  "", //"em",
-/* 0706 */  "", //"ex",
-/* 0707 */  "", //"mu inserted)",
-/* 0708 */  "", //"The unit of measurement in math glue must be mu.",
-/* 0709 */  "", //"To recover gracefully from this error, it's best to",
-/* 0710 */  "", //"delete the erroneous units; e.g., type `2' to delete",
-/* 0711 */  "", //"two letters. (See Chapter 27 of The TeXbook.)",
-/* 0712 */  "", //"in",
-/* 0713 */  "", //"pc",
-/* 0714 */  "", //"cm",
-/* 0715 */  "", //"mm",
-/* 0716 */  "", //"bp",
-/* 0717 */  "", //"dd",
-/* 0718 */  "", //"cc",
-/* 0719 */  "", //"sp",
-/* 0720 */  "", //"pt inserted)",
-/* 0721 */  "", //"Dimensions can be in units of em, ex, in, pt, pc,",
-/* 0722 */  "", //"cm, mm, dd, cc, bp, or sp; but yours is a new one!",
-/* 0723 */  "", //"I'll assume that you meant to say pt, for printer's points.",
-/* 0724 */  "", //"Dimension too large",
-/* 0725 */  "", //"I can't work with sizes bigger than about 19 feet.",
-/* 0726 */  "", //"Continue and I'll use the largest value I can.",
-/* 0727 */  "", //"plus",
-/* 0728 */  "", //"minus",
-/* 0729 */  "", //"width",
-/* 0730 */  "", //"height",
-/* 0731 */  "", //"depth",
-/* 0732 */  "", //"number",
-/* 0733 */  "", //"romannumeral",
-/* 0734 */  "", //"string",
-/* 0735 */  "", //"meaning",
-/* 0736 */  "", //"fontname",
-/* 0737 */  "", //"jobname",
-/* 0738 */  "", //" at ",
-/* 0739 */  "", //"Where was the left brace" "? You said something like `\\def\\a}',",
-/* 0740 */  "", //"which I'm going to interpret as `\\def\\a{}'.",
-/* 0741 */  "", //"You already have nine parameters",
-/* 0742 */  "", //"I'm going to ignore the # sign you just used.",
-/* 0743 */  "", //"Parameters must be numbered consecutively",
-/* 0744 */  "", //"I've inserted the digit you should have used after the #.",
-/* 0745 */  "", //"Type `1' to delete what you did use.",
-/* 0746 */  "", //"Illegal parameter number in definition of ",
-/* 0747 */  "", //"You meant to type ## instead of #, right" "?",
-/* 0748 */  "", //"Or maybe a } was forgotten somewhere earlier, and things",
-/* 0749 */  "", //"are all screwed up" "? I'm going to assume that you meant ##.",
-/* 0750 */  "", //"*** (cannot \\read from terminal in nonstop modes)",
-/* 0751 */  "", //"File ended within ",
-/* 0752 */  "", //"This \\read has unbalanced braces.",
-/* 0753 */  "", //"if",
-/* 0754 */  "", //"ifcat",
-/* 0755 */  "", //"ifnum",
-/* 0756 */  "", //"ifdim",
-/* 0757 */  "", //"ifodd",
-/* 0758 */  "", //"ifvmode",
-/* 0759 */  "", //"ifhmode",
-/* 0760 */  "", //"ifmmode",
-/* 0761 */  "", //"ifinner",
-/* 0762 */  "", //"ifvoid",
-/* 0763 */  "", //"ifhbox",
-/* 0764 */  "", //"ifvbox",
-/* 0765 */  "", //"ifx",
-/* 0766 */  "", //"ifeof",
-/* 0767 */  "", //"iftrue",
-/* 0768 */  "", //"iffalse",
-/* 0769 */  "", //"ifcase",
-/* 0770 */  "", //"fi",
-/* 0771 */  "", //"or",
-/* 0772 */  "", //"else",
-/* 0773 */  "", //"Extra ",
-/* 0774 */  "", //"I'm ignoring this; it doesn't match any \\if.",
-/* 0775 */  "", //"{true}",
-/* 0776 */  "", //"{false}",
-/* 0777 */  "", //"Missing = inserted for ",
-/* 0778 */  "", //"I was expecting to see `<', `=', or `>'. Didn't.",
-/* 0779 */  "", //"{case ",
-/* 0780 */  "", //".fmt",
-/* 0781 */  "", //"input file name",
-/* 0782 */  "", //"I can't find file `",
-/* 0783 */  "", //"I can't write on file `",
-/* 0784 */  "", //"'.",
-/* 0785 */  ".tex",
-/* 0786 */  "", //"Please type another ",
-/* 0787 */  "", //"*** (job aborted, file error in nonstop mode)",
-/* 0788 */  "", //".dvi",
-/* 0789 */  "", //"file name for output",
-/* 0790 */  "texput",
-/* 0791 */  "", //".log",
-/* 0792 */  "", //"**",
-/* 0793 */  "", //"transcript file name",
-/* 0794 */  "  ",
-/* 0795 */  "nullfont",
-/* 0796 */  "", //"Font ",
-/* 0797 */  "", //" scaled ",
-/* 0798 */  "", //" not loadable: Bad metric (TFM) file",
-/* 0799 */  "", //" not loadable: Metric (TFM) file not found",
-/* 0800 */  "", //"I wasn't able to read the size data for this font,",
-/* 0801 */  "", //"so I will ignore the font specification.",
-/* 0802 */  "", //"[Wizards can fix TFM files using TFtoPL/PLtoTF.]",
-/* 0803 */  "", //"You might try inserting a different font spec;",
-/* 0804 */  "", //"e.g., type `I\\font<same font id>=<substitute font name>'.",
-/* 0805 */  ".tfm",
-/* 0806 */  "", //" not loaded: Not enough room left",
-/* 0807 */  "", //"I'm afraid I won't be able to make use of this font,",
-/* 0808 */  "", //"because my memory for character-size data is too small.",
-/* 0809 */  "", //"If you're really stuck, ask a wizard to enlarge me.",
-/* 0810 */  "", //"Or maybe try `I\\font<same font id>=<name of loaded font>'.",
-/* 0811 */  "", //"Missing font identifier",
-/* 0812 */  "", //"I was looking for a control sequence whose",
-/* 0813 */  "", //"current meaning has been defined by \\font.",
-/* 0814 */  "", //" has only ",
-/* 0815 */  "", //" fontdimen parameters",
-/* 0816 */  "", //"To increase the number of font parameters, you must",
-/* 0817 */  "", //"use \\fontdimen immediately after the \\font is loaded.",
-/* 0818 */  "", //"font memory",
-/* 0819 */  "", //"Missing character: There is no ",
-/* 0820 */  "", //" in font ",
-/* 0821 */  "", //" TeX output ",
-/* 0822 */  "", //"vlistout",
-/* 0823 */  "", //"Completed box being shipped out",
-/* 0824 */  "", //"Memory usage before: ",
-/* 0825 */  "", //" after: ",
-/* 0826 */  "", //"; still untouched: ",
-/* 0827 */  "", //"Huge page cannot be shipped out",
-/* 0828 */  "", //"The page just created is more than 18 feet tall or",
-/* 0829 */  "", //"more than 18 feet wide, so I suspect something went wrong.",
-/* 0830 */  "", //"The following box has been deleted:",
-/* 0831 */  "", //"No pages of output.",
-/* 0832 */  "", //"Output written on ",
-/* 0833 */  "", //" page",
-/* 0834 */  "", //", ",
-/* 0835 */  "", //" bytes).",
-/* 0836 */  "", //"to",
-/* 0837 */  "", //"spread",
-/* 0838 */  "", //"Underfull",
-/* 0839 */  "", //"Loose",
-/* 0840 */  "", //" \\hbox (badness ",
-/* 0841 */  "", //") has occurred while \\output is active",
-/* 0842 */  "", //") in paragraph at lines ",
-/* 0843 */  "", //") in alignment at lines ",
-/* 0844 */  "", //"--",
-/* 0845 */  "", //") detected at line ",
-/* 0846 */  "", //"Overfull \\hbox (",
-/* 0847 */  "", //"pt too wide",
-/* 0848 */  "", //"Tight \\hbox (badness ",
-/* 0849 */  "", //"vpack",
-/* 0850 */  "", //" \\vbox (badness ",
-/* 0851 */  "", //"Overfull \\vbox (",
-/* 0852 */  "", //"pt too high",
-/* 0853 */  "", //"Tight \\vbox (badness ",
-/* 0854 */  "", //"{}",
-/* 0855 */  "", //"displaystyle",
-/* 0856 */  "", //"textstyle",
-/* 0857 */  "", //"scriptstyle",
-/* 0858 */  "", //"scriptscriptstyle",
-/* 0859 */  "", //"Unknown style!",
-/* 0860 */  "", //"mathord",
-/* 0861 */  "", //"mathop",
-/* 0862 */  "", //"mathbin",
-/* 0863 */  "", //"mathrel",
-/* 0864 */  "", //"mathopen",
-/* 0865 */  "", //"mathclose",
-/* 0866 */  "", //"mathpunct",
-/* 0867 */  "", //"mathinner",
-/* 0868 */  "", //"overline",
-/* 0869 */  "", //"underline",
-/* 0870 */  "", //"left",
-/* 0871 */  "", //"right",
-/* 0872 */  "", //"limits",
-/* 0873 */  "", //"nolimits",
-/* 0874 */  "", //"fraction, thickness ",
-/* 0875 */  "", //"= default",
-/* 0876 */  "", //", left-delimiter ",
-/* 0877 */  "", //", right-delimiter ",
-/* 0878 */  "", //" is undefined (character ",
-/* 0879 */  "", //"Somewhere in the math formula just ended, you used the",
-/* 0880 */  "", //"stated character from an undefined font family. For example,",
-/* 0881 */  "", //"plain TeX doesn't allow \\it or \\sl in subscripts. Proceed,",
-/* 0882 */  "", //"and I'll try to forget that I needed that character.",
-/* 0883 */  "", //"mlist1",
-/* 0884 */  "", //"mlist2",
-/* 0885 */  "", //"mlist3",
-/* 0886 */  "0234000122*4000133**3**344*0400400*000000234000111*1111112341011",
-/* 0887 */  "", //"mlist4",
-/* 0888 */  "", //" inside $$'s",
-/* 0889 */  "", //"Displays can use special alignments (like \\eqalignno)",
-/* 0890 */  "", //"only if nothing but the alignment itself is between $$'s.",
-/* 0891 */  "", //"So I've deleted the formulas that preceded this alignment.",
-/* 0892 */  "", //"span",
-/* 0893 */  "", //"cr",
-/* 0894 */  "", //"crcr",
-/* 0895 */  "endtemplate",
-/* 0896 */  "", //"alignment tab character ",
-/* 0897 */  "", //"Missing # inserted in alignment preamble",
-/* 0898 */  "", //"There should be exactly one # between &'s, when an",
-/* 0899 */  "", //"\\halign or \\valign is being set up. In this case you had",
-/* 0900 */  "", //"none, so I've put one in; maybe that will work.",
-/* 0901 */  "", //"Only one # is allowed per tab",
-/* 0902 */  "", //"more than one, so I'm ignoring all but the first.",
-/* 0903 */  "", //"endv",
-/* 0904 */  "", //"Extra alignment tab has been changed to ",
-/* 0905 */  "", //"You have given more \\span or & marks than there were",
-/* 0906 */  "", //"in the preamble to the \\halign or \\valign now in progress.",
-/* 0907 */  "", //"So I'll assume that you meant to type \\cr instead.",
-/* 0908 */  "", //"256 spans",
-/* 0909 */  "", //"align1",
-/* 0910 */  "", //"align0",
-/* 0911 */  "", //"Infinite glue shrinkage found in a paragraph",
-/* 0912 */  "", //"The paragraph just ended includes some glue that has",
-/* 0913 */  "", //"infinite shrinkability, e.g., `\\hskip 0pt minus 1fil'.",
-/* 0914 */  "", //"Such glue doesn't belong there---it allows a paragraph",
-/* 0915 */  "", //"of any length to fit on one line. But it's safe to proceed,",
-/* 0916 */  "", //"since the offensive shrinkability has been made finite.",
-/* 0917 */  "", //"disc1",
-/* 0918 */  "", //"disc2",
-/* 0919 */  "", //"@@",
-/* 0920 */  "", //": line ",
-/* 0921 */  "", //" t=",
-/* 0922 */  "", //" -> @@",
-/* 0923 */  "", //" via @@",
-/* 0924 */  "", //" b=",
-/* 0925 */  "", //" p=",
-/* 0926 */  "", //" d=",
-/* 0927 */  "", //"@firstpass",
-/* 0928 */  "", //"@secondpass",
-/* 0929 */  "", //"@emergencypass",
-/* 0930 */  "", //"paragraph",
-/* 0931 */  "", //"disc3",
-/* 0932 */  "", //"disc4",
-/* 0933 */  "", //"line breaking",
-/* 0934 */  "", //"HYPH(",
-/* 0935 */  "", //"hyphenation",
-/* 0936 */  "", //" will be flushed",
-/* 0937 */  "", //"Hyphenation exceptions must contain only letters",
-/* 0938 */  "", //"and hyphens. But continue; I'll forgive and forget.",
-/* 0939 */  "", //"Not a letter",
-/* 0940 */  "", //"Letters in \\hyphenation words must have \\lccode>0.",
-/* 0941 */  "", //"Proceed; I'll ignore the character I just read.",
-/* 0942 */  "", //"exception dictionary",
-/* 0943 */  "", //"pattern memory ops",
-/* 0944 */  "", //"pattern memory ops per language",
-/* 0945 */  "", //"pattern memory",
-/* 0946 */  "", //"Too late for ",
-/* 0947 */  "", //"patterns",
-/* 0948 */  "", //"All patterns must be given before typesetting begins.",
-/* 0949 */  "", //"Bad ",
-/* 0950 */  "", //"(See Appendix H.)",
-/* 0951 */  "", //"Nonletter",
-/* 0952 */  "", //"Duplicate pattern",
-/* 0953 */  "", //"pruning",
-/* 0954 */  "", //"vertbreak",
-/* 0955 */  "", //"Infinite glue shrinkage found in box being split",
-/* 0956 */  "", //"The box you are \\vsplitting contains some infinitely",
-/* 0957 */  "", //"shrinkable glue, e.g., `\\vss' or `\\vskip 0pt minus 1fil'.",
-/* 0958 */  "", //"Such glue doesn't belong there; but you can safely proceed,",
-/* 0959 */  "", //"vsplit",
-/* 0960 */  "", //" needs a ",
-/* 0961 */  "", //"vbox",
-/* 0962 */  "", //"The box you are trying to split is an \\hbox.",
-/* 0963 */  "", //"I can't split such a box, so I'll leave it alone.",
-/* 0964 */  "", //"pagegoal",
-/* 0965 */  "", //"pagetotal",
-/* 0966 */  "", //"pagestretch",
-/* 0967 */  "", //"pagefilstretch",
-/* 0968 */  "", //"pagefillstretch",
-/* 0969 */  "", //"pagefilllstretch",
-/* 0970 */  "", //"pageshrink",
-/* 0971 */  "", //"pagedepth",
-/* 0972 */  "", //"fill",
-/* 0973 */  "", //"filll",
-/* 0974 */  "", //"### current page:",
-/* 0975 */  "", //" (held over for next output)",
-/* 0976 */  "", //"total height ",
-/* 0977 */  "", //" goal height ",
-/* 0978 */  "", //" adds ",
-/* 0979 */  "", //", #",
-/* 0980 */  "", //" might split",
-/* 0981 */  "", //"%% goal height=",
-/* 0982 */  "", //", max depth=",
-/* 0983 */  "", //"Insertions can only be added to a vbox",
-/* 0984 */  "", //"Tut tut: You're trying to \\insert into a",
-/* 0985 */  "", //"\\box register that now contains an \\hbox.",
-/* 0986 */  "", //"Proceed, and I'll discard its present contents.",
-/* 0987 */  "", //"page",
-/* 0988 */  "", //"Infinite glue shrinkage found on current page",
-/* 0989 */  "", //"The page about to be output contains some infinitely",
-/* 0990 */  "", //" g=",
-/* 0991 */  "", //" c=",
-/* 0992 */  "", //"Infinite glue shrinkage inserted from ",
-/* 0993 */  "", //"The correction glue for page breaking with insertions",
-/* 0994 */  "", //"must have finite shrinkability. But you may proceed,",
-/* 0995 */  "", //"% split",
-/* 0996 */  "", //" to ",
-/* 0997 */  "", //"255 is not void",
-/* 0998 */  "", //"You shouldn't use \\box255 except in \\output routines.",
-/* 0999 */  "", //"Output loop---",
-/* 1000 */  "", //" consecutive dead cycles",
-/* 1001 */  "", //"I've concluded that your \\output is awry; it never does a",
-/* 1002 */  "", //"\\shipout, so I'm shipping \\box255 out myself. Next time",
-/* 1003 */  "", //"increase \\maxdeadcycles if you want me to be more patient!",
-/* 1004 */  "", //"Unbalanced output routine",
-/* 1005 */  "", //"Your sneaky output routine has problematic {'s and/or }'s.",
-/* 1006 */  "", //"I can't handle that very well; good luck.",
-/* 1007 */  "", //"Output routine didn't use all of ",
-/* 1008 */  "", //"Your \\output commands should empty \\box255,",
-/* 1009 */  "", //"e.g., by saying `\\shipout\\box255'.",
-/* 1010 */  "", //"Proceed; I'll discard its present contents.",
-/* 1011 */  "", //"Missing $ inserted",
-/* 1012 */  "", //"I've inserted a begin-math/end-math symbol since I think",
-/* 1013 */  "", //"you left one out. Proceed, with fingers crossed.",
-/* 1014 */  "", //"' in ",
-/* 1015 */  "", //"Sorry, but I'm not programmed to handle this case;",
-/* 1016 */  "", //"I'll just pretend that you didn't ask for it.",
-/* 1017 */  "", //"If you're in the wrong mode, you might be able to",
-/* 1018 */  "", //"return to the right one by typing `I}' or `I$' or `I\\par'.",
-/* 1019 */  "", //"end",
-/* 1020 */  "", //"dump",
-/* 1021 */  "", //"hskip",
-/* 1022 */  "", //"hfil",
-/* 1023 */  "", //"hfill",
-/* 1024 */  "", //"hss",
-/* 1025 */  "", //"hfilneg",
-/* 1026 */  "", //"vskip",
-/* 1027 */  "", //"vfil",
-/* 1028 */  "", //"vfill",
-/* 1029 */  "", //"vss",
-/* 1030 */  "", //"vfilneg",
-/* 1031 */  "", //"I've inserted something that you may have forgotten.",
-/* 1032 */  "", //"(See the <inserted text> above.)",
-/* 1033 */  "", //"With luck, this will get me unwedged. But if you",
-/* 1034 */  "", //"really didn't forget anything, try typing `2' now; then",
-/* 1035 */  "", //"my insertion and my current dilemma will both disappear.",
-/* 1036 */  "", //"right.",
-/* 1037 */  "", //"Things are pretty mixed up, but I think the worst is over.",
-/* 1038 */  "", //"Too many }'s",
-/* 1039 */  "", //"You've closed more groups than you opened.",
-/* 1040 */  "", //"Such booboos are generally harmless, so keep going.",
-/* 1041 */  "", //"rightbrace",
-/* 1042 */  "", //"Extra }, or forgotten ",
-/* 1043 */  "", //"I've deleted a group-closing symbol because it seems to be",
-/* 1044 */  "", //"spurious, as in `$x}$'. But perhaps the } is legitimate and",
-/* 1045 */  "", //"you forgot something else, as in `\\hbox{$x}'. In such cases",
-/* 1046 */  "", //"the way to recover is to insert both the forgotten and the",
-/* 1047 */  "", //"deleted material, e.g., by typing `I$}'.",
-/* 1048 */  "", //"moveleft",
-/* 1049 */  "", //"moveright",
-/* 1050 */  "", //"raise",
-/* 1051 */  "", //"lower",
-/* 1052 */  "", //"copy",
-/* 1053 */  "", //"lastbox",
-/* 1054 */  "", //"vtop",
-/* 1055 */  "", //"hbox",
-/* 1056 */  "", //"shipout",
-/* 1057 */  "", //"leaders",
-/* 1058 */  "", //"cleaders",
-/* 1059 */  "", //"xleaders",
-/* 1060 */  "", //"Leaders not followed by proper glue",
-/* 1061 */  "", //"You should say `\\leaders <box or rule><hskip or vskip>'.",
-/* 1062 */  "", //"I found the <box or rule>, but there's no suitable",
-/* 1063 */  "", //"<hskip or vskip>, so I'm ignoring these leaders.",
-/* 1064 */  "", //"Sorry; this \\lastbox will be void.",
-/* 1065 */  "", //"Sorry...I usually can't take things from the current page.",
-/* 1066 */  "", //"This \\lastbox will therefore be void.",
-/* 1067 */  "", //"Missing `to' inserted",
-/* 1068 */  "", //"I'm working on `\\vsplit<box number> to <dimen>';",
-/* 1069 */  "", //"will look for the <dimen> next.",
-/* 1070 */  "", //"A <box> was supposed to be here",
-/* 1071 */  "", //"I was expecting to see \\hbox or \\vbox or \\copy or \\box or",
-/* 1072 */  "", //"something like that. So you might find something missing in",
-/* 1073 */  "", //"your output. But keep trying; you can fix this later.",
-/* 1074 */  "", //"indent",
-/* 1075 */  "", //"noindent",
-/* 1076 */  "", //"' here except with leaders",
-/* 1077 */  "", //"To put a horizontal rule in an hbox or an alignment,",
-/* 1078 */  "", //"you should use \\leaders or \\hrulefill (see The TeXbook).",
-/* 1079 */  "", //"You can't ",
-/* 1080 */  "", //"I'm changing to \\insert0; box 255 is special.",
-/* 1081 */  "", //"Try `I\\vskip-\\lastskip' instead.",
-/* 1082 */  "", //"Try `I\\kern-\\lastkern' instead.",
-/* 1083 */  "", //"Perhaps you can make the output routine do it.",
-/* 1084 */  "", //"unpenalty",
-/* 1085 */  "", //"unkern",
-/* 1086 */  "", //"unskip",
-/* 1087 */  "", //"unhbox",
-/* 1088 */  "", //"unhcopy",
-/* 1089 */  "", //"unvbox",
-/* 1090 */  "", //"unvcopy",
-/* 1091 */  "", //"Incompatible list can't be unboxed",
-/* 1092 */  "", //"Sorry, Pandora. (You sneaky devil.)",
-/* 1093 */  "", //"I refuse to unbox an \\hbox in vertical mode or vice versa.",
-/* 1094 */  "", //"And I can't open any boxes in math mode.",
-/* 1095 */  "", //"Illegal math ",
-/* 1096 */  "", //"Sorry: The third part of a discretionary break must be",
-/* 1097 */  "", //"empty, in math formulas. I had to delete your third part.",
-/* 1098 */  "", //"Discretionary list is too long",
-/* 1099 */  "", //"Wow---I never thought anybody would tweak me here.",
-/* 1100 */  "", //"You can't seriously need such a huge discretionary list" "?",
-/* 1101 */  "", //"Improper discretionary list",
-/* 1102 */  "", //"Discretionary lists must contain only boxes and kerns.",
-/* 1103 */  "", //"The following discretionary sublist has been deleted:",
-/* 1104 */  "", //"Missing } inserted",
-/* 1105 */  "", //"I've put in what seems to be necessary to fix",
-/* 1106 */  "", //"the current column of the current alignment.",
-/* 1107 */  "", //"Try to go on, since this might almost work.",
-/* 1108 */  "", //"Misplaced ",
-/* 1109 */  "", //"I can't figure out why you would want to use a tab mark",
-/* 1110 */  "", //"here. If you just want an ampersand, the remedy is",
-/* 1111 */  "", //"simple: Just type `I\\&' now. But if some right brace",
-/* 1112 */  "", //"up above has ended a previous alignment prematurely,",
-/* 1113 */  "", //"you're probably due for more error messages, and you",
-/* 1114 */  "", //"might try typing `S' now just to see what is salvageable.",
-/* 1115 */  "", //"or \\cr or \\span just now. If something like a right brace",
-/* 1116 */  "", //"I expect to see \\noalign only after the \\cr of",
-/* 1117 */  "", //"an alignment. Proceed, and I'll ignore this case.",
-/* 1118 */  "", //"I expect to see \\omit only after tab marks or the \\cr of",
-/* 1119 */  "", // "I'm guessing that you meant to end an alignment here.",
-/* 1120 */  "", //"I'm ignoring this, since I wasn't doing a \\csname.",
-/* 1121 */  "", //"eqno",
-/* 1122 */  "", //"leqno",
-/* 1123 */  "", //"displaylimits",
-/* 1124 */  "", //"Limit controls must follow a math operator",
-/* 1125 */  "", //"I'm ignoring this misplaced \\limits or \\nolimits command.",
-/* 1126 */  "", //"Missing delimiter (. inserted)",
-/* 1127 */  "", //"I was expecting to see something like `(' or `\\{' or",
-/* 1128 */  "", //"`\\}' here. If you typed, e.g., `{' instead of `\\{', you",
-/* 1129 */  "", //"should probably delete the `{' by typing `1' now, so that",
-/* 1130 */  "", //"braces don't get unbalanced. Otherwise just proceed.",
-/* 1131 */  "", //"Acceptable delimiters are characters whose \\delcode is",
-/* 1132 */  "", //"nonnegative, or you can use `\\delimiter <delimiter code>'.",
-/* 1133 */  "", //"Please use ",
-/* 1134 */  "", //" for accents in math mode",
-/* 1135 */  "", //"I'm changing \\accent to \\mathaccent here; wish me luck.",
-/* 1136 */  "", //"(Accents are not the same in formulas as they are in text.)",
-/* 1137 */  "", //"Double superscript",
-/* 1138 */  "", //"I treat `x^1^2' essentially like `x^1{}^2'.",
-/* 1139 */  "", //"Double subscript",
-/* 1140 */  "", //"I treat `x_1_2' essentially like `x_1{}_2'.",
-/* 1141 */  "", //"above",
-/* 1142 */  "", //"over",
-/* 1143 */  "", //"atop",
-/* 1144 */  "", //"abovewithdelims",
-/* 1145 */  "", //"overwithdelims",
-/* 1146 */  "", //"atopwithdelims",
-/* 1147 */  "", //"Ambiguous; you need another { and }",
-/* 1148 */  "", //"I'm ignoring this fraction specification, since I don't",
-/* 1149 */  "", //"know whether a construction like `x \\over y \\over z'",
-/* 1150 */  "", //"means `{x \\over y} \\over z' or `x \\over {y \\over z}'.",
-/* 1151 */  "", //"I'm ignoring a \\right that had no matching \\left.",
-/* 1152 */  "", //"Math formula deleted: Insufficient symbol fonts",
-/* 1153 */  "", //"Sorry, but I can't typeset math unless \\textfont 2",
-/* 1154 */  "", //"and \\scriptfont 2 and \\scriptscriptfont 2 have all",
-/* 1155 */  "", //"the \\fontdimen values needed in math symbol fonts.",
-/* 1156 */  "", //"Math formula deleted: Insufficient extension fonts",
-/* 1157 */  "", //"Sorry, but I can't typeset math unless \\textfont 3",
-/* 1158 */  "", //"and \\scriptfont 3 and \\scriptscriptfont 3 have all",
-/* 1159 */  "", //"the \\fontdimen values needed in math extension fonts.",
-/* 1160 */  "", //"Display math should end with $$",
-/* 1161 */  "", //"The `$' that I just saw supposedly matches a previous `$$'.",
-/* 1162 */  "", //"So I shall assume that you typed `$$' both times.",
-/* 1163 */  "", //"display",
-/* 1164 */  "", //"Missing $$ inserted",
-/* 1165 */  "", //"long",
-/* 1166 */  "", //"outer",
-/* 1167 */  "", //"global",
-/* 1168 */  "", //"def",
-/* 1169 */  "", //"gdef",
-/* 1170 */  "", //"edef",
-/* 1171 */  "", //"xdef",
-/* 1172 */  "", //"prefix",
-/* 1173 */  "", //"You can't use a prefix with `",
-/* 1174 */  "", //"I'll pretend you didn't say \\long or \\outer or \\global.",
-/* 1175 */  "", //"' or `",
-/* 1176 */  "", //"' with `",
-/* 1177 */  "", //"I'll pretend you didn't say \\long or \\outer here.",
-/* 1178 */  "", //"Missing control sequence inserted",
-/* 1179 */  "", //"Please don't say `\\def cs{...}', say `\\def\\cs{...}'.",
-/* 1180 */  "", //"I've inserted an inaccessible control sequence so that your",
-/* 1181 */  "", //"definition will be completed without mixing me up too badly.",
-/* 1182 */  "", //"You can recover graciously from this error, if you're",
-/* 1183 */  "", //"careful; see exercise 27.2 in The TeXbook.",
-/* 1184 */  "inaccessible",
-/* 1185 */  "", //"let",
-/* 1186 */  "", //"futurelet",
-/* 1187 */  "", //"chardef",
-/* 1188 */  "", //"mathchardef",
-/* 1189 */  "", //"countdef",
-/* 1190 */  "", //"dimendef",
-/* 1191 */  "", //"skipdef",
-/* 1192 */  "", //"muskipdef",
-/* 1193 */  "", //"toksdef",
-/* 1194 */  "", //"You should have said `\\read<number> to \\cs'.",
-/* 1195 */  "", //"I'm going to look for the \\cs now.",
-/* 1196 */  "", //"Invalid code (",
-/* 1197 */  "", //"), should be in the range 0..",
-/* 1198 */  "", //"), should be at most ",
-/* 1199 */  "", //"I'm going to use 0 instead of that illegal code value.",
-/* 1200 */  "", //"by",
-/* 1201 */  "", //"Arithmetic overflow",
-/* 1202 */  "", //"I can't carry out that multiplication or division,",
-/* 1203 */  "", //"since the result is out of range.",
-/* 1204 */  "", //"I'm forgetting what you said and not changing anything.",
-/* 1205 */  "", //"Sorry, \\setbox is not allowed after \\halign in a display,",
-/* 1206 */  "", //"or between \\accent and an accented character.",
-/* 1207 */  "", //"Bad space factor",
-/* 1208 */  "", //"I allow only values in the range 1..32767 here.",
-/* 1209 */  "", //"I allow only nonnegative values here.",
-/* 1210 */  "", //"Patterns can be loaded only by INITEX",
-/* 1211 */  "", //"hyphenchar",
-/* 1212 */  "", //"skewchar",
-/* 1213 */  "FONT",
-/* 1214 */  "", //"at",
-/* 1215 */  "", //"scaled",
-/* 1216 */  "", //"Improper `at' size (",
-/* 1217 */  "", //"pt), replaced by 10pt",
-/* 1218 */  "", //"I can only handle fonts at positive sizes that are",
-/* 1219 */  "", //"less than 2048pt, so I've changed what you said to 10pt.",
-/* 1220 */  "", //"select font ",
-/* 1221 */  "", //"errorstopmode",
-/* 1222 */  "", //"openin",
-/* 1223 */  "", //"closein",
-/* 1224 */  "", //"message",
-/* 1225 */  "", //"errmessage",
-/* 1226 */  "", //"(That was another \\errmessage.)",
-/* 1227 */  "", //"This error message was generated by an \\errmessage",
-/* 1228 */  "", //"command, so I can't give any explicit help.",
-/* 1229 */  "", //"Pretend that you're Hercule Poirot: Examine all clues,",
-/* 1230 */  "", //"and deduce the truth by order and method.",
-/* 1231 */  "", //"lowercase",
-/* 1232 */  "", //"uppercase",
-/* 1233 */  "", //"show",
-/* 1234 */  "", //"showbox",
-/* 1235 */  "", //"showthe",
-/* 1236 */  "", //"showlists",
-/* 1237 */  "", //"This isn't an error message; I'm just \\showing something.",
-/* 1238 */  "", //"Type `I\\show...' to show more (e.g., \\show\\cs,",
-/* 1239 */  "", //"\\showthe\\count10, \\showbox255, \\showlists).",
-/* 1240 */  "", //"And type `I\\tracingonline=1\\show...' to show boxes and",
-/* 1241 */  "", //"lists on your terminal as well as in the transcript file.",
-/* 1242 */  "", //"> ",
-/* 1243 */  "", //"undefined",
-/* 1244 */  "", //"macro",
-/* 1245 */  "", //"long macro",
-/* 1246 */  "", //"outer macro",
-/* 1247 */  "", //"outer endtemplate",
-/* 1248 */  "", //"> \\box",
-/* 1249 */  "", //"OK",
-/* 1250 */  "", //" (see the transcript file)",
-/* 1251 */  " (INITEX)",
-/* 1252 */  "", //"You can't dump inside a group",
-/* 1253 */  "", //"`{...\\dump}' is a no-no.",
-/* 1254 */  "", //" strings of total length ",
-/* 1255 */  "", //" memory locations dumped; current usage is ",
-/* 1256 */  "", //" multiletter control sequences",
-/* 1257 */  "", //" words of font info for ",
-/* 1258 */  "", //" preloaded font",
-/* 1259 */  "", //"\\font",
-/* 1260 */  "", //" hyphenation exception",
-/* 1261 */  "", //"Hyphenation trie of length ",
-/* 1262 */  "", //" has ",
-/* 1263 */  "", //" op",
-/* 1264 */  "", //" out of ",
-/* 1265 */  "", //" for language ",
-/* 1266 */  "", //" (format=",
-/* 1267 */  "", //"format file name",
-/* 1268 */  "", //"Beginning to dump on file ",
-/* 1269 */  "", //"Transcript written on ",
-/* 1270 */  "", //" )",
-/* 1271 */  "", //"end occurred ",
-/* 1272 */  "", //"inside a group at level ",
-/* 1273 */  "", //"when ",
-/* 1274 */  "", //" on line ",
-/* 1275 */  "", //" was incomplete)",
-/* 1276 */  "", //"(see the transcript file for additional information)",
-/* 1277 */  "", //"(\\dump is performed only by INITEX)",
-/* 1278 */  "", //"debug # (-1 to exit):",
-/* 1279 */  "", //"openout",
-/* 1280 */  "", //"closeout",
-/* 1281 */  "", //"special",
-/* 1282 */  "", //"immediate",
-/* 1283 */  "", //"setlanguage",
-/* 1284 */  "", //"[unknown extension!]",
-/* 1285 */  "", //"ext1",
-/* 1286 */  "", //" (hyphenmin ",
-/* 1287 */  "", //"whatsit" "?",
-/* 1288 */  "", //"ext2",
-/* 1289 */  "", //"ext3",
-/* 1290 */  "endwrite",
-/* 1291 */  "", //"Unbalanced write command",
-/* 1292 */  "", //"On this page there's a \\write with fewer real {'s than }'s.",
-/* 1293 */  "", //"ext4",
-/* 1294 */  "", //"output file name",
-};
-
-static str_number load_pool_strings (size_t spare_size)
-{
-  str_number g;
-  size_t k, l, i = 0;
-
-  for (k = 0; k < sizeof(pool_file_arr) / sizeof(char *); k++)
-  {
-    l = strlen(pool_file_arr[k]);
-    i += l;
-
-    if (i >= spare_size)
-      return 0;
-
-    memcpy(str_pool + pool_ptr, pool_file_arr[k], l);
-    pool_ptr += l;
-    g = make_string();
-  }
-
-  return g;
-}
-
 static str_number make_str_string (const char * s)
 {
   size_t slen = strlen(s);
@@ -3653,6 +2589,55 @@ static str_number make_str_string (const char * s)
     pool_ptr += slen;
     return (make_string());
   }
+}
+
+static const str_number STR_CANT_HAPPEN = 256;
+static const str_number STR_ROMAN = 257;
+static const str_number STR_NOTEXPANDED = 258;
+static const str_number STR_EMPTY = 259;
+static const str_number STR_DOT_TEX = 260;
+static const str_number STR_TEXPUT = 261;
+static const str_number STR_NULLFONT = 262;
+static const str_number STR_DOT_TFM = 263;
+static const str_number STR_MATH_SPACING = 264;
+static const str_number STR_ENDTEMPLATE = 265;
+static const str_number STR_INACCESSIBLE = 266;
+static const str_number STR_FONT = 267;
+static const str_number STR_FORMAT_IDENT = 268;
+static const str_number STR_ENDWRITE = 269;
+static const str_number STR_ENDGROUP = 270;
+static const str_number STR_RELAX = 271;
+static const str_number STR_FI = 272;
+static const str_number STR_CR = 273;
+static const str_number STR_RIGHT = 274;
+static const str_number STR_PDFPRIMITIVE = 275;
+
+static str_number load_pool_strings (size_t spare_size)
+{
+  str_number g;
+
+  g = make_str_string("???"); // STR_CANT_HAPPEN
+  g = make_str_string("m2d5c2l5x2v5i"); // STR_ROMAN
+  g = make_str_string("notexpanded:"); // STR_NOTEXPANDED
+  g = make_str_string(""); // STR_EMPTY
+  g = make_str_string(".tex"); // STR_DOT_TEX
+  g = make_str_string("texput"); // STR_TEXPUT
+  g = make_str_string("nullfont"); // STR_NULLFONT
+  g = make_str_string(".tfm"); // STR_DOT_TFM
+  g = make_str_string("0234000122*4000133**3**344*0400400*000000234000111*1111112341011"); // STR_MATH_SPACING
+  g = make_str_string("endtemplate"); // STR_ENDTEMPLATE
+  g = make_str_string("inaccessible"); // STR_INACCESSIBLE
+  g = make_str_string("FONT"); // STR_FONT
+  g = make_str_string(" (INITEX)"); // STR_FORMAT_IDENT
+  g = make_str_string("endwrite"); // STR_ENDWRITE
+  g = make_str_string("endgroup"); // STR_ENDGROUP
+  g = make_str_string("relax"); // STR_RELAX
+  g = make_str_string("fi"); // STR_FI
+  g = make_str_string("cr"); // STR_CR
+  g = make_str_string("right"); // STR_RIGHT
+  g = make_str_string("pdfprimitive"); // STR_PDFPRIMITIVE
+
+  return g;
 }
 
 static str_number get_job_name (str_number job)
@@ -3994,7 +2979,7 @@ static void do_initex (void)
   for (k = dimen_base; k <= eqtb_size; k++)
     eqtb[k].cint = 0;
 
-  hash_used = frozen_control_sequence;
+  hash_used = frozen_control_sequence; // {nothing is used}
   cs_count = 0;
 
   if (aptex_env.trace_mem)
@@ -4002,11 +2987,11 @@ static void do_initex (void)
 
   eq_type(frozen_dont_expand) = dont_expand;
   prim_used = prim_size; // {nothing is used}
-  text(frozen_dont_expand) = 499;  /* "notexpanded:" */
+  text(frozen_dont_expand) = STR_NOTEXPANDED;
   eq_type(frozen_primitive) = ignore_spaces;
   equiv(frozen_primitive) = 1;
   eq_level(frozen_primitive) = level_one;
-  text(frozen_primitive) = make_str_string("pdfprimitive");
+  text(frozen_primitive) = STR_PDFPRIMITIVE;
 
   jfm_enc = 0;
   font_ptr                    = null_font;
@@ -4014,8 +2999,8 @@ static void do_initex (void)
   font_dir[null_font]         = dir_default;
   font_enc[null_font]         = 0;
   font_num_ext[null_font]     = 0;
-  font_name[null_font]        = 795; /* nullfont */
-  font_area[null_font]        = 335; /* "" */
+  font_name[null_font]        = STR_NULLFONT;
+  font_area[null_font]        = STR_EMPTY;
   hyphen_char[null_font]      = '-';
   skew_char[null_font]        = -1;
   bchar_label[null_font]      = non_address;
@@ -4046,9 +3031,9 @@ static void do_initex (void)
   scriptscript_baseline_shift_factor = 500;
 
   reset_trie();
-  text(frozen_protection) = 1184; /* "inaccessible" */
-  format_ident = 1251;            /* " (INITEX)" */
-  text(end_write) = 1290;         /* "endwrite" */
+  text(frozen_protection) = STR_INACCESSIBLE;
+  format_ident = STR_FORMAT_IDENT;
+  text(end_write) = STR_ENDWRITE;
   eq_level(end_write) = level_one;
   eq_type(end_write) = outer_call;
   equiv(end_write) = 0;
@@ -4967,6 +3952,9 @@ static int aptex_program (void)
     init_pool_ptr = pool_ptr;
     fix_date_and_time();
   }
+  else
+  {
+  }
 
   ready_already = 314159;
 
@@ -5158,7 +4146,7 @@ start_of_TEX:
     fix_date_and_time();
     random_seed = (microseconds * 1000) + (epochseconds % 1000000);
     init_randoms(random_seed);
-    magic_offset = str_start[886] - 9 * ord_noad; /* math_spacing = 886 */
+    magic_offset = str_start[STR_MATH_SPACING] - 9 * ord_noad;
     if (aptex_env.opt_int >= 0)
       interaction = aptex_env.opt_int;
 
@@ -6284,7 +5272,7 @@ done2:
       print_nl("\\font");
       sprint_esc(font_id_text(k));
       print_char('=');
-      print_file_name(font_name[k], font_area[k], 335);
+      print_file_name(font_name[k], font_area[k], STR_EMPTY);
 
       if (font_size[k] != font_dsize[k])
       {
@@ -6527,7 +5515,7 @@ static void init_prim (void)
   primitive("divide", divide, 0);
   primitive("endcsname", end_cs_name, 0);
   primitive("endgroup", end_group, 0);
-  text(frozen_end_group) = make_str_string("endgroup");
+  text(frozen_end_group) = STR_ENDGROUP;
   eqtb[frozen_end_group] = eqtb[cur_val];
   primitive("expandafter", expand_after, 0);
   primitive("font", def_font, 0);
@@ -6555,7 +5543,7 @@ static void init_prim (void)
   primitive("radical", radical, 0);
   primitive("read", read_to_cs, 0);
   primitive("relax", relax, 256);
-  text(frozen_relax) = make_str_string("relax");
+  text(frozen_relax) = STR_RELAX;
   eqtb[frozen_relax] = eqtb[cur_val];
   primitive("setbox", set_box, 0);
   primitive("the", the, 0);
@@ -6661,20 +5649,20 @@ static void init_prim (void)
   primitive("ifjfont", if_test, if_jfont_code);
   primitive("iftfont", if_test, if_tfont_code);
   primitive("fi", fi_or_else, fi_code);
-  text(frozen_fi) = make_str_string("fi");
+  text(frozen_fi) = STR_FI;
   eqtb[frozen_fi] = eqtb[cur_val];
   primitive("or", fi_or_else, or_code);
   primitive("else", fi_or_else, else_code);
   primitive("nullfont", set_font, null_font);
-  text(frozen_null_font) = 795;
+  text(frozen_null_font) = STR_NULLFONT;
   eqtb[frozen_null_font] = eqtb[cur_val];
   primitive("span", tab_mark, span_code);
   primitive("cr", car_ret, cr_code);
-  text(frozen_cr) = make_str_string("cr");
+  text(frozen_cr) = STR_CR;
   eqtb[frozen_cr] = eqtb[cur_val];
   primitive("crcr", car_ret, cr_cr_code);
-  text(frozen_end_template) = make_str_string("endtemplate");
-  text(frozen_endv) = make_str_string("endtemplate");
+  text(frozen_end_template) = STR_ENDTEMPLATE;
+  text(frozen_endv) = STR_ENDTEMPLATE;
   eq_type(frozen_endv) = endv;
   equiv(frozen_endv) = null_list;
   eq_level(frozen_endv) = level_one;
@@ -6760,7 +5748,7 @@ static void init_prim (void)
   primitive("atopwithdelims", above, delimited_code + atop_code);
   primitive("left", left_right, left_noad);
   primitive("right", left_right, right_noad);
-  text(frozen_right) = make_str_string("right");
+  text(frozen_right) = STR_RIGHT;
   eqtb[frozen_right] = eqtb[cur_val];
   primitive("long", prefix, 1);
   primitive("outer", prefix, 2);
@@ -7030,13 +6018,13 @@ void print_ (integer s)
   integer nl;     // {new-line character to restore}
 
   if (s >= str_ptr)
-    s = 259; // '???' {this can't happen}
+    s = STR_CANT_HAPPEN; // '???' {this can't happen}
   else
   {
     if (s < 256)
     {
       if (s < 0)
-        s = 259;
+        s = STR_CANT_HAPPEN;
       else
       {
         if (selector > pseudo)
@@ -8345,7 +7333,7 @@ static void print_roman_int (integer n)
   pool_pointer j, k; // {mysterious indices into |str_pool|}
   nonnegative_integer u, v; // {mysterious numbers}
 
-  j = str_start[260]; /* m2d5c2l5x2v5i */
+  j = str_start[STR_ROMAN];
   v = 1000;
 
   while (true)
@@ -19721,7 +18709,7 @@ static void end_name (void)
 #endif
 
   if (area_delimiter == 0)
-    cur_area = 335;
+    cur_area = STR_EMPTY;
   else
   {
     cur_area = str_ptr;
@@ -19731,7 +18719,7 @@ static void end_name (void)
 
   if (ext_delimiter == 0)
   {
-    cur_ext = 335;
+    cur_ext = STR_EMPTY;
     cur_name = make_string();
   }
   else
@@ -19956,7 +18944,7 @@ static void scan_file_name_braced (void)
 
 void pack_job_name_ (str_number s)
 {
-  cur_area = 335; /* "" */
+  cur_area = STR_EMPTY;
   cur_ext  = s;
   cur_name = job_name;
   pack_cur_name();
@@ -19977,7 +18965,7 @@ void prompt_file_name_ (const char * s, str_number e)
   print_file_name(cur_name, cur_area, cur_ext);
   prints("'.");
 
-  if (e == 785)    /* .tex */
+  if (e == STR_DOT_TEX)
     show_context();
 
   print_nl("Please type another ");
@@ -20007,7 +18995,7 @@ done:
     end_name();
   }
 
-  if (cur_ext == 335) /* "" */
+  if (cur_ext == STR_EMPTY)
     cur_ext = e;
 
   pack_cur_name();
@@ -20023,7 +19011,7 @@ void open_log_file (void)
   old_setting = selector;
 
   if (job_name == 0)
-    job_name = get_job_name(790); // "texput"
+    job_name = get_job_name(STR_TEXPUT);
 
   pack_job_name(".log");
 
@@ -20095,7 +19083,7 @@ void start_input (void)
       goto done;
 
     end_file_reading();
-    prompt_file_name("input file name", ".tex");
+    prompt_file_name_("input file name", STR_DOT_TEX);
   }
 
 done:
@@ -20186,7 +19174,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
   g = null_font;
   // @<Open |tfm_file| for input@>
   file_opened = false;
-  pack_file_name(nom, aire, 805); /* .tfm */
+  pack_file_name(nom, aire, STR_DOT_TFM);
 
   if (tracing_fontloaders)
   {
@@ -21416,7 +20404,7 @@ static internal_font_number load_expand_font (internal_font_number f, integer e)
     }
     else
     {
-      k = read_font_info(null_cs, s, 335 /* "" */, font_size[f]);
+      k = read_font_info(null_cs, s, STR_EMPTY, font_size[f]);
     }
   }
   if (k != null_font)
@@ -24255,13 +23243,13 @@ void out_what (pointer p)
             cur_area = open_area(p);
             cur_ext = open_ext(p);
 
-            if (cur_ext == 335) /* "" */
-              cur_ext = 785;    /* ".tex" */
+            if (cur_ext == STR_EMPTY)
+              cur_ext = STR_DOT_TEX;
 
             pack_cur_name();
 
             while (!a_open_out(write_file[j]))
-              prompt_file_name("output file name", ".tex");
+              prompt_file_name_("output file name", STR_DOT_TEX);
 
             write_open[j] = true;
           }
@@ -29803,7 +28791,7 @@ done:;
 
           /* [843] - font expansion */
           if (type(prev_r) == delta_node)
-          { 
+          {
             do_all_eight(convert_to_break_width);
           }
           /* [843] - font expansion */
@@ -30232,7 +29220,7 @@ found:
       }
 #endif
 
-      d = d + total_demerits(r); 
+      d = d + total_demerits(r);
       // {this is the minimum total demerits
       // from the beginning to |cur_p| via |r|}
 
@@ -36669,7 +35657,7 @@ void new_font (small_number a)
   else if (u >= single_base)
   {
     if (u == null_cs)
-      t = 1213; /* FONT */
+      t = STR_FONT;
     else
       t = u - single_base;
   }
@@ -36811,9 +35799,9 @@ static void open_or_close_in (void)
     scan_file_name();
     pack_cur_name();
 
-    if ((cur_ext != 335) && a_open_in(read_file[n]))
+    if ((cur_ext != STR_EMPTY) && a_open_in(read_file[n]))
       read_open[n] = just_open;
-    else if ((cur_ext != 785) && (name_length + 5 < file_name_size))
+    else if ((cur_ext != STR_DOT_TEX) && (name_length + 5 < file_name_size))
     {
       strncpy((char *) name_of_file + name_length + 1, ".tex ", 5);
       name_length = name_length + 4;
@@ -36825,7 +35813,7 @@ static void open_or_close_in (void)
         name_length = name_length - 4;
         name_of_file[name_length + 1] = ' ';
 
-        if ((cur_ext == 335) && a_open_in(read_file[n]))
+        if ((cur_ext == STR_EMPTY) && a_open_in(read_file[n]))
           read_open[n] = just_open;
       }
     }
