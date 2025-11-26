@@ -112,7 +112,7 @@ extern int    pdf_dev_put_image  (int xobj_id, transform_info *p, double ref_x, 
 
 /* The design_size and ptsize required by PK font support...
  */
-extern int    pdf_dev_locate_font (const char *font_name, spt_t ptsize);
+extern int    pdf_dev_locate_font (const char *font_name, spt_t ptsize, int extend);
 
 /* The following two routines are NOT WORKING.
  * Dvipdfmx doesn't manage gstate well..

@@ -1288,7 +1288,7 @@ print_fontmap (const char *font_name, fontmap_rec *mrec)
  * of the same font at different sizes.
  */
 int
-pdf_dev_locate_font (const char *font_name, spt_t ptsize)
+pdf_dev_locate_font (const char *font_name, spt_t ptsize, int extend)
 {
   pdf_dev         *p = current_device();
   int              i;
@@ -1368,6 +1368,9 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
     font->slant  = mrec->opt.slant;
     font->bold   = mrec->opt.bold;
   }
+
+  if (extend != 0)
+    font->extend = 1 + (0.001 * (double) extend);
 
   return  p->num_dev_fonts++;
 }

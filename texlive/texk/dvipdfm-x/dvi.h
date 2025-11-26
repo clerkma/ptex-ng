@@ -75,7 +75,7 @@ extern void  dvi_scan_specials (int page_no,
                                 int *majorversion, int *minorversion,
                                 int *do_enc, int *keybits, int32_t *perm,
                                 char *opasswd, char *upasswd, int *has_id, unsigned char *id1, unsigned char *id2);
-extern int   dvi_locate_font   (const char *name, spt_t ptsize);
+extern int   dvi_locate_font   (const char *name, spt_t ptsize, int extend);
 
 /* link or nolink:
  * See dvipdfm (not x) user's manual on pdf:link and pdf:nolink.

@@ -1006,7 +1006,7 @@ dvi_unit_size (void)
 
 
 int
-dvi_locate_font (const char *tfm_name, spt_t ptsize)
+dvi_locate_font (const char *tfm_name, spt_t ptsize, int extend)
 {
   int           cur_id = -1;
   const char   *name = tfm_name;
@@ -1113,7 +1113,7 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
   }
 
   /* We need ptsize for PK font creation. */
-  font_id = pdf_dev_locate_font(name, ptsize);
+  font_id = pdf_dev_locate_font(name, ptsize, extend);
   if (font_id < 0) {
     WARN("Could not locate a virtual/physical font for TFM \"%s\".", tfm_name);
     if (mrec && mrec->map_name) { /* has map_name */
@@ -1216,7 +1216,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
 
   memset(&loaded_fonts[cur_id], 0, sizeof (struct loaded_font));
 
-  loaded_fonts[cur_id].font_id  = pdf_dev_locate_font(fontmap_key, ptsize);
+  loaded_fonts[cur_id].font_id  = pdf_dev_locate_font(fontmap_key, ptsize, 0);
   loaded_fonts[cur_id].size     = ptsize;
   loaded_fonts[cur_id].type     = NATIVE;
   loaded_fonts[cur_id].minbytes = pdf_dev_font_minbytes(loaded_fonts[cur_id].font_id);
@@ -1821,7 +1821,7 @@ do_fnt (int32_t tex_id)
                                        def_fonts[i].embolden);
     } else {
       font_id = dvi_locate_font(def_fonts[i].font_name,
-                                def_fonts[i].point_size);
+                                def_fonts[i].point_size, 0);
     }
     loaded_fonts[font_id].rgba_color = def_fonts[i].rgba_color;
     loaded_fonts[font_id].rgba_used = def_fonts[i].rgba_used;
