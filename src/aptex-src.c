@@ -2367,29 +2367,46 @@ static boolean input_ln (alpha_file f, boolean bypass_eoln)
   return true;
 }
 
+typedef struct {
+  char * mbcs;
+  char * utf8;
+} open_name_t;
+
+static void make_open_name (open_name_t *open_name)
+{
+  open_name->mbcs = NULL;
+  open_name->utf8 = (char *) calloc(1, name_length + 1);
+  strncpy(open_name->utf8, (const char *) name_of_file + 1, name_length);
+  open_name->mbcs = utf8_mbcs(open_name->utf8);
+}
+
+static void free_open_name (open_name_t *open_name)
+{
+  if (open_name->mbcs)
+    free(open_name->mbcs);
+  if (open_name->utf8)
+    free(open_name->utf8);
+}
+
 static boolean a_open_input (alpha_file * f)
 {
   boolean openable = false;
   char * file_name_kpse = NULL;
-  char * file_name_mbcs = NULL;
+  open_name_t open_name = {0};
 
-  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
-  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-
-  file_name_mbcs = utf8_mbcs(file_name_utf8);
-
-  if (file_name_mbcs[0] == '|' && aptex_env.flag_shell_escape == true)
+  make_open_name(&open_name);
+  if ((open_name.mbcs[0] == '|') && (aptex_env.flag_shell_escape == true))
   {
-    f->file_data = popen(file_name_mbcs + 1, "r");
+    f->file_data = popen(open_name.mbcs + 1, "r");
     f->file_type = 1;
     if (f->file_data) openable = true;
   }
   else
   {
 #ifdef USE_KPATHSEA
-    file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tex_format, false);
+    file_name_kpse = kpse_find_file((const_string) open_name.mbcs, kpse_tex_format, false);
 #else
-    file_name_kpse = file_name_mbcs;
+    file_name_kpse = open_name.mbcs;
 #endif /* USE_KPATHSEA */
 
     if (file_name_kpse != NULL)
@@ -2400,11 +2417,7 @@ static boolean a_open_input (alpha_file * f)
     }
   }
 
-  if (file_name_mbcs != NULL)
-    free(file_name_mbcs);
-
-  if (file_name_utf8 != NULL)
-    free(file_name_utf8);
+  free_open_name(&open_name);
 
   if (file_name_kpse != NULL)
     free(file_name_kpse);
@@ -2416,20 +2429,20 @@ static boolean b_open_input (byte_file * f)
 {
   boolean openable = false;
   char * file_name_kpse = NULL;
-  char * file_name_mbcs = NULL;
+  char * file_name_real = NULL;
+  open_name_t open_name = {0};
 
-  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
-  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
+  make_open_name(&open_name);
 
-  if (name_length > 3 && (strncasecmp(file_name_utf8, "ot:", 3) == 0))
-    file_name_mbcs = utf8_mbcs(strrchr(file_name_utf8, ':') + 1);
+  if (name_length > 3 && (strncasecmp(open_name.utf8, "ot:", 3) == 0))
+    file_name_real = strrchr(open_name.mbcs, ':') + 1;
   else
-    file_name_mbcs = utf8_mbcs(file_name_utf8);
+    file_name_real = open_name.mbcs;
 
 #ifdef USE_KPATHSEA
-  file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_tfm_format, true);
+  file_name_kpse = kpse_find_file((const_string) file_name_real, kpse_tfm_format, true);
 #else
-  file_name_kpse = file_name_mbcs;
+  file_name_kpse = file_name_real;
 #endif
 
   if (file_name_kpse != NULL)
@@ -2443,11 +2456,7 @@ static boolean b_open_input (byte_file * f)
     }
   }
 
-  if (file_name_mbcs != NULL)
-    free(file_name_mbcs);
-
-  if (file_name_utf8 != NULL)
-    free(file_name_utf8);
+  free_open_name(&open_name);
 
   if (file_name_kpse != NULL)
     free(file_name_kpse);
@@ -2459,13 +2468,11 @@ static boolean w_open_input (word_file * f)
 {
   boolean openable = false;
   char * file_name_kpse = NULL;
-  char * file_name_mbcs = NULL;
-  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+  open_name_t open_name = {0};
 
-  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-  file_name_mbcs = utf8_mbcs(file_name_utf8);
+  make_open_name(&open_name);
 #ifdef USE_KPATHSEA
-  file_name_kpse = kpse_find_file((const_string) file_name_mbcs, kpse_fmt_format, false);
+  file_name_kpse = kpse_find_file((const_string) open_name.mbcs, kpse_fmt_format, false);
 #else
   file_name_kpse = file_name_mbcs;
 #endif
@@ -2476,11 +2483,7 @@ static boolean w_open_input (word_file * f)
     if (*f) openable = true;
   }
 
-  if (file_name_mbcs != NULL)
-    free(file_name_mbcs);
-
-  if (file_name_utf8 != NULL)
-    free(file_name_utf8);
+  free_open_name(&open_name);
 
   if (file_name_kpse != NULL)
     free(file_name_kpse);
@@ -2519,58 +2522,34 @@ static void w_close (word_file f)
 
 static boolean a_open_output (alpha_file * f)
 {
-  char * file_name_mbcs = NULL;
-  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+  open_name_t open_name = {0};
 
-  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-  file_name_mbcs = utf8_mbcs(file_name_utf8);
-
-  f->file_data = fopen(file_name_mbcs, "wb");
+  make_open_name(&open_name);
+  f->file_data = fopen(open_name.mbcs, "wb");
   f->file_type = 0;
-
-  if (file_name_mbcs != NULL)
-    free(file_name_mbcs);
-
-  if (file_name_utf8 != NULL)
-    free(file_name_utf8);
+  free_open_name(&open_name);
 
   return (f->file_data != NULL);
 }
 
 static boolean b_open_output (byte_file * f)
 {
-  char * file_name_mbcs = NULL;
-  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+  open_name_t open_name = {0};
 
-  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-  file_name_mbcs = utf8_mbcs(file_name_utf8);
-
-  *f = fopen(file_name_mbcs, "wb");
-
-  if (file_name_mbcs != NULL)
-    free(file_name_mbcs);
-
-  if (file_name_utf8 != NULL)
-    free(file_name_utf8);
+  make_open_name(&open_name);
+  *f = fopen(open_name.mbcs, "wb");
+  free_open_name(&open_name);
 
   return (*f != NULL);
 }
 
 static boolean w_open_output (word_file * f)
 {
-  char * file_name_mbcs = NULL;
-  char * file_name_utf8 = (char *) calloc(1, name_length + 1);
+  open_name_t open_name = {0};
 
-  strncpy(file_name_utf8, (const char *) name_of_file + 1, name_length);
-  file_name_mbcs = utf8_mbcs(file_name_utf8);
-
-  *f = gzopen(file_name_mbcs, "wb");
-
-  if (file_name_mbcs != NULL)
-    free(file_name_mbcs);
-
-  if (file_name_utf8 != NULL)
-    free(file_name_utf8);
+  make_open_name(&open_name);
+  *f = gzopen(open_name.mbcs, "wb");
+  free_open_name(&open_name);
 
   return (*f != NULL);
 }
