@@ -319,6 +319,15 @@ static void print_err (const char * s)
   print_nl("! ");
   prints(s);
 }
+static void print_ignored_err (const char * s)
+{
+  if (interaction == error_stop_mode)
+    wake_up_terminal();
+
+  print_nl("");
+  prints("ignored error: ");
+  prints(s);
+}
 /* sec 0042 */
 static inline void append_char (ASCII_code c)
 {
