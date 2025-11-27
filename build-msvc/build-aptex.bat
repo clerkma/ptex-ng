@@ -1,6 +1,9 @@
 @REM Build ApTeX with Visual Studio 2022/2026.
 
 @ECHO OFF
+if not defined VCToolsVersion (
+    goto toolchain_warn
+)
 if "%1" == "" goto set_nmake
 if "%1" == "jom" goto set_jom
 
@@ -42,4 +45,13 @@ exit /B 0
 @ECHO OFF
 %CLEAN%
 %MAKE% -s -nologo -f makefiles\mk-%~1.nmake
+exit /B 0
+
+:toolchain_warn
+@ECHO ON
+@ECHO Please set up Visual Studio enviroment.
+@ECHO     arm -^> env\set-env-a64.bat
+@ECHO     x64 -^> env\set-env-x64.bat
+@ECHO     x86 -^> env\set-env-x86.bat
+@ECHO OFF
 exit /B 0
