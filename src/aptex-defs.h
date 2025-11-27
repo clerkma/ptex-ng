@@ -45,7 +45,8 @@
 #define eTeX_ex             (eTeX_mode == true)
 
 // predefined macro
-#define abs(x)      ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
+// #define abs(x)      ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
+#define abs(x)      labs(x)
 #define chr(x)      (x)
 #define odd(x)      ((x) % 2)
 #define round(x)    aptex_utils_round((real) (x))
@@ -232,7 +233,7 @@ enum
 #define set_ins_dir(a, b)   subtype(a + 5) = b + dir_max
 //#
 #define disp_node        5                      // {|type| of a displace node}
-#define disp_dimen(a)    mem[a + 1].cint
+#define disp_dimen(a)    mem[a + 1].sc
 /* sec 0141 */
 #define mark_node         6                     // {|type| of a mark node}
 #define small_node_size   2                     // {number of words to allocate for most node types}
@@ -259,7 +260,7 @@ enum
 #define math_node 11                            // {|type| of a math node}
 #define before    0                             // {|subtype| for math node that introduces a formula}
 #define after     1                             // {|subtype| for math node that winds up a formula}
-
+//
 #define M_code    2
 #define begin_M_code  (M_code + before)         // 2 {|subtype| for \.{\\beginM} node}
 #define end_M_code    (M_code + after)          // 3 {|subtype| for \.{\\endM} node}
@@ -269,7 +270,7 @@ enum
 #define R_code    8
 #define begin_R_code  (R_code + begin_M_code)   // 10 {|subtype| for \.{\\beginR} node}
 #define end_R_code    (R_code + end_M_code)     // 11 {|subtype| for \.{\\endR} node}
-
+//
 #define end_LR(a)         odd(subtype(a))
 #define end_LR_type(a)    (L_code * (subtype(a) / L_code) + end_M_code)
 #define begin_LR_type(a)  (a - after + before)
@@ -1765,7 +1766,7 @@ do {                                                  \
 /* sec 0832 */
 #define update_width(a) cur_active_width[a] = cur_active_width[a] + mem[r + (a)].cint
 /* sec 0833 */
-#define awful_bad 07777777777
+#define awful_bad 07777777777 // {more than a billion demerits}
 /* sec 0837 */
 #define set_break_width_to_background(a) break_width[a] = background[a]
 /* sec 0843 */

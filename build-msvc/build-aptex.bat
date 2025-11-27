@@ -1,4 +1,4 @@
-@REM Build ApTeX with Visual Studio 2022.
+@REM Build ApTeX with Visual Studio 2022/2026.
 
 @ECHO OFF
 if "%1" == "" goto set_nmake
