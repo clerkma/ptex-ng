@@ -1270,6 +1270,21 @@ do {                            \
 #define alpha_token             (other_token + '`' )  // {reverse apostrophe, precedes alpha constants}
 #define point_token             (other_token + '.' )  // {decimal point}
 #define continental_point_token (other_token + ',' )  // {decimal point, Eurostyle}
+/* sec 0441 */
+#define get_the_next_non_blank_non_sign_token() \
+do {                                            \
+  negative = false;                             \
+                                                \
+  do {                                          \
+    get_the_next_non_blank_non_call_token();    \
+                                                \
+    if (cur_tok == other_token + '-')           \
+    {                                           \
+      negative = !negative;                     \
+      cur_tok = other_token + '+';              \
+    }                                           \
+  } while (!(cur_tok != other_token + '+'));    \
+} while (0)
 /* sec 0445 */
 #define infinity      017777777777                    // {the largest positive value that \TeX\ knows}
 #define zero_token    (other_token  + '0')            // {zero, the smallest digit}
