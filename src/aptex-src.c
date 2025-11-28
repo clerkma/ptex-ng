@@ -14527,7 +14527,7 @@ void scan_fifteen_bit_int (void)
 {
   scan_int();
 
-  if ((cur_val < 0) || (cur_val > 32767))
+  if ((cur_val < 0) || (cur_val > 077777))
   {
     print_err("Bad mathchar");
     help2("A mathchar number must be between 0 and 32767.",
@@ -14599,7 +14599,7 @@ void find_font_dimen (boolean writing)
     cur_val = fmem_ptr;
   else
   {
-    if (writing && (n <= space_shrink_code) && (n >= space_code) && (font_glue[f] != 0))
+    if (writing && (n <= space_shrink_code) && (n >= space_code) && (font_glue[f] != null))
     {
       delete_glue_ref(font_glue[f]);
       font_glue[f] = null;
@@ -14610,6 +14610,7 @@ void find_font_dimen (boolean writing)
       if (f < font_ptr)
         cur_val = fmem_ptr;
       else
+      // @<Increase the number of parameters...@>
       {
         do {
  #ifdef APTEX_EXTENSION
@@ -14650,12 +14651,12 @@ void find_font_dimen (boolean writing)
 // fetch an internal parameter
 static void scan_something_internal (small_number level, boolean negative)
 {
-  halfword m;
-  pointer q, r;
-  pointer tx;
-  halfword qx;
-  four_quarters i;
-  integer p;
+  halfword m; // {|chr_code| part of the operand token}
+  pointer q, r; // {general purpose indices}
+  pointer tx; // {effective tail node}
+  halfword qx; // {general purpose index}
+  four_quarters i; // {character info}
+  integer p; // {index into |nest|}
 
 restart:
   m = cur_chr;
@@ -14663,6 +14664,7 @@ restart:
   switch (cur_cmd)
   {
     case assign_kinsoku:
+      // @<Fetch breaking penalty from some table@>
       {
         scan_int();
         q = get_kinsoku_pos(tokanji(cur_val), cur_pos);
@@ -14675,6 +14677,7 @@ restart:
       break;
 
     case assign_inhibit_xsp_code:
+      //  @<Fetch inhibit type from some table@>
       {
         scan_int();
         q = get_inhibit_pos(tokanji(cur_val), cur_pos);
@@ -14690,6 +14693,7 @@ restart:
       break;
 
     case set_kansuji_char:
+      // @<Fetch kansuji char code from some table@>
       {
         scan_int();
         cur_val_level = int_val;
@@ -14709,6 +14713,7 @@ restart:
       break;
 
     case def_code:
+      // @<Fetch a character code from some table@>
       {
         if (m == math_code_base)
         {
@@ -14738,6 +14743,7 @@ restart:
     case def_family:
     case set_font:
     case def_font:
+      // @<Fetch a token list...@>
       if (level != tok_val)
       {
         print_err("Missing number, treated as zero");
@@ -14749,7 +14755,7 @@ restart:
       }
       else if (cur_cmd <= assign_toks)
       {
-        if (cur_cmd < assign_toks)
+        if (cur_cmd < assign_toks) // {|cur_cmd=toks_register|}
         {
           if (m == mem_bot)
           {
@@ -14800,6 +14806,7 @@ restart:
       break;
 
     case set_aux:
+      //  @<Fetch the |space_factor| or the |prev_depth|@>
       if (abs(mode) != m)
       {
         print_err("Improper ");
@@ -14822,8 +14829,9 @@ restart:
       break;
 
     case set_prev_graf:
+      // @<Fetch the |prev_graf|@>
       if (mode == 0)
-        scanned_result(0, int_val);
+        scanned_result(0, int_val); // {|prev_graf=0| within \.{\\write}}
       else
       {
         nest[nest_ptr] = cur_list;
@@ -14837,9 +14845,11 @@ restart:
       break;
 
     case set_page_int:
+      // @<Fetch the |dead_cycles| or the |insert_penalties|@>
       {
         if (m == 0)
           cur_val = dead_cycles;
+        // @<Cases for `Fetch the |dead_cycles| or the |insert_penalties|'@>
         else if (m == 2)
           cur_val = interaction;
         else
@@ -14850,6 +14860,7 @@ restart:
       break;
 
     case set_page_dimen:
+      // @<Fetch something on the |page_so_far|@>
       {
         if ((page_contents == empty) && (!output_active))
         {
@@ -14866,8 +14877,10 @@ restart:
       break;
 
     case set_shape:
+      //  @<Fetch the |par_shape| size@>
       {
         if (m > par_shape_loc)
+        // @<Fetch a penalties array element@>
         {
           scan_int();
 
@@ -14881,7 +14894,7 @@ restart:
             cur_val = penalty(equiv(m) + cur_val);
           }
         }
-        else if (par_shape_ptr == 0)
+        else if (par_shape_ptr == null)
           cur_val = 0;
         else
           cur_val = info(par_shape_ptr);
@@ -14891,11 +14904,12 @@ restart:
       break;
 
     case set_box_dimen:
+      // @<Fetch a box dimension@>
       {
         scan_register_num();
         fetch_box(q);
 
-        if (q == 0)
+        if (q == null)
           cur_val = 0;
         else
         {
@@ -14904,7 +14918,7 @@ restart:
           while ((q != null) && (abs(box_dir(q)) != abs(direction)))
             q = link(q);
 
-          if (q == 0)
+          if (q == null)
           {
             r = link(qx);
             link(qx) = null;
@@ -14930,6 +14944,7 @@ restart:
       break;
 
     case assign_font_dimen:
+      // @<Fetch a font dimension@>
       {
         find_font_dimen(false);
         font_info[fmem_ptr].sc = 0;
@@ -14938,6 +14953,7 @@ restart:
       break;
 
     case assign_font_int:
+      // @<Fetch a font integer@>
       {
         scan_font_ident();
 
@@ -14945,26 +14961,32 @@ restart:
           scanned_result(hyphen_char[cur_val], int_val);
         else if (m == 1)
           scanned_result(skew_char[cur_val], int_val);
-        else {
+        else
+        {
           integer n = cur_val;
           scan_char_num();
           integer k = cur_val;
-          switch (m) {
-          case lp_code_base:
-            scanned_result(get_lp_code(n,k), int_val);
-            break;
-          case rp_code_base:
-            scanned_result(get_rp_code(n,k), int_val);
-            break;
-          case ef_code_base:
-            scanned_result(get_ef_code(n,k), int_val);
-            break;
+
+          switch (m)
+          {
+            case lp_code_base:
+              scanned_result(get_lp_code(n,k), int_val);
+              break;
+
+            case rp_code_base:
+              scanned_result(get_rp_code(n,k), int_val);
+              break;
+
+            case ef_code_base:
+              scanned_result(get_ef_code(n,k), int_val);
+              break;
           }
         }
       }
       break;
 
     case tex_register:
+      // @<Fetch a register@>
       {
         if ((m < mem_bot) || (m > lo_mem_stat_max))
         {
@@ -15013,20 +15035,24 @@ restart:
             case mu_val:
               cur_val = mu_skip(cur_val);
               break;
+            // {there are no other cases}
           }
         }
       }
       break;
 
     case last_item:
+      // @<Fetch an item in the current node...@>
       if (cur_chr >= input_line_no_code)
       {
         if (m >= eTeX_glue)
+        // @<Process an expression and |return|@>
         {
           if (m < eTeX_mu)
           {
             switch (m)
             {
+              // @<Cases for fetching a glue value@>
               case mu_to_glue_code:
                 scan_mu_glue();
                 break;
@@ -15038,11 +15064,12 @@ restart:
           {
             switch (m)
             {
+              // @<Cases for fetching a mu value@>
               case glue_to_mu_code:
                 scan_normal_glue();
                 break;
             }
-
+            // {there are no other cases}
             cur_val_level = mu_val;
           }
           else
@@ -15072,7 +15099,7 @@ restart:
               m = cur_val;
               cur_val = new_spec(m);
               delete_glue_ref(m);
-
+              // @<Negate all three...@>
               {
                 negate(width(cur_val));
                 negate(stretch(cur_val));
@@ -15089,6 +15116,7 @@ restart:
         {
           switch (m)
           {
+            // @<Cases for fetching a dimension value@>
             case font_char_wd_code:
             case font_char_ht_code:
             case font_char_dp_code:
@@ -15097,7 +15125,7 @@ restart:
                 scan_font_ident();
                 q = cur_val;
 
-                if (font_dir[q] != dir_default)
+                if (font_dir[q] != dir_default) // {Japanese font}
                 {
                   scan_int();
 
@@ -15138,6 +15166,7 @@ restart:
                         cur_val = char_italic(q, i);
                         break;
                     }
+                    // {there are no other cases}
                   }
                   else
                     cur_val = 0;
@@ -15168,13 +15197,14 @@ restart:
                         cur_val = char_italic(q, i);
                         break;
                     }
+                    // {there are no other cases}
                   }
                   else
                     cur_val = 0;
                 }
               }
               break;
-
+            // @<Cases for fetching a dimension value@>
             case par_shape_length_code:
             case par_shape_indent_code:
             case par_shape_dimen_code:
@@ -15201,7 +15231,7 @@ restart:
                 cur_val_level = dimen_val;
               }
               break;
-
+            // @<Cases for fetching a dimension value@>
             case glue_stretch_code:
             case glue_shrink_code:
               {
@@ -15217,7 +15247,7 @@ restart:
               }
               break;
           }
-
+          // {there are no other cases}
           cur_val_level = dimen_val;
         }
         else
@@ -15230,26 +15260,6 @@ restart:
 
             case badness_code:
               cur_val = last_badness;
-              break;
-
-            case pdf_last_x_pos_code:
-              cur_val = pdf_last_x_pos;
-              break;
-
-            case pdf_last_y_pos_code:
-              cur_val = pdf_last_y_pos;
-              break;
-
-            case elapsed_time_code:
-              cur_val = get_microinterval();
-              break;
-
-            case random_seed_code:
-              cur_val = random_seed;
-              break;
-
-            case shell_escape_code:
-              cur_val = aptex_env.flag_shell_escape;
               break;
 
             case ptex_version_code:
@@ -15268,10 +15278,32 @@ restart:
               cur_val = pTeX_minor_version;
               break;
 
+            // @<Cases for fetching an integer value@>
             case eTeX_version_code:
               cur_val = eTeX_version;
               break;
 
+            case pdf_last_x_pos_code:
+              cur_val = pdf_last_x_pos;
+              break;
+
+            case pdf_last_y_pos_code:
+              cur_val = pdf_last_y_pos;
+              break;
+
+            case shell_escape_code:
+              cur_val = aptex_env.flag_shell_escape;
+              break;
+
+            case elapsed_time_code:
+              cur_val = get_microinterval();
+              break;
+
+            case random_seed_code:
+              cur_val = random_seed;
+              break;
+
+            // @<Cases for fetching an integer value@>
             case current_group_level_code:
               cur_val = cur_level - level_one;
               break;
@@ -15280,6 +15312,7 @@ restart:
               cur_val = cur_group;
               break;
 
+            // @<Cases for fetching an integer value@>
             case current_if_level_code:
               {
                 q = cond_ptr;
@@ -15311,6 +15344,7 @@ restart:
                 cur_val = 0;
               break;
 
+            // @<Cases for fetching an integer value@>
             case glue_stretch_order_code:
             case glue_shrink_order_code:
               {
@@ -15326,6 +15360,7 @@ restart:
               }
               break;
 
+            // @<Cases for fetching an integer value@>
             case current_spacing_mode_code:
               cur_val = auto_spacing;
               break;
@@ -15334,11 +15369,12 @@ restart:
               cur_val = auto_xspacing;
               break;
 
+            // @<Cases for fetching an integer value@>
             case current_cjk_token_code:
               cur_val = enable_cjk_token;
               break;
           }
-
+          // {there are no other cases}
           cur_val_level = int_val;
         }
       }
@@ -15367,18 +15403,21 @@ restart:
           cur_val_level = cur_chr;
 
         if ((cur_chr == last_node_char_code) && (is_char_node(tx)) && (tx != head))
-        //{ |tx| might be ``second node'' of a KANJI character; so we need to look the node before |tx| }
         {
+          // { |tx| might be ``second node'' of a KANJI character; so we need to look the node before |tx| }
           r = head;
           q = head;
+
           while (q != tx)
           {
             r = q;
             q = link(q);
           } // { |r| is the node just before |tx| }
+
           if ((r != head) && is_char_node(r))
-            if (font_dir[font(r)] != dir_default)
-              tx = r;
+          if (font_dir[font(r)] != dir_default)
+            tx = r;
+
           find_last_char();
         }
 
@@ -15470,6 +15509,7 @@ restart:
 
     case ignore_spaces: // {trap unexpandable primitives}
       if (cur_chr == 1)
+      // @<Reset |cur_tok| for unexpandable primitives, goto restart @>
       {
         get_token();
 
@@ -15498,6 +15538,7 @@ restart:
       break;
 
     default:
+      // @<Complain that \.{\\the} can't do this; give zero result@>
       {
         print_err("You can't use `");
         print_cmd_chr(cur_cmd, cur_chr);
@@ -15515,6 +15556,7 @@ restart:
   }
 
   while (cur_val_level > level)
+  // @<Convert \(c)|cur_val| to a lower level@>
   {
     if (cur_val_level == glue_val)
       cur_val = width(cur_val);
@@ -15523,13 +15565,13 @@ restart:
 
     decr(cur_val_level);
   }
-
+  // @<Fix the reference count, if any, ...@>
   if (negative)
   {
     if (cur_val_level >= glue_val)
     {
       cur_val = new_spec(cur_val);
-
+      // @<Negate all three glue components of |cur_val|@>
       {
         negate(width(cur_val));
         negate(stretch(cur_val));
@@ -15546,20 +15588,21 @@ restart:
 // sets |cur_cmd|, |cur_chr|, |cur_cs| to next token
 void get_next (void)
 {
-  uint32_t k;
-  halfword t;
-  uint32_t cat;
-  integer l;
-  ASCII_code c, cc;
-  uint32_t d;
+  uint32_t k; // {an index into |buffer|}
+  halfword t; // {a token}
+  uint32_t cat; // {|cat_code(cur_chr)|, usually}
+  integer l; // {temporary index into |buffer|}
+  ASCII_code c, cc; // {constituents of a possible expanded code}
+  uint32_t d; // {number of excess characters in an expanded code}
 
 restart:
   cur_cs = 0;
 
   if (state != token_list)
+  // @<Input from external file, |goto restart| if no input found@>
   {
 lab_switch:
-    if (loc <= limit)
+    if (loc <= limit) // {current line not yet finished}
     {
       cur_chr = fromBUFF(buffer, limit + 1, loc);
       cur_cmd = kcat_code(kcatcodekey(cur_chr));
@@ -15579,9 +15622,10 @@ lab_switch:
 reswitch:
         cur_cmd = cat_code(cur_chr);
       };
-
+      // @<Change state if necessary...@>
       switch (state + cur_cmd)
       {
+        // @<Cases where character is ignored@>
         case any_state_plus(ignore):
         case skip_blanks + spacer:
         case skip_blanks_kanji + spacer:
@@ -15590,9 +15634,10 @@ reswitch:
           break;
 
         case any_state_plus(escape):
+          // @<Scan a control...@>
           {
             if (loc > limit)
-              cur_cs = null_cs;
+              cur_cs = null_cs; // {|state| is irrelevant in this case}
             else
             {
               k = loc;
@@ -15608,6 +15653,7 @@ reswitch:
               }
               else
               {
+                // {not multi-byte char}
                 cur_chr = buffer[k];
                 cat = cat_code(cur_chr);
                 incr(k);
@@ -15643,6 +15689,7 @@ start_cs:
               }
               else if (((cat == letter) || (cat == kanji) || (cat == kana) || (cat == hangul)) && (k <= limit))
               {
+                // @<Scan ahead in the buffer...@>
                 do {
                   cur_chr = fromBUFF(buffer, limit + 1, k);
                   cat = kcat_code(kcatcodekey(cur_chr));
@@ -15666,6 +15713,7 @@ start_cs:
                   }
                   else
                   {
+                    // {not multi-byte char}
                     cur_chr = buffer[k];
                     cat = cat_code(cur_chr);
                     incr(k);
@@ -15675,19 +15723,17 @@ start_cs:
                   {
                     c = buffer[k + 1];
 
-                    if (c < 0200)
+                    if (c < 0200) // {yes, one is indeed present}
                     {
                       d = 2;
 
                       if (is_hex(c))
+                      if (k + 2 <= limit)
                       {
-                        if (k + 2 <= limit)
-                        {
-                          cc = buffer[k + 2];
+                        cc = buffer[k + 2];
 
-                          if (is_hex(cc))
-                            incr(d);
-                        }
+                        if (is_hex(cc))
+                          incr(d);
                       }
 
                       if (d > 2)
@@ -15726,7 +15772,7 @@ start_cs:
                 if (cat == other_kchar)
                   k = k - multilenbuffchar(cur_chr) + 1;
 
-                if (k > loc + 1)
+                if (k > loc + 1) // {multiletter control sequence has been scanned}
                 {
                   cur_cs = id_lookup(loc, k - loc);
                   loc = k;
@@ -15734,6 +15780,7 @@ start_cs:
                 }
               }
               else
+              // @<If an expanded...@>
               {
                 if (buffer[k] == cur_chr)
                 {
@@ -15743,19 +15790,17 @@ start_cs:
                     {
                       c = buffer[k + 1];
 
-                      if (c < 128)
+                      if (c < 0200) // {yes, one is indeed present}
                       {
                         d = 2;
 
                         if (is_hex(c))
+                        if (k + 2 <= limit)
                         {
-                          if (k + 2 <= limit)
-                          {
-                            cc = buffer[k + 2];
+                          cc = buffer[k + 2];
 
-                            if (is_hex(cc))
-                              incr(d);
-                          }
+                          if (is_hex(cc))
+                            incr(d);
                         }
 
                         if (d > 2)
@@ -15764,9 +15809,9 @@ start_cs:
                           buffer[k - 1] = cur_chr;
                         }
                         else if (c < 64)
-                          buffer[k - 1] = c + 64;
+                          buffer[k - 1] = c + 0100;
                         else
-                          buffer[k - 1] = c - 64;
+                          buffer[k - 1] = c - 0100;
 
                         limit = limit - d;
                         first = first - d;
@@ -15786,7 +15831,7 @@ start_cs:
                   }
                 }
               }
-
+              // {single-letter control sequence}
               if ((cat == kanji) || (cat == kana) || (cat == hangul))
               {
                 cur_cs = id_lookup(loc, k - loc);
@@ -15810,6 +15855,7 @@ found:
           break;
 
         case any_state_plus(active_char):
+          // @<Process an active-character...@>
           {
             cur_cs = cur_chr + active_base;
             cur_cmd = eq_type(cur_cs);
@@ -15822,39 +15868,38 @@ found:
           break;
 
         case any_state_plus(sup_mark):
+          // @<If this |sup_mark| starts an expanded character...@>
           {
             if (cur_chr == buffer[loc])
+            if (loc < limit)
             {
-              if (loc < limit)
+              c = buffer[loc + 1];
+
+              if (c < 128)
               {
-                c = buffer[loc + 1];
+                loc = loc + 2;
 
-                if (c < 128)
+                if (is_hex(c))
                 {
-                  loc = loc + 2;
-
-                  if (is_hex(c))
+                  if (loc <= limit)
                   {
-                    if (loc <= limit)
-                    {
-                      cc = buffer[loc];
+                    cc = buffer[loc];
 
-                      if (is_hex(cc))
-                      {
-                        incr(loc);
-                        hex_to_cur_chr();
-                        goto reswitch;
-                      }
+                    if (is_hex(cc))
+                    {
+                      incr(loc);
+                      hex_to_cur_chr();
+                      goto reswitch;
                     }
                   }
-
-                  if (c < 64)
-                    cur_chr = c + 64;
-                  else
-                    cur_chr = c - 64;
-
-                  goto reswitch;
                 }
+
+                if (c < 0100)
+                  cur_chr = c + 0100;
+                else
+                  cur_chr = c - 0100;
+
+                goto reswitch;
               }
             }
 
@@ -15863,6 +15908,7 @@ found:
           break;
 
         case any_state_plus(invalid_char):
+          // @<Decry the invalid...@>
           {
             print_err("Text line contains an invalid character");
             help2("A funny symbol that I can't read has just been input.",
@@ -15874,8 +15920,10 @@ found:
           }
           break;
 
+        // @<Handle situations involving spaces, braces, changes of state@>
         case mid_kanji + spacer:
         case mid_line + spacer:
+          // @<Enter |skip_blanks| state, emit a space@>
           {
             state = skip_blanks;
             cur_chr = ' ';
@@ -15883,6 +15931,7 @@ found:
           break;
 
         case mid_line + car_ret:
+          // @<Finish line, emit a space@>
           {
             loc = limit + 1;
             cur_cmd = spacer;
@@ -15892,11 +15941,13 @@ found:
 
         case mid_kanji + car_ret:
           if (skip_mode)
+          // <Finish line, |goto switch|@>
           {
             loc = limit + 1;
             goto lab_switch;
           }
           else
+          // @<Finish line, emit a space@>
           {
             loc = limit + 1;
             cur_cmd = spacer;
@@ -15907,6 +15958,7 @@ found:
         case skip_blanks + car_ret:
         case skip_blanks_kanji + car_ret:
         case any_state_plus(comment):
+          // <Finish line, |goto switch|@>
           {
             loc = limit + 1;
             goto lab_switch;
@@ -15914,6 +15966,7 @@ found:
           break;
 
         case new_line + car_ret:
+          // @<Finish line, emit a \.{\\par}@>
           {
             loc = limit + 1;
             cur_cs = par_loc;
@@ -16008,42 +16061,42 @@ found:
     else
     {
       state = new_line;
-
+      // @<Move to next line of file, or |goto restart|...@>
       if (name > 17)
+      // @<Read next line of file into |buffer|, or
+      // |goto restart| if the file has ended@>
       {
         incr(line);
         first = start;
 
         if (!force_eof)
+        if (name <= 19)
         {
-          if (name <= 19)
+          if (pseudo_input()) // {not end of file}
+            firm_up_the_line(); // {this sets |limit|}
+          else if ((every_eof != null) && !eof_seen[index])
           {
-            if (pseudo_input())
-              firm_up_the_line();
-            else if ((every_eof != null) && !eof_seen[index])
-            {
-              limit = first - 1;
-              eof_seen[index] = true;
-              begin_token_list(every_eof, every_eof_text);
-              goto restart;
-            }
-            else
-              force_eof = true;
+            limit = first - 1;
+            eof_seen[index] = true; // {fake one empty line}
+            begin_token_list(every_eof, every_eof_text);
+            goto restart;
           }
           else
+            force_eof = true;
+        }
+        else
+        {
+          if (input_ln(cur_file, true)) // {not end of file}
+            firm_up_the_line(); // {this sets |limit|}
+          else if ((every_eof != null) && !eof_seen[index])
           {
-            if (input_ln(cur_file, true))
-              firm_up_the_line();
-            else if ((every_eof != null) && !eof_seen[index])
-            {
-              limit = first - 1;
-              eof_seen[index] = true;
-              begin_token_list(every_eof, every_eof_text);
-              goto restart;
-            }
-            else
-              force_eof = true;
+            limit = first - 1;
+            eof_seen[index] = true; // {fake one empty line}
+            begin_token_list(every_eof, every_eof_text);
+            goto restart;
           }
+          else
+            force_eof = true;
         }
 
         if (force_eof)
@@ -16054,12 +16107,12 @@ found:
               (if_stack[in_open] != cond_ptr))
               file_warning();
           }
-
+          // {give warning for some unfinished groups and/or conditionals}
           if (name >= 19)
           {
             print_char(')');
             decr(open_parens);
-            update_terminal();
+            update_terminal(); // {show user that file has been read}
           }
 
           force_eof = false;
@@ -16075,21 +16128,21 @@ found:
           buffer[limit] = end_line_char;
 
         first = limit + 1;
-        loc = start;
+        loc = start; // {ready to read}
       }
       else
       {
-        if (!terminal_input)
+        if (!terminal_input) // {\.{\\read} line has ended}
         {
           cur_cmd = 0;
           cur_chr = 0;
           return;
         }
 
-        if (input_ptr > 0)
+        if (input_ptr > 0) // {text was inserted during error recovery}
         {
           end_file_reading();
-          goto restart;
+          goto restart; // {resume previous level}
         }
 
         if (selector < log_only)
@@ -16100,12 +16153,12 @@ found:
           if (end_line_char_inactive())
             incr(limit);
 
-          if (limit == start)
+          if (limit == start) // {previous line was empty}
             print_nl("(Please type a command or say `\\end')");
 
           print_ln();
           first = start;
-          prompt_input("*");
+          prompt_input("*"); // {input on-line into |buffer|}
           limit = last;
 
           if (end_line_char_inactive())
@@ -16118,18 +16171,22 @@ found:
         }
         else
           fatal_error("*** (job aborted, no legal \\end found)");
+        // {nonstop mode, which is intended for overnight batch processing,
+        // never waits for on-line input}
       }
 
       check_interrupt();
       goto lab_switch;
     }
   }
-  else if (loc != 0)
+  // @<Input from token list, |goto restart| if end of list or
+  //  if a parameter needs to be expanded@>
+  else if (loc != null) // {list not exhausted}
   {
     t = info(loc);
-    loc = link(loc);
+    loc = link(loc); // {move to next}
 
-    if (t >= cs_token_flag)
+    if (t >= cs_token_flag) // {a control sequence token}
     {
       cur_cs = t - cs_token_flag;
       cur_cmd = eq_type(cur_cs);
@@ -16138,9 +16195,10 @@ found:
       if (cur_cmd >= outer_call)
       {
         if (cur_cmd == dont_expand)
+        // @<Get the next token, suppressing expansion@>
         {
           cur_cs = info(loc) - cs_token_flag;
-          loc = 0;
+          loc = null;
           cur_cmd = eq_type(cur_cs);
           cur_chr = equiv(cur_cs);
 
@@ -16159,7 +16217,7 @@ found:
         }
       }
     }
-    else if (check_kanji(t))
+    else if (check_kanji(t)) // {|wchar_token|}
     {
       cur_cmd = t / max_cjk_val;
       cur_chr = t % max_cjk_val;
@@ -16180,6 +16238,7 @@ found:
           break;
 
         case out_param:
+          // @<Insert macro parameter...@>
           {
             begin_token_list(param_stack[param_start + cur_chr - 1], parameter);
             goto restart;
@@ -16194,31 +16253,29 @@ found:
   }
   else
   {
+    // {we are done with this token list}
     end_token_list();
-    goto restart;
+    goto restart; // {resume previous level}
   }
-
+  // @<If an alignment entry has just ended, take appropriate action@>
   if (cur_cmd <= car_ret)
+  if (cur_cmd >= tab_mark)
+  if (align_state == 0)
+  // @<Insert the \(v)\<v_j>...@>
   {
-    if (cur_cmd >= tab_mark)
-    {
-      if (align_state == 0)
-      {
-        if ((scanner_status == aligning) || (cur_align == null))
-          fatal_error("(interwoven alignment preambles are not allowed)");
+    if ((scanner_status == aligning) || (cur_align == null))
+      fatal_error("(interwoven alignment preambles are not allowed)");
 
-        cur_cmd = extra_info(cur_align);
-        extra_info(cur_align) = cur_chr;
+    cur_cmd = extra_info(cur_align);
+    extra_info(cur_align) = cur_chr;
 
-        if (cur_cmd == omit)
-          begin_token_list(omit_template, v_template);
-        else
-          begin_token_list(v_part(cur_align), v_template);
+    if (cur_cmd == omit)
+      begin_token_list(omit_template, v_template);
+    else
+      begin_token_list(v_part(cur_align), v_template);
 
-        align_state = 1000000;
-        goto restart;
-      }
-    }
+    align_state = 1000000;
+    goto restart;
   }
 }
 
