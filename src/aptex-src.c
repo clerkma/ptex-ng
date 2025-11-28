@@ -16291,26 +16291,17 @@ void scan_int (void)
   radix = 0;
   OK_so_far = true;
   // @<Get the next non-blank non-sign token; set |negative| appropriately@>
-  negative = false;
-
-  do {
-    get_the_next_non_blank_non_call_token();
-
-    if (cur_tok == other_token + '-')
-    {
-      negative = !negative;
-      cur_tok = other_token + '+';
-    }
-  } while (!(cur_tok != other_token + '+'));
+  get_the_next_non_blank_non_sign_token();
 
 restart:
   if (cur_tok == alpha_token)
+  // @<Scan an alphabetic character code into |cur_val|@>
   {
-    get_token();
+    get_token(); // {suppress macro expansion}
 
     if (cur_tok < cs_token_flag)
     {
-      if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+      if ((cur_cmd >= kanji) && (cur_cmd <= hangul)) // {|wchar_token|}
       {
         skip_mode = false;
         cur_val = tonum(cur_chr);
@@ -16333,6 +16324,7 @@ restart:
     else if (cur_tok < cs_token_flag + null_cs)
       cur_val = cur_tok - cs_token_flag - single_base;
     else
+    // { check the cs is a single Japanese character }
     {
       m = text(cur_tok - cs_token_flag);
       if (str_start[m + 1] - str_start[m] == multistrlen(str_pool, str_start[m + 1], str_start[m]))
@@ -16340,7 +16332,7 @@ restart:
       else
       {
         cur_cmd = invalid_char;
-        cur_val = 256;
+        cur_val = max_cjk_val;
       }
     }
 
@@ -16353,6 +16345,7 @@ restart:
       back_error();
     }
     else
+    //  @<Scan an optional space@>
     {
       get_x_token();
 
@@ -16363,6 +16356,7 @@ restart:
     skip_mode = true;
   }
   else if (cur_tok == cs_token_flag + frozen_primitive)
+  // @<Reset |cur_tok| for unexpandable primitives, goto restart @>
   {
     get_token();
 
@@ -16391,6 +16385,7 @@ restart:
   else if ((cur_cmd >= min_internal) && (cur_cmd <= max_internal))
     scan_something_internal(int_val, false);
   else
+  // @<Scan a numeric constant@>
   {
     radix = 10;
     m = 214748364;
@@ -16410,7 +16405,7 @@ restart:
 
     vacuous = true;
     cur_val = 0;
-
+    // @<Accumulate the constant...@>
     while (true)
     {
       if ((cur_tok < zero_token + radix) && (cur_tok >= zero_token) && (cur_tok <= zero_token + 9))
@@ -16446,9 +16441,10 @@ restart:
 
       get_x_token();
     }
-
 done:
+
     if (vacuous)
+    // @<Express astonishment...@>
     {
       print_err("Missing number, treated as zero");
       help3("A number should have been here; I inserted `0'.",
@@ -16467,13 +16463,15 @@ done:
 // sets |cur_val| to a dimension
 void scan_dimen (boolean mu, boolean inf, boolean shortcut)
 {
-  boolean negative;
-  integer f;
-  integer num, denom;
-  small_number k, kk;
-  halfword p, q;
-  scaled v;
-  integer save_cur_val;
+  boolean negative; // {should the answer be negated?}
+  integer f; // {numerator of a fraction whose denominator is $2^{16}$}
+  // @<Local variables for dimension calculations@>
+  integer num, denom; // {conversion ratio for the scanned units}
+  small_number k, kk; // {number of digits in a decimal fraction}
+  halfword p, q; // {top of decimal digit stack}
+  scaled v; // {an internal dimension}
+  integer save_cur_val; // {temporary storage of |cur_val|}
+  // @<Local variables for dimension calculations@>
   eight_bits t;
 
   f = 0;
@@ -16484,36 +16482,30 @@ void scan_dimen (boolean mu, boolean inf, boolean shortcut)
   if (!shortcut)
   {
     // @<Get the next non-blank non-sign token; set |negative| appropriately@>
-    negative = false;
-
-    do {
-      get_the_next_non_blank_non_call_token();
-
-      if (cur_tok == other_token + '-')
-      {
-        negative = !negative;
-        cur_tok = other_token + '+';
-      }
-    } while (!(cur_tok != other_token + '+'));
+    get_the_next_non_blank_non_sign_token();
 
     if ((cur_cmd >= min_internal) && (cur_cmd <= max_internal))
     {
+      // @<Fetch an internal dimension and |goto attach_sign|...@>
       if (mu)
       {
         scan_something_internal(mu_val, false);
 
-        if (cur_val_level >= glue_val)
-        {
-          v = width(cur_val);
-          delete_glue_ref(cur_val);
-          cur_val = v;
-        }
-
-        if (cur_val_level == mu_val)
-          goto attach_sign;
-
         if (cur_val_level != int_val)
-          mu_error();
+        {
+          // @<Coerce glue to a dimension@>
+          if (cur_val_level >= glue_val)
+          {
+            v = width(cur_val);
+            delete_glue_ref(cur_val);
+            cur_val = v;
+          }
+
+          if (cur_val_level != mu_val)
+            mu_error();
+          else
+            goto attach_sign;
+        }
       }
       else
       {
@@ -16542,10 +16534,11 @@ void scan_dimen (boolean mu, boolean inf, boolean shortcut)
         cur_tok = point_token;
 
       if ((radix == 10) && (cur_tok == point_token))
+      // @<Scan decimal fraction@>
       {
         k = 0;
-        p = 0;
-        get_token();
+        p = null;
+        get_token(); // {|point_token| is being re-scanned}
 
         while (true)
         {
@@ -16554,7 +16547,7 @@ void scan_dimen (boolean mu, boolean inf, boolean shortcut)
           if ((cur_tok > zero_token + 9) || (cur_tok < zero_token))
             goto done1;
 
-          if (k < 17)
+          if (k < 17) // {digits for |k>=17| cannot affect the result}
           {
             q = get_avail();
             link(q) = p;
@@ -16581,12 +16574,12 @@ done1:
     }
   }
 
-  if (cur_val < 0)
+  if (cur_val < 0) // {in this case |f=0|}
   {
     negative = !negative;
     negate(cur_val);
   }
-
+  // @<Scan units and set |cur_val| to $x\cdot(|cur_val|+f/2^{16})$...@>
   if (inf)
   {
     if (scan_keyword("fil"))
@@ -16609,7 +16602,7 @@ done1:
       goto attach_fraction;
     }
   }
-
+  // @<Scan for \(u)units that are internal dimensions...@>
   save_cur_val = cur_val;
   get_the_next_non_blank_non_call_token();
 
@@ -16620,7 +16613,7 @@ done1:
     if (mu)
     {
       scan_something_internal(mu_val, false);
-
+      //  @<Coerce glue...@>
       if (cur_val_level >= glue_val)
       {
         v = width(cur_val);
@@ -16642,10 +16635,11 @@ done1:
     goto not_found;
 
   if (scan_keyword("em"))
-    v = quad(cur_font);
+    v = quad(cur_font); // @<The em width for |cur_font|@>
   else if (scan_keyword("ex"))
-    v = x_height(cur_font);
+    v = x_height(cur_font); // @<The x-height for |cur_font|@>
   else if (scan_keyword("zw"))
+  // @<The KANJI width for |cur_jfont|@>
   {
     if (direction == dir_tate)
       v = char_width(cur_tfont, char_info(cur_tfont, 0));
@@ -16653,6 +16647,7 @@ done1:
       v = char_width(cur_jfont, char_info(cur_jfont, 0));
   }
   else if (scan_keyword("zh"))
+  // @<The KANJI height for |cur_jfont|@>
   {
     if (direction == dir_tate)
     {
@@ -16667,7 +16662,7 @@ done1:
   }
   else
     goto not_found;
-
+  // @<Scan an optional space@>
   {
     get_x_token();
 
@@ -16676,11 +16671,12 @@ done1:
   }
 
 found:
-  cur_val = nx_plus_y(save_cur_val, v, xn_over_d(v, f, 65536));
+  cur_val = nx_plus_y(save_cur_val, v, xn_over_d(v, f, 0200000));
   goto attach_sign;
 
 not_found:
   if (mu)
+  // @<Scan for \(m)\.{mu} units and |goto attach_fraction|@>
   {
     if (scan_keyword("mu"))
       goto attach_fraction;
@@ -16698,6 +16694,7 @@ not_found:
   }
 
   if (scan_keyword("true"))
+  // @<Adjust \(f)for the magnification ratio@>
   {
     prepare_mag();
 
@@ -16711,7 +16708,7 @@ not_found:
   }
 
   if (scan_keyword("pt"))
-    goto attach_fraction;
+    goto attach_fraction; // {the easy case}
 
   if (scan_keyword("in"))
     set_conversion(7227, 100);
@@ -16731,11 +16728,12 @@ not_found:
     set_conversion(7227, 10160);
   else if (scan_keyword("H"))
     set_conversion(7227, 10160);
-  else if (scan_keyword("twip"))
+  else if (scan_keyword("twip")) // just placed here
     set_conversion(1, 20);
   else if (scan_keyword("sp"))
     goto done;
   else
+  // @<Complain about unknown unit...@>
   {
     print_err("Illegal unit of measure (");
     prints("pt inserted)");
@@ -16762,6 +16760,7 @@ attach_fraction:
     cur_val = cur_val * unity + f;
 
 done:
+  // @<Scan an optional space@>
   {
     get_x_token();
 
@@ -16771,6 +16770,7 @@ done:
 
 attach_sign:
   if (arith_error || (abs(cur_val) >= 010000000000))
+  //  @<Report that this dimension is out of range@>
   {
     print_err("Dimension too large");
     help2("I can't work with sizes bigger than about 19 feet.",
@@ -16787,22 +16787,13 @@ attach_sign:
 // sets |cur_val| to a glue spec pointer
 void scan_glue (small_number level)
 {
-  boolean negative;
-  pointer q;
-  boolean mu;
+  boolean negative; // {should the answer be negated?}
+  pointer q; // {new glue specification}
+  boolean mu; // {does |level=mu_val|?}
 
   mu = (level == mu_val);
-  negative = false;
-
-  do {
-    get_the_next_non_blank_non_call_token();
-
-    if (cur_tok == other_token + '-')
-    {
-      negative = !negative;
-      cur_tok = other_token + '+';
-    }
-  } while (!(cur_tok != other_token + '+'));
+  // @<Get the next non-blank non-sign...@>
+  get_the_next_non_blank_non_sign_token();
 
   if ((cur_cmd >= min_internal) && (cur_cmd <= max_internal))
   {
@@ -16829,7 +16820,7 @@ void scan_glue (small_number level)
     if (negative)
       negate(cur_val);
   }
-
+  // @<Create a new glue specification whose width is |cur_val|...@>
   q = new_spec(zero_glue);
   width(q) = cur_val;
 
@@ -16850,13 +16841,13 @@ void scan_glue (small_number level)
   cur_val = q;
 }
 
-#define default_rule 26214 // 0.4pt
+#define default_rule 26214 // {0.4\thinspace pt}
 
 static pointer scan_rule_spec (void)
 {
-  pointer q;
+  pointer q; // {the rule node being created}
 
-  q = new_rule();
+  q = new_rule(); // {|width|, |depth|, and |height| all equal |null_flag| now}
 
   if (cur_cmd == vrule)
     width(q) = default_rule;
@@ -16894,10 +16885,10 @@ reswitch:
 // changes the string |str_pool[b..pool_ptr]| to a token list
 static pointer str_toks_cat (pool_pointer b, uint32_t cat)
 {
-  pointer p;
-  pointer q;
-  halfword t;
-  pool_pointer k;
+  pointer p; // {tail of the token list}
+  pointer q; // {new node being added to the token list via |store_new_token|}
+  halfword t; // {token being appended}
+  pool_pointer k; // {index into |str_pool|}
   int cc;
 
   str_room(1);
@@ -17035,7 +17026,7 @@ static pointer the_toks (void)
         }
         break;
     }
-
+    // {there are no other cases}
     selector = old_setting;
     return str_toks(b);
   }
@@ -17210,22 +17201,25 @@ static void get_file_dump (str_number s, integer i, integer j)
 
 void conv_toks (void)
 {
-  char old_setting;
-  KANJI_code cx;
-  char c;
-  small_number save_scanner_status;
-  pointer save_def_ref;
+  char old_setting; // {holds |selector| setting}
+  pointer p, q;
+  KANJI_code cx; // {temporary register for KANJI}
+  char c; // {desired type of conversion}
+  small_number save_scanner_status; // {|scanner_status| upon entry}
+  pointer save_def_ref; // {|def_ref| upon entry, important if inside `\.{\\message}'}
   pointer save_warning_index;
-  boolean boolvar;
-  str_number u;
-  str_number s;
+  boolean boolvar; // {temp boolean}
+  str_number u; // {saved current string string}
+  str_number s; // {first temp string}
   integer i;
   integer j;
-  uint32_t cat;
-  pool_pointer b;
+  uint32_t cat; // {desired catcode, or 0 for automatic |spacer|/|other_char| selection}
+  pool_pointer b; // {base of temporary string}
 
   cat = 0;
   c = cur_chr;
+  u = 0; // { will become non-nil if a string is already being built}
+  // @<Scan the argument for command |c|@>
   KANJI(cx) = 0;
 
   switch (c)
@@ -17259,7 +17253,7 @@ void conv_toks (void)
         scanner_status = normal;
         get_token();
 
-        if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+        if ((cur_cmd >= kanji) && (cur_cmd <= hangul)) // {|wchar_token|}
           KANJI(cx) = cur_tok;
 
         scanner_status = save_scanner_status;
@@ -17277,10 +17271,12 @@ void conv_toks (void)
     case ng_strcmp_code:
       {
         save_scanner_status = scanner_status;
+        save_warning_index = warning_index;
         save_def_ref = def_ref;
         save_cur_string();
         compare_strings();
         def_ref = save_def_ref;
+        warning_index = save_warning_index;
         scanner_status = save_scanner_status;
         restore_cur_string();
       }
@@ -17386,7 +17382,6 @@ void conv_toks (void)
         save_warning_index = warning_index;
         save_def_ref = def_ref;
         save_cur_string();
-
         // {scan offset}
         cur_val = 0;
 
@@ -17404,7 +17399,6 @@ void conv_toks (void)
         }
 
         i = cur_val;
-
         // {scan length}
         cur_val = 0;
 
@@ -17422,7 +17416,6 @@ void conv_toks (void)
         }
 
         j = cur_val;
-
         //{scan file name}
         scan_pdf_ext_toks();
         s = tokens_to_string(def_ref);
@@ -17458,6 +17451,7 @@ void conv_toks (void)
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
         ins_list(link(def_ref));
+        free_avail(def_ref);
         def_ref = save_def_ref;
         restore_cur_string();
         return;
@@ -17480,7 +17474,7 @@ void conv_toks (void)
         i = cur_val;
         scan_int();
 
-        if (i <= 0x7F) //{ no |wchar_token| }
+        if (i <= 0x7F) // { no |wchar_token| }
         {
           if (illegal_Ucharcat_ascii_catcode(cur_val))
           {
@@ -17509,7 +17503,7 @@ void conv_toks (void)
           else
             cat = cur_val;
         }
-        else //{ |wchar_token| only }
+        else // { |wchar_token| only }
         {
           if (illegal_Ucharcat_wchar_catcode(cur_val))
           {
@@ -17530,9 +17524,13 @@ void conv_toks (void)
 
     case left_margin_kern_code:
     case right_margin_kern_code:
-      scan_int();
-      if ((box(cur_val) == null) || (type(box(cur_val)) != hlist_node))
-        aptex_error("marginkern", "a non-empty hbox expected");
+      {
+        scan_int();
+        fetch_box(p);
+
+        if ((p == null) || (type(p) != hlist_node))
+          aptex_error("marginkern", "a non-empty hbox expected");
+      }
       break;
 
     case job_name_code:
@@ -17540,11 +17538,11 @@ void conv_toks (void)
         open_log_file();
       break;
   }
-
+  // {there are no other cases}
   old_setting = selector;
   selector = new_string;
   b = pool_ptr;
-
+  // @<Print the result of command |c|@>
   switch (c)
   {
     case number_code:
@@ -17553,6 +17551,10 @@ void conv_toks (void)
 
     case roman_numeral_code:
       print_roman_int(cur_val);
+      break;
+
+    case kansuji_code:
+      print_kansuji(cur_val);
       break;
 
     case jis_code:
@@ -17595,14 +17597,6 @@ void conv_toks (void)
       }
       break;
 
-    case ptex_revision_code:
-      prints(pTeX_revision);
-      break;
-
-    case uptex_revision_code:
-      prints(upTeX_revision);
-      break;
-
     case ucs_code:
       if (is_internalUPTEX())
         print_int(fromUCS(cur_val));
@@ -17629,10 +17623,6 @@ void conv_toks (void)
       }
       break;
 
-    case kansuji_code:
-      print_kansuji(cur_val);
-      break;
-
     case tojis_code:
       {
         cur_val = toJIS(cur_val);
@@ -17648,6 +17638,14 @@ void conv_toks (void)
         print_font_name_and_size(cur_val);
         print_font_dir_and_enc(cur_val);
       }
+      break;
+
+    case ptex_revision_code:
+      prints(pTeX_revision);
+      break;
+
+    case uptex_revision_code:
+      prints(upTeX_revision);
       break;
 
     case string_code:
@@ -17716,11 +17714,10 @@ void conv_toks (void)
 
     case left_margin_kern_code:
       {
-        pointer p = list_ptr(box(cur_val));
+        p = list_ptr(box(cur_val));
         while ((p != null) &&
                (cp_skipable(p) ||
-                (!is_char_node(p) && (type(p) == glue_node)
-                 && (subtype(p) == left_skip_code + 1))))
+                (!is_char_node(p) && (type(p) == glue_node) && (subtype(p) == left_skip_code + 1))))
           p = link(p);
         if ((p != null) && (!is_char_node(p)) &&
             (type(p) == margin_kern_node) && (subtype(p) == left_side))
@@ -17733,12 +17730,11 @@ void conv_toks (void)
 
     case right_margin_kern_code:
       {
-        pointer q = list_ptr(box(cur_val));
-        pointer p = prev_rightmost(q, null);
+        q = list_ptr(box(cur_val));
+        p = prev_rightmost(q, null);
         while ((p != null) &&
                (cp_skipable(p) ||
-                (!is_char_node(p) && (type(p) == glue_node)
-                 && (subtype(p) == left_skip_code + 1))))
+                (!is_char_node(p) && (type(p) == glue_node) && (subtype(p) == left_skip_code + 1))))
           p = prev_rightmost(q, p);
         if ((p != null) && (!is_char_node(p)) &&
             (type(p) == margin_kern_node) && (subtype(p) == right_side))
@@ -17753,7 +17749,7 @@ void conv_toks (void)
       print(job_name);
       break;
   }
-
+  // {there are no other cases}
   selector = old_setting;
   link(garbage) = str_toks_cat(b, cat);
   ins_list(link(temp_head));
