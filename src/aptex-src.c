@@ -14365,12 +14365,17 @@ void x_token (void)
     cur_tok = cs_token_flag + cur_cs;
 }
 
-// reads a mandatory |left_brace|
-void scan_left_brace (void)
+static inline void get_the_next_non_blank_non_relax_non_call_token (void)
 {
   do {
     get_x_token();
   } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+}
+
+// reads a mandatory |left_brace|
+void scan_left_brace (void)
+{
+  get_the_next_non_blank_non_relax_non_call_token();
 
   if (cur_cmd != left_brace)
   {
@@ -14387,11 +14392,16 @@ void scan_left_brace (void)
   }
 }
 
-static void scan_optional_equals (void)
+static inline void get_the_next_non_blank_non_call_token (void)
 {
   do {
     get_x_token();
   } while (!(cur_cmd != spacer));
+}
+
+static void scan_optional_equals (void)
+{
+  get_the_next_non_blank_non_call_token();
 
   if (cur_tok != other_token + '=')
     back_input();
@@ -14546,9 +14556,7 @@ void scan_font_ident (void)
   internal_font_number f;
   halfword m;
 
-  do {
-    get_x_token();
-  } while (!(cur_cmd != spacer));
+  get_the_next_non_blank_non_call_token();
 
   if (cur_cmd == def_font)
     f = cur_font;
@@ -16217,20 +16225,19 @@ found:
 // sets |cur_val| to an integer
 void scan_int (void)
 {
-  boolean negative;
-  integer m;
-  small_number d;
-  boolean vacuous;
-  boolean OK_so_far;
+  boolean negative; //{should the answer be negated?}
+  integer m; // {|@t$2^{31}$@> div radix|, the threshold of danger}
+  small_number d; // {the digit just scanned}
+  boolean vacuous; // {have no digits appeared?}
+  boolean OK_so_far; // {has an error message been issued?}
 
   radix = 0;
   OK_so_far = true;
+  // @<Get the next non-blank non-sign token; set |negative| appropriately@>
   negative = false;
 
   do {
-    do {
-      get_x_token();
-    } while (!(cur_cmd != spacer));
+    get_the_next_non_blank_non_call_token();
 
     if (cur_tok == other_token + '-')
     {
@@ -16419,12 +16426,11 @@ void scan_dimen (boolean mu, boolean inf, boolean shortcut)
 
   if (!shortcut)
   {
+    // @<Get the next non-blank non-sign token; set |negative| appropriately@>
     negative = false;
 
     do {
-      do {
-        get_x_token();
-      } while (!(cur_cmd != spacer));
+      get_the_next_non_blank_non_call_token();
 
       if (cur_tok == other_token + '-')
       {
@@ -16548,10 +16554,7 @@ done1:
   }
 
   save_cur_val = cur_val;
-
-  do {
-    get_x_token();
-  } while (!(cur_cmd != spacer));
+  get_the_next_non_blank_non_call_token();
 
   if ((cur_cmd < min_internal) || (cur_cmd > max_internal))
     back_input();
@@ -16735,9 +16738,7 @@ void scan_glue (small_number level)
   negative = false;
 
   do {
-    do {
-      get_x_token();
-    } while (!(cur_cmd != spacer));
+    get_the_next_non_blank_non_call_token();
 
     if (cur_tok == other_token + '-')
     {
@@ -18191,10 +18192,7 @@ void conditional (void)
           scan_normal_dimen();
 
         n = cur_val;
-
-        do {
-          get_x_token();
-        } while (!(cur_cmd != spacer));
+        get_the_next_non_blank_non_call_token();
 
         if ((cur_tok >= other_token + '<') && (cur_tok <= other_token + '>'))
           r = cur_tok - other_token;
@@ -18823,9 +18821,7 @@ static void scan_file_name (void)
   save_warning_index = warning_index;
   warning_index = cur_cs; // {store |cur_cs| here to remember until later}
 
-  do {
-    get_x_token();
-  } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+  get_the_next_non_blank_non_relax_non_call_token();
 
   back_input(); // {return the last token to be read by either code path}
 
@@ -18835,11 +18831,7 @@ static void scan_file_name (void)
   {
     name_in_progress = true;
     begin_name();
-
-    do {
-      get_x_token();
-    } while (!(cur_cmd != spacer));
-
+    get_the_next_non_blank_non_call_token();
     skip_mode = false;
 
     while (true)
@@ -32004,9 +31996,7 @@ static void box_end (integer box_context)
   else if (cur_box != null)
     if (box_context > ship_out_flag)
     {
-      do {
-        get_x_token();
-      } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+      get_the_next_non_blank_non_relax_non_call_token();
 
       if (((cur_cmd == hskip) && (abs(mode) != vmode)) ||
         ((cur_cmd == vskip) && (abs(mode) == vmode)))
@@ -32214,9 +32204,7 @@ done:;
 // the next input should specify a box or perhaps a rule
 void scan_box (integer box_context)
 {
-  do {
-    get_x_token();
-  } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+  get_the_next_non_blank_non_relax_non_call_token();
 
   if (cur_cmd == make_box)
     begin_box(box_context);
@@ -33451,9 +33439,7 @@ static void scan_math (pointer p, pointer q)
   KANJI(cx) = 0;
 
 restart:
-  do {
-    get_x_token();
-  } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+  get_the_next_non_blank_non_relax_non_call_token();
 
 reswitch:
   switch (cur_cmd)
@@ -33628,11 +33614,11 @@ static void set_math_char (integer c)
 static void math_limit_switch (void)
 {
   if (head != tail)
-    if (type(tail) == op_noad)
-    {
-      subtype(tail) = cur_chr;
-      return;
-    }
+  if (type(tail) == op_noad)
+  {
+    subtype(tail) = cur_chr;
+    return;
+  }
 
   print_err("Limit controls must follow a math operator");
   help1("I'm ignoring this misplaced \\limits or \\nolimits command.");
@@ -33645,9 +33631,7 @@ static void scan_delimiter (pointer p, boolean r)
      scan_twenty_seven_bit_int();
    else
    {
-     do {
-      get_x_token();
-     } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+     get_the_next_non_blank_non_relax_non_call_token();
 
      switch (cur_cmd)
      {
@@ -34384,9 +34368,7 @@ static void prefixed_command (void)
     if (!odd(a / cur_chr))
       a = a + cur_chr;
 
-    do {
-      get_x_token();
-    } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+    get_the_next_non_blank_non_relax_non_call_token();
 
     if (cur_cmd <= max_non_prefixed_command)
     {
@@ -34655,12 +34637,9 @@ static void prefixed_command (void)
             e = true;
         }
 
-        p = cur_chr;
+        p = cur_chr; // {|p=every_par_loc| or |output_routine_loc| or \dots}
         scan_optional_equals();
-
-        do {
-          get_x_token();
-        } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+        get_the_next_non_blank_non_relax_non_call_token();
 
         if (cur_cmd != left_brace)
         {
@@ -35760,9 +35739,7 @@ void do_assignments (void)
 {
   while (true)
   {
-    do {
-      get_x_token();
-    } while (!((cur_cmd != spacer) && (cur_cmd != relax)));
+    get_the_next_non_blank_non_relax_non_call_token();
 
     if (cur_cmd <= max_non_prefixed_command)
       return;
@@ -36755,10 +36732,7 @@ reswitch:
     case any_mode(ignore_spaces):
       if (cur_chr == 0)
       {
-        do {
-          get_x_token();
-        } while (!(cur_cmd != spacer));
-
+        get_the_next_non_blank_non_call_token();
         goto reswitch;
       }
       else
@@ -40150,20 +40124,20 @@ void file_warning (void)
   if (history == spotless)
     history = warning_issued;
 }
-
+// {scans and evaluates an expression}
 void scan_expr (void)
 {
-  boolean a, b;
-  small_number l;
-  small_number r;
-  small_number s;
-  small_number o;
-  integer e;
-  integer t;
-  integer f;
-  integer n;
-  pointer p;
-  pointer q;
+  boolean a, b; // {saved values of |arith_error|}
+  small_number l; // {type of expression}
+  small_number r; // {state of expression so far}
+  small_number s; // {state of term so far}
+  small_number o; // {next operation or type of next factor}
+  integer e; // {expression so far}
+  integer t; // {term so far}
+  integer f; // {current factor}
+  integer n; // {numerator of combined multiplication and division}
+  pointer p; // {top of expression stack}
+  pointer q; // {for stack manipulations}
 
   l = cur_val_level;
   a = arith_error;
@@ -40183,9 +40157,7 @@ continu:
   else
     o = int_val;
 
-  do {
-    get_x_token();
-  } while (cur_cmd == spacer);
+  get_the_next_non_blank_non_call_token();
 
   if (cur_tok == other_token + '(')
   {
@@ -40215,9 +40187,7 @@ continu:
   f = cur_val;
 
 found:
-  do {
-    get_x_token();
-  } while (cur_cmd == spacer);
+  get_the_next_non_blank_non_call_token();
 
   if (cur_tok == other_token + '+')
     o = expr_add;
