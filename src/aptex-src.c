@@ -4009,8 +4009,9 @@ start_of_TEX:
       {
         no_new_control_sequence = false;
         primitive("lastnodetype", last_item, last_node_type_code);
-        primitive("lastnodechar", last_item, last_node_char_code);
         primitive("lastnodesubtype", last_item, last_node_subtype_code);
+        primitive("lastnodechar", last_item, last_node_char_code);
+        primitive("lastnodefont", last_item, last_node_font_code);
         primitive("eTeXversion", last_item, eTeX_version_code);
         primitive("eTeXrevision", convert, eTeX_revision_code);
         primitive("everyeof", assign_toks, every_eof_loc);
@@ -11080,12 +11081,16 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("lastnodetype");
           break;
 
+        case last_node_subtype_code:
+          print_esc("lastnodesubtype");
+          break;
+
         case last_node_char_code:
           print_esc("lastnodechar");
           break;
 
-        case last_node_subtype_code:
-          print_esc("lastnodesubtype");
+        case last_node_font_code:
+          print_esc("lastnodefont");
           break;
 
         case eTeX_version_code:
@@ -14557,6 +14562,9 @@ static void scan_twenty_seven_bit_int (void)
   }
 }
 
+// for last_node_font
+void scan_something_internal (small_number level, boolean negative);
+
 void scan_font_ident (void)
 {
   internal_font_number f;
@@ -14577,6 +14585,12 @@ void scan_font_ident (void)
     m = cur_chr;
     scan_four_bit_int();
     f = equiv(m + cur_val);
+  }
+  else if ((cur_cmd == last_item) && (cur_chr == last_node_font_code))
+  {
+    // procedure scan_something_internal_ident
+    scan_something_internal(ident_val, false);
+    f = cur_val - font_id_base;
   }
   else
   {
@@ -15405,10 +15419,16 @@ restart:
           cur_val_level = int_val;
           cur_val = -1;
         }
+        else if (cur_chr == last_node_font_code)
+        {
+          cur_val_level = ident_val;
+          cur_val = null_font + font_id_base;
+        }
         else
           cur_val_level = cur_chr;
 
-        if ((cur_chr == last_node_char_code) && (is_char_node(tx)) && (tx != head))
+        if ((cur_chr == last_node_char_code) || (cur_chr == last_node_font_code))
+        if ((is_char_node(tx)) && (tx != head))
         {
           // { |tx| might be ``second node'' of a KANJI character; so we need to look the node before |tx| }
           r = head;
@@ -15424,7 +15444,10 @@ restart:
           if (font_dir[font(r)] != dir_default)
             tx = r;
 
-          find_last_char();
+          if (cur_chr == last_node_char_code)
+            find_last_char();
+          else
+            cur_val = font(tx) + font_id_base;
         }
 
         if (!is_char_node(tx) && (tx != head) && (mode != 0))
@@ -15469,12 +15492,13 @@ restart:
 
             case last_node_subtype_code:
               if (type(tx) <= unset_node)
-                cur_val = subtype(tx);
+                cur_val = subtype(tx); // { non-math nodes }
               else
               {
                 cur_val = type(tx);
                 if (cur_val < unset_node + 4)
                   cur_val = cur_val - unset_node - 1;
+                // { |style_noad|, |choice_noad|, |ord_noad| }
                 else if (cur_val == unset_node + 4)
                   cur_val = cur_val - unset_node - 1 + subtype(tx);
                 else
@@ -15483,7 +15507,31 @@ restart:
               break;
 
             case last_node_char_code:
-              ignore_font_kerning();
+              {
+                ignore_font_kerning();
+                if (is_char_node(tx))
+                  find_last_char();
+                else if (type(tx) == ligature_node)
+                // {decompose a ligature to original characters}
+                {
+                  r = lig_ptr(tx);
+                  while (link(r) != null)
+                    r = link(r);
+                  cur_val = character(r);
+                }
+                // {else: already -1}
+              }
+              break;
+
+            case last_node_font_code:
+              {
+                ignore_font_kerning();
+                if (is_char_node(tx))
+                  cur_val = font(tx) + font_id_base;
+                else if (type(tx) == ligature_node)
+                  cur_val = font(lig_char(tx)) + font_id_base;
+                // {else: already nullfont}
+              }
               break;
           }
         else if ((mode == vmode) && (tx == head))
