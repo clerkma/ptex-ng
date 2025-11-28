@@ -3285,6 +3285,7 @@ static void initialize (void)
   sa_level = level_zero;
   page_disc = null;
   split_disc = null;
+  expand_depth_count = 0;
   page_dir = dir_yoko;
 
   aptex_utils_get_seconds_and_micros(&epochseconds, &microseconds);
@@ -13977,6 +13978,10 @@ static void expand (void)
   pointer backup_backup;  // {to save |link(backup_head)|}
   small_number save_scanner_status; // {temporary storage of |scanner_status|}
 
+  incr(expand_depth_count);
+  if (expand_depth_count >= expand_depth)
+    overflow("expansion depth", expand_depth);
+
   cv_backup = cur_val;
   cvl_backup = cur_val_level;
   radix_backup = radix;
@@ -14306,6 +14311,7 @@ reswitch:
   radix = radix_backup;
   cur_order = co_backup;
   link(backup_head) = backup_backup;
+  decr(expand_depth_count);
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_tok|, and expands macros
@@ -40197,6 +40203,10 @@ void scan_expr (void)
   b = false;
   p = null;
 
+  incr(expand_depth_count);
+  if (expand_depth_count >= expand_depth)
+    overflow("expansion depth", expand_depth);
+
 restart:
   r = expr_none;
   e = 0;
@@ -40400,6 +40410,8 @@ found:
     free_node(q, expr_node_size);
     goto found;
   }
+
+  decr(expand_depth_count);
 
   if (b)
   {

@@ -193,6 +193,7 @@ def_const(neg_trie_op_size,   -751,   -35111);
 def_const(min_trie_op,        0,      0);
 def_const(max_trie_op,        500,    1000);
 def_const(dvi_buf_size,       16384,  16384);
+def_const(expand_depth,       1000,   1000);
 def_const(hash_prime,         55711,  445631);
 def_const(hash_size,          65536,  524288);
 
@@ -851,6 +852,9 @@ EXTERN boolean is_print_utf8;
 EXTERN str_number last_tokens_string;
 EXTERN integer epochseconds;
 EXTERN integer microseconds;
+
+// othe variables
+EXTERN integer expand_depth_count;
 
 // for SyncTeX
 EXPORT integer synctex_option;
