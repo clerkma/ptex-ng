@@ -14563,7 +14563,7 @@ static void scan_twenty_seven_bit_int (void)
 }
 
 // for last_node_font
-void scan_something_internal (small_number level, boolean negative);
+static void scan_something_internal (small_number level, boolean negative);
 
 void scan_font_ident (void)
 {
