@@ -21795,7 +21795,7 @@ reswitch:
 
     goto next_p;
 
-  fin_rule:
+fin_rule:
     // @<Output a rule in an hlist@>
     if (is_running(rule_ht))
       rule_ht = height(this_box) + disp;
@@ -22277,7 +22277,7 @@ reswitch:
 
     goto next_p;
 
-  fin_rule:
+fin_rule:
     // @<Output a rule in an hlist@>
     if (is_running(rule_ht))
       rule_ht = height(this_box) + disp;
@@ -28559,7 +28559,7 @@ total_pw(pointer q, pointer p)
       }
   }
   l = find_protchar_left(l, true);
- done:
+done:
   return left_pw(l) + right_pw(r);
 }
 
@@ -30713,7 +30713,7 @@ static pointer vsplit (halfword n, scaled h)
     delete_token_ref(split_bot_mark);
     split_bot_mark = null;
   }
-
+  // @<Dispense with trivial cases of void or bad boxes@>
   if (v == null)
   {
     return null;
@@ -30742,7 +30742,9 @@ static pointer vsplit (halfword n, scaled h)
 
   flush_node_list(link(v));
   link(v) = null;
+  //
   q = vert_break(list_ptr(v), h, split_max_depth);
+  // @<Look at all the marks...@>
   p = list_ptr(v);
 
   if (p == q)
@@ -30751,6 +30753,7 @@ static pointer vsplit (halfword n, scaled h)
   {
     if (type(p) == mark_node)
       if (mark_class(p) != 0)
+      // @<Update the current marks for |vsplit|@>
       {
         find_sa_element(mark_val, mark_class(p), true);
 
@@ -30862,37 +30865,38 @@ static void ensure_vbox (eight_bits n)
   p = box(n);
 
   if (p != null)
-    if (type(p) == dir_node)
-    {
-      p = list_ptr(p);
-      delete_glue_ref(space_ptr(box(n)));
-      delete_glue_ref(xspace_ptr(box(n)));
-      free_node(box(n), box_node_size);
-      box(n) = p;
-    }
+  if (type(p) == dir_node)
+  {
+    p = list_ptr(p);
+    delete_glue_ref(space_ptr(box(n)));
+    delete_glue_ref(xspace_ptr(box(n)));
+    free_node(box(n), box_node_size);
+    box(n) = p;
+  }
 
   if (p != null)
-    if (type(p) != vlist_node)
-    {
-      print_err("Insertions can only be added to a vbox");
-      help3("Tut tut: You're trying to \\insert into a",
-          "\\box register that now contains an \\hbox.",
-          "Proceed, and I'll discard its present contents.");
-      box_error(n);
-    }
+  if (type(p) != vlist_node)
+  {
+    print_err("Insertions can only be added to a vbox");
+    help3("Tut tut: You're trying to \\insert into a",
+        "\\box register that now contains an \\hbox.",
+        "Proceed, and I'll discard its present contents.");
+    box_error(n);
+  }
 }
 
 static void fire_up (pointer c)
 {
-  pointer p, q, r, s;
-  pointer prev_p;
+  pointer p, q, r, s; // {nodes being examined and/or changed}
+  pointer prev_p; // {predecessor of |p|}
   /* unsigned char n; */
-  unsigned int n;
-  boolean wait;
-  integer save_vbadness;
-  scaled save_vfuzz;
-  pointer save_split_top_skip;
+  unsigned int n; // {insertion box number}
+  boolean wait; // {should the present insertion be held over?}
+  integer save_vbadness; // {saved value of |vbadness|}
+  scaled save_vfuzz; // {saved value of |vfuzz|}
+  pointer save_split_top_skip; // {saved value of |split_top_skip|}
 
+  // @<Set the value of |output_penalty|@>
   if (type(best_page_break) == penalty_node)
   {
     geq_word_define(int_base + output_penalty_code, penalty(best_page_break));
@@ -30915,10 +30919,10 @@ static void fire_up (pointer c)
     delete_token_ref(first_mark);
     first_mark = null;
   }
-
+  // @<Put the \(o)optimal current page into box 255...@>
   if (c == best_page_break)
-    best_page_break = null;
-
+    best_page_break = null; // {|c| not yet linked in}
+  // @<Ensure that box 255 is empty before output@>
   if (box(255) != null)
   {
     print_err("");
@@ -30929,10 +30933,11 @@ static void fire_up (pointer c)
     box_error(255);
   }
 
-  insert_penalties = 0;
+  insert_penalties = 0; // {this will count the number of insertions held over}
   save_split_top_skip = split_top_skip;
 
   if (holding_inserts <= 0)
+  // @<Prepare all the boxes involved in insertions to act as queues@>
   {
     r = link(page_ins_head);
 
@@ -30968,6 +30973,7 @@ static void fire_up (pointer c)
     if (type(p) == ins_node)
     {
       if (holding_inserts <= 0)
+      // @<Either insert the material specified by node |p| into...@>
       {
         r = link(page_ins_head);
 
@@ -31005,6 +31011,7 @@ static void fire_up (pointer c)
           link(s) = ins_ptr(p);
 
           if (best_ins_ptr(r) == p)
+          // @<Wrap up the box specified by node |r|, splitting node |p| if...@>
           {
             if (type(r) == split_up)
               if ((broken_ins(r) == p) && (broken_ins(r) != null))
@@ -31045,7 +31052,7 @@ static void fire_up (pointer c)
             last_ins_ptr(r) = s;
           }
         }
-
+        // @<Either append the insertion node |p|...@>
         link(prev_p) = link(p);
         link(p) = null;
 
@@ -31065,7 +31072,8 @@ static void fire_up (pointer c)
       }
     }
     else if (type(p) == mark_node)
-      if (mark_class(p) != null)
+      if (mark_class(p) != 0)
+      // @<Update the current marks for |fire_up|@>
       {
         find_sa_element(mark_val, mark_class(p), true);
 
@@ -31082,6 +31090,7 @@ static void fire_up (pointer c)
         add_token_ref(mark_ptr(p));
       }
       else
+      // @<Update the values of |first_mark| and |bot_mark|@>
       {
         if (first_mark == null)
         {
@@ -31101,7 +31110,7 @@ static void fire_up (pointer c)
   }
 
   split_top_skip = save_split_top_skip;
-
+  // @<Break the current page at node |p|, put it...@>
   if (p != null)
   {
     if (link(contrib_head) == null)
@@ -31118,7 +31127,7 @@ static void fire_up (pointer c)
   save_vbadness = vbadness;
   vbadness = inf_bad;
   save_vfuzz = vfuzz;
-  vfuzz = max_dimen;
+  vfuzz = max_dimen; // {inhibit error messages}
   box(255) = vpackage(link(page_head), best_size, exactly, page_max_depth);
   set_box_dir(box(255), page_dir);
   vbadness = save_vbadness;
@@ -31126,7 +31135,7 @@ static void fire_up (pointer c)
 
   if (last_glue != max_halfword)
     delete_glue_ref(last_glue);
-
+  // @<Start a new current page@>; {this sets |last_glue:=max_halfword|}
   page_contents = empty;
   page_tail = page_head;
   link(page_head) = null;
@@ -31143,7 +31152,7 @@ static void fire_up (pointer c)
     link(page_head) = link(hold_head);
     page_tail = q;
   }
-
+  // @<Delete \(t)the page-insertion nodes@>
   r = link(page_ins_head);
 
   while (r != page_ins_head)
@@ -31167,6 +31176,7 @@ static void fire_up (pointer c)
 
   if (output_routine != null)
     if (dead_cycles >= max_dead_cycles)
+    // @<Explain that too many dead cycles have occurred in a row@>
     {
       print_err("Output loop---");
       print_int(dead_cycles);
@@ -31177,6 +31187,7 @@ static void fire_up (pointer c)
       error();
     }
     else
+    // @<Fire up the user's output routine and |return|@>
     {
       output_active = true;
       incr(dead_cycles);
@@ -31190,7 +31201,7 @@ static void fire_up (pointer c)
       scan_left_brace();
       return;
     }
-
+  // @<Perform the default output routine@>
   {
     if (link(page_head) != null)
     {
@@ -31264,19 +31275,8 @@ continu:
         last_kern = width(p);
     }
 
-    /*
-      @<Move node |p| to the current page; if it is time for a page break,
-      put the nodes following the break back onto the contribution list,
-      and |return| to the user's output routine if there is one@>
-    */
-
-    /*
-      @<If the current page is empty and node |p| is to be deleted, |goto done1|;
-      otherwise use node |p| to update the state of the current page;
-      if this node is an insertion, |goto contribute|; otherwise if this node
-      is not a legal breakpoint, |goto contribute| or |update_heights|;
-      otherwise set |pi| to the penalty associated with this breakpoint@>
-    */
+    // @<Move node |p| to the current page; ...@>
+    // @<If the current page is empty...@>
     switch (type(p))
     {
       case hlist_node:
@@ -31284,11 +31284,8 @@ continu:
       case dir_node:
       case rule_node:
         if (page_contents < box_there)
+        // // @<Initialize the current page, insert the \.{\\topskip} glue...@>
         {
-          /*
-            @<Initialize the current page, insert the \.{\\topskip} glue
-            ahead of |p|, and |goto continue|@>
-          */
           if (page_contents == empty)
             freeze_page_specs(box_there);
           else
@@ -31306,11 +31303,8 @@ continu:
           goto continu;
         }
         else
+        // @<Prepare to move a box or rule node to the current page...@>
         {
-          /*
-            @<Prepare to move a box or rule node to the current page,
-            then |goto contribute|@>
-          */
           page_total = page_total + page_depth + height(p);
           page_depth = depth(p);
           goto contribute;
@@ -31318,10 +31312,7 @@ continu:
         break;
 
       case whatsit_node:
-        /*
-          @<Prepare to move whatsit |p| to the current page,
-          then |goto contribute|@>
-        */
+        // @<Prepare to move whatsit |p| to the current page, then |goto contribute|@>
         goto contribute;
         break;
 
@@ -31370,12 +31361,8 @@ continu:
 
           n = n;
 
-          /*
-            @<Create a page insertion node with |subtype(r)=qi(n)|, and
-            include the glue correction for box |n| in the
-            current page state@>
-          */
           if (subtype(r) != n)
+          // @<Create a page insertion node...@>
           {
             q = get_node(page_ins_node_size);
             link(q) = link(r);
@@ -31436,7 +31423,7 @@ continu:
             if (count(n) == 1000)
               h = height(p);
             else
-              h = x_over_n(height(p), 1000) * count(n);
+              h = x_over_n(height(p), 1000) * count(n); // {this much room is needed}
 
             if (((h <= 0) || (h <= delta)) && (height(p) + height(r) <= dimen(n)))
             {
@@ -31444,11 +31431,8 @@ continu:
               height(r) = height(r) + height(p);
             }
             else
+            // @<Find the best way to split the insertion...@>
             {
-              /*
-                @<Find the best way to split the insertion, and change
-                |type(r)| to |split_up|@>
-              */
               if (count(n) <= 0)
                 w = max_dimen;
               else
@@ -31466,6 +31450,7 @@ continu:
               height(r) = height(r) + best_height_plus_depth;
 #ifdef STAT
               if (tracing_pages > 0)
+              // @<Display the insertion split cost@>
               {
                 begin_diagnostic();
                 print_nl("% split");
@@ -31510,14 +31495,10 @@ continu:
         break;
     }
 
-    /*
-      @<Check if node |p| is a new champion breakpoint; then \(if)if it is time for
-      a page break, prepare for output, and either fire up the user's
-      output routine and |return| or ship out the page and |goto done|@>
-    */
-
+    // @<Check if node |p| is a new champion breakpoint; then \(if)...@>
     if (pi < inf_penalty)
     {
+      // @<Compute the badness, |b|, of the current page...@>
       if (page_total < page_goal)
         if ((page_so_far[3] != 0) || (page_so_far[4] != 0) || (page_so_far[5] != 0))
           b = 0;
@@ -31543,6 +31524,7 @@ continu:
 
 #ifdef STAT
       if (tracing_pages > 0)
+      // @<Display the page break cost@>
       {
         begin_diagnostic();
         print_nl("%");
@@ -31601,11 +31583,8 @@ continu:
     if ((type(p) < glue_node) || (type(p) > kern_node))
       goto contribute;
 
-  update_heights:
-    /*
-      @<Update the current page measurements with respect to the
-      glue or kern specified by node~|p|@>
-    */
+update_heights:
+    // @<Update the current page measurements with respect to the glue...@>
     if (type(p) == kern_node)
       q = p;
     else
@@ -31633,7 +31612,7 @@ continu:
     page_total = page_total + page_depth + width(q);
     page_depth = 0;
 
-  contribute:
+contribute:
     // @<Make sure that |page_max_depth| is not exceeded@>;
     if (page_depth > page_max_depth)
     {
@@ -31647,7 +31626,7 @@ continu:
     link(p) = null;
     goto done;
 
-  done1:
+done1:
     // @<Recycle node |p|@>
     link(contrib_head) = link(p);
     link(p) = null;
@@ -31668,9 +31647,9 @@ done:;
 
   // @<Make the contribution list empty by setting its tail to |contrib_head|@>
   if (nest_ptr == 0)
-    tail = contrib_head;
+    tail = contrib_head; // {vertical mode}
   else
-    contrib_tail = contrib_head;
+    contrib_tail = contrib_head; // {other modes}
 }
 
 // handle spaces when |space_factor<>1000
