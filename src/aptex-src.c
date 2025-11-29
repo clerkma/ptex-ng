@@ -16332,7 +16332,14 @@ found:
     goto restart;
   }
 }
+// @<Scan an optional space@>
+static inline void scan_an_optional_space()
+{
+  get_x_token();
 
+  if (cur_cmd != spacer)
+    back_input();
+}
 // sets |cur_val| to an integer
 void scan_int (void)
 {
@@ -16399,13 +16406,7 @@ restart:
       back_error();
     }
     else
-    //  @<Scan an optional space@>
-    {
-      get_x_token();
-
-      if (cur_cmd != spacer)
-        back_input();
-    }
+      scan_an_optional_space();
 
     skip_mode = true;
   }
@@ -16716,13 +16717,7 @@ done1:
   }
   else
     goto not_found;
-  // @<Scan an optional space@>
-  {
-    get_x_token();
-
-    if (cur_cmd != spacer)
-      back_input();
-  }
+  scan_an_optional_space();
 
 found:
   cur_val = nx_plus_y(save_cur_val, v, xn_over_d(v, f, 0200000));
@@ -16814,13 +16809,7 @@ attach_fraction:
     cur_val = cur_val * unity + f;
 
 done:
-  // @<Scan an optional space@>
-  {
-    get_x_token();
-
-    if (cur_cmd != spacer)
-      back_input();
-  }
+  scan_an_optional_space();
 
 attach_sign:
   if (arith_error || (abs(cur_val) >= 010000000000))
@@ -20358,7 +20347,7 @@ static void pdf_prepare_ship_out(void)
 
 static str_number expand_font_name (integer f, integer e)
 {
-  integer old_setting;
+  integer old_setting; // {holds |selector| setting}
 
   old_setting = selector;
   selector = new_string;
@@ -20369,7 +20358,7 @@ static str_number expand_font_name (integer f, integer e)
   selector = old_setting;
   return make_string();
 }
-
+// {creates an expanded font from the base font; doesn't load expanded tfm at all}
 static internal_font_number auto_expand_font (internal_font_number f, integer e)
 {
   internal_font_number k;
@@ -20405,33 +20394,26 @@ static internal_font_number auto_expand_font (internal_font_number f, integer e)
   ni = lig_kern_base[f] - italic_base[f];
   nk = exten_base[f] - (kern_base[f] + kern_base_offset);
   if (fmem_ptr + nw + ni + nk >= font_mem_size)
-  {
     overflow("number of words of font memory (font_mem_size)", font_mem_size);
-  }
   width_base[k] = fmem_ptr;
   italic_base[k] = width_base[k] + nw;
   kern_base[k] = italic_base[k] + ni - kern_base_offset;
   fmem_ptr = fmem_ptr + nw + ni + nk;
 
   for (i = 0; i < nw; i++)
-  {
     font_info[width_base[k] + i].sc =
       round_xn_over_d(font_info[width_base[f] + i].sc, 1000 + e, 1000);
-  }
   for (i = 0; i < ni; i++)
-  {
     font_info[italic_base[k] + i].sc =
       round_xn_over_d(font_info[italic_base[f] + i].sc, 1000 + e, 1000);
-  }
   for (i = 0; i < nk; i++)
-  {
     font_info[kern_base[k] + kern_base_offset + i].sc =
       round_xn_over_d(font_info[kern_base[f] + kern_base_offset + i].sc, 1000 + e, 1000);
-  }
 
   return k;
 }
-
+// {set expansion-related parameters for an expanded font |k|, based on the base
+// font |f| and the expansion amount |e|}
 static void copy_expand_param (internal_font_number k, internal_font_number f, integer e)
 {
   if (pdf_font_base[f] == NULL)
@@ -20442,62 +20424,55 @@ static void copy_expand_param (internal_font_number k, internal_font_number f, i
   pdf_font_blink[k] = f;
   pdf_font_base[k] = pdf_font_base[f];
 }
-
+// {looks up for a TFM with name |s| loaded at |fs| size; if found then flushes |s|}
 static internal_font_number tfm_lookup (str_number s, scaled fs)
 {
   internal_font_number k;
 
   if (fs != 0)
     for (k = font_base + 1; k <= font_ptr; k++)
-    {
       if (str_eq_str(font_name[k], s) && (font_size[k] == fs))
       {
         flush_str(s);
         return k;
       }
-    }
   else
     for (k = font_base + 1; k <= font_ptr; k++)
-    {
       if (str_eq_str(font_name[k], s))
       {
         flush_str(s);
         return k;
       }
-    }
+
   return null_font;
 }
-
+// {loads font |f| expanded by |e| thousandths into font memory; |e| is nonzero
+// and is a multiple of |pdf_font_step[f]|}
 static internal_font_number load_expand_font (internal_font_number f, integer e)
 {
   str_number s; // {font name}
   internal_font_number k;
+
   s = expand_font_name(f, e);
   k = tfm_lookup(s, font_size[f]);
   if (k == null_font)
-  {
     if (pdf_font_auto_expand[f])
-    {
       k = auto_expand_font(f, e);
-    }
     else
-    {
       k = read_font_info(null_cs, s, STR_EMPTY, font_size[f]);
-    }
-  }
   if (k != null_font)
     copy_expand_param(k, f, e);
   return k;
 }
-
+// {return the multiple of |pdf_font_step[f]| that is nearest to |e|}
 static integer fix_expand_value (integer f, integer e)
 {
-  /* return the multiple of |pdf_font_step[f]| that is nearest to |e| */
   integer step;
   integer max_expand;
   boolean neg;
 
-  if (e == 0) return 0;
+  if (e == 0)
+    return 0;
 
   if (e < 0)
   {
@@ -20512,27 +20487,23 @@ static integer fix_expand_value (integer f, integer e)
   }
 
   if (e > max_expand)
-  {
     e = max_expand;
-  }
   else
   {
     step = pdf_font_step[f];
     if (e % step > 0)
-    {
       e = step * round_xn_over_d(e, 1, step);
-    }
   }
 
-  if (neg) e = -e;
+  if (neg)
+    e = -e;
 
   return e;
 }
-
+// {look up and create if not found an expanded version of |f|; |f| is an
+// expandable font; |e| is nonzero and is a multiple of |pdf_font_step[f]|}
 static integer get_expand_font (integer f, integer e)
 {
-  /* look up and create if not found an expanded version of |f|; |f| is an
-     expandable font; |e| is nonzero and is a multiple of |pdf_font_step[f]| */
   integer k;
 
   k = pdf_font_elink[f];
@@ -20548,34 +20519,32 @@ static integer get_expand_font (integer f, integer e)
   pdf_font_elink[f] = k;
   return k;
 }
-
+// {looks up for font |f| expanded by |e| thousandths, |e| is an arbitrary value
+// between max stretch and max shrink of |f|; if not found then creates it}
 static internal_font_number expand_font (internal_font_number f, integer e)
 {
-  /* looks up for font |f| expanded by |e| thousandths, |e| is an arbitrary value
-     between max stretch and max shrink of |f|; if not found then creates it */
-  if (e == 0) return f;
+  if (e == 0)
+    return f;
   e = fix_expand_value(f, e);
-  if (e == 0) return f;
+  if (e == 0)
+    return f;
   if (pdf_font_elink[f] == null_font)
     aptex_error("font expansion", "uninitialized pdf_font_elink");
   return get_expand_font(f, e);
 }
-
-static void read_expand_font (void) // {read font expansion spec and load expanded font}
+// {read font expansion spec and load expanded font}
+static void read_expand_font (void)
 {
   integer shrink_limit, stretch_limit, font_step;
   internal_font_number f;
   boolean auto_expand;
+
   scan_font_ident();
   f = cur_val;
   if (f == null_font)
-  {
     aptex_error("font expansion", "invalid font identifier");
-  }
   if (pdf_font_blink[f] != null_font)
-  {
     aptex_error("font expansion", "\\pdffontexpand cannot be used this way (the base font has been expanded)");
-  }
   scan_optional_equals();
   scan_int();
   stretch_limit = fix_int(cur_val, 0, 1000);
@@ -20584,9 +20553,7 @@ static void read_expand_font (void) // {read font expansion spec and load expand
   scan_int();
   font_step = fix_int(cur_val, 0, 1000);
   if (font_step == 0)
-  {
     aptex_error("font expansion", "invalid step");
-  }
   stretch_limit -= stretch_limit % font_step;
   if (stretch_limit < 0)
     stretch_limit = 0;
@@ -20594,26 +20561,19 @@ static void read_expand_font (void) // {read font expansion spec and load expand
   if (shrink_limit < 0)
     shrink_limit = 0;
   if ((shrink_limit == 0) && (stretch_limit == 0))
-  {
     aptex_error("font expansion", "invalid limit");
-  }
   auto_expand = false;
   if (scan_keyword("autoexpand"))
   {
     auto_expand = true;
-    // @<Scan an optional space@>
-    get_x_token();
-    if (cur_cmd != spacer)
-      back_input();
+    scan_an_optional_space();
   }
-  /* check if the font can be expanded */
+  // {check if the font can be expanded}
   if (pdf_font_expand_ratio[f] != 0)
-  {
     aptex_error("font expansion", "this font has been expanded by another font so it cannot be used now");
-  }
   if (pdf_font_step[f] != 0)
+  // {this font has been expanded, ensure the expansion parameters are identical}
   {
-    /* this font has been expanded, ensure the expansion parameters are identical */
     if (pdf_font_step[f] != font_step)
       aptex_error("font expansion", "font has been expanded with different expansion step");
 
@@ -20632,6 +20592,7 @@ static void read_expand_font (void) // {read font expansion spec and load expand
   }
   else
   {
+    // procedure set_expand_params
     pdf_font_step[f] = font_step;
     pdf_font_auto_expand[f] = auto_expand;
     if (stretch_limit > 0)
@@ -23427,9 +23388,8 @@ found:
 static boolean check_expand_pars (internal_font_number f)
 {
   internal_font_number k;
-  if ((pdf_font_step[f] == 0) ||
-      ((pdf_font_stretch[f] == null_font) &&
-       (pdf_font_shrink[f] == null_font)))
+
+  if ((pdf_font_step[f] == 0) || ((pdf_font_stretch[f] == null_font) && (pdf_font_shrink[f] == null_font)))
     return false;
   if (cur_font_step < 0)
     cur_font_step = pdf_font_step[f];
@@ -23446,8 +23406,8 @@ static boolean check_expand_pars (internal_font_number f)
                   "using fonts with different limit of expansion in one paragraph is not allowed");
   }
   k = pdf_font_shrink[f];
-   if (k != null_font)
-   {
+  if (k != null_font)
+  {
     if (max_shrink_ratio < 0)
       max_shrink_ratio = -pdf_font_expand_ratio[k];
     else if (max_shrink_ratio != -pdf_font_expand_ratio[k])
@@ -23462,6 +23422,7 @@ static scaled char_stretch (internal_font_number f, eight_bits c)
   internal_font_number k;
   scaled dw;
   integer ef;
+
   k = pdf_font_stretch[f];
   ef = get_ef_code(f, c);
   if ((k != null_font) && (ef > 0))
@@ -23478,9 +23439,11 @@ static scaled char_shrink (internal_font_number f, eight_bits c)
   internal_font_number k;
   scaled dw;
   integer ef;
+
   k = pdf_font_shrink[f];
   ef = get_ef_code(f, c);
-  if ((k != null_font) && (ef > 0)) {
+  if ((k != null_font) && (ef > 0))
+  {
     dw = char_width(f,char_info(f,c)) - char_width(k,char_info(k,c));
     if (dw > 0)
       return round_xn_over_d(dw, ef, 1000);
@@ -23492,6 +23455,7 @@ static scaled get_kern (internal_font_number f, eight_bits lc, eight_bits rc)
 {
   four_quarters i,j;
   font_index k;
+
   i = char_info(f,lc);
   if (char_tag(i) != lig_tag)
     return 0;
@@ -23500,14 +23464,12 @@ static scaled get_kern (internal_font_number f, eight_bits lc, eight_bits rc)
   if (skip_byte(j) <= stop_flag)
     goto continue1;
   k = lig_kern_restart(f,j);
- continue0:
+continue0:
   j = font_info[k].qqqq;
- continue1:
+continue1:
   if ((next_char(j) == rc) && (skip_byte(j) <= stop_flag) &&
       (op_byte(j) >= kern_flag))
-  {
     return char_kern(f,j);
-  }
   if (skip_byte(j) == 0)
     incr(k);
   else
@@ -23541,8 +23503,7 @@ static scaled kern_stretch (pointer p)
     return 0;
 
   d = get_kern(pdf_font_stretch[font(l)], character(l), character(r));
-  return round_xn_over_d(d - width(p),
-                         get_ef_code(font(l), character(l)), 1000);
+  return round_xn_over_d(d - width(p), get_ef_code(font(l), character(l)), 1000);
 }
 
 static scaled kern_shrink (pointer p)
@@ -23574,12 +23535,12 @@ static scaled kern_shrink (pointer p)
     return 0;
 
   d = get_kern(pdf_font_shrink[font(l)], character(l), character(r));
-  return round_xn_over_d(width(p) - d,
-                         get_ef_code(font(l), character(l)), 1000);
+  return round_xn_over_d(width(p) - d, get_ef_code(font(l), character(l)), 1000);
 }
 
 static void do_subst_font (pointer p, int ex_ratio)
 {
+  internal_font_number f, k;
   pointer r;
   int ef;
 
@@ -23589,9 +23550,7 @@ static void do_subst_font (pointer p, int ex_ratio)
     while (r != null)
     {
       if (is_char_node(r) || (type(r) == ligature_node))
-      {
         do_subst_font(r, ex_ratio);
-      }
       r = link(r);
     }
 
@@ -23599,9 +23558,7 @@ static void do_subst_font (pointer p, int ex_ratio)
     while (r != null)
     {
       if (is_char_node(r) || (type(r) == ligature_node))
-      {
         do_subst_font(r, ex_ratio);
-      }
       r = link(r);
     }
     return;
@@ -23613,31 +23570,25 @@ static void do_subst_font (pointer p, int ex_ratio)
     r = lig_char(p);
   else
   {
-    /* {|short_display_n(p, 5);|} */
+    // {|short_display_n(p, 5);|}
     aptex_error("font expansion", "invalid node type");
   }
 
-  internal_font_number f = font(r);
+  f = font(r);
   ef = get_ef_code(f, character(r));
-  if (ef == 0) return;
+  if (ef == 0)
+    return;
 
-  internal_font_number k;
   if ((pdf_font_stretch[f] != null_font) && (ex_ratio > 0))
-  {
     k = expand_font(f, ext_xn_over_d(ex_ratio*ef,
                                      pdf_font_expand_ratio[pdf_font_stretch[f]],
                                      1000000));
-  }
   else if ((pdf_font_shrink[f] != null_font) && (ex_ratio < 0))
-  {
     k = expand_font(f, ext_xn_over_d(ex_ratio*ef,
                                      -pdf_font_expand_ratio[pdf_font_shrink[f]],
                                      1000000));
-  }
   else
-  {
     k = f;
-  }
 
   if (k != f)
   {
@@ -23657,6 +23608,7 @@ static void do_subst_font (pointer p, int ex_ratio)
 
 static scaled char_pw (pointer p, small_number side)
 {
+  internal_font_number f;
   integer c;
 
   if (side == left_side)
@@ -23664,7 +23616,8 @@ static scaled char_pw (pointer p, small_number side)
   else
     last_rightmost_char = null;
 
-  if (p == null) return 0;
+  if (p == null)
+    return 0;
 
   if (!is_char_node(p))
   {
@@ -23674,7 +23627,7 @@ static scaled char_pw (pointer p, small_number side)
       return 0;
   }
 
-  integer f = font(p);
+  f = font(p);
   if (side == left_side)
   {
     c = get_lp_code(f, character(p));
@@ -23686,22 +23639,23 @@ static scaled char_pw (pointer p, small_number side)
     last_rightmost_char = p;
   }
 
-  if (c == 0) return 0;
+  if (c == 0)
+    return 0;
 
   return round_xn_over_d(quad(f), c, 1000);
 }
 
 static pointer new_margin_kern (scaled w, pointer p, small_number side)
 {
-  pointer k = get_node(margin_kern_node_size);
+  pointer k;
+
+  k = get_node(margin_kern_node_size);
   type(k) = margin_kern_node;
   subtype(k) = side;
   width(k) = w;
 
   if (p == null)
-  {
     aptex_error("margin kerning", "invalid pointer to marginal char node");
-  }
 
   fast_get_avail(margin_char(k));
   character(margin_char(k)) = character(p);
@@ -35294,13 +35248,7 @@ void resume_after_display (void)
   set_cur_lang();
   clang = cur_lang;
   prev_graf = (norm_min(left_hyphen_min) * 0100 + norm_min(right_hyphen_min)) * 0200000 + cur_lang;
-  // @<Scan an optional space@>
-  {
-    get_x_token();
-
-    if (cur_cmd != spacer)
-      back_input();
-  }
+  scan_an_optional_space();
 
   if (nest_ptr == 1)
     build_page();

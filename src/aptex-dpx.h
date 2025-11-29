@@ -2,6 +2,8 @@
 // This is a bridge header over dvipdfm-x.
 // PDF output functions from texlive/texk/dvipdfm-x
 //
+#ifndef APTEX_DPX_H
+#define APTEX_DPX_H
 
 /* from "dvipdfm-x/fontmap.h" */
 extern void pdf_init_fontmaps (void);
@@ -103,3 +105,5 @@ typedef struct {
 extern void MD5_init (MD5_CONTEXT *);
 extern void MD5_write (MD5_CONTEXT *, const unsigned char *, unsigned int);
 extern void MD5_final (unsigned char *, MD5_CONTEXT *);
+
+#endif // APTEX_DPX_H
