@@ -1221,9 +1221,10 @@ do {                            \
 } while (0)
 /* sec 0416 */
 #define last_node_type_code       (glue_val + 1)            // {code for \.{\\lastnodetype}}
-#define last_node_char_code       (glue_val + 2)            // {code for \.{\\lastnodechar}}
-#define last_node_subtype_code    (glue_val + 3)            // {code for \.{\\lastnodesubtype}}
-#define input_line_no_code        (glue_val + 4)            // {code for \.{\\inputlineno}}
+#define last_node_subtype_code    (glue_val + 2)            // {code for \.{\\lastnodesubtype}}
+#define last_node_char_code       (glue_val + 3)            // {code for \.{\\lastnodechar}}
+#define last_node_font_code       (glue_val + 4)            // {code for \.{\\lastnodefont}}
+#define input_line_no_code        (glue_val + 5)            // {code for \.{\\inputlineno}}
 #define badness_code              (input_line_no_code + 1)  // {code for \.{\\badness}}
 #define shell_escape_code         (badness_code + 1)        // {code for \.{\\shellescape}}
 #define ptex_version_code         (shell_escape_code + 1)   // {code for \.{\\ptexversion}}
