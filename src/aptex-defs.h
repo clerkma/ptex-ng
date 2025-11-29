@@ -3597,7 +3597,6 @@ do {                                            \
       write_open[show_stream])                  \
     selector = show_stream;                     \
 } while (0)
-#endif
 
 /* HZ */
 #define cal_margin_kern_var(a)                                          \
@@ -3668,3 +3667,5 @@ do {                                            \
   } while (0)
 
 #define append_list(a, b) do { link(tail) = link(a); tail = b; } while (0)
+
+#endif // APTEX_MACROS_H

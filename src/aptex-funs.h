@@ -760,12 +760,12 @@ static inline integer get_ef_code (internal_font_number f, integer c)
 {
   return pdf_font_base[f] == NULL ? 1000 : pdf_font_base[f]->ef[c];
 }
-
+// {finds the node preceding the rightmost node |e|; |s| is some node
+// before |e|}
 static pointer prev_rightmost (pointer s, pointer e)
 {
-  /* {finds the node preceding the rightmost node |e|; |s| is some node
-     before |e|} */
   pointer p;
+
   p = s;
   if (p == null)
     return null;
@@ -780,8 +780,9 @@ static pointer prev_rightmost (pointer s, pointer e)
 
 static scaled round_xn_over_d (scaled x, integer n, integer d)
 {
-  boolean positive = true;
-  nonnegative_integer t, u, v;
+  boolean positive = true; // {was |x>=0|?}
+  nonnegative_integer t, u, v; // {intermediate quantities}
+
   if (x < 0)
   {
     positive = !positive;
@@ -803,18 +804,17 @@ static scaled round_xn_over_d (scaled x, integer n, integer d)
   if (2 * v >= d)
     u++;
   if (positive)
-    return (scaled) u;
+    return u;
   else
-    return (-(scaled) u);
+    return -u;
 }
 
-#define max_integer 0x7FFFFFFF
+#define max_integer 0x7FFFFFFF // {$2^{31}-1$}
 static scaled divide_scaled (scaled s, scaled m, integer dd)
 {
-  scaled q;
-  scaled r;
-  integer i;
-  integer sign = 1;
+  scaled q, r;
+  integer i, sign = 1;
+
   if (s < 0)
   {
     sign = -sign;
@@ -826,13 +826,9 @@ static scaled divide_scaled (scaled s, scaled m, integer dd)
     m = -m;
   }
   if (m == 0)
-  {
     aptex_error("arithmetic", "divided by zero");
-  }
   else if (m >= (max_integer / 10))
-  {
     aptex_error("arithmetic", "number too big");
-  }
   q = s / m;
   r = s % m;
   for (i = 1; i <= dd; i++)
@@ -900,4 +896,4 @@ static void free_font_base (void)
   }
 }
 
-#endif
+#endif // APTEX_FUNCTIONS_H
