@@ -2412,6 +2412,9 @@ static boolean a_open_input (alpha_file * f)
     if (file_name_kpse != NULL)
     {
       f->file_data = fopen(file_name_kpse, "rb");
+#if defined (_MSC_VER)
+      setvbuf(f->file_data, NULL, _IOFBF, 64 * 1024);
+#endif
       f->file_type = 0;
       if (f->file_data) openable = true;
     }
@@ -20155,9 +20158,10 @@ static void pdf_locate_font (internal_font_number f)
 {
   char * lfont_name;
   // TODO: actually expand glyph.
-  if (pdf_font_auto_expand[f] && pdf_font_blink[f] != null_font) {
+  if (pdf_font_auto_expand[f] && pdf_font_blink[f] != null_font)
     lfont_name = take_str_string(font_name[pdf_font_blink[f]]);
-  } else lfont_name = take_str_string(font_name[f]);
+  else
+    lfont_name = take_str_string(font_name[f]);
   font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
   free(lfont_name);
 }
@@ -20341,7 +20345,7 @@ static void pdf_prepare_ship_out(void)
   spc_exec_at_begin_document();
 }
 
-#endif
+#endif // APTEX_DVI_ONLY
 
 /* Here come some subroutines to deal with expanded fonts for HZ-algorithm. */
 
