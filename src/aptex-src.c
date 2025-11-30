@@ -24188,6 +24188,9 @@ exit:
   return r;
 }
 
+// {special case of unconstrained depth}
+#define vpack(...) vpackage(__VA_ARGS__, max_dimen)
+
 static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
 {
   pointer r;  // {the box node that will be returned}
@@ -24537,7 +24540,7 @@ static pointer overbar (pointer b, scaled k, scaled t)
   p = new_kern(t);
   link(p) = q;
 
-  return vpackage(p, 0, 1, max_dimen);
+  return vpack(p, natural);
 }
 
 static pointer char_box (internal_font_number f, quarterword c)
@@ -25070,7 +25073,7 @@ static void make_under (pointer q)
   p = new_kern(3 * default_rule_thickness);
   link(x) = p;
   link(p) = fraction_rule(default_rule_thickness);
-  y = vpackage(x, 0, 1, max_dimen);
+  y = vpack(x, natural);
   delta = height(y) + depth(y) + default_rule_thickness;
   height(y) = height(x);
   depth(y) = delta - height(y);
@@ -25238,7 +25241,7 @@ done:
     p = new_kern(-delta);
     link(p) = x;
     link(y) = p;
-    y = vpackage(y, 0, 1, max_dimen);
+    y = vpack(y, natural);
     width(y) = width(x);
 
     // @<Make the height of box |y| equal to |h|@>;
@@ -25784,7 +25787,7 @@ static void make_scripts (pointer q, scaled delta)
       p = new_kern((shift_up - depth(x)) - (height(y) - shift_down));
       link(x) = p;
       link(p) = y;
-      x = vpackage(x, 0, 1, max_dimen);
+      x = vpack(x, natural);
       shift_amount(x) = shift_down;
     }
   }
@@ -26762,7 +26765,7 @@ static void fin_row (void)
   }
   else
   {
-    p = vpackage(link(head), 0, 1, max_dimen);
+    p = vpack(link(head), natural);
     pop_nest();
     link(tail) = p;
     tail = p;
@@ -26918,7 +26921,7 @@ static void fin_align (void)
       q = link(link(q));
     } while (!(q == null));
 
-    p = vpackage(preamble, saved(1), saved(0), max_dimen);
+    p = vpack(preamble, saved(1), saved(0));
     q = link(preamble);
 
     do {
@@ -30796,7 +30799,7 @@ done:
 
   if (q != null)
   {
-    q = vpackage(q, 0, 1, max_dimen);
+    q = vpack(q, natural);
     set_box_dir(q, box_dir(v));
   }
 
@@ -31025,7 +31028,7 @@ static void fire_up (pointer c)
 
                 if (ins_ptr(p) != null)
                 {
-                  temp_ptr = vpackage(ins_ptr(p), 0, 1, max_dimen);
+                  temp_ptr = vpack(ins_ptr(p), natural);
                   height(p) = height(temp_ptr) + depth(temp_ptr);
                   delete_glue_ref(space_ptr(temp_ptr));
                   delete_glue_ref(xspace_ptr(temp_ptr));
@@ -31041,7 +31044,7 @@ static void fire_up (pointer c)
             delete_glue_ref(xspace_ptr(box(n)));
             flush_node_list(link(box(n)));
             free_node(box(n), box_node_size);
-            box(n) = vpackage(temp_ptr, 0, 1, max_dimen);
+            box(n) = vpack(temp_ptr, natural);
             set_box_dir(box(n), abs(ins_dir(p)));
           }
           else
@@ -31655,11 +31658,12 @@ done:;
 // handle spaces when |space_factor<>1000
 static void app_space (void)
 {
-  pointer q;
+  pointer q; // {glue node}
 
   if ((space_factor >= 2000) && (xspace_skip != zero_glue))
     q = new_param_glue(xspace_skip_code);
   else
+  // @<Find the glue specification...@>
   {
     if (space_skip != zero_glue)
       main_p = space_skip;
@@ -31667,26 +31671,26 @@ static void app_space (void)
     {
       main_p = font_glue[cur_font];
 
-      if (main_p == 0)
+      if (main_p == null)
       {
         main_p = new_spec(zero_glue);
         main_k = param_base[cur_font] + space_code;
-        width(main_p) = font_info[main_k].cint;
-        stretch(main_p) = font_info[main_k + 1].cint;
-        shrink(main_p) = font_info[main_k + 2].cint;
+        width(main_p) = font_info[main_k].sc; // {that's |space(cur_font)|}
+        stretch(main_p) = font_info[main_k + 1].sc; // {and |space_stretch(cur_font)|}
+        shrink(main_p) = font_info[main_k + 2].sc; // {and |space_shrink(cur_font)|}
         font_glue[cur_font] = main_p;
       }
     }
 
     main_p = new_spec(main_p);
-
+    // @<Modify the glue specification in |main_p| according to the space factor@>
     if (space_factor >= 2000)
       width(main_p) = width(main_p) + extra_space(cur_font);
 
     stretch(main_p) = xn_over_d(stretch(main_p), space_factor, 1000);
     shrink(main_p) = xn_over_d(shrink(main_p), 1000, space_factor);
     q = new_glue(main_p);
-    glue_ref_count(main_p) = 0;
+    glue_ref_count(main_p) = null;
   }
 
   if (!is_char_node(tail) && (type(tail) == disp_node))
@@ -31833,8 +31837,8 @@ static void off_save (void)
   pointer p;  // {inserted token}
 
   if (cur_group == bottom_level)
+  // @<Drop current token and complain that it was unmatched@>
   {
-    // @<Drop current token and complain that it was unmatched@>
     print_err("Extra ");
     print_cmd_chr(cur_cmd, cur_chr);
     help1("Things are pretty mixed up, but I think the worst is over.");
@@ -31847,10 +31851,7 @@ static void off_save (void)
     link(temp_head) = p;
     print_err("Missing ");
 
-    /*
-      @<Prepare to insert a token that matches |cur_group|,
-      and print what it is@>
-    */
+    // @<Prepare to insert a token that matches |cur_group|...@>
     switch (cur_group)
     {
       case semi_simple_group:
@@ -31935,10 +31936,10 @@ void normal_paragraph (void)
   if (hang_after != 1)
     eq_word_define(int_base + hang_after_code, 1);
 
-  if (par_shape_ptr != 0)
-    eq_define(par_shape_loc, shape_ref, 0);
+  if (par_shape_ptr != null)
+    eq_define(par_shape_loc, shape_ref, null);
 
-  if (inter_line_penalties_ptr != 0)
+  if (inter_line_penalties_ptr != null)
     eq_define(inter_line_penalties_loc, shape_ref, null);
 }
 
@@ -32304,14 +32305,14 @@ static void new_graf (boolean indented)
     begin_token_list(every_par, every_par_text);
 
   if (nest_ptr == 1)
-    build_page();
+    build_page(); // {put |par_skip| glue on current page}
 }
 
 static void indent_in_hmode (void)
 {
   pointer p, q;
 
-  if (cur_chr > 0)
+  if (cur_chr > 0) // {\.{\\indent}}
   {
     p = new_null_box();
     width(p) = par_indent;
@@ -32716,6 +32717,7 @@ static void build_discretionary (void)
   integer d; // {direction}
 
   unsave();
+  // @<Prune the current list, if necessary...@>
   q = head;
   p = link(q);
   n = 0;
@@ -32786,6 +32788,7 @@ done:
       break;
 
     case 2:
+      // @<Attach list |p| to the current...@>
       {
         if ((n > 0) && (abs(mode) == mmode))
         {
@@ -32832,7 +32835,7 @@ done:
       }
       break;
   }
-
+  // {there are no other cases}
   incr(saved(-1));
   new_save_level(disc_group);
   scan_left_brace();
@@ -32841,7 +32844,6 @@ done:
   space_factor = 1000;
   inhibit_glue_flag = false;
 }
-
 /* sec 1123 */
 static void make_accent (void)
 {
@@ -33044,6 +33046,7 @@ static void make_accent (void)
 static void align_error (void)
 {
   if (abs(align_state) > 2)
+  // @<Express consternation...@>
   {
     print_err("Misplaced ");
     print_cmd_chr(cur_cmd, cur_chr);
@@ -33148,7 +33151,7 @@ static void push_math (group_code c)
 {
   push_nest();
   mode = -mmode;
-  incompleat_noad = 0;
+  incompleat_noad = null;
   new_save_level(c);
 }
 
@@ -36404,7 +36407,7 @@ static void handle_right_brace (void)
         unsave();
         save_ptr = save_ptr - 2;
         // {now |saved(0)| is the insertion number, or 255 for |vadjust|}
-        p = vpackage(link(head), natural, max_dimen);
+        p = vpack(link(head), natural);
         set_box_dir(p, direction);
         pop_nest();
 
@@ -36576,7 +36579,7 @@ static void handle_right_brace (void)
         end_graf();
         unsave();
         save_ptr = save_ptr - 2;
-        p = vpackage(link(head), saved(1), saved(0), max_dimen);
+        p = vpack(link(head), saved(1), saved(0));
         set_box_dir(p, direction);
         pop_nest();
 
