@@ -3340,9 +3340,9 @@ static void initialize (void)
 /* sec 1303 */
 static boolean load_fmt_file (void)
 {
-  integer j, k;
-  pointer p, q;
-  integer x;
+  integer j, k; // {all-purpose indices}
+  pointer p, q; // {all-purpose pointers}
+  integer x; // {something undumped}
 
   // Undump constants for consistency check
   undump_int(x);
@@ -3510,7 +3510,7 @@ static boolean load_fmt_file (void)
 
   if (mem_min < mem_bot - 2)
   {
-/*  or call add_variable_space(mem_bot - (mem_min + 1)) */
+/* or call add_variable_space(mem_bot - (mem_min + 1)) */
     p = llink(rover);
     q = mem_min + 1;
     link(mem_min) = 0;  /* null */
@@ -3957,30 +3957,29 @@ static int aptex_program (void)
     goto final_end;
   }
 
-  initialize();
+  initialize(); // {set global variables to their starting values}
 
   if (aptex_env.flag_initex)
   {
     if (!get_strings_started())
       goto final_end;
 
-    init_prim();
+    init_prim(); // {call |primitive| for each primitive}
     init_str_ptr = str_ptr;
     init_pool_ptr = pool_ptr;
     fix_date_and_time();
-  }
-  else
-  {
   }
 
   ready_already = 314159;
 
 start_of_TEX:
+  // @<Initialize the output routines@>
   selector = term_only;
   tally = 0;
   term_offset = 0;
   file_offset = 0;
   kcode_pos = 0;
+  // @<Initialize the output...@>
   prints(banner);
 
   if (format_ident == 0)
@@ -3997,12 +3996,15 @@ start_of_TEX:
   }
 
   update_terminal();
+  // @<Initialize the output...@>
   job_name = 0;
   name_in_progress = false;
   log_opened = false;
+  // @<Initialize the output...@>
   output_file_name = 0;
-
+  // @<Get the first line...@>
   {
+    // @<Initialize the input routines@>
     {
       input_ptr = 0;
       max_in_stack = 0;
@@ -4037,20 +4039,37 @@ start_of_TEX:
         goto final_end;
 
       limit = last;
-      first = last + 1;
+      first = last + 1; // {|init_terminal| has set |loc| and |last|}
     }
 
     if (aptex_env.flag_initex)
     {
-      if (true || ((buffer[loc] == '*') && (format_ident == 1251)))
+      if (true || ((buffer[loc] == '*') && (format_ident == STR_FORMAT_IDENT)))
       {
         no_new_control_sequence = false;
+        // @<Generate all \eTeX...@>
         primitive("lastnodetype", last_item, last_node_type_code);
         primitive("lastnodesubtype", last_item, last_node_subtype_code);
         primitive("lastnodechar", last_item, last_node_char_code);
         primitive("lastnodefont", last_item, last_node_font_code);
         primitive("eTeXversion", last_item, eTeX_version_code);
         primitive("eTeXrevision", convert, eTeX_revision_code);
+        primitive("pdfprimitive", no_expand, 1);
+        primitive("pdfstrcmp", convert, ng_strcmp_code);
+        primitive("pdfcreationdate", convert, pdf_creation_date_code);
+        primitive("pdffilemoddate", convert, pdf_file_mod_date_code);
+        primitive("pdffilesize", convert, pdf_file_size_code);
+        primitive("pdfmdfivesum", convert, pdf_mdfive_sum_code);
+        primitive("pdffiledump", convert, pdf_file_dump_code);
+        primitive("pdflastxpos", last_item, pdf_last_x_pos_code);
+        primitive("pdflastypos", last_item, pdf_last_y_pos_code);
+        primitive("pdfelapsedtime", last_item, elapsed_time_code);
+        primitive("pdfrandomseed", last_item, random_seed_code);
+        primitive("pdfuniformdeviate", convert, pdf_uniform_deviate_code);
+        primitive("pdfnormaldeviate", convert, pdf_normal_deviate_code);
+        primitive("Uchar", convert, Uchar_convert_code);
+        primitive("Ucharcat", convert, Ucharcat_convert_code);
+        // @<Generate all \eTeX...@>
         primitive("everyeof", assign_toks, every_eof_loc);
         primitive("tracingassigns", assign_int, int_base + tracing_assigns_code);
         primitive("tracinggroups", assign_int, int_base + tracing_groups_code);
@@ -4061,63 +4080,86 @@ start_of_TEX:
         primitive("lastlinefit", assign_int, int_base + last_line_fit_code);
         primitive("savingvdiscards", assign_int, int_base + saving_vdiscards_code);
         primitive("savinghyphcodes", assign_int, int_base + saving_hyph_codes_code);
+        // @<Generate all \eTeX...@>
         primitive("currentgrouplevel", last_item, current_group_level_code);
         primitive("currentgrouptype", last_item, current_group_type_code);
+        // @<Generate all \eTeX...@>
         primitive("currentiflevel", last_item, current_if_level_code);
         primitive("currentiftype", last_item, current_if_type_code);
         primitive("currentifbranch", last_item, current_if_branch_code);
+        // @<Generate all \eTeX...@>
         primitive("fontcharwd", last_item, font_char_wd_code);
         primitive("fontcharht", last_item, font_char_ht_code);
         primitive("fontchardp", last_item, font_char_dp_code);
         primitive("fontcharic", last_item, font_char_ic_code);
+        // @<Generate all \eTeX...@>
         primitive("parshapelength", last_item, par_shape_length_code);
         primitive("parshapeindent", last_item, par_shape_indent_code);
         primitive("parshapedimen", last_item, par_shape_dimen_code);
+        // @<Generate all \eTeX...@>
         primitive("showgroups", xray, show_groups);
+        // @<Generate all \eTeX...@>
         primitive("showtokens", xray, show_tokens);
+        // @<Generate all \eTeX...@>
         primitive("unexpanded", the, 1);
         primitive("detokenize", the, show_tokens);
+        // @<Generate all \eTeX...@>
         primitive("showifs", xray, show_ifs);
+        // @<Generate all \eTeX...@>
         primitive("interactionmode", set_page_int, 2);
+        // @<Generate all \eTeX...@>
         primitive("middle", left_right, middle_noad);
+        // @<Generate all \eTeX...@>
         primitive("TeXXeTstate", assign_int, eTeX_state_base + TeXXeT_code);
         primitive("beginL", valign, begin_L_code);
         primitive("endL", valign, end_L_code);
         primitive("beginR", valign, begin_R_code);
         primitive("endR", valign, end_R_code);
+        // @<Generate all \eTeX...@>
         primitive("scantokens", input, 2);
+        // @<Generate all \eTeX...@>
         primitive("readline", read_to_cs, 1);
+        // @<Generate all \eTeX...@>
         primitive("unless", expand_after, 1);
         primitive("ifdefined", if_test, if_def_code);
         primitive("ifcsname", if_test, if_cs_code);
         primitive("iffontchar", if_test, if_font_char_code);
         primitive("ifincsname", if_test, if_in_csname_code);
+        // @<Generate all \eTeX...@>
         primitive("protected", prefix, 8);
+        // @<Generate all \eTeX...@>
         primitive("numexpr", last_item, eTeX_expr - int_val + int_val);
         primitive("dimexpr", last_item, eTeX_expr - int_val + dimen_val);
         primitive("glueexpr", last_item, eTeX_expr - int_val + glue_val);
         primitive("muexpr", last_item, eTeX_expr - int_val + mu_val);
+        // @<Generate all \eTeX...@>
         primitive("gluestretchorder", last_item, glue_stretch_order_code);
         primitive("glueshrinkorder", last_item, glue_shrink_order_code);
-        primitive("currentspacingmode", last_item, current_spacing_mode_code);
-        primitive("currentxspacingmode", last_item, current_xspacing_mode_code);
-        primitive("currentcjktoken", last_item, current_cjk_token_code);
         primitive("gluestretch", last_item, glue_stretch_code);
         primitive("glueshrink", last_item, glue_shrink_code);
+        // @<Generate all \eTeX...@>
         primitive("mutoglue", last_item, mu_to_glue_code);
         primitive("gluetomu", last_item, glue_to_mu_code);
+        // @<Generate all \eTeX...@>
         primitive("marks", mark, marks_code);
         primitive("topmarks", top_bot_mark, top_mark_code + marks_code);
         primitive("firstmarks", top_bot_mark, first_mark_code + marks_code);
         primitive("botmarks", top_bot_mark, bot_mark_code + marks_code);
         primitive("splitfirstmarks", top_bot_mark, split_first_mark_code + marks_code);
         primitive("splitbotmarks", top_bot_mark, split_bot_mark_code + marks_code);
+        // @<Generate all \eTeX...@>
         primitive("pagediscards", un_vbox, last_box_code);
         primitive("splitdiscards", un_vbox, vsplit_code);
+        // @<Generate all \eTeX...@>
         primitive("interlinepenalties", set_shape, inter_line_penalties_loc);
         primitive("clubpenalties", set_shape, club_penalties_loc);
         primitive("widowpenalties", set_shape, widow_penalties_loc);
         primitive("displaywidowpenalties", set_shape, display_widow_penalties_loc);
+        // @<Generate all \eTeX...@>
+        primitive("currentspacingmode", last_item, current_spacing_mode_code);
+        primitive("currentxspacingmode", last_item, current_xspacing_mode_code);
+        // @<Generate all \eTeX...@>
+        primitive("currentcjktoken", last_item, current_cjk_token_code);
 
         if (buffer[loc] == '*')
           incr(loc);
@@ -5552,7 +5594,6 @@ static void init_prim (void)
   primitive("noalign", no_align, 0);
   primitive("noboundary", no_boundary, 0);
   primitive("noexpand", no_expand, 0);
-  primitive("pdfprimitive", no_expand, 1);
   primitive("nonscript", non_script, 0);
   primitive("omit", omit, 0);
   primitive("parshape", set_shape, par_shape_loc);
@@ -5603,10 +5644,6 @@ static void init_prim (void)
   primitive("uptexversion", last_item, uptex_version_code);
   primitive("epTeXversion", last_item, eptex_version_code);
   primitive("ptexminorversion", last_item, ptex_minor_version_code);
-  primitive("pdflastxpos", last_item, pdf_last_x_pos_code);
-  primitive("pdflastypos", last_item, pdf_last_y_pos_code);
-  primitive("pdfelapsedtime", last_item, elapsed_time_code);
-  primitive("pdfrandomseed", last_item, random_seed_code);
   primitive("number", convert, number_code);
   primitive("romannumeral", convert, roman_numeral_code);
   primitive("kansuji", convert, kansuji_code);
@@ -5623,19 +5660,9 @@ static void init_prim (void)
   primitive("toucs", convert, toucs_code);
   primitive("tojis", convert, tojis_code);
   primitive("ptexfontname", convert, ptex_font_name_code);
-  primitive("pdfstrcmp", convert, ng_strcmp_code);
   primitive("ngbanner", convert, ng_banner_code);
   primitive("ngostype", convert, ng_os_type_code);
-  primitive("pdfcreationdate", convert, pdf_creation_date_code);
-  primitive("pdffilemoddate", convert, pdf_file_mod_date_code);
-  primitive("pdffilesize", convert, pdf_file_size_code);
-  primitive("pdfmdfivesum", convert, pdf_mdfive_sum_code);
-  primitive("pdffiledump", convert, pdf_file_dump_code);
-  primitive("pdfuniformdeviate", convert, pdf_uniform_deviate_code);
-  primitive("pdfnormaldeviate", convert, pdf_normal_deviate_code);
   primitive("expanded", convert, expanded_code);
-  primitive("Uchar", convert, Uchar_convert_code);
-  primitive("Ucharcat", convert, Ucharcat_convert_code);
   primitive("leftmarginkern", convert, left_margin_kern_code);
   primitive("rightmarginkern", convert, right_margin_kern_code);
   primitive("jobname", convert, job_name_code);
