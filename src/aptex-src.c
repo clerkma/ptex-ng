@@ -1210,7 +1210,7 @@ static void aptex_memory_init (void)
 
   save_stack = NULL;
   current_save_size = 0;
-  save_stack = realloc_save_stack (initial_save_size);
+  save_stack = realloc_save_stack(initial_save_size);
 #endif
 
 #ifdef APTEX_EXTENSION
@@ -2706,16 +2706,17 @@ static inline void dump_wd (memory_word x)
 static void do_initex (void)
 {
   integer i;
-  integer k;
+  integer k; // {index into |mem|, |eqtb|, etc.}
 
   for (k = mem_bot + 1; k <= lo_mem_stat_max; k++)
-    mem[k].cint = 0;
-
+    mem[k].sc = 0;
+  // {all glue dimensions are zeroed}
   k = mem_bot;
 
   while (k <= lo_mem_stat_max)
+  // {set first words of glue specifications}
   {
-    glue_ref_count(k) = 1;
+    glue_ref_count(k) = null + 1;
     stretch_order(k) = normal;
     shrink_order(k) = normal;
     k = k + glue_spec_size;
@@ -2732,40 +2733,46 @@ static void do_initex (void)
   stretch(fil_neg_glue) = -unity;
   stretch_order(fil_neg_glue) = fil;
   rover = lo_mem_stat_max + 1;
-  link(rover) = empty_flag;
-  node_size(rover) = block_size;
+  link(rover) = empty_flag; // {now initialize the dynamic memory}
+  node_size(rover) = block_size; // {which is a 1000-word available node}
   llink(rover) = rover;
   rlink(rover) = rover;
   lo_mem_max = rover + block_size;
-  link(lo_mem_max) = 0;
-  info(lo_mem_max) = 0;
+  link(lo_mem_max) = null;
+  info(lo_mem_max) = null;
 
   for (k = hi_mem_stat_min; k <= mem_top; k++)
-    mem[k] = mem[lo_mem_max];
-
-  info(omit_template) = end_template_token;
+    mem[k] = mem[lo_mem_max]; // {clear list heads}
+  // @<Initialize the special...@>
+  info(omit_template) = end_template_token; // {|link(omit_template)=null|}
+  // @<Initialize the special list heads...@>
   link(end_span) = max_quarterword + 1;
-  info(end_span) = 0;
+  info(end_span) = null;
+  // @<Initialize the special list heads...@>
   type(last_active) = hyphenated;
   line_number(last_active) = max_halfword;
-  subtype(last_active) = 0;
+  subtype(last_active) = 0; // {the |subtype| is never examined by the algorithm}
+  // @<Initialize the special list heads...@>
   subtype(page_ins_head) = 255;
   type(page_ins_head) = split_up;
   link(mem_top) = page_ins_head;
+  // @<Initialize the special list...@>
   type(page_head) = glue_node;
-  subtype(page_head) = normal;
-  avail = 0;
+  subtype(page_head) = normal; // {{\sl Sync\TeX} watch point: box(|page_head|) size >= |glue_node| size}
+  avail = null;
   mem_end = mem_top;
-  hi_mem_min = hi_mem_stat_min;
+  hi_mem_min = hi_mem_stat_min; // {initialize the one-word memory}
   var_used = lo_mem_stat_max + 1 - mem_bot;
   dyn_used = hi_mem_stat_usage;
+  // {initialize statistics}
+  // @<Initialize table entries...@>
   eq_type(undefined_control_sequence) = undefined_cs;
-  equiv(undefined_control_sequence) = 0;
+  equiv(undefined_control_sequence) = null;
   eq_level(undefined_control_sequence) = level_zero;
 
   for (k = active_base; k <= undefined_control_sequence - 1; k++)
     eqtb[k] = eqtb[undefined_control_sequence];
-
+  // @<Initialize table entries...@>
   equiv(glue_base) = zero_glue;
   eq_level(glue_base) = level_one;
   eq_type(glue_base) = glue_ref;
@@ -2774,8 +2781,8 @@ static void do_initex (void)
     eqtb[k] = eqtb[glue_base];
 
   glue_ref_count(zero_glue) = glue_ref_count(zero_glue) + local_base - glue_base;
-
-  par_shape_ptr = 0;
+  // @<Initialize table entries...@>
+  par_shape_ptr = null;
   eq_type(par_shape_loc) = shape_ref;
   eq_level(par_shape_loc) = level_one;
 
@@ -2785,7 +2792,7 @@ static void do_initex (void)
   for (k = output_routine_loc; k <= toks_base + 255; k++)
     eqtb[k] = eqtb[undefined_control_sequence];
 
-  box(0) = 0;
+  box(0) = null;
   eq_type(box_base) = box_ref;
   eq_level(box_base) = level_one;
 
@@ -2938,7 +2945,7 @@ static void do_initex (void)
     for (k = 16; k <= 94; k++)
       kcat_code(0xA0 + k) = kanji; // {2 men 16 ku ... 94 ku}
   };
-
+  // @<Initialize table entries...@>
   for (k = int_base; k <= del_code_base - 1; k++)
     eqtb[k].cint = 0;
 
@@ -2957,10 +2964,10 @@ static void do_initex (void)
 
   del_code('.') = 0;
   show_stream = -1;
-
+  // @<Initialize table entries...@>
   for (k = dimen_base; k <= eqtb_size; k++)
-    eqtb[k].cint = 0;
-
+    eqtb[k].sc = 0;
+  // @<Initialize table entries...@>
   hash_used = frozen_control_sequence; // {nothing is used}
   cs_count = 0;
 
@@ -2974,7 +2981,7 @@ static void do_initex (void)
   equiv(frozen_primitive) = 1;
   eq_level(frozen_primitive) = level_one;
   text(frozen_primitive) = STR_PDFPRIMITIVE;
-
+  //
   jfm_enc = 0;
   font_ptr                    = null_font;
   fmem_ptr                    = 7;
@@ -3013,16 +3020,18 @@ static void do_initex (void)
   scriptscript_baseline_shift_factor = 500;
 
   reset_trie();
+  // @<Initialize table entries...@>
   text(frozen_protection) = STR_INACCESSIBLE;
+  // @<Initialize table entries...@>
   format_ident = STR_FORMAT_IDENT;
   text(end_write) = STR_ENDWRITE;
   eq_level(end_write) = level_one;
   eq_type(end_write) = outer_call;
   equiv(end_write) = 0;
-  eTeX_mode = false;
+  eTeX_mode = false; // {initially we are in compatibility mode}
   max_reg_num = 255;
   max_reg_help_line = "A register number must be between 0 and 255.";
-
+  // @<Initialize table...@>
   for (i = int_val; i <= tok_val; ++i)
     sa_root[i] = null;
 
@@ -3034,7 +3043,7 @@ static void do_initex (void)
 static void initialize (void)
 {
   integer i;
-  integer k;
+  integer k; // {index into |mem|, |eqtb|, etc.}
 
 #ifndef APTEX_EXTENSION
   hyph_pointer z;
@@ -3068,7 +3077,7 @@ static void initialize (void)
   xchr[116] = 't'; xchr[117] = 'u'; xchr[118] = 'v'; xchr[119] = 'w';
   xchr[120] = 'x'; xchr[121] = 'y'; xchr[122] = 'z'; xchr[123] = '{';
   xchr[124] = '|'; xchr[125] = '}'; xchr[126] = '~';
-
+  // {Initialize |xchr| to the identity mapping.}
   for (i = 0; i <= 31; i++)
     xchr[i] = chr(i);
 
@@ -3097,9 +3106,11 @@ static void initialize (void)
 
   deletions_allowed = true;
   set_box_allowed = true;
-  error_count = 0;
+  error_count = 0; // {|history| is initialized elsewhere}
+  //
   help_ptr = 0;
   use_err_help = false;
+  //
   interrupt = 0;
   OK_to_interrupt = true;
 
@@ -3140,13 +3151,13 @@ static void initialize (void)
   mode = vmode;
   head = contrib_head;
   tail = contrib_head;
-  eTeX_aux = 0;
   prev_node = tail;
   direction = dir_yoko;
   adjust_dir = direction;
   prev_disp = 0;
   last_jchr = null;
   disp_called = false;
+  eTeX_aux = 0;
   prev_depth = ignore_depth;
   mode_line = 0;
   prev_graf = 0;
@@ -3166,11 +3177,11 @@ static void initialize (void)
   last_node_subtype = -1;
   page_depth = 0;
   page_max_depth = 0;
-
+  //
   for (k = int_base; k <= eqtb_size; k++)
     xeq_level[k] = level_one;
-
-  no_new_control_sequence = true;
+  //
+  no_new_control_sequence = true; // {new identifiers are usually forbidden}
   prim_next(0) = 0;
   prim_text(0) = 0;
 
@@ -3182,39 +3193,44 @@ static void initialize (void)
 
   for (k = hash_base + 1; k <= undefined_control_sequence - 1; k++)
     hash[k] = hash[hash_base];
-
+  //
   save_ptr = 0;
   cur_level = level_one;
   cur_group = bottom_level;
   cur_boundary = 0;
   max_save_stack = 0;
+  //
   mag_set = 0;
+  //
   skip_mode = true;
-  top_mark = 0;
-  first_mark = 0;
-  bot_mark = 0;
-  split_first_mark = 0;
-  split_bot_mark = 0;
+  //
+  top_mark = null;
+  first_mark = null;
+  bot_mark = null;
+  split_first_mark = null;
+  split_bot_mark = null;
+  //
   cur_val = 0;
   cur_val_level = int_val;
   radix = 0;
   cur_order = normal;
-
+  //
   for (k = 0; k <= 16; k++)
     read_open[k] = closed;
-
-  cond_ptr = 0;
+  //
+  cond_ptr = null;
   if_limit = normal;
   cur_if = 0;
   if_line = 0;
 
   for (k = font_base; k <= font_max; k++)
     font_used[k] = false;
-
+  //
   null_character.b0 = min_quarterword;
   null_character.b1 = min_quarterword;
   null_character.b2 = min_quarterword;
   null_character.b3 = min_quarterword;
+  //
   total_pages = 0;
   max_v = 0;
   max_h = 0;
@@ -3224,29 +3240,36 @@ static void initialize (void)
   dead_cycles = 0;
   cur_s = -1;
   dir_used = false;
+  //
   half_buf = dvi_buf_size / 2;
   dvi_limit = dvi_buf_size;
   dvi_ptr = 0;
   dvi_offset = 0;
   dvi_gone = 0;
+  //
   down_ptr = 0;
   right_ptr = 0;
-  adjust_tail = 0;
-  pre_adjust_tail = 0;
+  //
+  adjust_tail = null;
   last_badness = 0;
   cur_kanji_skip = zero_glue;
   cur_xkanji_skip = zero_glue;
+  //
+  pre_adjust_tail = null;
+  //
   pack_begin_line = 0;
-  empty_field.rh = 0;
-  empty_field.lh = 0;
+  //
+  empty_field.rh = empty;
+  empty_field.lh = null;
   null_delimiter.b0 = 0;
-  null_delimiter.b1 = 0;
+  null_delimiter.b1 = min_quarterword;
   null_delimiter.b2 = 0;
-  null_delimiter.b3 = 0;
-  align_ptr = 0;
-  cur_align = 0;
-  cur_span = 0;
-  cur_loop = 0;
+  null_delimiter.b3 = min_quarterword;
+  //
+  align_ptr = null;
+  cur_align = null;
+  cur_span = null;
+  cur_loop = null;
   cur_head = null;
   cur_tail = null;
   cur_pre_head = null;
@@ -3257,38 +3280,49 @@ static void initialize (void)
   for (z = 0; z <= hyphen_prime; z++)
   {
     hyph_word[z] = 0;
-    hyph_list[z] = 0;
+    hyph_list[z] = null;
   }
 #endif
 
   hyph_count = 0;
+  //
   output_active = false;
   output_can_end = false;
   insert_penalties = 0;
+  //
   ligature_present = false;
   cancel_boundary = false;
   lft_hit = false;
   rt_hit = false;
   ins_disc = false;
+  //
   after_token = 0;
+  //
   long_help_seen = false;
+  //
   format_ident = 0;
-
+  //
   for (k = 0; k <= 17; k++)
     write_open[k] = false;
-
+  //
   LR_ptr = null;
   LR_problems = 0;
   cur_dir = left_to_right;
+  //
   pseudo_files = null;
+  //
   sa_mark = null;
   sa_null.hh.lh = null;
   sa_null.hh.rh = null;
+  //
   sa_chain = null;
   sa_level = level_zero;
+  //
   page_disc = null;
   split_disc = null;
+  //
   expand_depth_count = 0;
+  //
   page_dir = dir_yoko;
 
   aptex_utils_get_seconds_and_micros(&epochseconds, &microseconds);
