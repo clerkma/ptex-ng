@@ -1210,7 +1210,7 @@ static void aptex_memory_init (void)
 
   save_stack = NULL;
   current_save_size = 0;
-  save_stack = realloc_save_stack (initial_save_size);
+  save_stack = realloc_save_stack(initial_save_size);
 #endif
 
 #ifdef APTEX_EXTENSION
@@ -2706,16 +2706,17 @@ static inline void dump_wd (memory_word x)
 static void do_initex (void)
 {
   integer i;
-  integer k;
+  integer k; // {index into |mem|, |eqtb|, etc.}
 
   for (k = mem_bot + 1; k <= lo_mem_stat_max; k++)
-    mem[k].cint = 0;
-
+    mem[k].sc = 0;
+  // {all glue dimensions are zeroed}
   k = mem_bot;
 
   while (k <= lo_mem_stat_max)
+  // {set first words of glue specifications}
   {
-    glue_ref_count(k) = 1;
+    glue_ref_count(k) = null + 1;
     stretch_order(k) = normal;
     shrink_order(k) = normal;
     k = k + glue_spec_size;
@@ -2732,40 +2733,46 @@ static void do_initex (void)
   stretch(fil_neg_glue) = -unity;
   stretch_order(fil_neg_glue) = fil;
   rover = lo_mem_stat_max + 1;
-  link(rover) = empty_flag;
-  node_size(rover) = block_size;
+  link(rover) = empty_flag; // {now initialize the dynamic memory}
+  node_size(rover) = block_size; // {which is a 1000-word available node}
   llink(rover) = rover;
   rlink(rover) = rover;
   lo_mem_max = rover + block_size;
-  link(lo_mem_max) = 0;
-  info(lo_mem_max) = 0;
+  link(lo_mem_max) = null;
+  info(lo_mem_max) = null;
 
   for (k = hi_mem_stat_min; k <= mem_top; k++)
-    mem[k] = mem[lo_mem_max];
-
-  info(omit_template) = end_template_token;
+    mem[k] = mem[lo_mem_max]; // {clear list heads}
+  // @<Initialize the special...@>
+  info(omit_template) = end_template_token; // {|link(omit_template)=null|}
+  // @<Initialize the special list heads...@>
   link(end_span) = max_quarterword + 1;
-  info(end_span) = 0;
+  info(end_span) = null;
+  // @<Initialize the special list heads...@>
   type(last_active) = hyphenated;
   line_number(last_active) = max_halfword;
-  subtype(last_active) = 0;
+  subtype(last_active) = 0; // {the |subtype| is never examined by the algorithm}
+  // @<Initialize the special list heads...@>
   subtype(page_ins_head) = 255;
   type(page_ins_head) = split_up;
   link(mem_top) = page_ins_head;
+  // @<Initialize the special list...@>
   type(page_head) = glue_node;
-  subtype(page_head) = normal;
-  avail = 0;
+  subtype(page_head) = normal; // {{\sl Sync\TeX} watch point: box(|page_head|) size >= |glue_node| size}
+  avail = null;
   mem_end = mem_top;
-  hi_mem_min = hi_mem_stat_min;
+  hi_mem_min = hi_mem_stat_min; // {initialize the one-word memory}
   var_used = lo_mem_stat_max + 1 - mem_bot;
   dyn_used = hi_mem_stat_usage;
+  // {initialize statistics}
+  // @<Initialize table entries...@>
   eq_type(undefined_control_sequence) = undefined_cs;
-  equiv(undefined_control_sequence) = 0;
+  equiv(undefined_control_sequence) = null;
   eq_level(undefined_control_sequence) = level_zero;
 
   for (k = active_base; k <= undefined_control_sequence - 1; k++)
     eqtb[k] = eqtb[undefined_control_sequence];
-
+  // @<Initialize table entries...@>
   equiv(glue_base) = zero_glue;
   eq_level(glue_base) = level_one;
   eq_type(glue_base) = glue_ref;
@@ -2774,8 +2781,8 @@ static void do_initex (void)
     eqtb[k] = eqtb[glue_base];
 
   glue_ref_count(zero_glue) = glue_ref_count(zero_glue) + local_base - glue_base;
-
-  par_shape_ptr = 0;
+  // @<Initialize table entries...@>
+  par_shape_ptr = null;
   eq_type(par_shape_loc) = shape_ref;
   eq_level(par_shape_loc) = level_one;
 
@@ -2785,7 +2792,7 @@ static void do_initex (void)
   for (k = output_routine_loc; k <= toks_base + 255; k++)
     eqtb[k] = eqtb[undefined_control_sequence];
 
-  box(0) = 0;
+  box(0) = null;
   eq_type(box_base) = box_ref;
   eq_level(box_base) = level_one;
 
@@ -2938,7 +2945,7 @@ static void do_initex (void)
     for (k = 16; k <= 94; k++)
       kcat_code(0xA0 + k) = kanji; // {2 men 16 ku ... 94 ku}
   };
-
+  // @<Initialize table entries...@>
   for (k = int_base; k <= del_code_base - 1; k++)
     eqtb[k].cint = 0;
 
@@ -2957,10 +2964,10 @@ static void do_initex (void)
 
   del_code('.') = 0;
   show_stream = -1;
-
+  // @<Initialize table entries...@>
   for (k = dimen_base; k <= eqtb_size; k++)
-    eqtb[k].cint = 0;
-
+    eqtb[k].sc = 0;
+  // @<Initialize table entries...@>
   hash_used = frozen_control_sequence; // {nothing is used}
   cs_count = 0;
 
@@ -2974,7 +2981,7 @@ static void do_initex (void)
   equiv(frozen_primitive) = 1;
   eq_level(frozen_primitive) = level_one;
   text(frozen_primitive) = STR_PDFPRIMITIVE;
-
+  //
   jfm_enc = 0;
   font_ptr                    = null_font;
   fmem_ptr                    = 7;
@@ -3013,16 +3020,18 @@ static void do_initex (void)
   scriptscript_baseline_shift_factor = 500;
 
   reset_trie();
+  // @<Initialize table entries...@>
   text(frozen_protection) = STR_INACCESSIBLE;
+  // @<Initialize table entries...@>
   format_ident = STR_FORMAT_IDENT;
   text(end_write) = STR_ENDWRITE;
   eq_level(end_write) = level_one;
   eq_type(end_write) = outer_call;
   equiv(end_write) = 0;
-  eTeX_mode = false;
+  eTeX_mode = false; // {initially we are in compatibility mode}
   max_reg_num = 255;
   max_reg_help_line = "A register number must be between 0 and 255.";
-
+  // @<Initialize table...@>
   for (i = int_val; i <= tok_val; ++i)
     sa_root[i] = null;
 
@@ -3034,7 +3043,7 @@ static void do_initex (void)
 static void initialize (void)
 {
   integer i;
-  integer k;
+  integer k; // {index into |mem|, |eqtb|, etc.}
 
 #ifndef APTEX_EXTENSION
   hyph_pointer z;
@@ -3068,7 +3077,7 @@ static void initialize (void)
   xchr[116] = 't'; xchr[117] = 'u'; xchr[118] = 'v'; xchr[119] = 'w';
   xchr[120] = 'x'; xchr[121] = 'y'; xchr[122] = 'z'; xchr[123] = '{';
   xchr[124] = '|'; xchr[125] = '}'; xchr[126] = '~';
-
+  // {Initialize |xchr| to the identity mapping.}
   for (i = 0; i <= 31; i++)
     xchr[i] = chr(i);
 
@@ -3097,9 +3106,11 @@ static void initialize (void)
 
   deletions_allowed = true;
   set_box_allowed = true;
-  error_count = 0;
+  error_count = 0; // {|history| is initialized elsewhere}
+  //
   help_ptr = 0;
   use_err_help = false;
+  //
   interrupt = 0;
   OK_to_interrupt = true;
 
@@ -3140,13 +3151,13 @@ static void initialize (void)
   mode = vmode;
   head = contrib_head;
   tail = contrib_head;
-  eTeX_aux = 0;
   prev_node = tail;
   direction = dir_yoko;
   adjust_dir = direction;
   prev_disp = 0;
   last_jchr = null;
   disp_called = false;
+  eTeX_aux = 0;
   prev_depth = ignore_depth;
   mode_line = 0;
   prev_graf = 0;
@@ -3166,11 +3177,11 @@ static void initialize (void)
   last_node_subtype = -1;
   page_depth = 0;
   page_max_depth = 0;
-
+  //
   for (k = int_base; k <= eqtb_size; k++)
     xeq_level[k] = level_one;
-
-  no_new_control_sequence = true;
+  //
+  no_new_control_sequence = true; // {new identifiers are usually forbidden}
   prim_next(0) = 0;
   prim_text(0) = 0;
 
@@ -3182,39 +3193,44 @@ static void initialize (void)
 
   for (k = hash_base + 1; k <= undefined_control_sequence - 1; k++)
     hash[k] = hash[hash_base];
-
+  //
   save_ptr = 0;
   cur_level = level_one;
   cur_group = bottom_level;
   cur_boundary = 0;
   max_save_stack = 0;
+  //
   mag_set = 0;
+  //
   skip_mode = true;
-  top_mark = 0;
-  first_mark = 0;
-  bot_mark = 0;
-  split_first_mark = 0;
-  split_bot_mark = 0;
+  //
+  top_mark = null;
+  first_mark = null;
+  bot_mark = null;
+  split_first_mark = null;
+  split_bot_mark = null;
+  //
   cur_val = 0;
   cur_val_level = int_val;
   radix = 0;
   cur_order = normal;
-
+  //
   for (k = 0; k <= 16; k++)
     read_open[k] = closed;
-
-  cond_ptr = 0;
+  //
+  cond_ptr = null;
   if_limit = normal;
   cur_if = 0;
   if_line = 0;
 
   for (k = font_base; k <= font_max; k++)
     font_used[k] = false;
-
+  //
   null_character.b0 = min_quarterword;
   null_character.b1 = min_quarterword;
   null_character.b2 = min_quarterword;
   null_character.b3 = min_quarterword;
+  //
   total_pages = 0;
   max_v = 0;
   max_h = 0;
@@ -3224,29 +3240,36 @@ static void initialize (void)
   dead_cycles = 0;
   cur_s = -1;
   dir_used = false;
+  //
   half_buf = dvi_buf_size / 2;
   dvi_limit = dvi_buf_size;
   dvi_ptr = 0;
   dvi_offset = 0;
   dvi_gone = 0;
+  //
   down_ptr = 0;
   right_ptr = 0;
-  adjust_tail = 0;
-  pre_adjust_tail = 0;
+  //
+  adjust_tail = null;
   last_badness = 0;
   cur_kanji_skip = zero_glue;
   cur_xkanji_skip = zero_glue;
+  //
+  pre_adjust_tail = null;
+  //
   pack_begin_line = 0;
-  empty_field.rh = 0;
-  empty_field.lh = 0;
+  //
+  empty_field.rh = empty;
+  empty_field.lh = null;
   null_delimiter.b0 = 0;
-  null_delimiter.b1 = 0;
+  null_delimiter.b1 = min_quarterword;
   null_delimiter.b2 = 0;
-  null_delimiter.b3 = 0;
-  align_ptr = 0;
-  cur_align = 0;
-  cur_span = 0;
-  cur_loop = 0;
+  null_delimiter.b3 = min_quarterword;
+  //
+  align_ptr = null;
+  cur_align = null;
+  cur_span = null;
+  cur_loop = null;
   cur_head = null;
   cur_tail = null;
   cur_pre_head = null;
@@ -3257,38 +3280,49 @@ static void initialize (void)
   for (z = 0; z <= hyphen_prime; z++)
   {
     hyph_word[z] = 0;
-    hyph_list[z] = 0;
+    hyph_list[z] = null;
   }
 #endif
 
   hyph_count = 0;
+  //
   output_active = false;
   output_can_end = false;
   insert_penalties = 0;
+  //
   ligature_present = false;
   cancel_boundary = false;
   lft_hit = false;
   rt_hit = false;
   ins_disc = false;
+  //
   after_token = 0;
+  //
   long_help_seen = false;
+  //
   format_ident = 0;
-
+  //
   for (k = 0; k <= 17; k++)
     write_open[k] = false;
-
+  //
   LR_ptr = null;
   LR_problems = 0;
   cur_dir = left_to_right;
+  //
   pseudo_files = null;
+  //
   sa_mark = null;
   sa_null.hh.lh = null;
   sa_null.hh.rh = null;
+  //
   sa_chain = null;
   sa_level = level_zero;
+  //
   page_disc = null;
   split_disc = null;
+  //
   expand_depth_count = 0;
+  //
   page_dir = dir_yoko;
 
   aptex_utils_get_seconds_and_micros(&epochseconds, &microseconds);
@@ -3306,9 +3340,9 @@ static void initialize (void)
 /* sec 1303 */
 static boolean load_fmt_file (void)
 {
-  integer j, k;
-  pointer p, q;
-  integer x;
+  integer j, k; // {all-purpose indices}
+  pointer p, q; // {all-purpose pointers}
+  integer x; // {something undumped}
 
   // Undump constants for consistency check
   undump_int(x);
@@ -3476,7 +3510,7 @@ static boolean load_fmt_file (void)
 
   if (mem_min < mem_bot - 2)
   {
-/*  or call add_variable_space(mem_bot - (mem_min + 1)) */
+/* or call add_variable_space(mem_bot - (mem_min + 1)) */
     p = llink(rover);
     q = mem_min + 1;
     link(mem_min) = 0;  /* null */
@@ -3923,30 +3957,29 @@ static int aptex_program (void)
     goto final_end;
   }
 
-  initialize();
+  initialize(); // {set global variables to their starting values}
 
   if (aptex_env.flag_initex)
   {
     if (!get_strings_started())
       goto final_end;
 
-    init_prim();
+    init_prim(); // {call |primitive| for each primitive}
     init_str_ptr = str_ptr;
     init_pool_ptr = pool_ptr;
     fix_date_and_time();
-  }
-  else
-  {
   }
 
   ready_already = 314159;
 
 start_of_TEX:
+  // @<Initialize the output routines@>
   selector = term_only;
   tally = 0;
   term_offset = 0;
   file_offset = 0;
   kcode_pos = 0;
+  // @<Initialize the output...@>
   prints(banner);
 
   if (format_ident == 0)
@@ -3963,12 +3996,15 @@ start_of_TEX:
   }
 
   update_terminal();
+  // @<Initialize the output...@>
   job_name = 0;
   name_in_progress = false;
   log_opened = false;
+  // @<Initialize the output...@>
   output_file_name = 0;
-
+  // @<Get the first line...@>
   {
+    // @<Initialize the input routines@>
     {
       input_ptr = 0;
       max_in_stack = 0;
@@ -4003,20 +4039,37 @@ start_of_TEX:
         goto final_end;
 
       limit = last;
-      first = last + 1;
+      first = last + 1; // {|init_terminal| has set |loc| and |last|}
     }
 
     if (aptex_env.flag_initex)
     {
-      if (true || ((buffer[loc] == '*') && (format_ident == 1251)))
+      if (true || ((buffer[loc] == '*') && (format_ident == STR_FORMAT_IDENT)))
       {
         no_new_control_sequence = false;
+        // @<Generate all \eTeX...@>
         primitive("lastnodetype", last_item, last_node_type_code);
         primitive("lastnodesubtype", last_item, last_node_subtype_code);
         primitive("lastnodechar", last_item, last_node_char_code);
         primitive("lastnodefont", last_item, last_node_font_code);
         primitive("eTeXversion", last_item, eTeX_version_code);
         primitive("eTeXrevision", convert, eTeX_revision_code);
+        primitive("pdfprimitive", no_expand, 1);
+        primitive("pdfstrcmp", convert, ng_strcmp_code);
+        primitive("pdfcreationdate", convert, pdf_creation_date_code);
+        primitive("pdffilemoddate", convert, pdf_file_mod_date_code);
+        primitive("pdffilesize", convert, pdf_file_size_code);
+        primitive("pdfmdfivesum", convert, pdf_mdfive_sum_code);
+        primitive("pdffiledump", convert, pdf_file_dump_code);
+        primitive("pdflastxpos", last_item, pdf_last_x_pos_code);
+        primitive("pdflastypos", last_item, pdf_last_y_pos_code);
+        primitive("pdfelapsedtime", last_item, elapsed_time_code);
+        primitive("pdfrandomseed", last_item, random_seed_code);
+        primitive("pdfuniformdeviate", convert, pdf_uniform_deviate_code);
+        primitive("pdfnormaldeviate", convert, pdf_normal_deviate_code);
+        primitive("Uchar", convert, Uchar_convert_code);
+        primitive("Ucharcat", convert, Ucharcat_convert_code);
+        // @<Generate all \eTeX...@>
         primitive("everyeof", assign_toks, every_eof_loc);
         primitive("tracingassigns", assign_int, int_base + tracing_assigns_code);
         primitive("tracinggroups", assign_int, int_base + tracing_groups_code);
@@ -4027,63 +4080,86 @@ start_of_TEX:
         primitive("lastlinefit", assign_int, int_base + last_line_fit_code);
         primitive("savingvdiscards", assign_int, int_base + saving_vdiscards_code);
         primitive("savinghyphcodes", assign_int, int_base + saving_hyph_codes_code);
+        // @<Generate all \eTeX...@>
         primitive("currentgrouplevel", last_item, current_group_level_code);
         primitive("currentgrouptype", last_item, current_group_type_code);
+        // @<Generate all \eTeX...@>
         primitive("currentiflevel", last_item, current_if_level_code);
         primitive("currentiftype", last_item, current_if_type_code);
         primitive("currentifbranch", last_item, current_if_branch_code);
+        // @<Generate all \eTeX...@>
         primitive("fontcharwd", last_item, font_char_wd_code);
         primitive("fontcharht", last_item, font_char_ht_code);
         primitive("fontchardp", last_item, font_char_dp_code);
         primitive("fontcharic", last_item, font_char_ic_code);
+        // @<Generate all \eTeX...@>
         primitive("parshapelength", last_item, par_shape_length_code);
         primitive("parshapeindent", last_item, par_shape_indent_code);
         primitive("parshapedimen", last_item, par_shape_dimen_code);
+        // @<Generate all \eTeX...@>
         primitive("showgroups", xray, show_groups);
+        // @<Generate all \eTeX...@>
         primitive("showtokens", xray, show_tokens);
+        // @<Generate all \eTeX...@>
         primitive("unexpanded", the, 1);
         primitive("detokenize", the, show_tokens);
+        // @<Generate all \eTeX...@>
         primitive("showifs", xray, show_ifs);
+        // @<Generate all \eTeX...@>
         primitive("interactionmode", set_page_int, 2);
+        // @<Generate all \eTeX...@>
         primitive("middle", left_right, middle_noad);
+        // @<Generate all \eTeX...@>
         primitive("TeXXeTstate", assign_int, eTeX_state_base + TeXXeT_code);
         primitive("beginL", valign, begin_L_code);
         primitive("endL", valign, end_L_code);
         primitive("beginR", valign, begin_R_code);
         primitive("endR", valign, end_R_code);
+        // @<Generate all \eTeX...@>
         primitive("scantokens", input, 2);
+        // @<Generate all \eTeX...@>
         primitive("readline", read_to_cs, 1);
+        // @<Generate all \eTeX...@>
         primitive("unless", expand_after, 1);
         primitive("ifdefined", if_test, if_def_code);
         primitive("ifcsname", if_test, if_cs_code);
         primitive("iffontchar", if_test, if_font_char_code);
         primitive("ifincsname", if_test, if_in_csname_code);
+        // @<Generate all \eTeX...@>
         primitive("protected", prefix, 8);
+        // @<Generate all \eTeX...@>
         primitive("numexpr", last_item, eTeX_expr - int_val + int_val);
         primitive("dimexpr", last_item, eTeX_expr - int_val + dimen_val);
         primitive("glueexpr", last_item, eTeX_expr - int_val + glue_val);
         primitive("muexpr", last_item, eTeX_expr - int_val + mu_val);
+        // @<Generate all \eTeX...@>
         primitive("gluestretchorder", last_item, glue_stretch_order_code);
         primitive("glueshrinkorder", last_item, glue_shrink_order_code);
-        primitive("currentspacingmode", last_item, current_spacing_mode_code);
-        primitive("currentxspacingmode", last_item, current_xspacing_mode_code);
-        primitive("currentcjktoken", last_item, current_cjk_token_code);
         primitive("gluestretch", last_item, glue_stretch_code);
         primitive("glueshrink", last_item, glue_shrink_code);
+        // @<Generate all \eTeX...@>
         primitive("mutoglue", last_item, mu_to_glue_code);
         primitive("gluetomu", last_item, glue_to_mu_code);
+        // @<Generate all \eTeX...@>
         primitive("marks", mark, marks_code);
         primitive("topmarks", top_bot_mark, top_mark_code + marks_code);
         primitive("firstmarks", top_bot_mark, first_mark_code + marks_code);
         primitive("botmarks", top_bot_mark, bot_mark_code + marks_code);
         primitive("splitfirstmarks", top_bot_mark, split_first_mark_code + marks_code);
         primitive("splitbotmarks", top_bot_mark, split_bot_mark_code + marks_code);
+        // @<Generate all \eTeX...@>
         primitive("pagediscards", un_vbox, last_box_code);
         primitive("splitdiscards", un_vbox, vsplit_code);
+        // @<Generate all \eTeX...@>
         primitive("interlinepenalties", set_shape, inter_line_penalties_loc);
         primitive("clubpenalties", set_shape, club_penalties_loc);
         primitive("widowpenalties", set_shape, widow_penalties_loc);
         primitive("displaywidowpenalties", set_shape, display_widow_penalties_loc);
+        // @<Generate all \eTeX...@>
+        primitive("currentspacingmode", last_item, current_spacing_mode_code);
+        primitive("currentxspacingmode", last_item, current_xspacing_mode_code);
+        // @<Generate all \eTeX...@>
+        primitive("currentcjktoken", last_item, current_cjk_token_code);
 
         if (buffer[loc] == '*')
           incr(loc);
@@ -5518,7 +5594,6 @@ static void init_prim (void)
   primitive("noalign", no_align, 0);
   primitive("noboundary", no_boundary, 0);
   primitive("noexpand", no_expand, 0);
-  primitive("pdfprimitive", no_expand, 1);
   primitive("nonscript", non_script, 0);
   primitive("omit", omit, 0);
   primitive("parshape", set_shape, par_shape_loc);
@@ -5569,10 +5644,6 @@ static void init_prim (void)
   primitive("uptexversion", last_item, uptex_version_code);
   primitive("epTeXversion", last_item, eptex_version_code);
   primitive("ptexminorversion", last_item, ptex_minor_version_code);
-  primitive("pdflastxpos", last_item, pdf_last_x_pos_code);
-  primitive("pdflastypos", last_item, pdf_last_y_pos_code);
-  primitive("pdfelapsedtime", last_item, elapsed_time_code);
-  primitive("pdfrandomseed", last_item, random_seed_code);
   primitive("number", convert, number_code);
   primitive("romannumeral", convert, roman_numeral_code);
   primitive("kansuji", convert, kansuji_code);
@@ -5589,19 +5660,9 @@ static void init_prim (void)
   primitive("toucs", convert, toucs_code);
   primitive("tojis", convert, tojis_code);
   primitive("ptexfontname", convert, ptex_font_name_code);
-  primitive("pdfstrcmp", convert, ng_strcmp_code);
   primitive("ngbanner", convert, ng_banner_code);
   primitive("ngostype", convert, ng_os_type_code);
-  primitive("pdfcreationdate", convert, pdf_creation_date_code);
-  primitive("pdffilemoddate", convert, pdf_file_mod_date_code);
-  primitive("pdffilesize", convert, pdf_file_size_code);
-  primitive("pdfmdfivesum", convert, pdf_mdfive_sum_code);
-  primitive("pdffiledump", convert, pdf_file_dump_code);
-  primitive("pdfuniformdeviate", convert, pdf_uniform_deviate_code);
-  primitive("pdfnormaldeviate", convert, pdf_normal_deviate_code);
   primitive("expanded", convert, expanded_code);
-  primitive("Uchar", convert, Uchar_convert_code);
-  primitive("Ucharcat", convert, Ucharcat_convert_code);
   primitive("leftmarginkern", convert, left_margin_kern_code);
   primitive("rightmarginkern", convert, right_margin_kern_code);
   primitive("jobname", convert, job_name_code);
