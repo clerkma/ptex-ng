@@ -1,4 +1,4 @@
-## $Id: Makefile.am 76440 2025-09-30 16:16:01Z karl $
+## $Id: Makefile.am 76986 2025-11-30 23:01:21Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
 ##
 ## Copyright 2015-2025 Karl Berry <tex-live@tug.org>
@@ -126,6 +126,9 @@ testman:
 testmans:
 	for m in $(srcdir)/*.man; do echo $$m; \
 	  $(MAKE) -s m=`basename $$m .man` testman || exit 1; done
+
+spell:
+	EXTRADICT=`realpath $(srcdir)/spell.add` myspell $(srcdir)/*.man
 
 EXTRA_DIST += \
 	spell.add
