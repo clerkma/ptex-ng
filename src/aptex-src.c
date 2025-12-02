@@ -245,7 +245,7 @@ static void print_aptex_time (clock_t inter_val)
 
 /* ad hoc default minimum growth in memory realloc is 62% */
 /* golden ratio (1 + \sqrt{5}) / 2 = 1.618033989... */
-static int percent_grow    = 62; /* default minimum growth in memory realloc is 62% */
+static int      percent_grow    = 62; /* default minimum growth in memory realloc is 62% */
 static intptr_t total_allocated = 0;  /* total memory allocated so far */
 static intptr_t max_address     = 0;  /* maximum address seen in allocated memory */
 
@@ -14761,7 +14761,7 @@ restart:
       break;
 
     case assign_inhibit_xsp_code:
-      //  @<Fetch inhibit type from some table@>
+      // @<Fetch inhibit type from some table@>
       {
         scan_int();
         q = get_inhibit_pos(tokanji(cur_val), cur_pos);
@@ -14890,7 +14890,7 @@ restart:
       break;
 
     case set_aux:
-      //  @<Fetch the |space_factor| or the |prev_depth|@>
+      // @<Fetch the |space_factor| or the |prev_depth|@>
       if (abs(mode) != m)
       {
         print_err("Improper ");
@@ -14961,7 +14961,7 @@ restart:
       break;
 
     case set_shape:
-      //  @<Fetch the |par_shape| size@>
+      // @<Fetch the |par_shape| size@>
       {
         if (m > par_shape_loc)
         // @<Fetch a penalties array element@>
@@ -16732,7 +16732,7 @@ done1:
     if (mu)
     {
       scan_something_internal(mu_val, false);
-      //  @<Coerce glue...@>
+      // @<Coerce glue...@>
       if (cur_val_level >= glue_val)
       {
         v = width(cur_val);
@@ -16877,7 +16877,7 @@ done:
 
 attach_sign:
   if (arith_error || (abs(cur_val) >= 010000000000))
-  //  @<Report that this dimension is out of range@>
+  // @<Report that this dimension is out of range@>
   {
     print_err("Dimension too large");
     help2("I can't work with sizes bigger than about 19 feet.",
@@ -18819,7 +18819,7 @@ static boolean more_name (ASCII_code c)
     str_room(1);
     append_char(c);
 
-    //  for DOS/Windows
+    // for DOS/Windows
     if ((c == '/' || c == '\\' || c == ':'))
     {
       area_delimiter = cur_length;
@@ -19043,7 +19043,7 @@ static void scan_file_name_braced (void)
   save_scanner_status = scanner_status; // {|scan_toks| sets |scanner_status| to |absorbing|}
   save_def_ref = def_ref; // {|scan_toks| uses |def_ref| to point to the token list just read}
   save_cur_cs = cur_cs; // {we set |cur_cs| back a few tokens to use in runaway errors}
-  //  {Scanning a token list}
+  // {Scanning a token list}
   cur_cs = warning_index; // {for possible runaway error}
   // {mimick |call_func| from pdfTeX}
 
@@ -19057,12 +19057,12 @@ static void scan_file_name_braced (void)
   selector = old_setting;
   s = make_string();
   // {turns the token list read in a string to input}
-  //  {Restoring some variables}
+  // {Restoring some variables}
   delete_token_ref(def_ref); // {remove the token list from memory}
   def_ref = save_def_ref; // {and restore |def_ref|}
   cur_cs = save_cur_cs; // {restore |cur_cs|}
   scanner_status = save_scanner_status; // {restore |scanner_status|}
-  //  {Passing the read string to the input machinery}
+  // {Passing the read string to the input machinery}
   save_stop_at_space = stop_at_space; // {save |stop_at_space|}
   stop_at_space = false; // {set |stop_at_space| to false to allow spaces in file names}
   begin_name();
@@ -23740,7 +23740,7 @@ static pointer hpack (pointer p, scaled w, small_number m)
   scaled s;               // {shift amount}
   pointer g;              // {points to a glue specification}
   glue_ord o;             // {order of infinity}
-  internal_font_number f; //  {the font in a |char_node|}
+  internal_font_number f; // {the font in a |char_node|}
   four_quarters i;        // {font information about a |char_node|}
   eight_bits hd;          // {height and depth indices for a character}
   scaled font_stretch, font_shrink;
@@ -25081,7 +25081,7 @@ static void fetch (pointer a)
 {
   cur_c = character(a);
   cur_f = fam_fnt(fam(a) + cur_size);
-  //  @<Complain about an undefined family and set |cur_i| null@>
+  // @<Complain about an undefined family and set |cur_i| null@>
   if (cur_f == null_font)
   {
     print_err("");
