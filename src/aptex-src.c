@@ -6586,7 +6586,6 @@ void error (void)
     // @<Get user's advice and |return|@>
     while (true)
     {
-continu:
       if (interaction != error_stop_mode)
         return;
       clear_for_error_prompt();
@@ -6641,7 +6640,7 @@ continu:
             help2("I have just deleted some text, as you asked.",
               "You can now delete more, or insert, or whatever.");
             show_context();
-            goto continu;
+            continue;
           }
           break;
 
@@ -6649,7 +6648,7 @@ continu:
         case 'D':
           {
             debug_help();
-            goto continu;
+            continue;
           }
           break;
   #endif
@@ -6694,7 +6693,7 @@ continu:
               "Maybe you should try asking a human?",
               "An error might have occurred before I noticed any problems.",
               "``If all else fails, read the instructions.''");
-            goto continu;
+            continue;
           }
           break;
 
@@ -26674,7 +26673,7 @@ static void init_align (void)
 
     // {\.{\\cr} ends the preamble}
     if (cur_cmd == car_ret)
-      goto done;
+      break;
 
     /*
       @<Scan preamble text until |cur_cmd| is |tab_mark| or |car_ret|,
@@ -26690,7 +26689,7 @@ static void init_align (void)
       get_preamble_token();
 
       if (cur_cmd == mac_param)
-        goto done1;
+        break;
 
       if ((cur_cmd <= car_ret) && (cur_cmd >= tab_mark) && (align_state == -1000000))
         if ((p == hold_head) && (cur_loop == null) && (cur_cmd == tab_mark))
@@ -26702,7 +26701,7 @@ static void init_align (void)
               "\\halign or \\valign is being set up. In this case you had",
               "none, so I've put one in; maybe that will work.");
           back_error();
-          goto done1;
+          break;
         }
       else if ((cur_cmd != spacer) || (p != hold_head))
       {
@@ -26711,7 +26710,6 @@ static void init_align (void)
         info(p) = cur_tok;
       }
     }
-done1:
     // end of section
     link(cur_align) = new_null_box();
     cur_align = link(cur_align);  // {a new alignrecord}
@@ -26724,11 +26722,10 @@ done1:
 
     while (true)
     {
-continu:
       get_preamble_token();
 
       if ((cur_cmd <= car_ret) && (cur_cmd >= tab_mark) && (align_state == -1000000))
-        goto done2;
+        break;
 
       if (cur_cmd == mac_param)
       {
@@ -26737,21 +26734,19 @@ continu:
             "\\halign or \\valign is being set up. In this case you had",
             "more than one, so I'm ignoring all but the first.");
         error();
-        goto continu;
+        continue;
       }
 
       link(p) = get_avail();
       p = link(p);
       info(p) = cur_tok;
     }
-done2:
     link(p) = get_avail();
     p = link(p);
     info(p) = end_template_token; // {put \.{\\endtemplate} at the end}
     // end of section
     v_part(cur_align) = link(hold_head);
   }
-done:
   scanner_status = normal;
   // end of section
   new_save_level(align_group);
