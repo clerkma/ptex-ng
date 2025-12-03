@@ -16909,7 +16909,7 @@ void scan_glue (small_number level)
 
     if (cur_val_level >= glue_val)
     {
-      if (cur_val_level != level)
+      if (unlikely(cur_val_level != level))
         mu_error();
 
       return;
@@ -16917,7 +16917,7 @@ void scan_glue (small_number level)
 
     if (cur_val_level == int_val)
       scan_dimen(mu, false, true);
-    else if (level == mu_val)
+    else if (unlikely(level == mu_val))
       mu_error();
   }
   else
@@ -26605,7 +26605,7 @@ restart:
   if ((cur_cmd == assign_glue) && (cur_chr == glue_base + tab_skip_code))
   {
     scan_optional_equals();
-    scan_glue(glue_val);
+    scan_normal_glue();
 
     if (global_defs > 0)
       geq_define(glue_base + tab_skip_code, glue_ref, cur_val);
@@ -31852,11 +31852,11 @@ static void append_glue (void)
       break;
 
     case skip_code:
-      scan_glue(glue_val);
+      scan_normal_glue();
       break;
 
     case mskip_code:
-      scan_glue(mu_val);
+      scan_mu_glue();
       break;
   }
   // {now |cur_val| points to the glue specification}
@@ -34851,9 +34851,9 @@ static void prefixed_command (void)
         scan_optional_equals();
 
         if (n == assign_mu_glue)
-          scan_glue(mu_val);
+          scan_mu_glue();
         else
-          scan_glue(glue_val);
+          scan_normal_glue();
 
         trap_zero_glue();
         define(p, glue_ref, cur_val);
@@ -40478,12 +40478,12 @@ found:
   cur_val_level = l;
 }
 
-void scan_normal_glue (void)
+_Flatten void scan_normal_glue (void)
 {
   scan_glue(glue_val);
 }
 
-void scan_mu_glue (void)
+_Flatten void scan_mu_glue (void)
 {
   scan_glue(mu_val);
 }
