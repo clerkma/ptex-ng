@@ -1,4 +1,4 @@
-## $Id: euptex.am 76984 2025-11-30 22:44:00Z karl $
+## $Id: euptex.am 77008 2025-12-02 23:27:19Z karl $
 ## texk/web2c/euptexdir/am/euptex.am: Makefile fragment for e-upTeX.
 ##
 ## Copyright 2015-2025 Karl Berry <tex-live@tug.org>
@@ -128,7 +128,7 @@ eup-basic.fmt: eup-basic.tex
 	test -s eup-basic.fmt # just in case tex succeeded but no .fmt
 #
 eup-basic.tex: $(srcdir)/tests/dump-basic.tex
-	cp $srcdir/tests/dump-basic.tex ./eup-basic.tex
+	cp $(srcdir)/tests/dump-basic.tex ./eup-basic.tex
 
 EXTRA_DIST += $(euptex_tests)
 
