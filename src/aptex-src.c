@@ -4937,7 +4937,7 @@ done:
   }
 }
 /* sec 0966 */
-void init_trie (void)
+static void init_trie (void)
 {
   trie_pointer p;
   integer j, k, t;
@@ -9419,7 +9419,7 @@ void show_node_list (integer p)
   }
 }
 
-void show_box (pointer p)
+static void show_box (pointer p)
 {
   /*
     @<Assign the values |depth_threshold:=show_box_depth| and
@@ -10473,7 +10473,7 @@ static void print_param (integer n)
 }
 
 // prepare to do some tracing
-void begin_diagnostic (void)
+static void begin_diagnostic (void)
 {
   diagnostic_old_setting = selector;
 
@@ -10487,7 +10487,7 @@ void begin_diagnostic (void)
 }
 
 // restore proper conditions after tracing
-void end_diagnostic (boolean blank_line)
+static void end_diagnostic (boolean blank_line)
 {
   print_nl("");
 
@@ -21472,8 +21472,8 @@ reswitch:
     chain = false;
 
     do {
-      f = font(p);
-      c = character(p);
+      internal_font_number f = font(p);
+      quarterword c = character(p);
 
       // @<Change font |dvi_f| to |f|@>
       if (f != dvi_f)
@@ -22005,8 +22005,8 @@ reswitch:
     pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
 
     do {
-      f = font(p);
-      c = character(p);
+      internal_font_number f = font(p);
+      quarterword c = character(p);
 
       // @<Change font |dvi_f| to |f|@>
       if (f != dvi_f)
@@ -39413,8 +39413,8 @@ reswitch:
     if (is_char_node(p))
     {
       do {
-        f = font(p);
-        c = character(p);
+        internal_font_number f = font(p);
+        quarterword c = character(p);
         cur_h = cur_h + char_width(f, char_info(f, c));
 
         if (font_dir[f] != dir_default)
@@ -39894,7 +39894,7 @@ void app_display (pointer j, pointer b, scaled d)
 
 void pseudo_start (void)
 {
-  int old_setting; // {holds |selector| setting}
+  enum output_mode old_setting; // {holds |selector| setting}
   str_number s; // {string to be converted into a pseudo file}
   pool_pointer l, m;  // {indices into |str_pool|}
   pointer p, q, r;  // {for list construction}

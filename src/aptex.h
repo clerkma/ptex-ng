@@ -579,7 +579,6 @@ EXTERN integer last_bop;                      // {location of previous |bop| in 
 EXTERN integer dead_cycles;                   // {recent outputs that didn't ship anything out}
 EXTERN boolean doing_leaders;                 // {are we inside a leader box?}
 
-EXTERN quarterword c, f;
 EXTERN boolean dir_used;                      // {Is this dvi extended?}
 EXPORT scaled rule_ht, rule_dp, rule_wd;      // {size of current rule being output}
 EXTERN pointer g;                             // {current glue specification}
