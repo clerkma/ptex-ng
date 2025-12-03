@@ -145,7 +145,6 @@ void get_x_token (void);
 void scan_left_brace (void);
 
 void scan_int (void);
-static inline void scan_dimen (boolean mu, boolean inf, boolean shortcut);
 void scan_glue (small_number level);
 void ins_the_toks (void);
 void conv_toks (void);
@@ -624,6 +623,7 @@ static inline integer get_microinterval (void)
 
 static str_number tokens_to_string (pointer p)
 {
+  enum output_mode old_setting;
   // {return a string from tokens list}
   if (selector == new_string)
     aptex_error("tokens", "tokens_to_string() called while selector = new_string");

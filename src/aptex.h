@@ -332,7 +332,7 @@ EXTERN pool_pointer init_pool_ptr;            // {the starting value of |pool_pt
 EXTERN str_number   init_str_ptr;             // {the starting value of |str_ptr|}
 
 EXTERN alpha_file log_file;                   // {transcript of \TeX\ session}
-EXTERN uint32_t   selector;                   // {where to print a message}
+EXTERN enum output_mode selector;             // {where to print a message}
 EXTERN uint32_t   dig[23 + 1];                // {digits in a number being output}
 EXTERN integer    tally;                      // {the number of characters recently printed}
 EXTERN integer    term_offset;                // {the number of characters on the current terminal line}
@@ -345,11 +345,11 @@ EXTERN ASCII_code prev_char;
 EXTERN integer trick_count;                   // {threshold for pseudoprinting, explained later}
 EXTERN integer first_count;                   // {another variable for pseudoprinting}
 
-EXTERN int interaction;                       // {current level of interaction}
+EXTERN enum i_mode interaction;               // {current level of interaction}
 
 EXTERN boolean deletions_allowed;             // {is it safe for |error| to call |get_token|? }
 EXTERN boolean set_box_allowed;               // {is it safe to do a \.{\\setbox} assignment?}
-EXTERN int history;                           // {has the source input been clean so far?}
+EXTERN enum cleaness history;                 // {has the source input been clean so far?}
 EXTERN int error_count;                       // {the number of scrolled errors since the last paragraph ended}
 
 EXTERN char * help_line[6];                   // {helps for the next |error|}
@@ -408,7 +408,7 @@ EXTERN integer max_nest_stack;                // {maximum of |nest_ptr| when pus
 EXTERN list_state_record cur_list;            // {the ``top'' semantic state}
 EXTERN int shown_mode;                        // {most recent mode shown by \.{\\tracingcommands}}
 
-EXTERN int old_setting;
+static enum output_mode diagnostic_old_setting;
 EXTERN integer sys_time, sys_day, sys_month, sys_year; // {date and time supplied by external system}
 
 EXPORT memory_word eqtb[eqtb_size + 1];

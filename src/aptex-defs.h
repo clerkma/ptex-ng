@@ -73,7 +73,7 @@
 #define cur_length    (pool_ptr - str_start[str_ptr])
 #define flush_char()  decr(pool_ptr)
 /* sec 0054 */
-enum
+enum output_mode
 {
   no_print     = 16,  // {|selector| setting that makes data disappear}
   term_only    = 17,  // {printing is destined for the terminal only}
@@ -84,20 +84,20 @@ enum
   max_selector = 21,  // {highest selector setting}
 };
 /* sec 0073 */
-enum
+enum i_mode
 {
-  batch_mode      = 0,  // {omits all stops and omits terminal output}
-  nonstop_mode    = 1,  // {omits all stops}
-  scroll_mode     = 2,  // {omits error stops}
-  error_stop_mode = 3,  // {stops at every opportunity to interact}
+  batch_mode,         // {omits all stops and omits terminal output}
+  nonstop_mode,       // {omits all stops}
+  scroll_mode,        // {omits error stops}
+  error_stop_mode,    // {stops at every opportunity to interact}
 };
 /* sec 0076 */
-enum
+enum cleaness
 {
-  spotless             = 0, // {|history| value when nothing has been amiss yet}
-  warning_issued       = 1, // {|history| value when |begin_diagnostic| has been called}
-  error_message_issued = 2, // {|history| value when |error| has been called}
-  fatal_error_stop     = 3, // {|history| value when termination was premature}
+  spotless,             // {|history| value when nothing has been amiss yet}
+  warning_issued,       // {|history| value when |begin_diagnostic| has been called}
+  error_message_issued, // {|history| value when |error| has been called}
+  fatal_error_stop,     // {|history| value when termination was premature}
 };
 /* sec 0079 */
 #define help0()     tex_help(0)
@@ -1293,8 +1293,6 @@ do {                                            \
 #define zero_token    (other_token  + '0')            // {zero, the smallest digit}
 #define A_token       (letter_token + 'A')            // {the smallest special hex digit}
 #define other_A_token (other_token  + 'A')            // {special hex digit of type |other_char|}
-/* sec 0448 */
-#define scan_normal_dimen() scan_dimen(false, false, false)
 /* sec 0458 */
 #define set_conversion(a, b)  \
 do {                          \
