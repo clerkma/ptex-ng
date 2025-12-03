@@ -145,7 +145,7 @@ void get_x_token (void);
 void scan_left_brace (void);
 
 void scan_int (void);
-void scan_dimen (boolean mu, boolean inf, boolean shortcut);
+static inline void scan_dimen (boolean mu, boolean inf, boolean shortcut);
 void scan_glue (small_number level);
 void ins_the_toks (void);
 void conv_toks (void);

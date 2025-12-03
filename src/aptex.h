@@ -475,7 +475,7 @@ EXTERN int long_state;                        // {governs the acceptance of \.{\
 EXTERN pointer pstack[10];                    // {arguments supplied to a macro}
 
 EXTERN integer cur_val;                       // {value returned by numeric scanners}
-EXTERN int cur_val_level;                     // {the ``level'' of this value}
+EXTERN enum reg_type cur_val_level;           // {the ``level'' of this value}
 
 EXTERN int radix;                             // {|scan_int| sets this to 8, 10, 16, or zero}
 

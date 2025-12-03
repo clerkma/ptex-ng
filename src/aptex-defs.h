@@ -1207,12 +1207,14 @@ do {                            \
 #define split_first_mark      cur_mark[split_first_mark_code]
 #define split_bot_mark        cur_mark[split_bot_mark_code]
 /* sec 0400 */
-#define int_val   0 // {integer values}
-#define dimen_val 1 // {dimension values}
-#define glue_val  2 // {glue specifications}
-#define mu_val    3 // {math glue specifications}
-#define ident_val 4 // {font identifier}
-#define tok_val   5 // {token lists}
+enum reg_type {
+  int_val,    // {integer values}
+  dimen_val,  // {dimension values}
+  glue_val,   // {glue specifications}
+  mu_val,     // {math glue specifications}
+  ident_val,  // {font identifier}
+  tok_val     // {token lists}
+};
 /* sec 0413 */
 #define scanned_result(va, vb)  \
 do {                            \

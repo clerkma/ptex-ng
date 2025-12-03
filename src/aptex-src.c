@@ -15120,7 +15120,7 @@ restart:
             case mu_val:
               cur_val = mu_skip(cur_val);
               break;
-            // {there are no other cases}
+            default: break;// {there are no other cases}
           }
         }
       }
@@ -16581,7 +16581,7 @@ done:
 }
 
 // sets |cur_val| to a dimension
-void scan_dimen (boolean mu, boolean inf, boolean shortcut)
+static inline void scan_dimen (boolean mu, boolean inf, boolean shortcut)
 {
   boolean negative; // {should the answer be negated?}
   integer f; // {numerator of a fraction whose denominator is $2^{16}$}
@@ -16621,7 +16621,7 @@ void scan_dimen (boolean mu, boolean inf, boolean shortcut)
             cur_val = v;
           }
 
-          if (cur_val_level != mu_val)
+          if (unlikely(cur_val_level != mu_val))
             mu_error();
           else
             goto attach_sign;
@@ -16741,7 +16741,7 @@ done1:
         cur_val = v;
       }
 
-      if (cur_val_level != mu_val)
+      if (unlikely(cur_val_level != mu_val))
         mu_error();
     }
     else
@@ -17133,8 +17133,8 @@ static pointer the_toks (void)
           delete_glue_ref(cur_val);
         }
         break;
+      default: break; // {there are no other cases}
     }
-    // {there are no other cases}
     selector = old_setting;
     return str_toks(b);
   }
@@ -35339,7 +35339,7 @@ void trap_zero_glue (void)
 void do_register_command (small_number a)
 {
   pointer l, q, r, s; // {for list manipulation}
-  char p; // {type of register involved}
+  enum reg_type p; // {type of register involved}
   boolean e;  // {does |l| refer to a sparse array element?}
   integer w;  // {integer or dimen value of |l|}
 
@@ -35404,6 +35404,7 @@ void do_register_command (small_number a)
         case mu_val:
           l = cur_val + mu_skip_base;
           break;
+        default: break;// {there are no other cases}
       }
     }
   }
