@@ -1338,40 +1338,42 @@ do {                          \
 #define closed    2
 #define just_open 1
 /* sec 0487 */
-#define unless_code       32
-#define if_char_code      0
-#define if_cat_code       1
-#define if_int_code       2
-#define if_dim_code       3
-#define if_odd_code       4
-#define if_vmode_code     5
-#define if_hmode_code     6
-#define if_mmode_code     7
-#define if_inner_code     8
-#define if_void_code      9
-#define if_hbox_code      10
-#define if_vbox_code      11
-#define ifx_code          12
-#define if_eof_code       13
-#define if_true_code      14
-#define if_false_code     15
-#define if_case_code      16
-#define if_def_code       17
-#define if_cs_code        18
-#define if_font_char_code 19
-//#
-#define if_in_csname_code     (if_case_code + 4)
-#define if_pdfprimitive_code  (if_in_csname_code + 1)
-#define if_tdir_code          (if_pdfprimitive_code + 1)
-#define if_ydir_code          (if_tdir_code + 1)
-#define if_ddir_code          (if_ydir_code + 1)
-#define if_mdir_code          (if_ddir_code + 1)
-#define if_tbox_code          (if_mdir_code + 1)
-#define if_ybox_code          (if_tbox_code + 1)
-#define if_dbox_code          (if_ybox_code + 1)
-#define if_mbox_code          (if_dbox_code + 1)
-#define if_jfont_code         (if_mbox_code + 1)
-#define if_tfont_code         (if_jfont_code + 1)
+#define unless_code     32
+enum if_type {
+  if_char_code,  //     0
+  if_cat_code,   //     1
+  if_int_code,   //     2
+  if_dim_code,   //     3
+  if_odd_code,   //     4
+  if_vmode_code, //     5
+  if_hmode_code, //     6
+  if_mmode_code, //     7
+  if_inner_code, //     8
+  if_void_code,  //     9
+  if_hbox_code,  //     10
+  if_vbox_code,  //     11
+  ifx_code,      //     12
+  if_eof_code,   //     13
+  if_true_code,  //     14
+  if_false_code, //     15
+  if_case_code,  //     16
+  if_def_code,   //     17
+  if_cs_code,    //     18
+  if_font_char_code, // 19
+  //#
+  if_in_csname_code,
+  if_pdfprimitive_code,
+  if_tdir_code,
+  if_ydir_code,
+  if_ddir_code,
+  if_mdir_code,
+  if_tbox_code,
+  if_ybox_code,
+  if_dbox_code,
+  if_mbox_code,
+  if_jfont_code,
+  if_tfont_code,
+};
 /* sec 0489 */
 #define if_node_size     2                  // {number of words in stack entry for conditionals}
 #define if_line_field(a) mem[(a) + 1].cint

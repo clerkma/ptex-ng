@@ -4683,7 +4683,7 @@ static void trie_fix (trie_pointer p)
   } while (!(p == 0));
 }
 /* sec 0960 */
-void new_patterns (void)
+static void new_patterns (void)
 {
   uint32_t k, l;
   boolean digit_sensed;
@@ -7856,7 +7856,7 @@ static void runaway (void)
   }
 }
 
-pointer get_avail (void)
+static pointer get_avail (void)
 {
   pointer p; // {the new node being got}
 
@@ -14542,7 +14542,7 @@ static void scan_eight_bit_int (void)
   }
 }
 
-void scan_ascii_num (void)
+static void scan_ascii_num (void)
 {
   scan_int();
 
@@ -14556,7 +14556,7 @@ void scan_ascii_num (void)
   }
 }
 
-void scan_char_num (void)
+static void scan_char_num (void)
 {
   scan_int();
 
@@ -14570,7 +14570,7 @@ void scan_char_num (void)
   }
 }
 
-void scan_four_bit_int (void)
+static void scan_four_bit_int (void)
 {
   scan_int();
 
@@ -14584,7 +14584,7 @@ void scan_four_bit_int (void)
   }
 }
 
-void scan_four_bit_int_or_18 (void)
+static void scan_four_bit_int_or_18 (void)
 {
   scan_int();
 
@@ -14598,7 +14598,7 @@ void scan_four_bit_int_or_18 (void)
   }
 }
 
-void scan_fifteen_bit_int (void)
+static void scan_fifteen_bit_int (void)
 {
   scan_int();
 
@@ -14629,7 +14629,7 @@ static void scan_twenty_seven_bit_int (void)
 // for last_node_font
 static void scan_something_internal (small_number level, boolean negative);
 
-void scan_font_ident (void)
+static void scan_font_ident (void)
 {
   internal_font_number f;
   halfword m;
@@ -16536,10 +16536,10 @@ restart:
         else if ((cur_tok <= other_A_token + 5) && (cur_tok >= other_A_token))
           d = cur_tok - other_A_token + 10;
         else
-          goto done;
+          break;
       }
       else
-        goto done;
+        break;
 
       vacuous = false;
 
@@ -16560,7 +16560,6 @@ restart:
 
       get_x_token();
     }
-done:
 
     if (vacuous)
     // @<Express astonishment...@>
@@ -16664,7 +16663,7 @@ static void scan_dimen (boolean mu, boolean inf, boolean shortcut)
           get_x_token();
 
           if ((cur_tok > zero_token + 9) || (cur_tok < zero_token))
-            goto done1;
+           break;
 
           if (k < 17) // {digits for |k>=17| cannot affect the result}
           {
@@ -16676,7 +16675,6 @@ static void scan_dimen (boolean mu, boolean inf, boolean shortcut)
           }
         }
 
-done1:
         for (kk = k; kk >= 1; kk--)
         {
           dig[kk - 1] = info(p);
@@ -18281,7 +18279,7 @@ void conditional (void)
   pointer p, q; // {for traversing token lists in \.{\\ifx} tests}
   small_number save_scanner_status; // {|scanner_status| upon entry}
   pointer save_cond_ptr;  // {|cond_ptr| corresponding to this conditional}
-  small_number this_if; // {type of this conditional}
+  enum if_type this_if; // {type of this conditional}
   boolean is_unless;  // {was this if preceded by `\.{\\unless}' ?}
 
   if (tracing_ifs > 0)
@@ -30363,7 +30361,7 @@ common_ending:
 }
 
 // enters new exceptions
-void new_hyph_exceptions (void)
+static void new_hyph_exceptions (void)
 {
   uint32_t n;
   uint32_t j;
