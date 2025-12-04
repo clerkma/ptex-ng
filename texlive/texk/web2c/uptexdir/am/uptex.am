@@ -1,4 +1,4 @@
-## $Id: uptex.am 76984 2025-11-30 22:44:00Z karl $
+## $Id: uptex.am 77008 2025-12-02 23:27:19Z karl $
 ## texk/web2c/uptexdir/am/uptex.am: Makefile fragment for upTeX.
 ##
 ## Copyright 2016-2025 Karl Berry <tex-live@tug.org>
@@ -251,7 +251,7 @@ up-basic-sjis.fmt: up-basic.tex
 	test -s up-basic-euc.fmt
 #
 up-basic.tex: $(srcdir)/tests/dump-basic.tex
-	cp $srcdir/tests/dump-basic.tex ./up-basic.tex
+	cp $(srcdir)/tests/dump-basic.tex ./up-basic.tex
 
 EXTRA_DIST += $(uptex_tests) $(upweb_tests)
 DISTCLEANFILES += $(upweb_programs:=.c) $(upweb_programs:=.h) \
