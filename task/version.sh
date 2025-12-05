@@ -8,6 +8,6 @@ DVER=$TEXK/dvipdfm-x/configure.ac
 dver=`grep AC_INIT $DVER | grep -o -e '[0-9]\+'`
 sed -i 's/"[^"]\+"/"'$dver'"/g' $ROOT/libdpx/config.h
 PVER=$TEXK/ptexenc/version.ac
-pver=`grep ptexenc_version $PVER | grep -o -E '[0-9]\.[0-9]\.[0-9](\/dev)?'`
+pver=`grep ptexenc_version $PVER | grep -o -E '[0-9]\.[0-9]\.[0-9](/dev)?'`
 sed -i 's@"[^"]\+"@"ptexenc version '$pver'"@g' $ROOT/ptexenc/c-auto.h
 cp texlive/libs/zlib/zlib-src/zconf.h.in build-msvc/build/zlib/zconf.h
