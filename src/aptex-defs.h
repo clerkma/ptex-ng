@@ -1300,40 +1300,42 @@ do {                          \
   denom = b;                  \
 } while (0)
 /* sec 0468 */
-#define number_code              0  // {command code for \.{\\number}}
-#define roman_numeral_code       1  // {command code for \.{\\romannumeral}}
-#define kansuji_code             2  // {command code for \.{\\kansuji}}
-#define string_code              3  // {command code for \.{\\string}}
-#define meaning_code             4  // {command code for \.{\\meaning}}
-#define font_name_code           5  // {command code for \.{\\fontname}}
-#define euc_code                 6  // {command code for \.{\\euc}}
-#define sjis_code                7  // {command code for \.{\\sjis}}
-#define jis_code                 8  // {command code for \.{\\jis}}
-#define kuten_code               9  // {command code for \.{\\kuten}}
-#define ucs_code                 10 // {command code for \.{\\ucs}}
-#define toucs_code               11 // {command code for \.{\\toucs}}
-#define tojis_code               12 // {command code for \.{\\tojis}}
-#define ptex_font_name_code      13 // {command code for \.{\\ptexfontname}}
-#define eTeX_revision_code       14 // {base for \eTeX's command codes}
-#define ng_strcmp_code           15 // {command code for \.{\\pdfstrcmp}}
-#define ng_banner_code           16 // {command code for \.{\\ngbanner}}
-#define ng_os_type_code          17 // {command code for \.{\\ngostype}}
-#define ptex_revision_code       18 // {command code for \.{\\ptexrevision}}
-#define uptex_revision_code      19 // {command code for \.{\\uptexrevision}}
-#define pdf_creation_date_code   20 // {command code for \.{\\pdfcreationdate}}
-#define pdf_file_mod_date_code   21 // {command code for \.{\\pdffilemodedate}}
-#define pdf_file_size_code       22 // {command code for \.{\\pdffilesize}}
-#define pdf_mdfive_sum_code      23 // {command code for \.{\\pdfmdfivesum}}
-#define pdf_file_dump_code       24 // {command code for \.{\\pdffiledump}}
-#define pdf_uniform_deviate_code 25 // {command code for \.{\\pdfuniformdeviate}}
-#define pdf_normal_deviate_code  26 // {command code for \.{\\pdfnormaldeviate}}
-#define expanded_code            27 // {command code for \.{\\expanded}}
-#define Uchar_convert_code       28 // {command code for \.{\\Uchar}}
-#define Ucharcat_convert_code    29 // {command code for \.{\\Ucharcat}}
+enum cmd_type {
+  number_code,             // 0  {command code for \.{\\number}}
+  roman_numeral_code,      // 1  {command code for \.{\\romannumeral}}
+  kansuji_code,            // 2  {command code for \.{\\kansuji}}
+  string_code,             // 3  {command code for \.{\\string}}
+  meaning_code,            // 4  {command code for \.{\\meaning}}
+  font_name_code,          // 5  {command code for \.{\\fontname}}
+  euc_code,                // 6  {command code for \.{\\euc}}
+  sjis_code,               // 7  {command code for \.{\\sjis}}
+  jis_code,                // 8  {command code for \.{\\jis}}
+  kuten_code,              // 9  {command code for \.{\\kuten}}
+  ucs_code,                // 10 {command code for \.{\\ucs}}
+  toucs_code,              // 11 {command code for \.{\\toucs}}
+  tojis_code,              // 12 {command code for \.{\\tojis}}
+  ptex_font_name_code,     // 13 {command code for \.{\\ptexfontname}}
+  eTeX_revision_code,      // 14 {base for \eTeX's command codes}
+  ng_strcmp_code,          // 15 {command code for \.{\\pdfstrcmp}}
+  ng_banner_code,          // 16 {command code for \.{\\ngbanner}}
+  ng_os_type_code,         // 17 {command code for \.{\\ngostype}}
+  ptex_revision_code,      // 18 {command code for \.{\\ptexrevision}}
+  uptex_revision_code,     // 19 {command code for \.{\\uptexrevision}}
+  pdf_creation_date_code,  // 20 {command code for \.{\\pdfcreationdate}}
+  pdf_file_mod_date_code,  // 21 {command code for \.{\\pdffilemodedate}}
+  pdf_file_size_code,      // 22 {command code for \.{\\pdffilesize}}
+  pdf_mdfive_sum_code,     // 23 {command code for \.{\\pdfmdfivesum}}
+  pdf_file_dump_code,      // 24 {command code for \.{\\pdffiledump}}
+  pdf_uniform_deviate_code,// 25 {command code for \.{\\pdfuniformdeviate}}
+  pdf_normal_deviate_code, // 26 {command code for \.{\\pdfnormaldeviate}}
+  expanded_code,           // 27 {command code for \.{\\expanded}}
+  Uchar_convert_code,      // 28 {command code for \.{\\Uchar}}
+  Ucharcat_convert_code,   // 29 {command code for \.{\\Ucharcat}}
 /* HZ */
-#define left_margin_kern_code    30 // {command code for \.{\\leftmarginkern}}
-#define right_margin_kern_code   31 // {command code for \.{\\rightmarginkern}}
-#define job_name_code            32 // {command code for \.{\\jobname}}
+  left_margin_kern_code,  // {command code for \.{\\leftmarginkern}}
+  right_margin_kern_code, // {command code for \.{\\rightmarginkern}}
+  job_name_code,          // {command code for \.{\\jobname}}
+};
 /* sec 0480 */
 #define closed    2
 #define just_open 1

@@ -11284,7 +11284,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case convert:
-      switch (chr_code)
+      switch ((enum cmd_type)chr_code)
       {
         case number_code:
           print_esc("number");
@@ -11414,7 +11414,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("rightmarginkern");
           break;
 
-        default:
+        case job_name_code:
           print_esc("jobname");
           break;
       }
@@ -17314,7 +17314,7 @@ void conv_toks (void)
   enum output_mode old_setting; // {holds |selector| setting}
   pointer p, q;
   KANJI_code cx; // {temporary register for KANJI}
-  char c; // {desired type of conversion}
+  enum cmd_type c; // {desired type of conversion}
   small_number save_scanner_status; // {|scanner_status| upon entry}
   pointer save_def_ref; // {|def_ref| upon entry, important if inside `\.{\\message}'}
   pointer save_warning_index;
@@ -17858,8 +17858,18 @@ void conv_toks (void)
     case job_name_code:
       print(job_name);
       break;
+
+  /*
+    case pdf_creation_date_code:
+    case pdf_file_mod_date_code:
+    case pdf_file_size_code:
+    case pdf_mdfive_sum_code:
+    case pdf_file_dump_code:
+    case expanded_code:
+   */
+    default:// {there are no other cases}
+      break;
   }
-  // {there are no other cases}
   selector = old_setting;
   link(garbage) = str_toks_cat(b, cat);
   ins_list(link(temp_head));
