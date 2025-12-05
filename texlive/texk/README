@@ -1,4 +1,4 @@
-$Id: README 76025 2025-08-11 02:00:45Z takuji $
+$Id: README 77026 2025-12-05 10:46:17Z takuji $
 Copyright 2006-2025 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -110,7 +110,7 @@ ttf2pk2 - maintained here, by us
 
 ttfdump - maintained here, by us, since Taiwan upstream apparently gone.
 
-upmendex 1.21 - by Takuji Tanaka
+upmendex 1.22 - by Takuji Tanaka
   https://ctan.org/pkg/upmendex
   https://github.com/t-tk/upmendex-package
 
