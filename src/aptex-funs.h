@@ -148,7 +148,8 @@ void scan_int (void);
 void scan_glue (small_number level);
 void ins_the_toks (void);
 void conv_toks (void);
-pointer scan_toks (boolean macro_def, boolean xpand);
+static pointer scan_toks (boolean macro_def, boolean xpand);
+static pointer scan_toks_expand (void);
 void pass_text (void);
 void conditional (void);
 void pack_file_name (str_number n, str_number a, str_number e);
@@ -651,12 +652,12 @@ static void compare_strings (void)
   str_number s1, s2;
   pool_pointer i1, i2, j1, j2;
 
-  scan_toks(false, true);
+  scan_toks_expand();
   is_print_utf8 = true;
   s1 = tokens_to_string(def_ref);
   is_print_utf8 = false;
   delete_token_ref(def_ref);
-  scan_toks(false, true);
+  scan_toks_expand();
   is_print_utf8 = true;
   s2 = tokens_to_string(def_ref);
   is_print_utf8 = false;

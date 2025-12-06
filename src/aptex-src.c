@@ -7864,7 +7864,7 @@ static pointer get_avail (void)
 
   if (likely(p != null))
     avail = link(avail); // {and pop it off}
-  else if (mem_end < mem_max) // {or go into virgin territory}
+  else if (unlikely(mem_end < mem_max)) // {or go into virgin territory}
   {
     incr(mem_end);
     p = mem_end;
@@ -7874,7 +7874,7 @@ static pointer get_avail (void)
     decr(hi_mem_min);
     p = hi_mem_min;
 
-    if (hi_mem_min <= lo_mem_max)
+    if (unlikely(hi_mem_min <= lo_mem_max))
     {
       incr(hi_mem_min);
       mem = realloc_mem(0, mem_top / 2);
@@ -7952,7 +7952,7 @@ restart:
 
     r = q - s;
 
-    if (r > p + 1)
+    if (likely(r > p + 1))
     {
       node_size(p) = r - p;
       rover = p;
@@ -17164,7 +17164,7 @@ do {                          \
 
 #define scan_pdf_ext_toks() \
 do {                        \
-  scan_toks(false, true);   \
+  scan_toks_expand();   \
 } while (0)
 
 static char * aptex_find_file (str_number s)
@@ -17875,7 +17875,7 @@ void conv_toks (void)
   ins_list(link(temp_head));
 }
 
-pointer scan_toks (boolean macro_def, boolean xpand)
+static pointer scan_toks (boolean macro_def, boolean xpand)
 {
   halfword t; // {token representing the highest parameter number}
   halfword s; // {saved token}
@@ -18066,6 +18066,10 @@ found:
     store_new_token(hash_brace);
 
   return p;
+}
+
+_Flatten static pointer scan_toks_expand (void) {
+  return scan_toks(false, true);
 }
 
 void read_toks (integer n, pointer r, halfword j)
@@ -19061,7 +19065,7 @@ static void scan_file_name_braced (void)
   cur_cs = warning_index; // {for possible runaway error}
   // {mimick |call_func| from pdfTeX}
 
-  if (scan_toks(false, true) != 0)
+  if (scan_toks_expand() != 0)
     do_nothing(); // {actually do the scanning}
 
   // {s := tokens_to_string(def_ref);}
@@ -20188,14 +20192,13 @@ void prune_movements (integer l)
   while (down_ptr != null)
   {
     if (location(down_ptr) < l)
-      goto done;
+      break;
 
     p = down_ptr;
     down_ptr = link(p);
     free_node(p, movement_node_size);
   }
 
-done:
   while (right_ptr != null)
   {
     if (location(right_ptr) < l)
@@ -23220,7 +23223,7 @@ static void write_out (pointer p)
   old_mode = mode;
   mode = 0;
   cur_cs = write_loc;
-  q = scan_toks(false, true); // {expand macros, etc.}
+  q = scan_toks_expand(); // {expand macros, etc.}
   mode = old_mode;
   get_token();
 
@@ -32507,7 +32510,7 @@ static void make_mark (void)
     c = cur_val;
   }
 
-  p = scan_toks(false, true);
+  p = scan_toks_expand();
   p = get_node(small_node_size);
   mark_class(p) = c;
   type(p) = mark_node;
@@ -35911,7 +35914,7 @@ static void issue_message (void)
   str_number s; // {the message}
 
   c = cur_chr;
-  link(garbage) = scan_toks(false, true);
+  link(garbage) = scan_toks_expand();
   old_setting = selector;
   selector = new_string;
   token_show(def_ref);
@@ -36278,7 +36281,7 @@ static void do_extension (void)
       {
         new_whatsit(special_node, write_node_size);
         write_stream(tail) = null;
-        p = scan_toks(false, true);
+        p = scan_toks_expand();
         write_tokens(tail) = def_ref;
         inhibit_glue_flag = false;
       }
@@ -40733,7 +40736,7 @@ void find_sa_element (small_number t, halfword n, boolean w)
   if ((cur_ptr == null) && w)
     goto not_found4;
 
-  goto exit;
+  return;
 
 not_found:
   new_index(t, null);
@@ -40795,7 +40798,6 @@ not_found4:
   sa_lev(cur_ptr) = level_one;
   link(cur_ptr) = q;
   add_sa_ptr();
-exit:;
 }
 
 void delete_sa_ref (pointer q)
