@@ -306,8 +306,6 @@ typedef integer trie_op_code;
 typedef integer trie_pointer;
 typedef integer hyph_pointer;
 
-EXTERN integer bad;                           // {is some ``constant'' wrong?}
-
 EXTERN ASCII_code xord[256];                  // {specifies conversion of input characters}
 EXTERN ASCII_code xchr[256];                  // { specifies conversion of output characters }
 

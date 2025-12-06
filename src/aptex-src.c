@@ -3876,7 +3876,7 @@ static int aptex_program (void)
   if (ready_already == 314159)
     goto start_of_TEX;
 
-  bad = 0;
+  integer bad = 0; // {is some ``constant'' wrong?}
 
   if ((half_error_line < 30) || (half_error_line > error_line - 15))
     bad = 1;
@@ -16299,7 +16299,7 @@ found:
   }
   // @<Input from token list, |goto restart| if end of list or
   //  if a parameter needs to be expanded@>
-  else if (loc != null) // {list not exhausted}
+  else if (likely(loc != null)) // {list not exhausted}
   {
     t = info(loc);
     loc = link(loc); // {move to next}

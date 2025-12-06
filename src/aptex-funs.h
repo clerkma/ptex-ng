@@ -140,7 +140,7 @@ void begin_file_reading (void);
 void end_file_reading (void);
 void clear_for_error_prompt (void);
 void get_next (void);
-void get_token (void);
+static void get_token (void);
 void get_x_token (void);
 void scan_left_brace (void);
 
