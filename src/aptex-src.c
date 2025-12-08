@@ -13775,7 +13775,7 @@ static void macro_call (void)
 continu:
       get_token();
 
-      if (cur_tok == info(r))
+      if (unlikely(cur_tok == info(r)))
       {
         r = link(r);
 
@@ -13790,7 +13790,7 @@ continu:
           goto continu;
       }
 
-      if (s != r)
+      if (unlikely(s != r))
       {
         if (unlikely(s == null))
         {
@@ -13903,7 +13903,7 @@ done:
               goto exit;
             }
 
-            if (cur_tok < right_brace_limit)
+            if (unlikely(cur_tok < right_brace_limit))
             {
               if (cur_tok < left_brace_limit)
                 incr(unbalance);
@@ -13940,7 +13940,7 @@ done1:
         }
       else
       {
-        if (cur_tok == space_token)
+        if (unlikely(cur_tok == space_token))
         {
           if (info(r) <= end_match_token)
           {
@@ -13961,7 +13961,7 @@ done1:
         goto continu;
 
 found:
-      if (s != null)
+      if (likely(s != null))
       {
         if ((m == 1) && (info(p) < right_brace_limit) && (p != temp_head))
         {
