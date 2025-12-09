@@ -5874,7 +5874,7 @@ static void init_prim (void)
 #endif
 
 // prints an end-of-line
-void print_ln (void)
+static void print_ln (void)
 {
   integer ii;
 
@@ -5934,7 +5934,7 @@ void print_ln (void)
 }
 
 // prints a single character
-void print_char (ASCII_code s)
+static void print_char (ASCII_code s)
 {
   if (s == new_line_char)
   {
@@ -6057,7 +6057,7 @@ void print_char (ASCII_code s)
 }
 
 // prints string |s|
-void print_ (integer s)
+static void print_ (integer s)
 {
   pool_pointer j; // {current character code position}
   integer nl;     // {new-line character to restore}
@@ -6113,7 +6113,7 @@ void print_ (integer s)
 }
 
 // string version print.
-_Flatten void prints_ (const char * s)
+static _Flatten void prints_ (const char * s)
 {
   while (*s)
     print_char(*s++);
@@ -13387,7 +13387,7 @@ void begin_token_list (pointer p, quarterword t)
 }
 // checked
 // leave a token-list input level
-void end_token_list (void)
+static void end_token_list (void)
 {
   if (token_type >= backed_up)
   {
@@ -13667,7 +13667,7 @@ static void firm_up_the_line (void)
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_tok|
-void get_token (void)
+static void get_token (void)
 {
   no_new_control_sequence = false;
   get_next();
@@ -14384,7 +14384,7 @@ reswitch:
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_tok|, and expands macros
-void get_x_token (void)
+static void get_x_token (void)
 {
 restart:
   get_next();
@@ -14448,7 +14448,7 @@ static inline void get_the_next_non_blank_non_relax_non_call_token (void)
 }
 
 // reads a mandatory |left_brace|
-void scan_left_brace (void)
+static void scan_left_brace (void)
 {
   get_the_next_non_blank_non_relax_non_call_token();
 
@@ -15704,7 +15704,7 @@ restart:
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_cs| to next token
-void get_next (void)
+static void get_next (void)
 {
   uint32_t k; // {an index into |buffer|}
   halfword t; // {a token}
@@ -16405,7 +16405,7 @@ static inline void scan_an_optional_space()
     back_input();
 }
 // sets |cur_val| to an integer
-void scan_int (void)
+static void scan_int (void)
 {
   boolean negative; //{should the answer be negated?}
   integer m; // {|@t$2^{31}$@> div radix|, the threshold of danger}
@@ -16895,7 +16895,7 @@ _Flatten static void scan_normal_dimen(void) {
 }
 
 // sets |cur_val| to a glue spec pointer
-void scan_glue (small_number level)
+static void scan_glue (small_number level)
 {
   boolean negative; // {should the answer be negated?}
   pointer q; // {new glue specification}
@@ -29418,7 +29418,7 @@ exit:
 #endif
 }
 
-void post_line_break (boolean d)
+static void post_line_break (boolean d)
 {
   pointer q, r, s;          // {temporary registers for list manipulation}
   /* [877] - margin kerning */
@@ -30046,7 +30046,7 @@ done:
   return j;
 }
 
-void hyphenate (void)
+static void hyphenate (void)
 {
   uint32_t i, j, l;
   pointer q, r, s;

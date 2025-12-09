@@ -87,11 +87,11 @@ extern void synctexcurrent(void);
 #define synctex_current synctexcurrent
 
 // functions of TeX82
-void print_ln (void);
-void print_char (ASCII_code s);
-void print_(integer s);
+static void print_ln (void);
+static void print_char (ASCII_code s);
+static void print_(integer s);
 #define print(s) print_((integer) (s))
-void prints_(const char * s);
+static void prints_(const char * s);
 #define prints(s) prints_((const char *) s)
 void slow_print (integer s);
 void print_nl (const char * s);
@@ -134,18 +134,18 @@ pointer id_lookup (integer j, integer l);
 void assign_trace (pointer p, const char * s);
 
 void show_context (void);
-void end_token_list (void);
+static void end_token_list (void);
 static void back_input (void);
 void begin_file_reading (void);
 void end_file_reading (void);
 void clear_for_error_prompt (void);
-void get_next (void);
+static void get_next (void);
 static void get_token (void);
-void get_x_token (void);
-void scan_left_brace (void);
+static void get_x_token (void);
+static void scan_left_brace (void);
 
-void scan_int (void);
-void scan_glue (small_number level);
+static void scan_int (void);
+static void scan_glue (small_number level);
 void ins_the_toks (void);
 void conv_toks (void);
 static pointer scan_toks (boolean macro_def, boolean xpand);
@@ -179,8 +179,8 @@ void mlist_to_hlist (void);
 void align_peek (void);
 pointer finite_shrink (pointer p);
 void try_break (integer pi, small_number breaktype);
-void post_line_break (boolean d);
-void hyphenate (void);
+static void post_line_break (boolean d);
+static void hyphenate (void);
 void print_totals (void);
 void build_page (void);
 void normal_paragraph (void);
