@@ -287,7 +287,7 @@ typedef struct
   memory_word aux_field;
 } list_state_record;
 /* sec 0269 */
-typedef char group_code;
+typedef enum group_code group_code;
 /* sec 0300 */
 typedef struct
 {
@@ -426,7 +426,7 @@ EXTERN def_array(save_stack, memory_word, save_size + 1);
 EXTERN integer save_ptr;                      // {first unused entry on |save_stack|}
 EXTERN integer max_save_stack;                // {maximum usage of save stack}
 EXTERN int cur_level;                         // {current nesting level for groups}
-EXTERN int cur_group;                         // {current group type}
+EXTERN group_code cur_group;                         // {current group type}
 EXTERN integer cur_boundary;                  // {where the current level begins}
 
 EXTERN integer mag_set;                       // {if nonzero, this magnification should be used henceforth}

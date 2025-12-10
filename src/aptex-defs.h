@@ -1019,23 +1019,25 @@ do {                                            \
 #define level_boundary    3 // {|save_type| corresponding to beginning of group}
 #define restore_sa        4 // {|save_type| when sparse array entries should be restored}
 /* sec 0269 */
-#define bottom_level        0   // {group code for the outside world}
-#define simple_group        1   // {group code for local structure only}
-#define hbox_group          2   // {code for `\.{\\hbox}\grp'}
-#define adjusted_hbox_group 3   // {code for `\.{\\hbox}\grp' in vertical mode}
-#define vbox_group          4   // {code for `\.{\\vbox}\grp'}
-#define vtop_group          5   // {code for `\.{\\vtop}\grp'}
-#define align_group         6   // {code for `\.{\\halign}\grp', `\.{\\valign}\grp'}
-#define no_align_group      7   // {code for `\.{\\noalign}\grp'}
-#define output_group        8   // {code for output routine}
-#define math_group          9   // {code for, e.g., `\.{\char'136}\grp'}
-#define disc_group          10  // {code for `\.{\\discretionary}\grp\grp\grp'}
-#define insert_group        11  // {code for `\.{\\insert}\grp', `\.{\\vadjust}\grp'}
-#define vcenter_group       12  // {code for `\.{\\vcenter}\grp'}
-#define math_choice_group   13  // {code for `\.{\\mathchoice}\grp\grp\grp\grp'}
-#define semi_simple_group   14  // {code for `\.{\\begingroup...\\endgroup}'}
-#define math_shift_group    15  // {code for `\.{\$...\$}'}
-#define math_left_group     16  // {code for `\.{\\left...\\right}'}
+enum group_code {
+  bottom_level,         // {group code for the outside world}
+  simple_group,         // {group code for local structure only}
+  hbox_group,           // {code for `\.{\\hbox}\grp'}
+  adjusted_hbox_group,  // {code for `\.{\\hbox}\grp' in vertical mode}
+  vbox_group,           // {code for `\.{\\vbox}\grp'}
+  vtop_group,           // {code for `\.{\\vtop}\grp'}
+  align_group,          // {code for `\.{\\halign}\grp', `\.{\\valign}\grp'}
+  no_align_group,       // {code for `\.{\\noalign}\grp'}
+  output_group,         // {code for output routine}
+  math_group,           // {code for, e.g., `\.{\char'136}\grp'}
+  disc_group,           // {code for `\.{\\discretionary}\grp\grp\grp'}
+  insert_group,         // {code for `\.{\\insert}\grp', `\.{\\vadjust}\grp'}
+  vcenter_group,        // {code for `\.{\\vcenter}\grp'}
+  math_choice_group,    // {code for `\.{\\mathchoice}\grp\grp\grp\grp'}
+  semi_simple_group,    // {code for `\.{\\begingroup...\\endgroup}'}
+  math_shift_group,     // {code for `\.{\$...\$}'}
+  math_left_group,      // {code for `\.{\\left...\\right}'}
+};
 #define max_group_code      16
 /* sec 0274 */
 #define saved(a) save_stack[save_ptr + (a)].cint

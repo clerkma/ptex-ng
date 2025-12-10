@@ -31987,6 +31987,7 @@ static void extra_right_brace (void)
     case math_left_group:
       print_esc("right");
       break;
+    default: break;
   }
 
   help5("I've deleted a group-closing symbol because it seems to be",
@@ -36712,10 +36713,10 @@ static void handle_right_brace (void)
             }
       }
       break;
-
+      /*
     default:
       confusion("rightbrace");
-      break;
+      break; */
   }
 }
 
@@ -39258,6 +39259,7 @@ void show_save_groups (void)
           goto found;
         }
         break;
+      case bottom_level: break;
     }
   }
 
