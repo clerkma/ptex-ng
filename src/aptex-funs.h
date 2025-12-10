@@ -862,6 +862,7 @@ static fontinfo *init_font_base (void)
     f->ef[i] = 1000;
   }
   f->next = fontinfo_root;
+  fontinfo_root = f;
   return f;
 }
 
