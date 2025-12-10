@@ -21678,6 +21678,7 @@ reswitch:
       case glue_node:
         // @<Move right or output leaders@>
         {
+          pointer g;
           round_glue();
 
           if (eTeX_ex)
@@ -21724,8 +21725,8 @@ reswitch:
               }
               else
               {
-                lq = rule_wd / leader_wd; // {the number of box copies}
-                lr = rule_wd % leader_wd; // {the remaining space}
+                integer lq = rule_wd / leader_wd; // {the number of box copies}
+                integer lr = rule_wd % leader_wd; // {the remaining space}
 
                 if (subtype(p) == c_leaders)
                   cur_h = cur_h + (lr / 2);
@@ -22166,6 +22167,7 @@ reswitch:
       case glue_node:
         // @<Move right or output leaders@>
         {
+          pointer g;
           round_glue();
 
           if (eTeX_ex)
@@ -22212,8 +22214,8 @@ reswitch:
               }
               else
               {
-                lq = rule_wd / leader_wd; // {the number of box copies}
-                lr = rule_wd % leader_wd; // {the remaining space}
+                integer lq = rule_wd / leader_wd; // {the number of box copies}
+                integer lr = rule_wd % leader_wd; // {the remaining space}
 
                 if (subtype(p) == c_leaders)
                   cur_h = cur_h + (lr / 2);
@@ -22547,7 +22549,7 @@ void dvi_vlist_out (void)
         case glue_node:
           // @<Move down or output leaders@>
           {
-            g = glue_ptr(p);
+            pointer g = glue_ptr(p);
             rule_ht = width(g) - cur_g;
 
             if (g_sign != normal)
@@ -22608,8 +22610,8 @@ void dvi_vlist_out (void)
                 }
                 else
                 {
-                  lq = rule_ht / leader_ht; // {the number of box copies}
-                  lr = rule_ht % leader_ht; // {the remaining space}
+                  integer lq = rule_ht / leader_ht; // {the number of box copies}
+                  integer lr = rule_ht % leader_ht; // {the remaining space}
 
                   if (subtype(p) == c_leaders)
                     cur_v = cur_v + (lr / 2);
@@ -22846,7 +22848,7 @@ void pdf_vlist_out (void)
         case glue_node:
           // @<Move down or output leaders@>
           {
-            g = glue_ptr(p);
+            pointer g = glue_ptr(p);
             rule_ht = width(g) - cur_g;
 
             if (g_sign != normal)
@@ -22907,8 +22909,8 @@ void pdf_vlist_out (void)
                 }
                 else
                 {
-                  lq = rule_ht / leader_ht; // {the number of box copies}
-                  lr = rule_ht % leader_ht; // {the remaining space}
+                  integer lq = rule_ht / leader_ht; // {the number of box copies}
+                  integer lr = rule_ht % leader_ht; // {the remaining space}
 
                   if (subtype(p) == c_leaders)
                     cur_v = cur_v + (lr / 2);
@@ -39462,6 +39464,7 @@ reswitch:
 
         case glue_node:
           {
+            pointer g;
             round_glue();
             handle_a_glue_node();
           }

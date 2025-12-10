@@ -426,7 +426,7 @@ EXTERN def_array(save_stack, memory_word, save_size + 1);
 EXTERN integer save_ptr;                      // {first unused entry on |save_stack|}
 EXTERN integer max_save_stack;                // {maximum usage of save stack}
 EXTERN int cur_level;                         // {current nesting level for groups}
-EXTERN group_code cur_group;                         // {current group type}
+EXTERN group_code cur_group;                  // {current group type}
 EXTERN integer cur_boundary;                  // {where the current level begins}
 
 EXTERN integer mag_set;                       // {if nonzero, this magnification should be used henceforth}
@@ -579,8 +579,6 @@ EXTERN boolean doing_leaders;                 // {are we inside a leader box?}
 
 EXTERN boolean dir_used;                      // {Is this dvi extended?}
 EXPORT scaled rule_ht, rule_dp, rule_wd;      // {size of current rule being output}
-EXTERN pointer g;                             // {current glue specification}
-EXTERN integer lq, lr;                        // {quantities used in calculations for leaders}
 EXTERN eight_bits dvi_buf[dvi_buf_size + 4];  // {buffer for \.{DVI} output}
 EXTERN dvi_index half_buf;                    // {half of |dvi_buf_size|}
 EXTERN dvi_index dvi_limit;                   // {end of the current half buffer}
