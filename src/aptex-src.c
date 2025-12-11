@@ -1737,7 +1737,7 @@ static inline integer calc_pos (integer c)
 }
 
 // Ref. http://www.unicode.org/Public/UNIDATA/Blocks.txt
-static long ucs_range[] =
+static const long ucs_range[] =
 {
   0x0000, /* Basic Latin                                         */ /* 0x00 */
   0x0080, /* Latin-1 Supplement                                  */
@@ -2101,7 +2101,7 @@ static long ucs_range[] =
 
 #define NUCS_RANGE (sizeof(ucs_range)/sizeof(ucs_range[0]))
 
-static int binary_search (long x, long *a, int left, int right)
+static int binary_search (long x, const long *a, int left, int right)
 {
   right++;
 
@@ -12107,7 +12107,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case xray:
-      switch (chr_code)
+      switch ((enum show)chr_code)
       {
         case show_box_code:
           print_esc("showbox");
@@ -12430,19 +12430,19 @@ static void show_eqtb (pointer n)
         prints(", type=");
         switch (eq_type(n))
         {
-          case 0:
+          case inhibit_both:
             prints("both");   // { |inhibit_both| }
             break;
-          case 1:
+          case inhibit_previous:
             prints("before"); // { |inhibit_previous| }
             break;
-          case 2:
+          case inhibit_after:
             prints("after"); // { |inhibit_after| }
             break;
-          case 3:
+          case inhibit_none:
             prints("none");  // { |inhibit_none| }
             break;
-          case 4:
+          case inhibit_unused:
             prints("unused"); // { |inhibit_unused| }
             break;
         }
@@ -36004,7 +36004,7 @@ static void show_whatever (void)
   integer l;  // {line where that conditional began}
   integer n;  // {level of \.{\\if...\\fi} nesting}
 
-  switch (cur_chr)
+  switch ((enum show)cur_chr)
   {
     case show_lists_code:
       {

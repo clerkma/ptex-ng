@@ -81,8 +81,8 @@ enum output_mode
   term_and_log = 19,  // {normal |selector| setting}
   pseudo       = 20,  // {special |selector| setting for |show_context|}
   new_string   = 21,  // {printing is deflected to the string pool}
-  max_selector = 21,  // {highest selector setting}
 };
+#define max_selector new_string // {highest selector setting}
 /* sec 0073 */
 enum i_mode
 {
@@ -2038,14 +2038,16 @@ while (0)
 #define toks_def_code      6  // {|shorthand_def| for \.{\\toksdef}}
 #define kchar_def_code     7  // {|shorthand_def| for \.{\\kchardef}}
 /* sec 1290 */
-#define show_code       0 // { \.{\\show} }
-#define show_box_code   1 // { \.{\\showbox} }
-#define show_the_code   2 // { \.{\\showthe} }
-#define show_lists_code 3 // { \.{\\showlists} }
-#define show_groups     4 // { \.{\\showgroups} }
-#define show_tokens     5 // { \.{\\showtokens} , must be odd! }
-#define show_ifs        6 // { \.{\\showifs} }
-#define show_mode       7 // { \.{\\showmode} }
+enum show {
+  show_code,       // { \.{\\show} }
+  show_box_code,   // { \.{\\showbox} }
+  show_the_code,   // { \.{\\showthe} }
+  show_lists_code, // { \.{\\showlists} }
+  show_groups,     // { \.{\\showgroups} }
+  show_tokens,     // { \.{\\showtokens} , must be odd! }
+  show_ifs,        // { \.{\\showifs} }
+  show_mode,       // { \.{\\showmode} }
+};
 /* sec 1306 */
 #define undump(va, vb, vc)        \
 do {                              \

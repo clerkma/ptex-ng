@@ -291,9 +291,9 @@ typedef enum group_code group_code;
 /* sec 0300 */
 typedef struct
 {
+  integer synctex_tag_field;
   quarterword state_field, index_field;
   halfword start_field, loc_field, limit_field, name_field;
-  integer synctex_tag_field;
 } in_state_record;
 /* sec 0548 */
 typedef integer internal_font_number;
