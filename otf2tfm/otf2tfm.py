@@ -6,9 +6,15 @@ import zlib
 import argparse
 
 UNITY = 0o4000000
+U32MAX = 0xFFFFFFFF
+FIXWORD_A = 0xFF000000
+
 
 def make_fixword(val):
-    return int(val * UNITY) & 0xFFFFFFFF
+    if val >= 0:
+        return int(val * UNITY) & U32MAX
+    else:
+        return (int((val + 16) * UNITY) & U32MAX) | FIXWORD_A
 
 def make_header():
     pass
@@ -26,6 +32,35 @@ def make_metric(face):
         dp.append(cbox.yMin)
     return wd, ht, dp
 
+def store_kern(lig_kern, kern, value, a_val=0):
+    lig_kern += [a_val, value[0], 0x80, len(kern)]
+    kern.append(value[1])
+
+def get_kern(face):
+    pair = {}
+    remainder = {}
+    count = 0
+    upm = face.units_per_EM
+    for l in range(1, 256):
+        save_count = count
+        for r in range(1, 256):
+            v = face.get_kerning(l, r, freetype.FT_KERNING_UNSCALED)
+            if v.x and count < 256:
+                pair.setdefault(l, []).append((r, make_fixword(v.x /  upm)))
+                count += 1
+        if count != save_count:
+            remainder[l] = save_count
+    prog = []
+    kern = []
+    for key in sorted(pair):
+        val = pair[key]
+        for one_val in val[:-1]:
+            store_kern(prog, kern, one_val)
+        store_kern(prog, kern, val[-1], 0x80)
+    blob_lig_kern = struct.pack(f">{len(prog)}B", *prog)
+    blob_kern = struct.pack(f">{len(kern)}L", *kern)
+    return remainder, blob_lig_kern, blob_kern
+
 def read_file(path):
     data = path.read_bytes()
     hash = zlib.crc32(data)
@@ -41,14 +76,15 @@ def main(src, out):
             header_checksum = hash
             header_design_size = make_fixword(10.0)
             wd, ht, dp = make_metric(face)
+            remainder, blob_nl, blob_nk = get_kern(face)
             bc = 0
             ec = 255
             nw = 256
             nh = 2
             nd = 2
             ni = 2
-            nl = 0
-            nk = 0
+            nl = len(blob_nl) // 4
+            nk = len(blob_nk) // 4
             ne = 0
             np = 7
             slant = make_fixword(0)
@@ -58,17 +94,28 @@ def main(src, out):
             xheight = make_fixword(ht[ord('x')] / upm)
             quad = make_fixword(1.0)
             extra_space = make_fixword(0.1)
-            lf = 6 + 2 + (ec - bc + 1) + nw + nh + nd + ni + 7
+            lf = 6 + 2 + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np
             blob_genesis = struct.pack(">12H", lf, lh, bc, ec, nw, nh, nd, ni, nl, nk, ne, np)
             blob_header = struct.pack(">LL", header_checksum, header_design_size)
-            blob_char_info = b"".join([struct.pack(">BBBB", x, 16 + 1, 0, 0) for x in range(256)])
+            char_info = []
+            for x in range(256):
+                char_info += [x, 16 + 1]
+                if x in remainder:
+                    char_info += [1, remainder[x]]
+                else:
+                    char_info += [0, 0]
+            blob_char_info = bytes(char_info)
             data_wd = [make_fixword(x / upm) for x in wd]
             blob_nw = struct.pack(">256L", 0, *data_wd[1:])
             blob_nh = struct.pack(">LL", 0, make_fixword(max(ht) / upm))
             blob_nd = struct.pack(">LL", 0, make_fixword(-min(dp) / upm))
             blob_ni = struct.pack(">LL", 0, 0)
             blob_param = struct.pack(">7L", slant, space, stretch, shrink, xheight, quad, extra_space)
-            blob_final = blob_genesis + blob_header + blob_char_info + blob_nw + blob_nh + blob_nd + blob_ni + blob_param
+            blob_final = (
+                blob_genesis + blob_header + blob_char_info
+                + blob_nw + blob_nh + blob_nd + blob_ni
+                + blob_nl + blob_nk + blob_param
+            )
             pathlib.Path(out).write_bytes(blob_final)
     except Exception as e:
         print("Error:", e)
