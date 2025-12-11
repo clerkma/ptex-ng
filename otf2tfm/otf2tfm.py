@@ -46,7 +46,7 @@ def get_kern(face):
         for r in range(1, 256):
             v = face.get_kerning(l, r, freetype.FT_KERNING_UNSCALED)
             if v.x and count < 256:
-                pair.setdefault(l, []).append((r, make_fixword(v.x /  upm)))
+                pair.setdefault(l, []).append((r, make_fixword(v.x / upm)))
                 count += 1
         if count != save_count:
             remainder[l] = save_count
@@ -57,7 +57,7 @@ def get_kern(face):
         for one_val in val[:-1]:
             store_kern(prog, kern, one_val)
         store_kern(prog, kern, val[-1], 0x80)
-    blob_lig_kern = struct.pack(f">{len(prog)}B", *prog)
+    blob_lig_kern = bytes(prog)
     blob_kern = struct.pack(f">{len(kern)}L", *kern)
     return remainder, blob_lig_kern, blob_kern
 
@@ -94,7 +94,7 @@ def main(src, out):
             xheight = make_fixword(ht[ord('x')] / upm)
             quad = make_fixword(1.0)
             extra_space = make_fixword(0.1)
-            lf = 6 + 2 + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np
+            lf = 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np
             blob_genesis = struct.pack(">12H", lf, lh, bc, ec, nw, nh, nd, ni, nl, nk, ne, np)
             blob_header = struct.pack(">LL", header_checksum, header_design_size)
             char_info = []
