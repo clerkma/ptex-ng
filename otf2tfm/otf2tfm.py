@@ -112,7 +112,7 @@ def main(src, out):
             data_wd = [make_fixword(x / upm) for x in wd]
             blob_nw = struct.pack(">256L", 0, *data_wd[1:])
             blob_nh = struct.pack(">LL", 0, make_fixword(max(ht) / upm))
-            blob_nd = struct.pack(">LL", 0, make_fixword(-min(dp) / upm))
+            blob_nd = struct.pack(">LL", 0, make_fixword(max(dp) / upm))
             blob_ni = struct.pack(">LL", 0, 0)
             blob_param = struct.pack(">7L", slant, space, stretch, shrink, xheight, quad, extra_space)
             blob_final = (
@@ -140,5 +140,8 @@ if __name__ == "__main__":
     task = parser.parse_args()
 
     if task.src and task.out:
-        print(task.src, task.out)
-        main(task.src, task.out)
+        if task.src == task.out:
+            print("Please check your command line")
+        else:
+            print(task.src, task.out)
+            main(task.src, task.out)
