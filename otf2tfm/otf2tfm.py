@@ -9,7 +9,6 @@ UNITY = 0o4000000
 U32MAX = 0xFFFFFFFF
 FIXWORD_A = 0xFF000000
 
-
 def make_fixword(val):
     if val >= 0:
         return int(val * UNITY) & U32MAX
@@ -26,14 +25,19 @@ def make_metric(face):
     for x in range(256):
         g = face.get_char_index(x)
         face.load_glyph(g, freetype.FT_LOAD_NO_SCALE)
-        cbox = face.glyph.outline.get_bbox()
+        outline = face.glyph.outline
         wd.append(face.glyph.advance.x)
-        ht.append(cbox.yMax)
-        dp.append(cbox.yMin)
+        if outline.contours:
+            cbox = face.glyph.outline.get_bbox()
+            ht.append(max(cbox.yMax, 0))
+            dp.append(abs(min(cbox.yMin, 0)))
+        else:
+            ht.append(0)
+            dp.append(0)
     return wd, ht, dp
 
-def store_kern(lig_kern, kern, value, a_val=0):
-    lig_kern += [a_val, value[0], 0x80, len(kern)]
+def store_kern(prog, kern, value, skip_op=0):
+    prog += [skip_op, value[0], 0x80, len(kern)]
     kern.append(value[1])
 
 def get_kern(face):
@@ -44,9 +48,9 @@ def get_kern(face):
     for l in range(1, 256):
         save_count = count
         for r in range(1, 256):
-            v = face.get_kerning(l, r, freetype.FT_KERNING_UNSCALED)
-            if v.x and count < 256:
-                pair.setdefault(l, []).append((r, make_fixword(v.x / upm)))
+            k = face.get_kerning(l, r, freetype.FT_KERNING_UNSCALED).x
+            if k and count < 256:
+                pair.setdefault(l, []).append((r, make_fixword(k / upm)))
                 count += 1
         if count != save_count:
             remainder[l] = save_count
@@ -57,9 +61,9 @@ def get_kern(face):
         for one_val in val[:-1]:
             store_kern(prog, kern, one_val)
         store_kern(prog, kern, val[-1], 0x80)
-    blob_lig_kern = bytes(prog)
+    blob_prog = bytes(prog)
     blob_kern = struct.pack(f">{len(kern)}L", *kern)
-    return remainder, blob_lig_kern, blob_kern
+    return remainder, blob_prog, blob_kern
 
 def read_file(path):
     data = path.read_bytes()
@@ -138,4 +142,3 @@ if __name__ == "__main__":
     if task.src and task.out:
         print(task.src, task.out)
         main(task.src, task.out)
-
