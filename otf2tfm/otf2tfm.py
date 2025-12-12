@@ -28,9 +28,9 @@ def make_metric(face):
         outline = face.glyph.outline
         wd.append(face.glyph.advance.x)
         if outline.contours:
-            cbox = outline.get_bbox()
-            ht.append(max(cbox.yMax, 0))
-            dp.append(abs(min(cbox.yMin, 0)))
+            bbox = outline.get_bbox()
+            ht.append(max(bbox.yMax, 0))
+            dp.append(abs(min(bbox.yMin, 0)))
         else:
             ht.append(0)
             dp.append(0)
