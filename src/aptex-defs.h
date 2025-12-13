@@ -1985,12 +1985,14 @@ do {                                                      \
 /* sec 1046 */
 #define non_math(a) vmode + a: case hmode + a
 /* sec 1058 */
-#define fil_code     0  // {identifies \.{\\hfil} and \.{\\vfil}}
-#define fill_code    1  // {identifies \.{\\hfill} and \.{\\vfill}}
-#define ss_code      2  // {identifies \.{\\hss} and \.{\\vss}}
-#define fil_neg_code 3  // {identifies \.{\\hfilneg} and \.{\\vfilneg}}
-#define skip_code    4  // {identifies \.{\\hskip} and \.{\\vskip}}
-#define mskip_code   5  // {identifies \.{\\mskip}}
+enum glue {
+  fil_code,     // 0  {identifies \.{\\hfil} and \.{\\vfil}}
+  fill_code,    // 1  {identifies \.{\\hfill} and \.{\\vfill}}
+  ss_code,      // 2  {identifies \.{\\hss} and \.{\\vss}}
+  fil_neg_code, // 3  {identifies \.{\\hfilneg} and \.{\\vfilneg}}
+  skip_code,    // 4  {identifies \.{\\hskip} and \.{\\vskip}}
+  mskip_code,   // 5  {identifies \.{\\mskip}}
+};
 /* sec 1071 */
 #define box_flag        010000000000  // {context code for `\.{\\setbox0}'}
 #define global_box_flag 010000100000  // {context code for `\.{\\global\\setbox0}'}

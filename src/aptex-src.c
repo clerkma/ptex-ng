@@ -12137,7 +12137,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("showmode");
           break;
 
-        default:
+        case show_code:
           print_esc("show");
           break;
       }
@@ -14048,7 +14048,7 @@ static void expand (void)
   small_number save_scanner_status; // {temporary storage of |scanner_status|}
 
   incr(expand_depth_count);
-  if (expand_depth_count >= expand_depth)
+  if (unlikely(expand_depth_count >= expand_depth))
     overflow("expansion depth", expand_depth);
 
   cv_backup = cur_val;
@@ -16397,7 +16397,7 @@ found:
   }
 }
 // @<Scan an optional space@>
-static inline void scan_an_optional_space()
+static inline void scan_an_optional_space(void)
 {
   get_x_token();
 
@@ -31847,7 +31847,7 @@ static void append_glue (void)
 
   s = cur_chr;
 
-  switch (s)
+  switch ((enum glue)s)
   {
     case fil_code:
       cur_val = fil_glue;
@@ -39082,9 +39082,9 @@ void group_trace (boolean e)
 
 void show_save_groups (void)
 {
-  int p;
+  integer p;
   int m;
-  pointer v;
+  integer v;
   quarterword l;
   group_code c;
   int a;

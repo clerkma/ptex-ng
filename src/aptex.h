@@ -425,7 +425,7 @@ EXTERN def_array(save_stack, memory_word, save_size + 1);
 
 EXTERN integer save_ptr;                      // {first unused entry on |save_stack|}
 EXTERN integer max_save_stack;                // {maximum usage of save stack}
-EXTERN int cur_level;                         // {current nesting level for groups}
+EXTERN quarterword cur_level;                 // {current nesting level for groups}
 EXTERN group_code cur_group;                  // {current group type}
 EXTERN integer cur_boundary;                  // {where the current level begins}
 
