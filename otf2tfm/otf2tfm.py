@@ -4,6 +4,7 @@ import pathlib
 import io
 import zlib
 import argparse
+import uharfbuzz as hb
 
 UNITY = 0o4000000
 U32MAX = 0xFFFFFFFF
@@ -40,15 +41,35 @@ def store_kern(prog, kern, value, skip_op=0):
     prog += [skip_op, value[0], 0x80, len(kern)]
     kern.append(value[1])
 
-def get_kern(face):
+def ft_kern(face, l, r):
+    return face.get_kerning(l, r, freetype.FT_KERNING_UNSCALED).x
+
+def hb_kern_test(font, text, kern):
+    buf = hb.Buffer()
+    buf.add_str(text)
+    buf.guess_segment_properties()
+    features = {"kern": kern, "liga": False}
+    hb.shape(font, buf, features)
+    return buf.glyph_positions
+
+def hb_kern(font, l, r):
+    text = f"{chr(l)}{chr(r)}"
+    p = hb_kern_test(font, text, False)
+    l_adv0 = p[0].x_advance
+    p = hb_kern_test(font, text, True)
+    l_adv1 = p[0].x_advance
+    r_xoff = p[1].x_offset
+    return l_adv1 - l_adv0 + r_xoff
+
+def get_kern(face, font, l_set=range(1, 256), r_set=range(1, 256)):
     pair = {}
     remainder = {}
     count = 0
     upm = face.units_per_EM
-    for l in range(1, 256):
+    for l in l_set:
         save_count = count
-        for r in range(1, 256):
-            k = face.get_kerning(l, r, freetype.FT_KERNING_UNSCALED).x
+        for r in r_set:
+            k = ft_kern(face, l, r) or hb_kern(font, l, r)
             if k and count < 256:
                 pair.setdefault(l, []).append((r, make_fixword(k / upm)))
                 count += 1
@@ -68,19 +89,21 @@ def get_kern(face):
 def read_file(path):
     data = path.read_bytes()
     hash = zlib.crc32(data)
-    return freetype.Face(io.BytesIO(data)), hash
+    ft_face = freetype.Face(io.BytesIO(data))
+    hb_font = hb.Font(hb.Face(data))
+    return ft_face, hb_font, hash
 
 def main(src, out):
     path = pathlib.Path(src)
     try:
         if result := read_file(path):
-            face, hash = result
+            face, font, hash = result
             upm = face.units_per_EM
             lh = 2
             header_checksum = hash
             header_design_size = make_fixword(10.0)
             wd, ht, dp = make_metric(face)
-            remainder, blob_nl, blob_nk = get_kern(face)
+            remainder, blob_nl, blob_nk = get_kern(face, font)
             bc = 0
             ec = 255
             nw = 256
