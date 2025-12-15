@@ -624,7 +624,7 @@ static inline integer get_microinterval (void)
 
 static str_number tokens_to_string (pointer p)
 {
-  enum output_mode old_setting;
+  output_mode_t old_setting;
   // {return a string from tokens list}
   if (selector == new_string)
     aptex_error("tokens", "tokens_to_string() called while selector = new_string");

@@ -330,7 +330,7 @@ EXTERN pool_pointer init_pool_ptr;            // {the starting value of |pool_pt
 EXTERN str_number   init_str_ptr;             // {the starting value of |str_ptr|}
 
 EXTERN alpha_file log_file;                   // {transcript of \TeX\ session}
-EXTERN enum output_mode selector;             // {where to print a message}
+EXTERN output_mode_t selector;                // {where to print a message}
 EXTERN uint32_t   dig[23 + 1];                // {digits in a number being output}
 EXTERN integer    tally;                      // {the number of characters recently printed}
 EXTERN integer    term_offset;                // {the number of characters on the current terminal line}
@@ -343,11 +343,11 @@ EXTERN ASCII_code prev_char;
 EXTERN integer trick_count;                   // {threshold for pseudoprinting, explained later}
 EXTERN integer first_count;                   // {another variable for pseudoprinting}
 
-EXTERN enum i_mode interaction;               // {current level of interaction}
+EXTERN interaction_mode_t interaction;        // {current level of interaction}
 
 EXTERN boolean deletions_allowed;             // {is it safe for |error| to call |get_token|? }
 EXTERN boolean set_box_allowed;               // {is it safe to do a \.{\\setbox} assignment?}
-EXTERN enum cleaness history;                 // {has the source input been clean so far?}
+EXTERN history_value_t history;               // {has the source input been clean so far?}
 EXTERN int error_count;                       // {the number of scrolled errors since the last paragraph ended}
 
 EXTERN char * help_line[6];                   // {helps for the next |error|}
@@ -406,7 +406,7 @@ EXTERN integer max_nest_stack;                // {maximum of |nest_ptr| when pus
 EXTERN list_state_record cur_list;            // {the ``top'' semantic state}
 EXTERN int shown_mode;                        // {most recent mode shown by \.{\\tracingcommands}}
 
-static enum output_mode diagnostic_old_setting;
+static output_mode_t diagnostic_old_setting;
 EXTERN integer sys_time, sys_day, sys_month, sys_year; // {date and time supplied by external system}
 
 EXPORT memory_word eqtb[eqtb_size + 1];
@@ -473,7 +473,7 @@ EXTERN int long_state;                        // {governs the acceptance of \.{\
 EXTERN pointer pstack[10];                    // {arguments supplied to a macro}
 
 EXTERN integer cur_val;                       // {value returned by numeric scanners}
-EXTERN enum reg_type cur_val_level;           // {the ``level'' of this value}
+EXTERN register_type_t cur_val_level;         // {the ``level'' of this value}
 
 EXTERN int radix;                             // {|scan_int| sets this to 8, 10, 16, or zero}
 

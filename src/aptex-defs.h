@@ -82,23 +82,26 @@ enum output_mode
   pseudo       = 20,  // {special |selector| setting for |show_context|}
   new_string   = 21,  // {printing is deflected to the string pool}
 };
+typedef enum output_mode output_mode_t;
 #define max_selector new_string // {highest selector setting}
 /* sec 0073 */
-enum i_mode
+enum interaction_mode
 {
   batch_mode,         // {omits all stops and omits terminal output}
   nonstop_mode,       // {omits all stops}
   scroll_mode,        // {omits error stops}
   error_stop_mode,    // {stops at every opportunity to interact}
 };
+typedef enum interaction_mode interaction_mode_t;
 /* sec 0076 */
-enum cleaness
+enum history_value
 {
   spotless,             // {|history| value when nothing has been amiss yet}
   warning_issued,       // {|history| value when |begin_diagnostic| has been called}
   error_message_issued, // {|history| value when |error| has been called}
   fatal_error_stop,     // {|history| value when termination was premature}
 };
+typedef enum history_value history_value_t;
 /* sec 0079 */
 #define help0()     tex_help(0)
 #define help1(...)  tex_help(1, __VA_ARGS__)
@@ -1209,7 +1212,7 @@ do {                            \
 #define split_first_mark      cur_mark[split_first_mark_code]
 #define split_bot_mark        cur_mark[split_bot_mark_code]
 /* sec 0400 */
-enum reg_type {
+enum register_type {
   int_val,    // {integer values}
   dimen_val,  // {dimension values}
   glue_val,   // {glue specifications}
@@ -1217,6 +1220,7 @@ enum reg_type {
   ident_val,  // {font identifier}
   tok_val     // {token lists}
 };
+typedef enum register_type register_type_t;
 /* sec 0413 */
 #define scanned_result(va, vb)  \
 do {                            \

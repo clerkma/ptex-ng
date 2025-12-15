@@ -13061,7 +13061,7 @@ static void show_cur_cmd_chr (void)
 // prints where the scanner is
 void show_context (void)
 {
-  enum output_mode old_setting; // {saved |selector| setting}
+  output_mode_t old_setting; // {saved |selector| setting}
   pointer s;  // {temporary pointer}
   integer nn; // {number of contexts shown so far, less one}
   boolean bottom_line;  // {have we reached the final context to be shown?}
@@ -17051,7 +17051,7 @@ static pointer str_toks (pool_pointer b)
 
 static pointer the_toks (void)
 {
-  enum output_mode old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   pointer p, q, r;  // {used for copying a token list}
   pool_pointer b; // {base of temporary string}
   small_number c; // {value of |cur_chr|}
@@ -17311,7 +17311,7 @@ static void get_file_dump (str_number s, integer i, integer j)
 
 void conv_toks (void)
 {
-  enum output_mode old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   pointer p, q;
   KANJI_code cx; // {temporary register for KANJI}
   enum cmd_type c; // {desired type of conversion}
@@ -19050,7 +19050,7 @@ done:
 
 static void scan_file_name_braced (void)
 {
-  enum output_mode old_setting;
+  output_mode_t old_setting;
   small_number save_scanner_status; // {|scanner_status| upon entry}
   pointer save_def_ref; // {|def_ref| upon entry, important if inside `\.{\\message}}
   pointer save_cur_cs;
@@ -19151,7 +19151,7 @@ void prompt_file_name_ (const char * s, str_number e)
 
 void open_log_file (void)
 {
-  enum output_mode old_setting;
+  output_mode_t old_setting;
   uint32_t k;
   uint32_t l;
   const char * months;
@@ -20428,7 +20428,7 @@ static void pdf_prepare_ship_out(void)
 
 static str_number expand_font_name (integer f, integer e)
 {
-  enum output_mode old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
 
   old_setting = selector;
   selector = new_string;
@@ -20732,7 +20732,7 @@ static void dvi_ship_out (pointer p)
   pointer del_node; // {used when delete the |dir_node| continued box}
   char j, k;  // {indices to first ten count registers}
   pool_pointer s; // {index into |str_pool|}
-  enum output_mode old_setting; // {saved |selector| setting}
+  output_mode_t old_setting; // {saved |selector| setting}
 
   // @<Start sheet {\sl Sync\TeX} information record@>
   synctex_sheet(mag);
@@ -20962,7 +20962,7 @@ static void pdf_ship_out (pointer p)
   integer page_loc; // {location of the current |bop|}
   pointer del_node; // {used when delete the |dir_node| continued box}
   char j, k;  // {indices to first ten count registers}
-  enum output_mode old_setting; // {saved |selector| setting}
+  output_mode_t old_setting; // {saved |selector| setting}
 
   // @<Start sheet {\sl Sync\TeX} information record@>
   synctex_sheet(mag);
@@ -23108,7 +23108,7 @@ void dir_out (void)
 
 static void special_out (pointer p)
 {
-  enum output_mode old_setting;
+  output_mode_t old_setting;
   pool_pointer k;
 
   synch_h();
@@ -23148,7 +23148,7 @@ static void special_out (pointer p)
 #ifndef APTEX_DVI_ONLY
 static void pdf_special_out (pointer p)
 {
-  enum output_mode old_setting;
+  output_mode_t old_setting;
 
   old_setting = selector;
   selector = new_string;
@@ -23202,7 +23202,7 @@ static void pdf_special_out (pointer p)
 
 static void write_out (pointer p)
 {
-  enum output_mode old_setting; // {holds print |selector|}
+  output_mode_t old_setting; // {holds print |selector|}
   integer old_mode; // {saved |mode|}
   /* small_number j; */
   int j;  // {write stream number}
@@ -35354,7 +35354,7 @@ void trap_zero_glue (void)
 void do_register_command (small_number a)
 {
   pointer l, q, r, s; // {for list manipulation}
-  enum reg_type p; // {type of register involved}
+  register_type_t p; // {type of register involved}
   boolean e;  // {does |l| refer to a sparse array element?}
   integer w;  // {integer or dimen value of |l|}
 
@@ -35718,7 +35718,7 @@ void new_font (small_number a)
   scaled s; // {stated ``at'' size, or negative of scaled magnification}
   internal_font_number f; // {runs through existing fonts}
   str_number t; // {name for the frozen font identifier}
-  enum output_mode old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   str_number flushable_string;
 
   if (job_name == 0)
@@ -35912,7 +35912,7 @@ static void open_or_close_in (void)
 // checked
 static void issue_message (void)
 {
-  enum output_mode old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   char c; // {identifies \.{\\message} and \.{\\errmessage}}
   str_number s; // {the message}
 
@@ -39910,7 +39910,7 @@ void app_display (pointer j, pointer b, scaled d)
 
 void pseudo_start (void)
 {
-  enum output_mode old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   str_number s; // {string to be converted into a pseudo file}
   pool_pointer l, m;  // {indices into |str_pool|}
   pointer p, q, r;  // {for list construction}
