@@ -6,14 +6,14 @@
 
 CC = gcc
 CDEBUG =
-CFLAGS += $(CDEBUG) -Werror -c -O2
+CFLAGS += $(CDEBUG) -Werror -c -O2 -flto -funroll-loops -fjump-tables
 INCLUDES = \
 	-I $(TLROOT)/texk/ \
 	-I $(TLROOT)/texk/ptexenc/ \
 	-I $(TLROOT)/libs/zlib/include \
 	-I $(TLROOT)/texk/web2c/libmd5
 LDLIBS = libdpx.a libpng.a libpaper.a libz.a libptexenc.a libkpathsea.a libw2c.a -lm
-LDFLAGS += -o
+LDFLAGS += -flto -o
 
 objects = aptex.o aptex-utils.o aptex-src.o
 headers = aptex.h aptex-funs.h aptex-defs.h aptex-utils.h aptex-dpx.h
