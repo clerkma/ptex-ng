@@ -75,10 +75,10 @@
   #pragma clang diagnostic ignored "-Wdangling-else"
 #endif
 
-#if defined (_MSC_VER)
-#define _Flatten
-#else
+#if defined (__clang__)
 #define _Flatten __attribute__((flatten))
+#else
+#define _Flatten
 #endif
 
 #ifdef __GNUC__
