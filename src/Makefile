@@ -6,7 +6,7 @@
 
 CC = gcc
 CDEBUG =
-CFLAGS += $(CDEBUG) -Werror -c -O2 -funroll-loops -flto -fstrict-enums -fjump-tables -fshort-enums
+CFLAGS += $(CDEBUG) -Werror -c -O2 -funroll-loops -flto -fjump-tables
 INCLUDES = \
 	-I $(TLROOT)/texk/ \
 	-I $(TLROOT)/texk/ptexenc/ \
