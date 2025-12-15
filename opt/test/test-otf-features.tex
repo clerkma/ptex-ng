@@ -1,0 +1,57 @@
+% ptex-ng test-otf-features.tex
+% 2016/06/20
+% Windows 10 system font: 'yumin.ttf'.
+% TeX Live distribution font: 'ipaexm.ttf'.
+%
+%
+% syntax:
+%   \jfont\t=name
+%   name        = "ot:" file_name file_index? script_lang? gsub_spec? ":" jfm_name
+%   file_index  = "[" number "]"
+%   script_lang = "(" script? lang? ")"
+%   script      = script_tag
+%   lang        = "/" lang_tag
+%   gsub_spec   = ";" fea_list
+%   fea_list    = (fea_tag ",")* [fea_tag | "*"]
+%
+%   script_tag: https://www.microsoft.com/typography/otspec/scripttags.htm
+%   lang_tag:   https://www.microsoft.com/typography/otspec/languagetags.htm
+%   fea_tag:    https://www.microsoft.com/typography/otspec/featuretags.htm
+%
+%   '*' for all gsub featurs
+% examples:
+%   \jfont\t=ot:yumin.ttf;jp90,hojo:upjisr-h
+%   \tfont\t=ot:yumin.ttf;vert:upjisr-v
+%   \jfont\t=ot:simsun.ttc[1]:upjisr-h
+%   \jfont\t=ot:SourceHanSansTC-Normal.otf:uprml-h
+% TODO:
+%   GPOS features will be supported in next release.
+
+\halign{\tt#\hfill&\quad\tt#&\quad\tt#&\quad#\cr
+{\bf Font Family}&{\bf Features}&{\bf JFM delegate}&{\bf Sample text}\cr
+IPAexMincho & NO FEATURES & upjisr-h &
+{\jfont\t=ot:ipaexm.ttf:upjisr-h
+\t 葛飾区／晷}\cr
+IPAexMincho & jp90,hojo & upjisr-h &
+{\jfont\t=ot:ipaexm.ttf;jp90,hojo:upjisr-h
+\t 葛飾区／晷}\cr
+Yu Mincho & NO FEATURES & upjisr-h &
+{\jfont\t=ot:yumin.ttf:upjisr-h
+\t 葛飾区／晷}\cr
+Yu Mincho & jp90,hojo & upjisr-h &
+{\jfont\t=ot:yumin.ttf;jp90,hojo:upjisr-h
+\t 葛飾区／晷}\cr
+Yu Mincho & jp78 & upjisr-h &
+{\jfont\t=ot:yumin.ttf;jp78:upjisr-h
+\t 餌}\cr
+Yu Mincho & jp83 & upjisr-h &
+{\jfont\t=ot:yumin.ttf;jp83:upjisr-h
+\t 餌}\cr
+Yu Mincho & jp90 & upjisr-h &
+{\jfont\t=ot:yumin.ttf;jp90:upjisr-h
+\t 餌}\cr
+Yu Mincho & nlck & upjisr-h &
+{\jfont\t=ot:yumin.ttf;nlck:upjisr-h
+\t 屡}\cr
+}
+\bye

@@ -1,0 +1,12 @@
+% Chinese test
+\documentclass[12pt]{article}
+\DeclareFontFamily{JY2}{fandolsong}{}
+\DeclareFontShape{JY2}{fandolsong}{m}{n}{<->s*[0.962216]ot:FandolSong-Regular.otf:upjisr-h}{}
+\DeclareFontShape{JY2}{fandolsong}{bx}{n}{<->ssub*simsun/m/n}{}
+\DeclareRobustCommand\fandolsong{\kanjifamily{fandolsong}\selectfont}
+\DeclareFontFamily{JY2}{emj}{}
+\DeclareFontShape{JY2}{emj}{m}{n}{<->s*[0.962216]ot:seguiemj.ttf:upjisr-h}{}
+\DeclareRobustCommand\emj{\kanjifamily{emj}\selectfont}
+\begin{document}
+\fandolsong \Large 在正文中使用带色颜文字：{\emj 😀😁😂😃}。
+\end{document}

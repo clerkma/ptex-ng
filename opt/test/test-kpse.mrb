@@ -1,0 +1,14 @@
+Kpathsea.set_program_name("ptex-ng", "")
+
+print "$TEXMFDIST = ", Kpathsea.var_value("TEXMFDIST"), "\n"
+print "$TEXMFROOT = ", Kpathsea.var_expand("$TEXMFROOT"), "\n"
+
+test0 = ["article.cls", "ujarticle.cls", "hyperref.sty", "tikz.sty"]
+test0.each do |i|
+    print "#{i} -> #{Kpathsea.find_file(i, Kpathsea::TEX_FORMAT, false)}\n"
+end
+
+test1 = ["cmr10", "cmr10.tfm", "upjisr-h.tfm", "upjisr-v.tfm"]
+test1.each do |i|
+    print "#{i} -> #{Kpathsea.find_file(i, Kpathsea::TFM_FORMAT, false)}\n"
+end
