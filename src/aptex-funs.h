@@ -87,11 +87,11 @@ extern void synctexcurrent(void);
 #define synctex_current synctexcurrent
 
 // functions of TeX82
-void print_ln (void);
-void print_char (ASCII_code s);
-void print_(integer s);
+static void print_ln (void);
+static void print_char (ASCII_code s);
+static void print_(integer s);
 #define print(s) print_((integer) (s))
-void prints_(const char * s);
+static void prints_(const char * s);
 #define prints(s) prints_((const char *) s)
 void slow_print (integer s);
 void print_nl (const char * s);
@@ -134,22 +134,22 @@ pointer id_lookup (integer j, integer l);
 void assign_trace (pointer p, const char * s);
 
 void show_context (void);
-void end_token_list (void);
-void back_input (void);
+static void end_token_list (void);
+static void back_input (void);
 void begin_file_reading (void);
 void end_file_reading (void);
 void clear_for_error_prompt (void);
-void get_next (void);
-void get_token (void);
-void get_x_token (void);
-void scan_left_brace (void);
+static void get_next (void);
+static void get_token (void);
+static void get_x_token (void);
+static void scan_left_brace (void);
 
-void scan_int (void);
-void scan_dimen (boolean mu, boolean inf, boolean shortcut);
-void scan_glue (small_number level);
+static void scan_int (void);
+static void scan_glue (small_number level);
 void ins_the_toks (void);
 void conv_toks (void);
-pointer scan_toks (boolean macro_def, boolean xpand);
+static pointer scan_toks (boolean macro_def, boolean xpand);
+static pointer scan_toks_expand (void);
 void pass_text (void);
 void conditional (void);
 void pack_file_name (str_number n, str_number a, str_number e);
@@ -179,8 +179,8 @@ void mlist_to_hlist (void);
 void align_peek (void);
 pointer finite_shrink (pointer p);
 void try_break (integer pi, small_number breaktype);
-void post_line_break (boolean d);
-void hyphenate (void);
+static void post_line_break (boolean d);
+static void hyphenate (void);
 void print_totals (void);
 void build_page (void);
 void normal_paragraph (void);
@@ -624,6 +624,7 @@ static inline integer get_microinterval (void)
 
 static str_number tokens_to_string (pointer p)
 {
+  enum output_mode old_setting;
   // {return a string from tokens list}
   if (selector == new_string)
     aptex_error("tokens", "tokens_to_string() called while selector = new_string");
@@ -651,12 +652,12 @@ static void compare_strings (void)
   str_number s1, s2;
   pool_pointer i1, i2, j1, j2;
 
-  scan_toks(false, true);
+  scan_toks_expand();
   is_print_utf8 = true;
   s1 = tokens_to_string(def_ref);
   is_print_utf8 = false;
   delete_token_ref(def_ref);
-  scan_toks(false, true);
+  scan_toks_expand();
   is_print_utf8 = true;
   s2 = tokens_to_string(def_ref);
   is_print_utf8 = false;

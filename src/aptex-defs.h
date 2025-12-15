@@ -73,7 +73,7 @@
 #define cur_length    (pool_ptr - str_start[str_ptr])
 #define flush_char()  decr(pool_ptr)
 /* sec 0054 */
-enum
+enum output_mode
 {
   no_print     = 16,  // {|selector| setting that makes data disappear}
   term_only    = 17,  // {printing is destined for the terminal only}
@@ -81,23 +81,23 @@ enum
   term_and_log = 19,  // {normal |selector| setting}
   pseudo       = 20,  // {special |selector| setting for |show_context|}
   new_string   = 21,  // {printing is deflected to the string pool}
-  max_selector = 21,  // {highest selector setting}
 };
+#define max_selector new_string // {highest selector setting}
 /* sec 0073 */
-enum
+enum i_mode
 {
-  batch_mode      = 0,  // {omits all stops and omits terminal output}
-  nonstop_mode    = 1,  // {omits all stops}
-  scroll_mode     = 2,  // {omits error stops}
-  error_stop_mode = 3,  // {stops at every opportunity to interact}
+  batch_mode,         // {omits all stops and omits terminal output}
+  nonstop_mode,       // {omits all stops}
+  scroll_mode,        // {omits error stops}
+  error_stop_mode,    // {stops at every opportunity to interact}
 };
 /* sec 0076 */
-enum
+enum cleaness
 {
-  spotless             = 0, // {|history| value when nothing has been amiss yet}
-  warning_issued       = 1, // {|history| value when |begin_diagnostic| has been called}
-  error_message_issued = 2, // {|history| value when |error| has been called}
-  fatal_error_stop     = 3, // {|history| value when termination was premature}
+  spotless,             // {|history| value when nothing has been amiss yet}
+  warning_issued,       // {|history| value when |begin_diagnostic| has been called}
+  error_message_issued, // {|history| value when |error| has been called}
+  fatal_error_stop,     // {|history| value when termination was premature}
 };
 /* sec 0079 */
 #define help0()     tex_help(0)
@@ -1019,23 +1019,25 @@ do {                                            \
 #define level_boundary    3 // {|save_type| corresponding to beginning of group}
 #define restore_sa        4 // {|save_type| when sparse array entries should be restored}
 /* sec 0269 */
-#define bottom_level        0   // {group code for the outside world}
-#define simple_group        1   // {group code for local structure only}
-#define hbox_group          2   // {code for `\.{\\hbox}\grp'}
-#define adjusted_hbox_group 3   // {code for `\.{\\hbox}\grp' in vertical mode}
-#define vbox_group          4   // {code for `\.{\\vbox}\grp'}
-#define vtop_group          5   // {code for `\.{\\vtop}\grp'}
-#define align_group         6   // {code for `\.{\\halign}\grp', `\.{\\valign}\grp'}
-#define no_align_group      7   // {code for `\.{\\noalign}\grp'}
-#define output_group        8   // {code for output routine}
-#define math_group          9   // {code for, e.g., `\.{\char'136}\grp'}
-#define disc_group          10  // {code for `\.{\\discretionary}\grp\grp\grp'}
-#define insert_group        11  // {code for `\.{\\insert}\grp', `\.{\\vadjust}\grp'}
-#define vcenter_group       12  // {code for `\.{\\vcenter}\grp'}
-#define math_choice_group   13  // {code for `\.{\\mathchoice}\grp\grp\grp\grp'}
-#define semi_simple_group   14  // {code for `\.{\\begingroup...\\endgroup}'}
-#define math_shift_group    15  // {code for `\.{\$...\$}'}
-#define math_left_group     16  // {code for `\.{\\left...\\right}'}
+enum group_code {
+  bottom_level,         // {group code for the outside world}
+  simple_group,         // {group code for local structure only}
+  hbox_group,           // {code for `\.{\\hbox}\grp'}
+  adjusted_hbox_group,  // {code for `\.{\\hbox}\grp' in vertical mode}
+  vbox_group,           // {code for `\.{\\vbox}\grp'}
+  vtop_group,           // {code for `\.{\\vtop}\grp'}
+  align_group,          // {code for `\.{\\halign}\grp', `\.{\\valign}\grp'}
+  no_align_group,       // {code for `\.{\\noalign}\grp'}
+  output_group,         // {code for output routine}
+  math_group,           // {code for, e.g., `\.{\char'136}\grp'}
+  disc_group,           // {code for `\.{\\discretionary}\grp\grp\grp'}
+  insert_group,         // {code for `\.{\\insert}\grp', `\.{\\vadjust}\grp'}
+  vcenter_group,        // {code for `\.{\\vcenter}\grp'}
+  math_choice_group,    // {code for `\.{\\mathchoice}\grp\grp\grp\grp'}
+  semi_simple_group,    // {code for `\.{\\begingroup...\\endgroup}'}
+  math_shift_group,     // {code for `\.{\$...\$}'}
+  math_left_group,      // {code for `\.{\\left...\\right}'}
+};
 #define max_group_code      16
 /* sec 0274 */
 #define saved(a) save_stack[save_ptr + (a)].cint
@@ -1207,12 +1209,14 @@ do {                            \
 #define split_first_mark      cur_mark[split_first_mark_code]
 #define split_bot_mark        cur_mark[split_bot_mark_code]
 /* sec 0400 */
-#define int_val   0 // {integer values}
-#define dimen_val 1 // {dimension values}
-#define glue_val  2 // {glue specifications}
-#define mu_val    3 // {math glue specifications}
-#define ident_val 4 // {font identifier}
-#define tok_val   5 // {token lists}
+enum reg_type {
+  int_val,    // {integer values}
+  dimen_val,  // {dimension values}
+  glue_val,   // {glue specifications}
+  mu_val,     // {math glue specifications}
+  ident_val,  // {font identifier}
+  tok_val     // {token lists}
+};
 /* sec 0413 */
 #define scanned_result(va, vb)  \
 do {                            \
@@ -1291,8 +1295,6 @@ do {                                            \
 #define zero_token    (other_token  + '0')            // {zero, the smallest digit}
 #define A_token       (letter_token + 'A')            // {the smallest special hex digit}
 #define other_A_token (other_token  + 'A')            // {special hex digit of type |other_char|}
-/* sec 0448 */
-#define scan_normal_dimen() scan_dimen(false, false, false)
 /* sec 0458 */
 #define set_conversion(a, b)  \
 do {                          \
@@ -1300,78 +1302,82 @@ do {                          \
   denom = b;                  \
 } while (0)
 /* sec 0468 */
-#define number_code              0  // {command code for \.{\\number}}
-#define roman_numeral_code       1  // {command code for \.{\\romannumeral}}
-#define kansuji_code             2  // {command code for \.{\\kansuji}}
-#define string_code              3  // {command code for \.{\\string}}
-#define meaning_code             4  // {command code for \.{\\meaning}}
-#define font_name_code           5  // {command code for \.{\\fontname}}
-#define euc_code                 6  // {command code for \.{\\euc}}
-#define sjis_code                7  // {command code for \.{\\sjis}}
-#define jis_code                 8  // {command code for \.{\\jis}}
-#define kuten_code               9  // {command code for \.{\\kuten}}
-#define ucs_code                 10 // {command code for \.{\\ucs}}
-#define toucs_code               11 // {command code for \.{\\toucs}}
-#define tojis_code               12 // {command code for \.{\\tojis}}
-#define ptex_font_name_code      13 // {command code for \.{\\ptexfontname}}
-#define eTeX_revision_code       14 // {base for \eTeX's command codes}
-#define ng_strcmp_code           15 // {command code for \.{\\pdfstrcmp}}
-#define ng_banner_code           16 // {command code for \.{\\ngbanner}}
-#define ng_os_type_code          17 // {command code for \.{\\ngostype}}
-#define ptex_revision_code       18 // {command code for \.{\\ptexrevision}}
-#define uptex_revision_code      19 // {command code for \.{\\uptexrevision}}
-#define pdf_creation_date_code   20 // {command code for \.{\\pdfcreationdate}}
-#define pdf_file_mod_date_code   21 // {command code for \.{\\pdffilemodedate}}
-#define pdf_file_size_code       22 // {command code for \.{\\pdffilesize}}
-#define pdf_mdfive_sum_code      23 // {command code for \.{\\pdfmdfivesum}}
-#define pdf_file_dump_code       24 // {command code for \.{\\pdffiledump}}
-#define pdf_uniform_deviate_code 25 // {command code for \.{\\pdfuniformdeviate}}
-#define pdf_normal_deviate_code  26 // {command code for \.{\\pdfnormaldeviate}}
-#define expanded_code            27 // {command code for \.{\\expanded}}
-#define Uchar_convert_code       28 // {command code for \.{\\Uchar}}
-#define Ucharcat_convert_code    29 // {command code for \.{\\Ucharcat}}
+enum cmd_type {
+  number_code,             // 0  {command code for \.{\\number}}
+  roman_numeral_code,      // 1  {command code for \.{\\romannumeral}}
+  kansuji_code,            // 2  {command code for \.{\\kansuji}}
+  string_code,             // 3  {command code for \.{\\string}}
+  meaning_code,            // 4  {command code for \.{\\meaning}}
+  font_name_code,          // 5  {command code for \.{\\fontname}}
+  euc_code,                // 6  {command code for \.{\\euc}}
+  sjis_code,               // 7  {command code for \.{\\sjis}}
+  jis_code,                // 8  {command code for \.{\\jis}}
+  kuten_code,              // 9  {command code for \.{\\kuten}}
+  ucs_code,                // 10 {command code for \.{\\ucs}}
+  toucs_code,              // 11 {command code for \.{\\toucs}}
+  tojis_code,              // 12 {command code for \.{\\tojis}}
+  ptex_font_name_code,     // 13 {command code for \.{\\ptexfontname}}
+  eTeX_revision_code,      // 14 {base for \eTeX's command codes}
+  ng_strcmp_code,          // 15 {command code for \.{\\pdfstrcmp}}
+  ng_banner_code,          // 16 {command code for \.{\\ngbanner}}
+  ng_os_type_code,         // 17 {command code for \.{\\ngostype}}
+  ptex_revision_code,      // 18 {command code for \.{\\ptexrevision}}
+  uptex_revision_code,     // 19 {command code for \.{\\uptexrevision}}
+  pdf_creation_date_code,  // 20 {command code for \.{\\pdfcreationdate}}
+  pdf_file_mod_date_code,  // 21 {command code for \.{\\pdffilemodedate}}
+  pdf_file_size_code,      // 22 {command code for \.{\\pdffilesize}}
+  pdf_mdfive_sum_code,     // 23 {command code for \.{\\pdfmdfivesum}}
+  pdf_file_dump_code,      // 24 {command code for \.{\\pdffiledump}}
+  pdf_uniform_deviate_code,// 25 {command code for \.{\\pdfuniformdeviate}}
+  pdf_normal_deviate_code, // 26 {command code for \.{\\pdfnormaldeviate}}
+  expanded_code,           // 27 {command code for \.{\\expanded}}
+  Uchar_convert_code,      // 28 {command code for \.{\\Uchar}}
+  Ucharcat_convert_code,   // 29 {command code for \.{\\Ucharcat}}
 /* HZ */
-#define left_margin_kern_code    30 // {command code for \.{\\leftmarginkern}}
-#define right_margin_kern_code   31 // {command code for \.{\\rightmarginkern}}
-#define job_name_code            32 // {command code for \.{\\jobname}}
+  left_margin_kern_code,  // {command code for \.{\\leftmarginkern}}
+  right_margin_kern_code, // {command code for \.{\\rightmarginkern}}
+  job_name_code,          // {command code for \.{\\jobname}}
+};
 /* sec 0480 */
 #define closed    2
 #define just_open 1
 /* sec 0487 */
-#define unless_code       32
-#define if_char_code      0
-#define if_cat_code       1
-#define if_int_code       2
-#define if_dim_code       3
-#define if_odd_code       4
-#define if_vmode_code     5
-#define if_hmode_code     6
-#define if_mmode_code     7
-#define if_inner_code     8
-#define if_void_code      9
-#define if_hbox_code      10
-#define if_vbox_code      11
-#define ifx_code          12
-#define if_eof_code       13
-#define if_true_code      14
-#define if_false_code     15
-#define if_case_code      16
-#define if_def_code       17
-#define if_cs_code        18
-#define if_font_char_code 19
-//#
-#define if_in_csname_code     (if_case_code + 4)
-#define if_pdfprimitive_code  (if_in_csname_code + 1)
-#define if_tdir_code          (if_pdfprimitive_code + 1)
-#define if_ydir_code          (if_tdir_code + 1)
-#define if_ddir_code          (if_ydir_code + 1)
-#define if_mdir_code          (if_ddir_code + 1)
-#define if_tbox_code          (if_mdir_code + 1)
-#define if_ybox_code          (if_tbox_code + 1)
-#define if_dbox_code          (if_ybox_code + 1)
-#define if_mbox_code          (if_dbox_code + 1)
-#define if_jfont_code         (if_mbox_code + 1)
-#define if_tfont_code         (if_jfont_code + 1)
+#define unless_code     32
+enum if_type {
+  if_char_code,  //     0
+  if_cat_code,   //     1
+  if_int_code,   //     2
+  if_dim_code,   //     3
+  if_odd_code,   //     4
+  if_vmode_code, //     5
+  if_hmode_code, //     6
+  if_mmode_code, //     7
+  if_inner_code, //     8
+  if_void_code,  //     9
+  if_hbox_code,  //     10
+  if_vbox_code,  //     11
+  ifx_code,      //     12
+  if_eof_code,   //     13
+  if_true_code,  //     14
+  if_false_code, //     15
+  if_case_code,  //     16
+  if_def_code,   //     17
+  if_cs_code,    //     18
+  if_font_char_code, // 19
+  //#
+  if_in_csname_code,
+  if_pdfprimitive_code,
+  if_tdir_code,
+  if_ydir_code,
+  if_ddir_code,
+  if_mdir_code,
+  if_tbox_code,
+  if_ybox_code,
+  if_dbox_code,
+  if_mbox_code,
+  if_jfont_code,
+  if_tfont_code,
+};
 /* sec 0489 */
 #define if_node_size     2                  // {number of words in stack entry for conditionals}
 #define if_line_field(a) mem[(a) + 1].cint
@@ -1979,12 +1985,14 @@ do {                                                      \
 /* sec 1046 */
 #define non_math(a) vmode + a: case hmode + a
 /* sec 1058 */
-#define fil_code     0  // {identifies \.{\\hfil} and \.{\\vfil}}
-#define fill_code    1  // {identifies \.{\\hfill} and \.{\\vfill}}
-#define ss_code      2  // {identifies \.{\\hss} and \.{\\vss}}
-#define fil_neg_code 3  // {identifies \.{\\hfilneg} and \.{\\vfilneg}}
-#define skip_code    4  // {identifies \.{\\hskip} and \.{\\vskip}}
-#define mskip_code   5  // {identifies \.{\\mskip}}
+enum glue {
+  fil_code,     // 0  {identifies \.{\\hfil} and \.{\\vfil}}
+  fill_code,    // 1  {identifies \.{\\hfill} and \.{\\vfill}}
+  ss_code,      // 2  {identifies \.{\\hss} and \.{\\vss}}
+  fil_neg_code, // 3  {identifies \.{\\hfilneg} and \.{\\vfilneg}}
+  skip_code,    // 4  {identifies \.{\\hskip} and \.{\\vskip}}
+  mskip_code,   // 5  {identifies \.{\\mskip}}
+};
 /* sec 1071 */
 #define box_flag        010000000000  // {context code for `\.{\\setbox0}'}
 #define global_box_flag 010000100000  // {context code for `\.{\\global\\setbox0}'}
@@ -2032,14 +2040,16 @@ while (0)
 #define toks_def_code      6  // {|shorthand_def| for \.{\\toksdef}}
 #define kchar_def_code     7  // {|shorthand_def| for \.{\\kchardef}}
 /* sec 1290 */
-#define show_code       0 // { \.{\\show} }
-#define show_box_code   1 // { \.{\\showbox} }
-#define show_the_code   2 // { \.{\\showthe} }
-#define show_lists_code 3 // { \.{\\showlists} }
-#define show_groups     4 // { \.{\\showgroups} }
-#define show_tokens     5 // { \.{\\showtokens} , must be odd! }
-#define show_ifs        6 // { \.{\\showifs} }
-#define show_mode       7 // { \.{\\showmode} }
+enum show {
+  show_code,       // { \.{\\show} }
+  show_box_code,   // { \.{\\showbox} }
+  show_the_code,   // { \.{\\showthe} }
+  show_lists_code, // { \.{\\showlists} }
+  show_groups,     // { \.{\\showgroups} }
+  show_tokens,     // { \.{\\showtokens} , must be odd! }
+  show_ifs,        // { \.{\\showifs} }
+  show_mode,       // { \.{\\showmode} }
+};
 /* sec 1306 */
 #define undump(va, vb, vc)        \
 do {                              \
