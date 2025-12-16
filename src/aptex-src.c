@@ -1192,7 +1192,6 @@ static void aptex_memory_init (void)
   buffer = realloc_buffer(initial_buf_size);
 #endif
 
-  interaction = -1;
   current_mem_size = 0;
 
 #ifdef APTEX_EXTENSION
@@ -1738,7 +1737,7 @@ static inline integer calc_pos (integer c)
 }
 
 // Ref. http://www.unicode.org/Public/UNIDATA/Blocks.txt
-static long ucs_range[] =
+static const long ucs_range[] =
 {
   0x0000, /* Basic Latin                                         */ /* 0x00 */
   0x0080, /* Latin-1 Supplement                                  */
@@ -2102,7 +2101,7 @@ static long ucs_range[] =
 
 #define NUCS_RANGE (sizeof(ucs_range)/sizeof(ucs_range[0]))
 
-static int binary_search (long x, long *a, int left, int right)
+static int binary_search (long x, const long *a, int left, int right)
 {
   right++;
 
@@ -2573,33 +2572,33 @@ static str_number make_str_string (const char * s)
   }
 }
 
-static const str_number STR_CANT_HAPPEN = 256;
-static const str_number STR_ROMAN = 257;
-static const str_number STR_NOTEXPANDED = 258;
-static const str_number STR_EMPTY = 259;
-static const str_number STR_DOT_TEX = 260;
-static const str_number STR_TEXPUT = 261;
-static const str_number STR_NULLFONT = 262;
-static const str_number STR_DOT_TFM = 263;
-static const str_number STR_MATH_SPACING = 264;
-static const str_number STR_ENDTEMPLATE = 265;
-static const str_number STR_INACCESSIBLE = 266;
-static const str_number STR_FONT = 267;
-static const str_number STR_FORMAT_IDENT = 268;
-static const str_number STR_ENDWRITE = 269;
-static const str_number STR_ENDGROUP = 270;
-static const str_number STR_RELAX = 271;
-static const str_number STR_FI = 272;
-static const str_number STR_CR = 273;
-static const str_number STR_RIGHT = 274;
-static const str_number STR_PDFPRIMITIVE = 275;
+enum str_pool {
+  STR_CANT_HAPPEN = 256,
+  STR_NOTEXPANDED,
+  STR_EMPTY,
+  STR_DOT_TEX,
+  STR_TEXPUT,
+  STR_NULLFONT,
+  STR_DOT_TFM,
+  STR_MATH_SPACING,
+  STR_ENDTEMPLATE,
+  STR_INACCESSIBLE,
+  STR_FONT,
+  STR_FORMAT_IDENT,
+  STR_ENDWRITE,
+  STR_ENDGROUP,
+  STR_RELAX,
+  STR_FI,
+  STR_CR,
+  STR_RIGHT,
+  STR_PDFPRIMITIVE,
+};
 
 static str_number load_pool_strings (size_t spare_size)
 {
   str_number g;
 
-  g = make_str_string("???"); // STR_CANT_HAPPEN
-  g = make_str_string("m2d5c2l5x2v5i"); // STR_ROMAN
+  g = make_str_string("?""?""?"); // STR_CANT_HAPPEN
   g = make_str_string("notexpanded:"); // STR_NOTEXPANDED
   g = make_str_string(""); // STR_EMPTY
   g = make_str_string(".tex"); // STR_DOT_TEX
@@ -3101,8 +3100,9 @@ static void initialize (void)
 
   xord[127] = 127;
 
-  if (interaction < batch_mode)
-    interaction = error_stop_mode;
+  if (aptex_env.opt_int >= 0)
+    interaction = aptex_env.opt_int;
+  else interaction = error_stop_mode;
 
   deletions_allowed = true;
   set_box_allowed = true;
@@ -3748,6 +3748,8 @@ static boolean load_fmt_file (void)
     trie_not_ready = false;
 
   undump(batch_mode, error_stop_mode, interaction);
+  if (aptex_env.opt_int >= 0)
+    interaction = aptex_env.opt_int;
   undump(0, str_ptr, format_ident);
   undump_int(x);
 
@@ -3874,7 +3876,7 @@ static int aptex_program (void)
   if (ready_already == 314159)
     goto start_of_TEX;
 
-  bad = 0;
+  integer bad = 0; // {is some ``constant'' wrong?}
 
   if ((half_error_line < 30) || (half_error_line > error_line - 15))
     bad = 1;
@@ -4207,8 +4209,6 @@ start_of_TEX:
     random_seed = (microseconds * 1000) + (epochseconds % 1000000);
     init_randoms(random_seed);
     magic_offset = str_start[STR_MATH_SPACING] - 9 * ord_noad;
-    if (aptex_env.opt_int >= 0)
-      interaction = aptex_env.opt_int;
 
     // @<Initialize the print |selector| based on |interaction|@>;
     if (interaction == batch_mode)
@@ -4683,7 +4683,7 @@ static void trie_fix (trie_pointer p)
   } while (!(p == 0));
 }
 /* sec 0960 */
-void new_patterns (void)
+static void new_patterns (void)
 {
   uint32_t k, l;
   boolean digit_sensed;
@@ -4937,7 +4937,7 @@ done:
   }
 }
 /* sec 0966 */
-void init_trie (void)
+static void init_trie (void)
 {
   trie_pointer p;
   integer j, k, t;
@@ -5874,7 +5874,7 @@ static void init_prim (void)
 #endif
 
 // prints an end-of-line
-void print_ln (void)
+static void print_ln (void)
 {
   integer ii;
 
@@ -5934,7 +5934,7 @@ void print_ln (void)
 }
 
 // prints a single character
-void print_char (ASCII_code s)
+static void print_char (ASCII_code s)
 {
   if (s == new_line_char)
   {
@@ -6057,7 +6057,7 @@ void print_char (ASCII_code s)
 }
 
 // prints string |s|
-void print_ (integer s)
+static void print_ (integer s)
 {
   pool_pointer j; // {current character code position}
   integer nl;     // {new-line character to restore}
@@ -6113,7 +6113,7 @@ void print_ (integer s)
 }
 
 // string version print.
-_Flatten void prints_ (const char * s)
+static _Flatten void prints_ (const char * s)
 {
   while (*s)
     print_char(*s++);
@@ -6586,7 +6586,6 @@ void error (void)
     // @<Get user's advice and |return|@>
     while (true)
     {
-continu:
       if (interaction != error_stop_mode)
         return;
       clear_for_error_prompt();
@@ -6641,7 +6640,7 @@ continu:
             help2("I have just deleted some text, as you asked.",
               "You can now delete more, or insert, or whatever.");
             show_context();
-            goto continu;
+            continue;
           }
           break;
 
@@ -6649,7 +6648,7 @@ continu:
         case 'D':
           {
             debug_help();
-            goto continu;
+            continue;
           }
           break;
   #endif
@@ -6694,7 +6693,7 @@ continu:
               "Maybe you should try asking a human?",
               "An error might have occurred before I noticed any problems.",
               "``If all else fails, read the instructions.''");
-            goto continu;
+            continue;
           }
           break;
 
@@ -7375,17 +7374,18 @@ static void print_hex_safe (integer n)
 
 static void print_roman_int (integer n)
 {
-  pool_pointer j, k; // {mysterious indices into |str_pool|}
+  size_t j, k; // {mysterious indices into |str|}
   nonnegative_integer u, v; // {mysterious numbers}
 
-  j = str_start[STR_ROMAN];
+  const char *str = "m2d5c2l5x2v5i";
+  j = 0;
   v = 1000;
 
   while (true)
   {
     while (n >= v)
     {
-      print_char(str_pool[j]);
+      print_char(str[j]);
       n = n - v;
     }
 
@@ -7393,23 +7393,23 @@ static void print_roman_int (integer n)
       return;
 
     k = j + 2;
-    u = v / (str_pool[k - 1] - '0');
+    u = v / (str[k - 1] - '0');
 
-    if (str_pool[k - 1] == '2')
+    if (str[k - 1] == '2')
     {
       k = k + 2;
-      u = u / (str_pool[k - 1] - '0');
+      u = u / (str[k - 1] - '0');
     }
 
     if (n + u >= v)
     {
-      print_char(str_pool[k]);
+      print_char(str[k]);
       n = n + u;
     }
     else
     {
       j = j + 2;
-      v = v / (str_pool[j - 1] - '0');
+      v = v / (str[j - 1] - '0');
     }
   }
 }
@@ -7856,15 +7856,15 @@ static void runaway (void)
   }
 }
 
-pointer get_avail (void)
+static pointer get_avail (void)
 {
   pointer p; // {the new node being got}
 
   p = avail; // {get top location in the |avail| stack}
 
-  if (p != null)
+  if (likely(p != null))
     avail = link(avail); // {and pop it off}
-  else if (mem_end < mem_max) // {or go into virgin territory}
+  else if (unlikely(mem_end < mem_max)) // {or go into virgin territory}
   {
     incr(mem_end);
     p = mem_end;
@@ -7874,7 +7874,7 @@ pointer get_avail (void)
     decr(hi_mem_min);
     p = hi_mem_min;
 
-    if (hi_mem_min <= lo_mem_max)
+    if (unlikely(hi_mem_min <= lo_mem_max))
     {
       incr(hi_mem_min);
       mem = realloc_mem(0, mem_top / 2);
@@ -7907,7 +7907,7 @@ void flush_list (pointer p)
 {
   pointer q, r; // {list traversers}
 
-  if (p != null)
+  if (likely(p != null))
   {
     r = p;
 
@@ -7952,7 +7952,7 @@ restart:
 
     r = q - s;
 
-    if (r > p + 1)
+    if (likely(r > p + 1))
     {
       node_size(p) = r - p;
       rover = p;
@@ -9419,7 +9419,7 @@ void show_node_list (integer p)
   }
 }
 
-void show_box (pointer p)
+static void show_box (pointer p)
 {
   /*
     @<Assign the values |depth_threshold:=show_box_depth| and
@@ -10473,9 +10473,9 @@ static void print_param (integer n)
 }
 
 // prepare to do some tracing
-void begin_diagnostic (void)
+static void begin_diagnostic (void)
 {
-  old_setting = selector;
+  diagnostic_old_setting = selector;
 
   if ((tracing_online <= 0) && (selector == term_and_log))
   {
@@ -10487,14 +10487,14 @@ void begin_diagnostic (void)
 }
 
 // restore proper conditions after tracing
-void end_diagnostic (boolean blank_line)
+static void end_diagnostic (boolean blank_line)
 {
   print_nl("");
 
   if (blank_line)
     print_ln();
 
-  selector = old_setting;
+  selector = diagnostic_old_setting;
 }
 
 static void print_length_param (integer n)
@@ -11284,7 +11284,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case convert:
-      switch (chr_code)
+      switch ((enum cmd_type)chr_code)
       {
         case number_code:
           print_esc("number");
@@ -11414,7 +11414,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("rightmarginkern");
           break;
 
-        default:
+        case job_name_code:
           print_esc("jobname");
           break;
       }
@@ -12107,7 +12107,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
       break;
 
     case xray:
-      switch (chr_code)
+      switch ((enum show)chr_code)
       {
         case show_box_code:
           print_esc("showbox");
@@ -12137,7 +12137,7 @@ void print_cmd_chr (quarterword cmd, halfword chr_code)
           print_esc("showmode");
           break;
 
-        default:
+        case show_code:
           print_esc("show");
           break;
       }
@@ -12430,19 +12430,19 @@ static void show_eqtb (pointer n)
         prints(", type=");
         switch (eq_type(n))
         {
-          case 0:
+          case inhibit_both:
             prints("both");   // { |inhibit_both| }
             break;
-          case 1:
+          case inhibit_previous:
             prints("before"); // { |inhibit_previous| }
             break;
-          case 2:
+          case inhibit_after:
             prints("after"); // { |inhibit_after| }
             break;
-          case 3:
+          case inhibit_none:
             prints("none");  // { |inhibit_none| }
             break;
-          case 4:
+          case inhibit_unused:
             prints("unused"); // { |inhibit_unused| }
             break;
         }
@@ -13061,7 +13061,7 @@ static void show_cur_cmd_chr (void)
 // prints where the scanner is
 void show_context (void)
 {
-  char old_setting; // {saved |selector| setting}
+  output_mode_t old_setting; // {saved |selector| setting}
   pointer s;  // {temporary pointer}
   integer nn; // {number of contexts shown so far, less one}
   boolean bottom_line;  // {have we reached the final context to be shown?}
@@ -13350,13 +13350,13 @@ void begin_token_list (pointer p, quarterword t)
     // {the token list starts with a reference count}
     add_token_ref(p);
 
-    if (t == macro)
+    if (likely(t == macro))
       param_start = param_ptr;
     else
     {
       loc = link(p);
 
-      if (tracing_macros > 1)
+      if (unlikely(tracing_macros > 1))
       {
         begin_diagnostic();
         print_nl("");
@@ -13387,7 +13387,7 @@ void begin_token_list (pointer p, quarterword t)
 }
 // checked
 // leave a token-list input level
-void end_token_list (void)
+static void end_token_list (void)
 {
   if (token_type >= backed_up)
   {
@@ -13409,7 +13409,7 @@ void end_token_list (void)
         fatal_error("Unbalanced output routine");
     }
   }
-  else if (token_type == u_template)
+  else if (unlikely(token_type == u_template))
   {
     if (align_state > 500000)
       align_state = 0;
@@ -13422,7 +13422,7 @@ void end_token_list (void)
 }
 
 // undoes one token of input
-void back_input (void)
+static void back_input (void)
 {
   pointer p;  // {a token list of length one}
 
@@ -13667,7 +13667,7 @@ static void firm_up_the_line (void)
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_tok|
-void get_token (void)
+static void get_token (void)
 {
   no_new_control_sequence = false;
   get_next();
@@ -13675,7 +13675,7 @@ void get_token (void)
 
   if (cur_cs == 0)
   {
-    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+    if (unlikely((cur_cmd >= kanji) && (cur_cmd <= hangul)))
       cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
     else
       cur_tok = (cur_cmd * max_char_val) + cur_chr;
@@ -13709,7 +13709,7 @@ static void macro_call (void)
   r = link(ref_count);
   n = 0;
 
-  if (tracing_macros > 0)
+  if (unlikely(tracing_macros > 0))
   {
     // @<Show the text of the macro being expanded@>
     begin_diagnostic();
@@ -13746,7 +13746,7 @@ static void macro_call (void)
     end_diagnostic(false);
   }
 
-  if (info(r) == protected_token)
+  if (unlikely(info(r) == protected_token))
     r = link(r);
 
   if (info(r) != end_match_token)
@@ -13755,7 +13755,7 @@ static void macro_call (void)
     unbalance = 0;
     long_state = eq_type(cur_cs);
 
-    if (long_state >= outer_call)
+    if (unlikely(long_state >= outer_call))
       long_state = long_state - 2;
 
     do {
@@ -13775,7 +13775,7 @@ static void macro_call (void)
 continu:
       get_token();
 
-      if (cur_tok == info(r))
+      if (unlikely(cur_tok == info(r)))
       {
         r = link(r);
 
@@ -13790,9 +13790,9 @@ continu:
           goto continu;
       }
 
-      if (s != r)
+      if (unlikely(s != r))
       {
-        if (s == null)
+        if (unlikely(s == null))
         {
           print_err("Use of ");
           sprint_cs(warning_index);
@@ -13827,7 +13827,7 @@ continu:
                 }
               }
 
-              if (info(u) != info(v))
+              if (likely(info(u) != info(v)))
                 goto done;
 
               u = link(u);
@@ -13841,7 +13841,7 @@ done:
         }
       }
 
-      if (cur_tok == par_token)
+      if (unlikely(cur_tok == par_token))
       if (long_state != long_call)
       if (suppress_long_error == 0)
       // @<Report a runaway argument and abort@>
@@ -13868,7 +13868,7 @@ done:
       }
 
       if (cur_tok < right_brace_limit)
-        if (cur_tok < left_brace_limit)
+        if (likely(cur_tok < left_brace_limit))
         {
           unbalance = 1;
 
@@ -13877,7 +13877,7 @@ done:
             fast_store_new_token(cur_tok);
             get_token();
 
-            if (cur_tok == par_token)
+            if (unlikely(cur_tok == par_token))
             if (long_state != long_call)
             if (suppress_long_error == 0)
             // @<Report a runaway argument and abort@>
@@ -13903,7 +13903,7 @@ done:
               goto exit;
             }
 
-            if (cur_tok < right_brace_limit)
+            if (unlikely(cur_tok < right_brace_limit))
             {
               if (cur_tok < left_brace_limit)
                 incr(unbalance);
@@ -13940,7 +13940,7 @@ done1:
         }
       else
       {
-        if (cur_tok == space_token)
+        if (unlikely(cur_tok == space_token))
         {
           if (info(r) <= end_match_token)
           {
@@ -13961,7 +13961,7 @@ done1:
         goto continu;
 
 found:
-      if (s != null)
+      if (likely(s != null))
       {
         if ((m == 1) && (info(p) < right_brace_limit) && (p != temp_head))
         {
@@ -13976,7 +13976,7 @@ found:
 
         incr(n);
 
-        if (tracing_macros > 0)
+        if (unlikely(tracing_macros > 0))
           if ((tracing_stack_levels == 0) || (input_ptr < tracing_stack_levels))
           {
             begin_diagnostic();
@@ -14048,7 +14048,7 @@ static void expand (void)
   small_number save_scanner_status; // {temporary storage of |scanner_status|}
 
   incr(expand_depth_count);
-  if (expand_depth_count >= expand_depth)
+  if (unlikely(expand_depth_count >= expand_depth))
     overflow("expansion depth", expand_depth);
 
   cv_backup = cur_val;
@@ -14062,7 +14062,7 @@ reswitch:
   {
     // @<Expand a nonmacro@>
 
-    if (tracing_commands > 1)
+    if (unlikely(tracing_commands > 1))
       show_cur_cmd_chr();
 
     switch (cur_cmd)
@@ -14202,7 +14202,7 @@ reswitch:
               store_new_token(cur_tok);
           } while (!(cur_cs != 0));
 
-          if (cur_cmd != end_cs_name)
+          if (unlikely(cur_cmd != end_cs_name))
           {
             print_err("Missing ");
             print_esc("endcsname");
@@ -14305,7 +14305,7 @@ reswitch:
 
       case fi_or_else:
         {
-          if (tracing_ifs > 0)
+          if (unlikely(tracing_ifs > 0))
           {
             if (tracing_commands <= 1)
               show_cur_cmd_chr();
@@ -14367,7 +14367,7 @@ reswitch:
         break;
     }
   }
-  else if (cur_cmd < end_template)
+  else if (likely(cur_cmd < end_template))
     macro_call();
   else
   {
@@ -14384,12 +14384,12 @@ reswitch:
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_tok|, and expands macros
-void get_x_token (void)
+static void get_x_token (void)
 {
 restart:
   get_next();
 
-  if (cur_cmd <= max_command)
+  if (likely(cur_cmd <= max_command))
     goto done;
 
   if (cur_cmd >= call)
@@ -14409,9 +14409,9 @@ restart:
   goto restart;
 
 done:
-  if (cur_cs == 0)
+  if (likely(cur_cs == 0))
   {
-    if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
+    if (unlikely(cur_cmd >= kanji) && (cur_cmd <= hangul))
       cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
     else
       cur_tok = (cur_cmd * max_char_val) + cur_chr;
@@ -14429,7 +14429,7 @@ void x_token (void)
     get_next();
   }
 
-  if (cur_cs == 0)
+  if (likely(cur_cs == 0))
   {
     if ((cur_cmd >= kanji) && (cur_cmd <= hangul))
       cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
@@ -14448,11 +14448,11 @@ static inline void get_the_next_non_blank_non_relax_non_call_token (void)
 }
 
 // reads a mandatory |left_brace|
-void scan_left_brace (void)
+static void scan_left_brace (void)
 {
   get_the_next_non_blank_non_relax_non_call_token();
 
-  if (cur_cmd != left_brace)
+  if (unlikely(cur_cmd != left_brace))
   {
     print_err("Missing { inserted");
     help4("A left brace was mandatory here, so I've put one in.",
@@ -14542,7 +14542,7 @@ static void scan_eight_bit_int (void)
   }
 }
 
-void scan_ascii_num (void)
+static void scan_ascii_num (void)
 {
   scan_int();
 
@@ -14556,7 +14556,7 @@ void scan_ascii_num (void)
   }
 }
 
-void scan_char_num (void)
+static void scan_char_num (void)
 {
   scan_int();
 
@@ -14570,7 +14570,7 @@ void scan_char_num (void)
   }
 }
 
-void scan_four_bit_int (void)
+static void scan_four_bit_int (void)
 {
   scan_int();
 
@@ -14584,7 +14584,7 @@ void scan_four_bit_int (void)
   }
 }
 
-void scan_four_bit_int_or_18 (void)
+static void scan_four_bit_int_or_18 (void)
 {
   scan_int();
 
@@ -14598,7 +14598,7 @@ void scan_four_bit_int_or_18 (void)
   }
 }
 
-void scan_fifteen_bit_int (void)
+static void scan_fifteen_bit_int (void)
 {
   scan_int();
 
@@ -14629,7 +14629,7 @@ static void scan_twenty_seven_bit_int (void)
 // for last_node_font
 static void scan_something_internal (small_number level, boolean negative);
 
-void scan_font_ident (void)
+static void scan_font_ident (void)
 {
   internal_font_number f;
   halfword m;
@@ -15119,7 +15119,7 @@ restart:
             case mu_val:
               cur_val = mu_skip(cur_val);
               break;
-            // {there are no other cases}
+            default: break;// {there are no other cases}
           }
         }
       }
@@ -15713,7 +15713,7 @@ restart:
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_cs| to next token
-void get_next (void)
+static void get_next (void)
 {
   uint32_t k; // {an index into |buffer|}
   halfword t; // {a token}
@@ -15725,7 +15725,7 @@ void get_next (void)
 restart:
   cur_cs = 0;
 
-  if (state != token_list)
+  if (unlikely(state != token_list))
   // @<Input from external file, |goto restart| if no input found@>
   {
 lab_switch:
@@ -16308,7 +16308,7 @@ found:
   }
   // @<Input from token list, |goto restart| if end of list or
   //  if a parameter needs to be expanded@>
-  else if (loc != null) // {list not exhausted}
+  else if (likely(loc != null)) // {list not exhausted}
   {
     t = info(loc);
     loc = link(loc); // {move to next}
@@ -16344,7 +16344,7 @@ found:
         }
       }
     }
-    else if (check_kanji(t)) // {|wchar_token|}
+    else if (unlikely(check_kanji(t))) // {|wchar_token|}
     {
       cur_cmd = t / max_cjk_val;
       cur_chr = t % max_cjk_val;
@@ -16385,7 +16385,7 @@ found:
     goto restart; // {resume previous level}
   }
   // @<If an alignment entry has just ended, take appropriate action@>
-  if (cur_cmd <= car_ret)
+  if (unlikely(cur_cmd <= car_ret))
   if (cur_cmd >= tab_mark)
   if (align_state == 0)
   // @<Insert the \(v)\<v_j>...@>
@@ -16406,7 +16406,7 @@ found:
   }
 }
 // @<Scan an optional space@>
-static inline void scan_an_optional_space()
+static inline void scan_an_optional_space(void)
 {
   get_x_token();
 
@@ -16414,7 +16414,7 @@ static inline void scan_an_optional_space()
     back_input();
 }
 // sets |cur_val| to an integer
-void scan_int (void)
+static void scan_int (void)
 {
   boolean negative; //{should the answer be negated?}
   integer m; // {|@t$2^{31}$@> div radix|, the threshold of danger}
@@ -16545,10 +16545,10 @@ restart:
         else if ((cur_tok <= other_A_token + 5) && (cur_tok >= other_A_token))
           d = cur_tok - other_A_token + 10;
         else
-          goto done;
+          break;
       }
       else
-        goto done;
+        break;
 
       vacuous = false;
 
@@ -16569,7 +16569,6 @@ restart:
 
       get_x_token();
     }
-done:
 
     if (vacuous)
     // @<Express astonishment...@>
@@ -16589,7 +16588,7 @@ done:
 }
 
 // sets |cur_val| to a dimension
-void scan_dimen (boolean mu, boolean inf, boolean shortcut)
+static void scan_dimen (boolean mu, boolean inf, boolean shortcut)
 {
   boolean negative; // {should the answer be negated?}
   integer f; // {numerator of a fraction whose denominator is $2^{16}$}
@@ -16629,7 +16628,7 @@ void scan_dimen (boolean mu, boolean inf, boolean shortcut)
             cur_val = v;
           }
 
-          if (cur_val_level != mu_val)
+          if (unlikely(cur_val_level != mu_val))
             mu_error();
           else
             goto attach_sign;
@@ -16673,7 +16672,7 @@ void scan_dimen (boolean mu, boolean inf, boolean shortcut)
           get_x_token();
 
           if ((cur_tok > zero_token + 9) || (cur_tok < zero_token))
-            goto done1;
+           break;
 
           if (k < 17) // {digits for |k>=17| cannot affect the result}
           {
@@ -16685,7 +16684,6 @@ void scan_dimen (boolean mu, boolean inf, boolean shortcut)
           }
         }
 
-done1:
         for (kk = k; kk >= 1; kk--)
         {
           dig[kk - 1] = info(p);
@@ -16749,7 +16747,7 @@ done1:
         cur_val = v;
       }
 
-      if (cur_val_level != mu_val)
+      if (unlikely(cur_val_level != mu_val))
         mu_error();
     }
     else
@@ -16900,8 +16898,13 @@ attach_sign:
     negate(cur_val);
 }
 
+/* sec 0448 */
+_Flatten static void scan_normal_dimen(void) {
+  scan_dimen(false, false, false);
+}
+
 // sets |cur_val| to a glue spec pointer
-void scan_glue (small_number level)
+static void scan_glue (small_number level)
 {
   boolean negative; // {should the answer be negated?}
   pointer q; // {new glue specification}
@@ -16917,7 +16920,7 @@ void scan_glue (small_number level)
 
     if (cur_val_level >= glue_val)
     {
-      if (cur_val_level != level)
+      if (unlikely(cur_val_level != level))
         mu_error();
 
       return;
@@ -16925,7 +16928,7 @@ void scan_glue (small_number level)
 
     if (cur_val_level == int_val)
       scan_dimen(mu, false, true);
-    else if (level == mu_val)
+    else if (unlikely(level == mu_val))
       mu_error();
   }
   else
@@ -17057,7 +17060,7 @@ static pointer str_toks (pool_pointer b)
 
 static pointer the_toks (void)
 {
-  char old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   pointer p, q, r;  // {used for copying a token list}
   pool_pointer b; // {base of temporary string}
   small_number c; // {value of |cur_chr|}
@@ -17141,8 +17144,8 @@ static pointer the_toks (void)
           delete_glue_ref(cur_val);
         }
         break;
+      default: break; // {there are no other cases}
     }
-    // {there are no other cases}
     selector = old_setting;
     return str_toks(b);
   }
@@ -17170,7 +17173,7 @@ do {                          \
 
 #define scan_pdf_ext_toks() \
 do {                        \
-  scan_toks(false, true);   \
+  scan_toks_expand();   \
 } while (0)
 
 static char * aptex_find_file (str_number s)
@@ -17317,10 +17320,10 @@ static void get_file_dump (str_number s, integer i, integer j)
 
 void conv_toks (void)
 {
-  char old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   pointer p, q;
   KANJI_code cx; // {temporary register for KANJI}
-  char c; // {desired type of conversion}
+  enum cmd_type c; // {desired type of conversion}
   small_number save_scanner_status; // {|scanner_status| upon entry}
   pointer save_def_ref; // {|def_ref| upon entry, important if inside `\.{\\message}'}
   pointer save_warning_index;
@@ -17864,14 +17867,24 @@ void conv_toks (void)
     case job_name_code:
       print(job_name);
       break;
+
+  /*
+    case pdf_creation_date_code:
+    case pdf_file_mod_date_code:
+    case pdf_file_size_code:
+    case pdf_mdfive_sum_code:
+    case pdf_file_dump_code:
+    case expanded_code:
+   */
+    default:// {there are no other cases}
+      break;
   }
-  // {there are no other cases}
   selector = old_setting;
   link(garbage) = str_toks_cat(b, cat);
   ins_list(link(temp_head));
 }
 
-pointer scan_toks (boolean macro_def, boolean xpand)
+static pointer scan_toks (boolean macro_def, boolean xpand)
 {
   halfword t; // {token representing the highest parameter number}
   halfword s; // {saved token}
@@ -18062,6 +18075,10 @@ found:
     store_new_token(hash_brace);
 
   return p;
+}
+
+_Flatten static pointer scan_toks_expand (void) {
+  return scan_toks(false, true);
 }
 
 void read_toks (integer n, pointer r, halfword j)
@@ -18285,7 +18302,7 @@ void conditional (void)
   pointer p, q; // {for traversing token lists in \.{\\ifx} tests}
   small_number save_scanner_status; // {|scanner_status| upon entry}
   pointer save_cond_ptr;  // {|cond_ptr| corresponding to this conditional}
-  small_number this_if; // {type of this conditional}
+  enum if_type this_if; // {type of this conditional}
   boolean is_unless;  // {was this if preceded by `\.{\\unless}' ?}
 
   if (tracing_ifs > 0)
@@ -19042,6 +19059,7 @@ done:
 
 static void scan_file_name_braced (void)
 {
+  output_mode_t old_setting;
   small_number save_scanner_status; // {|scanner_status| upon entry}
   pointer save_def_ref; // {|def_ref| upon entry, important if inside `\.{\\message}}
   pointer save_cur_cs;
@@ -19056,7 +19074,7 @@ static void scan_file_name_braced (void)
   cur_cs = warning_index; // {for possible runaway error}
   // {mimick |call_func| from pdfTeX}
 
-  if (scan_toks(false, true) != 0)
+  if (scan_toks_expand() != 0)
     do_nothing(); // {actually do the scanning}
 
   // {s := tokens_to_string(def_ref);}
@@ -19127,11 +19145,10 @@ void prompt_file_name_ (const char * s, str_number e)
     while (true)
     {
       if (k == last || !more_name(buffer[k]))
-        goto done;
+        break;
       incr(k);
     }
 
-done:
     end_name();
   }
 
@@ -19143,7 +19160,7 @@ done:
 
 void open_log_file (void)
 {
-  char old_setting;
+  output_mode_t old_setting;
   uint32_t k;
   uint32_t l;
   const char * months;
@@ -20184,14 +20201,13 @@ void prune_movements (integer l)
   while (down_ptr != null)
   {
     if (location(down_ptr) < l)
-      goto done;
+      break;
 
     p = down_ptr;
     down_ptr = link(p);
     free_node(p, movement_node_size);
   }
 
-done:
   while (right_ptr != null)
   {
     if (location(right_ptr) < l)
@@ -20421,7 +20437,7 @@ static void pdf_prepare_ship_out(void)
 
 static str_number expand_font_name (integer f, integer e)
 {
-  integer old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
 
   old_setting = selector;
   selector = new_string;
@@ -20725,7 +20741,7 @@ static void dvi_ship_out (pointer p)
   pointer del_node; // {used when delete the |dir_node| continued box}
   char j, k;  // {indices to first ten count registers}
   pool_pointer s; // {index into |str_pool|}
-  char old_setting; // {saved |selector| setting}
+  output_mode_t old_setting; // {saved |selector| setting}
 
   // @<Start sheet {\sl Sync\TeX} information record@>
   synctex_sheet(mag);
@@ -20955,7 +20971,7 @@ static void pdf_ship_out (pointer p)
   integer page_loc; // {location of the current |bop|}
   pointer del_node; // {used when delete the |dir_node| continued box}
   char j, k;  // {indices to first ten count registers}
-  char old_setting; // {saved |selector| setting}
+  output_mode_t old_setting; // {saved |selector| setting}
 
   // @<Start sheet {\sl Sync\TeX} information record@>
   synctex_sheet(mag);
@@ -21476,8 +21492,8 @@ reswitch:
     chain = false;
 
     do {
-      f = font(p);
-      c = character(p);
+      internal_font_number f = font(p);
+      quarterword c = character(p);
 
       // @<Change font |dvi_f| to |f|@>
       if (f != dvi_f)
@@ -21671,6 +21687,7 @@ reswitch:
       case glue_node:
         // @<Move right or output leaders@>
         {
+          pointer g;
           round_glue();
 
           if (eTeX_ex)
@@ -21717,8 +21734,8 @@ reswitch:
               }
               else
               {
-                lq = rule_wd / leader_wd; // {the number of box copies}
-                lr = rule_wd % leader_wd; // {the remaining space}
+                integer lq = rule_wd / leader_wd; // {the number of box copies}
+                integer lr = rule_wd % leader_wd; // {the remaining space}
 
                 if (subtype(p) == c_leaders)
                   cur_h = cur_h + (lr / 2);
@@ -22009,8 +22026,8 @@ reswitch:
     pdf_dev_set_dirmode(dir_to_dvi(cur_dir_hv));
 
     do {
-      f = font(p);
-      c = character(p);
+      internal_font_number f = font(p);
+      quarterword c = character(p);
 
       // @<Change font |dvi_f| to |f|@>
       if (f != dvi_f)
@@ -22159,6 +22176,7 @@ reswitch:
       case glue_node:
         // @<Move right or output leaders@>
         {
+          pointer g;
           round_glue();
 
           if (eTeX_ex)
@@ -22205,8 +22223,8 @@ reswitch:
               }
               else
               {
-                lq = rule_wd / leader_wd; // {the number of box copies}
-                lr = rule_wd % leader_wd; // {the remaining space}
+                integer lq = rule_wd / leader_wd; // {the number of box copies}
+                integer lr = rule_wd % leader_wd; // {the remaining space}
 
                 if (subtype(p) == c_leaders)
                   cur_h = cur_h + (lr / 2);
@@ -22541,7 +22559,7 @@ void dvi_vlist_out (void)
         case glue_node:
           // @<Move down or output leaders@>
           {
-            g = glue_ptr(p);
+            pointer g = glue_ptr(p);
             rule_ht = width(g) - cur_g;
 
             if (g_sign != normal)
@@ -22602,8 +22620,8 @@ void dvi_vlist_out (void)
                 }
                 else
                 {
-                  lq = rule_ht / leader_ht; // {the number of box copies}
-                  lr = rule_ht % leader_ht; // {the remaining space}
+                  integer lq = rule_ht / leader_ht; // {the number of box copies}
+                  integer lr = rule_ht % leader_ht; // {the remaining space}
 
                   if (subtype(p) == c_leaders)
                     cur_v = cur_v + (lr / 2);
@@ -22840,7 +22858,7 @@ void pdf_vlist_out (void)
         case glue_node:
           // @<Move down or output leaders@>
           {
-            g = glue_ptr(p);
+            pointer g = glue_ptr(p);
             rule_ht = width(g) - cur_g;
 
             if (g_sign != normal)
@@ -22901,8 +22919,8 @@ void pdf_vlist_out (void)
                 }
                 else
                 {
-                  lq = rule_ht / leader_ht; // {the number of box copies}
-                  lr = rule_ht % leader_ht; // {the remaining space}
+                  integer lq = rule_ht / leader_ht; // {the number of box copies}
+                  integer lr = rule_ht % leader_ht; // {the remaining space}
 
                   if (subtype(p) == c_leaders)
                     cur_v = cur_v + (lr / 2);
@@ -23100,7 +23118,7 @@ void dir_out (void)
 
 static void special_out (pointer p)
 {
-  char old_setting;
+  output_mode_t old_setting;
   pool_pointer k;
 
   synch_h();
@@ -23140,7 +23158,7 @@ static void special_out (pointer p)
 #ifndef APTEX_DVI_ONLY
 static void pdf_special_out (pointer p)
 {
-  char old_setting;
+  output_mode_t old_setting;
 
   old_setting = selector;
   selector = new_string;
@@ -23194,7 +23212,7 @@ static void pdf_special_out (pointer p)
 
 static void write_out (pointer p)
 {
-  char old_setting; // {holds print |selector|}
+  output_mode_t old_setting; // {holds print |selector|}
   integer old_mode; // {saved |mode|}
   /* small_number j; */
   int j;  // {write stream number}
@@ -23217,7 +23235,7 @@ static void write_out (pointer p)
   old_mode = mode;
   mode = 0;
   cur_cs = write_loc;
-  q = scan_toks(false, true); // {expand macros, etc.}
+  q = scan_toks_expand(); // {expand macros, etc.}
   mode = old_mode;
   get_token();
 
@@ -26615,7 +26633,7 @@ restart:
   if ((cur_cmd == assign_glue) && (cur_chr == glue_base + tab_skip_code))
   {
     scan_optional_equals();
-    scan_glue(glue_val);
+    scan_normal_glue();
 
     if (global_defs > 0)
       geq_define(glue_base + tab_skip_code, glue_ref, cur_val);
@@ -26678,7 +26696,7 @@ static void init_align (void)
 
     // {\.{\\cr} ends the preamble}
     if (cur_cmd == car_ret)
-      goto done;
+      break;
 
     /*
       @<Scan preamble text until |cur_cmd| is |tab_mark| or |car_ret|,
@@ -26694,7 +26712,7 @@ static void init_align (void)
       get_preamble_token();
 
       if (cur_cmd == mac_param)
-        goto done1;
+        break;
 
       if ((cur_cmd <= car_ret) && (cur_cmd >= tab_mark) && (align_state == -1000000))
         if ((p == hold_head) && (cur_loop == null) && (cur_cmd == tab_mark))
@@ -26706,7 +26724,7 @@ static void init_align (void)
               "\\halign or \\valign is being set up. In this case you had",
               "none, so I've put one in; maybe that will work.");
           back_error();
-          goto done1;
+          break;
         }
       else if ((cur_cmd != spacer) || (p != hold_head))
       {
@@ -26715,7 +26733,6 @@ static void init_align (void)
         info(p) = cur_tok;
       }
     }
-done1:
     // end of section
     link(cur_align) = new_null_box();
     cur_align = link(cur_align);  // {a new alignrecord}
@@ -26728,11 +26745,10 @@ done1:
 
     while (true)
     {
-continu:
       get_preamble_token();
 
       if ((cur_cmd <= car_ret) && (cur_cmd >= tab_mark) && (align_state == -1000000))
-        goto done2;
+        break;
 
       if (cur_cmd == mac_param)
       {
@@ -26741,21 +26757,19 @@ continu:
             "\\halign or \\valign is being set up. In this case you had",
             "more than one, so I'm ignoring all but the first.");
         error();
-        goto continu;
+        continue;
       }
 
       link(p) = get_avail();
       p = link(p);
       info(p) = cur_tok;
     }
-done2:
     link(p) = get_avail();
     p = link(p);
     info(p) = end_template_token; // {put \.{\\endtemplate} at the end}
     // end of section
     v_part(cur_align) = link(hold_head);
   }
-done:
   scanner_status = normal;
   // end of section
   new_save_level(align_group);
@@ -29416,7 +29430,7 @@ exit:
 #endif
 }
 
-void post_line_break (boolean d)
+static void post_line_break (boolean d)
 {
   pointer q, r, s;          // {temporary registers for list manipulation}
   /* [877] - margin kerning */
@@ -30044,7 +30058,7 @@ done:
   return j;
 }
 
-void hyphenate (void)
+static void hyphenate (void)
 {
   uint32_t i, j, l;
   pointer q, r, s;
@@ -30372,7 +30386,7 @@ common_ending:
 }
 
 // enters new exceptions
-void new_hyph_exceptions (void)
+static void new_hyph_exceptions (void)
 {
   uint32_t n;
   uint32_t j;
@@ -31843,7 +31857,7 @@ static void append_glue (void)
 
   s = cur_chr;
 
-  switch (s)
+  switch ((enum glue)s)
   {
     case fil_code:
       cur_val = fil_glue;
@@ -31862,11 +31876,11 @@ static void append_glue (void)
       break;
 
     case skip_code:
-      scan_glue(glue_val);
+      scan_normal_glue();
       break;
 
     case mskip_code:
-      scan_glue(mu_val);
+      scan_mu_glue();
       break;
   }
   // {now |cur_val| points to the glue specification}
@@ -31985,6 +31999,7 @@ static void extra_right_brace (void)
     case math_left_group:
       print_esc("right");
       break;
+    default: break;
   }
 
   help5("I've deleted a group-closing symbol because it seems to be",
@@ -32508,7 +32523,7 @@ static void make_mark (void)
     c = cur_val;
   }
 
-  p = scan_toks(false, true);
+  p = scan_toks_expand();
   p = get_node(small_node_size);
   mark_class(p) = c;
   type(p) = mark_node;
@@ -34861,9 +34876,9 @@ static void prefixed_command (void)
         scan_optional_equals();
 
         if (n == assign_mu_glue)
-          scan_glue(mu_val);
+          scan_mu_glue();
         else
-          scan_glue(glue_val);
+          scan_normal_glue();
 
         trap_zero_glue();
         define(p, glue_ref, cur_val);
@@ -35349,7 +35364,7 @@ void trap_zero_glue (void)
 void do_register_command (small_number a)
 {
   pointer l, q, r, s; // {for list manipulation}
-  char p; // {type of register involved}
+  register_type_t p; // {type of register involved}
   boolean e;  // {does |l| refer to a sparse array element?}
   integer w;  // {integer or dimen value of |l|}
 
@@ -35414,6 +35429,7 @@ void do_register_command (small_number a)
         case mu_val:
           l = cur_val + mu_skip_base;
           break;
+        default: break;// {there are no other cases}
       }
     }
   }
@@ -35712,7 +35728,7 @@ void new_font (small_number a)
   scaled s; // {stated ``at'' size, or negative of scaled magnification}
   internal_font_number f; // {runs through existing fonts}
   str_number t; // {name for the frozen font identifier}
-  char old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   str_number flushable_string;
 
   if (job_name == 0)
@@ -35906,12 +35922,12 @@ static void open_or_close_in (void)
 // checked
 static void issue_message (void)
 {
-  char old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   char c; // {identifies \.{\\message} and \.{\\errmessage}}
   str_number s; // {the message}
 
   c = cur_chr;
-  link(garbage) = scan_toks(false, true);
+  link(garbage) = scan_toks_expand();
   old_setting = selector;
   selector = new_string;
   token_show(def_ref);
@@ -35998,7 +36014,7 @@ static void show_whatever (void)
   integer l;  // {line where that conditional began}
   integer n;  // {level of \.{\\if...\\fi} nesting}
 
-  switch (cur_chr)
+  switch ((enum show)cur_chr)
   {
     case show_lists_code:
       {
@@ -36278,7 +36294,7 @@ static void do_extension (void)
       {
         new_whatsit(special_node, write_node_size);
         write_stream(tail) = null;
-        p = scan_toks(false, true);
+        p = scan_toks_expand();
         write_tokens(tail) = def_ref;
         inhibit_glue_flag = false;
       }
@@ -36709,10 +36725,10 @@ static void handle_right_brace (void)
             }
       }
       break;
-
+      /*
     default:
       confusion("rightbrace");
-      break;
+      break; */
   }
 }
 
@@ -39076,9 +39092,9 @@ void group_trace (boolean e)
 
 void show_save_groups (void)
 {
-  int p;
+  integer p;
   int m;
-  pointer v;
+  integer v;
   quarterword l;
   group_code c;
   int a;
@@ -39255,6 +39271,7 @@ void show_save_groups (void)
           goto found;
         }
         break;
+      case bottom_level: break;
     }
   }
 
@@ -39421,8 +39438,8 @@ reswitch:
     if (is_char_node(p))
     {
       do {
-        f = font(p);
-        c = character(p);
+        internal_font_number f = font(p);
+        quarterword c = character(p);
         cur_h = cur_h + char_width(f, char_info(f, c));
 
         if (font_dir[f] != dir_default)
@@ -39457,6 +39474,7 @@ reswitch:
 
         case glue_node:
           {
+            pointer g;
             round_glue();
             handle_a_glue_node();
           }
@@ -39902,7 +39920,7 @@ void app_display (pointer j, pointer b, scaled d)
 
 void pseudo_start (void)
 {
-  int old_setting; // {holds |selector| setting}
+  output_mode_t old_setting; // {holds |selector| setting}
   str_number s; // {string to be converted into a pseudo file}
   pool_pointer l, m;  // {indices into |str_pool|}
   pointer p, q, r;  // {for list construction}
@@ -40488,12 +40506,12 @@ found:
   cur_val_level = l;
 }
 
-void scan_normal_glue (void)
+_Flatten void scan_normal_glue (void)
 {
   scan_glue(glue_val);
 }
 
-void scan_mu_glue (void)
+_Flatten void scan_mu_glue (void)
 {
   scan_glue(mu_val);
 }
@@ -40733,7 +40751,7 @@ void find_sa_element (small_number t, halfword n, boolean w)
   if ((cur_ptr == null) && w)
     goto not_found4;
 
-  goto exit;
+  return;
 
 not_found:
   new_index(t, null);
@@ -40795,7 +40813,6 @@ not_found4:
   sa_lev(cur_ptr) = level_one;
   link(cur_ptr) = q;
   add_sa_ptr();
-exit:;
 }
 
 void delete_sa_ref (pointer q)
