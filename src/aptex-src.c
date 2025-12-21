@@ -13819,7 +13819,7 @@ continu:
               if (u == r)
               {
                 if (cur_tok != info(v))
-                  goto done;
+                  break;
                 else
                 {
                   r = link(v);
@@ -13828,12 +13828,11 @@ continu:
               }
 
               if (likely(info(u) != info(v)))
-                goto done;
+                break;
 
               u = link(u);
               v = link(v);
             }
-done:
             t = link(t);
           } while (!(t == r));
 
@@ -16470,7 +16469,7 @@ restart:
       }
     }
 
-    if ((cur_val > 255) && (cur_cmd < kanji))
+    if (unlikely((cur_val > 255) && (cur_cmd < kanji)))
     {
       print_err("Improper alphabetic or KANJI constant");
       help2("A one-character control sequence belongs after a ` mark.",
@@ -16483,7 +16482,7 @@ restart:
 
     skip_mode = true;
   }
-  else if (cur_tok == cs_token_flag + frozen_primitive)
+  else if (unlikely(cur_tok == cs_token_flag + frozen_primitive))
   // @<Reset |cur_tok| for unexpandable primitives, goto restart @>
   {
     get_token();
