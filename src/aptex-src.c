@@ -6193,7 +6193,7 @@ static void print_the_digs (eight_bits k)
 // prints an integer in decimal form
 void print_int (integer n)
 {
-  uint32_t k;     // var k:0..23; {index to current digit; we assume that $|n|<10^{23}$}
+  eight_bits k;     // var k:0..23; {index to current digit; we assume that $|n|<10^{23}$}
   integer m;  // {used to negate |n| in possibly dangerous cases}
 
   k = 0;
@@ -12550,8 +12550,8 @@ pointer id_lookup (integer j, integer l)
 {
   integer h;  // {hash code}
   integer d;  // {number of characters in incomplete current string}
-  pointer p;  // {index in |hash| array}
-  pointer k;  // {index in |buffer| array}
+  register pointer p;  // {index in |hash| array}
+  register pointer k;  // {index in |buffer| array}
 
   h = buffer[j];
 
@@ -13673,7 +13673,7 @@ static void get_token (void)
   get_next();
   no_new_control_sequence = true;
 
-  if (cur_cs == 0)
+  if (likely(cur_cs == 0))
   {
     if (unlikely((cur_cmd >= kanji) && (cur_cmd <= hangul)))
       cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
@@ -15717,7 +15717,7 @@ static void get_next (void)
   uint32_t k; // {an index into |buffer|}
   halfword t; // {a token}
   uint32_t cat; // {|cat_code(cur_chr)|, usually}
-  integer l; // {temporary index into |buffer|}
+  uint32_t l; // {temporary index into |buffer|}
   ASCII_code c, cc; // {constituents of a possible expanded code}
   uint32_t d; // {number of excess characters in an expanded code}
 
@@ -32332,7 +32332,7 @@ done:;
 }
 
 // the next input should specify a box or perhaps a rule
-void scan_box (integer box_context)
+static void scan_box (integer box_context)
 {
   get_the_next_non_blank_non_relax_non_call_token();
 
