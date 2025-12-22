@@ -331,7 +331,7 @@ EXTERN str_number   init_str_ptr;             // {the starting value of |str_ptr
 
 EXTERN alpha_file log_file;                   // {transcript of \TeX\ session}
 EXTERN output_mode_t selector;                // {where to print a message}
-EXTERN uint32_t   dig[23 + 1];                // {digits in a number being output}
+EXTERN ASCII_code dig[23 + 1];                // {digits in a number being output}
 EXTERN integer    tally;                      // {the number of characters recently printed}
 EXTERN integer    term_offset;                // {the number of characters on the current terminal line}
 EXTERN integer    file_offset;                // {the number of characters on the current file line}
@@ -842,8 +842,8 @@ EXTERN integer minimum_demerits;              // {best total demerits known for 
 EXTERN pointer best_place[4];                 // {how to achieve |minimal_demerits|}
 EXTERN halfword best_pl_line[4];              // {corresponding line number}
 
-EXTERN integer dvi_dir;                       // {a \.{DVI} reader program thinks we direct to}
-EXTERN integer cur_dir_hv;                    // {\TeX\ thinks we direct to}
+EXTERN eight_bits dvi_dir;                       // {a \.{DVI} reader program thinks we direct to}
+EXTERN eight_bits cur_dir_hv;                    // {\TeX\ thinks we direct to}
 EXTERN eight_bits page_dir;
 
 EXTERN pointer first_char;                    // {first printable character}
