@@ -140,8 +140,10 @@ void begin_file_reading (void);
 void end_file_reading (void);
 void clear_for_error_prompt (void);
 static void get_next (void);
-static void get_token (void);
-static void get_x_token (void);
+static halfword get_token_ (void);
+#define get_token cur_tok = get_token_
+static halfword get_x_token_ (void);
+#define get_x_token cur_tok = get_x_token_
 static void scan_left_brace (void);
 
 static void scan_int (void);

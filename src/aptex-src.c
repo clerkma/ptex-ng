@@ -2141,11 +2141,11 @@ static integer kcatcodekey (integer c)
 {
   integer block;
 
-  if (is_internalUPTEX())
+  if (likely(is_internalUPTEX()))
   {
     block = binary_search((long)c, ucs_range, 0, NUCS_RANGE-1);
 
-    if (block == 0x01)
+    if (unlikely(block == 0x01))
     {
       /* Latin-1 Letters */
       if (FEMININE_ORDINAL_INDICATOR == c
@@ -2156,7 +2156,7 @@ static integer kcatcodekey (integer c)
         return 0x01FD;
     }
 
-    if (block == 0xa1)
+    if (unlikely(block == 0xa1))
     {
       /* Fullwidth ASCII variants  except for U+FF01..FF0F, U+FF1A..FF20, U+FF3B..FF40, U+FF5B..FF5E */
       if ((FULLWIDTH_DIGIT_0 <= c && c <= FULLWIDTH_DIGIT_9)
@@ -6942,30 +6942,23 @@ static boolean str_eq_buf (str_number s, integer k)
   {
     if (str_pool[j] != buffer[k])
     {
-      result = false;
-      goto not_found;
+      return false;
     }
 
     incr(j);
     incr(k);
   }
 
-  result = true;
-
-not_found:
-  return result;
+  return true;
 }
 
 // test equality of strings
 static boolean str_eq_str (str_number s, str_number t)
 {
   pool_pointer j, k;  // {running indices}
-  boolean result;     // {result of comparison}
-
-  result = false;
 
   if (length(s) != length(t))
-    goto not_found;
+    return false;
 
   j = str_start[s];
   k = str_start[t];
@@ -6973,16 +6966,13 @@ static boolean str_eq_str (str_number s, str_number t)
   while (j < str_start[s + 1])
   {
     if (str_pool[j] != str_pool[k])
-      goto not_found;
+      return false;
 
     incr(j);
     incr(k);
   }
 
-  result = true;
-
-not_found:
-  return result;
+  return true;
 }
 
 // prints two least significant digits
@@ -13667,7 +13657,7 @@ static void firm_up_the_line (void)
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_tok|
-static void get_token (void)
+static halfword get_token_ (void)
 {
   no_new_control_sequence = false;
   get_next();
@@ -13676,12 +13666,12 @@ static void get_token (void)
   if (likely(cur_cs == 0))
   {
     if (unlikely((cur_cmd >= kanji) && (cur_cmd <= hangul)))
-      cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
+      return (cur_cmd * max_cjk_val) + cur_chr;
     else
-      cur_tok = (cur_cmd * max_char_val) + cur_chr;
+      return (cur_cmd * max_char_val) + cur_chr;
   }
   else
-    cur_tok = cs_token_flag + cur_cs;
+    return cs_token_flag + cur_cs;
 }
 
 // invokes a user-defined control sequence
@@ -14383,7 +14373,7 @@ reswitch:
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_tok|, and expands macros
-static void get_x_token (void)
+static halfword get_x_token_ (void)
 {
 restart:
   get_next();
@@ -14411,16 +14401,16 @@ done:
   if (likely(cur_cs == 0))
   {
     if (unlikely(cur_cmd >= kanji) && (cur_cmd <= hangul))
-      cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
+      return (cur_cmd * max_cjk_val) + cur_chr;
     else
-      cur_tok = (cur_cmd * max_char_val) + cur_chr;
+      return (cur_cmd * max_char_val) + cur_chr;
   }
   else
-    cur_tok = cs_token_flag + cur_cs;
+    return cs_token_flag + cur_cs;
 }
 
 // |get_x_token| without the initial |get_next|
-void x_token (void)
+static void x_token (void)
 {
   while (cur_cmd > max_command)
   {
@@ -15820,7 +15810,7 @@ start_cs:
                   cur_chr = fromBUFF(buffer, limit + 1, k);
                   cat = kcat_code(kcatcodekey(cur_chr));
 
-                  if ((multistrlen(buffer, limit + 1, k) > 1) && check_kcat_code(cat))
+                  if (unlikely(multistrlen(buffer, limit + 1, k) > 1) && check_kcat_code(cat))
                   {
                     if (cat == not_cjk)
                       cat = other_kchar;
@@ -16318,7 +16308,7 @@ found:
       cur_cmd = eq_type(cur_cs);
       cur_chr = equiv(cur_cs);
 
-      if (cur_cmd >= outer_call)
+      if (unlikely(cur_cmd >= outer_call))
       {
         if (cur_cmd == dont_expand)
         // @<Get the next token, suppressing expansion@>
@@ -18178,7 +18168,7 @@ void read_toks (integer n, pointer r, halfword j)
         cur_chr = fromBUFF(buffer, limit + 1, loc);
         cur_tok = kcat_code(kcatcodekey(cur_chr));
 
-        if ((multistrlen(buffer, limit + 1, loc) > 1) && check_kcat_code(cur_tok))
+        if (unlikely(multistrlen(buffer, limit + 1, loc) > 1) && check_kcat_code(cur_tok))
         {
           if (cur_tok == not_cjk)
             cur_tok = other_kchar;
@@ -20202,7 +20192,7 @@ void prune_movements (integer l)
     if (location(down_ptr) < l)
       break;
 
-    p = down_ptr;
+    pointer p = down_ptr;
     down_ptr = link(p);
     free_node(p, movement_node_size);
   }
