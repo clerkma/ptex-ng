@@ -350,7 +350,7 @@ EXTERN boolean set_box_allowed;               // {is it safe to do a \.{\\setbox
 EXTERN history_value_t history;               // {has the source input been clean so far?}
 EXTERN int error_count;                       // {the number of scrolled errors since the last paragraph ended}
 
-EXTERN char * help_line[6];                   // {helps for the next |error|}
+EXTERN const char * help_line[6];             // {helps for the next |error|}
 EXTERN int help_ptr;                          // {the number of help lines present}
 EXTERN boolean use_err_help;                  // {should the |err_help| list be shown?}
 
