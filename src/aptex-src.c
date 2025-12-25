@@ -5518,7 +5518,7 @@ static void init_prim (void)
   primitive("ptexlineendmode", assign_int, int_base + ptex_lineend_code);
   primitive("ptextracingfonts", assign_int, int_base + ptex_tracing_fonts_code);
 #define PDFOUTPUT "dpxoutput"
-  primitive(PDFOUTPUT, assign_int, int_base + pdf_output_code);
+  primitive("" PDFOUTPUT, assign_int, int_base + pdf_output_code);
   primitive("pdfcompresslevel", assign_int, int_base + pdf_compress_level_code);
   primitive("pdfmajorversion", assign_int, int_base + pdf_major_version_code);
   primitive("pdfminorversion", assign_int, int_base + pdf_minor_version_code);
@@ -15704,10 +15704,10 @@ static void get_next (void)
 {
   uint32_t k; // {an index into |buffer|}
   halfword t; // {a token}
-  uint32_t cat; // {|cat_code(cur_chr)|, usually}
+  unsigned short cat; // {|cat_code(cur_chr)|, usually}
   uint32_t l; // {temporary index into |buffer|}
   ASCII_code c, cc; // {constituents of a possible expanded code}
-  uint32_t d; // {number of excess characters in an expanded code}
+  unsigned char d; // {number of excess characters in an expanded code}
 
 restart:
   cur_cs = 0;
@@ -21435,34 +21435,30 @@ void dvi_hlist_out (void)
   prev_p = this_box + list_offset;
 
   // @<Initialize |hlist_out| for mixed direction typesetting@>
-  if (eTeX_ex)
-  {
-    put_LR(before);
-
-    if (box_lr(this_box) == dlist)
-    {
-      if (cur_dir == right_to_left)
-      {
-        cur_dir = left_to_right;
-        cur_h = cur_h - width(this_box);
-      }
-      else
-        set_box_lr(this_box, 0);
-    }
-
-    if ((cur_dir == right_to_left) && (box_lr(this_box) != reversed))
-    {
-      save_h = cur_h;
-      temp_ptr = p;
-      p = new_kern(0);
-      link(prev_p) = p;
-      cur_h = 0;
-      link(p) = reverse(this_box, null, cur_g, cur_glue);
-      width(p) = -cur_h;
-      cur_h = save_h;
-      set_box_lr(this_box, reversed);
-    }
+#define init_hlist_out()                                                \
+  if (eTeX_ex) {                                                        \
+    put_LR(before);                                                     \
+    if (box_lr(this_box) == dlist) {                                    \
+      if (cur_dir == right_to_left) {                                   \
+        cur_dir = left_to_right;                                        \
+        cur_h = cur_h - width(this_box);                                \
+      }                                                                 \
+      else                                                              \
+        set_box_lr(this_box, 0);                                        \
+    }                                                                   \
+    if ((cur_dir == right_to_left) && (box_lr(this_box) != reversed)) { \
+      save_h = cur_h;                                                   \
+      temp_ptr = p;                                                     \
+      p = new_kern(0);                                                  \
+      link(prev_p) = p;                                                 \
+      cur_h = 0;                                                        \
+      link(p) = reverse(this_box, null, cur_g, cur_glue);               \
+      width(p) = -cur_h;                                                \
+      cur_h = save_h;                                                   \
+      set_box_lr(this_box, reversed);                                   \
+    }                                                                   \
   }
+  init_hlist_out()
 
   left_edge = cur_h;
   // @<Start hlist {\sl Sync\TeX} information record@>
@@ -21970,34 +21966,7 @@ void pdf_hlist_out (void)
   prev_p = this_box + list_offset;
 
   // @<Initialize |hlist_out| for mixed direction typesetting@>
-  if (eTeX_ex)
-  {
-    put_LR(before);
-
-    if (box_lr(this_box) == dlist)
-    {
-      if (cur_dir == right_to_left)
-      {
-        cur_dir = left_to_right;
-        cur_h = cur_h - width(this_box);
-      }
-      else
-        set_box_lr(this_box, 0);
-    }
-
-    if ((cur_dir == right_to_left) && (box_lr(this_box) != reversed))
-    {
-      save_h = cur_h;
-      temp_ptr = p;
-      p = new_kern(0);
-      link(prev_p) = p;
-      cur_h = 0;
-      link(p) = reverse(this_box, null, cur_g, cur_glue);
-      width(p) = -cur_h;
-      cur_h = save_h;
-      set_box_lr(this_box, reversed);
-    }
-  }
+  init_hlist_out()
 
   left_edge = cur_h;
   // @<Start hlist {\sl Sync\TeX} information record@>
