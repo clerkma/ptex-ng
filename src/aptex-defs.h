@@ -1385,10 +1385,12 @@ enum if_type {
 /* sec 0489 */
 #define if_node_size     2                  // {number of words in stack entry for conditionals}
 #define if_line_field(a) mem[(a) + 1].cint
-#define if_code          1  // {code for \.{\\if...} being evaluated}
-#define fi_code          2  // {code for \.{\\fi}}
-#define else_code        3  // {code for \.{\\else}}
-#define or_code          4  // {code for \.{\\or}}
+enum if_code {
+  if_code =  1,  // {code for \.{\\if...} being evaluated}
+  fi_code,       // {code for \.{\\fi}}
+  else_code,     // {code for \.{\\else}}
+  or_code,       // {code for \.{\\or}}
+};
 /* sec 0506 */
 #define get_x_token_or_active_char()                    \
 do {                                                    \
@@ -1902,8 +1904,10 @@ do {                              \
 /* sec 0974 */
 #define deplorable 100000
 /* sec 0980 */
-#define inserts_only 1
-#define box_there    2
+enum page {
+  inserts_only = 1,
+  box_there,
+};
 /* sec 0981 */
 #define page_ins_node_size 4            // {number of words for a page insertion node}
 #define inserting          0            // {an insertion class that has not yet overflowed}

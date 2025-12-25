@@ -13657,7 +13657,7 @@ static void firm_up_the_line (void)
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_tok|
-static halfword get_token_ (void)
+static inline void get_token (void)
 {
   no_new_control_sequence = false;
   get_next();
@@ -13666,12 +13666,12 @@ static halfword get_token_ (void)
   if (likely(cur_cs == 0))
   {
     if (unlikely((cur_cmd >= kanji) && (cur_cmd <= hangul)))
-      return (cur_cmd * max_cjk_val) + cur_chr;
+      cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
     else
-      return (cur_cmd * max_char_val) + cur_chr;
+      cur_tok = (cur_cmd * max_char_val) + cur_chr;
   }
   else
-    return cs_token_flag + cur_cs;
+    cur_tok = cs_token_flag + cur_cs;
 }
 
 // invokes a user-defined control sequence
@@ -13989,7 +13989,7 @@ found:
 
   if (n > 0)
   {
-    if (param_ptr + n > max_param_stack)
+    if (unlikely(param_ptr + n > max_param_stack))
     {
       max_param_stack = param_ptr + n;
 
@@ -14373,7 +14373,7 @@ reswitch:
 }
 
 // sets |cur_cmd|, |cur_chr|, |cur_tok|, and expands macros
-static halfword get_x_token_ (void)
+static inline void get_x_token (void)
 {
 restart:
   get_next();
@@ -14401,12 +14401,12 @@ done:
   if (likely(cur_cs == 0))
   {
     if (unlikely(cur_cmd >= kanji) && (cur_cmd <= hangul))
-      return (cur_cmd * max_cjk_val) + cur_chr;
+      cur_tok = (cur_cmd * max_cjk_val) + cur_chr;
     else
-      return (cur_cmd * max_char_val) + cur_chr;
+      cur_tok = (cur_cmd * max_char_val) + cur_chr;
   }
   else
-    return cs_token_flag + cur_cs;
+    cur_tok = cs_token_flag + cur_cs;
 }
 
 // |get_x_token| without the initial |get_next|
@@ -15723,12 +15723,13 @@ lab_switch:
       cur_chr = fromBUFF(buffer, limit + 1, loc);
       cur_cmd = kcat_code(kcatcodekey(cur_chr));
 
-      if ((multistrlen(buffer, limit + 1, loc) > 1) && check_kcat_code(cur_cmd))
+      const int len = multistrlen(buffer, limit + 1, loc);
+      if ((len > 1) && check_kcat_code(cur_cmd))
       {
         if (cur_cmd == not_cjk)
           cur_cmd = other_kchar;
 
-        loc = loc + multistrlen(buffer, limit + 1, loc);
+        loc = loc + len;
       }
       else
       {
@@ -15760,12 +15761,13 @@ reswitch:
               cur_chr = fromBUFF(buffer, limit + 1, k);
               cat = kcat_code(kcatcodekey(cur_chr));
 
-              if ((multistrlen(buffer, limit + 1, k) > 1) && check_kcat_code(cat))
+              const int len = multistrlen(buffer, limit + 1, k);
+              if ((len > 1) && check_kcat_code(cat))
               {
                 if (cat == not_cjk)
                   cat = other_kchar;
 
-                k = k + multistrlen(buffer, limit + 1, k);
+                k = k + len;
               }
               else
               {
@@ -15810,12 +15812,13 @@ start_cs:
                   cur_chr = fromBUFF(buffer, limit + 1, k);
                   cat = kcat_code(kcatcodekey(cur_chr));
 
-                  if (unlikely(multistrlen(buffer, limit + 1, k) > 1) && check_kcat_code(cat))
+                  const int len = multistrlen(buffer, limit + 1, k);
+                  if (unlikely(len > 1) && check_kcat_code(cat))
                   {
                     if (cat == not_cjk)
                       cat = other_kchar;
 
-                    k = k + multistrlen(buffer, limit + 1, k);
+                    k = k + len;
 
                     if ((cat == kanji) || (cat == kana))
                     {
@@ -17009,7 +17012,8 @@ static pointer str_toks_cat (pool_pointer b, uint32_t cat)
     t = fromBUFF(str_pool, pool_ptr, k);
     cc = kcat_code(kcatcodekey(t));
 
-    if ((multistrlen(str_pool, pool_ptr, k) > 1) && ((cat >= kanji) || check_kcat_code(cc)))
+    const int len = multistrlen(str_pool, pool_ptr, k);
+    if ((len > 1) && ((cat >= kanji) || check_kcat_code(cc)))
     {
       if (cat >= kanji)
         cc = cat;
@@ -17017,7 +17021,7 @@ static pointer str_toks_cat (pool_pointer b, uint32_t cat)
         cc = other_kchar;
 
       t = t + cc * max_cjk_val;
-      k = k + multistrlen(str_pool, pool_ptr, k) - 1;
+      k = k + len - 1;
     }
     else
     {
@@ -18168,13 +18172,14 @@ void read_toks (integer n, pointer r, halfword j)
         cur_chr = fromBUFF(buffer, limit + 1, loc);
         cur_tok = kcat_code(kcatcodekey(cur_chr));
 
-        if (unlikely(multistrlen(buffer, limit + 1, loc) > 1) && check_kcat_code(cur_tok))
+        const int len = multistrlen(buffer, limit + 1, loc);
+        if (unlikely(len > 1) && check_kcat_code(cur_tok))
         {
           if (cur_tok == not_cjk)
             cur_tok = other_kchar;
 
           cur_tok = cur_chr + cur_tok * max_cjk_val;
-          loc = loc + multistrlen(buffer, limit + 1, loc);
+          loc = loc + len;
         }
         else
         {
@@ -18240,7 +18245,7 @@ void pass_text (void)
     if (cur_cmd == fi_or_else)
     {
       if (l == 0)
-        goto done;
+        break;
 
       if (cur_chr == fi_code)
         decr(l);
@@ -18249,10 +18254,9 @@ void pass_text (void)
       incr(l);
   }
 
-done:
   scanner_status = save_scanner_status;
 
-  if (tracing_ifs > 0)
+  if (unlikely(tracing_ifs > 0))
     show_cur_cmd_chr();
 }
 
@@ -18294,23 +18298,21 @@ void conditional (void)
   enum if_type this_if; // {type of this conditional}
   boolean is_unless;  // {was this if preceded by `\.{\\unless}' ?}
 
-  if (tracing_ifs > 0)
+  if (unlikely(tracing_ifs > 0))
   {
     if (tracing_commands <= 1)
       show_cur_cmd_chr();
   }
 
-  {
-    p = get_node(if_node_size);
-    link(p) = cond_ptr;
-    type(p) = if_limit;
-    subtype(p) = cur_if;
-    if_line_field(p) = if_line;
-    cond_ptr = p;
-    cur_if = cur_chr;
-    if_limit = if_code;
-    if_line = line;
-  }
+  p = get_node(if_node_size);
+  link(p) = cond_ptr;
+  type(p) = if_limit;
+  subtype(p) = cur_if;
+  if_line_field(p) = if_line;
+  cond_ptr = p;
+  cur_if = cur_chr;
+  if_limit = if_code;
+  if_line = line;
 
   save_cond_ptr = cond_ptr;
   is_unless = (cur_chr >= unless_code);
@@ -18607,7 +18609,7 @@ void conditional (void)
 
         while (p != null)
         {
-          if (m >= max_buf_stack)
+          if (unlikely(m >= max_buf_stack))
           {
             max_buf_stack = m + 1;
 
@@ -18623,7 +18625,7 @@ void conditional (void)
 #endif
           }
 
-          if (check_kanji(info(p)))
+          if (unlikely(check_kanji(info(p))))
           {
             if (BYTE1(toBUFF(info(p) % max_cjk_val)) != 0)
             {
@@ -18749,7 +18751,7 @@ void conditional (void)
   if (is_unless)
     b = !b;
 
-  if (tracing_commands > 1)
+  if (unlikely(tracing_commands > 1))
   {
     begin_diagnostic();
 
@@ -18771,9 +18773,9 @@ void conditional (void)
   {
     pass_text();
 
-    if (cond_ptr == save_cond_ptr)
+    if (likely(cond_ptr == save_cond_ptr))
     {
-      if (cur_chr != or_code)
+      if (likely(cur_chr != or_code))
         goto common_ending;
 
       print_err("Extra ");
@@ -20192,7 +20194,7 @@ void prune_movements (integer l)
     if (location(down_ptr) < l)
       break;
 
-    pointer p = down_ptr;
+    p = down_ptr;
     down_ptr = link(p);
     free_node(p, movement_node_size);
   }
@@ -32545,7 +32547,6 @@ static void delete_last (void)
   pointer p, q; // {run through the current list}
   pointer r; // {running behind |p|}
   pointer s; // {running behind |r|}
-  pointer t;
   integer fm; // {a final \.{\\beginM} \.{\\endM} node pair?}
   integer gm; // {1: if |link(q)|, 2: if |q| is an  \.{\\endM} node}
   boolean fd, gd; // {same for |disp_node|}
@@ -32572,6 +32573,7 @@ static void delete_last (void)
   }
   else
   {
+    pointer t;
     check_effective_tail(return);
 
     if (!is_char_node(tx))
@@ -32586,7 +32588,7 @@ static void delete_last (void)
 static void unpackage (void)
 {
   pointer p;  // {the box}
-  char c;     // {should we copy?}
+  small_number c;  // {should we copy?}
   scaled disp; // {displacement}
 
   if (cur_chr > copy_code)

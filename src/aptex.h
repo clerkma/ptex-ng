@@ -477,16 +477,16 @@ EXTERN pointer pstack[10];                    // {arguments supplied to a macro}
 EXTERN integer cur_val;                       // {value returned by numeric scanners}
 EXTERN register_type_t cur_val_level;         // {the ``level'' of this value}
 
-EXTERN int radix;                             // {|scan_int| sets this to 8, 10, 16, or zero}
+EXTERN small_number radix;                    // {|scan_int| sets this to 8, 10, 16, or zero}
 
-EXTERN int cur_order;                         // {order of infinity found by |scan_dimen|}
+EXTERN glue_ord cur_order;                    // {order of infinity found by |scan_dimen|}
 
 EXTERN alpha_file read_file[16];              // {used for \.{\\read}}
 EXTERN char read_open[17];                    // {state of |read_file[n]|}
 
 EXTERN pointer cond_ptr;                      // {top of the condition stack}
-EXTERN int if_limit;                          // {upper bound on |fi_or_else| codes}
-EXTERN int cur_if;                            // {type of conditional being worked on}
+EXTERN enum if_code if_limit;                          // {upper bound on |fi_or_else| codes}
+EXTERN small_number cur_if;                   // {type of conditional being worked on}
 EXTERN integer if_line;                       // {line where that conditional began}
 
 EXTERN integer skip_line;                     // {skipping began here}
@@ -751,7 +751,7 @@ EXTERN trie_op_code max_op_used;
 EXTERN scaled best_height_plus_depth;         // {height of the best box, without stretching or shrinking}
 
 EXTERN pointer page_tail;                     // {the final node on the current page}
-EXTERN int page_contents;                     // {what is on the current page so far?}
+EXTERN enum page page_contents;               // {what is on the current page so far?}
 EXTERN scaled page_max_depth;                 // {maximum box depth on page being built}
 EXTERN pointer best_page_break;               // {break here to get the best page known so far}
 EXTERN integer least_page_cost;               // {the score for this currently best page}
