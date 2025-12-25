@@ -4686,10 +4686,10 @@ static void trie_fix (trie_pointer p)
 static void new_patterns (void)
 {
   uint32_t k, l;
-  boolean digit_sensed;
+  bool digit_sensed;
   trie_op_code v;
   trie_pointer p, q;
-  boolean first_child;
+  bool first_child;
   /* ASCII_code c; */
   int c;
 
@@ -14028,7 +14028,7 @@ static void insert_relax (void)
 static void expand (void)
 {
   halfword t; // {token that is being ``expanded after''}
-  boolean b; // {keep track of nested csnames}
+  bool b; // {keep track of nested csnames}
   pointer p, q, r;  // {for list manipulation}
   integer j;  // {index into |buffer|}
   integer cv_backup;  // {to save the global quantity |cur_val|}
@@ -19056,7 +19056,7 @@ static void scan_file_name_braced (void)
   pointer save_cur_cs;
   str_number s; // {temp string}
   integer i; // {loop tally}
-  boolean save_stop_at_space; // {this should be in tex.ch}
+  bool save_stop_at_space; // {this should be in tex.ch}
 
   save_scanner_status = scanner_status; // {|scan_toks| sets |scanner_status| to |absorbing|}
   save_def_ref = def_ref; // {|scan_toks| uses |def_ref| to point to the token list just read}
@@ -19305,7 +19305,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
   int jfm_flag;
   halfword nt;
   KANJI_code cx;
-  boolean file_opened;
+  bool file_opened;
   halfword lf, lh, nw, nh, nd, ni, nl, nk, ne, np;
   int bc, ec;
   internal_font_number f;
@@ -19314,10 +19314,10 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
   four_quarters qw;
   scaled sw;
   integer bch_label;
-  short bchar;
+  unsigned short bchar;
   scaled z;
   integer alpha;
-  char beta;
+  small_number beta;
 
   g = null_font;
   // @<Open |tfm_file| for input@>
@@ -20618,7 +20618,7 @@ static void read_expand_font (void)
 {
   integer shrink_limit, stretch_limit, font_step;
   internal_font_number f;
-  boolean auto_expand;
+  bool auto_expand;
 
   scan_font_ident();
   f = cur_val;
@@ -21407,7 +21407,7 @@ void dvi_hlist_out (void)
   pointer leader_box; // {the leader box being replicated}
   scaled leader_wd; // {width of leader box being replicated}
   scaled lx;  // {extra space between leader boxes}
-  boolean outer_doing_leaders;  // {were we doing leaders?}
+  bool outer_doing_leaders;  // {were we doing leaders?}
   scaled edge;  // {right edge of sub-box or leader space}
   pointer prev_p; // {one step behind |p|}
   real glue_temp; // {glue value before rounding}
@@ -21949,7 +21949,7 @@ void pdf_hlist_out (void)
   pointer leader_box; // {the leader box being replicated}
   scaled leader_wd; // {width of leader box being replicated}
   scaled lx;  // {extra space between leader boxes}
-  boolean outer_doing_leaders;  // {were we doing leaders?}
+  bool outer_doing_leaders;  // {were we doing leaders?}
   scaled edge;  // {right edge of sub-box or leader space}
   pointer prev_p; // {one step behind |p|}
   real glue_temp; // {glue value before rounding}
@@ -22434,7 +22434,7 @@ void dvi_vlist_out (void)
   pointer leader_box; // {the leader box being replicated}
   scaled leader_ht; // {height of leader box being replicated}
   scaled lx;  // {extra space between leader boxes}
-  boolean outer_doing_leaders;  // {were we doing leaders?}
+  bool outer_doing_leaders;  // {were we doing leaders?}
   scaled edge;  // {bottom boundary of leader space}
   real glue_temp; // {glue value before rounding}
   real cur_glue;  // {glue seen so far}
@@ -22744,7 +22744,7 @@ void pdf_vlist_out (void)
   pointer leader_box; // {the leader box being replicated}
   scaled leader_ht; // {height of leader box being replicated}
   scaled lx;  // {extra space between leader boxes}
-  boolean outer_doing_leaders;  // {were we doing leaders?}
+  bool outer_doing_leaders;  // {were we doing leaders?}
   scaled edge;  // {bottom boundary of leader space}
   real glue_temp; // {glue value before rounding}
   real cur_glue;  // {glue seen so far}
@@ -24676,7 +24676,7 @@ static pointer var_delimiter (pointer d, small_number s, scaled v)
   eight_bits hd;            // {height-depth byte}
   four_quarters r;          // {extensible pieces}
   small_number z;           // {runs through font family members}
-  boolean large_attempt;    // {are we trying the ``large'' variant?}
+  bool large_attempt;       // {are we trying the ``large'' variant?}
 
   f = null_font;
   w = 0;
@@ -27721,10 +27721,10 @@ static void line_break (bool d)
 
     /* [863] - margin kerning, avoiding overfull boxes */
     prev_char_p = null;
-    prev_legal = null;
-    rejected_cur_p = null;
-    try_prev_break = false;
-    before_rejected_cur_p = false;
+    // prev_legal = null;
+    // rejected_cur_p = null;
+    // try_prev_break = false;
+    // before_rejected_cur_p = false;
     first_p = cur_p; /* to access the first node of paragraph as the first active
                      node has `break_node=null' */
     while ((cur_p != null) && (link(active) != last_active))
@@ -38688,7 +38688,7 @@ done:
   return flag;
 }
 
-void adjust_hlist (pointer p, boolean pf)
+void adjust_hlist (pointer p, bool pf)
 {
   pointer q, s, t, u, v, x, z;
   halfword i, k;
@@ -38696,7 +38696,7 @@ void adjust_hlist (pointer p, boolean pf)
   int insert_skip;
   KANJI_code cx; // {temporary register for KANJI character}
   ASCII_code ax; // {temporary register for ASCII character}
-  boolean do_ins; // {for inserting |xkanji_skip| into previous (or after) KANJI}
+  bool do_ins; // {for inserting |xkanji_skip| into previous (or after) KANJI}
 
   if (link(p) == null)
     goto exit;

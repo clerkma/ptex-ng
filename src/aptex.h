@@ -347,8 +347,8 @@ EXTERN integer first_count;                   // {another variable for pseudopri
 
 EXTERN interaction_mode_t interaction;        // {current level of interaction}
 
-EXTERN boolean deletions_allowed;             // {is it safe for |error| to call |get_token|? }
-EXTERN boolean set_box_allowed;               // {is it safe to do a \.{\\setbox} assignment?}
+EXTERN bool deletions_allowed;             // {is it safe for |error| to call |get_token|? }
+EXTERN bool set_box_allowed;               // {is it safe to do a \.{\\setbox} assignment?}
 EXTERN history_value_t history;               // {has the source input been clean so far?}
 EXTERN int error_count;                       // {the number of scrolled errors since the last paragraph ended}
 
@@ -531,7 +531,7 @@ EXTERN str_number font_area[font_max + 1];    // {area of the font}
 EXTERN eight_bits font_bc[font_max + 1];      // {beginning (smallest) character code}
 EXTERN eight_bits font_ec[font_max + 1];      // {ending (largest) character code}
 EXTERN pointer font_glue[font_max + 1];       // {glue specification for interword space, |null| if not allocated}
-EXTERN bool font_used[font_max + 1];       // {has a character from this font actually appeared in the output?}
+EXTERN bool font_used[font_max + 1];          // {has a character from this font actually appeared in the output?}
 EXTERN integer hyphen_char[font_max + 1];     // {current \.{\\hyphenchar} values}
 EXTERN integer skew_char[font_max + 1];       // {current \.{\\skewchar} values}
 EXTERN font_index bchar_label[font_max + 1];  // {start of |lig_kern| program for left boundary character, |non_address| if there is none}
@@ -579,9 +579,9 @@ EXTERN scaled max_h;                          // {maximum width of pages shipped
 EXTERN integer max_push;                      // {deepest nesting of |push| commands encountered so far}
 EXTERN integer last_bop;                      // {location of previous |bop| in the \.{DVI} output}
 EXTERN integer dead_cycles;                   // {recent outputs that didn't ship anything out}
-EXTERN boolean doing_leaders;                 // {are we inside a leader box?}
+EXTERN bool doing_leaders;                    // {are we inside a leader box?}
 
-EXTERN boolean dir_used;                      // {Is this dvi extended?}
+EXTERN bool dir_used;                         // {Is this dvi extended?}
 EXPORT scaled rule_ht, rule_dp, rule_wd;      // {size of current rule being output}
 EXTERN eight_bits dvi_buf[dvi_buf_size + 4];  // {buffer for \.{DVI} output}
 EXTERN dvi_index half_buf;                    // {half of |dvi_buf_size|}
@@ -615,7 +615,7 @@ EXTERN pointer cur_mlist;                     // {beginning of mlist to be trans
 EXTERN small_number cur_style;                // {style code at current place in the list}
 EXTERN small_number cur_size;                 // {size code corresponding to |cur_style|}
 EXTERN scaled cur_mu;                         // {the math unit width corresponding to |cur_size|}
-EXTERN boolean mlist_penalties;               // {should |mlist_to_hlist| insert penalties?}
+EXTERN bool mlist_penalties;                  // {should |mlist_to_hlist| insert penalties?}
 
 EXTERN internal_font_number cur_f;            // {the |font| field of a |math_char|}
 EXTERN quarterword cur_c;                     // {the |character| field of a |math_char|}
@@ -647,13 +647,13 @@ EXTERN pointer first_p;       // {to access the first node of the paragraph}
 EXTERN pointer prev_char_p;   // {pointer to the previous char of an implicit kern}
 EXTERN pointer next_char_p;   // {pointer to the next char of an implicit kern}
 
-EXTERN boolean try_prev_break;                /* force break at the previous legal breakpoint? */
-EXTERN pointer prev_legal;                    /* the previous legal breakpoint */
-EXTERN pointer prev_prev_legal;               /* to save |prev_p| corresponding to |prev_legal| */
-EXTERN boolean prev_auto_breaking;            /* to save |auto_breaking| corresponding to |prev_legal| */
-EXTERN scaled prev_active_width[8+1];         /* to save |active_width| corresponding to |prev_legal| */
-EXTERN pointer rejected_cur_p;                /* the last |cur_p| that has been rejected */
-EXTERN boolean before_rejected_cur_p;         /* |cur_p| is still before |rejected_cur_p|? */
+// EXTERN boolean try_prev_break;                /* force break at the previous legal breakpoint? */
+// EXTERN pointer prev_legal;                    /* the previous legal breakpoint */
+// EXTERN pointer prev_prev_legal;               /* to save |prev_p| corresponding to |prev_legal| */
+// EXTERN boolean prev_auto_breaking;            /* to save |auto_breaking| corresponding to |prev_legal| */
+// EXTERN scaled prev_active_width[8+1];         /* to save |active_width| corresponding to |prev_legal| */
+// EXTERN pointer rejected_cur_p;                /* the last |cur_p| that has been rejected */
+// EXTERN boolean before_rejected_cur_p;         /* |cur_p| is still before |rejected_cur_p|? */
 
 EXTERN integer max_stretch_ratio;             /* maximal stretch ratio of expanded fonts */
 EXTERN integer max_shrink_ratio;              /* maximal shrink ratio of expanded fonts */
@@ -662,9 +662,9 @@ EXTERN integer cur_font_step;                 /* the current step of expanded fo
 EXTERN boolean no_shrink_error_yet;           // {have we complained about infinite shrinkage?}
 
 EXTERN pointer cur_p;                         // {the current breakpoint under consideration}
-EXTERN boolean chain;                         // {chain current line and next line?}
-EXTERN boolean second_pass;                   // {is this our second attempt to break this paragraph?}
-EXTERN boolean final_pass;                    // {is this our final attempt to break this paragraph?}
+EXTERN bool chain;                            // {chain current line and next line?}
+EXTERN bool second_pass;                      // {is this our second attempt to break this paragraph?}
+EXTERN bool final_pass;                       // {is this our final attempt to break this paragraph?}
 EXTERN integer threshold;                     // {maximum badness on feasible lines}
 
 EXTERN scaled disc_width[8+1];                // {the length of discretionary material preceding a break}
@@ -683,7 +683,7 @@ EXTERN integer actual_looseness;              // {the difference between |line_n
 EXTERN integer line_diff;                     // {the difference between the current line number and the optimum |best_line|}
 
 EXTERN int hc[66];                            // {word to be hyphenated}
-EXTERN int hn;                                // {the number of positions occupied in |hc|}
+EXTERN small_number hn;                       // {the number of positions occupied in |hc|}
 EXTERN halfword ha, hb;                       // {nodes |ha..hb| should be replaced by the hyphenated result}
 EXTERN int hf;                                // {font number of the letters in |hc|}
 EXTERN int hu[66];                            // {like |hc|, before conversion to lowercase}
@@ -862,10 +862,11 @@ EXTERN integer microseconds;
 // othe variables
 EXTERN integer expand_depth_count;
 
+EXTERN bool stop_at_space;
+EXTERN bool is_in_csname;
 // for SyncTeX
 EXPORT integer synctex_option;
-EXTERN boolean stop_at_space;
-EXTERN boolean is_in_csname;
+
 
 EXTERN struct {
   // enviroment in UTF-8
