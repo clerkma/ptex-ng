@@ -134,6 +134,8 @@
 extern "C" {
 #endif
 
+typedef _Bool bool;
+
 // types: integers
 typedef uint8_t ASCII_code;
 typedef int32_t KANJI_code;
@@ -280,11 +282,11 @@ typedef struct
   int dir_field, adj_dir_field;
   scaled pdisp_field;
   pointer head_field, tail_field, pnode_field, last_jchr_field;
-  boolean disp_called_field;
   integer inhibit_glue_flag_field;
   pointer eTeX_aux_field;
   integer pg_field, ml_field;
   memory_word aux_field;
+  bool disp_called_field;
 } list_state_record;
 /* sec 0269 */
 typedef enum group_code group_code;
@@ -357,7 +359,7 @@ EXTERN boolean use_err_help;                  // {should the |err_help| list be 
 EXTERN integer interrupt;                     // {should \TeX\ pause for instructions?}
 EXTERN boolean OK_to_interrupt;               // {should interrupts be observed?}
 
-EXTERN boolean arith_error;                   // {has arithmetic overflow occurred recently?}
+EXTERN bool arith_error;                     // {has arithmetic overflow occurred recently?}
 EXTERN scaled ng_remainder;                   // {amount subtracted to get an exact division}
 
 EXTERN integer randoms[55];                   // {the last 55 random values generated}
@@ -529,7 +531,7 @@ EXTERN str_number font_area[font_max + 1];    // {area of the font}
 EXTERN eight_bits font_bc[font_max + 1];      // {beginning (smallest) character code}
 EXTERN eight_bits font_ec[font_max + 1];      // {ending (largest) character code}
 EXTERN pointer font_glue[font_max + 1];       // {glue specification for interword space, |null| if not allocated}
-EXTERN boolean font_used[font_max + 1];       // {has a character from this font actually appeared in the output?}
+EXTERN bool font_used[font_max + 1];       // {has a character from this font actually appeared in the output?}
 EXTERN integer hyphen_char[font_max + 1];     // {current \.{\\hyphenchar} values}
 EXTERN integer skew_char[font_max + 1];       // {current \.{\\skewchar} values}
 EXTERN font_index bchar_label[font_max + 1];  // {start of |lig_kern| program for left boundary character, |non_address| if there is none}
@@ -553,7 +555,7 @@ EXTERN integer pdf_font_stretch[font_max + 1];            // {limit of stretchin
 EXTERN integer pdf_font_shrink[font_max + 1];             // {limit of shrinking}
 EXTERN integer pdf_font_step[font_max + 1];               // {amount of one step of expansion}
 EXTERN integer pdf_font_expand_ratio[font_max + 1];       // {expansion ratio of a particular font}
-EXTERN boolean pdf_font_auto_expand[font_max + 1];        // {this font is auto-expanded?}
+EXTERN bool pdf_font_auto_expand[font_max + 1];        // {this font is auto-expanded?}
 // HZ charinfo
 typedef struct fontinfo {
   integer ef[256]; /* font expansion factor */
@@ -741,7 +743,7 @@ EXTERN trie_op_code max_op_used;
   EXTERN def_array(trie_l, trie_pointer, trie_size + 1);       /* left subtrie links */
   EXTERN def_array(trie_r, trie_pointer, trie_size + 1);       /* right subtrie links */
   EXTERN def_array(trie_hash, trie_pointer, trie_size + 1);    /* used to identify equivlent subtries */
-  EXTERN def_array(trie_taken, char, trie_size + 1); // char / boolean
+  EXTERN def_array(trie_taken, bool, trie_size + 1); // char / boolean
   EXTERN trie_pointer trie_ptr;
   EXTERN trie_pointer trie_min[256];
   EXTERN trie_pointer trie_max;
@@ -792,7 +794,7 @@ EXTERN word_file fmt_file;                    // {for input or output of format 
 EXTERN integer ready_already;                 // {a sacrifice of purity for economy}
 
 EXTERN alpha_file write_file[16];
-EXTERN boolean write_open[18];
+EXTERN bool write_open[18];
 
 EXTERN pointer write_loc;                     // {|eqtb| address of \.{\\write}}
 
@@ -803,7 +805,7 @@ EXTERN integer pdf_last_y_pos;
 
 EXTERN boolean eTeX_mode;                     // {identifies compatibility and extended mode}
 
-EXTERN boolean eof_seen[max_in_open + 1];     // {has eof been seen?}
+EXTERN bool eof_seen[max_in_open + 1];     // {has eof been seen?}
 
 EXTERN scaled revdisp;                        // {temporary value of displacement}
 EXTERN pointer LR_ptr;                        // {stack of LR codes for |hpack|, |ship_out|, and |init_math|}
@@ -850,7 +852,6 @@ EXTERN pointer first_char;                    // {first printable character}
 EXTERN pointer last_char;                     // {last printable character}
 EXTERN boolean find_first_char;               // {find for a first printable character?}
 EXTERN int fbyte;
-EXTERN boolean save_arith_error;
 
 // eTeX
 EXTERN boolean is_print_utf8;
@@ -882,18 +883,18 @@ EXTERN struct {
   clock_t time_main;
   clock_t time_finish;
   // tracing options
-  boolean trace_mem;
-  boolean trace_realloc;
-  boolean trace_lbrk;
+  bool trace_mem;
+  bool trace_realloc;
+  bool trace_lbrk;
   // flags
-  boolean flag_initex;
-  boolean flag_tex82;
-  boolean flag_shell_escape;
-  boolean flag_compact_fmt;
-  boolean flag_reset_trie;
-  boolean flag_reset_hyphen;
-  boolean flag_suppress_f_ligs;
-  boolean flag_merge_kanji_baseline;
+  bool flag_initex;
+  bool flag_tex82;
+  bool flag_shell_escape;
+  bool flag_compact_fmt;
+  bool flag_reset_trie;
+  bool flag_reset_hyphen;
+  bool flag_suppress_f_ligs;
+  bool flag_merge_kanji_baseline;
 } aptex_env;
 
 #ifndef __SyncTeX__

@@ -301,7 +301,7 @@ static size_t roundup (size_t n)
     return ((n / sizeof(void *)) + 1) * sizeof(void *);
 }
 
-static boolean prime (int x)
+static bool prime (int x)
 {
   int k;
   int sum = 1;    /* 1 + 3 + 5 + k = (k + 1) * (k + 1) / 4 */
@@ -788,7 +788,7 @@ static int allocate_ini (int size)
   nl = (size + 1) * sizeof(trie_pointer);
   no = (size + 1) * sizeof(trie_op_code);
   nc = (size + 1) * sizeof(packed_ASCII_code);
-  nt = (size + 1) * sizeof(char);
+  nt = (size + 1) * sizeof(bool);
   n = nl + no + nc + nr + nh + nt;
 
   aptex_memory_trace("initex hyphen trie", n);
@@ -798,7 +798,7 @@ static int allocate_ini (int size)
   trie_c = (packed_ASCII_code *) malloc (roundup(nc));
   trie_r = (trie_pointer *) malloc (roundup(nr));
   trie_hash = (trie_pointer *) malloc (roundup(nh));
-  trie_taken = (char *) malloc (roundup(nt));
+  trie_taken = (bool *) malloc (roundup(nt));
 
   if (trie_c == NULL || trie_o == NULL || trie_l == NULL || trie_r == NULL ||
       trie_hash == NULL || trie_taken == NULL)
@@ -1686,12 +1686,12 @@ static inline integer aptex_utils_round (real r)
 #define nrestmultichr(x)  ((x) != 0 ? ((x) / 8) + 2 - ((x) % 8) : -1)
 #define CJK_TOKEN_FLAG  0xFFFFFF
 
-static inline boolean is_char_ascii (integer c)
+static inline bool is_char_ascii (integer c)
 {
   return (0 <= c && c < 0x100);
 }
 
-static inline boolean is_char_kanji (integer c)
+static inline bool is_char_kanji (integer c)
 {
   if (is_internalUPTEX())
     return (c >= 0);
@@ -1699,7 +1699,7 @@ static inline boolean is_char_kanji (integer c)
     return iskanji1(Hi(c)) && iskanji2(Lo(c));
 }
 
-static inline boolean check_kanji (integer c)
+static inline bool check_kanji (integer c)
 {
   if (c >= cs_token_flag)
     return false;
@@ -1709,7 +1709,7 @@ static inline boolean check_kanji (integer c)
     return is_char_kanji(c);
 }
 
-static boolean ismultiprn (integer c)
+static bool ismultiprn (integer c)
 {
   int i, j;
 
@@ -2645,7 +2645,7 @@ static void reset_trie(void);
 static boolean get_strings_started(void);
 static void init_prim(void);
 static void store_fmt_file(void);
-static boolean str_eq_str(str_number s, str_number t);
+static bool str_eq_str(str_number s, str_number t);
 static pointer prim_lookup(str_number s);
 static void primitive_(str_number s, quarterword c, halfword o);
 static void fix_date_and_time(void);
@@ -6457,7 +6457,7 @@ static void print_dir (eight_bits dir)
 //
 static void print_direction_alt (integer d)
 {
-  boolean x;
+  bool x;
 
   x = false;
 
@@ -6931,10 +6931,10 @@ str_number make_string (void)
 }
 
 // test equality of strings
-static boolean str_eq_buf (str_number s, integer k)
+static bool str_eq_buf (str_number s, integer k)
 {
   pool_pointer j; // {running index}
-  boolean result; // {result of comparison}
+  // boolean result; // {result of comparison}
 
   j = str_start[s];
 
@@ -6953,7 +6953,7 @@ static boolean str_eq_buf (str_number s, integer k)
 }
 
 // test equality of strings
-static boolean str_eq_str (str_number s, str_number t)
+static bool str_eq_str (str_number s, str_number t)
 {
   pool_pointer j, k;  // {running indices}
 
@@ -6994,7 +6994,7 @@ static integer make_frac (integer p, integer q)
 {
   integer f; // {the fraction bits, with a leading 1 bit}
   integer n; // {the integer part of $\vert p/q\vert$}
-  boolean negative; // {should the result be negated?}
+  bool negative; // {should the result be negated?}
   integer be_careful; // {disables certain compiler optimizations}
 
   if (p >= 0)
@@ -7058,7 +7058,7 @@ static integer make_frac (integer p, integer q)
 static integer take_frac (integer q, integer f)
 {
   integer p; // {the fraction so far}
-  boolean negative; // {should the result be negated?}
+  bool negative; // {should the result be negated?}
   integer n; // {additional multiple of $q$}
   integer be_careful; // {disables certain compiler optimizations}
 
@@ -7549,7 +7549,7 @@ static scaled mult_and_add (integer n, scaled x, scaled y, scaled max_answer)
 static scaled x_over_n (scaled x, integer n)
 {
   scaled Result;
-  boolean negative; // {should |remainder| be negated?}
+  bool negative; // {should |remainder| be negated?}
 
   negative = false;
 
@@ -7589,7 +7589,7 @@ static scaled x_over_n (scaled x, integer n)
 static scaled xn_over_d (scaled x, integer n, integer d)
 {
   scaled Result;
-  boolean positive; // {was |x>=0|?}
+  bool positive; // {was |x>=0|?}
   nonnegative_integer t, u, v; // {intermediate quantities}
 
   if (x >= 0)
@@ -7624,7 +7624,7 @@ static scaled xn_over_d (scaled x, integer n, integer d)
 }
 
 // {check if $s$-th bit (one-based) of $n$ is set}
-static boolean is_bit_set (integer n, small_number s)
+static bool is_bit_set (integer n, small_number s)
 {
 /*
   integer m, i;
@@ -14472,7 +14472,7 @@ static void scan_optional_equals (void)
 }
 
 // look for a given string
-static boolean scan_keyword (const char * s)
+static bool scan_keyword (const char * s)
 {
   pointer p;  // {tail of the backup list}
   pointer q;  // {new node being added to the token list via |store_new_token|}
@@ -14616,7 +14616,7 @@ static void scan_twenty_seven_bit_int (void)
 }
 
 // for last_node_font
-static void scan_something_internal (small_number level, boolean negative);
+static void scan_something_internal (small_number level, bool negative);
 
 static void scan_font_ident (void)
 {
@@ -14722,7 +14722,7 @@ void find_font_dimen (boolean writing)
 }
 
 // fetch an internal parameter
-static void scan_something_internal (small_number level, boolean negative)
+static void scan_something_internal (small_number level, bool negative)
 {
   halfword m; // {|chr_code| part of the operand token}
   pointer q, r; // {general purpose indices}
@@ -16408,11 +16408,11 @@ static inline void scan_an_optional_space(void)
 // sets |cur_val| to an integer
 static void scan_int (void)
 {
-  boolean negative; //{should the answer be negated?}
+  bool negative; //{should the answer be negated?}
   integer m; // {|@t$2^{31}$@> div radix|, the threshold of danger}
   small_number d; // {the digit just scanned}
-  boolean vacuous; // {have no digits appeared?}
-  boolean OK_so_far; // {has an error message been issued?}
+  bool vacuous; // {have no digits appeared?}
+  bool OK_so_far; // {has an error message been issued?}
 
   radix = 0;
   OK_so_far = true;
@@ -16580,9 +16580,9 @@ restart:
 }
 
 // sets |cur_val| to a dimension
-static void scan_dimen (boolean mu, boolean inf, boolean shortcut)
+static void scan_dimen (bool mu, bool inf, bool shortcut)
 {
-  boolean negative; // {should the answer be negated?}
+  bool negative; // {should the answer be negated?}
   integer f; // {numerator of a fraction whose denominator is $2^{16}$}
   // @<Local variables for dimension calculations@>
   integer num, denom; // {conversion ratio for the scanned units}
@@ -16898,9 +16898,9 @@ _Flatten static void scan_normal_dimen(void) {
 // sets |cur_val| to a glue spec pointer
 static void scan_glue (small_number level)
 {
-  boolean negative; // {should the answer be negated?}
+  bool negative; // {should the answer be negated?}
   pointer q; // {new glue specification}
-  boolean mu; // {does |level=mu_val|?}
+  bool mu; // {does |level=mu_val|?}
 
   mu = (level == mu_val);
   // @<Get the next non-blank non-sign...@>
@@ -17258,7 +17258,7 @@ static void get_file_size (str_number s)
   }
 }
 
-static void get_md5_sum (str_number s, boolean f)
+static void get_md5_sum (str_number s, bool f)
 {
   char * file_name;
   char * file_md5_sum;
@@ -17320,7 +17320,7 @@ void conv_toks (void)
   small_number save_scanner_status; // {|scanner_status| upon entry}
   pointer save_def_ref; // {|def_ref| upon entry, important if inside `\.{\\message}'}
   pointer save_warning_index;
-  boolean boolvar; // {temp boolean}
+  bool boolvar; // {temp boolean}
   str_number u; // {saved current string string}
   str_number s; // {first temp string}
   integer i;
@@ -17877,7 +17877,7 @@ void conv_toks (void)
   ins_list(link(temp_head));
 }
 
-static pointer scan_toks (boolean macro_def, boolean xpand)
+static pointer scan_toks (bool macro_def, bool xpand)
 {
   halfword t; // {token representing the highest parameter number}
   halfword s; // {saved token}
@@ -18288,7 +18288,7 @@ static void change_if_limit (small_number l, pointer p)
 
 void conditional (void)
 {
-  boolean b; // {is the condition true?}
+  bool b; // {is the condition true?}
   boolean e; // {keep track of nested csnames}
   char r; // {relation to be evaluated}
   integer m, n; // {to be tested against the second operand}
@@ -18296,7 +18296,7 @@ void conditional (void)
   small_number save_scanner_status; // {|scanner_status| upon entry}
   pointer save_cond_ptr;  // {|cond_ptr| corresponding to this conditional}
   enum if_type this_if; // {type of this conditional}
-  boolean is_unless;  // {was this if preceded by `\.{\\unless}' ?}
+  bool is_unless;  // {was this if preceded by `\.{\\unless}' ?}
 
   if (unlikely(tracing_ifs > 0))
   {
@@ -19504,7 +19504,7 @@ static internal_font_number read_font_info (pointer u, str_number nom, str_numbe
         z = s;
       else
       {
-        save_arith_error = arith_error;
+        bool save_arith_error = arith_error;
         sw = z;
         z = xn_over_d(z, -s, 1000);
         if (arith_error || z >= 01000000000)
@@ -20550,7 +20550,7 @@ static integer fix_expand_value (integer f, integer e)
 {
   integer step;
   integer max_expand;
-  boolean neg;
+  bool neg;
 
   if (e == 0)
     return 0;
@@ -23433,7 +23433,7 @@ void out_what (pointer p)
 }
 
 // scans a box specification and left brace
-static void scan_spec (group_code c, boolean three_codes)
+static void scan_spec (group_code c, bool three_codes)
 {
   integer s;
   char spec_code;
@@ -23469,7 +23469,7 @@ found:
 }
 
 /* HZ */
-static boolean check_expand_pars (internal_font_number f)
+static bool check_expand_pars (internal_font_number f)
 {
   internal_font_number k;
 
@@ -27492,7 +27492,7 @@ restart:
 }
 
 /* sec 0815 */
-static void line_break (boolean d)
+static void line_break (bool d)
 {
   // boolean auto_breaking;  // {is node |cur_p| outside a formula?}
   // pointer prev_p; // {helps to determine when glue nodes are breakpoints}
@@ -29421,7 +29421,7 @@ exit:
 #endif
 }
 
-static void post_line_break (boolean d)
+static void post_line_break (bool d)
 {
   pointer q, r, s;          // {temporary registers for list manipulation}
   /* [877] - margin kerning */
@@ -34483,7 +34483,7 @@ static void prefixed_command (void)
   font_index k;
   pointer p, q;
   integer n;
-  boolean e;
+  bool e;
 
   a = 0;
 
@@ -40248,7 +40248,7 @@ void file_warning (void)
 // {scans and evaluates an expression}
 void scan_expr (void)
 {
-  boolean a, b; // {saved values of |arith_error|}
+  _Bool a, b; // {saved values of |arith_error|}
   small_number l; // {type of expression}
   small_number r; // {state of expression so far}
   small_number s; // {state of term so far}
@@ -40507,7 +40507,7 @@ _Flatten void scan_mu_glue (void)
   scan_glue(mu_val);
 }
 
-integer add_or_sub (integer x, integer y, integer max_answer, boolean negative)
+integer add_or_sub (integer x, integer y, integer max_answer, bool negative)
 {
   integer a;
 
@@ -40529,7 +40529,7 @@ integer add_or_sub (integer x, integer y, integer max_answer, boolean negative)
 
 integer quotient (integer n, integer d)
 {
-  boolean negative;
+  bool negative;
   integer a;
 
   if (d == 0)
@@ -40566,7 +40566,7 @@ integer quotient (integer n, integer d)
 
 integer fract (integer x, integer n, integer d, integer max_answer)
 {
-  boolean negative;
+  bool negative;
   integer a;
   integer f;
   integer h;
@@ -40926,7 +40926,7 @@ void show_sa (pointer p, const char * s)
 }
 #endif
 
-boolean do_marks (small_number a, small_number l, pointer q)
+bool do_marks (small_number a, small_number l, pointer q)
 {
   small_number i;
 

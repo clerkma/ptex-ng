@@ -148,7 +148,7 @@ static void scan_int (void);
 static void scan_glue (small_number level);
 void ins_the_toks (void);
 void conv_toks (void);
-static pointer scan_toks (boolean macro_def, boolean xpand);
+static pointer scan_toks (bool macro_def, bool xpand);
 static pointer scan_toks_expand (void);
 void pass_text (void);
 void conditional (void);
@@ -179,7 +179,7 @@ void mlist_to_hlist (void);
 void align_peek (void);
 pointer finite_shrink (pointer p);
 void try_break (integer pi, small_number breaktype);
-static void post_line_break (boolean d);
+static void post_line_break (bool d);
 static void hyphenate (void);
 void print_totals (void);
 void build_page (void);
@@ -253,7 +253,7 @@ void file_warning(void);
 void scan_expr(void);
 void scan_normal_glue(void);
 void scan_mu_glue(void);
-integer add_or_sub(integer x, integer y, integer max_answer, boolean negative);
+integer add_or_sub(integer x, integer y, integer max_answer, bool negative);
 integer quotient(integer n, integer d);
 integer fract(integer x, integer n, integer d, integer max_answer);
 void scan_register_num(void);
@@ -262,7 +262,7 @@ void find_sa_element(small_number t, halfword n, boolean w);
 void delete_sa_ref(pointer q);
 //void print_sa_num(pointer q);
 void show_sa(pointer p, const char * s);
-boolean do_marks(small_number a, small_number l, pointer q);
+bool do_marks(small_number a, small_number l, pointer q);
 void sa_save(pointer p);
 void sa_destroy(pointer p);
 void sa_def(pointer p, halfword e);
@@ -786,7 +786,7 @@ static pointer prev_rightmost (pointer s, pointer e)
 
 static scaled round_xn_over_d (scaled x, integer n, integer d)
 {
-  boolean positive = true; // {was |x>=0|?}
+  bool positive = true; // {was |x>=0|?}
   nonnegative_integer t, u, v; // {intermediate quantities}
 
   if (x < 0)
