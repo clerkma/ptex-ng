@@ -285,7 +285,7 @@ typedef struct
   pointer eTeX_aux_field;
   integer pg_field, ml_field;
   memory_word aux_field;
-  unsigned short dir_field, adj_dir_field;
+  short int dir_field, adj_dir_field;
   bool disp_called_field;
 } list_state_record;
 /* sec 0269 */
@@ -419,7 +419,7 @@ EXTERN quarterword zzzad[eqtb_size - int_base + 1];
 EXTERN two_halves zzzae[undefined_control_sequence - hash_base];
 #define hash (zzzae - hash_base)              // {the hash table}
 EXTERN pointer hash_used;                     // {allocation pointer for |hash|}
-EXTERN boolean no_new_control_sequence;       // {are new identifiers legal?}
+EXTERN bool no_new_control_sequence;          // {are new identifiers legal?}
 EXTERN integer cs_count;                      // {total number of known identifiers}
 // #
 EXTERN two_halves prim[prim_size + 1]; // {the primitives table}
