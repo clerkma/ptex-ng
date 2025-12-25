@@ -213,7 +213,7 @@ pointer get_inhibit_pos (KANJI_code c, small_number n);
 pointer get_kinsoku_pos (KANJI_code c, small_number n);
 
 boolean check_box (pointer box_p);
-void adjust_hlist(pointer p, boolean pf);
+void adjust_hlist(pointer p, bool pf);
 
 void dir_out(void);
 void set_math_kchar(integer c);
