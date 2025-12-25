@@ -46,9 +46,9 @@ static int vps_overfull;
 // pdf consistency check
 static int fixed_pdf_major_version;
 static int fixed_pdf_minor_version;
-static boolean pdf_version_written;
+static bool pdf_version_written;
 static int fixed_pdfoutput;
-static boolean fixed_pdfoutput_set;
+static bool fixed_pdfoutput_set;
 #endif
 
 #if   defined (__clang__)
@@ -14223,7 +14223,7 @@ reswitch:
 #endif
             }
 
-            if (check_kanji(info(p)))
+            if (unlikely(check_kanji(info(p))))
             {
               t = toBUFF(info(p) % max_cjk_val);
 
@@ -14375,29 +14375,27 @@ reswitch:
 // sets |cur_cmd|, |cur_chr|, |cur_tok|, and expands macros
 static inline void get_x_token (void)
 {
-restart:
-  get_next();
+  while(true) {
+    get_next();
 
-  if (likely(cur_cmd <= max_command))
-    goto done;
+    if (likely(cur_cmd <= max_command))
+      break;
 
-  if (cur_cmd >= call)
-  {
-    if (cur_cmd < end_template)
-      macro_call();
+    if (cur_cmd >= call)
+      {
+        if (cur_cmd < end_template)
+          macro_call();
+        else
+          {
+            cur_cs = frozen_endv;
+            cur_cmd = endv;
+            break;
+          }
+      }
     else
-    {
-      cur_cs = frozen_endv;
-      cur_cmd = endv;
-      goto done;
-    }
+      expand();
   }
-  else
-    expand();
 
-  goto restart;
-
-done:
   if (likely(cur_cs == 0))
   {
     if (unlikely(cur_cmd >= kanji) && (cur_cmd <= hangul))
@@ -33749,7 +33747,7 @@ static void math_limit_switch (void)
   error();
 }
 
-static void scan_delimiter (pointer p, boolean r)
+static void scan_delimiter (pointer p, bool r)
 {
    if (r)
      scan_twenty_seven_bit_int();

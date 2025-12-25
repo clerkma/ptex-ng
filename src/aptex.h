@@ -279,13 +279,13 @@ typedef uint32_t glue_ord;
 typedef struct
 {
   int mode_field;
-  int dir_field, adj_dir_field;
   scaled pdisp_field;
   pointer head_field, tail_field, pnode_field, last_jchr_field;
   integer inhibit_glue_flag_field;
   pointer eTeX_aux_field;
   integer pg_field, ml_field;
   memory_word aux_field;
+  unsigned short dir_field, adj_dir_field;
   bool disp_called_field;
 } list_state_record;
 /* sec 0269 */
