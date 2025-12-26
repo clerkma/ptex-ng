@@ -22260,6 +22260,7 @@ reswitch:
         }
         break;
 
+    case margin_kern_node:
       case kern_node:
         // @<Record |kern_node| {\sl Sync\TeX} information@>
         synctex_kern(p, this_box);
