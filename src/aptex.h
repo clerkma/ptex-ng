@@ -89,6 +89,18 @@
 #define unlikely(x)    (x)
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+    #define unreachable() __builtin_unreachable()
+#elif defined(_MSC_VER)
+    #define unreachable() __assume(0)
+#endif
+
+#ifdef APTEX_DEBUG
+#define confusion confusion_
+#else
+#define confusion(msg) do { unreachable(); confusion_(msg); } while (0)
+#endif
+
 // standard C headers
 #include <stdio.h>
 #include <stdlib.h>
