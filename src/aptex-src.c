@@ -6848,7 +6848,7 @@ _Noreturn static void overflow (const char * s, integer n)
 }
 
 // consistency check violated; |s| tells where
-_Noreturn static void confusion (const char * s)
+_Noreturn static void confusion_ (const char * s)
 {
   normalize_selector();
 
@@ -15106,7 +15106,7 @@ restart:
             case mu_val:
               cur_val = mu_skip(cur_val);
               break;
-            default: break;// {there are no other cases}
+            default: unreachable();// {there are no other cases}
           }
         }
       }
@@ -15127,6 +15127,7 @@ restart:
               case mu_to_glue_code:
                 scan_mu_glue();
                 break;
+              default: unreachable();// {there are no other cases}
             }
 
             cur_val_level = glue_val;
@@ -15139,8 +15140,8 @@ restart:
               case glue_to_mu_code:
                 scan_normal_glue();
                 break;
+              default: unreachable();// {there are no other cases}
             }
-            // {there are no other cases}
             cur_val_level = mu_val;
           }
           else
@@ -15236,8 +15237,8 @@ restart:
                       case font_char_ic_code:
                         cur_val = char_italic(q, i);
                         break;
+                      default: unreachable(); // {there are no other cases}
                     }
-                    // {there are no other cases}
                   }
                   else
                     cur_val = 0;
@@ -15267,8 +15268,8 @@ restart:
                       case font_char_ic_code:
                         cur_val = char_italic(q, i);
                         break;
+                      default: unreachable();  // {there are no other cases}
                     }
-                    // {there are no other cases}
                   }
                   else
                     cur_val = 0;
@@ -15317,8 +15318,8 @@ restart:
                 delete_glue_ref(q);
               }
               break;
+            default: unreachable(); // {there are no other cases}
           }
-          // {there are no other cases}
           cur_val_level = dimen_val;
         }
         else
@@ -15444,8 +15445,8 @@ restart:
             case current_cjk_token_code:
               cur_val = enable_cjk_token;
               break;
+            default: unreachable(); // {there are no other cases}
           }
-          // {there are no other cases}
           cur_val_level = int_val;
         }
       }
@@ -17135,7 +17136,7 @@ static pointer the_toks (void)
           delete_glue_ref(cur_val);
         }
         break;
-      default: break; // {there are no other cases}
+      default: unreachable(); // {there are no other cases}
     }
     selector = old_setting;
     return str_toks(b);
@@ -17647,8 +17648,9 @@ void conv_toks (void)
       if (job_name == 0)
         open_log_file();
       break;
+
+    default: unreachable(); // {there are no other cases}
   }
-  // {there are no other cases}
   old_setting = selector;
   selector = new_string;
   b = pool_ptr;
@@ -17867,8 +17869,7 @@ void conv_toks (void)
     case pdf_file_dump_code:
     case expanded_code:
    */
-    default:// {there are no other cases}
-      break;
+    default: unreachable(); // {there are no other cases}
   }
   selector = old_setting;
   link(garbage) = str_toks_cat(b, cat);
@@ -22406,7 +22407,7 @@ void dvi_vlist_out (void)
   real glue_temp; // {glue value before rounding}
   real cur_glue;  // {glue seen so far}
   scaled cur_g; // {rounded equivalent of |cur_glue| times the glue ratio}
-  integer save_dir; // {what |dvi_dir| should pop to}
+  eight_bits save_dir; // {what |dvi_dir| should pop to}
 
   cur_g = 0;
   cur_glue = float_constant(0);
@@ -22716,7 +22717,7 @@ void pdf_vlist_out (void)
   real glue_temp; // {glue value before rounding}
   real cur_glue;  // {glue seen so far}
   scaled cur_g; // {rounded equivalent of |cur_glue| times the glue ratio}
-  integer save_dir; // {what |dvi_dir| should pop to}
+  eight_bits save_dir; // {what |dvi_dir| should pop to}
 
   cur_g = 0;
   cur_glue = 0.0;
@@ -32878,8 +32879,8 @@ done:
         return;
       }
       break;
+      default: unreachable();// {there are no other cases}
   }
-  // {there are no other cases}
   incr(saved(-1));
   new_save_level(disc_group);
   scan_left_brace();
@@ -35387,7 +35388,7 @@ void do_register_command (small_number a)
         case mu_val:
           l = cur_val + mu_skip_base;
           break;
-        default: break;// {there are no other cases}
+        default: unreachable();// {there are no other cases}
       }
     }
   }
@@ -36683,10 +36684,8 @@ static void handle_right_brace (void)
             }
       }
       break;
-      /*
     default:
       confusion("rightbrace");
-      break; */
   }
 }
 
@@ -38666,7 +38665,7 @@ void adjust_hlist (pointer p, bool pf)
   bool do_ins; // {for inserting |xkanji_skip| into previous (or after) KANJI}
 
   if (link(p) == null)
-    goto exit;
+    return;
 
   if (auto_spacing > 0)
   {
@@ -38837,7 +38836,6 @@ void adjust_hlist (pointer p, bool pf)
 
   if ((v != null) && pf && (i > 5))
     make_jchr_widow_penalty_node();
-exit:;
 }
 
 void set_math_kchar (integer c)
@@ -39230,6 +39228,7 @@ void show_save_groups (void)
         }
         break;
       case bottom_level: break;
+      default: unreachable();// {there are no other cases}
     }
   }
 
@@ -39332,14 +39331,13 @@ void scan_general_text (void)
         decr(unbalance);
 
         if (unbalance == 0)
-          goto found;
+          break;
       }
     }
 
     store_new_token(cur_tok);
   }
 
-found:
   q = link(def_ref);
   free_avail(def_ref);
 
@@ -40380,6 +40378,7 @@ found:
         expr_s(shrink(t));
       }
       break;
+    default: unreachable();// {there are no other cases}
   }
 
   if (o > expr_sub)
