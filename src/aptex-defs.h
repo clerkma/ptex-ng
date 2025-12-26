@@ -2718,7 +2718,7 @@ do {                                                          \
       while (!is_char_node(t))                                \
       {                                                       \
         if ((type(t) == glue_node) || (type(t) == kern_node)) \
-          goto exit;                                          \
+          return;                                             \
                                                               \
         t = link(t);                                          \
       }                                                       \
