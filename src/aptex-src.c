@@ -21,13 +21,6 @@
 
 #include "aptex.h"
 
-#ifndef USE_KPATHSEA
-  #define xmalloc malloc
-  #define xrealloc realloc
-  #define xfopen fopen
-  #define xfclose(a, b) fclose(a)
-#endif
-
 static int mem_initex;
 static int new_hyphen_prime;
 static char * format_name;
@@ -21194,6 +21187,7 @@ static void pdf_synch_dir (void)
               cur_v = -tmp;
             }
             break;
+          default: unreachable();
         }
 
         dvi_dir = cur_dir_hv;
@@ -21221,6 +21215,7 @@ static void pdf_synch_dir (void)
               cur_h = -cur_h;
             }
             break;
+          default: unreachable();
         }
 
         dvi_dir = cur_dir_hv;
@@ -21248,6 +21243,7 @@ static void pdf_synch_dir (void)
               cur_h = -cur_h;
             }
             break;
+          default: unreachable();
         }
 
         dvi_dir = cur_dir_hv;
@@ -21293,6 +21289,7 @@ static void synch_dir (void)
               cur_v = -tmp;
             }
             break;
+          default: unreachable();
         }
 
         dvi_h = cur_h;
@@ -21326,6 +21323,7 @@ static void synch_dir (void)
               cur_h = -cur_h;
             }
             break;
+          default: unreachable();
         }
 
         dvi_h = cur_h;
@@ -21359,6 +21357,7 @@ static void synch_dir (void)
               cur_h = -cur_h;
             }
             break;
+          default: unreachable();
         }
 
         dvi_h = cur_h;
@@ -31949,7 +31948,7 @@ static void extra_right_brace (void)
     case math_left_group:
       print_esc("right");
       break;
-    default: break;
+    default: unreachable();
   }
 
   help5("I've deleted a group-closing symbol because it seems to be",
@@ -32591,6 +32590,7 @@ static void unpackage (void)
         return;
       }
       break;
+    default: unreachable();
   }
 
   disp = 0;
@@ -34026,6 +34026,8 @@ static void math_fraction (void)
       case atop_code:
         thickness(incompleat_noad) = 0;
         break;
+
+      default: unreachable();
     }
   }
 }
@@ -34446,7 +34448,7 @@ static void prefixed_command (void)
 
   a = 0;
 
-  while (cur_cmd == prefix)
+  while (unlikely(cur_cmd == prefix))
   {
     if (!odd(a / cur_chr))
       a = a + cur_chr;
@@ -34474,7 +34476,7 @@ static void prefixed_command (void)
     }
   }
 
-  if (a >= 8)
+  if (unlikely(a >= 8))
   {
     j = protected_token;
     a = a - 8;
@@ -34482,7 +34484,7 @@ static void prefixed_command (void)
   else
     j = 0;
 
-  if ((cur_cmd != def) && ((a % 4 != 0) || (j != 0)))
+  if (unlikely((cur_cmd != def) && ((a % 4 != 0) || (j != 0))))
   {
     print_err("You can't use `");
     print_esc("long");
@@ -34503,7 +34505,7 @@ static void prefixed_command (void)
     error();
   }
 
-  if (global_defs != 0)
+  if (unlikely(global_defs != 0))
   {
     if (global_defs < 0)
     {
@@ -34667,6 +34669,7 @@ static void prefixed_command (void)
                 case toks_def_code:
                   define(p, assign_toks, toks_base + cur_val);
                   break;
+                default: unreachable();
               }
             }
             break;
@@ -37403,6 +37406,7 @@ reswitch:
     case any_mode(extension):
       do_extension();
       break;
+    default: unreachable();// {there are no other cases}
   }
 
   goto big_switch;
@@ -38546,7 +38550,7 @@ boolean check_box (pointer box_p)
         p = link(p);
 
         if (p == null)
-          goto done;
+          return flag;
       } while (is_char_node(p));
     }
 
@@ -38641,7 +38645,6 @@ boolean check_box (pointer box_p)
     p = link(p);
   }
 
-done:
   return flag;
 }
 
@@ -39003,6 +39006,7 @@ static void print_group (boolean e)
           prints(" left");
       }
       break;
+    default: unreachable();
   }
 
   prints(" group (level ");
