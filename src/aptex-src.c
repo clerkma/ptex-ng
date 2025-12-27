@@ -2300,7 +2300,7 @@ static void t_open_in (void)
 // inputs the next line or returns |false|
 static boolean input_ln (alpha_file f, boolean bypass_eoln)
 {
-  int i = '\0';
+  int i;
 
   (void) bypass_eoln;
   last = first;
@@ -18281,7 +18281,7 @@ static void change_if_limit (small_number l, pointer p)
 void conditional (void)
 {
   bool b; // {is the condition true?}
-  boolean e; // {keep track of nested csnames}
+  bool e; // {keep track of nested csnames}
   char r; // {relation to be evaluated}
   integer m, n; // {to be tested against the second operand}
   pointer p, q; // {for traversing token lists in \.{\\ifx} tests}
@@ -38922,7 +38922,7 @@ boolean check_echar_range (integer c)
 }
 
 // for eTeX
-boolean eTeX_enabled (boolean b, quarterword j, halfword k)
+bool eTeX_enabled (bool b, quarterword j, halfword k)
 {
   if (!b)
   {
@@ -39034,7 +39034,7 @@ static void print_group (boolean e)
 }
 
 #ifdef STAT
-void group_trace (boolean e)
+void group_trace (bool e)
 {
   begin_diagnostic();
   print_char('{');

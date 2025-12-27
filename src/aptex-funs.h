@@ -223,8 +223,8 @@ boolean check_kcat_code(integer ct);
 boolean check_echar_range(integer c);
 
 // functions of eTeX
-boolean eTeX_enabled (boolean b, quarterword j, halfword k);
-void group_trace (boolean e);
+bool eTeX_enabled (bool b, quarterword j, halfword k);
+void group_trace (bool e);
 void show_save_groups (void);
 void scan_general_text (void);
 
