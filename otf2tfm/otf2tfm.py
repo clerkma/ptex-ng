@@ -53,13 +53,16 @@ def hb_kern_test(font, text, kern):
     return buf.glyph_positions
 
 def hb_kern(font, l, r):
-    text = f"{chr(l)}{chr(r)}"
-    p = hb_kern_test(font, text, False)
-    l_adv0 = p[0].x_advance
-    p = hb_kern_test(font, text, True)
-    l_adv1 = p[0].x_advance
-    r_xoff = p[1].x_offset
-    return l_adv1 - l_adv0 + r_xoff
+    try:
+        text = f"{chr(l)}{chr(r)}"
+        p = hb_kern_test(font, text, False)
+        l_adv0 = p[0].x_advance
+        p = hb_kern_test(font, text, True)
+        l_adv1 = p[0].x_advance
+        r_xoff = p[1].x_offset
+        return l_adv1 - l_adv0 + r_xoff
+    except:
+        return 0
 
 def get_kern(face, font, l_set=range(1, 256), r_set=range(1, 256)):
     pair = {}
@@ -93,57 +96,60 @@ def read_file(path):
     hb_font = hb.Font(hb.Face(data))
     return ft_face, hb_font, hash
 
+def run_main_task(path, out):
+    if result := read_file(path):
+        face, font, hash = result
+        upm = face.units_per_EM
+        lh = 2
+        header_checksum = hash
+        header_design_size = make_fixword(10.0)
+        wd, ht, dp = make_metric(face)
+        remainder, blob_nl, blob_nk = get_kern(face, font)
+        bc = 0
+        ec = 255
+        nw = 256
+        nh = 2
+        nd = 2
+        ni = 2
+        nl = len(blob_nl) // 4
+        nk = len(blob_nk) // 4
+        ne = 0
+        np = 7
+        slant = make_fixword(0)
+        space = make_fixword(wd[ord(' ')] / upm)
+        stretch = make_fixword(0.16)
+        shrink = make_fixword(0.11)
+        xheight = make_fixword(ht[ord('x')] / upm)
+        quad = make_fixword(1.0)
+        extra_space = make_fixword(0.1)
+        lf = 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np
+        blob_genesis = struct.pack(">12H", lf, lh, bc, ec, nw, nh, nd, ni, nl, nk, ne, np)
+        blob_header = struct.pack(">LL", header_checksum, header_design_size)
+        char_info = []
+        for x in range(256):
+            char_info += [x, 16 + 1]
+            if x in remainder:
+                char_info += [1, remainder[x]]
+            else:
+                char_info += [0, 0]
+        blob_char_info = bytes(char_info)
+        data_wd = [make_fixword(x / upm) for x in wd]
+        blob_nw = struct.pack(">256L", 0, *data_wd[1:])
+        blob_nh = struct.pack(">LL", 0, make_fixword(max(ht) / upm))
+        blob_nd = struct.pack(">LL", 0, make_fixword(max(dp) / upm))
+        blob_ni = struct.pack(">LL", 0, 0)
+        blob_param = struct.pack(">7L", slant, space, stretch, shrink, xheight, quad, extra_space)
+        blob_final = (
+            blob_genesis + blob_header + blob_char_info
+            + blob_nw + blob_nh + blob_nd + blob_ni
+            + blob_nl + blob_nk + blob_param
+        )
+        pathlib.Path(out).write_bytes(blob_final)
+
 def main(src, out):
     path = pathlib.Path(src)
     try:
-        if result := read_file(path):
-            face, font, hash = result
-            upm = face.units_per_EM
-            lh = 2
-            header_checksum = hash
-            header_design_size = make_fixword(10.0)
-            wd, ht, dp = make_metric(face)
-            remainder, blob_nl, blob_nk = get_kern(face, font)
-            bc = 0
-            ec = 255
-            nw = 256
-            nh = 2
-            nd = 2
-            ni = 2
-            nl = len(blob_nl) // 4
-            nk = len(blob_nk) // 4
-            ne = 0
-            np = 7
-            slant = make_fixword(0)
-            space = make_fixword(wd[ord(' ')] / upm)
-            stretch = make_fixword(0.16)
-            shrink = make_fixword(0.11)
-            xheight = make_fixword(ht[ord('x')] / upm)
-            quad = make_fixword(1.0)
-            extra_space = make_fixword(0.1)
-            lf = 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np
-            blob_genesis = struct.pack(">12H", lf, lh, bc, ec, nw, nh, nd, ni, nl, nk, ne, np)
-            blob_header = struct.pack(">LL", header_checksum, header_design_size)
-            char_info = []
-            for x in range(256):
-                char_info += [x, 16 + 1]
-                if x in remainder:
-                    char_info += [1, remainder[x]]
-                else:
-                    char_info += [0, 0]
-            blob_char_info = bytes(char_info)
-            data_wd = [make_fixword(x / upm) for x in wd]
-            blob_nw = struct.pack(">256L", 0, *data_wd[1:])
-            blob_nh = struct.pack(">LL", 0, make_fixword(max(ht) / upm))
-            blob_nd = struct.pack(">LL", 0, make_fixword(max(dp) / upm))
-            blob_ni = struct.pack(">LL", 0, 0)
-            blob_param = struct.pack(">7L", slant, space, stretch, shrink, xheight, quad, extra_space)
-            blob_final = (
-                blob_genesis + blob_header + blob_char_info
-                + blob_nw + blob_nh + blob_nd + blob_ni
-                + blob_nl + blob_nk + blob_param
-            )
-            pathlib.Path(out).write_bytes(blob_final)
+        run_main_task(path, out)
     except Exception as e:
         print("Error:", e)
         print(f"Please check your font: {src} ...")
