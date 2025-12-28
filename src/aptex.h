@@ -447,7 +447,7 @@ EXTERN integer cur_boundary;                  // {where the current level begins
 
 EXTERN integer mag_set;                       // {if nonzero, this magnification should be used henceforth}
 
-EXTERN int cur_cmd;                           // {current command set by |get_next|}
+EXTERN eight_bits cur_cmd;                    // {current command set by |get_next|}
 EXTERN halfword cur_chr;                      // {operand of current command}
 EXTERN pointer cur_cs;                        // {control sequence found here, zero if none found}
 EXTERN halfword cur_tok;                      // {packed representative of |cur_cmd| and |cur_chr|}
@@ -465,7 +465,7 @@ EXTERN alpha_file input_file[max_in_open + 1];
 EXTERN integer line;                          // {current line number in the current source file}
 EXTERN integer line_stack[max_in_open + 1];
 
-EXTERN int scanner_status;                    // {can a subfile end now?}
+EXTERN small_number scanner_status;           // {can a subfile end now?}
 EXTERN pointer warning_index;                 // {identifier relevant to non-|normal| scanner status}
 EXTERN pointer def_ref;                       // {reference count of token list being defined}
 
@@ -481,8 +481,8 @@ EXTERN integer base_ptr;                      // {shallowest level shown by |sho
 EXTERN pointer par_loc;                       // {location of `\.{\\par}' in |eqtb|}
 EXTERN halfword par_token;                    // {token representing `\.{\\par}'}
 
-EXTERN boolean skip_mode;
-EXTERN boolean force_eof;                     // {should the next \.{\\input} be aborted early?}
+EXTERN bool skip_mode;
+EXTERN bool force_eof;                        // {should the next \.{\\input} be aborted early?}
 EXTERN pointer cur_mark[6];                   // {token lists for marks}
 
 EXTERN int long_state;                        // {governs the acceptance of \.{\\par}}
