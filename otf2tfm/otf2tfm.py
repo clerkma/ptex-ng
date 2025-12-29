@@ -33,7 +33,7 @@ def make_metric(face):
         bmp_ht = face.glyph.bitmap_top
         bmp_ht_dp = face.glyph.bitmap.rows
         ht.append(max(bmp_ht, 0))
-        dp.append(abs(min(bmp_ht_dp - bmp_ht, 0)))
+        dp.append(abs(max(bmp_ht_dp - bmp_ht, 0)))
     return wd, ht, dp
 
 def store_kern(prog, kern, value, skip_op=0):
