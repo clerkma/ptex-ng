@@ -26,15 +26,14 @@ def make_metric(face):
     for x in range(256):
         g = face.get_char_index(x)
         face.load_glyph(g, freetype.FT_LOAD_NO_SCALE)
-        outline = face.glyph.outline
         wd.append(face.glyph.advance.x)
-        if outline.contours:
-            bbox = outline.get_bbox()
-            ht.append(max(bbox.yMax, 0))
-            dp.append(abs(min(bbox.yMin, 0)))
-        else:
-            ht.append(0)
-            dp.append(0)
+        face.set_pixel_sizes(10, 0)
+        face.load_glyph(g)
+        face.glyph.render(freetype.FT_RENDER_MODE_LIGHT)
+        bmp_ht = face.glyph.bitmap_top
+        bmp_ht_dp = face.glyph.bitmap.rows
+        ht.append(max(bmp_ht, 0))
+        dp.append(abs(min(bmp_ht_dp - bmp_ht, 0)))
     return wd, ht, dp
 
 def store_kern(prog, kern, value, skip_op=0):
@@ -96,6 +95,17 @@ def read_file(path):
     hb_font = hb.Font(hb.Face(data))
     return ft_face, hb_font, hash
 
+def build_val_index(v, v_16):
+    try:
+        return v_16.index(v)
+    except:
+        return len(v_16) - 1
+
+def build_ht_dp_index(ht, dp, ht_16, dp_16):
+    ht_index = build_val_index(ht, ht_16)
+    dp_index = build_val_index(dp, dp_16)
+    return (ht_index << 4) | dp_index
+
 def run_main_task(path, out):
     if result := read_file(path):
         face, font, hash = result
@@ -104,12 +114,14 @@ def run_main_task(path, out):
         header_checksum = hash
         header_design_size = make_fixword(10.0)
         wd, ht, dp = make_metric(face)
+        ht_16 = sorted(set(ht))[:16]
+        dp_16 = sorted(set(dp))[:16]
         remainder, blob_nl, blob_nk = get_kern(face, font)
         bc = 0
         ec = 255
         nw = 256
-        nh = 2
-        nd = 2
+        nh = len(ht_16)
+        nd = len(dp_16)
         ni = 2
         nl = len(blob_nl) // 4
         nk = len(blob_nk) // 4
@@ -127,7 +139,7 @@ def run_main_task(path, out):
         blob_header = struct.pack(">LL", header_checksum, header_design_size)
         char_info = []
         for x in range(256):
-            char_info += [x, 16 + 1]
+            char_info += [x, build_ht_dp_index(ht[x], dp[x], ht_16, dp_16)]
             if x in remainder:
                 char_info += [1, remainder[x]]
             else:
@@ -135,8 +147,8 @@ def run_main_task(path, out):
         blob_char_info = bytes(char_info)
         data_wd = [make_fixword(x / upm) for x in wd]
         blob_nw = struct.pack(">256L", 0, *data_wd[1:])
-        blob_nh = struct.pack(">LL", 0, make_fixword(max(ht) / upm))
-        blob_nd = struct.pack(">LL", 0, make_fixword(max(dp) / upm))
+        blob_nh = struct.pack(f">{nh}L", *[make_fixword(x / 10) for x in ht_16])
+        blob_nd = struct.pack(f">{nd}L", *[make_fixword(x / 10) for x in dp_16])
         blob_ni = struct.pack(">LL", 0, 0)
         blob_param = struct.pack(">7L", slant, space, stretch, shrink, xheight, quad, extra_space)
         blob_final = (
