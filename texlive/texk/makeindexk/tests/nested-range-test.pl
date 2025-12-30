@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# $Id: nested-range-test.pl 77150 2025-12-21 21:53:52Z karl $
+# $Id: nested-range-test.pl 77204 2025-12-28 23:06:34Z karl $
 # Public domain.  Originally written 2011, Karl Berry.
 # Check that makeindex doesn't create spurious output from nested ranges.
 # See nested-range.tex and -bb.tex.
@@ -11,8 +11,10 @@ require "$srcdir/../tests/common-test.pl";
 exit (&main ());
 
 sub main {
+  my $IND = "nested-range.ind";
+
   my @test_args = ("./makeindex", "$srcdir/tests/nested-range.idx",
-                       "-o", "nested-range.ind",
+                       "-o", $IND,
                        "-t", "nested-range.ilg");
   my $ret = &test_run (@test_args);
   if ($ret != 0) {
@@ -21,18 +23,15 @@ sub main {
   }
   
   my $bad = 0;
-  local *IND;
-  $IND = "nested-range.ind";
   
   # Seems that unpredictably the output file doesn't exist yet?
   if (! -e $IND) {
-    warn "test_run succeeded, but $IND doesn't exist? Sleeping (cmd=@test_args)\n";
-    warn `pwd; ls -lt; ps auxww | grep make`;
-    sleep 2;
+    warn "test_run succeeded, but $IND doesn't exist? (cmd=@test_args)\n";
+    warn `pwd; ls -lt; /l/bin/proc`;
   }
   
   # The test fails if the output contains \(.
-  open (IND) || die "open($IND) failed: $!";
+  open (IND, $IND) || die "open($IND) failed: $!";
   while (<IND>) {
     $bad = 1 if /\\\(/;
   }

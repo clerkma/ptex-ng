@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: nest.test 77203 2025-12-28 23:00:46Z karl $
 # Copyright 2024 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
 # Copyright 2017-2022 Karl Berry <tex-live@tug.org>
 # Copyright 2013 Peter Breitenlohner <tex-live@tug.org>
