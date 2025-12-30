@@ -1473,24 +1473,24 @@ do {                            \
 #define quad(f)          param(quad_code, f)
 #define extra_space(f)   param(extra_space_code, f)
 /* sec 0561 */
-#define start_font_error_message()  \
-do {                                \
-  print_err("Font ");               \
-  sprint_cs(u);                     \
-  print_char('=');                  \
-  print_file_name(nom, aire, 335);  \
-                                    \
-  if (s >= 0)                       \
-  {                                 \
-    prints(" at ");                 \
-    print_scaled(s);                \
-    prints("pt");                   \
-  }                                 \
-  else if (s != -1000)              \
-  {                                 \
-    prints(" scaled ");             \
-    print_int(-s);                  \
-  }                                 \
+#define start_font_error_message()        \
+do {                                      \
+  print_err("Font ");                     \
+  sprint_cs(u);                           \
+  print_char('=');                        \
+  print_file_name(nom, aire, STR_EMPTY);  \
+                                          \
+  if (s >= 0)                             \
+  {                                       \
+    prints(" at ");                       \
+    print_scaled(s);                      \
+    prints("pt");                         \
+  }                                       \
+  else if (s != -1000)                    \
+  {                                       \
+    prints(" scaled ");                   \
+    print_int(-s);                        \
+  }                                       \
 } while (0)
 /* sec 0564 */
 #define read_sixteen(a) \
