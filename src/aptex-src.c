@@ -12823,7 +12823,7 @@ static void unsave (void)
       decr(save_ptr);
 
       if (save_type(save_ptr) == level_boundary)
-        goto done;
+        break;
 
       p = save_index(save_ptr);
 
@@ -12914,7 +12914,6 @@ static void unsave (void)
       }
     }
 
-done:
 #ifdef STAT
     if (tracing_groups > 0)
       group_trace(true);
