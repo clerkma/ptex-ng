@@ -2962,6 +2962,7 @@ again_2:                                                \
         goto main_loop_j_3;                             \
       }                                                 \
       break;                                            \
+    default: do_nothing();                              \
   }                                                     \
                                                         \
   x_token();                                            \

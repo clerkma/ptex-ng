@@ -14217,27 +14217,27 @@ reswitch:
 
             if (unlikely(check_kanji(info(p))))
             {
-              t = toBUFF(info(p) % max_cjk_val);
+              const long u = toBUFF(info(p) % max_cjk_val);
 
-              if (BYTE1(t) != 0)
+              if (BYTE1(u) != 0)
               {
-                buffer[j] = BYTE1(t);
+                buffer[j] = BYTE1(u);
                 incr(j);
               }
 
-              if (BYTE2(t) != 0)
+              if (BYTE2(u) != 0)
               {
-                buffer[j] = BYTE2(t);
+                buffer[j] = BYTE2(u);
                 incr(j);
               }
 
-              if (BYTE3(t) != 0)
+              if (BYTE3(u) != 0)
               {
-                buffer[j] = BYTE3(t);
+                buffer[j] = BYTE3(u);
                 incr(j);
               }
 
-              buffer[j] = BYTE4(t);
+              buffer[j] = BYTE4(u);
               incr(j);
               p = link(p);
             }
@@ -17037,7 +17037,7 @@ static pointer str_toks_cat (pool_pointer b, uint32_t cat)
   return p;
 }
 
-static pointer str_toks (pool_pointer b)
+_Flatten static pointer str_toks (pool_pointer b)
 {
   return str_toks_cat(b, 0);
 }
@@ -18618,25 +18618,26 @@ void conditional (void)
 
           if (unlikely(check_kanji(info(p))))
           {
-            if (BYTE1(toBUFF(info(p) % max_cjk_val)) != 0)
+            const long u = toBUFF(info(p) % max_cjk_val);
+            if (BYTE1(u) != 0)
             {
-              buffer[m] = BYTE1(toBUFF(info(p) % max_cjk_val));
+              buffer[m] = BYTE1(u);
               incr(m);
             }
 
-            if (BYTE2(toBUFF(info(p) % max_cjk_val)) != 0)
+            if (BYTE2(u) != 0)
             {
-              buffer[m] = BYTE2(toBUFF(info(p) % max_cjk_val));
+              buffer[m] = BYTE2(u);
               incr(m);
             }
 
-            if (BYTE3(toBUFF(info(p) % max_cjk_val)) != 0)
+            if (BYTE3(u) != 0)
             {
-              buffer[m] = BYTE3(toBUFF(info(p) % max_cjk_val));
+              buffer[m] = BYTE3(u);
               incr(m);
             }
 
-            buffer[m] = BYTE4(toBUFF(info(p) % max_cjk_val));
+            buffer[m] = BYTE4(u);
             incr(m);
             p = link(p);
           }
@@ -33874,6 +33875,7 @@ static void build_choices (void)
         return;
       }
       break;
+    default: unreachable();
   }
 
   incr(saved(-1));
@@ -40961,6 +40963,8 @@ bool do_marks (small_number a, small_number l, pointer q)
           }
         }
         break;
+
+      default: unreachable();
     }
 
     if (sa_bot_mark(q) == null)
