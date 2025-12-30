@@ -411,7 +411,7 @@ _Noreturn static void succumb (void)
 /* sec 0096 */
 static inline void check_interrupt (void)
 {
-  if (interrupt != 0)
+  if (unlikely(interrupt != 0))
     pause_for_instructions();
 }
 /* sec 0273 */

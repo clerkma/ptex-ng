@@ -406,7 +406,7 @@ EXTERN pointer rover;                         // {points to some node in the lis
 #endif
 
 EXTERN pointer was_mem_end, was_lo_max, was_hi_min;
-EXTERN boolean panicking;
+EXTERN bool panicking;
 
 EXTERN integer font_in_short_display;         // {an internal font number}
 
