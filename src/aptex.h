@@ -862,7 +862,7 @@ EXTERN eight_bits page_dir;
 
 EXTERN pointer first_char;                    // {first printable character}
 EXTERN pointer last_char;                     // {last printable character}
-EXTERN boolean find_first_char;               // {find for a first printable character?}
+EXTERN bool find_first_char;                  // {find for a first printable character?}
 EXTERN int fbyte;
 
 // eTeX

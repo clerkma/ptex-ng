@@ -212,7 +212,7 @@ eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f);
 pointer get_inhibit_pos (KANJI_code c, small_number n);
 pointer get_kinsoku_pos (KANJI_code c, small_number n);
 
-boolean check_box (pointer box_p);
+bool check_box (pointer box_p);
 void adjust_hlist(pointer p, bool pf);
 
 void dir_out(void);
