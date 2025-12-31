@@ -76,9 +76,20 @@ stub_aptex = r"""
 \dump
 \endinput
 """
+
+stub_amstex = r"""
+\input aptex-config.tex
+\input plain
+\input amstex
+\dump
+\endinput
+"""
+
 stub_formats = """
 # plain
 aptex aptex language.def *aptex.ini
+# AMSTeX
+amstex aptex language.def *amstex.ini
 # LaTeX
 aplatex aptex language.dat *aplatex.ini
 aplatex-dev aptex language.dat *aplatex.ini
@@ -92,6 +103,7 @@ def make_formats():
         with tempfile.TemporaryDirectory() as tempdir:
             root = pathlib.Path(tempdir)
             (root / "aptex.ini").write_text(stub_aptex)
+            (root / "amstex.ini").write_text(stub_amstex)
             (root / "aplatex.ini").write_text(stub_aplatex)
             (root / "aptex-config.tex").write_text(stub_config)
             (root / "fmt-aptex.cnf").write_text(stub_formats)
