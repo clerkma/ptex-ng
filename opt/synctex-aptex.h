@@ -1,4 +1,4 @@
-// Copyright 2025 LdBeth, Clerk Ma.
+// Copyright 2025-2026 LdBeth, Clerk Ma.
 #include <kpathsea/c-fopen.h>
 #define __SyncTeX__
 #define EXTERN extern

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014-2025 Clerk Ma
+# Copyright (c) 2014-2026 Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #

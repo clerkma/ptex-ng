@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2025 LdBeth, Clerk Ma
+# Copyright (c) 2025-2026 LdBeth, Clerk Ma
 #
 # You may freely use, modify and/or distribute this file.
 #

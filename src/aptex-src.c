@@ -1,7 +1,7 @@
 /*
    Copyright 2007 TeX Users Group
-   Copyright 2014-2025 Clerk Ma
-   Copyright 2025 LdBeth
+   Copyright 2014-2026 Clerk Ma
+   Copyright 2025-2026 LdBeth
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -135,8 +135,8 @@ static void print_aptex_usage (void)
 
 static void print_aptex_version (void)
 {
-  printf("Copyright 2014-2025 Clerk Ma.\n"
-    "          2025 LdBeth.\n"
+  printf("Copyright 2014-2026 Clerk Ma.\n"
+    "          2025-2026 LdBeth.\n"
     "banner: \"%s\"\n"
     "base: Y&Y TeX 2.3.0, pTeX%s, upTeX%s, HZ%s\n",
          banner, pTeX_version_string, upTeX_version_string, hz_version_string);
@@ -20336,7 +20336,7 @@ static void check_pdfversion (void)
 static void pdf_prepare_ship_out(void)
 {
   struct pdf_setting aptex_pdf_setting;
-  char * aptex_producer = "Asiatic pTeX 2025";
+  char * aptex_producer = "Asiatic pTeX 2026";
   int aptex_pdf_version;
   unsigned char aptex_id1[16], aptex_id2[16];
 
