@@ -36703,7 +36703,7 @@ void main_control (void)
   scaled disp;    // {displacement register}
   boolean ins_kp; // {whether insert kinsoku penalty}
 
-  boolean bSuppress;
+  bool bSuppress;
 
   if (every_job != 0)
     begin_token_list(every_job, every_job_text);
@@ -38532,10 +38532,10 @@ done:
   return p;
 }
 
-boolean check_box (pointer box_p)
+bool check_box (pointer box_p)
 {
   pointer p; // {run through the current box}
-  boolean flag; // {found any printable character?}
+  bool flag; // {found any printable character?}
 
   flag = false;
   p = box_p;
