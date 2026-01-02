@@ -136,6 +136,7 @@ typedef enum history_value history_value_t;
 #define link(p) mem[p].hh.rh  // {the |link| field of a memory word}
 #define info(p) mem[p].hh.lh  // {the |info| field of a memory word}
 /* sec 0122 */
+/*
 #ifdef STAT
 #define fast_get_avail(a) \
   do                      \
@@ -168,6 +169,8 @@ typedef enum history_value history_value_t;
     }                     \
   while (0)
 #endif
+*/
+#define fast_get_avail(a) a = get_avail()
 /* sec 0124 */
 #define empty_flag  max_halfword            // {the |link| of an empty variable-size node}
 #define is_empty(a) (link(a) == empty_flag) // {tests for empty node}
