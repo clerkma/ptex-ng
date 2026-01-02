@@ -7839,6 +7839,39 @@ static void runaway (void)
   }
 }
 
+static pointer get_avail_alloc (void) {
+  pointer p;
+  if (unlikely(mem_end < mem_max)) // {or go into virgin territory}
+    {
+      incr(mem_end);
+      p = mem_end;
+    }
+  else
+    {
+      decr(hi_mem_min);
+      p = hi_mem_min;
+
+      if (unlikely(hi_mem_min <= lo_mem_max))
+        {
+          incr(hi_mem_min);
+          mem = realloc_mem(0, mem_top / 2);
+
+          if (mem == NULL)
+            return 0;
+
+          if (mem_end >= mem_max)
+            {
+              runaway();  // {if memory is exhausted, display possible runaway text}
+              overflow("main memory size", mem_max + 1 - mem_min);  // {quit; all one-word nodes are busy}
+            }
+
+          incr(mem_end);
+          p = mem_end;
+        }
+    }
+  return p;
+}
+
 static pointer get_avail (void)
 {
   pointer p; // {the new node being got}
@@ -7847,34 +7880,7 @@ static pointer get_avail (void)
 
   if (likely(p != null))
     avail = link(avail); // {and pop it off}
-  else if (unlikely(mem_end < mem_max)) // {or go into virgin territory}
-  {
-    incr(mem_end);
-    p = mem_end;
-  }
-  else
-  {
-    decr(hi_mem_min);
-    p = hi_mem_min;
-
-    if (unlikely(hi_mem_min <= lo_mem_max))
-    {
-      incr(hi_mem_min);
-      mem = realloc_mem(0, mem_top / 2);
-
-      if (mem == NULL)
-        return 0;
-
-      if (mem_end >= mem_max)
-      {
-        runaway();  // {if memory is exhausted, display possible runaway text}
-        overflow("main memory size", mem_max + 1 - mem_min);  // {quit; all one-word nodes are busy}
-      }
-
-      incr(mem_end);
-      p = mem_end;
-    }
-  }
+  else p = get_avail_alloc();
 
   link(p) = null;  // {provide an oft-desired initialization of the new node}
 
@@ -9432,7 +9438,7 @@ static void show_box (pointer p)
 
 // |p| points to the reference count
 // of a token list that is losing one reference
-void delete_token_ref (pointer p)
+static void delete_token_ref (pointer p)
 {
   if (token_ref_count(p) == null)
     flush_list(p);
@@ -9441,7 +9447,7 @@ void delete_token_ref (pointer p)
 }
 
 // |p| points to a glue specification
-void delete_glue_ref (pointer p)
+static void delete_glue_ref (pointer p)
 {
   if (glue_ref_count(p) == null)
     free_node(p, glue_spec_size);
