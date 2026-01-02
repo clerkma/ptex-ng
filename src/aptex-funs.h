@@ -125,7 +125,7 @@ void search_mem (pointer p);
 void show_node_list (integer p);
 static inline void delete_token_ref (pointer p);
 static inline void delete_glue_ref (pointer p);
-#define fast_delete_glue_ref(p) delete_glue_ref((pointer) (p))
+#define fast_delete_glue_ref delete_glue_ref
 void flush_node_list (pointer p);
 void print_cmd_chr (quarterword cmd, halfword chr_code);
 pointer id_lookup (integer j, integer l);
