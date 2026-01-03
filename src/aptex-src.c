@@ -9678,7 +9678,7 @@ static pointer copy_node_list (pointer p)
   pointer h;  // {temporary head of copied list}
   pointer q;  // {previous position in new list}
   pointer r;  // {current node being fabricated for new list}
-  char words; // {number of words remaining to be copied}
+  unsigned char words; // {number of words remaining to be copied}
 
   h = get_avail();
   q = h;
@@ -9704,9 +9704,12 @@ static pointer copy_node_list (pointer p)
           r = get_node(box_node_size);
           sync_tag(r + box_node_size) = sync_tag(p + box_node_size);
           sync_line(r + box_node_size) = sync_line(p + box_node_size);
+          /*
           mem[r + 7] = mem[p + 7];
           mem[r + 6] = mem[p + 6];
           mem[r + 5] = mem[p + 5];  // {copy the last three words}
+          */
+          memcpy(&mem[r + 5], &mem[p + 5], 3 * sizeof(mem[0]));
           add_glue_ref(space_ptr(r));
           add_glue_ref(xspace_ptr(r));
           list_ptr(r) = copy_node_list(list_ptr(p));  // {this affects |mem[r+5]|}
@@ -9724,8 +9727,11 @@ static pointer copy_node_list (pointer p)
       case ins_node:
         {
           r = get_node(ins_node_size);
+          /*
           mem[r + 5] = mem[p + 5];
           mem[r + 4] = mem[p + 4];
+          */
+          memcpy(&mem[r + 4], &mem[p + 4], 2 * sizeof(mem[0]));
           add_glue_ref(split_top_ptr(p));
           ins_ptr(r) = copy_node_list(ins_ptr(p));  // {this affects |mem[r+4]|}
           words = ins_node_size - 2;
@@ -9845,11 +9851,14 @@ static pointer copy_node_list (pointer p)
         break;
     }
 
+    /*
     while (words > 0)
     {
       decr(words);
       mem[r + words] = mem[p + words];
     }
+    */
+    memcpy(&mem[r], &mem[p], words * sizeof(mem[0]));
 
     link(q) = r;
     q = r;
@@ -39588,7 +39597,7 @@ pointer new_segment (small_number s, pointer f)
 void just_copy (pointer p, pointer h, pointer t)
 {
   pointer r;
-  int words;
+  unsigned char words;
 
   while (p != null)
   {
@@ -39603,9 +39612,12 @@ void just_copy (pointer p, pointer h, pointer t)
       case vlist_node:
         {
           r = get_node(box_node_size);
+          /*
           mem[r + 7] = mem[p + 7];
           mem[r + 6] = mem[p + 6];
           mem[r + 5] = mem[p + 5];
+          */
+          memcpy(&mem[r + 5], &mem[p + 5], 3 * sizeof(mem[0]));
           add_glue_ref(space_ptr(r));
           add_glue_ref(xspace_ptr(r));
           words = 5;
@@ -39687,11 +39699,14 @@ void just_copy (pointer p, pointer h, pointer t)
         break;
     }
 
+    /*
     while (words > 0)
     {
       decr(words);
       mem[r + words] = mem[p + words];
     }
+    */
+    memcpy(&mem[r], &mem[p], words * sizeof(mem[0]));
 
 found:
     link(h) = r;
