@@ -22428,7 +22428,7 @@ void dvi_vlist_out (void)
   this_box = temp_ptr;
   g_order = glue_order(this_box);
   g_sign = glue_sign(this_box);
-  p = list_ptr(this_box);
+  // p = list_ptr(this_box);
   incr(cur_s);
 
   if (cur_s > 0)
@@ -22445,7 +22445,7 @@ void dvi_vlist_out (void)
   cur_v = cur_v - height(this_box);
   top_edge = cur_v;
 
-  while (p != null)
+  for (p = list_ptr(this_box);p != null;p = link(p))
   {
     /*
       @<Output node |p| for |vlist_out| and move to the next node,
@@ -22504,6 +22504,7 @@ void dvi_vlist_out (void)
               case dir_node:
                 dir_out();
                 break;
+              default: unreachable();
             }
 
             dvi_h = save_h;
@@ -22639,6 +22640,7 @@ void dvi_vlist_out (void)
                     case dir_node:
                       dir_out();
                       break;
+                    default: unreachable();
                   }
 
                   doing_leaders = outer_doing_leaders;
@@ -22651,7 +22653,7 @@ void dvi_vlist_out (void)
                 }
 
                 cur_v = edge - 10;
-                goto next_p;
+                continue;
               }
             }
 
@@ -22668,7 +22670,7 @@ void dvi_vlist_out (void)
           break;
       }
 
-      goto next_p;
+      continue;
 
 fin_rule:
       // @<Output a rule in a vlist, |goto next_p|@>
@@ -22691,14 +22693,12 @@ fin_rule:
         cur_h = left_edge;
       }
 
-      goto next_p;
+      continue;
 
 move_past:
       cur_v = cur_v + rule_ht;
     }
 
-next_p:
-    p = link(p);
   }
 
   // @<Finish vlist {\sl Sync\TeX} information record@>
@@ -22738,7 +22738,7 @@ void pdf_vlist_out (void)
   this_box = temp_ptr;
   g_order = glue_order(this_box);
   g_sign = glue_sign(this_box);
-  p = list_ptr(this_box);
+  // p = list_ptr(this_box);
   incr(cur_s);
 
   pdf_synch_dir();
@@ -22748,7 +22748,7 @@ void pdf_vlist_out (void)
   cur_v = cur_v - height(this_box);
   top_edge = cur_v;
 
-  while (p != null)
+  for (p = list_ptr(this_box);p != null;p = link(p))
   {
     /*
       @<Output node |p| for |vlist_out| and move to the next node,
@@ -22805,6 +22805,7 @@ void pdf_vlist_out (void)
               case dir_node:
                 dir_out();
                 break;
+              default: unreachable();
             }
 
             dvi_dir = save_dir;
@@ -22934,6 +22935,7 @@ void pdf_vlist_out (void)
                     case dir_node:
                       dir_out();
                       break;
+                    default: unreachable();
                   }
 
                   doing_leaders = outer_doing_leaders;
@@ -22944,7 +22946,7 @@ void pdf_vlist_out (void)
                 }
 
                 cur_v = edge - 10;
-                goto next_p;
+                continue;
               }
             }
 
@@ -22961,7 +22963,7 @@ void pdf_vlist_out (void)
           break;
       }
 
-      goto next_p;
+      continue;
 
 fin_rule:
       // @<Output a rule in a vlist, |goto next_p|@>
@@ -22980,14 +22982,12 @@ fin_rule:
         cur_h = left_edge;
       }
 
-      goto next_p;
+      continue;
 
 move_past:
       cur_v = cur_v + rule_ht;
     }
 
-next_p:
-    p = link(p);
   }
 
   // @<Finish vlist {\sl Sync\TeX} information record@>
@@ -24370,7 +24370,7 @@ static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
     glue_sign(r) = normal;
     glue_order(r) = normal;
     set_glue_ratio_zero(glue_set(r));
-    goto exit;
+    return r;
   }
   else if (x > 0)
   {
@@ -24418,7 +24418,7 @@ static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
         }
       }
 
-    goto exit;
+    return r;
   }
   else
   {
@@ -24473,7 +24473,7 @@ static pointer vpackage (pointer p, scaled h, small_number m, scaled l)
         }
       }
 
-    goto exit;
+    return r;
   }
 
 common_ending:
@@ -24498,7 +24498,6 @@ common_ending:
   show_box(r);
   end_diagnostic(true);
 
-exit:
   return r;
 }
 
@@ -40584,7 +40583,7 @@ integer fract (integer x, integer n, integer d, integer max_answer)
     negative = !negative;
   }
   else if (x == 0)
-    goto done;
+    return a;
 
   if (n < 0)
   {
@@ -40673,12 +40672,11 @@ found:
   if (negative)
     negate(a);
 
-  goto done;
+  return a;
 
 too_big:
   num_error(a);
 
-done:
   return a;
 }
 
