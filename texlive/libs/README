@@ -1,4 +1,4 @@
-$Id: README 77197 2025-12-28 02:54:39Z kakuto $
+$Id: README 77220 2025-12-31 04:57:12Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -65,8 +65,8 @@ potrace 1.16 - checked 29aug22
 pplib 2.05.0 - checked 21apr20
   https://github.com/contextgarden/pplib
 
-teckit 2.5.12 - checked 26aug23
-  https://github.com/silnrsi/teckit/archive/2.5.12.tar.gz
+teckit 2.5.13 - checked 31dec25
+  https://github.com/silnrsi/teckit/archive/refs/tags/v2.5.13.tar.gz
 
 xpdf 4.04 - checked 24apr22
   https://www.xpdfreader.com/download.html
