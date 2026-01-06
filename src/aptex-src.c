@@ -5166,16 +5166,13 @@ static void store_fmt_file (void)
   k = active_base;
 
   do {
-    j = k;
 
-    while (j < int_base - 1)
+    for (j = k; j < int_base - 1; incr(j))
     {
       if ((equiv(j) == equiv(j + 1)) &&
           (eq_type(j) == eq_type(j + 1)) &&
           (eq_level(j) == eq_level(j + 1)))
           goto found1;
-
-      incr(j);
     }
 
     l = int_base;
@@ -5210,14 +5207,11 @@ done1:
 
   // Dump regions 5 and 6 of eqtb
   do {
-    j = k;
 
-    while (j < eqtb_size)
+    for (j = k; j < eqtb_size; incr(j))
     {
       if (eqtb[j].cint == eqtb[j + 1].cint)
         goto found2;
-
-      incr(j);
     }
 
     l = eqtb_size + 1;
@@ -6226,10 +6220,7 @@ static pointer prim_lookup(str_number s) //{search the primitives table}
   if (s <= biggest_char)
   {
     if (s < 0)
-    {
-      p = undefined_primitive;
-      goto found;
-    }
+      return undefined_primitive;
     else
       p = (s % prim_prime) + prim_base; // {we start searching here}
   }
@@ -6262,10 +6253,10 @@ static pointer prim_lookup(str_number s) //{search the primitives table}
     {
       if (length(prim_text(p) - 1) == l)
         if (str_eq_str(prim_text(p) - 1, s))
-          goto found;
+          return p;
     }
     else if (prim_text(p) == 1 + s)
-      goto found; // { |p| points a single-letter primitive }
+      return p; // { |p| points a single-letter primitive }
 
     if (prim_next(p) == 0)
     {
@@ -6290,13 +6281,12 @@ static pointer prim_lookup(str_number s) //{search the primitives table}
         prim_text(p) = s + 1;
       }
 
-      goto found;
+      return p;
     }
 
     p = prim_next(p);
   }
 
-found:
   return p;
 }
 
