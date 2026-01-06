@@ -4571,7 +4571,7 @@ static void first_fit (trie_pointer p)
   c = trie_c[p];
   z = trie_min[c]; // {get the first conceivably good hole}
 
-  for (bool not_found = true; not_found; z = trie_link(z))
+  while (true)
   {
     h = z - c;
 
@@ -4589,18 +4589,25 @@ static void first_fit (trie_pointer p)
     }
 
     if (trie_taken[h])
-      continue;
+      goto not_found;
 
-    for (q = trie_r[p]; q > 0; q = trie_r[q])
+    q = trie_r[p];
+
+    while (q > 0)
     {
       if (trie_link(h + trie_c[q]) == 0)
-        continue;
+        goto not_found;
+
+      q = trie_r[q];
     }
 
-    not_found = false;
+    goto found;
 
+not_found:
+    z = trie_link(z);
   }
 
+found:
   trie_taken[h] = true;
   trie_hash[p] = h;
   q = p;
