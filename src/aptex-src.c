@@ -4571,7 +4571,7 @@ static void first_fit (trie_pointer p)
   c = trie_c[p];
   z = trie_min[c]; // {get the first conceivably good hole}
 
-  while (true)
+  for (bool not_found = true; not_found; z = trie_link(z))
   {
     h = z - c;
 
@@ -4589,25 +4589,18 @@ static void first_fit (trie_pointer p)
     }
 
     if (trie_taken[h])
-      goto not_found;
+      continue;
 
-    q = trie_r[p];
-
-    while (q > 0)
+    for (q = trie_r[p]; q > 0; q = trie_r[q])
     {
       if (trie_link(h + trie_c[q]) == 0)
-        goto not_found;
-
-      q = trie_r[q];
+        continue;
     }
 
-    goto found;
+    not_found = false;
 
-not_found:
-    z = trie_link(z);
   }
 
-found:
   trie_taken[h] = true;
   trie_hash[p] = h;
   q = p;
@@ -20001,10 +19994,10 @@ void movement (scaled w, eight_bits o)
     right_ptr = q;
   }
   // @<Look at the other stack entries until deciding...@>
-  p = link(q);
+  // p = link(q);
   mstate = none_seen;
 
-  while (p != null)
+  for (p = link(q); p != null; p = link(p))
   {
     if (width(p) == w)
     {
@@ -20085,7 +20078,6 @@ void movement (scaled w, eight_bits o)
       }
     }
 
-    p = link(p);
   }
 
 not_found:
@@ -20110,7 +20102,11 @@ not_found:
     dvi_out((w >> 16));
     //w = w % 65536L;
     w = w & 65535L;
-    goto lab2;
+
+    // goto lab2;
+    dvi_out(w / 0400);
+    dvi_out(w % 0400);
+    return;
   }
 
   if (abs(w) >= 0200)
@@ -20120,7 +20116,10 @@ not_found:
     if (w < 0)
       w = w + 0200000;
 
-    goto lab2;
+    // goto lab2;
+    dvi_out(w / 0400);
+    dvi_out(w % 0400);
+    return;
   }
 
   dvi_out(o); // {|down1| or |right1|}
@@ -20128,12 +20127,6 @@ not_found:
   if (w < 0)
     w = w + 0400;
 
-  goto lab1;
-
-lab2:
-  dvi_out(w / 0400);
-
-lab1:
   dvi_out(w % 0400);
   return;
 
@@ -20265,6 +20258,7 @@ static inline void pdf_char_out (internal_font_number f, ASCII_code c)
     case dir_dtou:
       ng_set(c, font_id[f], cur_v, cur_h);
       break;
+    default: unreachable();
   }
 }
 
@@ -20283,6 +20277,7 @@ static inline void pdf_kanji_out (internal_font_number f, KANJI_code c)
     case dir_dtou:
       ng_set(c, font_id[f], cur_v, cur_h);
       break;
+    default: unreachable();
   }
 }
 
@@ -20301,6 +20296,7 @@ void pdf_rule_out (scaled rule_wd, scaled rule_ht)
     case dir_dtou:
       pdf_dev_set_rule(cur_v, cur_h, rule_ht, rule_wd);
       break;
+    default: unreachable();
   }
 }
 
@@ -20896,6 +20892,7 @@ static void dvi_ship_out (pointer p)
     case dir_node:
       dir_out();
       break;
+    default: unreachable();
   }
 
   dvi_out(eop);
@@ -21118,6 +21115,7 @@ static void pdf_ship_out (pointer p)
     case dir_node:
       dir_out();
       break;
+    default: unreachable();
   }
 
   aptex_dpx_eop();
@@ -25922,7 +25920,7 @@ void mlist_to_hlist (void)
   mlist = cur_mlist;
   penalties = mlist_penalties;
   style = cur_style; // {tuck global parameters away as local variables}
-  q = mlist;
+  // q = mlist;
   r = null;
   r_type = op_noad;
   max_h = 0;
@@ -25944,7 +25942,7 @@ void mlist_to_hlist (void)
     item in the mlist@>;
   */
 
-  while (q != null)
+  for (q = mlist;q != null;q = link(q))
   {
     /*
       @<Do first-pass processing based on |type(q)|; |goto done_with_noad|
@@ -26060,7 +26058,7 @@ reswitch:
             cur_mu = x_over_n(math_quad(cur_size), 18);
           }
 
-          goto done_with_node;
+          continue;
         }
         break;
 
@@ -26109,7 +26107,7 @@ reswitch:
             link(p) = z;
           }
 
-          goto done_with_node;
+          continue;
         }
         break;
 
@@ -26119,7 +26117,7 @@ reswitch:
       case whatsit_node:
       case penalty_node:
       case disc_node:
-        goto done_with_node;
+        continue;
         break;
 
       case rule_node:
@@ -26130,7 +26128,7 @@ reswitch:
           if (depth(q) > max_d)
             max_d = depth(q);
 
-          goto done_with_node;
+          continue;
         }
         break;
 
@@ -26158,19 +26156,19 @@ reswitch:
               }
           }
 
-          goto done_with_node;
+          continue;
         }
         break;
 
       case kern_node:
         {
           math_kern(q, cur_mu);
-          goto done_with_node;
+          continue;
         }
         break;
 
       case disp_node:
-        goto done_with_node;
+        continue;
         break;
 
       default:
@@ -26301,8 +26299,8 @@ done_with_noad:
     }
 
     // {go here when a node has been fully converted}
-done_with_node:
-    q = link(q);
+    // done_with_node:
+    // q = link(q);
   }
 
   // @<Convert \(a)a final |bin_noad| to an |ord_noad|@>;
