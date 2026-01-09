@@ -4769,9 +4769,9 @@ static void new_patterns (void)
                 if (l > 0)
                   decr(l);
                 else
-                  goto done1;
+                  break;
               }
-done1:
+
               q = 0;
               hc[0] = cur_lang;
 
@@ -38418,13 +38418,13 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
   {
     do {
       if (inhibit_xsp_code(p) == c)
-        goto done; // { found, update there }
+        return p; // { found, update there }
 
       if (inhibit_xsp_code(p) == 0) // { no further scan needed }
       {
         if (pp != no_entry)
           p = pp;
-        goto done;
+        return p;
       }
 
       if (inhibit_xsp_type(p) == inhibit_unused)
@@ -38445,10 +38445,10 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
   {
     do {
       if (inhibit_xsp_code(p) == 0)
-        goto done1;
+        break;
 
       if (inhibit_xsp_code(p) == c)
-        goto done;
+        return p;
 
       incr(p);
 
@@ -38456,11 +38456,9 @@ pointer get_inhibit_pos (KANJI_code c, small_number n)
         p = 0;
     } while (!(s == p));
 
-done1:
     p = no_entry;
   }
 
-done:
   return p;
 }
 
@@ -38490,13 +38488,13 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
   {
     do {
       if (kinsoku_code(p) == c) // { found, update there }
-        goto done;
+        return p;
 
       if (kinsoku_type(p) == 0) // { no further scan needed }
       {
         if (pp != no_entry)
           p = pp;
-        goto done;
+        return p;
       }
 
       if (kinsoku_type(p) == kinsoku_unused_code)
@@ -38517,10 +38515,10 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
   {
     do {
       if (kinsoku_type(p) == 0)
-        goto done1;
+        break;
 
       if (kinsoku_code(p) == c)
-        goto done;
+        return p;
 
       incr(p);
 
@@ -38528,11 +38526,9 @@ pointer get_kinsoku_pos (KANJI_code c, small_number n)
         p = 0;
     } while (!(s == p));
 
-done1:
     p = no_entry;
   }
 
-done:
   return p;
 }
 
@@ -40228,7 +40224,7 @@ void file_warning (void)
 // {scans and evaluates an expression}
 void scan_expr (void)
 {
-  _Bool a, b; // {saved values of |arith_error|}
+  bool a, b; // {saved values of |arith_error|}
   small_number l; // {type of expression}
   small_number r; // {state of expression so far}
   small_number s; // {state of term so far}
