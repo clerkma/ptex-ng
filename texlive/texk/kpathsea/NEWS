@@ -1,4 +1,4 @@
-$Id: NEWS 76830 2025-11-11 23:13:34Z karl $
+$Id: NEWS 77277 2026-01-06 18:14:12Z karl $
 This file records noteworthy changes.  (Public domain.)
 
 6.4.2 (for TeX Live 2026)
@@ -6,6 +6,11 @@ This file records noteworthy changes.  (Public domain.)
   st_nlink=2 (stat member for number of links, only on Unix-ish systems)
   check is made to decide whether we're in a leaf directory; in the
   default texmf.cnf, the check is disabled.
+
+* Configuration value openin_any no longer has any effect; any filename
+  is always considered ok for reading.  This is because in practice no
+  value but `a' was ever useful anyway, to the best of anyone's knowledge.
+  (More comments about this in texmf.cnf and tex-file.c.)
 
 6.4.1 (for TeX Live 2025, 7 March 2025)
 * kpsewhich outputs a blank line when a given file cannot be found,

@@ -1,5 +1,8 @@
-$Id: NEWS 74485 2025-03-06 22:52:00Z karl $
+$Id: NEWS 77300 2026-01-08 14:56:02Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+dvips 2026.1 (TeX Live 2026):
+  No substantive user-visible updates.
 
 dvips 2025.1 (TeX Live 2025, 7 March 2025):
   Support upTeX new encoding for combining characters via virtual fonts.
