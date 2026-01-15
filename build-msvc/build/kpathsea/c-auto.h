@@ -1,7 +1,7 @@
 #ifndef KPATHSEA_C_AUTO_H
 #define KPATHSEA_C_AUTO_H
 
-#define KPSEVERSION "kpathsea version 6.4.2/dev"
+#define KPSEVERSION "kpathsea version 6.4.2"
 
 #define HAVE_ASSERT_H 1
 #define HAVE_GETCWD 1
