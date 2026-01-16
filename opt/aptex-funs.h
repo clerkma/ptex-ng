@@ -325,7 +325,7 @@ static void print_ignored_err (const char * s)
     wake_up_terminal();
 
   print_nl("");
-  prints("ignored error: ");
+  prints("ignored: ");
   prints(s);
 }
 /* sec 0042 */
