@@ -1,8 +1,8 @@
 /****************************************************************************\
- $Id: xetex.ch 77374 2026-01-15 22:20:56Z karl $
+ $Id: xetex.ch 77404 2026-01-18 23:42:09Z karl $
  Part of the XeTeX typesetting system
  Copyright (c) 1994-2008 by SIL International
- Copyright (c) 2009-2025 by Jonathan Kew
+ Copyright (c) 2009-2026 by Jonathan Kew
  Copyright (c) 2012 by Khaled Hosny
 
  SIL Author(s): Jonathan Kew
@@ -129,14 +129,6 @@ if translate_filename then begin
   wterm(' (WARNING: translate-file "');
   fputs(translate_filename, stdout);
   wterm_ln('" ignored)');
-@z
-
-@x l.1891 - have print_ignored_err respect --file-line-error
-  print_nl("ignored: "); print(#);
-@y
-  if file_line_error_style_p then print_file_line
-  else print_nl("");
-  print("ignored: "); print(#);
 @z
 
 @x l.2020 - add a new |history| value for failure of the output driver
