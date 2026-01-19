@@ -322,7 +322,7 @@ static void print_err (const char * s)
 
 static inline void wlog_str (const char * s)
 {
-  (void) fprintf(log_file.file_data, s);
+  (void) fprintf(log_file.file_data, "%s", s);
 }
 
 static void print_ignored_err (const char * s)
