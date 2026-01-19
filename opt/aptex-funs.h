@@ -319,14 +319,19 @@ static void print_err (const char * s)
   print_nl("! ");
   prints(s);
 }
+
+static inline void wlog_str (const char * s)
+{
+  (void) fprintf(log_file.file_data, s);
+}
+
 static void print_ignored_err (const char * s)
 {
-  if (interaction == error_stop_mode)
-    wake_up_terminal();
-
-  print_nl("");
-  prints("ignored: ");
+  old_selector_ignored_err = selector;
+  selector = log_only;
+  wlog_str("ignored: ");
   prints(s);
+  selector = old_selector_ignored_err;
 }
 /* sec 0042 */
 static inline void append_char (ASCII_code c)

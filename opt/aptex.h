@@ -407,6 +407,7 @@ EXTERN list_state_record cur_list;            // {the ``top'' semantic state}
 EXTERN int shown_mode;                        // {most recent mode shown by \.{\\tracingcommands}}
 
 static output_mode_t diagnostic_old_setting;
+static output_mode_t old_selector_ignored_err;
 EXTERN integer sys_time, sys_day, sys_month, sys_year; // {date and time supplied by external system}
 
 EXPORT memory_word eqtb[eqtb_size + 1];
