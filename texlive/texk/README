@@ -1,4 +1,4 @@
-$Id: README 77026 2025-12-05 10:46:17Z takuji $
+$Id: README 77416 2026-01-19 23:07:15Z karl $
 Copyright 2006-2025 TeX Users Group.
 You may freely use, modify and/or distribute this file.
 
@@ -65,7 +65,7 @@ dvipos - maintained here, by us
 
 dvipsk - maintained here, by us
 
-dvisvgm 3.4.3 - checked 11jan25
+dvisvgm 3.6 - checked 19jan26
   https://dvisvgm.de/Downloads/
   https://github.com/mgieseki/dvisvgm
   https://ctan.org/pkg/dvisvgm

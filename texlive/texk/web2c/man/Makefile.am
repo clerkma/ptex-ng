@@ -1,4 +1,4 @@
-## $Id: Makefile.am 76986 2025-11-30 23:01:21Z karl $
+## $Id: Makefile.am 77415 2026-01-19 22:56:24Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
 ##
 ## Copyright 2015-2025 Karl Berry <tex-live@tug.org>
@@ -95,8 +95,7 @@ EXTRA_DIST += $(misc_man_sources)
 misc_man_sources = \
 	amstex.man \
 	latex.man \
-	latex-dev.man \
-	pdfetex.man
+	latex-dev.man
 
 man1_links += latex-dev:pdflatex-dev \
   latex-dev:xelatex-dev \
