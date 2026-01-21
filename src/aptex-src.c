@@ -40927,6 +40927,16 @@ bool do_marks (small_number a, small_number l, pointer q)
   {
     switch (a)
     {
+      case vsplit_init:
+        if (sa_split_first_mark(q) != null)
+        {
+          delete_token_ref(sa_split_first_mark(q));
+          sa_split_first_mark(q) = null;
+          delete_token_ref(sa_split_bot_mark(q));
+          sa_split_bot_mark(q) = null;
+        }
+        break;
+
       case fire_up_init:
         if (sa_bot_mark(q) != null)
         {
