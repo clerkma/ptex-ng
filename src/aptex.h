@@ -421,7 +421,6 @@ EXTERN list_state_record cur_list;            // {the ``top'' semantic state}
 EXTERN int shown_mode;                        // {most recent mode shown by \.{\\tracingcommands}}
 
 EXTERN int old_setting;
-EXTERN int old_selector_ignored_err;
 static output_mode_t diagnostic_old_setting;
 EXTERN integer sys_time, sys_day, sys_month, sys_year; // {date and time supplied by external system}
 
@@ -790,7 +789,7 @@ EXTERN pointer main_p;                        // {temporary register for list ma
 EXTERN integer main_s;                        // {space factor value}
 EXTERN halfword bchar;                        // {right boundary character of current font, or |non_char|}
 EXTERN halfword false_bchar;                  // {nonexistent character matching |bchar|, or |non_char|}
-EXTERN boolean cancel_boundary;               // {should the left boundary be ignored?}
+EXTERN bool cancel_boundary;                  // {should the left boundary be ignored?}
 EXTERN boolean ins_disc;                      // {should we insert a discretionary node?}
 
 EXTERN pointer cur_box;                       // {box to be placed into its context}

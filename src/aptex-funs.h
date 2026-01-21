@@ -327,6 +327,7 @@ static inline void wlog_str (const char * s)
 
 static void print_ignored_err (const char * s)
 {
+  static int old_selector_ignored_err;
   old_selector_ignored_err = selector;
   selector = log_only;
   wlog_str("ignored: ");
