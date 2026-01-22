@@ -41160,7 +41160,7 @@ void gsa_def (pointer p, halfword e)
 
   delete_sa_ref(p);
 }
-
+// {global |sa_w_def|}
 void gsa_w_def (pointer p, integer w)
 {
   add_sa_ref(p);
@@ -41183,7 +41183,7 @@ void gsa_w_def (pointer p, integer w)
 
 void sa_restore (void)
 {
-  pointer p;
+  pointer p; // {sparse array element}
 
   do {
     p = sa_loc(sa_chain);

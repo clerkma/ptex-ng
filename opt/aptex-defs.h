@@ -3422,7 +3422,7 @@ do {                          \
 #define dimen_val_limit 0x20 // {$2^4\cdot(|dimen_val|+1)$}
 #define mu_val_limit    0x40 // {$2^4\cdot(|mu_val|+1)$}
 #define box_val_limit   0x50 // {$2^4\cdot(|box_val|+1)$}
-#define tok_val_limit   0x60
+#define tok_val_limit   0x60 // {$2^4\cdot(|tok_val|+1)$}
 //
 #define index_node_size 9 // {size of an index node}
 #define sa_index        type // {a four-bit address or a type or both}
