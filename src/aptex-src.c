@@ -40097,11 +40097,11 @@ void get_x_or_protected (void)
 
 void group_warning (void)
 {
-  integer i;
-  boolean w;
+  integer i; // {index into |grp_stack|}
+  boolean w; // {do we need a warning?}
 
   base_ptr = input_ptr;
-  input_stack[base_ptr] = cur_input;
+  input_stack[base_ptr] = cur_input; // {store current state}
   i = in_open;
   w = false;
 
@@ -40138,11 +40138,11 @@ void group_warning (void)
 
 void if_warning (void)
 {
-  int i;
-  boolean w;
+  int i; // {index into |if_stack|}
+  boolean w; // {do we need a warning?}
 
   base_ptr = input_ptr;
-  input_stack[base_ptr] = cur_input;
+  input_stack[base_ptr] = cur_input; // {store current state}
   i = in_open;
   w = false;
 
@@ -40180,10 +40180,10 @@ void if_warning (void)
 
 void file_warning (void)
 {
-  pointer p;
-  quarterword l;
-  quarterword c;
-  integer i;
+  pointer p; // {saved value of |save_ptr| or |cond_ptr|}
+  quarterword l; // {saved value of |cur_level| or |if_limit|}
+  quarterword c; // {saved value of |cur_group| or |cur_if|}
+  integer i; // {saved value of |if_line|}
 
   p = save_ptr;
   l = cur_level;
@@ -40202,7 +40202,7 @@ void file_warning (void)
 
   save_ptr = p;
   cur_level = l;
-  cur_group = c;
+  cur_group = c; // {restore old values}
   p = cond_ptr;
   l = if_limit;
   c = cur_if;
@@ -40227,7 +40227,7 @@ void file_warning (void)
   cond_ptr = p;
   if_limit = l;
   cur_if = c;
-  if_line = i;
+  if_line = i; // {restore old values}
   print_ln();
 
   if (tracing_nesting > 1)
