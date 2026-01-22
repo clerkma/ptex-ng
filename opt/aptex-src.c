@@ -40704,21 +40704,21 @@ void scan_register_num (void)
 
 void new_index (quarterword i, pointer q)
 {
-  small_number k;
+  small_number k; // {loop index}
 
   cur_ptr = get_node(index_node_size);
   sa_index(cur_ptr) = i;
   sa_used(cur_ptr) = 0;
   link(cur_ptr) = q;
 
-  for (k = 1; k <= index_node_size - 1; k++)
+  for (k = 1; k <= index_node_size - 1; k++) // {clear all 16 pointers}
     mem[cur_ptr + k] = sa_null;
 }
-
+// {sets |cur_val| to sparse array element location or |null|}
 void find_sa_element (small_number t, halfword n, boolean w)
 {
-  pointer q;
-  small_number i;
+  pointer q; // {for list manipulations}
+  small_number i; // {a four bit index}
 
   cur_ptr = sa_root[t];
   if_cur_ptr_is_null_then_return_or_goto(not_found);
@@ -40804,12 +40804,12 @@ not_found4:
   link(cur_ptr) = q;
   add_sa_ptr();
 }
-
+// {reduce reference count}
 void delete_sa_ref (pointer q)
 {
-  pointer p;
-  small_number i;
-  small_number s;
+  pointer p; // {for list manipulations}
+  small_number i; // {a four bit index}
+  small_number s; // {size of a node}
 
   decr(sa_ref(q));
 
@@ -40844,20 +40844,21 @@ void delete_sa_ref (pointer q)
     q = link(p);
     free_node(p, s);
 
-    if (q == null)
+    if (q == null) // {the whole tree has been freed}
     {
       sa_root[i] = null;
       return;
     }
 
-    delete_sa_ptr(); s = index_node_size;
+    delete_sa_ptr();
+    s = index_node_size; // {node |q| is an index node}
   } while (!(sa_used(q) > 0));
 }
 
 #ifdef STAT
 void show_sa (pointer p, const char * s)
 {
-  small_number t;
+  small_number t; // {the type of element}
 
   begin_diagnostic();
   print_char('{');
@@ -40865,7 +40866,7 @@ void show_sa (pointer p, const char * s)
   print_char(' ');
 
   if (p == null)
-    print_char('?');
+    print_char('?'); // {this can't happen}
   else
   {
     t = sa_type(p);
@@ -40880,7 +40881,7 @@ void show_sa (pointer p, const char * s)
     else if (t == tok_val)
       print_cmd_chr(toks_register, p);
     else
-      print_char('?');
+      print_char('?'); // {this can't happen either}
 
     print_char('=');
 
@@ -40916,7 +40917,7 @@ void show_sa (pointer p, const char * s)
           show_token_list(link(p), null, 32);
       }
       else
-        print_char('?');
+        print_char('?'); // {this can't happen either}
     }
   }
 
@@ -40927,9 +40928,9 @@ void show_sa (pointer p, const char * s)
 
 boolean do_marks (small_number a, small_number l, pointer q)
 {
-  small_number i;
+  small_number i; // {a four bit index}
 
-  if (l < 4)
+  if (l < 4) // {|q| is an index node}
   {
     for (i = 0; i <= 15; ++i)
     {
@@ -40946,7 +40947,7 @@ boolean do_marks (small_number a, small_number l, pointer q)
       q = null;
     }
   }
-  else
+  else // {|q| is the node for a mark class}
   {
     switch (a)
     {
@@ -41015,11 +41016,11 @@ boolean do_marks (small_number a, small_number l, pointer q)
 
   return (q == null);
 }
-
+// {saves value of |p|}
 void sa_save (pointer p)
 {
-  pointer q;
-  quarterword i;
+  pointer q; // {the new save node}
+  quarterword i; // {index field of node}
 
   if (cur_level != sa_level)
   {
@@ -41062,7 +41063,7 @@ void sa_save (pointer p)
   sa_chain = q;
   add_sa_ref(p);
 }
-
+// {destroy value of |p|}
 void sa_destroy (pointer p)
 {
   if (sa_index(p) < mu_val_limit)
@@ -41075,7 +41076,7 @@ void sa_destroy (pointer p)
       delete_token_ref(sa_ptr(p));
   }
 }
-
+// {new data for sparse array elements}
 void sa_def (pointer p, halfword e)
 {
   add_sa_ref(p);
@@ -41145,7 +41146,7 @@ void sa_w_def (pointer p, integer w)
 
   delete_sa_ref(p);
 }
-
+// {global |sa_def|}
 void gsa_def (pointer p, halfword e)
 {
   add_sa_ref(p);
@@ -41166,7 +41167,7 @@ void gsa_def (pointer p, halfword e)
 
   delete_sa_ref(p);
 }
-
+// {global |sa_w_def|}
 void gsa_w_def (pointer p, integer w)
 {
   add_sa_ref(p);
@@ -41189,7 +41190,7 @@ void gsa_w_def (pointer p, integer w)
 
 void sa_restore (void)
 {
-  pointer p;
+  pointer p; // {sparse array element}
 
   do {
     p = sa_loc(sa_chain);
