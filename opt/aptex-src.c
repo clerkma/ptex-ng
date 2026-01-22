@@ -9713,6 +9713,7 @@ static pointer copy_node_list (pointer p)
       case unset_node:
         {
           r = get_node(box_node_size);
+          // @<Copy the box {\sl Sync\TeX} information@>;
           sync_tag(r + box_node_size) = sync_tag(p + box_node_size);
           sync_line(r + box_node_size) = sync_line(p + box_node_size);
           mem[r + 7] = mem[p + 7];
@@ -9729,6 +9730,7 @@ static pointer copy_node_list (pointer p)
         {
           r = get_node(rule_node_size);
           words = rule_node_size - synctex_field_size;
+          // {{\sl Sync\TeX}: do not let \TeX\ copy the {\sl Sync\TeX} information}
         }
         break;
 
@@ -9787,9 +9789,10 @@ static pointer copy_node_list (pointer p)
       case glue_node:
         {
           r = get_node(medium_node_size);
+          add_glue_ref(glue_ptr(p));
+          // @<Copy the medium sized node {\sl Sync\TeX} information@>
           sync_tag(r + medium_node_size) = sync_tag(p + medium_node_size);
           sync_line(r + medium_node_size) = sync_line(p + medium_node_size);
-          add_glue_ref(glue_ptr(p));
           glue_ptr(r) = glue_ptr(p);
           leader_ptr(r) = copy_node_list(leader_ptr(p));
         }
@@ -39610,12 +39613,12 @@ pointer new_segment (small_number s, pointer f)
 
 void just_copy (pointer p, pointer h, pointer t)
 {
-  pointer r;
-  int words;
+  pointer r; // {current node being fabricated for new list}
+  int words; // {number of words remaining to be copied}
 
   while (p != null)
   {
-    words = 1;
+    words = 1; // {this setting occurs in more branches than any other}
 
     if (is_char_node(p))
       r = get_avail();
@@ -39626,13 +39629,16 @@ void just_copy (pointer p, pointer h, pointer t)
       case vlist_node:
         {
           r = get_node(box_node_size);
+          // @<Copy the box {\sl Sync\TeX} information@>;
+          sync_tag(r + box_node_size) = sync_tag(p + box_node_size);
+          sync_line(r + box_node_size) = sync_line(p + box_node_size);
           mem[r + 7] = mem[p + 7];
           mem[r + 6] = mem[p + 6];
-          mem[r + 5] = mem[p + 5];
+          mem[r + 5] = mem[p + 5]; // {copy the last three words}
           add_glue_ref(space_ptr(r));
           add_glue_ref(xspace_ptr(r));
           words = 5;
-          list_ptr(r) = null;
+          list_ptr(r) = null; // {this affects |mem[r+5]|}
         }
         break;
 
@@ -39645,7 +39651,7 @@ void just_copy (pointer p, pointer h, pointer t)
 
       case ligature_node:
         {
-          r = get_avail();
+          r = get_avail(); // {only |font| and |character| are needed}
           mem[r] = mem[lig_char(p)];
           goto found;
         }
@@ -39654,15 +39660,18 @@ void just_copy (pointer p, pointer h, pointer t)
       case kern_node:
       case math_node:
         {
-          r = get_node(small_node_size);
-          words = small_node_size;
+          words = medium_node_size; // {{\sl Sync\TeX}: proper size for math and kern}
+          r = get_node(words);
         }
         break;
 
       case glue_node:
         {
-          r = get_node(small_node_size);
-          add_glue_ref(glue_ptr(p));
+          r = get_node(medium_node_size);
+          add_glue_ref(glue_ptr(p)); // {{\sl Sync\TeX}: proper size for glue}
+          // @<Copy the medium sized node {\sl Sync\TeX} information@>
+          sync_tag(r + medium_node_size) = sync_tag(p + medium_node_size);
+          sync_line(r + medium_node_size) = sync_line(p + medium_node_size);
           glue_ptr(r) = glue_ptr(p);
           leader_ptr(r) = null;
         }
@@ -39729,10 +39738,10 @@ not_found:
 
 void just_reverse (pointer p)
 {
-  pointer l;
-  pointer t;
-  pointer q;
-  halfword m, n;
+  pointer l; // {the new list}
+  pointer t; // {tail of reversed segment}
+  pointer q; // {the next node}
+  halfword m, n; // {count of unmatched math nodes}
 
   m = min_halfword;
   n = min_halfword;
@@ -39790,11 +39799,11 @@ done:
 
 void app_display (pointer j, pointer b, scaled d)
 {
-  scaled z;
-  scaled s;
-  scaled e;
-  integer x;
-  pointer p, q, r, t, u;
+  scaled z; // {width of the line}
+  scaled s; // {move the line right this much}
+  scaled e; // {distance from right edge of box to end of line}
+  integer x; // {|pre_display_direction|}
+  pointer p, q, r, t, u; // {for list manipulation}
 
   s = display_indent;
   x = pre_display_direction;
@@ -39825,9 +39834,10 @@ void app_display (pointer j, pointer b, scaled d)
     }
 
     if (box_lr(p) == dlist)
-      q = p;
+      q = p; // {display or equation number}
     else
     {
+      // {display and equation number}
       r = list_ptr(p);
       free_node(p, box_node_size);
 
@@ -39840,7 +39850,7 @@ void app_display (pointer j, pointer b, scaled d)
 
         do {
           q = r;
-          r = link(r);
+          r = link(r); // {find tail of list}
         } while (!(r == null));
       }
       else
@@ -39852,7 +39862,7 @@ void app_display (pointer j, pointer b, scaled d)
           t = link(r);
           link(r) = p;
           p = r;
-          r = t;
+          r = t; // {reverse list}
         } while (!(r == null));
       }
     }
@@ -39860,7 +39870,7 @@ void app_display (pointer j, pointer b, scaled d)
     if (j == null)
     {
       r = new_kern(0);
-      t = new_kern(0);
+      t = new_kern(0); // {the widths will be set later}
     }
     else
     {
@@ -39870,7 +39880,7 @@ void app_display (pointer j, pointer b, scaled d)
 
     u = new_math(0, end_M_code);
 
-    if (type(t) == glue_node)
+    if (type(t) == glue_node) // {|t| is \.{\\rightskip} glue}
     {
       cancel_glue(right_skip_code, q, u, t, e);
       link(u) = t;
@@ -39884,7 +39894,7 @@ void app_display (pointer j, pointer b, scaled d)
 
     u = new_math(0, begin_M_code);
 
-    if (type(r) == glue_node)
+    if (type(r) == glue_node) // {|r| is \.{\\leftskip} glue}
     {
       cancel_glue(left_skip_code, u, p, r, d);
       link(r) = u;
@@ -39897,7 +39907,7 @@ void app_display (pointer j, pointer b, scaled d)
 
       if (j == null)
       {
-        b = hpack(u, 0, 1);
+        b = hpack(u, natural);
         shift_amount(b) = s;
       }
       else
