@@ -3424,20 +3424,20 @@ do {                          \
 #define expr_s(a)           a = fract(a, n, f, max_dimen)
 
 // for sparse array
-#define box_val   4
-#define mark_val  6
+#define box_val   4 // {the additional box registers}
+#define mark_val  6 // {the additional mark classes}
 //
-#define dimen_val_limit 0x20
-#define mu_val_limit    0x40
-#define box_val_limit   0x50
-#define tok_val_limit   0x60
+#define dimen_val_limit 0x20 // {$2^4\cdot(|dimen_val|+1)$}
+#define mu_val_limit    0x40 // {$2^4\cdot(|mu_val|+1)$}
+#define box_val_limit   0x50 // {$2^4\cdot(|box_val|+1)$}
+#define tok_val_limit   0x60 // {$2^4\cdot(|tok_val|+1)$}
 //
-#define index_node_size 9
-#define sa_index        type
-#define sa_used         subtype
+#define index_node_size 9 // {size of an index node}
+#define sa_index        type // {a four-bit address or a type or both}
+#define sa_used         subtype // {count of non-null pointers}
 //
-#define sa_mark sa_root[mark_val]
-//
+#define sa_mark sa_root[mark_val] // {root for mark classes}
+// {some tree element is missing}
 #define if_cur_ptr_is_null_then_return_or_goto(a) \
 do {                    \
   if (cur_ptr == null)  \
@@ -3449,11 +3449,11 @@ do {                    \
   }                     \
 } while (0)
 //
-#define hex_dig1(a) (a / 4096)
-#define hex_dig2(a) (a / 256) % 16
-#define hex_dig3(a) (a / 16) % 16
-#define hex_dig4(a) (a % 16)
-//
+#define hex_dig1(a) (a / 4096) // {the fourth lowest hexadecimal digit}
+#define hex_dig2(a) (a / 256) % 16 // {the third lowest hexadecimal digit}
+#define hex_dig3(a) (a / 16) % 16 // {the second lowest hexadecimal digit}
+#define hex_dig4(a) (a % 16) // {the lowest hexadecimal digit}
+// {set |cur_ptr| to the pointer indexed by |i| from index node |q|}
 #define get_sa_ptr()                \
 do {                                \
   if odd(i)                         \
@@ -3461,7 +3461,7 @@ do {                                \
   else                              \
     cur_ptr = info(q + (i / 2) + 1);\
 } while (0)
-
+// {store the pointer indexed by |i| in index node |q|}
 #define put_sa_ptr(a)           \
 do {                            \
   if odd(i)                     \
@@ -3469,32 +3469,32 @@ do {                            \
   else                          \
     info(q + (i / 2) + 1) = a;  \
 } while (0)
-
+// {add |cur_ptr| as the pointer indexed by |i| in index node |q|}
 #define add_sa_ptr()    \
 do {                    \
   put_sa_ptr(cur_ptr);  \
   incr(sa_used(q));     \
 } while (0)
-
+// {delete the pointer indexed by |i| in index node |q|}
 #define delete_sa_ptr() \
 do {                    \
   put_sa_ptr(null);     \
   decr(sa_used(q));     \
 } while (0)
 //
-#define sa_lev            sa_used
-#define pointer_node_size 2
-#define sa_type(a)        (sa_index(a) / 16)
-#define sa_ref(a)         info(a + 1)
-#define sa_ptr(a)         link(a + 1)
+#define sa_lev            sa_used // {grouping level for the current value}
+#define pointer_node_size 2 // {size of an element with a pointer value}
+#define sa_type(a)        (sa_index(a) / 16) // {type part of combined type/index}
+#define sa_ref(a)         info(a + 1) // {reference count of a sparse array element}
+#define sa_ptr(a)         link(a + 1) // {a pointer value}
 //
-#define word_node_size  3
-#define sa_num          sa_ptr
-#define sa_int(a)       mem[a + 2].cint
-#define sa_dim(a)       mem[a + 2].cint
+#define word_node_size  3 // {size of an element with a word value}
+#define sa_num          sa_ptr // {the register number}
+#define sa_int(a)       mem[a + 2].cint // {an integer}
+#define sa_dim(a)       mem[a + 2].sc // {a dimension (a somewhat esotheric distinction)}
 //
-#define mark_class_node_size 4
-//
+#define mark_class_node_size 4 // {size of an element for a mark class}
+// {fetch |box(cur_val)|}
 #define fetch_box(a)                          \
 do {                                          \
   if (cur_val < 256)                          \
@@ -3509,9 +3509,9 @@ do {                                          \
       a = sa_ptr(cur_ptr);                    \
   }                                           \
 } while (0)
-//
+// {increase reference count}
 #define add_sa_ref(a) incr(sa_ref(a))
-//
+// {change |box(cur_val)|, the |eq_level| stays the same}
 #define change_box(a) \
 do {                  \
   if (cur_val<256)    \
@@ -3532,18 +3532,18 @@ do {                                      \
   }                                       \
 } while (0)
 //
-#define vsplit_init   0
-#define fire_up_init  1
-#define fire_up_done  2
-#define destroy_marks 3
+#define vsplit_init   0 // {action code for |vsplit| initialization}
+#define fire_up_init  1 // {action code for |fire_up| initialization}
+#define fire_up_done  2 // {action code for |fire_up| completion}
+#define destroy_marks 3 // {action code for |final_cleanup|}
 //
-#define sa_top_mark(a)          info(a + 1)
-#define sa_first_mark(a)        link(a + 1)
-#define sa_bot_mark(a)          info(a + 2)
-#define sa_split_first_mark(a)  link(a + 2)
-#define sa_split_bot_mark(a)    info(a + 3)
+#define sa_top_mark(a)          info(a + 1) // {\.{\\topmarks}|n|}
+#define sa_first_mark(a)        link(a + 1) // {\.{\\firstmarks}|n|}
+#define sa_bot_mark(a)          info(a + 2) // {\.{\\botmarks}|n|}
+#define sa_split_first_mark(a)  link(a + 2) // {\.{\\splitfirstmarks}|n|}
+#define sa_split_bot_mark(a)    info(a + 3) // {\.{\\splitbotmarks}|n|}
 //
-#define sa_loc sa_ref
+#define sa_loc sa_ref // {location of saved item}
 //
 #define sa_define(a1,a2,a3,a4,a5) \
 do {                    \
@@ -3557,7 +3557,7 @@ do {                    \
   else                  \
     define(a3, a4, a5); \
 } while (0)
-//
+// {assign |cur_box| to |box(cur_val)|}
 #define sa_def_box()                      \
 do {                                      \
   find_sa_element(box_val, cur_val, true);\

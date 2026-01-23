@@ -9713,6 +9713,7 @@ static pointer copy_node_list (pointer p)
       case unset_node:
         {
           r = get_node(box_node_size);
+          // @<Copy the box {\sl Sync\TeX} information@>;
           sync_tag(r + box_node_size) = sync_tag(p + box_node_size);
           sync_line(r + box_node_size) = sync_line(p + box_node_size);
           mem[r + 7] = mem[p + 7];
@@ -9729,6 +9730,7 @@ static pointer copy_node_list (pointer p)
         {
           r = get_node(rule_node_size);
           words = rule_node_size - synctex_field_size;
+          // {{\sl Sync\TeX}: do not let \TeX\ copy the {\sl Sync\TeX} information}
         }
         break;
 
@@ -9787,9 +9789,10 @@ static pointer copy_node_list (pointer p)
       case glue_node:
         {
           r = get_node(medium_node_size);
+          add_glue_ref(glue_ptr(p));
+          // @<Copy the medium sized node {\sl Sync\TeX} information@>
           sync_tag(r + medium_node_size) = sync_tag(p + medium_node_size);
           sync_line(r + medium_node_size) = sync_line(p + medium_node_size);
-          add_glue_ref(glue_ptr(p));
           glue_ptr(r) = glue_ptr(p);
           leader_ptr(r) = copy_node_list(leader_ptr(p));
         }
@@ -39610,12 +39613,12 @@ pointer new_segment (small_number s, pointer f)
 
 void just_copy (pointer p, pointer h, pointer t)
 {
-  pointer r;
-  int words;
+  pointer r; // {current node being fabricated for new list}
+  int words; // {number of words remaining to be copied}
 
   while (p != null)
   {
-    words = 1;
+    words = 1; // {this setting occurs in more branches than any other}
 
     if (is_char_node(p))
       r = get_avail();
@@ -39626,13 +39629,16 @@ void just_copy (pointer p, pointer h, pointer t)
       case vlist_node:
         {
           r = get_node(box_node_size);
+          // @<Copy the box {\sl Sync\TeX} information@>;
+          sync_tag(r + box_node_size) = sync_tag(p + box_node_size);
+          sync_line(r + box_node_size) = sync_line(p + box_node_size);
           mem[r + 7] = mem[p + 7];
           mem[r + 6] = mem[p + 6];
-          mem[r + 5] = mem[p + 5];
+          mem[r + 5] = mem[p + 5]; // {copy the last three words}
           add_glue_ref(space_ptr(r));
           add_glue_ref(xspace_ptr(r));
           words = 5;
-          list_ptr(r) = null;
+          list_ptr(r) = null; // {this affects |mem[r+5]|}
         }
         break;
 
@@ -39645,7 +39651,7 @@ void just_copy (pointer p, pointer h, pointer t)
 
       case ligature_node:
         {
-          r = get_avail();
+          r = get_avail(); // {only |font| and |character| are needed}
           mem[r] = mem[lig_char(p)];
           goto found;
         }
@@ -39654,15 +39660,18 @@ void just_copy (pointer p, pointer h, pointer t)
       case kern_node:
       case math_node:
         {
-          r = get_node(small_node_size);
-          words = small_node_size;
+          words = medium_node_size; // {{\sl Sync\TeX}: proper size for math and kern}
+          r = get_node(words);
         }
         break;
 
       case glue_node:
         {
-          r = get_node(small_node_size);
-          add_glue_ref(glue_ptr(p));
+          r = get_node(medium_node_size);
+          add_glue_ref(glue_ptr(p)); // {{\sl Sync\TeX}: proper size for glue}
+          // @<Copy the medium sized node {\sl Sync\TeX} information@>
+          sync_tag(r + medium_node_size) = sync_tag(p + medium_node_size);
+          sync_line(r + medium_node_size) = sync_line(p + medium_node_size);
           glue_ptr(r) = glue_ptr(p);
           leader_ptr(r) = null;
         }
@@ -39729,10 +39738,10 @@ not_found:
 
 void just_reverse (pointer p)
 {
-  pointer l;
-  pointer t;
-  pointer q;
-  halfword m, n;
+  pointer l; // {the new list}
+  pointer t; // {tail of reversed segment}
+  pointer q; // {the next node}
+  halfword m, n; // {count of unmatched math nodes}
 
   m = min_halfword;
   n = min_halfword;
@@ -39790,11 +39799,11 @@ done:
 
 void app_display (pointer j, pointer b, scaled d)
 {
-  scaled z;
-  scaled s;
-  scaled e;
-  integer x;
-  pointer p, q, r, t, u;
+  scaled z; // {width of the line}
+  scaled s; // {move the line right this much}
+  scaled e; // {distance from right edge of box to end of line}
+  integer x; // {|pre_display_direction|}
+  pointer p, q, r, t, u; // {for list manipulation}
 
   s = display_indent;
   x = pre_display_direction;
@@ -39825,9 +39834,10 @@ void app_display (pointer j, pointer b, scaled d)
     }
 
     if (box_lr(p) == dlist)
-      q = p;
+      q = p; // {display or equation number}
     else
     {
+      // {display and equation number}
       r = list_ptr(p);
       free_node(p, box_node_size);
 
@@ -39840,7 +39850,7 @@ void app_display (pointer j, pointer b, scaled d)
 
         do {
           q = r;
-          r = link(r);
+          r = link(r); // {find tail of list}
         } while (!(r == null));
       }
       else
@@ -39852,7 +39862,7 @@ void app_display (pointer j, pointer b, scaled d)
           t = link(r);
           link(r) = p;
           p = r;
-          r = t;
+          r = t; // {reverse list}
         } while (!(r == null));
       }
     }
@@ -39860,7 +39870,7 @@ void app_display (pointer j, pointer b, scaled d)
     if (j == null)
     {
       r = new_kern(0);
-      t = new_kern(0);
+      t = new_kern(0); // {the widths will be set later}
     }
     else
     {
@@ -39870,7 +39880,7 @@ void app_display (pointer j, pointer b, scaled d)
 
     u = new_math(0, end_M_code);
 
-    if (type(t) == glue_node)
+    if (type(t) == glue_node) // {|t| is \.{\\rightskip} glue}
     {
       cancel_glue(right_skip_code, q, u, t, e);
       link(u) = t;
@@ -39884,7 +39894,7 @@ void app_display (pointer j, pointer b, scaled d)
 
     u = new_math(0, begin_M_code);
 
-    if (type(r) == glue_node)
+    if (type(r) == glue_node) // {|r| is \.{\\leftskip} glue}
     {
       cancel_glue(left_skip_code, u, p, r, d);
       link(r) = u;
@@ -39897,7 +39907,7 @@ void app_display (pointer j, pointer b, scaled d)
 
       if (j == null)
       {
-        b = hpack(u, 0, 1);
+        b = hpack(u, natural);
         shift_amount(b) = s;
       }
       else
@@ -40105,11 +40115,11 @@ void get_x_or_protected (void)
 
 void group_warning (void)
 {
-  integer i;
-  boolean w;
+  integer i; // {index into |grp_stack|}
+  boolean w; // {do we need a warning?}
 
   base_ptr = input_ptr;
-  input_stack[base_ptr] = cur_input;
+  input_stack[base_ptr] = cur_input; // {store current state}
   i = in_open;
   w = false;
 
@@ -40146,11 +40156,11 @@ void group_warning (void)
 
 void if_warning (void)
 {
-  int i;
-  boolean w;
+  int i; // {index into |if_stack|}
+  boolean w; // {do we need a warning?}
 
   base_ptr = input_ptr;
-  input_stack[base_ptr] = cur_input;
+  input_stack[base_ptr] = cur_input; // {store current state}
   i = in_open;
   w = false;
 
@@ -40188,10 +40198,10 @@ void if_warning (void)
 
 void file_warning (void)
 {
-  pointer p;
-  quarterword l;
-  quarterword c;
-  integer i;
+  pointer p; // {saved value of |save_ptr| or |cond_ptr|}
+  quarterword l; // {saved value of |cur_level| or |if_limit|}
+  quarterword c; // {saved value of |cur_group| or |cur_if|}
+  integer i; // {saved value of |if_line|}
 
   p = save_ptr;
   l = cur_level;
@@ -40210,7 +40220,7 @@ void file_warning (void)
 
   save_ptr = p;
   cur_level = l;
-  cur_group = c;
+  cur_group = c; // {restore old values}
   p = cond_ptr;
   l = if_limit;
   c = cur_if;
@@ -40235,7 +40245,7 @@ void file_warning (void)
   cond_ptr = p;
   if_limit = l;
   cur_if = c;
-  if_line = i;
+  if_line = i; // {restore old values}
   print_ln();
 
   if (tracing_nesting > 1)
@@ -40704,21 +40714,21 @@ void scan_register_num (void)
 
 void new_index (quarterword i, pointer q)
 {
-  small_number k;
+  small_number k; // {loop index}
 
   cur_ptr = get_node(index_node_size);
   sa_index(cur_ptr) = i;
   sa_used(cur_ptr) = 0;
   link(cur_ptr) = q;
 
-  for (k = 1; k <= index_node_size - 1; k++)
+  for (k = 1; k <= index_node_size - 1; k++) // {clear all 16 pointers}
     mem[cur_ptr + k] = sa_null;
 }
-
+// {sets |cur_val| to sparse array element location or |null|}
 void find_sa_element (small_number t, halfword n, boolean w)
 {
-  pointer q;
-  small_number i;
+  pointer q; // {for list manipulations}
+  small_number i; // {a four bit index}
 
   cur_ptr = sa_root[t];
   if_cur_ptr_is_null_then_return_or_goto(not_found);
@@ -40804,12 +40814,12 @@ not_found4:
   link(cur_ptr) = q;
   add_sa_ptr();
 }
-
+// {reduce reference count}
 void delete_sa_ref (pointer q)
 {
-  pointer p;
-  small_number i;
-  small_number s;
+  pointer p; // {for list manipulations}
+  small_number i; // {a four bit index}
+  small_number s; // {size of a node}
 
   decr(sa_ref(q));
 
@@ -40844,20 +40854,21 @@ void delete_sa_ref (pointer q)
     q = link(p);
     free_node(p, s);
 
-    if (q == null)
+    if (q == null) // {the whole tree has been freed}
     {
       sa_root[i] = null;
       return;
     }
 
-    delete_sa_ptr(); s = index_node_size;
+    delete_sa_ptr();
+    s = index_node_size; // {node |q| is an index node}
   } while (!(sa_used(q) > 0));
 }
 
 #ifdef STAT
 void show_sa (pointer p, const char * s)
 {
-  small_number t;
+  small_number t; // {the type of element}
 
   begin_diagnostic();
   print_char('{');
@@ -40865,7 +40876,7 @@ void show_sa (pointer p, const char * s)
   print_char(' ');
 
   if (p == null)
-    print_char('?');
+    print_char('?'); // {this can't happen}
   else
   {
     t = sa_type(p);
@@ -40880,7 +40891,7 @@ void show_sa (pointer p, const char * s)
     else if (t == tok_val)
       print_cmd_chr(toks_register, p);
     else
-      print_char('?');
+      print_char('?'); // {this can't happen either}
 
     print_char('=');
 
@@ -40916,7 +40927,7 @@ void show_sa (pointer p, const char * s)
           show_token_list(link(p), null, 32);
       }
       else
-        print_char('?');
+        print_char('?'); // {this can't happen either}
     }
   }
 
@@ -40927,9 +40938,9 @@ void show_sa (pointer p, const char * s)
 
 boolean do_marks (small_number a, small_number l, pointer q)
 {
-  small_number i;
+  small_number i; // {a four bit index}
 
-  if (l < 4)
+  if (l < 4) // {|q| is an index node}
   {
     for (i = 0; i <= 15; ++i)
     {
@@ -40946,7 +40957,7 @@ boolean do_marks (small_number a, small_number l, pointer q)
       q = null;
     }
   }
-  else
+  else // {|q| is the node for a mark class}
   {
     switch (a)
     {
@@ -41015,11 +41026,11 @@ boolean do_marks (small_number a, small_number l, pointer q)
 
   return (q == null);
 }
-
+// {saves value of |p|}
 void sa_save (pointer p)
 {
-  pointer q;
-  quarterword i;
+  pointer q; // {the new save node}
+  quarterword i; // {index field of node}
 
   if (cur_level != sa_level)
   {
@@ -41062,7 +41073,7 @@ void sa_save (pointer p)
   sa_chain = q;
   add_sa_ref(p);
 }
-
+// {destroy value of |p|}
 void sa_destroy (pointer p)
 {
   if (sa_index(p) < mu_val_limit)
@@ -41075,7 +41086,7 @@ void sa_destroy (pointer p)
       delete_token_ref(sa_ptr(p));
   }
 }
-
+// {new data for sparse array elements}
 void sa_def (pointer p, halfword e)
 {
   add_sa_ref(p);
@@ -41145,7 +41156,7 @@ void sa_w_def (pointer p, integer w)
 
   delete_sa_ref(p);
 }
-
+// {global |sa_def|}
 void gsa_def (pointer p, halfword e)
 {
   add_sa_ref(p);
@@ -41166,7 +41177,7 @@ void gsa_def (pointer p, halfword e)
 
   delete_sa_ref(p);
 }
-
+// {global |sa_w_def|}
 void gsa_w_def (pointer p, integer w)
 {
   add_sa_ref(p);
@@ -41189,7 +41200,7 @@ void gsa_w_def (pointer p, integer w)
 
 void sa_restore (void)
 {
-  pointer p;
+  pointer p; // {sparse array element}
 
   do {
     p = sa_loc(sa_chain);
