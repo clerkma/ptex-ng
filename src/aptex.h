@@ -371,7 +371,7 @@ EXTERN boolean use_err_help;                  // {should the |err_help| list be 
 EXTERN integer interrupt;                     // {should \TeX\ pause for instructions?}
 EXTERN boolean OK_to_interrupt;               // {should interrupts be observed?}
 
-EXTERN bool arith_error;                     // {has arithmetic overflow occurred recently?}
+EXTERN bool arith_error;                      // {has arithmetic overflow occurred recently?}
 EXTERN scaled ng_remainder;                   // {amount subtracted to get an exact division}
 
 EXTERN integer randoms[55];                   // {the last 55 random values generated}
@@ -498,7 +498,7 @@ EXTERN alpha_file read_file[16];              // {used for \.{\\read}}
 EXTERN char read_open[17];                    // {state of |read_file[n]|}
 
 EXTERN pointer cond_ptr;                      // {top of the condition stack}
-EXTERN enum if_code if_limit;                          // {upper bound on |fi_or_else| codes}
+EXTERN enum if_code if_limit;                 // {upper bound on |fi_or_else| codes}
 EXTERN small_number cur_if;                   // {type of conditional being worked on}
 EXTERN integer if_line;                       // {line where that conditional began}
 
@@ -566,7 +566,7 @@ EXTERN integer pdf_font_stretch[font_max + 1];            // {limit of stretchin
 EXTERN integer pdf_font_shrink[font_max + 1];             // {limit of shrinking}
 EXTERN integer pdf_font_step[font_max + 1];               // {amount of one step of expansion}
 EXTERN integer pdf_font_expand_ratio[font_max + 1];       // {expansion ratio of a particular font}
-EXTERN bool pdf_font_auto_expand[font_max + 1];        // {this font is auto-expanded?}
+EXTERN bool pdf_font_auto_expand[font_max + 1];           // {this font is auto-expanded?}
 // HZ charinfo
 typedef struct fontinfo {
   integer ef[256]; /* font expansion factor */

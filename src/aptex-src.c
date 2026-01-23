@@ -13583,6 +13583,8 @@ static void check_outer_validity (void)
             info(p) = right_brace_token + '}';
           }
           break;
+
+        default: unreachable();// {there are no other cases}
       }
 
       ins_list(p);
@@ -15586,6 +15588,7 @@ restart:
                 // {else: already nullfont}
               }
               break;
+            default: unreachable(); // {there are no other cases}
           }
         else if ((mode == vmode) && (tx == head))
           switch (cur_chr)
@@ -15610,6 +15613,7 @@ restart:
             case last_node_subtype_code:
               cur_val = last_node_subtype;
               break;
+            default: unreachable(); // {there are no other cases}
           }
       }
       break;
@@ -30592,8 +30596,7 @@ static pointer vert_break (pointer p, scaled h, scaled d)
   integer least_cost; // {the smallest badness plus penalties found so far}
   pointer best_place; // {the most recent break that leads to |least_cost|}
   scaled prev_dp;   // {depth of previous box in the list}
-  /* small_number t; */
-  int t;  // {|type| of the node following a kern}
+  small_number t;  // {|type| of the node following a kern}
 
   prev_p = p;
   least_cost = awful_bad;
@@ -30685,7 +30688,7 @@ static pointer vert_break (pointer p, scaled h, scaled d)
       }
 
       if ((b == awful_bad) || (pi <= eject_penalty))
-        goto done;
+        return best_place;
     }
 
     if ((type(p) < glue_node) || (type(p) > kern_node))
@@ -30735,7 +30738,6 @@ not_found:
     p = link(prev_p);
   }
 
-done:
   return best_place;
 }
 
