@@ -36728,16 +36728,16 @@ void main_control (void)
   pointer gp, gq; // {temporary registers for list manipulation}
   scaled disp;    // {displacement register}
   boolean ins_kp; // {whether insert kinsoku penalty}
-
   boolean bSuppress;
 
-  if (every_job != 0)
+  if (every_job != null)
     begin_token_list(every_job, every_job_text);
 
 big_switch:
   get_x_token();
 
 reswitch:
+  // @<Give diagnostic information, if requested@>
   if (interrupt != 0)
     if (OK_to_interrupt)
     {
@@ -36874,9 +36874,9 @@ reswitch:
 
     case vmode + stop:
       if (its_all_over())
-        return;
+        return; // {this is the only way out}
       break;
-
+    // @<Forbidden cases detected in |main_control|@>
     case vmode + vmove:
     case hmode + hmove:
     case mmode + hmove:
@@ -36887,7 +36887,7 @@ reswitch:
     case any_mode(mac_param):
       report_illegal_case();
       break;
-
+    // @<Math-only cases in non-math modes, or vice versa@>
     case non_math(sup_mark):
     case non_math(sub_mark):
     case non_math(math_char_num):
@@ -36918,7 +36918,7 @@ reswitch:
       if (suppress_mathpar_error == 0)
         insert_dollar_sign();
       break;
-
+    // @<Cases of |main_control| that build boxes and lists@>
     case vmode + hrule:
     case hmode + vrule:
     case mmode + vrule:
@@ -37081,7 +37081,8 @@ reswitch:
       {
         if (align_state < 0)
           off_save();
-
+        // {this tries to
+        //  recover from an alignment that didn't end properly}
         end_graf(); // {this takes us to the enclosing mode, if |mode>0|}
 
         if (mode == vmode)
@@ -37156,6 +37157,7 @@ reswitch:
       break;
 
     case hmode + valign:
+      // @<Cases of |main_control| for |hmode+valign|@>
       if (cur_chr > 0)
       {
         if (eTeX_enabled(TeXXeT_en, cur_cmd, cur_chr))
@@ -37353,7 +37355,7 @@ reswitch:
       else
         off_save();
       break;
-
+    // @<Cases of |main_control| that don't depend on |mode|@>
     case any_mode(assign_kinsoku):
     case any_mode(assign_inhibit_xsp_code):
     case any_mode(set_auto_spacing):
@@ -37438,10 +37440,11 @@ reswitch:
     case any_mode(inhibit_glue):
       inhibit_glue_flag = (cur_chr == 0);
       break;
-
+    // @<Cases of |main_control| that are for extensions to \TeX@>
     case any_mode(extension):
       do_extension();
       break;
+    // {of the big |case| statement}
   }
 
   goto big_switch;
@@ -37836,7 +37839,7 @@ void give_err_help (void)
 
 boolean open_fmt_file (void)
 {
-  uint32_t j;
+  uint32_t j; // {the first space after the format file name}
 
   j = loc;
 
