@@ -36711,16 +36711,16 @@ void main_control (void)
   pointer gp, gq; // {temporary registers for list manipulation}
   scaled disp;    // {displacement register}
   boolean ins_kp; // {whether insert kinsoku penalty}
-
   bool bSuppress;
 
-  if (every_job != 0)
+  if (every_job != null)
     begin_token_list(every_job, every_job_text);
 
 big_switch:
   get_x_token();
 
 reswitch:
+  // @<Give diagnostic information, if requested@>
   if (interrupt != 0)
     if (OK_to_interrupt)
     {
@@ -36857,9 +36857,9 @@ reswitch:
 
     case vmode + stop:
       if (its_all_over())
-        return;
+        return; // {this is the only way out}
       break;
-
+    // @<Forbidden cases detected in |main_control|@>
     case vmode + vmove:
     case hmode + hmove:
     case mmode + hmove:
@@ -36870,7 +36870,7 @@ reswitch:
     case any_mode(mac_param):
       report_illegal_case();
       break;
-
+    // @<Math-only cases in non-math modes, or vice versa@>
     case non_math(sup_mark):
     case non_math(sub_mark):
     case non_math(math_char_num):
@@ -36901,7 +36901,7 @@ reswitch:
       if (suppress_mathpar_error == 0)
         insert_dollar_sign();
       break;
-
+    // @<Cases of |main_control| that build boxes and lists@>
     case vmode + hrule:
     case hmode + vrule:
     case mmode + vrule:
@@ -37064,7 +37064,8 @@ reswitch:
       {
         if (align_state < 0)
           off_save();
-
+        // {this tries to
+        //  recover from an alignment that didn't end properly}
         end_graf(); // {this takes us to the enclosing mode, if |mode>0|}
 
         if (mode == vmode)
@@ -37139,6 +37140,7 @@ reswitch:
       break;
 
     case hmode + valign:
+      // @<Cases of |main_control| for |hmode+valign|@>
       if (cur_chr > 0)
       {
         if (eTeX_enabled(TeXXeT_en, cur_cmd, cur_chr))
@@ -37336,7 +37338,7 @@ reswitch:
       else
         off_save();
       break;
-
+    // @<Cases of |main_control| that don't depend on |mode|@>
     case any_mode(assign_kinsoku):
     case any_mode(assign_inhibit_xsp_code):
     case any_mode(set_auto_spacing):
@@ -37421,11 +37423,12 @@ reswitch:
     case any_mode(inhibit_glue):
       inhibit_glue_flag = (cur_chr == 0);
       break;
-
+    // @<Cases of |main_control| that are for extensions to \TeX@>
     case any_mode(extension):
       do_extension();
       break;
     default: unreachable();// {there are no other cases}
+    // {of the big |case| statement}
   }
 
   goto big_switch;
@@ -37820,7 +37823,7 @@ void give_err_help (void)
 
 boolean open_fmt_file (void)
 {
-  uint32_t j;
+  uint32_t j; // {the first space after the format file name}
 
   j = loc;
 
@@ -38378,7 +38381,8 @@ eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f)
   sp = 1; // { start position }
   ep = font_num_ext[f] - 1; // { end position }
 
-  if ((ep >= 1)) if (font_enc[f] == 0)
+  if ((ep >= 1)) // { nt is larger than 1; |char_type| is non-empty }
+  if (font_enc[f] == 0) // { |kchar_code| are ordered; faster search }
   {
     if ((kchar_code(f, sp) <= jc) && (jc <= kchar_code(f, ep)))
     {
@@ -38399,6 +38403,7 @@ eight_bits get_jfm_pos (KANJI_code kcode, internal_font_number f)
   }
   else
   {
+    // { TFM-DVI encoding conversion; whole search }
     while (sp <= ep)
     {
       if (jc == kchar_code(f, sp))
@@ -38614,7 +38619,7 @@ bool check_box (pointer box_p)
           flag = true;
         }
         else
-          do_nothing();
+          do_nothing(); // {\.{\\beginR} etc.}
         break;
 
       case kern_node:
@@ -38762,10 +38767,12 @@ void adjust_hlist (pointer p, bool pf)
             insert_skip = no_skip;
           else if (subtype(p) == acc_kern)
           {
+            // { When we insert \.{\\xkanjiskip}, we first ignore accent (and kerns) and
+            //   insert \.{\\xkanjiskip}, then we recover the accent. }
             if (q == p)
             {
               t = link(p);
-
+              // { if p is beginning on the list, we have only to ignore nodes. }
               if (is_char_node(t))
                 if (font_dir[font(t)] != dir_default)
                   t = link(t);
@@ -38820,6 +38827,7 @@ void adjust_hlist (pointer p, bool pf)
         case adjust_node:
         case ins_node:
         case whatsit_node:
+          // {These nodes are vanished when typeset is done}
           do_nothing();
           break;
 
@@ -38849,7 +38857,7 @@ void adjust_hlist (pointer p, bool pf)
 
 void set_math_kchar (integer c)
 {
-  pointer p;
+  pointer p; // {the new noad}
 
   p = new_noad();
   math_type(nucleus(p)) = math_jchar;
@@ -38892,6 +38900,7 @@ void change_page_direction (halfword d)
             goto done;
           }
           break;
+        // { |glue_node|, |kern_node|, |penalty_node| are discarded }
         default:
           p = link(p);
           break;
@@ -39022,6 +39031,7 @@ static void print_group (boolean e)
       }
       break;
     default: unreachable();
+    // {there are no other cases}
   }
 
   prints(" group (level ");
@@ -39058,18 +39068,18 @@ void group_trace (bool e)
 
 void show_save_groups (void)
 {
-  integer p;
-  int m;
-  integer v;
-  quarterword l;
-  group_code c;
-  int a;
+  integer p; // {index into |nest|}
+  int m; // {mode}
+  pointer v; // {saved value of |save_ptr|}
+  quarterword l; // {saved value of |cur_level|}
+  group_code c; // {saved value of |cur_group|}
+  int a; // {to keep track of alignments}
   integer i;
   quarterword j;
   const char * s;
 
   p = nest_ptr;
-  nest[p] = cur_list;
+  nest[p] = cur_list; // {put the top level into the array}
   v = save_ptr;
   l = cur_level;
   c = cur_group;
@@ -39203,6 +39213,7 @@ void show_save_groups (void)
           s = "vcenter";
           goto found1;
         }
+        break;
 
       case semi_simple_group:
         {
@@ -39238,7 +39249,8 @@ void show_save_groups (void)
         }
         break;
       case bottom_level: break;
-      default: unreachable();// {there are no other cases}
+      default: unreachable();
+      // {there are no other cases}
     }
   }
 
@@ -39310,12 +39322,12 @@ done:
 
 void scan_general_text (void)
 {
-  int s;
-  pointer w;
-  pointer d;
-  pointer p;
-  pointer q;
-  halfword unbalance;
+  int s; // {to save |scanner_status|}
+  pointer w; // {to save |warning_index|}
+  pointer d; // {to save |def_ref|}
+  pointer p; // {tail of the token list being built}
+  pointer q; // {new node being added to the token list via |store_new_token|}
+  halfword unbalance; // {number of unmatched left braces}
 
   s = scanner_status;
   w = warning_index;
@@ -39325,7 +39337,7 @@ void scan_general_text (void)
   def_ref = get_avail();
   token_ref_count(def_ref) = null;
   p = def_ref;
-  scan_left_brace();
+  scan_left_brace(); // {remove the compulsory left brace}
   unbalance = 1;
 
   while (true)
@@ -39349,7 +39361,7 @@ void scan_general_text (void)
   }
 
   q = link(def_ref);
-  free_avail(def_ref);
+  free_avail(def_ref); // {discard reference count}
 
   if (q == null)
     cur_val = temp_head;
@@ -39362,31 +39374,31 @@ void scan_general_text (void)
   def_ref = d;
 }
 
-// create an edge nod
+// {create an edge node}
 pointer new_edge (small_number s, scaled w)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(edge_node_size);
   type(p) = edge_node;
   subtype(p) = s;
   width(p) = w;
   edge_dist(p) = 0;
-
+// {the |edge_dist| field will be set later}
   return p;
 }
 
 pointer reverse (pointer this_box, pointer t, scaled cur_g, real cur_glue)
 {
-  pointer l, la;
-  scaled disp, disp2;
+  pointer l, la; // {the new list}
+  scaled disp, disp2; // { displacement }
   boolean disped;
-  pointer p;
-  pointer q;
-  glue_ord g_order;
-  int g_sign;
-  real glue_temp;
-  halfword m, n;
+  pointer p; // {the current node}
+  pointer q; // {the next node}
+  glue_ord g_order; // {applicable order of infinity for glue}
+  int g_sign; // {selects type of glue}
+  real glue_temp; // {glue value before rounding}
+  halfword m, n; // {count of unmatched math nodes}
 
   g_order = glue_order(this_box);
   g_sign = glue_sign(this_box);
@@ -39476,7 +39488,7 @@ reswitch:
                 if (n > min_halfword)
                 {
                   decr(n);
-                  decr(subtype(p));
+                  decr(subtype(p)); // {change |after| into |before|}
                 }
                 else
                 {
@@ -39486,7 +39498,7 @@ reswitch:
                     decr(m);
                   else
                   {
-                    free_node(p, small_node_size);
+                    free_node(p, medium_node_size); // {{\sl Sync\TeX}: p is a |kern_node|}
                     link(t) = q;
                     width(t) = rule_wd;
                     edge_dist(t) = -cur_h - rule_wd;
@@ -39502,7 +39514,7 @@ reswitch:
               if ((n > min_halfword) || (LR_dir(p) != cur_dir))
               {
                 incr(n);
-                incr(subtype(p));
+                incr(subtype(p)); // {change |before| into |after|}
               }
               else
               {
@@ -39541,7 +39553,7 @@ next_p:
       if (type(p) == kern_node)
         if ((rule_wd == 0) || (l == null))
         {
-          free_node(p, small_node_size);
+          free_node(p, medium_node_size);
           p = l;
         }
 
@@ -39554,9 +39566,12 @@ next_p:
 
     p = new_math(0, info(LR_ptr));
     LR_problems = LR_problems + 10000;
+    // {manufacture one missing math node}
   }
 
 done:
+// {if the beginning node of the new list isn't |disp_node|,
+//  we insert |disp_node| to fix.}
   if ((l != null) && (type(l) != disp_node))
   {
     p = get_node(small_node_size);
@@ -39569,15 +39584,15 @@ done:
     return l;
 }
 
-// create a segment node
+// {create a segment node}
 pointer new_segment (small_number s, pointer f)
 {
-  pointer p;
+  pointer p; // {the new node}
 
   p = get_node(segment_node_size);
   type(p) = segment_node;
   subtype(p) = s;
-  width(p) = 0;
+  width(p) = 0; // {the |width| field will be set later}
   segment_first(p) = f;
   segment_last(p) = f;
 
