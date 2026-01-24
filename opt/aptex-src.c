@@ -36724,7 +36724,6 @@ static void handle_right_brace (void)
       break; */
   }
 }
-
 // governs \TeX's activities
 void main_control (void)
 {
