@@ -37450,17 +37450,23 @@ reswitch:
   goto big_switch;
 
 main_loop_j:
+// @<Append KANJI-character |cur_chr|
+//   to the current hlist in the current font; |goto reswitch| when
+//   a non-character has been fetched@>
   append_kanji_to_hlist();
 
 main_loop:
   inhibit_glue_flag = false;
+// @<Append character |cur_chr| and the following characters (if~any)
+//   to the current hlist in the current font; |goto reswitch| when
+//   a non-character has been fetched@>
   adjust_space_factor();
 
   if (direction == dir_tate)
     disp = t_baseline_shift;
   else
     disp = y_baseline_shift;
-
+// @<Append |disp_node| at begin of displace area@>
   append_disp_node_at_begin();
   main_f = cur_font;
   bchar = font_bchar[main_f];
@@ -37487,18 +37493,24 @@ main_loop:
     main_k = bchar_label[main_f];
 
   if (main_k == non_address)
-    goto main_loop_move_2;
+    goto main_loop_move_2; // {no left boundary processing}
 
   cur_r = cur_l;
   cur_l = non_char;
-  goto main_lig_loop_1;
+  goto main_lig_loop_1; // {begin with cursor after left boundary}
 
 main_loop_wrapup:
+// @<Make a ligature node, if |ligature_present|;
+//   insert a null discretionary, if appropriate@>
   wrapup(rt_hit);
 
 main_loop_move:
-  if (lig_stack == 0)
+// @<If the cursor is immediately followed by the right boundary,
+//   |goto reswitch|; if it's followed by an invalid character, |goto big_switch|;
+//   otherwise move the cursor one step to the right and |goto main_lig_loop|@>
+  if (lig_stack == null)
   {
+    // @<Append |disp_node| at end of displace area@>
     append_disp_node_at_end();
     goto reswitch;
   }
@@ -37528,10 +37540,12 @@ main_loop_move_2:
   }
 
   link(tail) = lig_stack;
-  tail = lig_stack;
+  tail = lig_stack; // {|main_loop_lookahead| is next}
 
 main_loop_lookahead:
-  get_next();
+// @<Look ahead for another character, or leave |lig_stack|
+//   empty if there's none there@>
+  get_next(); // {set only |cur_cmd| and |cur_chr|, for speed}
 
   if (cur_cmd == letter)
     goto main_loop_lookahead_1;
@@ -37561,7 +37575,7 @@ main_loop_lookahead:
     goto_main_lig_loop();
   }
 
-  x_token();
+  x_token(); // {now expand and set |cur_cmd|, |cur_chr|, |cur_tok|}
 
   if (cur_cmd == letter)
     goto main_loop_lookahead_1;
@@ -37623,7 +37637,7 @@ main_loop_lookahead:
     bchar = non_char;
 
   cur_r = bchar;
-  lig_stack = 0;
+  lig_stack = null;
   goto main_lig_loop;
 
 main_loop_lookahead_1:
@@ -37635,9 +37649,11 @@ main_loop_lookahead_1:
   character(lig_stack) = cur_r;
 
   if (cur_r == false_bchar)
-    cur_r = non_char;
+    cur_r = non_char; // {this prevents spurious ligatures}
 
 main_lig_loop:
+// @<If there's a ligature/kern command relevant to |cur_l| and
+//   |cur_r|, adjust the text appropriately; exit to |main_loop_wrapup|@>
   if (char_tag(main_i) != lig_tag)
     goto main_loop_wrapup;
 
@@ -37676,17 +37692,17 @@ main_lig_loop_2:
 
       if (cur_l == non_char)
         lft_hit = true;
-      else if (lig_stack == 0)
+      else if (lig_stack == null)
         rt_hit = true;
 
-      check_interrupt();
+      check_interrupt(); // {allow a way out in case there's an infinite ligature loop}
 
       switch (op_byte(main_j))
       {
         case 1:
         case 5:
           {
-            cur_l = rem_byte(main_j);
+            cur_l = rem_byte(main_j); // {\.{=:\?}, \.{=:\?>}}
             main_i = char_info(main_f, cur_l);
             ligature_present = true;
           }
@@ -37695,14 +37711,14 @@ main_lig_loop_2:
         case 2:
         case 6:
           {
-            cur_r = rem_byte(main_j);
+            cur_r = rem_byte(main_j); // {\.{\?=:}, \.{\?=:>}}
 
-            if (lig_stack == 0)
+            if (lig_stack == null) // {right boundary character is being consumed}
             {
               lig_stack = new_lig_item(cur_r);
               bchar = non_char;
             }
-            else if (is_char_node(lig_stack))
+            else if (is_char_node(lig_stack)) // {|link(lig_stack)=null|}
             {
               main_p = lig_stack;
               lig_stack = new_lig_item(cur_r);
@@ -37715,7 +37731,7 @@ main_lig_loop_2:
 
         case 3:
           {
-            cur_r = rem_byte(main_j);
+            cur_r = rem_byte(main_j); // {\.{\?=:\?}}
             main_p = lig_stack;
             lig_stack = new_lig_item(cur_r);
             link(lig_stack) = main_p;
@@ -37725,7 +37741,7 @@ main_lig_loop_2:
         case 7:
         case 11:
           {
-            wrapup(false);
+            wrapup(false); // {\.{\?=:\?>}, \.{\?=:\?>>}}
             cur_q = tail;
             cur_l = rem_byte(main_j);
             main_i = char_info(main_f, cur_l);
@@ -37736,9 +37752,9 @@ main_lig_loop_2:
         default:
           {
             cur_l = rem_byte(main_j);
-            ligature_present = true;
+            ligature_present = true; // {\.{=:}}
 
-            if (lig_stack == 0)
+            if (lig_stack == null)
               goto main_loop_wrapup;
             else
               goto main_loop_move_1;
@@ -37772,20 +37788,22 @@ main_lig_loop_2:
   goto main_lig_loop_1;
 
 main_loop_move_lig:
+// @<Move the cursor past a pseudo-ligature, then
+//   |goto main_loop_lookahead| or |main_lig_loop|@>
   main_p = lig_ptr(lig_stack);
 
-  if (main_p != 0)
-    tail_append(main_p);
+  if (main_p != null)
+    tail_append(main_p); // {append a single character}
 
   temp_ptr = lig_stack;
   lig_stack = link(temp_ptr);
-  free_node(temp_ptr, small_node_size);
+  free_node(temp_ptr, small_node_size); // {{\sl Sync\TeX} watch point: proper size!}
   main_i = char_info(main_f, cur_l);
   ligature_present = true;
 
-  if (lig_stack == 0)
+  if (lig_stack == null)
   {
-    if (main_p != 0)
+    if (main_p != null)
       goto main_loop_lookahead;
     else
       cur_r = bchar;
@@ -37796,18 +37814,22 @@ main_loop_move_lig:
   goto main_lig_loop;
 
 append_normal_space:
+// @<Append a normal inter-word space to the current list,
+//   then |goto big_switch|@>
   if (space_skip == zero_glue)
   {
+// @<Find the glue specification, |main_p|, for
+//   text spaces in the current font@>
     {
       main_p = font_glue[cur_font];
 
-      if (main_p == 0)
+      if (main_p == null)
       {
         main_p = new_spec(zero_glue);
         main_k = param_base[cur_font] + space_code;
-        width(main_p) = font_info[main_k].cint;
-        stretch(main_p) = font_info[main_k + 1].cint;
-        shrink(main_p) = font_info[main_k + 2].cint;
+        width(main_p) = font_info[main_k].sc; // {that's |space(cur_font)|}
+        stretch(main_p) = font_info[main_k + 1].sc; // {and |space_stretch(cur_font)|}
+        shrink(main_p) = font_info[main_k + 2].sc; // {and |space_shrink(cur_font)|}
         font_glue[cur_font] = main_p;
       }
     }
