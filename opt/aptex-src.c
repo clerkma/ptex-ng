@@ -35727,7 +35727,7 @@ void new_font (small_number a)
   if (job_name == 0)
     open_log_file();  // {avoid confusing \.{texput} with the font name}
 
-  // Scan the font encoding specification
+  // @<Scan the font encoding specification@>
   {
     jfm_enc = 0;
     if (scan_keyword_noexpand("in"))
@@ -35744,6 +35744,7 @@ void new_font (small_number a)
       }
     }
   }
+
   get_r_token();
   u = cur_cs;
 
@@ -35807,29 +35808,24 @@ void new_font (small_number a)
     s = -1000;
 
   name_in_progress = false;
-  /*
-    @<If this font has already been loaded, set |f| to the internal
-    font number and |goto common_ending|@>
-  */
-  flushable_string = str_ptr - 1;
-
+  // @<If this font has already been loaded, set |f| to the internal
+  //   font number and |goto common_ending|@>
   for (f = font_base + 1; f < font_ptr; f++)
   {
     if (str_eq_str(font_name[f], cur_name) && str_eq_str(font_area[f], cur_area))
     {
-      if (cur_name == flushable_string)
-      {
-        flush_string();
-        cur_name = font_name[f];
-      }
-
       if (s > 0)
       {
         if (s == font_size[f])
           goto common_ending;
       }
-      else if (font_size[f] == xn_over_d(font_dsize[f], -s, 1000))
-        goto common_ending;
+      else
+      {
+        arith_error = false;
+        if (font_size[f] == xn_over_d(font_dsize[f], -s, 1000))
+          if (!arith_error)
+            goto common_ending;
+      }
     }
   }
 
