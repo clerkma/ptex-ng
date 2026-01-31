@@ -15,10 +15,16 @@ goto start_build
 set MAKE=jom
 
 :start_build
+where /q git
+if %ERRORLEVEL% == 0 (
+    for /f "usebackq" %%i in (`git rev-parse HEAD`) do (
+        set APTEX_COMMIT_ID=%%i
+    )
+)
 set BUILD=build
 set TL_ROOT=..\texlive
 set APTEX_ROOT=..\src
-set APTEX_CFLAGS=-nologo -c -O2 -Oy
+set APTEX_CFLAGS=-nologo -c -O2 -Oy -DAPTEX_COMMIT_ID=\"git-%APTEX_COMMIT_ID%\"
 set CLEAN=if exist *.obj (del *.obj)
 
 @ECHO OFF
