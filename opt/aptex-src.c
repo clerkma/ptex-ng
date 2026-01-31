@@ -298,10 +298,11 @@ static void aptex_memory_probe (void)
 
 static size_t roundup (size_t n)
 {
-  if ((n % sizeof(void *)) == 0)
+  size_t u = sizeof(void *);
+  if ((n % u) == 0)
     return n;
   else
-    return ((n / sizeof(void *)) + 1) * sizeof(void *);
+    return ((n / u) + 1) * u;
 }
 
 static boolean prime (int x)
