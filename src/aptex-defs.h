@@ -48,7 +48,7 @@
 // #define abs(x)      ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
 #define abs(x)      labs((integer)x)
 #define chr(x)      (x)
-#define odd(x)      ((x) % 2)
+#define odd(x)      ((x) & 1u)
 #define round(x)    aptex_utils_round((real) (x))
 #define decr(x)     --(x)
 #define incr(x)     ++(x)

@@ -35978,7 +35978,7 @@ static void show_whatever (void)
 {
   pointer p;  // {tail of a token list to show}
   small_number t; // {type of conditional being shown}
-  int m;  // {upper bound on |fi_or_else| codes}
+  enum if_code m; // {upper bound on |fi_or_else| codes}
   integer l;  // {line where that conditional began}
   integer n;  // {level of \.{\\if...\\fi} nesting}
 
