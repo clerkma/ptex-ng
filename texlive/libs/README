@@ -1,4 +1,4 @@
-$Id: README 77485 2026-01-25 21:01:01Z karl $
+$Id: README 77549 2026-01-31 02:11:26Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -68,7 +68,7 @@ pplib 2.05.0 - checked 21apr20
 teckit 2.5.13 - checked 31dec25
   https://github.com/silnrsi/teckit/archive/refs/tags/v2.5.13.tar.gz
 
-xpdf 4.04 - checked 24apr22
+xpdf 4.06 - checked 31jan26
   https://www.xpdfreader.com/download.html
   with modifications for pdftex
 

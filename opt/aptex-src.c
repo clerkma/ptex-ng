@@ -150,6 +150,9 @@ static void print_aptex_version (void)
   printf("Compiled with mruby version %s\n", MRUBY_VERSION);
 #endif
   printf("Compiled with libdpx (build-in dvipdfmx)\n");
+#if defined (APTEX_COMMIT_ID)
+  printf("Source: %s\n", APTEX_COMMIT_ID);
+#endif
   aptex_utils_exit(EXIT_SUCCESS);
 }
 
@@ -295,10 +298,11 @@ static void aptex_memory_probe (void)
 
 static size_t roundup (size_t n)
 {
-  if ((n % sizeof(void *)) == 0)
+  size_t u = sizeof(void *);
+  if ((n % u) == 0)
     return n;
   else
-    return ((n / sizeof(void *)) + 1) * sizeof(void *);
+    return ((n / u) + 1) * u;
 }
 
 static boolean prime (int x)

@@ -1,4 +1,4 @@
-## $Id: libmplib.am 72836 2024-11-12 22:39:49Z karl $
+## $Id: libmplib.am 77550 2026-01-31 17:13:58Z lscarso $
 ## texk/web2c/mplibdir/am/libmplib.am: Makefile fragment for libmplib.
 ##
 ## Copyright 2015-2022 Luigi Scarso <tex-live@tug.org>
@@ -23,7 +23,7 @@ nodist_libmplibbackends_a_SOURCES = $(pngout_c_h)  $(svgout_c_h)
 
 
 
-mp_c_h =  mp.c mplib.h mpmp.h
+mp_c_h =  mp.c mplib.h mpmp.h mpconfig.h
 mpmath_c_h = mpmath.h mpmath.c
 mpmathbinary_c_h = mpmathbinary.h mpmathbinary.c
 mpmathdecimal_c_h = mpmathdecimal.h mpmathdecimal.c
