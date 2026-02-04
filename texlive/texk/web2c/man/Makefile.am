@@ -1,4 +1,4 @@
-## $Id: Makefile.am 77415 2026-01-19 22:56:24Z karl $
+## $Id: Makefile.am 77582 2026-02-03 16:42:45Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/web2c/man/
 ##
 ## Copyright 2015-2025 Karl Berry <tex-live@tug.org>
@@ -121,11 +121,16 @@ testman:
 	groff $(testopts) $(srcdir)/$m.man >"$$pdf" \
 	|| { rm -f "$$pdf"; exit 1; }; # ls -l `pwd`/"$$pdf"
 
-# remake pdfs for all *.man files.
+# remake pdfs for all *.man files, and make one combined pdf.
+# (Comments about these options in ps2pdf-tub.)
+allpdf = tlmanall.pdf
+gs = gs
+pdfconcat = $(gs) -q -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -r1200 \
+            -sOutputFile="$(allpdf)" -dAutoRotatePages=/None -dPrinted=false
 testmans:
 	for m in $(srcdir)/*.man; do echo $$m; \
 	  $(MAKE) -s m=`basename $$m .man` testman || exit 1; done
-
+	-rm -f $(allpdf); $(pdfconcat) *.pdf
 spell:
 	EXTRADICT=`realpath $(srcdir)/spell.add` myspell $(srcdir)/*.man
 
