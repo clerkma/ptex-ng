@@ -1,10 +1,10 @@
-$Id: README 76670 2025-10-28 02:05:09Z kakuto $
+$Id: README 77577 2026-02-02 21:19:20Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Extra utilities we (optionally) compile for TeX Live.
 See comments in ../texk/README.
 
-asymptote 3.04 - checked 26may25
+asymptote 3.06 - checked 2feb26
   update TL from CTAN, to include prebuilt doc, Windows binaries, etc.
   See https://tug.org/texlive/build.html#asymptote
   and tlpkg/bin/tl-update-asy
