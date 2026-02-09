@@ -1,10 +1,12 @@
-## $Id: Makefile.am 77435 2026-01-21 17:39:52Z karl $
+## $Id: Makefile.am 77690 2026-02-09 07:31:53Z stolusis $
 ### Makefile.am for the TeX Live subdirectory texk/xdvipsk/
 ##
 ## Copyright 2015-2026 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##
+SUBDIRS = squeeze man
+
 GRAPHLIB_INCLUDES = -I$(srcdir)/graphlib
 OTFLIB_INCLUDES = -I$(srcdir)/otflib
 
@@ -288,6 +290,32 @@ libdvipsgraph_a_CPPFLAGS = $(ZLIB_INCLUDES) $(LIBPNG_INCLUDES) $(LIBJPEG_INCLUDE
 @LIBPNG_RULE@
 ## Rebuild freetype2
 @FREETYPE2_RULE@
+
+prolog_DATA = $(prologues)
+
+dist_prologues = \
+	texcid.lpro
+
+prologdir = $(datarootdir)/texmf-dist/dvips/xdvipsk
+
+prologues = $(dist_prologues:.lpro=.pro)
+
+SUFFIXES = .pro .lpro
+
+# The `t[mp]-' business is so that we don't create an empty .pro file,
+# if running squeeze fails for some reason.  A dependency on squeeze
+# fails here, so we include it below.
+.lpro.pro:
+	$(AM_V_GEN)squeeze/squeeze <$< >t-$@ && mv t-$@ $@
+
+# When cross-compiling, EXEEXT for the build and host systems may differ.
+# Thus we depend on the auxiliary file squeeze/stamp-squeeze.
+$(prologues): squeeze/stamp-squeeze
+
+squeeze/stamp-squeeze:
+	cd squeeze && $(MAKE) $(AM_MAKEFLAGS) stamp-squeeze
+
+EXTRA_DIST = $(dist_prologues) texc.script
 
 # Files not to be distributed
 include $(srcdir)/../../am/dist_hook.am
