@@ -984,6 +984,15 @@ prologdir = $(datarootdir)/texmf-dist/dvips/xdvipsk
 prologues = $(dist_prologues:.lpro=.pro)
 SUFFIXES = .pro .lpro
 EXTRA_DIST = $(dist_prologues) texc.script
+
+#
+AM_TESTS_ENVIRONMENT = TEXMFCNF=../../../kpathsea; export TEXMFCNF; \
+	DVIPSFONTS=.:../texmf-test/fonts//; export DVIPSFONTS; \
+	T1FONTS=.:../texmf-test/fonts//; export T1FONTS; \
+	DVIPSHEADERS=../texmf-test/{dvips,fonts}//; export \
+	DVIPSHEADERS; TEXCONFIG=../texmf-test/dvips//; export \
+	TEXCONFIG; TEXPICTS=../texmf-test/images//; export TEXPICTS; \
+	DVIPSDEBUG=1; export DVIPSDEBUG;
 NEVER_DIST = `find . $(NEVER_NAMES)`
 NEVER_NAMES = -name .svn
 NEVER_NAMES_SUB = -o -name .deps -o -name .dirstamp -o -name '*.$(OBJEXT)'
@@ -4802,6 +4811,11 @@ squeeze/stamp-squeeze:
 	cd squeeze && $(MAKE) $(AM_MAKEFLAGS) stamp-squeeze
 dist-hook:
 	cd "$(distdir)" && rm -rf $(NEVER_DIST)
+
+#TESTS = testdata/bitmaps.test testdata/opentype.test testdata/luacallbacks.test testdata/mapfile.test testdata/mapline.test
+#EXTRA_DIST += $(TESTS)
+
+#EXTRA_DIST += testdata/bitmaps/bitmaps.dvi testdata/bitmaps-gid/bitmaps.dvi
 
 # Files not to be distributed
 
