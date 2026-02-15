@@ -818,7 +818,11 @@ LUA_DEPEND = $(LUA53_DEPEND)
 AM_CPPFLAGS = $(KPATHSEA_INCLUDES) -DUNIX -DKPATHSEA -DSHIFTLOWCHARS
 AM_CFLAGS = $(WARNING_CFLAGS)
 @cross_TRUE@MINGW_INCLUDES = -I$(abs_top_srcdir)/mingw/include
-xdvipsk_CPPFLAGS = $(OTFLIB_INCLUDES) $(GRAPHLIB_INCLUDES) $(LUA_INCLUDES) $(ZLIB_INCLUDES) $(LIBPNG_INCLUDES) $(LIBJPEG_INCLUDES) $(LIBTIFF_INCLUDES) $(KPATHSEA_INCLUDES) $(FREETYPE2_INCLUDES) -DUNIX -DKPATHSEA -DSHIFTLOWCHARS -DXDVIPSK
+xdvipsk_CPPFLAGS = $(OTFLIB_INCLUDES) $(GRAPHLIB_INCLUDES) $(LUA_INCLUDES) \
+                   $(ZLIB_INCLUDES) $(LIBPNG_INCLUDES) $(LIBJPEG_INCLUDES) \
+                   $(LIBTIFF_INCLUDES) $(KPATHSEA_INCLUDES) $(FREETYPE2_INCLUDES) \
+                   -DUNIX -DKPATHSEA -DSHIFTLOWCHARS -DXDVIPSK
+
 xdvipsk_SOURCES = bbox.c bitmapenc.c charcode.c color.c config.h \
 	debug.h dopage.c dosection.c dospecial.c download.c dpicheck.c \
 	drawPS.c dviinput.c emspecialex.c finclude.c fontdef.c \
@@ -977,22 +981,11 @@ libdvipsgraph_a_SOURCES = \
 
 libdvipsgraph_a_CPPFLAGS = $(ZLIB_INCLUDES) $(LIBPNG_INCLUDES) $(LIBJPEG_INCLUDES) $(LIBTIFF_INCLUDES)
 prolog_DATA = $(prologues)
-dist_prologues = \
-	texcid.lpro
-
+dist_prologues = texcid.lpro
 prologdir = $(datarootdir)/texmf-dist/dvips/xdvipsk
 prologues = $(dist_prologues:.lpro=.pro)
 SUFFIXES = .pro .lpro
-EXTRA_DIST = $(dist_prologues) texc.script
-
-#
-AM_TESTS_ENVIRONMENT = TEXMFCNF=../../../kpathsea; export TEXMFCNF; \
-	DVIPSFONTS=.:../texmf-test/fonts//; export DVIPSFONTS; \
-	T1FONTS=.:../texmf-test/fonts//; export T1FONTS; \
-	DVIPSHEADERS=../texmf-test/{dvips,fonts}//; export \
-	DVIPSHEADERS; TEXCONFIG=../texmf-test/dvips//; export \
-	TEXCONFIG; TEXPICTS=../texmf-test/images//; export TEXPICTS; \
-	DVIPSDEBUG=1; export DVIPSDEBUG;
+EXTRA_DIST = $(dist_prologues)
 NEVER_DIST = `find . $(NEVER_NAMES)`
 NEVER_NAMES = -name .svn
 NEVER_NAMES_SUB = -o -name .deps -o -name .dirstamp -o -name '*.$(OBJEXT)'
@@ -4783,13 +4776,10 @@ $(libjpeg_a_OBJECTS): config.force
 
 $(libtiff_a_OBJECTS): config.force
 
-$(xdvipsk_OBJECTS): $(KPATHSEA_DEPEND) $(LUA_DEPEND) $(ZLIB_DEPEND) $(LIBPNG_DEPEND) $(LIBJPEG_DEPEND) $(LIBTIFF_DEPEND) $(FREETYPE2_DEPEND)
+$(xdvipsk_OBJECTS): $(KPATHSEA_DEPEND) $(LUA_DEPEND) $(ZLIB_DEPEND) $(LIBPNG_DEPEND) \
+                    $(LIBJPEG_DEPEND) $(LIBTIFF_DEPEND) $(FREETYPE2_DEPEND)
 
 $(libdvipsgraph_a_OBJECTS): config.force
-
-###############################################################################
-# THE LIBRARIES TO BUILD
-###############################################################################
 
 @KPATHSEA_RULE@
 @LUA53_RULE@
@@ -4797,14 +4787,9 @@ $(libdvipsgraph_a_OBJECTS): config.force
 @LIBPNG_RULE@
 @FREETYPE2_RULE@
 
-# The `t[mp]-' business is so that we don't create an empty .pro file,
-# if running squeeze fails for some reason.  A dependency on squeeze
-# fails here, so we include it below.
 .lpro.pro:
 	$(AM_V_GEN)squeeze/squeeze <$< >t-$@ && mv t-$@ $@
 
-# When cross-compiling, EXEEXT for the build and host systems may differ.
-# Thus we depend on the auxiliary file squeeze/stamp-squeeze.
 $(prologues): squeeze/stamp-squeeze
 
 squeeze/stamp-squeeze:
@@ -4812,12 +4797,12 @@ squeeze/stamp-squeeze:
 dist-hook:
 	cd "$(distdir)" && rm -rf $(NEVER_DIST)
 
-#TESTS = testdata/bitmaps.test testdata/opentype.test testdata/luacallbacks.test testdata/mapfile.test testdata/mapline.test
-#EXTRA_DIST += $(TESTS)
-
-#EXTRA_DIST += testdata/bitmaps/bitmaps.dvi testdata/bitmaps-gid/bitmaps.dvi
-
-# Files not to be distributed
+#TESTS = testdata/bitmaps.test \
+#        testdata/luacallbacks.test \
+#        testdata/mapfile.test \
+#        testdata/mapline.test \
+#        testdata/opentype.test
+#EXTRA_DIST += $(TESTS) testdata/run_xdvipsk_test
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
