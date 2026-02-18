@@ -1,4 +1,4 @@
-## $Id: Makefile.am 77826 2026-02-14 22:45:15Z stolusis $
+## $Id: Makefile.am 77863 2026-02-16 01:53:04Z karl $
 ### Makefile.am for the TeX Live subdirectory texk/xdvipsk/
 ##
 ## Copyright 2015-2026 Karl Berry <tex-live@tug.org>
@@ -21,6 +21,9 @@ if cross
   MINGW_INCLUDES = -I$(abs_top_srcdir)/mingw/include
 endif
 bin_PROGRAMS = xdvipsk
+
+# Force Automake to use CXXLD for linking
+nodist_EXTRA_xdvipsk_SOURCES = dummy.cxx
 
 xdvipsk_CPPFLAGS = $(OTFLIB_INCLUDES) $(GRAPHLIB_INCLUDES) $(LUA_INCLUDES) \
                    $(ZLIB_INCLUDES) $(LIBPNG_INCLUDES) $(LIBJPEG_INCLUDES) \
@@ -291,7 +294,7 @@ libdvipsgraph_a_CPPFLAGS = $(ZLIB_INCLUDES) $(LIBPNG_INCLUDES) $(LIBJPEG_INCLUDE
 @FREETYPE2_RULE@
 
 prolog_DATA = $(prologues)
-dist_prologues = texcid.lpro
+dist_prologues = xdvipsk-cid.lpro
 prologdir = $(datarootdir)/texmf-dist/dvips/xdvipsk
 prologues = $(dist_prologues:.lpro=.pro)
 
@@ -307,11 +310,8 @@ squeeze/stamp-squeeze:
 
 EXTRA_DIST = $(dist_prologues)
 
-#TESTS = testdata/bitmaps.test \
-#        testdata/luacallbacks.test \
-#        testdata/mapfile.test \
-#        testdata/mapline.test \
-#        testdata/opentype.test
-#EXTRA_DIST += $(TESTS) testdata/run_xdvipsk_test
+TESTS = testdata/xdvipsk-help.test \
+        testdata/xdvipsk-version.test
+EXTRA_DIST += $(TESTS)
 
 include $(srcdir)/../../am/dist_hook.am
