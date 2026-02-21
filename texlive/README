@@ -1,4 +1,4 @@
-$Id: README 77434 2026-01-21 17:07:17Z karl $
+$Id: README 77852 2026-02-15 22:40:17Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 For a high-level overview of building TeX Live, see
@@ -40,6 +40,7 @@ armhf-linux: github, see below.
 
 x86_64-cygwin: gcc-10.2.0, cygwin-3.1.7
   TL_CONFIGURE_ARGS="--enable-xindy --enable-shared CLISP=/path/to/clisp.exe
+    CXXFLAGS=-Wa,-mbig-obj
     LDFLAGS='-Wl,--no-insert-timestamp -Wl,--stack,0x800000'" \
   ./Build
   

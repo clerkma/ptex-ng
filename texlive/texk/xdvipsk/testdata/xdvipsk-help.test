@@ -1,0 +1,10 @@
+#! /bin/sh -vx
+# $Id$
+# Copyright 2026 Sigitas Tolusis <sigitas@vtex.lt>
+# You may freely use, modify and/or distribute this file.
+
+## Test --help argument.
+
+./xdvipsk --help >testdata/xdvipsk.help.log 2>&1 
+
+exit $?
