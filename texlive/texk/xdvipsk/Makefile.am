@@ -1,4 +1,4 @@
-## $Id: Makefile.am 77863 2026-02-16 01:53:04Z karl $
+## $Id: Makefile.am 78054 2026-02-22 18:41:30Z stolusis $
 ### Makefile.am for the TeX Live subdirectory texk/xdvipsk/
 ##
 ## Copyright 2015-2026 Karl Berry <tex-live@tug.org>
@@ -47,6 +47,7 @@ xdvipsk_SOURCES = \
 	emspecialex.c \
 	finclude.c \
 	fontdef.c \
+	font_glyph_maps.h \
 	glyphlist_table.h \
 	glyphmap.c \
 	glyphmap.h \
