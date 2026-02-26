@@ -1,10 +1,10 @@
-$Id: README 78107 2026-02-24 17:20:30Z karl $
+$Id: README 78127 2026-02-25 15:55:36Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Non-kpathsea programs we (optionally) compile for TeX Live.
 See comments in ../texk/README.
 
-asymptote 3.08 - checked 24feb26
+asymptote 3.09 - checked 25feb26
   update TL from CTAN, to include prebuilt doc, Windows binaries, etc.
   See https://tug.org/texlive/build.html#asymptote
   and tlpkg/bin/tl-update-asy
