@@ -7,6 +7,10 @@
 ## How to Build
 ### Linux/Mac
 
+Compilers tested:
+ * `gcc` (Linux)
+ * `clang` (macOS)
+
 Run the shell script:
 
     ./build-gcc/build-aptex.sh
@@ -27,6 +31,5 @@ Run the shell script:
 
 ## Source
 
-* `texlive`: TeX Live 2025 (`http://tug.org/svn/texlive/trunk/Build/source/`)
+* `texlive`: TeX Live 2026 (`http://tug.org/svn/texlive/trunk/Build/source/`)
   * `svn co svn://tug.org/texlive/trunk/Build/source texlive`
-
