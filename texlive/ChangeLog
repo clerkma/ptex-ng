@@ -1,4 +1,11 @@
+2025-03-02  Karl Berry  <karl@tug.org>
+
+	* TL'26 release.
+
 2026-02-15  Karl Berry  <karl@freefriends.org>
+
+	* .github/scripts/build-tl.sh (CFLAGS, CXXFLAGS): add -O2 if we
+	set these vars; report all vars we set.
 
 	* Build: do not set CFLAGS unless one of the TL_* variables is
 	set; otherwise we lose Autoconf's normal CFLAGS of -g -O2.

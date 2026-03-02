@@ -1,20 +1,18 @@
-$Id: README 77577 2026-02-02 21:19:20Z karl $
+$Id: README 78127 2026-02-25 15:55:36Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
-Extra utilities we (optionally) compile for TeX Live.
+Non-kpathsea programs we (optionally) compile for TeX Live.
 See comments in ../texk/README.
 
-asymptote 3.06 - checked 2feb26
+asymptote 3.09 - checked 25feb26
   update TL from CTAN, to include prebuilt doc, Windows binaries, etc.
   See https://tug.org/texlive/build.html#asymptote
   and tlpkg/bin/tl-update-asy
 
   Special builders for asy:
-    aarch64-linux - Johannes Hielscher
-    universal-darwin - Dick Koch
+    windows - installed from asy dist, including dlls, into tlpkg/asymptote64
     x86_64-cygwin - Ken Brown
-    *solaris, as well as darwinlegacy - Mojca (no longer done)
-    windows - installed from asy dist, including dlls
+    universal-darwin - Dick Koch
 
 autosp 2025-10-26 - checked 28oct25
   https://ctan.org/pkg/autosp

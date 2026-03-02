@@ -286,7 +286,9 @@ extern FILE *pksearch(char *path, const char *file, const char *mode, char *n, h
 #ifdef XDVIPSK
 /* search() variant with preserving of the realnameoffile */
 extern FILE *search_safe(kpse_file_format_type format, const char *file_name, const char *mode, boolean verbose);
-extern void parse_g2u(const char *pfb_fname, boolean encoding_only);
+/* searches and loads font unicode map
+   pfb_name -- font file name without an extension */
+extern void parse_g2u(const char *pfb_fname);
 #endif /* XDVIPSK */
 extern FILE *my_real_fopen(const char *n, const char *t);
 extern int close_file(FILE *f);
@@ -296,6 +298,12 @@ extern int close_file(FILE *f);
 #ifndef KPATHSEA
 extern char *expandfilename(const char *src);
 #endif /* KPATHSEA */
+/* searches for a font file
+   p_real_fpath and p_is_dfont could be NULL
+   returned file object should be fclose'd, if not NULL
+   returned p_real_fpath should be removed after return, if not NULL: if (*p_real_fpath) free(*p_real_fpath); */
+extern FILE *lookup_font_file(const char *fpath, char **p_real_fpath, int *p_is_dfont);
+
 extern int sfntload(fontdesctype *curfnt);
 #endif /* XDVIPSK */
 
@@ -546,7 +554,12 @@ extern Boolean noprocset;
 #endif
 
 /* global variables from loadfont.c */
+#ifdef XDVIPSK
+#define ERR_BUF_LEN 1500
+extern char errbuf[ERR_BUF_LEN + 1];
+#else
 extern char errbuf[1500];
+#endif /* XDVIPSK */
 extern int lastresortsizes[40];
 extern FILE *pkfile;
 

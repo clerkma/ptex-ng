@@ -1,11 +1,11 @@
 This is asymptote.info, produced by makeinfo version 7.2 from
 asymptote.texi.
 
-This file documents ‘Asymptote’, version 3.06.
+This file documents ‘Asymptote’, version 3.09.
 
    <https://asymptote.sourceforge.io>
 
-   Copyright © 2004-25 Andy Hammerlindl, John Bowman, and Tom Prince.
+   Copyright © 2004-26 Andy Hammerlindl, John Bowman, and Tom Prince.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Lesser General Public License
@@ -22,11 +22,11 @@ File: asymptote.info,  Node: Top,  Next: Description,  Up: (dir)
 Asymptote
 *********
 
-This file documents ‘Asymptote’, version 3.06.
+This file documents ‘Asymptote’, version 3.09.
 
    <https://asymptote.sourceforge.io>
 
-   Copyright © 2004-25 Andy Hammerlindl, John Bowman, and Tom Prince.
+   Copyright © 2004-26 Andy Hammerlindl, John Bowman, and Tom Prince.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Lesser General Public License
@@ -8638,7 +8638,7 @@ Options (negate boolean options by replacing - with -no):
 -autobillboard         3D labels always face viewer by default [true]
 -autoimport str        Module to automatically import
 -autoplain             Enable automatic importing of plain [true]
--autoplay              Autoplay 3D animations [false]
+-autoplay              Autoplay 3D WebGL animations [true]
 -autorotate            Enable automatic PDF page rotation [false]
 -axes3                 Show 3D axes in PDF output [true]
 -batchMask             Mask fpu exceptions in batch mode [false]
@@ -11057,22 +11057,22 @@ Node: smoothcontour3351822
 Node: slopefield353589
 Node: ode355134
 Node: Options355403
-Ref: configuration file363976
-Ref: settings363976
-Ref: texengines365324
-Ref: magick365324
-Node: Interactive mode368719
-Ref: history370948
-Node: GUI372319
-Node: GUI installation372889
-Node: GUI usage374040
-Node: Command-Line Interface375107
-Node: Language server protocol376552
-Node: PostScript to Asymptote378033
-Node: Help378862
-Node: Debugger380592
-Node: Credits382440
-Node: Index383698
+Ref: configuration file363981
+Ref: settings363981
+Ref: texengines365329
+Ref: magick365329
+Node: Interactive mode368724
+Ref: history370953
+Node: GUI372324
+Node: GUI installation372894
+Node: GUI usage374045
+Node: Command-Line Interface375112
+Node: Language server protocol376557
+Node: PostScript to Asymptote378038
+Node: Help378867
+Node: Debugger380597
+Node: Credits382445
+Node: Index383703
 
 End Tag Table
 

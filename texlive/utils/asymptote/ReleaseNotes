@@ -1,3 +1,19 @@
+Release Notes for Version 3.09
+
+A 3D rendering bug exposed by the new default setting autoplay=true was fixed.
+The experimental and buggy support for OpenGL animations was removed in favour of WebGL animations.
+
+Release Notes for Version 3.08
+
+Include generated GUI/xasy* files in releases.
+Fix and standardize make clean, distclean, and maintainer-clean.
+
+Release Notes for Version 3.07
+
+A busy loop and race conditions in WebGL animations were addressed.
+WebGL animations are fully reversible and controlled by the autoplay setting.
+Build issues on legacy platforms were addressed; unused files were removed.
+
 Release Notes for Version 3.06
 
 The Xasy front end was updated to Qt6.

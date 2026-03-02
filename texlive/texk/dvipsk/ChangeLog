@@ -1,3 +1,12 @@
+2026-03-02  Karl Berry  <karl@tug.org>
+
+	* TL'26 release.
+
+2026-02-18  Karl Berry  <karl@freefriends.org>
+
+	* makefont.c: remove () declaration of getenv, etc.
+	Unused, but keeping in sync with xdvipsk.
+
 2026-01-30  Karl Berry  <karl@freefriends.org>
 
 	* dvips.texi: fix a couple of urls.
