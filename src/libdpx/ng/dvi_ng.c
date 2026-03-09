@@ -95,7 +95,7 @@ void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v)
 
   font = &loaded_fonts[ng_font_id];
   width = tfm_get_fw_width(font->tfm_id, ch);
-  width = sqxfw(font->size, width);
+  width = sqxfw(font->size, width * font->extend);
   memcpy(wbuf, font->padbytes, 4);
 
   switch (font->type)
