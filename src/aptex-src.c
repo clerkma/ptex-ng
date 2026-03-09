@@ -1690,7 +1690,7 @@ static inline bool is_char_ascii (integer c)
 
 static inline bool is_char_kanji (integer c)
 {
-  if (is_internalUPTEX())
+  if (likely(is_internalUPTEX()))
     return (c >= 0);
   else
     return iskanji1(Hi(c)) && iskanji2(Lo(c));
@@ -5193,7 +5193,7 @@ found1:
       if ((equiv(j) != equiv(j + 1)) ||
           (eq_type(j) != eq_type(j + 1)) ||
           (eq_level(j) != eq_level(j + 1)))
-          goto done1;
+          break;
 
       incr(j);
     }
@@ -5230,7 +5230,7 @@ found2:
     while (j < eqtb_size)
     {
       if (eqtb[j].cint != eqtb[j + 1].cint)
-        goto done2;
+        break;
 
       incr(j);
     }
@@ -20237,12 +20237,17 @@ static char * output_pdf_name;
 static void pdf_locate_font (internal_font_number f)
 {
   char * lfont_name;
-  // TODO: actually expand glyph.
-  if (pdf_font_auto_expand[f] && pdf_font_blink[f] != null_font)
+  if (pdf_font_auto_expand[f] && pdf_font_blink[f] != null_font) {
+    /* TODO: actually expand glyph.
+     * Use pdf_dev_string_mode
+     */
     lfont_name = take_str_string(font_name[pdf_font_blink[f]]);
-  else
+    font_id[f] = dvi_locate_expanded_font(lfont_name, font_size[f], pdf_font_expand_ratio[f]);
+  }
+  else {
     lfont_name = take_str_string(font_name[f]);
-  font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
+    font_id[f] = dvi_locate_font(lfont_name, font_size[f]);
+  }
   free(lfont_name);
 }
 
@@ -28632,7 +28637,7 @@ void try_break (integer pi, small_number break_type)
   pointer lp, rp, cp;
   pointer prev_r;               // {stays a step behind |r|}
   halfword old_l;               // {maximum line number in current equivalence class of lines}
-  boolean no_break_yet;         // {have we found a feasible break at |cur_p|?}
+  bool no_break_yet;            // {have we found a feasible break at |cur_p|?}
   pointer prev_prev_r;          // {a step behind |prev_r|, if |type(prev_r)=delta_node|}
   pointer s;                    // {runs through nodes ahead of |cur_p|}
   pointer q;                    // {points to a new node being created}
@@ -28640,12 +28645,12 @@ void try_break (integer pi, small_number break_type)
   integer t;                    // {node count, if |cur_p| is a discretionary node}
   internal_font_number f;       // {used in character width calculation}
   halfword l;                   // {line number of current active node}
-  boolean node_r_stays_active;  // {should node |r| remain in the active list?}
+  bool node_r_stays_active;     // {should node |r| remain in the active list?}
   scaled line_width;            // {the current line will be justified to this width}
   uint32_t fit_class;           // {possible fitness class of test line}
   halfword b;                   // {badness of test line}
   integer d;                    // {demerits of test line}
-  boolean artificial_demerits;  // {has |d| been forced to zero?}
+  bool artificial_demerits;     // {has |d| been forced to zero?}
   pointer save_link;            // {temporarily holds value of |link(cur_p)|}
   scaled shortfall;             // {used in badness calculations}
   scaled g;                     // {glue stretch or shrink of test line, adjustment for last line}

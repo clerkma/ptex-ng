@@ -85,6 +85,7 @@ extern int spc_exec_special (const char *buffer, long size,
 
 /* from "dvipdfm-x/dvi.c" */
 extern int dvi_locate_font (const char *tfm_name, spt_t ptsize);
+extern int dvi_locate_expanded_font (const char *tfm_name, spt_t ptsize, int extend);
 extern int dvi_locate_native_font (const char *filename, uint32_t fidx,
   spt_t ptsize, int layout_dir, int extend, int slant, int embolden);
 
