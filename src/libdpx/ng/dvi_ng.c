@@ -15,20 +15,21 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA.  */
 
-spt_t ng_packet_width (int32_t ch, int ng_font_id)
+#include "ng.h"
+
+spt_t ng_packet_width (int32_t ch, int ng_font_id, int extend)
 {
   struct loaded_font * font;
   spt_t width;
 
   font = &loaded_fonts[ng_font_id];
   width = tfm_get_fw_width(font->tfm_id, ch);
-  width = sqxfw(font->size, width);
+  width = sqxfw(font->size, (extend != 0 ? width * (1 + ((double)extend / 1000.0)) : width));
 
   return width;
 }
 
-extern void ng_set_packet (int32_t ch, int vf_font, int32_t h, int32_t v);
-
+/*
 void ng_gid (uint16_t gid, int ng_font_id, int32_t h, int32_t v)
 {
   struct loaded_font *font;
@@ -85,8 +86,9 @@ void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, ui
     pdf_color_pop();
   }
 }
+*/
 
-void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v)
+void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v, int extend)
 {
   struct loaded_font * font;
   spt_t width, height, depth;
@@ -95,7 +97,7 @@ void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v)
 
   font = &loaded_fonts[ng_font_id];
   width = tfm_get_fw_width(font->tfm_id, ch);
-  width = sqxfw(font->size, width);
+  width = sqxfw(font->size, (extend != 0 ? width * (1 + ((double)extend / 1000.0)) : width));
   memcpy(wbuf, font->padbytes, 4);
 
   switch (font->type)
@@ -145,7 +147,7 @@ void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v)
       break;
 
     case VIRTUAL:
-      ng_set_packet(ch, font->font_id, h, v);
+      ng_set_packet(ch, font->font_id, h, v, extend);
       break;
   }
 }

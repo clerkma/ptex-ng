@@ -85,14 +85,14 @@ extern int spc_exec_special (const char *buffer, long size,
 
 /* from "dvipdfm-x/dvi.c" */
 extern int dvi_locate_font (const char *tfm_name, spt_t ptsize);
-extern int dvi_locate_expanded_font (const char *tfm_name, spt_t ptsize, int extend);
+extern int dvi_locate_expanded_font (const char *tfm_name, const char *tex_name, spt_t ptsize, int extend);
 extern int dvi_locate_native_font (const char *filename, uint32_t fidx,
   spt_t ptsize, int layout_dir, int extend, int slant, int embolden);
 
 /* from "src/libdpx/ng/dvi_ng.c" */
-extern void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v);
-extern void ng_gid (uint16_t gid, int ng_font_id, int32_t h, int32_t v);
-extern void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, uint8_t g, uint8_t b);
+extern void ng_set (int32_t ch, int ng_font_id, int32_t h, int32_t v, int extend);
+/* extern void ng_gid (uint16_t gid, int ng_font_id, int32_t h, int32_t v); */
+/* extern void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, uint8_t g, uint8_t b); */
 extern void spc_moveto (int32_t, int32_t);
 
 /* dvipdfm-x/dvipdfmx.c */

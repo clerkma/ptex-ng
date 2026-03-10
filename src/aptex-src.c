@@ -20238,11 +20238,10 @@ static void pdf_locate_font (internal_font_number f)
 {
   char * lfont_name;
   if (pdf_font_auto_expand[f] && pdf_font_blink[f] != null_font) {
-    /* TODO: actually expand glyph.
-     * Use pdf_dev_string_mode
-     */
     lfont_name = take_str_string(font_name[pdf_font_blink[f]]);
-    font_id[f] = dvi_locate_expanded_font(lfont_name, font_size[f], pdf_font_expand_ratio[f]);
+    char * fname = take_str_string(font_name[f]);
+    font_id[f] = dvi_locate_expanded_font(lfont_name, fname, font_size[f], pdf_font_expand_ratio[f]);
+    free(fname);
   }
   else {
     lfont_name = take_str_string(font_name[f]);
@@ -20256,15 +20255,15 @@ static inline void pdf_char_out (internal_font_number f, ASCII_code c)
   switch (cur_dir_hv)
   {
     case dir_yoko:
-      ng_set(c, font_id[f], cur_h, -cur_v);
+      ng_set(c, font_id[f], cur_h, -cur_v, pdf_font_expand_ratio[f]);
       break;
 
     case dir_tate:
-      ng_set(c, font_id[f], -cur_v, -cur_h);
+      ng_set(c, font_id[f], -cur_v, -cur_h, pdf_font_expand_ratio[f]);
       break;
 
     case dir_dtou:
-      ng_set(c, font_id[f], cur_v, cur_h);
+      ng_set(c, font_id[f], cur_v, cur_h, pdf_font_expand_ratio[f]);
       break;
     default: unreachable();
   }
@@ -20275,15 +20274,15 @@ static inline void pdf_kanji_out (internal_font_number f, KANJI_code c)
   switch (cur_dir_hv)
   {
     case dir_yoko:
-      ng_set(c, font_id[f], cur_h, -cur_v);
+      ng_set(c, font_id[f], cur_h, -cur_v, 0);
       break;
 
     case dir_tate:
-      ng_set(c, font_id[f], -cur_v, -cur_h);
+      ng_set(c, font_id[f], -cur_v, -cur_h, 0);
       break;
 
     case dir_dtou:
-      ng_set(c, font_id[f], cur_v, cur_h);
+      ng_set(c, font_id[f], cur_v, cur_h, 0);
       break;
     default: unreachable();
   }

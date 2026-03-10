@@ -15,8 +15,11 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA.  */
 
+#include "ng.h"
+
+extern int spc_exec_special (const char *buffer, long size, double x_user, double y_user, double dpx_mag);
+
 /* output a vf packet */
-#define SIGNED_QUAD int32_t
 static int ng_stack_ptr = 0;
 static SIGNED_QUAD ng_dvi_h[101];
 static SIGNED_QUAD ng_dvi_v[101];
@@ -45,8 +48,6 @@ static int ng_packet_font (SIGNED_QUAD font_id, unsigned long vf_font)
     return 0;
   }
 }
-
-extern int spc_exec_special (const char *buffer, long size, double x_user, double y_user, double dpx_mag);
 
 static void ng_special_out (SIGNED_QUAD len, unsigned char **start, unsigned char *end, SIGNED_QUAD h, SIGNED_QUAD v)
 {
@@ -90,15 +91,6 @@ static void ng_special_out (SIGNED_QUAD len, unsigned char **start, unsigned cha
   *start += len;
 }
 
-typedef long long scaled;
-extern void pdf_rule_out (scaled rule_wd, scaled rule_ht);
-extern spt_t ng_packet_width (SIGNED_QUAD ch, int ng_font_id);
-extern void ng_set (SIGNED_QUAD ch, int ng_font_id, SIGNED_QUAD h, SIGNED_QUAD v);
-
-#define dvi_yoko 0
-#define dvi_tate 1
-#define dvi_dtou 3
-
 static void ng_adjust_hpos (SIGNED_QUAD * h, SIGNED_QUAD * v, SIGNED_QUAD d)
 {
   int ng_cur_dir = pdf_dev_get_dirmode();
@@ -135,7 +127,7 @@ static void ng_adjust_vpos (SIGNED_QUAD * h, SIGNED_QUAD * v, SIGNED_QUAD d)
   }
 }
 
-void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
+void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v, int extend)
 {
   unsigned char opcode;
   unsigned char *start, *end;
@@ -180,15 +172,15 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
         case SET2:
         case SET3:
           packet_word = get_pkt_unsigned_num(&start, end, opcode - SET1);
-          ng_set(packet_word, packet_font, packet_h, packet_v);
-          ng_adjust_hpos(&packet_h, &packet_v, ng_packet_width(packet_word, packet_font));
+          ng_set(packet_word, packet_font, packet_h, packet_v, extend);
+          ng_adjust_hpos(&packet_h, &packet_v, ng_packet_width(packet_word, packet_font, extend));
           break;
 
         case PUT1:
         case PUT2:
         case PUT3:
           packet_word = get_pkt_unsigned_num(&start, end, opcode - PUT1);
-          ng_set(packet_word, packet_font, packet_h, packet_v);
+          ng_set(packet_word, packet_font, packet_h, packet_v, extend);
           break;
 
         case SET4:
@@ -337,8 +329,8 @@ void ng_set_packet (SIGNED_QUAD ch, int vf_font, SIGNED_QUAD h, SIGNED_QUAD v)
 
         default:
           if (opcode <= SET_CHAR_127)
-            ng_set(opcode, packet_font, packet_h, packet_v),
-            ng_adjust_hpos(&packet_h, &packet_v, ng_packet_width(opcode, packet_font));
+            ng_set(opcode, packet_font, packet_h, packet_v, extend),
+              ng_adjust_hpos(&packet_h, &packet_v, ng_packet_width(opcode, packet_font, extend));
           else if (opcode >= FNT_NUM_0 && opcode <= FNT_NUM_63)
             packet_font = ng_packet_font(opcode - FNT_NUM_0, vf_font);
           else

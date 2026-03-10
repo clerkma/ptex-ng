@@ -1372,6 +1372,88 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
   return  p->num_dev_fonts++;
 }
 
+int
+pdf_dev_locate_expanded_font (const char *font_name, const char *tex_name,
+                              spt_t ptsize, double extend)
+{
+  pdf_dev         *p = current_device();
+  int              i;
+  fontmap_rec     *mrec;
+  struct dev_font *font;
+
+  if (!font_name || !tex_name)
+    return -1;
+
+  if (ptsize == 0) {
+    ERROR("pdf_dev_locate_font() called with the zero ptsize.");
+    return -1;
+  }
+
+  for (i = 0; i < p->num_dev_fonts; i++) {
+    if (!strcmp(tex_name, p->fonts[i].tex_name) &&
+        ptsize == p->fonts[i].sptsize) {
+      return i; /* found a dev_font that matches the request */
+    }
+  }
+
+  /*
+   * Make sure we have room for a new one, even though we may not
+   * actually create one.
+   */
+  if (p->num_dev_fonts >= p->max_dev_fonts) {
+    p->max_dev_fonts += 16;
+    p->fonts      = RENEW(p->fonts, p->max_dev_fonts, struct dev_font);
+  }
+
+  font = &p->fonts[p->num_dev_fonts];
+
+  /* New font */
+  mrec = pdf_lookup_fontmap_record(font_name);
+
+  font->font_id = pdf_font_findresource(font_name, ptsize * p->unit.dvi2pts);
+  if (font->font_id < 0) {
+    font->font_id = pdf_font_load_font(font_name, ptsize * p->unit.dvi2pts, mrec);
+    if (font->font_id < 0)
+      return  -1;
+  }
+
+  pdf_font_resource_name(font->font_id, font->short_name);
+
+  font->used_on_this_page = 0;
+
+  font->tex_name = NEW(strlen(tex_name) + 1, char);
+  strcpy(font->tex_name, tex_name);
+  font->sptsize  = ptsize;
+
+  switch (pdf_get_font_subtype(font->font_id)) {
+  case PDF_FONT_FONTTYPE_TYPE3:
+    font->format = PDF_FONTTYPE_BITMAP;
+    break;
+  case PDF_FONT_FONTTYPE_TYPE0:
+    font->format = PDF_FONTTYPE_COMPOSITE;
+    break;
+  default:
+    font->format = PDF_FONTTYPE_SIMPLE;
+    break;
+  }
+
+  font->wmode      = pdf_get_font_wmode   (font->font_id);
+  font->enc_id     = pdf_get_font_encoding(font->font_id);
+
+  font->resource   = NULL;
+  font->used_chars = NULL;
+
+  font->extend     = extend;
+  font->slant      = 0.0;
+  font->bold       = 0.0;
+  if (mrec) {
+    font->slant  = mrec->opt.slant;
+    font->bold   = mrec->opt.bold;
+  }
+
+  return  p->num_dev_fonts++;
+}
+
 
 /* This does not remember current stroking width. */
 static int
