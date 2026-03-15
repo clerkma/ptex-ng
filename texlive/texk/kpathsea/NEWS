@@ -1,5 +1,8 @@
-$Id: NEWS 78218 2026-03-01 02:27:51Z karl $
+$Id: NEWS 78374 2026-03-15 00:38:54Z karl $
 This file records noteworthy changes.  (Public domain.)
+
+* kpsewhich: special-case dvipdfmx.cfg, like the other program
+  configuration files (config.ps, fmtutil.cnf, texmf.cnf, etc.).
 
 6.4.2 (for TeX Live 2026, 3 March 2026)
 * New configuration value texmf_nlink_for_leaf to specify whether the
