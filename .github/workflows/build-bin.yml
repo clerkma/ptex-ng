@@ -17,6 +17,15 @@ jobs:
         run: ./build-gcc/build-aptex.sh
       - name: test
         run: cd test && sh run.sh
+      - name: pack
+        run: tar cvf aptex-linux-x64.tar.gz src/aptex
+      - name: release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: aptex-linux-x64.tar.gz
+          asset_name: app-linux-x64.tar.gz
+          tag: ${{ github.ref }}-${{ github.run_id }}
   build-macos:
     runs-on: macos-latest
     steps:
@@ -25,3 +34,12 @@ jobs:
         run: ./build-gcc/build-aptex.sh
       - name: test
         run: cd test && sh run.sh
+      - name: pack
+        run: tar cvf aptex-macOS.tar.gz src/aptex
+      - name: release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: aptex-macOS.tar.gz
+          asset_name: app-macOS.tar.gz
+          tag: ${{ github.ref }}-${{ github.run_id }}
