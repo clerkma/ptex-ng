@@ -66,7 +66,7 @@ void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, ui
       (double)(r) / 255,
       (double)(g) / 255,
       (double)(b) / 255);
-    pdf_color_push(&color, &color);
+    pdf_color_push(&color, &color, PDF_COLOR_SOURCE_DVIPS);
   }
 
   if (dvi_is_tracking_boxes())
@@ -82,7 +82,7 @@ void ng_layer (uint16_t gid, int ng_font_id, int32_t h, int32_t v, uint8_t r, ui
   wbuf[1] = gid & 0xff;
   pdf_dev_set_string(h, v, wbuf, 2, width, font->font_id);
   {
-    pdf_color_pop();
+    pdf_color_pop(PDF_COLOR_SOURCE_DVIPS);
   }
 }
 
