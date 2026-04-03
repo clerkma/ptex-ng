@@ -165,6 +165,10 @@ pdf_color_copycolor (pdf_color *color1, const pdf_color *color2)
   ASSERT(color1 && color2);
 
   memcpy(color1, color2, sizeof(pdf_color));
+  if (color2->spot_color_name) {
+    color1->spot_color_name = NEW(strlen(color2->spot_color_name)+1, char);
+    strcpy(color1->spot_color_name, color2->spot_color_name);
+  }
 }
 
 /* Brighten up a color. f == 0 means no change, f == 1 means white. */
@@ -434,6 +438,7 @@ static struct {
   int       current;
   pdf_color stroke[DEV_COLOR_STACK_MAX];
   pdf_color fill[DEV_COLOR_STACK_MAX];
+  int       source[DEV_COLOR_STACK_MAX]; /* PDF_COLOR_SOURCE_DVIPS or _BCOLOR */
 } color_stack = {
   0,
 };
@@ -459,32 +464,98 @@ pdf_color_clear_stack (void)
 void
 pdf_color_set (pdf_color *sc, pdf_color *fc)
 {
+  if (color_stack.stroke[color_stack.current].spot_color_name)
+    RELEASE(color_stack.stroke[color_stack.current].spot_color_name);
+  if (color_stack.fill[color_stack.current].spot_color_name)
+    RELEASE(color_stack.fill[color_stack.current].spot_color_name);
   pdf_color_copycolor(&color_stack.stroke[color_stack.current], sc);
   pdf_color_copycolor(&color_stack.fill[color_stack.current], fc);
   pdf_dev_reset_color(1);
 }
 
 void
-pdf_color_push (pdf_color *sc, pdf_color *fc)
+pdf_color_push (pdf_color *sc, pdf_color *fc, int source)
 {
   if (color_stack.current >= DEV_COLOR_STACK_MAX-1) {
     WARN("Color stack overflow. Just ignore.");
   } else {
     color_stack.current++;
+    color_stack.source[color_stack.current] = source;
     pdf_color_set(sc, fc);
   }
   return;
 }
 
 void
-pdf_color_pop (void)
+pdf_color_pop (int source)
 {
+  int  i;
+
   if (color_stack.current <= 0) {
     WARN("Color stack underflow. Just ignore.");
-  } else {
-    color_stack.current--;
-    pdf_dev_reset_color(1);
+    return;
   }
+
+  /* Find the topmost entry that matches the given source tag.
+   * This prevents "pdf:ecolor" from popping a "color push" entry
+   * and vice versa, fixing the cross-pop bug when the two mechanisms
+   * are interleaved on the shared stack (e.g., breakable tcolorbox
+   * containing a listings environment spanning a page break).
+   */
+  for (i = color_stack.current; i > 0; i--) {
+    if (color_stack.source[i] == source)
+      break;
+  }
+
+  if (i <= 0) {
+    /* No matching entry found.
+     * Do NOT pop -- leave the stack unchanged to avoid silent corruption.
+     */
+    WARN("Color stack pop: no matching %s entry found. Stack unchanged.",
+         source == PDF_COLOR_SOURCE_BCOLOR ? "bcolor" : "push");
+    return;
+  }
+
+  if (i == color_stack.current) {
+    /* Top entry matches -- normal case, just pop. */
+    if (color_stack.stroke[color_stack.current].spot_color_name) {
+      RELEASE(color_stack.stroke[color_stack.current].spot_color_name);
+      color_stack.stroke[color_stack.current].spot_color_name = NULL;
+    }
+    if (color_stack.fill[color_stack.current].spot_color_name) {
+      RELEASE(color_stack.fill[color_stack.current].spot_color_name);
+      color_stack.fill[color_stack.current].spot_color_name   = NULL;
+    }
+    color_stack.current--;
+  } else {
+    /* Matching entry is below the top.
+     * Remove it by shifting entries above it down by one.
+     * Free spot_color_name in each destination slot before overwriting
+     * since pdf_color_copycolor deep-copies the pointer.
+     */
+    int  j;
+    for (j = i; j < color_stack.current; j++) {
+      if (color_stack.stroke[j].spot_color_name)
+        RELEASE(color_stack.stroke[j].spot_color_name);
+      if (color_stack.fill[j].spot_color_name)
+        RELEASE(color_stack.fill[j].spot_color_name);
+      pdf_color_copycolor(&color_stack.stroke[j], &color_stack.stroke[j+1]);
+      pdf_color_copycolor(&color_stack.fill[j],   &color_stack.fill[j+1]);
+      color_stack.source[j] = color_stack.source[j+1];
+    }
+    /* Free and clear the abandoned top slot. */
+    if (color_stack.stroke[color_stack.current].spot_color_name) {
+      RELEASE(color_stack.stroke[color_stack.current].spot_color_name);
+      color_stack.stroke[color_stack.current].spot_color_name = NULL;
+    }
+    if (color_stack.fill[color_stack.current].spot_color_name) {
+      RELEASE(color_stack.fill[color_stack.current].spot_color_name);
+      color_stack.fill[color_stack.current].spot_color_name   = NULL;
+    }
+    color_stack.current--;
+  }
+
+  pdf_dev_reset_color(1);
   return;
 }
 
