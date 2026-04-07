@@ -1,4 +1,4 @@
-## $Id: Makefile.am 78557 2026-03-31 12:53:30Z munepi $
+## $Id: Makefile.am 78592 2026-04-04 12:47:05Z takuji $
 ## Makefile.am for the TeX Live subdirectory texk/dvipdfm-x/
 ##
 ## Copyright 2015-2025 Karl Berry <tex-live@tug.org>
@@ -321,6 +321,8 @@ DISTCLEANFILES += upjf.vf upjv.vf upjf-*.ofm upjv-*.ofm upjf-*.tfm upjf_*.pdf up
 ## dvipdfmx-upjf2.test
 EXTRA_DIST += tests/upjf2_full.zvp0 tests/upjf2_full.vf
 EXTRA_DIST += tests/upjv2_full.zvp0 tests/upjv2_full.vf
+EXTRA_DIST += tests/upjf5_fb.zvp0 tests/upjf5_fb.vf
+EXTRA_DIST += tests/upjv5_fb.zvp0 tests/upjv5_fb.vf
 EXTRA_DIST += tests/upjf-c.pl tests/upjf-c.tfm
 EXTRA_DIST += tests/upjv-c.pl tests/upjv-c.tfm
 EXTRA_DIST += tests/upjf-hara.map

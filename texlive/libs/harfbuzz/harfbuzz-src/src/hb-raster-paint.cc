@@ -222,11 +222,18 @@ hb_raster_paint_push_clip_from_emitter (hb_raster_paint_t *c,
     hb_raster_paint_push_empty_clip (c, w, h);
     return;
   }
+  hb_memset (new_clip.alpha.arrayZ, 0, (unsigned) clip_size);
 
   const uint8_t *mask_buf = hb_raster_image_get_buffer (mask_img);
   hb_raster_extents_t mask_ext;
   hb_raster_image_get_extents (mask_img, &mask_ext);
   const hb_raster_clip_t &old_clip = c->current_clip ();
+  if (unlikely (!old_clip.has_valid_alpha_mask ()))
+  {
+    hb_raster_draw_recycle_image (rdr, mask_img);
+    hb_raster_paint_push_empty_clip (c, w, h);
+    return;
+  }
 
   /* Convert mask extents from surface coordinates to clip-buffer coordinates. */
   int mask_x0 = mask_ext.x_origin - surf->extents.x_origin;
@@ -420,6 +427,11 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
   py1 = hb_min (py1, (int) h);
 
   const hb_raster_clip_t &old_clip = c->current_clip ();
+  if (unlikely (!old_clip.has_valid_alpha_mask ()))
+  {
+    hb_raster_paint_push_empty_clip (c, w, h);
+    return;
+  }
 
   hb_raster_clip_t new_clip = c->acquire_clip (w, h);
 
@@ -446,13 +458,18 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
     }
     hb_memset (new_clip.alpha.arrayZ, 0, (unsigned) clip_size);
 
-    unsigned iy0 = (unsigned) hb_max (py0, (int) old_clip.min_y);
-    unsigned iy1 = (unsigned) hb_min (py1, (int) old_clip.max_y);
-    unsigned ix0 = (unsigned) hb_max (px0, (int) old_clip.min_x);
-    unsigned ix1 = (unsigned) hb_min (px1, (int) old_clip.max_x);
+    int iy0_i = hb_max (py0, (int) old_clip.min_y);
+    int iy1_i = hb_min (py1, (int) old_clip.max_y);
+    int ix0_i = hb_max (px0, (int) old_clip.min_x);
+    int ix1_i = hb_min (px1, (int) old_clip.max_x);
 
-    if (ix0 < ix1 && iy0 < iy1)
+    if (ix0_i < ix1_i && iy0_i < iy1_i)
     {
+      unsigned iy0 = (unsigned) iy0_i;
+      unsigned iy1 = (unsigned) iy1_i;
+      unsigned ix0 = (unsigned) ix0_i;
+      unsigned ix1 = (unsigned) ix1_i;
+
       for (unsigned y = iy0; y < iy1; y++)
       {
         const uint8_t *old_row = old_clip.alpha.arrayZ + y * old_clip.stride;
@@ -490,88 +507,96 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
     /* For each pixel in the bounding box, test if inside the quad
      * using cross-product edge tests (winding order). */
-    unsigned iy0 = (unsigned) hb_max (py0, (int) old_clip.min_y);
-    unsigned iy1 = (unsigned) hb_min (py1, (int) old_clip.max_y);
-    unsigned ix0 = (unsigned) hb_max (px0, (int) old_clip.min_x);
-    unsigned ix1 = (unsigned) hb_min (px1, (int) old_clip.max_x);
+    int iy0_i = hb_max (py0, (int) old_clip.min_y);
+    int iy1_i = hb_min (py1, (int) old_clip.max_y);
+    int ix0_i = hb_max (px0, (int) old_clip.min_x);
+    int ix1_i = hb_min (px1, (int) old_clip.max_x);
     new_clip.min_x = w; new_clip.min_y = h;
     new_clip.max_x = 0; new_clip.max_y = 0;
 
-    /* Precompute edge normals for point-in-quad test.
-     * Edge i goes from corner i to corner (i+1)%4.
-     * Normal = (dy, -dx); inside test: dot(normal, p-corner) >= 0 */
-	    float enx[4], eny[4], ed[4];
-	    for (unsigned i = 0; i < 4; i++)
-	    {
-	      unsigned j = (i + 1) & 3;
-	      float edx = qx[j] - qx[i], edy = qy[j] - qy[i];
-	      enx[i] = edy;       /* normal x */
-	      eny[i] = -edx;      /* normal y */
-	      ed[i] = enx[i] * qx[i] + eny[i] * qy[i]; /* distance threshold */
-	    }
-	    float area2 = 0.f;
-	    for (unsigned i = 0; i < 4; i++)
-	    {
-	      unsigned j = (i + 1) & 3;
-	      area2 += qx[i] * qy[j] - qx[j] * qy[i];
-	    }
-	    bool ccw = area2 >= 0.f;
+    if (ix0_i < ix1_i && iy0_i < iy1_i)
+    {
+      unsigned iy0 = (unsigned) iy0_i;
+      unsigned iy1 = (unsigned) iy1_i;
+      unsigned ix0 = (unsigned) ix0_i;
+      unsigned ix1 = (unsigned) ix1_i;
 
-    if (old_clip.is_rect)
-    {
-      for (unsigned y = iy0; y < iy1; y++)
-	for (unsigned x = ix0; x < ix1; x++)
-	{
-	  float px_f = x + 0.5f, py_f = y + 0.5f;
-	  /* Test if pixel center is inside the quad */
-		  bool inside = true;
-		  for (unsigned i = 0; i < 4; i++)
-		  {
-		    float d = enx[i] * px_f + eny[i] * py_f;
-		    if (ccw ? d < ed[i] : d > ed[i])
-		    {
-		      inside = false;
-		      break;
-		    }
-		  }
-	  uint8_t a = inside ? 255 : 0;
-	  new_clip.alpha[y * new_clip.stride + x] = a;
-	  if (a)
-	  {
-	    new_clip.min_x = hb_min (new_clip.min_x, x);
-	    new_clip.min_y = hb_min (new_clip.min_y, y);
-	    new_clip.max_x = hb_max (new_clip.max_x, x + 1);
-	    new_clip.max_y = hb_max (new_clip.max_y, y + 1);
-	  }
-	}
-    }
-    else
-    {
-      for (unsigned y = iy0; y < iy1; y++)
+      /* Precompute edge normals for point-in-quad test.
+       * Edge i goes from corner i to corner (i+1)%4.
+       * Normal = (dy, -dx); inside test: dot(normal, p-corner) >= 0 */
+	      float enx[4], eny[4], ed[4];
+	      for (unsigned i = 0; i < 4; i++)
+	      {
+		unsigned j = (i + 1) & 3;
+		float edx = qx[j] - qx[i], edy = qy[j] - qy[i];
+		enx[i] = edy;       /* normal x */
+		eny[i] = -edx;      /* normal y */
+		ed[i] = enx[i] * qx[i] + eny[i] * qy[i]; /* distance threshold */
+	      }
+	      float area2 = 0.f;
+	      for (unsigned i = 0; i < 4; i++)
+	      {
+		unsigned j = (i + 1) & 3;
+		area2 += qx[i] * qy[j] - qx[j] * qy[i];
+	      }
+	      bool ccw = area2 >= 0.f;
+
+      if (old_clip.is_rect)
       {
-	const uint8_t *old_row = old_clip.alpha.arrayZ + y * old_clip.stride;
-	for (unsigned x = ix0; x < ix1; x++)
-	{
-	  float px_f = x + 0.5f, py_f = y + 0.5f;
-	  /* Test if pixel center is inside the quad */
-		  bool inside = true;
-		  for (unsigned i = 0; i < 4; i++)
-		  {
-		    float d = enx[i] * px_f + eny[i] * py_f;
-		    if (ccw ? d < ed[i] : d > ed[i])
-		    {
-		      inside = false;
-		      break;
-		    }
-		  }
-	  uint8_t a = inside ? old_row[x] : 0;
-	  new_clip.alpha[y * new_clip.stride + x] = a;
-	  if (a)
+	for (unsigned y = iy0; y < iy1; y++)
+	  for (unsigned x = ix0; x < ix1; x++)
 	  {
-	    new_clip.min_x = hb_min (new_clip.min_x, x);
-	    new_clip.min_y = hb_min (new_clip.min_y, y);
-	    new_clip.max_x = hb_max (new_clip.max_x, x + 1);
-	    new_clip.max_y = hb_max (new_clip.max_y, y + 1);
+	    float px_f = x + 0.5f, py_f = y + 0.5f;
+	    /* Test if pixel center is inside the quad */
+		    bool inside = true;
+		    for (unsigned i = 0; i < 4; i++)
+		    {
+		      float d = enx[i] * px_f + eny[i] * py_f;
+		      if (ccw ? d < ed[i] : d > ed[i])
+		      {
+			inside = false;
+			break;
+		      }
+		    }
+	    uint8_t a = inside ? 255 : 0;
+	    new_clip.alpha[y * new_clip.stride + x] = a;
+	    if (a)
+	    {
+	      new_clip.min_x = hb_min (new_clip.min_x, x);
+	      new_clip.min_y = hb_min (new_clip.min_y, y);
+	      new_clip.max_x = hb_max (new_clip.max_x, x + 1);
+	      new_clip.max_y = hb_max (new_clip.max_y, y + 1);
+	    }
+	  }
+      }
+      else
+      {
+	for (unsigned y = iy0; y < iy1; y++)
+	{
+	  const uint8_t *old_row = old_clip.alpha.arrayZ + y * old_clip.stride;
+	  for (unsigned x = ix0; x < ix1; x++)
+	  {
+	    float px_f = x + 0.5f, py_f = y + 0.5f;
+	    /* Test if pixel center is inside the quad */
+		    bool inside = true;
+		    for (unsigned i = 0; i < 4; i++)
+		    {
+		      float d = enx[i] * px_f + eny[i] * py_f;
+		      if (ccw ? d < ed[i] : d > ed[i])
+		      {
+			inside = false;
+			break;
+		      }
+		    }
+	    uint8_t a = inside ? old_row[x] : 0;
+	    new_clip.alpha[y * new_clip.stride + x] = a;
+	    if (a)
+	    {
+	      new_clip.min_x = hb_min (new_clip.min_x, x);
+	      new_clip.min_y = hb_min (new_clip.min_y, y);
+	      new_clip.max_x = hb_max (new_clip.max_x, x + 1);
+	      new_clip.max_y = hb_max (new_clip.max_y, y + 1);
+	    }
 	  }
 	}
       }
@@ -711,8 +736,12 @@ hb_raster_paint_image (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
   /* Handle SVG format */
   if (format == HB_PAINT_IMAGE_FORMAT_SVG)
+  {
+    if (unlikely (!c->svg_font))
+      return false;
     return hb_raster_svg_render (c, blob, c->svg_glyph, c->svg_font,
 				 c->svg_palette, c->foreground);
+  }
 
   unsigned src_width = width;
   unsigned src_height = height;
@@ -865,16 +894,6 @@ hb_raster_paint_image (hb_paint_funcs_t *pfuncs HB_UNUSED,
 #define GRADIENT_LUT_SIZE 256
 #define GRADIENT_LUT_MIN_PIXELS (64u * 64u)
 
-static int
-cmp_color_stop (const void *p1, const void *p2)
-{
-  const hb_color_stop_t *c1 = (const hb_color_stop_t *) p1;
-  const hb_color_stop_t *c2 = (const hb_color_stop_t *) p2;
-  if (c1->offset < c2->offset) return -1;
-  if (c1->offset > c2->offset) return 1;
-  return 0;
-}
-
 static bool
 get_color_stops (hb_raster_paint_t *c,
 		 hb_color_line_t *color_line,
@@ -916,7 +935,10 @@ normalize_color_line (hb_color_stop_t *stops,
     return;
   }
 
-  hb_qsort (stops, len, sizeof (hb_color_stop_t), cmp_color_stop);
+  hb_array_t<hb_color_stop_t> (stops, len)
+    .qsort ([] (const hb_color_stop_t &a, const hb_color_stop_t &b) {
+      return a.offset < b.offset;
+    });
 
   float mn = stops[0].offset, mx = stops[0].offset;
   for (unsigned i = 1; i < len; i++)
