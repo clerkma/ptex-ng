@@ -1,4 +1,4 @@
-## $Id: bootstrap.am 61575 2022-01-11 22:47:10Z karl $
+## $Id: bootstrap.am 78688 2026-04-13 00:12:25Z karl $
 ## texk/web2c/am/bootstrap.am: Makefile fragment for tangle and ctangle.
 ##
 ## Copyright 2015-2022 Karl Berry <tex-live@tug.org>
@@ -84,7 +84,11 @@ $(ctangleboot_OBJECTS): $(ctangleboot_DEPENDENCIES)
 	$(cp_silent)cp -f $< $@
 .hin.h:
 	$(cp_silent)cp -f $< $@
-ctangleboot_DEPENDENCIES = $(default_dependencies)
+
+# cwebboot should depend on this too, but where?
+ctangleboot_DEPENDENCIES = $(default_dependencies) \
+  cwebdir/ctang-w2c.ch cwebdir/comm-w2c.ch
+
 EXTRA_DIST += ctangleboot.cin cwebboot.cin
 DISTCLEANFILES += ctangleboot.c cwebboot.c
 

@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: dvipdfmx-incl.test 74206 2025-02-22 18:41:57Z karl $
+# $Id: dvipdfmx-incl.test 78708 2026-04-15 08:02:29Z mseven $
 # Copyright 2024 Japanese TeX Development Community <issue@texjp.org>
 # You may freely use, modify and/or distribute this file.
 
@@ -26,7 +26,7 @@ $_xdvipdfmx --dvipdfmx -vv -f psfonts.map -o multi_incl.pdf $srcdir/tests/multi_
  || failed="$failed multi-incl"
 
 filesize=`ls -l multi_incl.pdf | awk '{print $5}'`
-if [ "$filesize" -gt 85010 ]; then
+if [ "$filesize" -gt 85011 ]; then
   echo "Too large file size :" $filesize
   failed="$failed multi-incl-size"
 fi
