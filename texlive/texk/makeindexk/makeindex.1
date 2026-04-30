@@ -7,28 +7,28 @@
 .if t .ds Uc \fIU\\h'-0.12m'C\\v'0.27m'\\h'-.23m'S\\h'-0.11m'F\\v'-0.27m'\fP
 .if n .ds Uc UCSF
 .ds Et \\f(boE\\h'-0.1667m'\\v'-0.20v'T\\v'0.20v'\\h'-0.125m'T\\fP
-.TH MAKEINDEX 1 "12 April 2026" "TeX Live"
+.TH MAKEINDEX 1 "26 April 2026" "TeX Live"
 .\"=====================================================================
 .SH NAME
 makeindex \- a general purpose, formatter-independent index processor
 .SH SYNOPSIS
 .B makeindex
-.RB [ \-c ]
-.RB [ \-g ]
-.RB [ \-i ]
-.RB [ \-l ]
-.RB [ \-o
+.RB [ -c ]
+.RB [ -g ]
+.RB [ -i ]
+.RB [ -l ]
+.RB [ -o
 .IR ind ]
-.RB [ \-p
+.RB [ -p
 .IR num ]
-.RB [ \-q ]
-.RB [ \-r ]
-.RB [ \-s
+.RB [ -q ]
+.RB [ -r ]
+.RB [ -s
 .IR sfile ]
-.RB [ \-t
+.RB [ -t
 .IR log ]
-.RB [ \-L ]
-.RB [ \-T ]
+.RB [ -L ]
+.RB [ -T ]
 .RI [ idx0
 .I idx1
 .IR idx2 .\|.\|.]
@@ -80,7 +80,7 @@ aborts.
 .LP
 If exactly one input file was given and no explicit style file was
 specified using
-.BR \-s ,
+.BR -s ,
 .I makeindex
 uses a file with the extension
 .I \&.mst
@@ -95,11 +95,11 @@ a paper cited below.
 .\"=====================================================================
 .SH OPTIONS
 .TP 10
-.B \-c
+.B -c
 Compress intermediate blanks (ignoring leading and trailing blanks and
 tabs).  By default, blanks in the index key are retained.
 .TP 10
-.B \-g
+.B -g
 Employ German word ordering in the index, in accord with rules set forth
 in DIN 5007.  By default,
 .I makeindex
@@ -115,19 +115,19 @@ as '+').  If the quote character is not redefined,
 .I makeindex
 will produce an error message and abort.
 .TP 10
-.B \-i
+.B -i
 Take input from
 .IR stdin .
 When this option is specified and
-.B \-o
+.B -o
 is not, output is written to
 .IR stdout .
 .TP 10
-.B \-l
+.B -l
 Letter ordering; by default, word ordering is used (see
 the \s-2ORDERING\s+2 section).
 .TP 10
-.BI \-o " ind"
+.BI -o " ind"
 Employ
 .I ind
 as the output index file.  By default, the file name
@@ -137,7 +137,7 @@ to the base name of
 the first input file
 .RI ( idx0 ).
 .TP 10
-.BI \-p " num"
+.BI -p " num"
 Set the starting page number of the output index file to be
 .I num
 (useful when the index file is to be formatted separately).  The
@@ -169,7 +169,7 @@ name is determined by appending the extension
 to the base name of the first input file
 .RI ( idx0 ).
 .TP 10
-.B \-q
+.B -q
 Quiet mode; send no messages to
 .IR stderr .
 By default, progress
@@ -178,20 +178,20 @@ and error messages are sent to
 as well as to the
 transcript file.
 .TP 10
-.B \-r
+.B -r
 Disable implicit page range formation; page ranges must be created by
 using explicit range operators; see \s-2SPECIAL EFFECTS\s+2 below.  By
 default, three or more successive pages are automatically abbreviated
 as a range (e.g. 1\(em5).
 .TP 10
-.BI \-s " sty"
+.BI -s " sty"
 Employ
 .I sty
 as the style file (no default).  The environment
 variable \s-2INDEXSTYLE\s+2 defines the path where the style file
 should be found.
 .TP 10
-.BI \-t " log"
+.BI -t " log"
 Employ
 .I log
 as the transcript file.  By default, the file name is
@@ -201,10 +201,10 @@ to the base name of the
 first input file
 .RI ( idx0 ).
 .TP 10
-.BR \-L
+.BR -L
 sort based on locale settings. Not available on all systems.
 .TP 10
-.BR \-T
+.BR -T
 special support for Thai documents. Not available on all systems.
 .\"=====================================================================
 .SH "STYLE FILE"
@@ -573,8 +573,8 @@ which defines an index for a book which can be formatted independently
 of the main source:
 .LP
 .RS
-.nf
-\f(CWpreamble
+.EX
+preamble
 "\\\\documentstyle[12pt]{book}
 \\\\begin{document}
 \\\\begin{theindex}
@@ -582,8 +582,8 @@ of the main source:
 postamble
 "\\n\\n}
 \\\\end{theindex}
-\\\\end{document}\\n\fP"
-.fi
+\\\\end{document}\\n"
+.EE
 .RE
 .LP
 Assuming that a particular book style requires the index (as well as any
@@ -593,9 +593,9 @@ named
 the following command line produces output in file
 .IR footmp.ind :
 .LP
-.RS
-\f(CWmakeindex  \-s book.ist  \-o footmp.ind  \-p odd  foo\fP
-.RE
+.EX
+makeindex  -s book.ist  -o footmp.ind  -p odd  foo
+.EE
 .LP
 Here a non-default output file name is used to avoid clobbering the
 output for the book itself (presumably
@@ -608,8 +608,8 @@ resides in the file
 .IR sample.ist :
 .LP
 .RS
-.nf
-\&\f(CWkeyword "IX:"
+.EX
+\&keyword "IX:"
 \&preamble
 \&".\\\\\\" start of index output
 \&\\".\\\\\\" enter two column mode
@@ -653,29 +653,29 @@ resides in the file
 \&encap_infix ""
 \&encap_suffix "\\\\fP"
 \&indent_space ""
-\&indent_length 0\fP
-.fi
+\&indent_length 0
+.EE
 .RE
 .LP
 The local macro package may require modification, as in this example
 of an extension to the
-.B \-ms
+.B -ms
 macros (note that at some sites, this macro should
 .I replace
 a pre-existing macro of the same name):
 .LP
 .RS
-.nf
-\f(CW\&.\" IX - index words to stderr
+.EX
+\&.\" IX - index words to stderr
 \&.de IX
 \&.ie '\\\\n(.z'' .tm IX: \\\\$1 \\\\$2 \\\\$3 \\\\$4 \\\\$5 \\\\$6 \\\\$7 \\\\$8 \\\\$9 {\\\\n(PN}
 \&.el \\\\!.IX \\\\$1 \\\\$2 \\\\$3 \\\\$4 \\\\$5 \\\\$6 \\\\$7 \\\\$8 \\\\$9 {\\\\n(PN}
-\&..\fP
-.fi
+\&..
+.EE
 .RE
 .LP
-(note that the string {\f(CW\\\\n(PN\fP} is separated from the rest of the
-line by a tab.
+(The string ``{\\\\n(PN}'' is separated from the rest of the
+line by a tab.)
 If your local macro package does not contain this extension,
 just include those lines at the beginning of your file.
 Here is a simple
@@ -684,20 +684,20 @@ input file, which we will assume is named
 .IR sample.txt :
 .LP
 .RS
-.nf
-\f(CW\&This is a sample file to test the \\fImakeindex\\fP(1L)
+.EX
+\&This is a sample file to test the \\fImakeindex\\fP(1)
 \&program, and see
 \&.IX {indexing!programs!C language}
-\&.IX {makeindex@\\fImakeindex\\fP(1L)}
+\&.IX {makeindex@\\fImakeindex\\fP(1)}
 \&.bp
 \&.rs
 \&.IX {Knuth}
 \&.IX {typesetting!computer-aided}
-\&how well it functions in the \\fItroff\\fP(1) environment.\fP
-.fi
+\&how well it functions in the \\fItroff\\fP(1) environment.
+.EE
 .RE
 .LP
-Note that index entries are indicated by the
+Index entries are indicated by the
 .B .IX
 macro, which
 causes the following text to be written to
@@ -711,9 +711,9 @@ To create an input file for
 .B "in the Bourne shell"
 environment, do the equivalent at your site of the command:
 .LP
-.nf
-\f(CWpsroff -ms -Tpsc -t sample.txt > /dev/null 2> sample.tmp\fP
-.fi
+.EX
+psroff -ms -Tpsc -t sample.txt > /dev/null 2> sample.tmp
+.EE
 .LP
 Some sites will require
 .I ditroff
@@ -722,28 +722,28 @@ instead of
 To filter out any genuine error messages, invoke
 .IR grep (1):
 .LP
-.RS
-\f(CWgrep '^IX: ' sample.tmp > sample.idx\fP
-.RE
+.EX
+grep '^IX: ' sample.tmp > sample.idx
+.EE
+.LP
 .\"---------------------------------------------------------------------
 .SS "CREATING THE INDEX FILE USING \*(Uc ENHANCED TROFF/\*(Ts"
 With \*(Uc Enhanced troff/\*(Ts, the
-.B \-I
+.B -I
 option of
 .IR psroff (1L)
 can produce both formatter output and an index file:
 .LP
-.RS
-\f(CWpsroff -ms -I sample.inp -Tpsc sample.txt\fP
-.RE
+.EX
+psroff -ms -I sample.inp -Tpsc sample.txt
+.EE
 .LP
 If it is wished to suppress the formatter output:
-.RS
 .LP
-.nf
-\f(CWpsroff -ms -I sample.inp -Tpsc -t sample.txt > /dev/null\fP
-.fi
-.RE
+.EX
+psroff -ms -I sample.inp -Tpsc -t sample.txt > /dev/null
+.EE
+.LP
 .\"---------------------------------------------------------------------
 .SS "COMPLETING THE INDEX"
 Any of the above procedures leaves the input for
@@ -753,9 +753,9 @@ in
 The next step is to invoke
 .IR makeindex :
 .LP
-.RS
-\f(CWmakeindex -s sample.ist sample.idx\fP
-.RE
+.EX
+makeindex -s sample.ist sample.idx
+.EE
 .LP
 This leaves
 .IR troff (1)-ready
@@ -768,7 +768,7 @@ By default,
 assumes
 .IR "word ordering" ;
 if the
-.B \-l
+.B -l
 option is in effect,
 .I "letter ordering"
 is used.  In word ordering, a blank precedes any letter in the
@@ -805,21 +805,21 @@ with a special character.
 Entries such as
 .LP
 .RS
-.nf
-\f(CW\\indexentry{alpha}{1}
+.EX
+\\indexentry{alpha}{1}
 \\indexentry{alpha!beta}{3}
-\\indexentry{alpha!beta!gamma}{10}\fP
-.fi
+\\indexentry{alpha!beta!gamma}{10}
+.EE
 .RE
 .LP
 in the input file will be converted to
 .LP
 .RS
-.nf
-\f(CW\\item alpha, 1
+.EX
+\\item alpha, 1
 \0\0\0\\subitem beta, 3
-\0\0\0\0\0\0\\subsubitem gamma, 10\fP
-.fi
+\0\0\0\0\0\0\\subsubitem gamma, 10
+.EE
 .RE
 .LP
 in the output index file.
@@ -834,13 +834,17 @@ using the
 (`@') operator.  For instance,
 .LP
 .RS
-\f(CW\\indexentry{alpha@{\\it alpha\\/}}{1}\fP
+.EX
+\\indexentry{alpha@{\\it alpha\\/}}{1}
+.EE
 .RE
 .LP
 will become
 .LP
 .RS
-\f(CW\\item {\\it alpha\\/},  1\fP
+.EX
+\\item {\\it alpha\\/},  1
+.EE
 .RE
 .LP
 after processing.  The pattern preceding `@' is
@@ -855,19 +859,19 @@ entries.
 The item, subitem, and subsubitem fields may have individual sort keys:
 .LP
 .RS
-.nf
-\f(CW\\indexentry{aa@{\\it aa\\/}!bb@{\\it bb\\/}!cc@{\\it cc\\/}}{1}\fP
-.fi
+.EX
+\\indexentry{aa@{\\it aa\\/}!bb@{\\it bb\\/}!cc@{\\it cc\\/}}{1}
+.EE
 .RE
 .LP
 This will be converted to
 .LP
 .RS
-.nf
-\f(CW\\item {\\it aa}, 1
+.EX
+\\item {\\it aa}, 1
 \0\0\0\\subitem {\\it bb}, 3
-\0\0\0\0\0\0\\subsubitem {\\it cc}, 10\fP
-.fi
+\0\0\0\0\0\0\\subsubitem {\\it cc}, 10
+.EE
 .RE
 .LP
 It is possible to encapsulate a page number with a designated
@@ -876,17 +880,21 @@ command using the
 (`|') operator:
 .LP
 .RS
-\f(CW\\indexentry{alpha|bold}{1}\fP
+.EX
+\\indexentry{alpha|bold}{1}
+.EE
 .RE
 .LP
 will be converted to
 .LP
 .RS
-\f(CW\\item alpha, \\bold{1}\fP
+.EX
+\\item alpha, \\bold{1}
+.EE
 .RE
 .LP
-where, with a suitable definition for \*(TX, \f(CW\\bold{n}\fP
-will expand to \f(CW{\\bf n}\fP.
+where, with a suitable definition for \*(TX, ``\\bold{n}''
+will expand to ``{\\bf n}''.
 In this example, the three output attributes associated with page
 encapsulation
 .BR encap_prefix ,
@@ -905,25 +913,33 @@ operator can also be used to create cross references in
 the index:
 .LP
 .RS
-\f(CW\\indexentry{alpha|see{beta}}{1}\fP
+.EX
+\\indexentry{alpha|see{beta}}{1}
+.EE
 .RE
 .LP
 will become
 .LP
 .RS
-\f(CW\\item alpha, \\see{beta}{1}\fP
+.EX
+\\item alpha, \\see{beta}{1}
+.EE
 .RE
 .LP
 in the output file, where
 .LP
 .RS
-\f(CW\\see{beta}{1}\fP
+.EX
+\\see{beta}{1}
+.EE
 .RE
 .LP
 will expand to
 .LP
 .RS
-\f(CW{\\it see\\/} beta\fP
+.EX
+{\\it see\\/} beta
+.EE
 .RE
 .LP
 Note that in a cross reference like this the page number disappears.
@@ -937,16 +953,18 @@ concatenated with
 (`|)') creates an explicit page range:
 .LP
 .RS
-.nf
-\f(CW\\indexentry{alpha|(}{1}
-\\indexentry{alpha|)}{5}\fP
-.fi
+.EX
+\\indexentry{alpha|(}{1}
+\\indexentry{alpha|)}{5}
+.EE
 .RE
 .LP
 will become
 .LP
 .RS
-\f(CW\\item alpha, 1\(em5\fP
+.EX
+\\item alpha, 1\(em5
+.EE
 .RE
 .LP
 Intermediate pages indexed by the same key will be merged into the
@@ -958,32 +976,36 @@ also include an extra command to set the page range in a designated
 font:
 .LP
 .RS
-.nf
-\f(CW\\indexentry{alpha|(bold}{1}
-\\indexentry{alpha|)}{5}\fP
-.fi
+.EX
+\\indexentry{alpha|(bold}{1}
+\\indexentry{alpha|)}{5}
+.EE
 .RE
 .LP
 will become
 .LP
 .RS
-\f(CW\\item alpha, \\bold{1--5}\fP
+.EX
+\\item alpha, \\bold{1--5}
+.EE
 .RE
 .LP
 Several potential problems are worth mentioning.  First, entries like
 .LP
 .RS
-.nf
-\f(CW\\indexentry{alpha|(}{1}
+.EX
+\\indexentry{alpha|(}{1}
 \\indexentry{alpha|bold}{3}
-\\indexentry{alpha|)}{5}\fP
-.fi
+\\indexentry{alpha|)}{5}
+.EE
 .RE
 .LP
 will be interpreted as
 .LP
 .RS
-\f(CW\\item alpha, \\bold{3}, 1--5\fP
+.EX
+\\item alpha, \\bold{3}, 1--5
+.EE
 .RE
 .LP
 but with a warning message in the transcript about encountering an
@@ -994,18 +1016,20 @@ possible) the range is broken into two subranges, one in Roman and the
 other in Arabic.  For instance,
 .LP
 .RS
-.nf
-\f(CW\\indexentry{alpha|(}{i}
+.EX
+\\indexentry{alpha|(}{i}
 \\indexentry{alpha}{iv}
 \\indexentry{alpha}{3}
-\\indexentry{alpha|)}{7}\fP
-.fi
+\\indexentry{alpha|)}{7}
+.EE
 .RE
 .LP
 will be turned into
 .LP
 .RS
-\f(CW\\item alpha, i--iv, 3--7\fP
+.EX
+\\item alpha, i--iv, 3--7
+.EE
 .RE
 .LP
 with a warning message in the transcript file complaining about an
@@ -1017,13 +1041,17 @@ escaped by the
 operator (`"').  Thus
 .LP
 .RS
-\f(CW\\indexentry{alpha"@beta}{1}\fP
+.EX
+\\indexentry{alpha"@beta}{1}
+.EE
 .RE
 .LP
 will actually become
 .LP
 .RS
-\f(CW\\item alpha@beta,  1\fP
+.EX
+\\item alpha@beta,  1
+.EE
 .RE
 .LP
 as a result of executing
@@ -1036,13 +1064,17 @@ by
 (`\\').  For example,
 .LP
 .RS
-\f(CW\\indexentry{f\\"ur}{1}\fP
+.EX
+\\indexentry{f\\"ur}{1}
+.EE
 .RE
 .LP
 becomes
 .LP
 .RS
-\f(CW\\item f\\"ur, 1\fP
+.EX
+\\item f\\"ur, 1
+.EE
 .RE
 .LP
 which represents an umlaut-accented `u' to the \*(TX family of
@@ -1050,7 +1082,8 @@ processors.
 .LP
 A page number can be a composite of one or more fields
 separated by the delimiter bound to
-.B page_compositor
+.\" the \% escape prevents hyphenation of the following word
+.B \%page_compositor
 (`-'), e.g., II-12 for page 12 of Chapter II.  Page numbers may
 contain up to ten fields.
 .PP
@@ -1082,10 +1115,10 @@ Here is an example showing the indexing of all printable ASCII
 characters other than letters and digits, assuming the default
 \*(TX format.  For convenience, the page number references are
 the corresponding ASCII ordinal values.
+.LP
 .RS
-.nf
-
-\f(CW\\indexentry{" @"  (space)}{32}
+.EX
+\\indexentry{" @"  (space)}{32}
 \\indexentry{"!@"! (exclamation point)}{33}
 \\indexentry{""@"" (quotation mark)}{34}
 \\indexentry{"#@"\\# (sharp sign)}{35}
@@ -1106,10 +1139,10 @@ the corresponding ASCII ordinal values.
 \\indexentry{"{@"\\"{ (left brace)}{123}
 \\indexentry{"|@"\\verb="|= (vertical bar)}{124}
 \\indexentry{"}@"\\"} (right brace)}{125}
-\\indexentry{"~@"\\verb=~= (tilde)}{126}\fP
-
-.fi
+\\indexentry{"~@"\\verb=~= (tilde)}{126}
+.EE
 .RE
+.LP
 Characters in the actual fields following the `@' character which
 have special significance to \*(TX must be represented as control
 sequences, or as math mode characters.  Note particularly how the
@@ -1117,10 +1150,10 @@ entries for the at sign, left and right braces, and the vertical
 bar, are coded.  The index file output by
 .I makeindex
 for this example looks like this:
+.LP
 .RS
-.nf
-
-\f(CW\\begin{theindex}
+.EX
+\\begin{theindex}
 
   \\item ! (exclamation point), 33
   \\item " (quotation mark), 34
@@ -1148,8 +1181,8 @@ for this example looks like this:
 
   \\item   (space), 32
 
-\\end{theindex}\fP
-.fi
+\\end{theindex}
+.EE
 .RE
 .\"=====================================================================
 .SH "FILES"
@@ -1218,7 +1251,7 @@ Nelson Beebe improved on the portable version, and maintained the
 source distribution for the \*(TX Users Group for many years.
 Andreas Brosig contributed to the German word ordering.
 The modification to the
-.B \-ms
+.B -ms
 macros was derived from a method proposed by Ravi Sethi of AT&T
 Bell Laboratories.
 The

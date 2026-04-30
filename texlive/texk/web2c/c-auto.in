@@ -55,8 +55,8 @@
 /* Define to 1 if you have the 'atoi' function. */
 #undef HAVE_ATOI
 
-/* define if the compiler supports basic C++11 syntax */
-#undef HAVE_CXX11
+/* define if the compiler supports basic C++17 syntax */
+#undef HAVE_CXX17
 
 /* Define to 1 if you have the declaration of 'isascii', and to 0 if you
    don't. */
@@ -312,6 +312,10 @@
 /* Enable extensions on AIX, Interix, z/OS.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
+#endif
+/* Enable extensions on Cosmopolitan Libc. */
+#ifndef _COSMO_SOURCE
+# undef _COSMO_SOURCE
 #endif
 /* Enable general extensions on macOS.  */
 #ifndef _DARWIN_C_SOURCE

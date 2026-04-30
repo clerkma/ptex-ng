@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: dvipdfmx-spot.test 78757 2026-04-20 21:57:51Z karl $
 # Copyright 2026 Munehiro Yamamoto <munepixyz@gmail.com>
 # You may freely use, modify and/or distribute this file.
 #

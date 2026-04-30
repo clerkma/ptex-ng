@@ -1,3 +1,12 @@
+2026-04-25  Karl Berry  <karl@freefriends.org>
+
+	* buildinfo.sh: show C and C++ language versions being used (I hope).
+	(compiler_std): new fn.
+
+2026-04-21  Karl Berry  <karl@freefriends.org>
+
+	* build-tools.txt: autoconf 2.73.
+
 2026-02-09  Karl Berry  <karl@freefriends.org>
 
 	* build-tools.txt: m4 1.4.21.
