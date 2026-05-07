@@ -27,7 +27,7 @@ jobs:
             tds_platform: universal-darwin
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
@@ -77,10 +77,11 @@ jobs:
           cd test && sh run.sh
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: aptex-${{ matrix.platform }}
           path: blade-bin/src/aptex
+          archive: false
 
       - name: Upload to release
         if: github.event_name == 'push'
@@ -96,7 +97,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -112,10 +113,11 @@ jobs:
         run: cd test && run.bat
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: aptex-windows-x64
+          name: aptex-windows-x64.exe
           path: build-msvc/aptex.exe
+          archive: false
 
       - name: Upload to release
         if: github.event_name == 'push'
