@@ -47,10 +47,10 @@ jobs:
           mkdir -p release
 
           for target in linux-x64 linux-arm64 macos-universal; do
-            install -D -m 755 release/aptex "release/aptex-${target}"
+            install -D -m 755 "artifacts/aptex-${target}" release/aptex
             tar czf "release/aptex-${target}.tar.gz" -C release aptex
+            rm release/aptex
           done
-          rm release/aptex
 
           cp artifacts/aptex-windows-x64.exe release/aptex.exe
           (cd release && zip aptex-windows-x64.zip aptex.exe)
