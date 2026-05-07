@@ -5,6 +5,13 @@
 *.exe
 *.pdb
 .vscode
+build64_release/
+build64_debug/
+AGENTS.md
+CLAUDE.md
+llmdoc/
+blade-bin
+.llmdoc-tmp/
 GPATH
 GRTAGS
 GSYMS

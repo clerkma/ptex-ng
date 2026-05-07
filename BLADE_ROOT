@@ -1,0 +1,16 @@
+cc_config(
+    cflags = ['-Wno-deprecated-non-prototype'],
+    warnings = ['-Wall'],
+    optimize = ['-O2'],
+    hdr_dep_missing_severity = 'debug',
+    allowed_undeclared_hdrs = ['*'],
+)
+
+cc_library_config(
+    hdrs_missing_severity = 'debug',
+    hdrs_missing_suppress = ['*'],
+)
+
+global_config(
+    default_visibility = ['PUBLIC'],
+)
