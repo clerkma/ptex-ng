@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   sync:
@@ -78,6 +79,7 @@ jobs:
 
       - name: Commit and push
         if: steps.check.outputs.needs_sync != 'false'
+        id: push
         run: |
           HEAD_REV=${{ steps.check.outputs.head }}
           git config user.name "github-actions[bot]"
@@ -85,7 +87,15 @@ jobs:
           git add texlive/ TEXLIVE_REVISION
           if git diff --cached --quiet; then
             echo "No actual file changes"
+            echo "pushed=false" >> $GITHUB_OUTPUT
             exit 0
           fi
           git commit -m "synchronized texlive $HEAD_REV."
           git push
+          echo "pushed=true" >> $GITHUB_OUTPUT
+
+      - name: Trigger build
+        if: steps.push.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run blade-build-bin.yml --ref master
