@@ -1,0 +1,80 @@
+name: Build Binaries (Blade)
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+            tds_platform: x86_64-linux
+          - os: ubuntu-24.04-arm
+            platform: linux-arm64
+            tds_platform: aarch64-linux
+          - os: macos-latest
+            platform: macos-arm64
+            tds_platform: aarch64-darwin
+          - os: macos-13
+            platform: macos-x64
+            tds_platform: x86_64-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y automake autoconf libtool texinfo gcc make ninja-build python3-pip ruby
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install automake autoconf libtool texinfo ninja
+
+      - name: Install blade-build
+        run: pip3 install blade-build --break-system-packages || pip3 install blade-build
+
+      - name: Build
+        run: blade build //src:aptex
+
+      - name: Test
+        run: |
+          cp blade-bin/src/aptex src/aptex
+          cd test && sh run.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aptex-${{ matrix.platform }}
+          path: blade-bin/src/aptex
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build
+        shell: cmd
+        run: cd build-msvc && build-aptex.bat
+
+      - name: Test
+        shell: cmd
+        run: cd test && run.bat
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aptex-windows-x64
+          path: build-msvc/aptex.exe

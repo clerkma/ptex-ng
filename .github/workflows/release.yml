@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for build and download artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHA=$(git rev-parse HEAD)
+          echo "Looking for successful blade-build-bin run on $SHA..."
+
+          for i in $(seq 1 60); do
+            RUN_ID=$(gh run list \
+              --workflow=blade-build-bin.yml \
+              --commit="$SHA" \
+              --status=success \
+              --json databaseId \
+              -q '.[0].databaseId')
+
+            if [ -n "$RUN_ID" ]; then
+              echo "Found successful run: $RUN_ID"
+              gh run download "$RUN_ID" --dir artifacts/
+              exit 0
+            fi
+
+            echo "Waiting for build workflow... attempt $i/60"
+            sleep 30
+          done
+
+          echo "::error::Build workflow did not complete within 30 minutes"
+          exit 1
+
+      - name: Prepare per-platform archives
+        run: |
+          mkdir -p release
+
+          cp artifacts/aptex-linux-x64/aptex release/aptex
+          chmod +x release/aptex
+          tar czf release/aptex-linux-x64.tar.gz -C release aptex
+          rm release/aptex
+
+          cp artifacts/aptex-linux-arm64/aptex release/aptex
+          chmod +x release/aptex
+          tar czf release/aptex-linux-arm64.tar.gz -C release aptex
+          rm release/aptex
+
+          cp artifacts/aptex-macos-arm64/aptex release/aptex
+          chmod +x release/aptex
+          tar czf release/aptex-macos-arm64.tar.gz -C release aptex
+          rm release/aptex
+
+          cp artifacts/aptex-macos-x64/aptex release/aptex
+          chmod +x release/aptex
+          tar czf release/aptex-macos-x64.tar.gz -C release aptex
+          rm release/aptex
+
+          cp artifacts/aptex-windows-x64/aptex.exe release/aptex.exe
+          (cd release && zip aptex-windows-x64.zip aptex.exe)
+          rm release/aptex.exe
+
+      - name: Prepare TDS archive
+        run: |
+          mkdir -p tds/bin/x86_64-linux
+          mkdir -p tds/bin/aarch64-linux
+          mkdir -p tds/bin/x86_64-darwin
+          mkdir -p tds/bin/aarch64-darwin
+          mkdir -p tds/bin/x86_64-windows
+
+          cp artifacts/aptex-linux-x64/aptex tds/bin/x86_64-linux/aptex
+          cp artifacts/aptex-linux-arm64/aptex tds/bin/aarch64-linux/aptex
+          cp artifacts/aptex-macos-x64/aptex tds/bin/x86_64-darwin/aptex
+          cp artifacts/aptex-macos-arm64/aptex tds/bin/aarch64-darwin/aptex
+          cp artifacts/aptex-windows-x64/aptex.exe tds/bin/x86_64-windows/aptex.exe
+
+          chmod +x tds/bin/x86_64-linux/aptex
+          chmod +x tds/bin/aarch64-linux/aptex
+          chmod +x tds/bin/x86_64-darwin/aptex
+          chmod +x tds/bin/aarch64-darwin/aptex
+
+          (cd tds && zip -r ../release/aptex-tds.zip bin/)
+
+      - name: Generate checksums
+        run: (cd release && sha256sum * > checksums.txt)
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          gh release create "$TAG" \
+            --title "aptex $TAG" \
+            --generate-notes \
+            --prerelease \
+            release/*
