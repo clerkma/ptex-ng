@@ -6,6 +6,11 @@ cc_config(
     allowed_undeclared_hdrs = ['*'],
 )
 
+cc_test_config(
+    gtest_libs = [],
+    gtest_main_libs = [],
+)
+
 cc_library_config(
     hdrs_missing_severity = 'debug',
     hdrs_missing_suppress = ['*'],

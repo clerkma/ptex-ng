@@ -2,3 +2,15 @@ fmt/*.fmt
 fmt/*.log
 *.log
 *.dvi
+*.pdf
+
+# Test work directories
+regression/_work/
+trip/_work/
+bench/_work/
+
+# Compiled test binaries
+unit/test_badness
+unit/test_memory_word
+unit/test_encoding
+bench/harness/bench_engine

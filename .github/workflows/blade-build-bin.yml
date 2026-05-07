@@ -50,7 +50,13 @@ jobs:
           CC: ${{ runner.os == 'macOS' && 'clang' || 'gcc' }}
           CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}
 
-      - name: Test
+      - name: Unit Tests
+        run: blade test //test/unit/...
+        env:
+          CC: ${{ runner.os == 'macOS' && 'clang' || 'gcc' }}
+          CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}
+
+      - name: Smoke Test
         run: |
           cp blade-bin/src/aptex src/aptex
           cd test && sh run.sh
