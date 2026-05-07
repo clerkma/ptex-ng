@@ -69,6 +69,7 @@ jobs:
           asset_name: aptex-${{ matrix.platform }}
           tag: ${{ github.ref }}-${{ github.run_id }}
           overwrite: true
+          prerelease: true
 
   build-windows:
     runs-on: windows-latest
@@ -103,3 +104,4 @@ jobs:
           asset_name: aptex-windows-x64.exe
           tag: ${{ github.ref }}-${{ github.run_id }}
           overwrite: true
+          prerelease: true
