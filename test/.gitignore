@@ -14,4 +14,6 @@ bench/_work/
 unit/test_badness
 unit/test_memory_word
 unit/test_encoding
+unit/test_scaled_arith
+unit/test_node_alloc
 bench/harness/bench_engine

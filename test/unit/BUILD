@@ -47,3 +47,21 @@ cc_test(
     defs = ['UNITY_INCLUDE_DOUBLE'],
     testdata = [],
 )
+
+cc_test(
+    name = 'test_scaled_arith',
+    srcs = ['test_scaled_arith.c'],
+    deps = [':unity'],
+    incs = ['vendor/unity'],
+    defs = ['UNITY_INCLUDE_DOUBLE'],
+    testdata = [],
+)
+
+cc_test(
+    name = 'test_node_alloc',
+    srcs = ['test_node_alloc.c'],
+    deps = [':unity'],
+    incs = ['vendor/unity'],
+    defs = ['UNITY_INCLUDE_DOUBLE'],
+    testdata = [],
+)
