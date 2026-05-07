@@ -186,16 +186,19 @@ static void print_aptex_info (void)
   GetModuleFileNameA(NULL, executable_path, 65536);
 #elif defined (__gnu_linux__) || defined (__ANDROID__)
   ssize_t executable_size;
-  executable_size = readlink("/proc/self/exe", executable_path, 65536);
+  executable_size = readlink("/proc/self/exe", executable_path, 65535);
+  if (executable_size > 0) executable_path[executable_size] = '\0';
 #elif defined (__NetBSD__)
   ssize_t executable_size;
-  executable_size = readlink("/proc/curproc/exe", executable_path, 65536);
+  executable_size = readlink("/proc/curproc/exe", executable_path, 65535);
+  if (executable_size > 0) executable_path[executable_size] = '\0';
 #elif defined (__DragonFly__)
   ssize_t executable_size;
-  executable_size = readlink("/proc/curproc/file", executable_path, 65536);
+  executable_size = readlink("/proc/curproc/file", executable_path, 65535);
+  if (executable_size > 0) executable_path[executable_size] = '\0';
 #elif defined (__APPLE__)
   extern int _NSGetExecutablePath(char* buf, uint32_t* bufsize);
-  uint32_t executable_path_length;
+  uint32_t executable_path_length = 65536;
   _NSGetExecutablePath(executable_path, &executable_path_length);
 #endif
 
@@ -2289,7 +2292,7 @@ static char * utf8_mbcs (const char * utf8_str)
 static void t_open_in (void)
 {
   buffer[first] = 0;
-  sprintf((char *) &buffer[first], "%s", aptex_env.aptex_src);
+  snprintf((char *) &buffer[first], (size_t) (buf_size - first), "%s", aptex_env.aptex_src);
 
   for (last = first; buffer[last]; ++last)
     do_nothing();
@@ -23287,7 +23290,7 @@ static void write_out (pointer p)
             and report in the log. We don't check the actual exit status of
             the command, or do anything with the output.}
         */
-        char * shell_cmd = calloc(cur_length, 1);
+        char * shell_cmd = calloc(cur_length + 1, 1);
         strncpy(shell_cmd, (char *) str_pool + str_start[str_ptr], cur_length);
         runsystem_ret = system(shell_cmd);
         switch (runsystem_ret)
