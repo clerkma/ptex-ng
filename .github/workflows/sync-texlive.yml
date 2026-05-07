@@ -1,0 +1,101 @@
+name: Sync TeX Live
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install subversion
+        run: sudo apt-get update && sudo apt-get install -y subversion
+
+      - name: Check for updates
+        id: check
+        run: |
+          SVN_URL="svn://tug.org/texlive/trunk/Build/source"
+          LAST_REV=$(cat TEXLIVE_REVISION | tr -d '[:space:]')
+          HEAD_REV=$(svn info "$SVN_URL" | grep "^Revision:" | awk '{print $2}')
+
+          echo "last=$LAST_REV" >> $GITHUB_OUTPUT
+          echo "head=$HEAD_REV" >> $GITHUB_OUTPUT
+
+          if [ "$LAST_REV" = "$HEAD_REV" ]; then
+            echo "Already at revision $HEAD_REV"
+            echo "needs_sync=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Update available: $LAST_REV -> $HEAD_REV"
+
+          # Directories we depend on (relative to SVN root)
+          WATCHED_DIRS="libs/zlib libs/libpng libs/libpaper texk/kpathsea texk/ptexenc texk/dvipdfm-x texk/web2c/synctexdir texk/web2c/libmd5 texk/texlive"
+
+          # Get list of changed paths
+          CHANGES=$(svn diff --summarize -r "$LAST_REV:$HEAD_REV" "$SVN_URL" | awk '{print $2}')
+
+          # Check if any watched directory is affected
+          AFFECTED=""
+          for dir in $WATCHED_DIRS; do
+            if echo "$CHANGES" | grep -q "/$dir/\|/$dir$"; then
+              AFFECTED="$AFFECTED $dir"
+            fi
+          done
+
+          if [ -z "$AFFECTED" ]; then
+            echo "Changes only in unwatched directories, updating revision marker only"
+            echo "needs_sync=marker_only" >> $GITHUB_OUTPUT
+            echo "affected=" >> $GITHUB_OUTPUT
+          else
+            echo "Affected directories:$AFFECTED"
+            echo "needs_sync=true" >> $GITHUB_OUTPUT
+            echo "affected=$AFFECTED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Sync affected directories
+        if: steps.check.outputs.needs_sync == 'true'
+        run: |
+          SVN_URL="svn://tug.org/texlive/trunk/Build/source"
+          HEAD_REV=${{ steps.check.outputs.head }}
+          AFFECTED="${{ steps.check.outputs.affected }}"
+
+          for dir in $AFFECTED; do
+            echo "Syncing texlive/$dir ..."
+            rm -rf "texlive/$dir"
+            svn export -r "$HEAD_REV" "$SVN_URL/$dir" "texlive/$dir"
+          done
+
+      - name: Update revision marker
+        if: steps.check.outputs.needs_sync != 'false'
+        run: echo "${{ steps.check.outputs.head }}" > TEXLIVE_REVISION
+
+      - name: Commit and push
+        if: steps.check.outputs.needs_sync != 'false'
+        id: push
+        run: |
+          HEAD_REV=${{ steps.check.outputs.head }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add texlive/ TEXLIVE_REVISION
+          if git diff --cached --quiet; then
+            echo "No actual file changes"
+            echo "pushed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          git commit -m "synchronized texlive $HEAD_REV."
+          git push
+          echo "pushed=true" >> $GITHUB_OUTPUT
+
+      - name: Trigger build
+        if: steps.push.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run blade-build-bin.yml --ref master

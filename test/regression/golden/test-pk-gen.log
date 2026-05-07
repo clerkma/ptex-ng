@@ -1,0 +1,18 @@
+This is aptex
+entering extended mode
+**test-pk-gen.tex
+(test-pk-gen.tex
+! Font \f=punk10 not loadable: Metric (TFM) file not found.
+<to be read again> 
+                   \f 
+l.2 \f
+      
+? 
+! Emergency stop.
+<to be read again> 
+                   \f 
+l.2 \f
+      
+End of file on the terminal!
+
+No pages of output.

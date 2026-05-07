@@ -1,0 +1,5 @@
+# Trip test minimal kpathsea config
+TEXMFCNF = .
+TEXINPUTS = .
+TEXFONTS = .
+TFMFONTS = .
