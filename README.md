@@ -1,19 +1,23 @@
 
 ## Build Status
 
-![pTeX-ng Workflow](https://github.com/clerkma/ptex-ng/actions/workflows/build-bin.yml/badge.svg)
-[![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/clerkma/ptex-ng?branch=master&svg=true)](https://ci.appveyor.com/project/clerkma/ptex-ng)
+![Build Binaries](https://github.com/clerkma/ptex-ng/actions/workflows/blade-build-bin.yml/badge.svg)
 
 ## How to Build
-### Linux/Mac
 
-Compilers tested:
- * `gcc` (Linux)
- * `clang` (macOS)
+### Linux/macOS (blade-build)
 
-Run the shell script:
+Prerequisites: `automake`, `autoconf`, `libtool`, `texinfo`, `ninja`, `gcc`/`clang`
 
-    ./build-gcc/build-aptex.sh
+Install [blade-build](https://github.com/blade-build/blade-build):
+
+    curl https://blade-build.github.io/install.sh | bash
+
+Build:
+
+    blade build //src:aptex
+
+Output binary: `blade-bin/src/aptex`
 
 ### Windows/MSVC
 

@@ -1,0 +1,129 @@
+name: Build Binaries (Blade)
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+            tds_platform: x86_64-linux
+          - os: ubuntu-24.04-arm
+            platform: linux-arm64
+            tds_platform: aarch64-linux
+          - os: macos-latest
+            platform: macos-universal
+            tds_platform: universal-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y automake autoconf libtool texinfo gcc make ninja-build python3-pip ruby
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install automake autoconf libtool texinfo ninja
+
+      - name: Install blade-build
+        run: |
+          curl https://blade-build.github.io/install.sh | bash
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Patch BLADE_ROOT for universal build
+        if: matrix.platform == 'macos-universal'
+        run: |
+          python3 -c "
+          content = open('BLADE_ROOT').read()
+          content = content.replace(
+              \"cflags = ['-Wno-deprecated-non-prototype']\",
+              \"cflags = ['-Wno-deprecated-non-prototype', '-arch arm64', '-arch x86_64'],\n    linkflags = ['-arch arm64', '-arch x86_64']\"
+          )
+          open('BLADE_ROOT', 'w').write(content)
+          "
+
+      - name: Build
+        run: blade build //src:aptex
+        env:
+          CC: ${{ runner.os == 'macOS' && 'clang' || 'gcc' }}
+          CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}
+          CFLAGS: ${{ matrix.platform == 'macos-universal' && '-arch arm64 -arch x86_64' || '' }}
+          CXXFLAGS: ${{ matrix.platform == 'macos-universal' && '-arch arm64 -arch x86_64' || '' }}
+          LDFLAGS: ${{ matrix.platform == 'macos-universal' && '-arch arm64 -arch x86_64' || '' }}
+
+      - name: Unit Tests
+        run: blade test //test/unit/...
+        env:
+          CC: ${{ runner.os == 'macOS' && 'clang' || 'gcc' }}
+          CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}
+
+      - name: Smoke Test
+        run: |
+          cp blade-bin/src/aptex src/aptex
+          cd test && sh run.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aptex-${{ matrix.platform }}
+          path: blade-bin/src/aptex
+
+      - name: Upload to release
+        if: github.event_name == 'push'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: blade-bin/src/aptex
+          asset_name: aptex-${{ matrix.platform }}
+          tag: ${{ github.ref }}-${{ github.run_id }}
+          overwrite: true
+          prerelease: true
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build
+        shell: cmd
+        run: cd build-msvc && build-aptex.bat
+
+      - name: Test
+        shell: cmd
+        run: cd test && run.bat
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aptex-windows-x64
+          path: build-msvc/aptex.exe
+
+      - name: Upload to release
+        if: github.event_name == 'push'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build-msvc/aptex.exe
+          asset_name: aptex-windows-x64.exe
+          tag: ${{ github.ref }}-${{ github.run_id }}
+          overwrite: true
+          prerelease: true
