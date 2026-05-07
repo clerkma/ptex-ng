@@ -20,7 +20,6 @@ if [ ! -x "$APTEX" ]; then
 fi
 
 GOLDEN_DIR="$SCRIPT_DIR/golden"
-INPUT_DIR="$SCRIPT_DIR/inputs"
 WORK_DIR="$SCRIPT_DIR/_work"
 UPDATE_MODE=0
 FAILED=0
@@ -62,11 +61,13 @@ run_test() {
     return
   fi
 
-  # Normalize: remove timestamps, version strings, file paths that vary
+  # Normalize: strip version banner, output lines, and absolute paths
   sed -e 's/^This is.*$/This is aptex/g' \
       -e '/^Output written on/d' \
       -e '/^Transcript written on/d' \
       -e 's/ [0-9]* bytes//' \
+      -e 's|/[^ ]*/\([^/ ]*\.tex\)|\1|g' \
+      -e 's|\*\*/[^ ]*/\([^/ ]*\.tex\)|**\1|g' \
       "${base}.log" > "${base}.log.normalized"
 
   if [ "$UPDATE_MODE" = "1" ]; then
@@ -89,15 +90,8 @@ run_test() {
   fi
 }
 
-# Copy existing test inputs for regression
-for f in "$TEST_ROOT"/test*.tex; do
-  if [ -f "$f" ]; then
-    cp "$f" "$INPUT_DIR/" 2>/dev/null || true
-  fi
-done
-
 echo "=== Running regression tests ==="
-for f in "$INPUT_DIR"/*.tex "$TEST_ROOT"/test*.tex; do
+for f in "$TEST_ROOT"/test*.tex; do
   [ -f "$f" ] && run_test "$f"
 done
 

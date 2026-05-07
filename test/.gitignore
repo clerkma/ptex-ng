@@ -1,6 +1,7 @@
 fmt/*.fmt
 fmt/*.log
 *.log
+!regression/golden/*.log
 *.dvi
 *.pdf
 
