@@ -23,8 +23,8 @@ jobs:
             platform: linux-arm64
             tds_platform: aarch64-linux
           - os: macos-latest
-            platform: macos-arm64
-            tds_platform: aarch64-darwin
+            platform: macos-universal
+            tds_platform: universal-darwin
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -44,11 +44,26 @@ jobs:
           curl https://blade-build.github.io/install.sh | bash
           echo "$HOME/bin" >> $GITHUB_PATH
 
+      - name: Patch BLADE_ROOT for universal build
+        if: matrix.platform == 'macos-universal'
+        run: |
+          python3 -c "
+          content = open('BLADE_ROOT').read()
+          content = content.replace(
+              \"cflags = ['-Wno-deprecated-non-prototype']\",
+              \"cflags = ['-Wno-deprecated-non-prototype', '-arch arm64', '-arch x86_64'],\n    linkflags = ['-arch arm64', '-arch x86_64']\"
+          )
+          open('BLADE_ROOT', 'w').write(content)
+          "
+
       - name: Build
         run: blade build //src:aptex
         env:
           CC: ${{ runner.os == 'macOS' && 'clang' || 'gcc' }}
           CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}
+          CFLAGS: ${{ matrix.platform == 'macos-universal' && '-arch arm64 -arch x86_64' || '' }}
+          CXXFLAGS: ${{ matrix.platform == 'macos-universal' && '-arch arm64 -arch x86_64' || '' }}
+          LDFLAGS: ${{ matrix.platform == 'macos-universal' && '-arch arm64 -arch x86_64' || '' }}
 
       - name: Unit Tests
         run: blade test //test/unit/...

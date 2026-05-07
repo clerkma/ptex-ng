@@ -4,8 +4,8 @@
 # You may freely use, modify and/or distribute this file.
 #
 
-CC = gcc
-AR = ar
+CC ?= gcc
+AR ?= ar
 CFLAGS += $(CDEBUG) -c -O2
 SYNCTEXINCLUDES = -I.. \
 	-I $(TLROOT)/texk \

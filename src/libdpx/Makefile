@@ -4,7 +4,7 @@
 # You may freely use, modify and/or distribute this file.
 #
 
-CC := gcc
+CC ?= gcc
 ROOT := $(TLROOT)/texk/dvipdfm-x
 CFLAGS += $(CDEBUG) -c -I. -I ng \
 	-I $(TLROOT)/texk \
