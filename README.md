@@ -1,7 +1,7 @@
 
 ## Build Status
 
-![Build Binaries](https://github.com/Liam0205/ptex-ng/actions/workflows/blade-build-bin.yml/badge.svg)
+![Build Binaries](https://github.com/clerkma/ptex-ng/actions/workflows/blade-build-bin.yml/badge.svg)
 
 ## How to Build
 
