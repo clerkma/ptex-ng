@@ -61,11 +61,6 @@ jobs:
           tar czf release/aptex-macos-arm64.tar.gz -C release aptex
           rm release/aptex
 
-          cp artifacts/aptex-macos-x64/aptex release/aptex
-          chmod +x release/aptex
-          tar czf release/aptex-macos-x64.tar.gz -C release aptex
-          rm release/aptex
-
           cp artifacts/aptex-windows-x64/aptex.exe release/aptex.exe
           (cd release && zip aptex-windows-x64.zip aptex.exe)
           rm release/aptex.exe
@@ -74,19 +69,16 @@ jobs:
         run: |
           mkdir -p tds/bin/x86_64-linux
           mkdir -p tds/bin/aarch64-linux
-          mkdir -p tds/bin/x86_64-darwin
           mkdir -p tds/bin/aarch64-darwin
           mkdir -p tds/bin/x86_64-windows
 
           cp artifacts/aptex-linux-x64/aptex tds/bin/x86_64-linux/aptex
           cp artifacts/aptex-linux-arm64/aptex tds/bin/aarch64-linux/aptex
-          cp artifacts/aptex-macos-x64/aptex tds/bin/x86_64-darwin/aptex
           cp artifacts/aptex-macos-arm64/aptex tds/bin/aarch64-darwin/aptex
           cp artifacts/aptex-windows-x64/aptex.exe tds/bin/x86_64-windows/aptex.exe
 
           chmod +x tds/bin/x86_64-linux/aptex
           chmod +x tds/bin/aarch64-linux/aptex
-          chmod +x tds/bin/x86_64-darwin/aptex
           chmod +x tds/bin/aarch64-darwin/aptex
 
           (cd tds && zip -r ../release/aptex-tds.zip bin/)

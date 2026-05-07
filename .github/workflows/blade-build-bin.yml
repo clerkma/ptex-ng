@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [master]
 
+permissions:
+  contents: write
+
 jobs:
   build-unix:
     strategy:
@@ -21,9 +24,6 @@ jobs:
           - os: macos-latest
             platform: macos-arm64
             tds_platform: aarch64-darwin
-          - os: macos-13
-            platform: macos-x64
-            tds_platform: x86_64-darwin
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -39,10 +39,15 @@ jobs:
         run: brew install automake autoconf libtool texinfo ninja
 
       - name: Install blade-build
-        run: pip3 install blade-build --break-system-packages || pip3 install blade-build
+        run: |
+          curl https://blade-build.github.io/install.sh | bash
+          echo "$HOME/bin" >> $GITHUB_PATH
 
       - name: Build
         run: blade build //src:aptex
+        env:
+          CC: ${{ runner.os == 'macOS' && 'clang' || 'gcc' }}
+          CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}
 
       - name: Test
         run: |
@@ -54,6 +59,16 @@ jobs:
         with:
           name: aptex-${{ matrix.platform }}
           path: blade-bin/src/aptex
+
+      - name: Upload to release
+        if: github.event_name == 'push'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: blade-bin/src/aptex
+          asset_name: aptex-${{ matrix.platform }}
+          tag: ${{ github.ref }}-${{ github.run_id }}
+          overwrite: true
 
   build-windows:
     runs-on: windows-latest
@@ -78,3 +93,13 @@ jobs:
         with:
           name: aptex-windows-x64
           path: build-msvc/aptex.exe
+
+      - name: Upload to release
+        if: github.event_name == 'push'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build-msvc/aptex.exe
+          asset_name: aptex-windows-x64.exe
+          tag: ${{ github.ref }}-${{ github.run_id }}
+          overwrite: true
