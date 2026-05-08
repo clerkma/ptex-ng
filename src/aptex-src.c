@@ -163,7 +163,8 @@ static void scivilize (char * date)
   int k;
   char pyear[6];
 
-  strcpy(pyear, date + 7);
+  strncpy(pyear, date + 7, sizeof(pyear) - 1);
+  pyear[sizeof(pyear) - 1] = '\0';
 
   for (k = 5; k >= 0; k--)
     date[k + 5] = date[k];
@@ -1538,7 +1539,7 @@ static void aptex_commands_init (int ac, char **av)
           free(aptex_env.aptex_src);
 
         aptex_env.aptex_src = (char *) calloc(strlen(av[optind]) + 2, sizeof(char));
-        sprintf(aptex_env.aptex_src, "%s ", av[optind]);
+        snprintf(aptex_env.aptex_src, strlen(av[optind]) + 2, "%s ", av[optind]);
       }
 
       optind++;
@@ -1561,7 +1562,7 @@ static void aptex_commands_init (int ac, char **av)
     aptex_utils_exit(EXIT_FAILURE);
   }
 
-  sprintf(TEX_format_default, " %s.fmt", format_name);
+  snprintf(TEX_format_default, strlen(format_name) + 6, " %s.fmt", format_name);
   format_default_length = strlen(TEX_format_default + 1);
 }
 
