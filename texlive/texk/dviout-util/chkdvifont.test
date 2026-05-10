@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: chkdvifont.test 78952 2026-05-09 20:00:22Z karl $
 # Copyright 2018-2026 Japanese TeX Development Community <issue@texjp.org>
 # You may freely use, modify and/or distribute this file.
 
@@ -72,12 +72,12 @@ $_chkdvifont -c $testdir/upphirakakuw6-h.tfm > xupp6-h.cfn && \
 
 ## Unicode filename
 if [ "$COMSPEC" != "" ] || [ "$ExeExt" = ".exe" ]; then
-  echo "*** We guess OS is Windows."
+  echo "$0: We guess OS is Windows."
   MyOS=Windows
   command_line_encoding=utf8
   export command_line_encoding
 else
-  echo "*** We guess OS is not Windows."
+  echo "$0: We guess OS is not Windows."
   MyOS=nonWindows
 fi
 cp $testdir/oldindep.dvi ./oidΔДदダ打다𝕯🎉.dvi && \
@@ -88,6 +88,4 @@ cp $testdir/oldindep.dvi ./oidΔДदダ打다𝕯🎉.dvi && \
 # output STDOUT to terminal
 $_chkdvifont -c ./oidΔДदダ打다𝕯🎉.dvi
 
-
 exit 0
-
