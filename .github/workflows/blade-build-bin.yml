@@ -27,7 +27,7 @@ jobs:
             tds_platform: universal-darwin
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
@@ -57,7 +57,10 @@ jobs:
           "
 
       - name: Build
-        run: blade build //src:aptex
+        run: |
+          blade build //src:aptex
+          cp blade-bin/src/aptex blade-bin/src/aptex-${{ matrix.platform }} # for artifact upload
+          cp blade-bin/src/aptex src/aptex # for smoke test
         env:
           CC: ${{ runner.os == 'macOS' && 'clang' || 'gcc' }}
           CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}
@@ -72,15 +75,14 @@ jobs:
           CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}
 
       - name: Smoke Test
-        run: |
-          cp blade-bin/src/aptex src/aptex
-          cd test && sh run.sh
+        run: cd test && sh run.sh
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: aptex-${{ matrix.platform }}
-          path: blade-bin/src/aptex
+          path: blade-bin/src/aptex-${{ matrix.platform }}
+          archive: false
 
       - name: Upload to release
         if: github.event_name == 'push'
@@ -96,7 +98,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -112,10 +114,11 @@ jobs:
         run: cd test && run.bat
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: aptex-windows-x64
+          name: aptex-windows-x64.exe
           path: build-msvc/aptex.exe
+          archive: false
 
       - name: Upload to release
         if: github.event_name == 'push'

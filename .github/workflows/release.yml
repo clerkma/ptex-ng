@@ -12,7 +12,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Wait for build and download artifacts
         env:
@@ -46,41 +46,22 @@ jobs:
         run: |
           mkdir -p release
 
-          cp artifacts/aptex-linux-x64/aptex release/aptex
-          chmod +x release/aptex
-          tar czf release/aptex-linux-x64.tar.gz -C release aptex
-          rm release/aptex
+          for target in linux-x64 linux-arm64 macos-universal; do
+            install -D -m 755 "artifacts/aptex-${target}" release/aptex
+            tar czf "release/aptex-${target}.tar.gz" -C release aptex
+            rm release/aptex
+          done
 
-          cp artifacts/aptex-linux-arm64/aptex release/aptex
-          chmod +x release/aptex
-          tar czf release/aptex-linux-arm64.tar.gz -C release aptex
-          rm release/aptex
-
-          cp artifacts/aptex-macos-arm64/aptex release/aptex
-          chmod +x release/aptex
-          tar czf release/aptex-macos-arm64.tar.gz -C release aptex
-          rm release/aptex
-
-          cp artifacts/aptex-windows-x64/aptex.exe release/aptex.exe
+          cp artifacts/aptex-windows-x64.exe release/aptex.exe
           (cd release && zip aptex-windows-x64.zip aptex.exe)
           rm release/aptex.exe
 
       - name: Prepare TDS archive
         run: |
-          mkdir -p tds/bin/x86_64-linux
-          mkdir -p tds/bin/aarch64-linux
-          mkdir -p tds/bin/aarch64-darwin
-          mkdir -p tds/bin/x86_64-windows
-
-          cp artifacts/aptex-linux-x64/aptex tds/bin/x86_64-linux/aptex
-          cp artifacts/aptex-linux-arm64/aptex tds/bin/aarch64-linux/aptex
-          cp artifacts/aptex-macos-arm64/aptex tds/bin/aarch64-darwin/aptex
-          cp artifacts/aptex-windows-x64/aptex.exe tds/bin/x86_64-windows/aptex.exe
-
-          chmod +x tds/bin/x86_64-linux/aptex
-          chmod +x tds/bin/aarch64-linux/aptex
-          chmod +x tds/bin/aarch64-darwin/aptex
-
+          install -D -m 755 artifacts/aptex-linux-x64 tds/bin/x86_64-linux/aptex
+          install -D -m 755 artifacts/aptex-linux-arm64 tds/bin/aarch64-linux/aptex
+          install -D -m 755 artifacts/aptex-macos-universal tds/bin/universal-darwin/aptex
+          install -D -m 755 artifacts/aptex-windows-x64.exe tds/bin/x86_64-windows/aptex.exe
           (cd tds && zip -r ../release/aptex-tds.zip bin/)
 
       - name: Generate checksums

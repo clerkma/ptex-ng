@@ -403,8 +403,8 @@ static int realloc_hyphen (int hyphen_prime)
     return -1;
   }
 
-  memset(hyph_word, 0, (hyphen_prime + 1) * sizeof (hyph_word[0]));
-  memset(hyph_list, 0, (hyphen_prime + 1) * sizeof (hyph_list[0]));
+  memset(hyph_word, 0, (hyphen_prime + 1) * sizeof(hyph_word[0]));
+  memset(hyph_list, 0, (hyphen_prime + 1) * sizeof(hyph_list[0]));
 
   hyph_count = 0;
 
@@ -439,10 +439,9 @@ static memory_word * allocate_mem (int size)
   mem_max = mem_top;
   mem_start = 0;     /* bottom of memory allocated by system */
   mem_min = 0;       /* bottom of area made available to TeX */
+
   n = (mem_max - mem_start + 1) * ((int) sizeof(memory_word));
-
   aptex_memory_trace("main memory", n);
-
   main_memory = (memory_word *) realloc(main_memory, n);
 
   if (main_memory == NULL)
@@ -459,7 +458,7 @@ static memory_word * allocate_mem (int size)
     mem = main_memory - mem_start;
 
   aptex_trace("Offset address main memory == %p\n", mem);
-  aptex_memory_update_statistics((intptr_t) main_memory, n, (current_mem_size + 1) * sizeof (memory_word));
+  aptex_memory_update_statistics((intptr_t) main_memory, n, (current_mem_size + 1) * sizeof(memory_word));
   current_mem_size = mem_max - mem_start;   /* total number of words - 1 *//*  current_mem_size = (mem_max - mem_start + 1); */
   aptex_memory_probe();
 
@@ -538,10 +537,8 @@ static memory_word * realloc_mem (int lo_size, int hi_size)
       }
     }
 
-    n = (new_size + 1) * sizeof (memory_word);
-
+    n = (new_size + 1) * sizeof(memory_word);
     aptex_memory_trace("main memory", n);
-
     new_memory = (memory_word *) realloc(main_memory, n);
 
     if (new_memory != NULL)
@@ -580,7 +577,7 @@ static memory_word * realloc_mem (int lo_size, int hi_size)
     mem_max = mem_max + hi_size;   /* update upper limit */
 
   aptex_memory_update_statistics ((intptr_t) main_memory, n,
-    (current_mem_size + 1) * sizeof (memory_word));
+    (current_mem_size + 1) * sizeof(memory_word));
   current_mem_size = new_size;
 
   if (current_mem_size != mem_max - mem_start)
@@ -626,10 +623,8 @@ static memory_word * realloc_font_info (int size)
     if (new_size > font_mem_size)
       new_size = font_mem_size; /* bump against limit */
 
-    n = (new_size + 1) * sizeof (memory_word);
-
+    n = (new_size + 1) * sizeof(memory_word);
     aptex_memory_trace("font_info", n);
-
     new_font_info = (memory_word *) realloc(font_info, n);
 
     if (new_font_info != NULL)
@@ -688,10 +683,8 @@ static packed_ASCII_code * realloc_str_pool (int size)
     if (new_size > pool_size)
       new_size = pool_size;
 
-    n = (new_size + 1) * sizeof (packed_ASCII_code);
-
+    n = (new_size + 1) * sizeof(packed_ASCII_code);
     aptex_memory_trace("str_pool", n);
-
     new_str_pool = (packed_ASCII_code *) realloc(str_pool, n);
 
     if (new_str_pool != NULL)
@@ -749,10 +742,8 @@ static pool_pointer * realloc_str_start (int size)
     if (new_size > max_strings)
       new_size = max_strings;
 
-    n = (new_size + 1) * sizeof (pool_pointer);
-
+    n = (new_size + 1) * sizeof(pool_pointer);
     aptex_memory_trace("str_start", n);
-
     new_str_start = (pool_pointer *) realloc(str_start, n);
 
     if (new_str_start != NULL)
@@ -796,12 +787,12 @@ static int allocate_ini (int size)
 
   aptex_memory_trace("initex hyphen trie", n);
 
-  trie_l = (trie_pointer *) malloc (roundup(nl));
-  trie_o = (trie_op_code *) malloc (roundup(no));
-  trie_c = (packed_ASCII_code *) malloc (roundup(nc));
-  trie_r = (trie_pointer *) malloc (roundup(nr));
-  trie_hash = (trie_pointer *) malloc (roundup(nh));
-  trie_taken = (bool *) malloc (roundup(nt));
+  trie_l = (trie_pointer *) malloc(roundup(nl));
+  trie_o = (trie_op_code *) malloc(roundup(no));
+  trie_c = (packed_ASCII_code *) malloc(roundup(nc));
+  trie_r = (trie_pointer *) malloc(roundup(nr));
+  trie_hash = (trie_pointer *) malloc(roundup(nh));
+  trie_taken = (char *) malloc(roundup(nt));
 
   if (trie_c == NULL || trie_o == NULL || trie_l == NULL || trie_r == NULL ||
       trie_hash == NULL || trie_taken == NULL)
@@ -851,10 +842,8 @@ static memory_word * realloc_save_stack (int size)
     if (new_size > save_size)
       new_size = save_size;
 
-    n = (new_size + 1) * sizeof (memory_word);
-
+    n = (new_size + 1) * sizeof(memory_word);
     aptex_memory_trace("save_stack", n);
-
     new_save_stack = (memory_word *) realloc(save_stack, n);
 
     if (new_save_stack != NULL)
@@ -912,9 +901,7 @@ static in_state_record * realloc_input_stack (int size)
       new_size = stack_size;
 
     n = (new_size + 1) * sizeof(in_state_record);
-
     aptex_memory_trace("input_stack", n);
-
     new_input_stack = (in_state_record *) realloc(input_stack, n);
 
     if (new_input_stack != NULL)
@@ -971,7 +958,7 @@ static list_state_record * realloc_nest_stack (int size)
     if (new_size > nest_size)
       new_size = nest_size;
 
-    n = (new_size + 1) * sizeof (list_state_record);
+    n = (new_size + 1) * sizeof(list_state_record);
     aptex_memory_trace("nest stack", n);
     new_nest = (list_state_record *) realloc(nest, n);
 
@@ -1088,9 +1075,7 @@ static ASCII_code * realloc_buffer (int size)
       new_size = buf_size;
 
     n = (new_size + 1) * sizeof(ASCII_code);
-
     aptex_memory_trace("buffer", n);
-
     new_buffer = (ASCII_code *) realloc(buffer, n);
 
     if (new_buffer != NULL)
@@ -2635,7 +2620,7 @@ static str_number get_job_name (str_number job)
 static char * take_str_string (str_number s)
 {
   char * a = (char *) malloc(length(s) + 1);
-  strncpy(a, (const char *)(str_pool + str_start[s]), length(s));
+  strncpy(a, (const char *) (str_pool + str_start[s]), length(s));
   a[length(s)] = '\0';
 
   return a;
@@ -41312,20 +41297,24 @@ char *synctex_get_job_name(void)
 {
    return utf8_mbcs(take_str_string(job_name));
 }
+
 char *synctex_get_log_name(void)
 {
    return utf8_mbcs(take_str_string(log_name));
 }
+
 char *synctex_get_current_name(void)
 {
-   char * name_mbcs = utf8_mbcs(take_str_string(cur_input.name_field));
+  char * name_mbcs = utf8_mbcs(take_str_string(cur_input.name_field));
 #ifdef USE_KPATHSEA
-   char * tmp = kpse_find_file(name_mbcs, kpse_tex_format, false);
-   if (tmp == NULL)
-     return name_mbcs;
-   else free(name_mbcs);
-   return tmp;
+  char * tmp = kpse_find_file(name_mbcs, kpse_tex_format, false);
+
+  if (tmp == NULL)
+    return name_mbcs;
+  else
+    free(name_mbcs);
+  return tmp;
 #else
-   return name_mbcs;
+  return name_mbcs;
 #endif
 }

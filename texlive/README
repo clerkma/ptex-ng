@@ -1,4 +1,4 @@
-$Id: README 78612 2026-04-05 21:34:39Z karl $
+$Id: README 78957 2026-05-10 15:56:01Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 For a high-level overview of building TeX Live, see
@@ -54,8 +54,6 @@ i386-netbsd, amd64-netbsd:
     CXXFLAGS='-D_NETBSD_SOURCE -std=c++17' \
     LDFLAGS='-L/usr/X11R7/lib -Wl,-rpath,/usr/X11R7/lib' \
   ./Build --enable-xindy CLISP=/usr/local/bin/clisp
-
-i386-solaris, x86_64-solaris: github, see below.
 
 universal-darwin: See Master/source/mactexdoc.tar.xz.
 
