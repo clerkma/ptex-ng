@@ -792,7 +792,7 @@ static int allocate_ini (int size)
   trie_c = (packed_ASCII_code *) malloc(roundup(nc));
   trie_r = (trie_pointer *) malloc(roundup(nr));
   trie_hash = (trie_pointer *) malloc(roundup(nh));
-  trie_taken = (char *) malloc(roundup(nt));
+  trie_taken = (bool *) malloc(roundup(nt));
 
   if (trie_c == NULL || trie_o == NULL || trie_l == NULL || trie_r == NULL ||
       trie_hash == NULL || trie_taken == NULL)
