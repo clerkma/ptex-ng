@@ -1,14 +1,14 @@
 # Code of AI Conduct for TeX Live
 
-(file version: $Id: CODE_OF_AI_CONDUCT.md 79097 2026-05-21 21:41:28Z karl $)
+(file version: $Id: CODE_OF_AI_CONDUCT.md 79119 2026-05-23 22:02:26Z karl $)
 
-This project accepts AI-assisted contributions, but human contributors
+TeX Live accepts AI-assisted contributions, but human contributors
 remain fully responsible, both technically and legally, for the changes
 they submit.
 
 Specifically, this implies that a knowledgable human must have reviewed
 every line of code/documentation and tested the package's basic
-functionality before uploading it.
+functionality before uploading or reporting.
 
 ## Requirements
 
@@ -67,6 +67,10 @@ functionality before uploading it.
 
 - Review AI-assisted contributions by the same technical standards as
   any other contribution.
+
+- Do not rely on AI analysis to decide whether to include, reject, or
+  request changes to a patch. Your judgement is what counts; using AI to
+  help make a decision is fine, but they are not the final arbiter.
 
 - Prefer reproducible fixes, focused diffs, and adequate tests over volume.
 
