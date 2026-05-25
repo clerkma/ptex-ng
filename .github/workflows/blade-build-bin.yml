@@ -41,7 +41,7 @@ jobs:
 
       - name: Install blade-build
         run: |
-          curl https://blade-build.github.io/install.sh | bash
+          bash task/install-blade-v2.sh
           echo "$HOME/bin" >> $GITHUB_PATH
 
       - name: Patch BLADE_ROOT for universal build
