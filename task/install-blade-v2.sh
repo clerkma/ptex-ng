@@ -2,7 +2,7 @@
 
 set -e
 
-if [[ -d ~/.cache/blade-build ]]; then
+if [[ -d blade-build ]]; then
     git -C blade-build pull
 else
     git clone https://github.com/blade-build/blade-build
