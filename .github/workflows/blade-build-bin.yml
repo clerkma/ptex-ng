@@ -58,7 +58,7 @@ jobs:
 
       - name: Build
         run: |
-          blade-build/blade build //src:aptex
+          ./blade-build/blade build //src:aptex
           cp blade-bin/src/aptex blade-bin/src/aptex-${{ matrix.platform }} # for artifact upload
           cp blade-bin/src/aptex src/aptex # for smoke test
         env:
