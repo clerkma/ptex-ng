@@ -15,7 +15,7 @@ Install [blade-build](https://github.com/blade-build/blade-build) (v2@`329589822
 
 Build:
 
-    blade-build/blade build //src:aptex
+    ./blade-build/blade build //src:aptex
 
 Output binary: `blade-bin/src/aptex`
 

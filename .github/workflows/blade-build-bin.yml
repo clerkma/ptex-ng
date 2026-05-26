@@ -69,7 +69,7 @@ jobs:
           LDFLAGS: ${{ matrix.platform == 'macos-universal' && '-arch arm64 -arch x86_64' || '' }}
 
       - name: Unit Tests
-        run: blade test //test/unit/...
+        run: ./blade-build/blade test //test/unit/...
         env:
           CC: ${{ runner.os == 'macOS' && 'clang' || 'gcc' }}
           CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}
