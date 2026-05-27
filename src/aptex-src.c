@@ -70,6 +70,13 @@ static const char * dist = "Unknown";
 
 static const char * banner = "This is Asiatic pTeX, Version 3.141592653";
 
+static bool aptex_cached_uptex = false;
+
+static inline bool internalUPTEX (void)
+{
+  return aptex_cached_uptex;
+}
+
 _Noreturn static void aptex_utils_exit (int unix_code)
 {
   update_terminal();
@@ -1681,7 +1688,7 @@ static inline bool is_char_ascii (integer c)
 
 static inline bool is_char_kanji (integer c)
 {
-  if (likely(is_internalUPTEX()))
+  if (likely(internalUPTEX()))
     return (c >= 0);
   else
     return iskanji1(Hi(c)) && iskanji2(Lo(c));
@@ -1714,14 +1721,11 @@ static bool ismultiprn (integer c)
 static inline integer calc_pos (integer c)
 {
   if (c >= 0 && c <= 255)
-    return(c);
+    return c;
 
-  unsigned char c1 = Hi(c);
-  unsigned char c2 = Lo(c);
-
-  c1 = (c1 % 4) * 64;  // c1 = 0, 64, 128, 192
-  c2 = c2 % 64;        // c2 = 0..63
-  return (c1 + c2);     // ret = 0..255
+  /* fold the two low bits of the high byte and the six low bits of the
+     low byte into a single 8-bit index (range 0..255) */
+  return ((Hi(c) & 0x03) << 6) | (Lo(c) & 0x3F);
 }
 
 // Ref. http://www.unicode.org/Public/UNIDATA/Blocks.txt
@@ -2129,7 +2133,7 @@ static integer kcatcodekey (integer c)
 {
   integer block;
 
-  if (likely(is_internalUPTEX()))
+  if (likely(internalUPTEX()))
   {
     block = binary_search((long)c, ucs_range, 0, NUCS_RANGE-1);
 
@@ -2187,6 +2191,8 @@ static void init_default_kanji (const_string file_str, const_string internal_str
       internal_str ? internal_str : "NULL");
     aptex_utils_exit(EXIT_FAILURE);
   }
+
+  aptex_cached_uptex = is_internalUPTEX();
 }
 
 static char * mbcs_utf8 (const char * mbcs_str)
@@ -2869,7 +2875,7 @@ static void do_initex (void)
     sf_code(k) = 999;
   }
 
-  if (is_internalUPTEX())
+  if (internalUPTEX())
   {
     kcat_code(0x0) = not_cjk; // { default: other_kchar }
 
@@ -6906,23 +6912,7 @@ str_number make_string (void)
 // test equality of strings
 static bool str_eq_buf (str_number s, integer k)
 {
-  pool_pointer j; // {running index}
-  // boolean result; // {result of comparison}
-
-  j = str_start[s];
-
-  while (j < str_start[s + 1])
-  {
-    if (str_pool[j] != buffer[k])
-    {
-      return false;
-    }
-
-    incr(j);
-    incr(k);
-  }
-
-  return true;
+  return memcmp(str_pool + str_start[s], buffer + k, length(s)) == 0;
 }
 
 // test equality of strings
@@ -17704,7 +17694,7 @@ void conv_toks (void)
       break;
 
     case ucs_code:
-      if (is_internalUPTEX())
+      if (internalUPTEX())
         print_int(fromUCS(cur_val));
       else
       {
@@ -17717,7 +17707,7 @@ void conv_toks (void)
       break;
 
     case toucs_code:
-      if (is_internalUPTEX())
+      if (internalUPTEX())
         print_int(toUCS(cur_val));
       else
       {
