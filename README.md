@@ -9,13 +9,13 @@
 
 Prerequisites: `automake`, `autoconf`, `libtool`, `texinfo`, `ninja`, `gcc`/`clang`
 
-Install [blade-build](https://github.com/blade-build/blade-build):
+Install [blade-build](https://github.com/blade-build/blade-build) (v2@`3295898226ee43f01f3b9c7081d6f24d7f4556b7`):
 
-    curl https://blade-build.github.io/install.sh | bash
+    bash task/install-blade-v2.sh
 
 Build:
 
-    blade build //src:aptex
+    ./blade-build/blade build //src:aptex
 
 Output binary: `blade-bin/src/aptex`
 

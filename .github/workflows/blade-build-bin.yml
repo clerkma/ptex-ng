@@ -41,7 +41,7 @@ jobs:
 
       - name: Install blade-build
         run: |
-          curl https://blade-build.github.io/install.sh | bash
+          bash task/install-blade-v2.sh
           echo "$HOME/bin" >> $GITHUB_PATH
 
       - name: Patch BLADE_ROOT for universal build
@@ -58,7 +58,8 @@ jobs:
 
       - name: Build
         run: |
-          blade build //src:aptex
+          ./blade-build/blade build //src:aptex
+          strip blade-bin/src/aptex
           cp blade-bin/src/aptex blade-bin/src/aptex-${{ matrix.platform }} # for artifact upload
           cp blade-bin/src/aptex src/aptex # for smoke test
         env:
@@ -69,7 +70,7 @@ jobs:
           LDFLAGS: ${{ matrix.platform == 'macos-universal' && '-arch arm64 -arch x86_64' || '' }}
 
       - name: Unit Tests
-        run: blade test //test/unit/...
+        run: ./blade-build/blade test //test/unit/...
         env:
           CC: ${{ runner.os == 'macOS' && 'clang' || 'gcc' }}
           CXX: ${{ runner.os == 'macOS' && 'clang++' || 'g++' }}

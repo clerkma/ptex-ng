@@ -1,0 +1,169 @@
+libpng row padding-bit non-determinism
+======================================
+
+Background
+----------
+
+Debian bug #1118385 / tex-k discussion (May 2026) reported that pdfTeX
+produces different PDF output on consecutive runs when including a
+particular PNG image (valuators.png from the fltk1.4 documentation,
+567 x 506, 4-bit colormap, non-interlaced) even with
+SOURCE_DATE_EPOCH/FORCE_SOURCE_DATE set.
+
+Root cause
+----------
+
+For a sub-byte pixel depth (here 4 bpp) and a width that is not a
+multiple of 8/bpp (567 * 4 = 2268 bits = 283.5 bytes), the last byte of
+each decoded scanline holds the last pixel in its high nibble and 4
+padding bits in its low nibble.
+
+In libpng-1.6.58, pngrutil.c:png_combine_row() (non-interlaced path)
+deliberately preserves the destination buffer's existing bits in that
+padding region:
+
+    end_byte = *end_ptr;                            /* dest bits BEFORE memcpy */
+    memcpy(dp, sp, PNG_ROWBYTES(...));              /* whole row from sp       */
+    *end_ptr = (end_byte & end_mask)                /* restore dest pad bits   */
+             | (*end_ptr & ~end_mask);
+
+pdfTeX allocates its row buffer with xtalloc -> xmalloc (uninitialized
+memory). The padding bits in the output PDF therefore reflect whatever
+was on the heap at allocation time, so successive runs produce
+different bytes for those bits and the PDFs differ.
+
+The PNG specification (W3C PNG, Second Edition, section 7.2
+"Scanlines", https://www.w3.org/TR/png/#7Scanline) addresses these
+bits explicitly:
+
+    "When there are multiple pixels per byte, some low-order bits of
+    the last byte of a scanline may go unused. The contents of these
+    unused bits are not specified."
+
+So the spec neither requires encoders to zero them nor permits readers
+to rely on any particular value -- they are simply undefined. libpng's
+current behaviour of importing them from the caller's destination
+buffer is technically conformant, but it is a poor contract: it makes
+decoded output depend on uninitialized caller memory, leaking heap
+state into downstream consumers and breaking reproducibility for any
+caller that does not pre-zero its row buffer.
+
+Fix
+---
+
+In libs/libpng/libpng-src/pngrutil.c, png_combine_row() now clears the
+padding bits instead of restoring them from the destination buffer:
+
+    if (end_ptr != NULL)
+       *end_ptr = (png_byte)(*end_ptr & ~end_mask);
+
+Test program
+------------
+
+The file ./pngtest.c (kept outside the libpng tree on purpose; it
+links against libpng and is not part of libpng itself) decodes a PNG
+three times, pre-filling the user-provided row buffer with 0x00, 0xff,
+and 0xaa before each png_read_row(). It prints the last 4 bytes of
+the first decoded row for each fill.
+
+  /* see pngtest.c */
+
+The trigger image is available in ./valuators.png, and can be obtained via
+
+    curl -sL "https://salsa.debian.org/fltk-team/fltk1.4/-/raw/main/documentation/src/valuators.png" \
+        -o ./valuators.png
+
+Demonstrate the bug against the system (unpatched) libpng:
+
+    gcc pngtest.c -lpng -o pngtest
+    ./pngtest valuators.png
+
+Expected (buggy) output -- the low nibble of the last byte mirrors the
+fill, proving the destination buffer's bits leak into the decoded row:
+
+    fill=0x00 row0 last bytes: 00 00 00 00
+    fill=0xff row0 last bytes: 00 00 00 0f
+    fill=0xaa row0 last bytes: 00 00 00 0a
+
+Demonstrate the fix against the patched in-tree libpng (after building
+under Build/source/Work):
+
+    gcc pngtest.c \
+        -I.../Build/source/libs/libpng/libpng-src \
+        -I.../Build/source/Work/libs/libpng \
+        .../Build/source/Work/libs/libpng/libpng.a \
+        -lz -lm -o pngtest_patched
+    ./pngtest_patched valuators.png
+
+Expected (fixed) output -- padding bits are zero regardless of the
+caller's buffer contents:
+
+    fill=0x00 row0 last bytes: 00 00 00 00
+    fill=0xff row0 last bytes: 00 00 00 00
+    fill=0xaa row0 last bytes: 00 00 00 00
+
+Reproducing through pdfTeX
+--------------------------
+
+The pngtest.c harness above exhibits the bug directly because it
+deliberately memset()s the row buffer with 0x00 / 0xff / 0xaa before
+each png_read_row(). In a real pdfTeX run the row buffer is allocated
+with xtalloc -> xmalloc, and on a fresh process glibc commonly returns
+a freshly mmap'd zero page for small allocations -- so the leaked
+padding bits happen to be 0 and successive PDFs are bit-identical even
+though the bug is latent. The original bug reporter only observed the
+non-determinism because more complex documents churn the heap enough
+to leave non-zero remnants in the chunk that ends up backing the row
+buffer.
+
+To surface the bug on demand, use glibc's MALLOC_PERTURB_ knob: when
+set to N (1..255) it fills every freshly-allocated byte with ~N (and
+every freed byte with N). That replaces "whatever happened to be
+there" with deterministic non-zero garbage and immediately reveals any
+code path reading uninitialised memory.
+
+Minimal example using the trigger image in this directory:
+
+    # create a minimal trigger.png
+    python make-trigger.py
+    # create the tex file
+    cat > trigger.tex <<'EOF'
+    \documentclass{article}
+    \usepackage{graphicx}
+    \begin{document}
+    \includegraphics[width=4cm]{trigger.png}
+    \end{document}
+    EOF
+    # make sure usual /ID and other entries are stable
+    export SOURCE_DATE_EPOCH=1700000000 FORCE_SOURCE_DATE=1
+    # run with malloc perturbation
+    for i in 1 2 3; do
+        MALLOC_PERTURB_=$((RANDOM % 254 + 1)) \
+            pdflatex -interaction=batchmode trigger.tex >/dev/null
+        cp trigger.pdf trigger$i.pdf
+    done
+    sha256sum trigger?.pdf
+
+With an unpatched libpng each invocation produces a different PDF
+hash. Fixing MALLOC_PERTURB_ to a constant value also yields a
+different (but deterministic) PDF per value, proving the PDF content
+depends on the contents of the uninitialised row buffer:
+
+    for v in 0 85 170 255; do
+        MALLOC_PERTURB_=$v pdflatex -interaction=batchmode trigger.tex >/dev/null
+        echo "MALLOC_PERTURB_=$v $(sha256sum trigger.pdf | cut -c1-16)"
+    done
+
+Against a pdfTeX linked to the patched libpng in this tree, all four
+hashes are identical regardless of MALLOC_PERTURB_.
+
+Notes
+-----
+
+- A pdfTeX-side workaround (memset(row, 0, rowbytes) before each
+  png_read_row) would also eliminate the symptom, but the same trap
+  exists for every other libpng caller. Fixing libpng once is the
+  right layer.
+- The fix only changes the non-interlaced memcpy tail in
+  png_combine_row(); the interlaced display/sparkle paths are
+  untouched.

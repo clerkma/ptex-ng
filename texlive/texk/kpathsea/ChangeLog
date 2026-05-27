@@ -1,3 +1,8 @@
+2026-05-25  Karl Berry  <karl@freefriends.org>
+
+	* kpsewhich.c (version): oops, had extra newline at end of
+	--version message.
+
 2026-05-09  Andreas Scherer  <https://ascherer.github.io>
 
 	* elt-dirs.c: Fix compiler warnings.
@@ -13,8 +18,8 @@
 
 	* configure.ac (kb_cv_func_getcwd_forks): don't declare
 	getcwd(), since C23 breaks that. Instead, rely on it being
-	declared in <unistd.h> (not <stdlib.h>)
-	The end result of the test failure being to usel
+	declared in <unistd.h> (not <stdlib.h>).
+	The end result of the test failure being to use
 	our fallback getcwd() in xgetcwd.c, which stat(2)s pervasively,
 	and is unusable under NFS :(. Original report and patch
 	from Emmanuel Thome, bugs.debian.org/1135783 and
