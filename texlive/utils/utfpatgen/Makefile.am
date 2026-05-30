@@ -1,4 +1,4 @@
-## $Id: Makefile.am 79150 2026-05-25 20:49:34Z karl $
+## $Id: Makefile.am 79211 2026-05-30 00:42:34Z karl $
 ## Makefile.am for the TeX Live subdirectory utils/utfpatgen/
 ##
 ## Copyright 2026 Karl Berry <tex-live@tug.org>
@@ -36,3 +36,14 @@ utfpatgen.c: $(UTFPATGEN_TREE)/utfpatgen.w
 	cp utfpatgen.c $(srcdir)/$(UTFPATGEN_TREE)/../utfpatgen.c
 # the leading space here stops Automake from reading it:
  endif #TL_CTANGLE
+
+# Update -src dir from a separate git checkout of the repo.
+# Since upstream is not making separate releases, have to do it this way.
+# After updating, remake our ./utfpatgen.c per the above.
+excludes = --cvs-exclude --exclude=.gitignore --exclude=cweb\*
+upstream_repo = $(HOME)/tex/utfpatgen/ 
+tl_src = $(srcdir)/$(UTFPATGEN_TREE)/
+chicken = #-n
+#
+update-src:
+	rsync --delete -av $(chicken) $(excludes) $(upstream_repo) $(tl_src)
