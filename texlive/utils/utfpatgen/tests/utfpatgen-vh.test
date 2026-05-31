@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id: utfpatgen-vh.test 79150 2026-05-25 20:49:34Z karl $
+# $Id: utfpatgen-vh.test 79214 2026-05-30 16:17:28Z karl $
 # Copyright 2026 Karl Berry <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 

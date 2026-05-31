@@ -1,4 +1,4 @@
-## $Id: Makefile.am 79211 2026-05-30 00:42:34Z karl $
+## $Id: Makefile.am 79213 2026-05-30 16:11:24Z karl $
 ## Makefile.am for the TeX Live subdirectory utils/utfpatgen/
 ##
 ## Copyright 2026 Karl Berry <tex-live@tug.org>
@@ -40,10 +40,22 @@ utfpatgen.c: $(UTFPATGEN_TREE)/utfpatgen.w
 # Update -src dir from a separate git checkout of the repo.
 # Since upstream is not making separate releases, have to do it this way.
 # After updating, remake our ./utfpatgen.c per the above.
-excludes = --cvs-exclude --exclude=.gitignore --exclude=cweb\*
+excludes = --cvs-exclude --exclude=.gitignore $(excludes1)
+excludes1 = --exclude=cweb\* --exclude=utfpatgen.tex
 upstream_repo = $(HOME)/tex/utfpatgen/ 
 tl_src = $(srcdir)/$(UTFPATGEN_TREE)/
 chicken = #-n
 #
 update-src:
 	rsync --delete -av $(chicken) $(excludes) $(upstream_repo) $(tl_src)
+
+# create the pdf for the man page so it's available on CTAN. Painful to
+# support utf8, since apparently we have to specify different fonts from
+# our own tree. 
+tldev = $(top_srcdir)/../../../../Master/tlpkg/dev
+groff_utf8 = GROFF_FONT_PATH=$(tldev)/groff-utf8 groff -K utf8
+manpdf = utfpatgen.man1.pdf
+update-man:
+	$(groff_utf8) -man $(tl_src)/utfpatgen.man | ps2pdf - $(manpdf) \
+	|| rm -f $(manpdf)
+	cp -p $(manpdf) $(tl_src)
