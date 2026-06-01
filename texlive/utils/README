@@ -1,4 +1,4 @@
-$Id: README 79150 2026-05-25 20:49:34Z karl $
+$Id: README 79222 2026-05-31 15:01:36Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 Non-kpathsea programs we (optionally) compile for TeX Live.
@@ -43,7 +43,7 @@ texdoctk - reluctantly maintained here in TL
 tpic2pdftex 1.97 - checked 24may26
   https://ctan.org/pkg/tpic2pdftex/
 
-utf8patgen 0.1 - checked 24may26
+utf8patgen 1.0 - checked 29may26
   https://github.com/tondach01/utfpatgen
 
 vlna 1.5 - checked 24may26
