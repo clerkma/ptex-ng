@@ -9,4 +9,4 @@ cd $NG_SRC_DIR/texlive/texk/ptexenc && make distclean
 cd $NG_SRC_DIR/src/libdpx && rm -f *.o *.a
 cd $NG_SRC_DIR/src/libw2c && rm -f *.o *.a
 # cd $NG_SRC_DIR/src/mruby && make clean
-cd $NG_SRC_DIR/src && rm -f *.o *.a aptex lsotfea ptex-ng
+cd $NG_SRC_DIR/src && rm -f *.o *.a aptex ptex-ng

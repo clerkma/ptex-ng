@@ -47,7 +47,6 @@ src/libptexenc.a
 src/libyaml.a
 src/libyaml/libyaml.a
 src/libz.a
-src/lsotfea
 src/ptex-ng
 src/libcairo-pdf.a
 src/libcairo/libcairo-pdf.a
