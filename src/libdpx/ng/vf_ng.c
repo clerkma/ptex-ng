@@ -52,7 +52,7 @@ static void ng_special_out (SIGNED_QUAD len, unsigned char **start, unsigned cha
 {
   uint8_t *buffer;
 
-  if (*start <= end - len)
+  if (len > 0 && *start <= end - len)
   {
     buffer = NEW(len+1, uint8_t);
     memcpy(buffer, *start, len);
