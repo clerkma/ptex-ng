@@ -1,3 +1,19 @@
+2026-01-09  Andreas Scherer  <https://ascherer.github.io>
+
+	* patgen.web: more sorting fixes in the "names of the sections".
+
+2026-06-19  Karl Berry  <karl@freefriends.org>
+
+	* tex.ch (scan_file_name): do not ignore \relax before looking for
+	the filename, as this allows recursive \input. The main part of
+	this change was accidentally committed in r78759 (2026-04-20)
+	as part of an unrelated change. Today's change just tinkers with
+	the comments, adds test files (not run by make check) and removes
+	an apparently-unneeded assignment name_in_progress:=false.	       
+	* NEWS: mention this.
+	* tests/inputtop.tex,
+	* tests/inputsub.tex: test recursive \input.
+
 2026-04-20  Karl Berry  <karl@freefriends.org>
 
 	* configure.ac [XeTeX]: ICU 76 requires C++17, so XeTeX does too.
@@ -354,7 +370,7 @@
 	* patgen.ch,
 	* patgen.web,
 	* pktogf.ch,
-	* pktogf.web: Fix sorting order in 'other' WEB codees.
+	* pktogf.web: Fix sorting order in 'other' WEB programs.
 
 2024-08-31  Andreas Scherer  <https://ascherer.github.io>
 
