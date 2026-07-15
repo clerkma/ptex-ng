@@ -1,12 +1,12 @@
 # TeXLive::TLConfig.pm - module exporting configuration values
-# Copyright 2007-2025 Norbert Preining
+# Copyright 2007-2026 Norbert Preining
 # This file is licensed under the GNU General Public License version 2
 # or any later version.
 
 use strict; use warnings;
 package TeXLive::TLConfig;
 
-my $svnrev = '$Revision: 73776 $';
+my $svnrev = '$Revision: 79591 $';
 my $_modulerevision = ($svnrev =~ m/: ([0-9]+) /) ? $1 : "unknown";
 sub module_revision { return $_modulerevision; }
 
@@ -31,7 +31,9 @@ BEGIN {
     $InfraLocation
     $DatabaseName
     $DatabaseLocation
-    $PackageBackupDir 
+    $CatalogueDatabaseName
+    $CatalogueDatabaseLocation
+    $PackageBackupDir
     $BlockSize
     $Archive
     $TeXLiveServerURL
@@ -61,7 +63,7 @@ BEGIN {
 
 # the year of our release, will be used in the location of the
 # network packages, and in menu names, and other places.
-our $ReleaseYear = 2025;
+our $ReleaseYear = 2026;
 
 # users can upgrade from this year to the current year; might be the
 # same as the release year, or any number of releases earlier.
@@ -88,6 +90,13 @@ our $DefaultCategory = "Package";
 our $InfraLocation = "tlpkg";
 our $DatabaseName = "texlive.tlpdb";
 our $DatabaseLocation = "$InfraLocation/$DatabaseName";
+
+# the catalogue-only database holds the catalogue-related fields
+# (longdesc, catalogue-* keys, etc.) that are factored out of the main
+# texlive.tlpdb so that frequent catalogue updates do not force package
+# updates. It is loaded on demand only (catalogue listing and searching).
+our $CatalogueDatabaseName = "texlive-catalogue-only.tlpdb";
+our $CatalogueDatabaseLocation = "$InfraLocation/$CatalogueDatabaseName";
 
 # location of backups in default autobackup setting (under tlpkg)
 our $PackageBackupDir = "$InfraLocation/backups";
@@ -255,8 +264,13 @@ our %TLPDBSettings = (
 
 our $WindowsMainMenuName = "TeX Live $ReleaseYear";
 
-# Comma-separated list of engines which do not exist on all platforms.
-our $PartialEngineSupport = "luametatex,luajithbtex,luajittex,mfluajit";
+# Comma-separated list of engines which do not exist in all installations.
+# The lua versions are not buildable everywhere.
+# Although XeTeX can be built everywhere, people can install TL without
+# it, and we don't want that to cause an error from fmtutil.
+# Specifically, context-legacy has a cont-en.fmt and csplain has a
+# pdfcsplain.fmt which are built with XeTeX.
+our $PartialEngineSupport = "luametatex,luajithbtex,luajittex,mfluajit,xetex";
 
 # Flags for error handling across the scripts and modules
 # all fine
@@ -344,6 +358,17 @@ plain text file, not any kind of relational or other database.
 
 Concatenation of C<InfraLocation> "/" C<DatabaseName>, i.e.,
 C<tlpkg/texlive.tlpdb>.
+
+=item C<$TeXLive::TLConfig::CatalogueDatabaseName>
+
+The name of the catalogue-only database file:
+C<texlive-catalogue-only.tlpdb>. It holds the catalogue-related fields
+factored out of the main database and is loaded only on demand.
+
+=item C<$TeXLive::TLConfig::CatalogueDatabaseLocation>
+
+Concatenation of C<InfraLocation> "/" C<CatalogueDatabaseName>, i.e.,
+C<tlpkg/texlive-catalogue-only.tlpdb>.
 
 =item C<$TeXLive::TLConfig::BlockSize>
 

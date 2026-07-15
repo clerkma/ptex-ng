@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# $Id: tlmgr.pl 78616 2026-04-06 13:48:59Z karl $
+# $Id: tlmgr.pl 79639 2026-07-10 16:45:34Z karl $
 # Copyright 2008-2026 Norbert Preining
 # This file is licensed under the GNU General Public License version 2
 # or any later version.
@@ -8,8 +8,8 @@
 
 use strict; use warnings;
 
-my $svnrev = '$Revision: 78616 $';
-my $datrev = '$Date: 2026-04-06 15:48:59 +0200 (Mon, 06 Apr 2026) $';
+my $svnrev = '$Revision: 79639 $';
+my $datrev = '$Date: 2026-07-10 18:45:34 +0200 (Fri, 10 Jul 2026) $';
 my $tlmgrrevision;
 my $tlmgrversion;
 my $prg;
@@ -1707,7 +1707,7 @@ sub action_dumptlpdb {
 #
 sub action_info {
   if ($opts{'only-installed'} && $opts{'only-remote'}) {
-    tlwarn("Are you joking? --only-installed and --only-remote cannot both be specified!\n");
+    tlwarn("$prg info: --only-installed and --only-remote cannot both be specified!\n");
     return($F_ERROR);
   }
   init_local_db();
@@ -1716,7 +1716,7 @@ sub action_info {
   my @datafields;
   my $fmt = "list";
   if ($opts{'data'} && $opts{'json'}) {
-    tlwarn("Preferring JSON output over data output!\n");
+    tlwarn("$prg info: preferring JSON output over data output, both given\n");
     delete($opts{'data'});
   }
   if ($opts{'json'}) {
@@ -1740,14 +1740,14 @@ sub action_info {
     for my $d (@datafields) {
       $load_remote = 1 if ($d eq "remoterev");
       if ($d !~ m/^(name|category|localrev|remoterev|shortdesc|longdesc|size|installed|relocatable|depends|[lr]?cat-version|[lr]?cat-date|[lr]?cat-license|[lr]?cat-contact-.*)$/) {
-        tlwarn("unknown data field: $d\n");
+        tlwarn("$prg info: unknown data field: $d\n");
         return($F_ERROR);
       }
     }
     $fmt = "csv";
     if ($load_remote) {
       if ($opts{"only-installed"}) {
-        tlwarn("requesting only-installed with data field remoterev, loading remote anyway!\n");
+        tlwarn("$prg info: requesting only-installed with data field remoterev, loading remote anyway\n");
         $opts{"only-installed"} = 0;
       }
       # loading of tlpdb is done below
@@ -1765,15 +1765,20 @@ sub action_info {
     init_tlmedia_or_die(1);
     $tlm = $remotetlpdb;
   }
+  # info reports catalogue data (shortdesc, longdesc, cat-* fields), which
+  # is loaded on demand only.
+  $tlm->merge_catalogue_data;
+  # when both local and remote are consulted (default), the local packages
+  # also need their catalogue data merged.
+  $localtlpdb->merge_catalogue_data if !$opts{"only-installed"};
 
-  #
   # tlmgr info
-  # tlmgr info collection
+  # tlmgr info collections
   # tlmgr info scheme
   # these commands just list the packages/collections/schemes installed with 
   # a short list
   my @whattolist;
-  $what = ($what || "-all");
+  $what = ($what || "-all"); # instead of using $opts{"all"}, comes to the same
   if ($what =~ m/^collections$/i) {
     @whattolist = $tlm->collections;
   } elsif ($what =~ m/^schemes$/i) {
@@ -1817,7 +1822,9 @@ sub action_info {
       $endsec -= 1;
       $endmsec += 1000000;
     }
-    print STDERR "JSON (", $TeXLive::TLUtils::jsonmode, ") generation took ", $endsec - $startsec, ".", substr($endmsec - $startmsec,0,2), " sec\n";
+    print STDERR "JSON (", $TeXLive::TLUtils::jsonmode, ") generation took ",
+                 $endsec - $startsec, ".", substr($endmsec - $startmsec,0,2),
+                 " sec\n";
   }
   return ($ret);
 }
@@ -1886,6 +1893,9 @@ sub action_search {
 sub _search_tlpdb {
   my ($tlpdb, $what, $dofile, $dodesc, $inword) = @_;
   my %pkgs;
+  # searching descriptions needs the catalogue data (shortdesc, longdesc,
+  # topics), which is loaded on demand only.
+  $tlpdb->merge_catalogue_data if $dodesc;
   foreach my $pkg ($tlpdb->list_packages) {
     my $tlp = $tlpdb->get_package($pkg);
     
@@ -2852,6 +2862,16 @@ sub action_update {
 
   init_tlmedia_or_die();
   info("$prg update: dry run, no changes will be made\n") if $opts{"dry-run"};
+
+  # The machine-readable update output reports the CTAN version (cat-version)
+  # of the local and remote package in the last two fields. That catalogue
+  # data is loaded on demand only, and only for machine-readable output;
+  # the human-readable update output does not show it, so a plain
+  # "tlmgr update" never pays the cost of loading the catalogue database.
+  if ($::machinereadable) {
+    $localtlpdb->merge_catalogue_data;
+    $remotetlpdb->merge_catalogue_data;
+  }
 
   my @excluded_pkgs = ();
   if ($opts{"exclude"}) {
@@ -4381,9 +4401,11 @@ sub show_one_package_detail {
   }
   if ($opts{"only-files"}) {
     print "$pkg\n" if ($total_nr_of_pkgs > 1);
-    return show_one_package_detail3($tlpdb, $pkg, $tlp, $source_found, $installed, 1, @colls);
+    return show_one_package_detail3($tlpdb, $pkg, $tlp, $source_found,
+                                    $installed, 1, @colls);
   } else {
-    return show_one_package_detail2($tlpdb, $pkg, $tlp, $source_found, $installed, 0, @colls);
+    return show_one_package_detail2($tlpdb, $pkg, $tlp, $source_found,
+                                    $installed, 0, @colls);
   }
 }
 
@@ -4437,7 +4459,7 @@ sub show_one_package_detail2 {
         $binsize += $binsz{$a} if defined($binsz{$a});
         my $atlp = $tlpdb->get_package($tlp->name . ".$a");
         if (!$atlp) {
-          tlwarn("$prg: cannot find depending package " . $tlp->name . ".$a\n");
+          tlwarn("$prg: cannot find depending package ", $tlp->name, ".$a\n");
           return($F_WARNING);
         }
         my %abinsz = %{$atlp->binsize};
@@ -4454,6 +4476,13 @@ sub show_one_package_detail2 {
     if (defined($foo->{$pkg})) {
       $sizestr = sprintf("%dk", int($foo->{$pkg} / 1024) + 1);
     }
+    my @removed;
+    for my $p (sort keys %$foo) {
+      if (! defined $foo->{$p}) {
+        push (@removed, $p);
+      }
+    }
+    print "removed:     @removed\n" if @removed;
   }
   print "sizes:       ", $sizestr, "\n";
   print "relocatable: ", ($tlp->relocated ? "Yes" : "No"), "\n";
@@ -4486,7 +4515,8 @@ sub show_one_package_detail2 {
       }
     }
     print "Included files, by type:\n";
-    $ret |= show_one_package_detail3($tlpdb, $pkg, $tlp, $source_found, $installed, 0, @colls);
+    $ret |= show_one_package_detail3($tlpdb, $pkg, $tlp, $source_found,
+                                     $installed, 0, @colls);
   }
   print "\n";
   return($ret);
@@ -7622,11 +7652,15 @@ do not include the version of the local installation
     # $texlive_minrelease not defined, so only one year is valid
     if ($texlive_release_year != $TeXLive::TLConfig::ReleaseYear) {
       info("fail load $location\n") if ($::machinereadable);
-      return(undef, "The TeX Live versions of the local installation
+      return(undef, <<END_INCOMPAT_VERSIONS);
+The TeX Live versions of the local installation
 and the repository are not compatible:
       local: $TeXLive::TLConfig::ReleaseYear
  repository: $texlive_release_year ($rroot)
-(Perhaps you need to use a different CTAN mirror? Just a guess.)");
+Perhaps that particular CTAN mirror is outdated? Just a guess.
+Or if you want to install an older version of TeX Live, see:
+  https://tug.org/texlive/acquire.html#past
+END_INCOMPAT_VERSIONS
     }
   }
 
@@ -8814,6 +8848,8 @@ Start the graphical user interface. See B<GUI> below.
 
 =item B<info [I<option>...] schemes>
 
+=item B<info [I<option>...] --all>
+
 With no argument, lists all packages available at the package
 repository, prefixing those already installed with C<i>.
 
@@ -8847,6 +8883,15 @@ but are still supported for backward compatibility.
 Options:
 
 =over 4
+
+=item B<--all>
+
+If C<--all> is given, by default a single line is output for each
+package installed, showing the name and shortdesc. The B<--data> or
+B<--json> options can be used to output other information. The B<--list>
+option is ignored; if you want to see all the information about
+everything, look at the C<tlpkg/texlive.tlpdb> file itself. It is plain
+text and the format is self-evident.
 
 =item B<--list>
 
@@ -10515,7 +10560,28 @@ The run time since start of installations or updates.
 
 The estimated total time.
 
+=item I<tag>
+
+In the case of a virtual database (multiple repositories), the tag of
+the repository providing the package; C<-> otherwise.
+
+=item I<lcatv>
+
+The catalogue (CTAN) version of the installed package, or C<-> if not
+available.
+
+=item I<rcatv>
+
+The catalogue (CTAN) version of the package on the server, or C<-> if not
+available.
+
 =back
+
+The catalogue version fields (I<lcatv> and I<rcatv>) are only populated
+in machine-readable mode, since the catalogue data is loaded on demand;
+a plain C<tlmgr update> does not report them.  The number of fields on
+each line is stable regardless: consumers may rely on there always being
+ten tab-separated fields, with C<-> used for any that are unavailable.
 
 =head2 Machine-readable C<option> output
 
@@ -10638,7 +10704,7 @@ This script and its documentation were written for the TeX Live
 distribution (L<https://tug.org/texlive>) and both are licensed under the
 GNU General Public License Version 2 or later.
 
-$Id: tlmgr.pl 78616 2026-04-06 13:48:59Z karl $
+$Id: tlmgr.pl 79639 2026-07-10 16:45:34Z karl $
 =cut
 
 # test HTML version: pod2html --cachedir=/tmp tlmgr.pl >/tmp/tlmgr.html

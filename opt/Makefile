@@ -35,4 +35,4 @@ aptex-src.o: aptex-src.c $(headers)
 .PHONY: clean
 
 clean:
-	rm aptex lsotfea *.o
+	rm aptex *.o

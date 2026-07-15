@@ -86,7 +86,7 @@ Boris Veytsman
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2014-2021  Boris Veytsman
+Copyright (C) 2014-2026  Boris Veytsman
 
 This is free software.  You may redistribute copies of it under the
 terms of the GNU General Public License
@@ -160,7 +160,7 @@ my $input= IO::File->new($inputfile) or
 my $output = IO::File->new("> $outputfile") or 
     die "Cannot write to $outputfile\n$USAGE\n";
 
-my $userAgent = LWP::UserAgent->new;
+my $userAgent = LWP::UserAgent->new(agent => 'curl');
 
 
 # Bibitem is a hash with the entries 'key', 'text', 'mr',
