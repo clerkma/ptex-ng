@@ -4527,8 +4527,8 @@ things.
 paragraphs is to define these names, and to set up the initial values of the
 equivalents.
 
-In the first region we have 256 equivalents for ``active characters'' that
-act as control sequences, followed by 256 equivalents for single-character
+In the first region we have $128+256$ equivalents for ``active characters'' that
+act as control sequences, followed by 128 equivalents for single-character
 control sequences.
 
 Then comes region~2, which corresponds to the hash table that we will
@@ -5035,8 +5035,9 @@ that will be defined later.
 @d saving_vdiscards_code (etex_int_base+5) /*save items discarded from vlists*/
 @d saving_hyph_codes_code (etex_int_base+6) /*save hyphenation codes for languages*/
 @d expand_depth_code (etex_int_base+7) /*maximum depth for expansion---\eTeX*/
-@d ignore_primitive_error_code (etex_int_base+8) /*ignore some primitive/engine errors*/
-@d eTeX_state_code (etex_int_base+9) /*\eTeX\ state variables*/
+@d suppress_fontnotfound_error_code (etex_int_base+8) /*suppress errors for missing fonts*/
+@d ignore_primitive_error_code (etex_int_base+9) /*ignore some primitive/engine errors*/
+@d eTeX_state_code (etex_int_base+10) /*\eTeX\ state variables*/
 @d etex_int_pars (eTeX_state_code+eTeX_states) /*total number of \eTeX's integer parameters*/
 @#
 @d int_pars etex_int_pars /*total number of integer parameters*/
@@ -5113,6 +5114,7 @@ that will be defined later.
 @d saving_vdiscards int_par(saving_vdiscards_code)
 @d saving_hyph_codes int_par(saving_hyph_codes_code)
 @d expand_depth int_par(expand_depth_code)
+@d suppress_fontnotfound_error int_par(suppress_fontnotfound_error_code)
 @d ignore_primitive_error int_par(ignore_primitive_error_code)
 @d ignore_infinite_glue_shrinkage_bit 1
 
@@ -5847,7 +5849,7 @@ primitive("radical", radical, 0);@/
 @!@:radical\_}{\.{\\radical} primitive@>
 primitive("read", read_to_cs, 0);@/
 @!@:read\_}{\.{\\read} primitive@>
-primitive("relax", relax, 256); /*cf.\ |scan_file_name|*/
+primitive("relax", relax, utf32_impossible_char); /*cf.\ |scan_file_name|*/
 @!@:relax\_}{\.{\\relax} primitive@>
 text(frozen_relax)=text(cur_val);eqtb[frozen_relax]=eqtb[cur_val];@/
 primitive("setbox", set_box, 0);@/
@@ -7190,7 +7192,7 @@ int @!q; /*temporary index*/
 the desired information.
 
 @d begin_pseudoprint
-  {@+l=tally;selector=pseudo;
+  {@+l=tally;tally=0;selector=pseudo;
   trick_count=1000000;
   }
 @d set_trick_count
@@ -7220,7 +7222,7 @@ else{@+print("...");p=l+first_count-half_error_line+3;
     if ((c&0xC0)==0x80) continuation_bytes++;
   }
   print_ln();
-  for (q=1; q<=n-continuation_bytes; q++) print_char(' '); /*print |n| spaces to begin line~2*/
+  for (q=1; q<=n-continuation_bytes; q++) print_char(' '); /*print spaces to begin line~2*/
 }
 if (m+n <= error_line) p=first_count+m;else p=first_count+(error_line-n-3);
 for (q=first_count; q<=p-1; q++) print_char(trick_buf[q%error_line]);
@@ -7229,6 +7231,11 @@ if (m+n > error_line) print("...")
 @ But the trick is distracting us from our current goal, which is to
 understand the input state. So let's concentrate on the data structures that
 are being pseudoprinted as we finish up the |show_context| procedure.
+We use |printn| to print character codes below |0x80| to get a visible
+representation of unprintable characters; and we use |print_char| for all other
+character codes assuming that it is better to have a correct rendering of
+multibyte UTF8 character codes than to have a printable but still unreadable
+rendering of UTF8 byte sequences.
 
 @<Pseudoprint the line@>=
 begin_pseudoprint;
@@ -7236,7 +7243,10 @@ if (buffer[limit]==end_line_char) j=limit;
 else j=limit+1; /*determine the effective end of the line*/
 if (j > 0) for (i=start; i<=j-1; i++)
   {@+if (i==loc) set_trick_count;
-  printn(buffer[i]);
+  if (buffer[i]<0x80)
+    printn(buffer[i]);
+  else
+    print_char(buffer[i]);
   }
 
 @ @<Pseudoprint the token list@>=
@@ -7469,7 +7479,7 @@ static pointer @!input_loc; /*location of `\.{\\input}' in |eqtb|*/
 static halfword @!input_token; /*token representing `\.{\\input}'*/
 
 @ @<Put each...@>=
-primitive("par", par_end, 256); /*cf.\ |scan_file_name|*/
+primitive("par", par_end, utf32_impossible_char); /*cf.\ |scan_file_name|*/
 @!@:par\_}{\.{\\par} primitive@>
 par_loc=cur_val;par_token=cs_token_flag+par_loc;
 
@@ -7756,7 +7766,7 @@ if (i==2||i==4||i==6)
   }
 }
 
-@ Active characters $x$ in the range 0 to |0x7F| are represented by single
+@ Active characters $x$ in the range 0 to |0x7F| are represented by a single
 byte in UTF8 and the current equivalents are as usual in
 |eqtb[active_base + $x$]|. To extend this table to cover all
 active characters would be a waste of memory. Therefore, we store the equivalents
@@ -7892,7 +7902,6 @@ else{@+ /*we are done with this token list*/
 routine has inserted a special marker into the input. In this special
 case, |info(loc)| is known to be a control sequence token, and |link(loc)==null|.
 
-@d no_expand_flag 257 /*this characterizes a special variant of |relax|*/
 
 @<Get the next token, suppressing expansion@>=
 {@+cur_cs=info(loc)-cs_token_flag;loc=null;@/
@@ -8168,7 +8177,7 @@ decr(incsname_state);
 @<Look up the characters of list |r| in the hash table, and set |cur_cs|@>;
 flush_list(r);
 if (eq_type(cur_cs)==undefined_cs)
-  {@+eq_define(cur_cs, relax, 256); /*N.B.: The |save_stack| might change*/
+  {@+eq_define(cur_cs, relax, utf32_impossible_char); /*N.B.: The |save_stack| might change*/
   }  /*the control sequence will now match `\.{\\relax}'*/
 cur_tok=cur_cs+cs_token_flag;back_input();
 }
@@ -9269,7 +9278,7 @@ else if (cur_tok < cs_token_flag+single_base)
 }
 else if (cur_tok < cs_token_flag+null_cs)
    cur_val=cur_tok-cs_token_flag-single_base;
-else /* a single UTF8 character controll sequence with a value greater than 255 */
+else /* a single UTF8 character controll sequence with a value greater than |0x7F| */
 { pointer p = cur_tok-cs_token_flag;
   int t=text(p);
   int i=str_start[t];
@@ -9278,9 +9287,9 @@ else /* a single UTF8 character controll sequence with a value greater than 255 
   if (k==j)
     cur_val=cur_chr;
   else
-    cur_val=0x110000;
+    cur_val=utf32_impossible_char;
 }
-if (cur_val > 0x10ffff)
+if (cur_val > utf32_max_char)
 {@+print_err("Improper alphabetic constant");
 @.Improper alphabetic constant@>
   help2("A one-character control sequence belongs after a ` mark.",@/
@@ -10449,26 +10458,33 @@ else b=(type(p)==vlist_node);
 \.{\\if\\noexpand} or following \.{\\ifcat\\noexpand}. We use the fact that
 active characters have the smallest tokens, among all control sequences.
 
+@d utf32_max_char 0x10FFFF                  /*the largest UTF character*/
+@d utf32_impossible_char (utf32_max_char+1) /*not a possible utf32 character code*/
+@d no_expand_flag (utf32_impossible_char+1) /*even bigger than the impossible character code*/
+
 @d get_x_token_or_active_char @t@>@;
   {@+get_x_token();
-  if (cur_cmd==relax) if (cur_chr==no_expand_flag)
+  if (cur_cmd==relax && cur_chr==no_expand_flag)
     {@+cur_cmd=active_char;
-       cur_chr=cur_tok-cs_token_flag-active_base;
-       if (cur_chr>=utf8_single_size)
-         cur_chr=active_hash[cur_tok-cs_token_flag];
+       if (cur_tok < cs_token_flag+single_base)
+       { if (cur_tok < cs_token_flag+ active_hash_base)
+           cur_chr=cur_tok-cs_token_flag-active_base;
+         else
+           cur_chr=active_hash[cur_tok-cs_token_flag];
+       }
     }
   }
 
 @<Test if two characters match@>=
 {@+get_x_token_or_active_char;
-if ((cur_cmd > active_char)||(cur_chr > biggest_char))  /*not a character*/
-  {@+m=relax;n=biggest_char+1;
+if ((cur_cmd > active_char)||(cur_chr > utf32_max_char))  /*not a character*/
+  {@+m=relax;n=utf32_impossible_char;
   }
 else{@+m=cur_cmd;n=cur_chr;
   }
-get_x_token_or_active_char;
-if ((cur_cmd > active_char)||(cur_chr > biggest_char))
-  {@+cur_cmd=relax;cur_chr=biggest_char+1;
+ get_x_token_or_active_char;
+if ((cur_cmd > active_char)||(cur_chr > utf32_max_char))
+  {@+cur_cmd=relax;cur_chr=utf32_impossible_char;
   }
 if (this_if==if_char_code) b=(n==cur_chr);@+else b=(m==cur_cmd);
 }
@@ -10798,7 +10814,7 @@ int @!old_setting; /*holds |selector| setting*/
 if (cur_cmd==left_brace)
   @<Define a general text file name and |goto done|@>@;
 name_in_progress=true;begin_name();  
-loop@+{@+if ((cur_cmd==relax) || (cur_cmd > other_char) || (cur_chr > biggest_char))  /*not a character*/
+loop@+{@+if ((cur_cmd==relax) || (cur_cmd > other_char) || (cur_chr > utf32_max_char))  /*not a character*/
     {@+back_input();goto done;
     }
 #if 0
@@ -11552,7 +11568,9 @@ g=null_font;@/
 @<Read and check the font data; |abort| if the font file is malformed;
 if there's no room for this font, say so and |goto done|; otherwise |incr(font_ptr)|
 and |goto done|@>;
-bad_tfm: @<Report a bad tfm file@>;
+bad_tfm:
+if (!suppress_fontnotfound_error) 
+{ @<Report a bad tfm file@>; }
 done: if (tfm_file.f!=NULL) b_close(&tfm_file);
 return g;
 }
@@ -11569,7 +11587,13 @@ static void read_predefined_font(internal_font_number g)
   pack_file_name(empty_string, font_area[g], empty_string,"");
   path=(char*)name_of_file+1;
   t=font_id_text(g);
+  { char *s=(char *)str_pool+str_start[feature_string[g]];
+    int n= length(feature_string[g]);
+    @<Set |feature_str| with length |n| from |s|@>@;
+  }
+  feature_warn=false;
   read_extended_font(g,t,font_name[g], font_area[g],font_size[g],path);
+  feature_warn=true;
 }
 
 @ If an extended font |k| is defined and then dumped into a format file,
@@ -11584,7 +11608,7 @@ it will not be loaded into memory together with the format file,
 and consequently, |x_font[k]| will be |NULL|. The decission not
 to load all fonts specified in a format makes sense because
 formats define a general purpose setting that usually defines
-many more fonts that are used in any specific document.
+many more fonts than those used in any specific document.
 For example, the plain \TeX\ format specifies 50 different fonts!
 \HiTeX\ will load a predefined font only if needed.
 
@@ -11600,7 +11624,7 @@ these primitives allow the selection of any of the 16 available
 font families.
 
 To tell an extended font from an font with a \.{.tfm} file,
-we store |-256| in |char_base[k]|. The char |char_base| array
+we store |extended_base| or -256 in |char_base[k]|. The char |char_base| array
 is not used for extended fonts and for other fonts its
 values are usually not negative but definitely bigger than the
 negative value of the smallest character code in the font. 
@@ -14496,8 +14520,8 @@ is | > outer_call|, so it will not easily disappear in the presence of errors.
 The |get_x_token| routine converts the first into the second, which has |endv|
 as its command code.
 
-@d span_code 256 /*distinct from any character*/
-@d cr_code 257 /*distinct from |span_code| and from any character*/
+@d span_code utf32_impossible_char /*distinct from any character*/
+@d cr_code (span_code+1) /*distinct from |span_code| and from any character*/
 @d cr_cr_code (cr_code+1) /*this distinguishes \.{\\crcr} from \.{\\cr}*/
 @d end_template_token cs_token_flag+frozen_end_template
 
@@ -16743,7 +16767,6 @@ the compressed table.
 
 @d max_language 255 /*the largest hyphenation language*/
 @d max_pattern_char 0xFFFF /*the largest character in a pattern*/
-@d biggest_char 0x10FFFF /*the largest UTF character*/
 
 @<Set initial values of key variables@>=
 max_hyph_char=max_language+1;
@@ -16804,7 +16827,7 @@ resume: prev_s=s;s=link(prev_s);
   }
 done2: hyf_char=hyphen_char[hf];
 if (hyf_char < 0) goto done1;
-if (hyf_char > biggest_char) goto done1;
+if (hyf_char > utf32_max_char) goto done1;
 ha=prev_s
 
 @ The word to be hyphenated is now moved to the |hu| and |hc| arrays.
@@ -21716,7 +21739,7 @@ producing an ``undefined control sequence'' error or expanding the
 previous meaning.  This allows, for instance, `\.{\\chardef\\foo=123\\foo}'.
 
 @<Assignments@>=
-case shorthand_def: {@+n=cur_chr;get_r_token();p=cur_cs;define(p, relax, 256);
+case shorthand_def: {@+n=cur_chr;get_r_token();p=cur_cs;define(p, relax, utf32_impossible_char);
   scan_optional_equals();
   switch (n) {
   case char_def_code: {@+scan_char_num();define(p, char_given, cur_val);
@@ -22274,7 +22297,7 @@ and |goto common_ending|@>;
 if (file_opened) 
 f=read_font_info(u, cur_name, cur_area, cur_ext, s);
 else
-{ @<Open an extended font file for input@>@;
+{ @<Find an extended font file for input@>@;
   if (path!=NULL)
   { if (font_ptr==font_max|| fmem_ptr+8 > font_mem_size)
       @<Apologize for not loading the font, |goto done|@>;
@@ -22287,11 +22310,13 @@ else
   }
   else
   { done:
-    start_font_error_message;
-    print(" not found.");
-    help2("I wasn't able to find the necessary font file.",
-          "You should check if the file exists or the name was misspelled.");
-    error();	  
+    if (!suppress_fontnotfound_error)
+    { start_font_error_message;
+      print(" not found.");
+      help2("I wasn't able to find the necessary font file.",
+            "You should check if the file exists or the name was misspelled.");
+      error();
+   }
     f=null_font;
   }
 }
@@ -23068,7 +23093,10 @@ dump_int(bchar_label[k]);
 dump_int(font_bchar[k]);
 dump_int(font_false_bchar[k]);@/
 print_nl("\\font");printn_esc(font_id_text(k));print_char('=');
-print_file_name(font_name[k], font_area[k],empty_string);
+if (IS_X_FONT(k))
+  print_file_name(font_name[k], empty_string,empty_string);
+else
+  print_file_name(font_name[k], font_area[k],empty_string);
 if (font_size[k]!=font_dsize[k])
   {@+print(" at ");print_scaled(font_size[k]);print("pt");
   }
@@ -23083,8 +23111,8 @@ undump_int(hyphen_char[k]);
 undump_int(skew_char[k]);@/
 undump(0, str_ptr, font_name[k]);
 undump(0, str_ptr, font_area[k]);@/
-undump(0, biggest_char, font_bc[k]);
-undump(0, biggest_char, font_ec[k]);@/
+undump(0, utf32_max_char, font_bc[k]);
+undump(0, utf32_max_char, font_ec[k]);@/
 undump_int(char_base[k]);
 undump_int(width_base[k]);
 undump_int(height_base[k]);@/
@@ -24837,6 +24865,8 @@ primitive("savingvdiscards", assign_int, int_base+saving_vdiscards_code);@/
 @!@:saving\_vdiscards\_}{\.{\\savingvdiscards} primitive@>
 primitive("savinghyphcodes", assign_int, int_base+saving_hyph_codes_code);@/
 @!@:saving\_hyph\_codes\_}{\.{\\savinghyphcodes} primitive@>
+primitive("suppressfontnotfounderror", assign_int, int_base+suppress_fontnotfound_error_code);@/
+@!@:suppress\_fontnotfound\_error\_}{\.{\\suppressfontnotfounderror} primitive@>
 primitive("ignoreprimitiveerror", assign_int, int_base+ignore_primitive_error_code);@/
 @!@:ignore\_primitive\_error\_}{\.{\\ignoreprimitiveerror} primitive@>
 
@@ -24853,6 +24883,7 @@ case tracing_scan_tokens_code: print_esc("tracingscantokens");@+break;
 case tracing_nesting_code: print_esc("tracingnesting");@+break;
 case saving_vdiscards_code: print_esc("savingvdiscards");@+break;
 case saving_hyph_codes_code: print_esc("savinghyphcodes");@+break;
+case suppress_fontnotfound_error_code:  print_esc("suppressfontnotfounderror");@+break;
 case ignore_primitive_error_code: print_esc("ignoreprimitiveerror");@+break;
 
 @ In order to handle \.{\\everyeof} we need an array |eof_seen| of
@@ -34166,7 +34197,7 @@ if ((cur_chr&0xF8)==0xF0)
   if (cur_chr>0x10FFFF && scanner_status!=skipping)
   { print_err("UTF8 code out of range in the input");
     int_error(cur_chr);
-    cur_chr=biggest_char;
+    cur_chr=utf32_max_char;
   }
   return i;
 }
@@ -34179,7 +34210,6 @@ the index |k|. The function advances the index |i| for each byte taken from the
 buffer and returns the updated value.
 
 
-
 @p static int utf8_get_cur_chr(unsigned char *b, int i, int k)
 { uint8_t d;
   @<input a single byte utf8 code@>@;
@@ -34187,7 +34217,7 @@ buffer and returns the updated value.
   @<input a three byte utf8 code@>@;
   @<input a four byte utf8 code@>@;
   print_err("Malformed UTF8 code in the input; character ignored");
-  cur_chr=biggest_char;
+  cur_chr=utf32_max_char;
   return i;
 }
 
@@ -34905,12 +34935,12 @@ static void end_name(void);
 static void scan_font_name(void)
 {@+pool_pointer @!j, k; /*index into |str_pool|*/
   int @!old_setting; /*holds |selector| setting*/
-  char *f_name=NULL;
+  char *fnt_str=NULL;
   name_in_progress=true;begin_name();
   @<Get the next non-blank non-relax...@>;
   if (cur_cmd==left_brace)
     @<Define a general text file name and |goto done|@>@;
-  loop@+{@+if ((cur_cmd > other_char)||(cur_chr > biggest_char))  /*not a character*/
+  loop@+{@+if ((cur_cmd > other_char)||(cur_chr > utf32_max_char))  /*not a character*/
     {@+back_input();goto done;
     }
     if (!more_name(cur_chr)) goto done;
@@ -34945,17 +34975,18 @@ separate global variables.
 @<Split the font name into its components@>=
 { int l = cur_length;
   int i=0;
-  int d;
-  f_name= (char *)str_pool+str_start[str_ptr];
-  if (f_name[i]=='[')
+  int d; /*number of characters to be deleted*/
+  
+  fnt_str= (char *)str_pool+str_start[str_ptr];
+  if (fnt_str[i]=='[')
   { d=1;
     @<Find a bracketed file name@>@;
   }
-  else if (strncmp("file:",f_name,5)==0)
+  else if (strncmp("file:",fnt_str,5)==0)
   { d=5;
     @<Find a non-bracketed file name@>@;
   }
-  else if (strncmp("name:",f_name,5)==0)
+  else if (strncmp("name:",fnt_str,5)==0)
   { d=5;
     @<Find a font by name@>@;
   }
@@ -34964,19 +34995,15 @@ separate global variables.
     d=0;
     @<Find a non-bracketed file name@>@;
   }
-  if (i<l && f_name[i]=='(')
+  if (i<l && fnt_str[i]=='(')
   { i++;
     @<Find font selector@>@;
   }
   else
     f_index=0;
-  if (feature_str!=0)
-    feature_str[0]=0;  
-  if (i<l && f_name[i]==':')
-  { int n;
-    n=pool_ptr-str_start[str_ptr]-i;
-    REALLOCATE(feature_str,n+1,char);
-    strncpy(feature_str,f_name+i,n+1);
+  { int n=  n=pool_ptr-str_start[str_ptr]-i;
+    char *s=fnt_str+i;
+    @<Set |feature_str| with length |n| from |s|@>@;
   } 
   pool_ptr=str_start[str_ptr]+f_delimiter; /*flush the remaining string*/
 }
@@ -34989,15 +35016,15 @@ the closing bracket might be missing if it was after the extension.
   i+=d;
   f_delimiter=area_delimiter=ext_delimiter=0;
   while (i<l)
-  { f_name[i-d]=f_name[i];
-    if (f_name[i]==']')
+  { fnt_str[i-d]=fnt_str[i];
+    if (fnt_str[i]==']')
     {  f_delimiter=i-d;
        d=2;
       i++;
       break;
     }
-    else if (IS_DIR_SEP(f_name[i])) {@+area_delimiter=i+1-d;ext_delimiter=0; }
-    else if (f_name[i]=='.') ext_delimiter=i+1-d;
+    else if (IS_DIR_SEP(fnt_str[i])) {@+area_delimiter=i+1-d;ext_delimiter=0; }
+    else if (fnt_str[i]=='.') ext_delimiter=i+1-d;
     i++;
   }
   if (d!=2)
@@ -35014,11 +35041,11 @@ or by the end of the string
 { i+=d;
   f_delimiter=area_delimiter=ext_delimiter=0;
   while (i<l)
-  { f_name[i-d]=f_name[i];
-    if (f_name[i]=='(' || f_name[i]==':')
+  { fnt_str[i-d]=fnt_str[i];
+    if (fnt_str[i]=='(' || fnt_str[i]==':')
       break;
-    else if (IS_DIR_SEP(f_name[i])) {@+area_delimiter=i+1-d;ext_delimiter=0; }
-    else if (f_name[i]=='.') ext_delimiter=i+1-d;
+    else if (IS_DIR_SEP(fnt_str[i])) {@+area_delimiter=i+1-d;ext_delimiter=0; }
+    else if (fnt_str[i]=='.') ext_delimiter=i+1-d;
     i++;
   }
   f_delimiter=i-d;
@@ -35032,8 +35059,8 @@ different syntay for font specifications.
 
 @<Find font selector@>=
 { char *end_ptr=NULL;
-  f_index=strtol((char *)f_name+i,&end_ptr,10);
-  i=(end_ptr-f_name);
+  f_index=strtol((char *)fnt_str+i,&end_ptr,10);
+  i=(end_ptr-fnt_str);
   if (*end_ptr==')')
     i++;
   else
@@ -35063,7 +35090,7 @@ The following code ignores a given file extension. So if a font
 is available in both formats, it will find the OpenType font even
 if ``.ttf'' was given as an extension.
 
-@<Open an extended font file for input@>=
+@<Find an extended font file for input@>=
 {  pack_file_name(cur_name, cur_area, empty_string,""); /* \TeX\ Live */
    path=kpse_find_file((char *)name_of_file+1, kpse_opentype_format, 0);
    if (path == NULL)
@@ -35501,7 +35528,7 @@ Hi\TeX\ uses the |font_name| and |font_area| (which holds the full pathname),
 as well as the |font_size|, |font_dsize|, |hyphen_char|, |font_bchar|, |font_glue|,
 and |font_params|. Some otherwise unused tables are used for
 special information:
-The |char_base| is set to |extended_base| as a merker that the font
+The |char_base| is set to |extended_base| as a marker that the font
 is an extended font. This maker is used to reload predefined extended fonts.
 The value of |lig_kern_base| is used to store the string number of the
 fonts feature list. |kern_base| is used to store marker bits for the \.{tlig} and \.{tacc}
@@ -35886,12 +35913,20 @@ the text direction, the script and the language.
 @<Glob...@>=
 
 static char *feature_str=NULL;
-
+static bool feature_warn=true;
 
 #define NUM_DEFAULT_FEATURES 6
 static hb_tag_t default_feature_tags[NUM_DEFAULT_FEATURES]=
 {HB_TAG('l','i','g','a'),HB_TAG('d','l','i','g'),HB_TAG('k','e','r','n'),
  HB_TAG('t','l','i','g'),HB_TAG('c','c','m','p'),HB_TAG('l','o','c','l')};
+
+@ @<Set |feature_str| with length |n| from |s|@>=
+if (feature_str!=NULL)
+    feature_str[0]=0;  
+if (n<=0) n=0;
+REALLOCATE(feature_str,n+1,char);
+strncpy(feature_str,s,n);
+feature_str[n]=0;
 
 
 
@@ -35904,37 +35939,52 @@ All OpenType feature tags have exactly 4 characters. Arguments that may follow a
 a feature tag are ignored.
 
 @<check and count the feature tags@>=
-feature_count=0;
 if (feature_str[0]!=':')
-  print_err("Feature string must start with a colon ':'. I igore it.");
+{ print_err("Font "); printn_esc(t);
+  print_err(" Feature string ");print(feature_str);
+  print_err(" must start with a colon ':'. I ignore it.");
+}
 else
 { i=1;
   while (feature_str[i]!=0)
-  { if (feature_str[i]!='+'&& feature_str[i]!='-')
-    { @<Feature error@>@;
-      print_err(" must start with '+' or '-'. I igore it.");
+  { int f_start=i;
+    if (feature_str[i]!='+'&& feature_str[i]!='-')
+    { if(feature_warn) 
+      { @<Feature error@>@;
+        print_err(" must start with '+' or '-'. I ignore it.");
+      }
       while (feature_str[i]!=0 && feature_str[i]!=';')
+        i++;
+      if (feature_str[i]==';')
         i++;
       continue;
     }
     i++;
     for (j=0;j<4;j++)
     { if ((feature_str[i]>='a' && feature_str[i]<='z') ||
-          (feature_str[i]>='A' && feature_str[i]<='Z'))
+          (feature_str[i]>='A' && feature_str[i]<='Z') ||
+	  (feature_str[i]>='0' && feature_str[i]<='9')
+	  )
 	 i++;
-      else	
-      { @<Feature error@>@;
-        print(" must have four alphabetic characters. I pad it with spaces.");
-        break;
-      }
+      else
+	 break;
     }
-    feature_count++;
+    if (j<1)	
+    { if (feature_warn)
+       { @<Feature error@>@;
+         print(" must have four alphanumeric characters. I ignore it.");
+       }
+    }
+    else
+      feature_count++;
     if (feature_str[i]!=0)
     { if (feature_str[i]==';')
         i++;
       else 
-      { @<Feature error@>@;
-        print_err(" must end with a ';'. I truncate the remainder.");
+      { if (feature_warn)
+        { @<Feature error@>@;
+          print_err(" must have four alphanumeric characters. I truncate the remainder.");
+	}
         do {
 	  i++;
 	  if (feature_str[i]==';')
@@ -35947,9 +35997,16 @@ else
 
 @ 
 @<Feature error@>=
-print_err("Feature "); print_int(feature_count+1);
+print_err("Font "); printn_esc(t);
+print_err(" Feature "); print_int(feature_count+1);
 print(": ");
-print(feature_str+i);
+{ int j=f_start;
+  while (feature_str[j]!=0)
+  { print_char(feature_str[j]);
+    if (feature_str[j]==';') break;
+    j++;
+  }
+}
 
 @ Before we expalin how t initialize the feature array, we need to wrap
 the initialization of a  |hb_feature_t| into a small function which we
@@ -35972,10 +36029,11 @@ before defining \TeX's macros.
 as
 
  @<Initialize the features of font |g|@>=
-{ int i,j,k, feature_count=0;
-  hb_tag_t t;
+{ int i,j,k, feature_count;
+  hb_tag_t tg;
   hb_feature_t *features;
-  if (feature_str!=NULL)
+  feature_count=0;
+  if (feature_str!=NULL && feature_str[0]!=0)
   { @<check and count the feature tags@>@;
   }
   ALLOCATE(features,feature_count+NUM_DEFAULT_FEATURES,hb_feature_t);
@@ -35991,6 +36049,8 @@ as
       else
       { while (feature_str[i]!=0 && feature_str[i]!=';')
           i++;
+        if (feature_str[i]==';')
+          i++;
 	continue;
       }
       i++;
@@ -36001,20 +36061,22 @@ as
         else	
           tag[j]=' ';
       }
-      t=HB_TAG(tag[0],tag[1],tag[2],tag[3]);
-      if (t==HB_TAG('t','l','i','g'))
-      { if (val) feature_bits[g]|=tlig_bit; else feature_bits[g]&=~tlig_bit; }
-      if (t==HB_TAG('t','a','c','c'))
-      { if (val) feature_bits[g]|=tacc_bit; else feature_bits[g]&=~tlig_bit; }
-      else	
-      { for (j=0;j<k;j++)
-          if (features[j].tag==t)
-	  { features[j].value=val;
-	    break;
-	  }
-        if (j==k)
-        { x_set_feature(features+k, t,val);
-	  k++;
+      if (tag[0]!=' ')
+      { tg=HB_TAG(tag[0],tag[1],tag[2],tag[3]);
+        if (tg==HB_TAG('t','l','i','g'))
+        { if (val) feature_bits[g]|=tlig_bit; else feature_bits[g]&=~tlig_bit; }
+        if (tg==HB_TAG('t','a','c','c'))
+        { if (val) feature_bits[g]|=tacc_bit; else feature_bits[g]&=~tlig_bit; }
+        else	
+        { for (j=0;j<k;j++)
+            if (features[j].tag==tg)
+	    { features[j].value=val;
+	      break;
+	    }
+          if (j==k)
+          { x_set_feature(features+k, tg,val);
+	    k++;
+          }
         }
       }
       while (feature_str[i]!=0 && feature_str[i]!=';')
@@ -36148,7 +36210,7 @@ with matching plans!
 #endif
 
 static hb_buffer_t *x_set_major(int f, uint32_t cp[],int n, int j,int len)
-{  hb_buffer_set_length (x_font[f]->major,0);
+{ hb_buffer_set_length (x_font[f]->major,0);
   hb_buffer_add_codepoints( x_font[f]->major,cp,n,j,len);
   hb_shape_plan_execute (x_font[f]->plan,x_font[f]->f, x_font[f]->major,
       x_font[f]->features, x_font[f]->feature_count);
@@ -36247,15 +36309,35 @@ static pointer x_append_cluster(pointer t, int f, uint32_t *cp, int cp_len,
 }
  
 
-@ The simple case:
+@ The simple case: If a cluster has the size |n==1|, we might just add a simple character node.
+Some font features, for example the ``+smcp'' feature that requests a ``small caps'' font,
+will influence the glyph assignment while shaping. Instead of assigning to the codepoint 'a'
+a glyph for a lower case 'a' a small glyph for an upper case 'A' is assigned. In such a case,
+the nominal glyph for the code point 'a' is different form the actual glyph. \HiTeX\ will
+retain the codepoint which may latter be used for hyphenation and the glyph selected by shaping
+in a ligature node.
 
 @d append_kern_to_t(A)   if ((A)!=0) { link(t)= new_kern(A); t=link(t); (*ncount)++; }
 
 @<Add a single codepoint@>=
 { scaled w;
+  hb_codepoint_t nominal_gid;
  (*ncount)++;
-  append_charnode_to_t(f,cp[0]);
-  w = x_char_advance(f,cp[0]);
+  hb_font_get_nominal_glyph (x_font[f]->f,cp[0], &nominal_gid);
+  if (gid==nominal_gid)
+  { append_charnode_to_t(f,cp[0]);
+  }
+  else
+  {  pointer lig, q, r;
+     lig= new_ligature(f, gid,null);
+     r=lig_char(lig);
+     q=get_avail();
+     font(q)=f;
+     character(q)=cp[0];
+     link(r)=q;
+     link(t)=lig; t=link(t);
+  }
+  w = x_glyph_advance(f, gid);
   append_kern_to_t(cw-w);
 }
 
