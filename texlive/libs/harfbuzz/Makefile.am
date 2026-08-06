@@ -1,4 +1,4 @@
-## $Id: Makefile.am 78312 2026-03-07 22:46:37Z kakuto $
+## $Id: Makefile.am 79872 2026-08-03 04:50:11Z kakuto $
 ## Proxy Makefile.am to build harfbuzz for TeX Live.
 ##
 ##   Copyright 2016-2017 Karl Berry <tex-live@tug.org>
@@ -39,7 +39,6 @@ libharfbuzz_a_SOURCES = \
 	@HARFBUZZ_TREE@/src/hb-subset-cff-common.cc \
 	@HARFBUZZ_TREE@/src/hb-subset-cff1.cc \
 	@HARFBUZZ_TREE@/src/hb-subset-cff2.cc \
-	@HARFBUZZ_TREE@/src/hb-subset-cff2-to-cff1.cc \
 	@HARFBUZZ_TREE@/src/hb-subset-input.cc \
 	@HARFBUZZ_TREE@/src/hb-subset-instancer-iup.cc \
 	@HARFBUZZ_TREE@/src/hb-subset-instancer-solver.cc \
@@ -52,7 +51,8 @@ libharfbuzz_a_SOURCES = \
 	@HARFBUZZ_TREE@/src/hb-subset-table-layout.cc \
 	@HARFBUZZ_TREE@/src/hb-subset-table-other.cc \
 	@HARFBUZZ_TREE@/src/hb-subset-table-var.cc \
-	@HARFBUZZ_TREE@/src/hb-subset.cc
+	@HARFBUZZ_TREE@/src/hb-subset.cc \
+	@HARFBUZZ_TREE@/src/hb-depend.cc
 
 ## Graphite library
 AM_CPPFLAGS += $(GRAPHITE2_INCLUDES)

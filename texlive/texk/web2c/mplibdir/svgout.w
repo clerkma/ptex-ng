@@ -38,7 +38,21 @@
 \pdfoutput=1
 \pageno=3
 
-@ 
+@s math_data int
+@s MP int
+@s boolean int
+@s integer int
+@s mp_clip_object int
+@s mp_edge_object int
+@s mp_fill_object int
+@s mp_graphic_object int
+@s mp_special_object int
+@s mp_stroked_object int
+@s mp_text_object int
+@s mp_gr_knot int
+@s mp_ps_font int
+
+@* Introduction.
 @d zero_t  ((math_data *)mp->math)->zero_t
 @d number_zero(A)		       (((math_data *)(mp->math))->equal)(A,zero_t)		       
 @d number_greater(A,B)		       (((math_data *)(mp->math))->greater)(A,B)		       
@@ -59,16 +73,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "mplib.h"
-#include "mplibps.h" /* external header */
 #include "mplibsvg.h" /* external header */
-#include "mpmp.h" /* internal header */
 #include "mppsout.h" /* internal header */
 #include "mpsvgout.h" /* internal header */
 #include "mpmath.h" /* internal header */
 @h
-@<Types in the outer block@>
-@<Declarations@>
+@<Types in the outer block@>@;
+@<Declarations@>@;
 
 @ There is a small bit of code from the backend that bleads through
 to the frontend because I do not know how to set up the includes
@@ -77,7 +88,6 @@ properly. That is |typedef struct svgout_data_struct * svgout_data|.
 @ @(mpsvgout.h@>=
 #ifndef MPSVGOUT_H
 #define MPSVGOUT_H 1
-#include "mplib.h"
 #include "mpmp.h"
 #include "mplibps.h"
 typedef struct svgout_data_struct {
@@ -101,7 +111,7 @@ void mp_svg_backend_free (MP mp) {
   mp->svg = NULL;
 }
 
-@ Writing to SVG files
+@* Writing to SVG files.
 
 This variable holds the number of characters on the current SVG file
 line. It could also be a boolean because right now the only interesting
@@ -193,12 +203,12 @@ the end of the buffer.
     mp->svg->bufsize = l;    
   }
   mp->svg->buf[mp->svg->loc++] = (A);
-} while (0)
+} while (0) @;
 
 @d append_string(A) do {
    const char *ss = (A);
    while (*ss != '\0') { append_char(*ss); ss++ ;}
-} while (0)
+} while (0) @;
 
 @ This function resets the buffer in preparation of the next string.
 The |memset| is an easy way to make sure that the old string is
@@ -288,7 +298,7 @@ static void mp_svg_store_double (MP mp, double s) {
 }
 
 
-@ Output XML tags. 
+@* Output XML tags.
 
 In order to create a nicely indented output file, the current tag
 nesting level needs to be remembered.
@@ -435,8 +445,7 @@ void mp_svg_trans_pair_out (MP mp, mp_pen_info *pen, double x, double y) {
 @ @<Declarations@>=
 static void mp_svg_pair_out (MP mp,double x, double y) ;
 
-@ 
-@<Declarations@>=
+@ @<Declarations@>=
 static void mp_svg_print_initial_comment(MP mp,mp_edge_object *hh);
 
 @ @c
@@ -791,7 +800,7 @@ static void mp_svg_font_path_out (MP mp, mp_gr_knot h) {
   append_char(0);
 }
 
-@ If |prologues:=3|, any glyphs in labels will be converted into paths.
+@ If \.{prologues:=3}, any glyphs in labels will be converted into paths.
 
 @d do_mark(A,B) do {
    if (mp_chars == NULL) {
@@ -804,7 +813,7 @@ static void mp_svg_font_path_out (MP mp, mp_gr_knot h) {
      mp_chars[(A)] = glfs;
    }
    mp_chars[(A)][(int)(B)] = 1;
-} while (0)
+} while (0) @;
 
 @<Declarations@>=
 void mp_svg_print_glyph_defs (MP mp, mp_edge_object *h);
@@ -1005,7 +1014,8 @@ void mp_svg_text_out (MP mp, mp_text_object *p, int prologues) {
 
 @ When stroking a path with an elliptical pen, it is necessary to transform
 the coordinate system so that a unit circular pen will have the desired shape.
-To keep this transformation local, we enclose it in a $$\&{<g>}\ldots\&{</g>}$$
+To keep this transformation local, we enclose it in a
+$$\langle\&{g}\rangle\ldots\langle/\&{g}\rangle$$
 block. Any translation component must be applied to the path being stroked
 while the rest of the transformation must apply only to the pen.
 If |fill_also=true|, the path is to be filled as well as stroked so we must
@@ -1157,8 +1167,7 @@ void mp_svg_fill_out (MP mp, mp_gr_knot p, mp_graphic_object *h) {
 @<Globals...@>=
 int clipid;
 
-@
-@<Set initial values@>=
+@ @<Set initial values@>=
 mp->svg->clipid = 0;
 
 @ @<Declarations@>=
@@ -1199,7 +1208,7 @@ void mp_svg_clip_out (MP mp, mp_clip_object *p) {
 
 
 
-@ The main output function
+@* The main output function.
 
 @d gr_has_scripts(A) (gr_type((A))<mp_start_clip_code)
 @d pen_is_elliptical(A) ((A)==gr_next_knot((A)))
@@ -1207,7 +1216,7 @@ void mp_svg_clip_out (MP mp, mp_clip_object *p) {
 @<Exported function ...@>=
 int mp_svg_gr_ship_out (mp_edge_object *hh, int prologues, int standalone) ;
 
-@ @c 
+@ @c
 int mp_svg_gr_ship_out (mp_edge_object *hh, int qprologues, int standalone) {
   mp_graphic_object *p;
   mp_pen_info *pen = NULL;
@@ -1312,8 +1321,8 @@ int mp_svg_ship_out (mp_edge_object *hh, int prologues) {
 
 @ 
 @d do_write_prescript(a,b) {
-  if ( (gr_pre_script((b *)a))!=NULL ) {
-    mp_svg_print_nl (mp, gr_pre_script((b *)a)); 
+  if ( (gr_pre_script(@[(b *)a@]))!=NULL ) {
+    mp_svg_print_nl (mp, gr_pre_script(@[(b *)a@]));
     mp_svg_print_ln(mp);
   }
 }
@@ -1328,8 +1337,8 @@ int mp_svg_ship_out (mp_edge_object *hh, int prologues) {
 
 @ 
 @d do_write_postscript(a,b) {
-  if ( (gr_post_script((b *)a))!=NULL ) {
-    mp_svg_print_nl (mp, gr_post_script((b *)a)); 
+  if ( (gr_post_script(@[(b *)a@]))!=NULL ) {
+    mp_svg_print_nl (mp, gr_post_script(@[(b *)a@]));
     mp_svg_print_ln(mp);
   }
 }
@@ -1341,3 +1350,4 @@ int mp_svg_ship_out (mp_edge_object *hh, int prologues) {
   else if (gr_type(p)==mp_text_code) { do_write_postscript(p,mp_text_object); }
 }
 
+@* Index.
