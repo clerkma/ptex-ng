@@ -1,4 +1,4 @@
-## $Id: Makefile.am 79998 2026-08-16 17:22:26Z karl $
+## $Id: Makefile.am 80064 2026-08-22 19:12:59Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2026 Karl Berry <tex-live@tug.org>
@@ -190,8 +190,9 @@ texmf_other_scripts = \
 	luafindfont/luafindfont.lua \
 	luaotfload/luaotfload-tool.lua \
 	lwarp/lwarpmk.lua \
-	makedtx/makedtx.pl \
+	make-paper-tarball/make-paper-tarball \
 	make4ht/make4ht \
+	makedtx/makedtx.pl \
 	markdown/markdown2tex.lua \
 	match_parens/match_parens \
 	mathspic/mathspic.pl \
