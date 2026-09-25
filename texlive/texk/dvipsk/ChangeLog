@@ -1,3 +1,41 @@
+2026-09-19  Tomas Rokicki  <rokicki@gmail.com>
+
+	* hps.c (NEED_ORIGIN, set_hps_origin): new flag and function,
+	recording the position and stack depth of the first character or
+	rule typeset inside a hypertex anchor.
+	(do_link): set NEED_ORIGIN; the position and pushcount recorded
+	there are now only a fallback for an anchor with no material.
+	* dopage.c (dochar, rules): call set_hps_origin when needed.
+	* protos.h: declare them.
+	* test-hyperlink.test, testdata/hyperlink.{tex,dvi,rects}: new test.
+	* Makefile.am (TESTS, EXTRA_DIST, DISTCLEANFILES): add it.
+
+	do_link recorded the link rectangle's lower left corner, and the
+	stack depth current_pushcount, at the position where the opening
+	\special{html:<a href="...">} was seen.  That is only the position
+	of the link text when the special is seen in horizontal mode.  In
+	vertical mode, vv is still the baseline preceding the link text
+	and pushcount is that of the enclosing vertical list, one less
+	than the line boxes.  So:
+
+	- the rectangle was anchored on the wrong baseline, giving a
+	  degenerate or inverted rectangle drawn as a small blank box
+	  above the link text instead of on it;
+
+	- the line-break test in dopage.c, which splits a link into one
+	  rectangle per line at each pop back to a level shallower than
+	  current_pushcount, could never fire.  A link whose text was
+	  broken across lines became a single rectangle running from the
+	  first baseline to the last, which for two lines is exactly zero
+	  height.
+
+	Recording both at the first material actually set inside the
+	anchor fixes both.  Links opened in horizontal mode are
+	unaffected.
+
+	Reported by Karl Berry, for Udo Wermuth's plain TeX TUGboat
+	articles.
+
 2026-06-25  Tomas Rokicki  <rokicki@gmail.com>
 
 	* download.c (quarterword): compute yoff(set), not xoff twice.

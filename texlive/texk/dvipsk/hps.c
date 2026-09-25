@@ -37,6 +37,7 @@ integer HREF_COUNT;
 Boolean ISHREF = 0;
 Boolean POPPED = 0;
 Boolean PUSHED = 0;
+Boolean NEED_ORIGIN = 0;
 
 char *current_name;
 int current_type;
@@ -262,8 +263,14 @@ do_link(char *s, int type)
   p->title = (char *)malloc(strlen(s)+1);
   p->title = s;
   p->srcpg = pagecounter;
+  /* Provisional lower left corner; likewise the current_pushcount set
+     below.  Both are replaced by set_hps_origin() at the first character
+     or rule actually typeset inside the anchor, and stand only if there
+     is none.  Here we may still be in vertical mode, where vv is the
+     baseline preceding the link text rather than its own.  */
   p->rect.llx = dvi_to_hps_conv(hh, HORIZONTAL);
   p->rect.lly = dvi_to_hps_conv(vv, VERTICAL)-FUDGE;
+  NEED_ORIGIN = TRUE;
   p->rect.urx = -1.0;
   p->rect.ury = -1.0;
   p->vert_dest = -1;
@@ -609,6 +616,25 @@ end_current_box(void) {
     }
     /* printf("Ended box %.0f, %.0f, %.0f, %.0f\n", nl->rect.llx, \
        nl->rect.lly,nl->rect.urx, nl->rect.ury); */
+  }
+}
+
+/* Anchor the current link at the first material set inside it: its own
+   baseline, and its own stack depth.  Taking the latter from the special
+   would leave it one short of the line boxes for an anchor opened in
+   vertical mode, so that the line-break test in dopage.c, which wants a
+   pop back to a shallower level, could never fire.  Called from dopage.c
+   when a character or rule is typeset while NEED_ORIGIN is set.  */
+
+void
+set_hps_origin(void) {
+  struct nlist *np;
+
+  NEED_ORIGIN = FALSE;
+  current_pushcount = pushcount;
+  if ((np = lookup_link(current_name, current_type)) && np->defn) {
+    np->defn->rect.llx = dvi_to_hps_conv(hh, HORIZONTAL);
+    np->defn->rect.lly = dvi_to_hps_conv(vv, VERTICAL)-FUDGE;
   }
 }
 

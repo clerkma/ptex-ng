@@ -70,13 +70,11 @@ unsigned char bitval[8]=
   1
 };
 
-static
 unsigned int minus_one(const unsigned x)
 {
   return (x == 0) ? x : x-1;
 }
 
-static
 unsigned int plus_one(const unsigned x)
 {
   return (x == (unsigned int) ~0U) ? x : x+1;
@@ -98,7 +96,6 @@ unsigned int plus_one(const unsigned x)
 *       and printed to stdout                                           *
 ************************************************************************/
 /* calculate the bounding box in postscript points, given a resolution in dpi */
-static
 void readppm_and_calcbb(const char *name,
                         const unsigned int resolution,
                         const unsigned char tight)
@@ -195,7 +192,6 @@ void readppm_and_calcbb(const char *name,
 #ifdef DEBUG
 	fprintf(stderr,"\nreading picture: %s size X: %u Y: %u\n",name,width,height);
 #endif
-        x = 0; /* avoid uninitialized warning */
         x_min= width>0 ? width-1 : 0;
         x_max= 0;
         y_min= height>0 ? height-1 : 0;
@@ -222,9 +218,6 @@ void readppm_and_calcbb(const char *name,
 	  i= _setmode( _fileno(stdin), _O_BINARY);
 	  if (i == -1)
 	    fprintf(stderr,"%s: ERROR - Cannot set binary mode for STDIN\n", prgname);
-	  i= _setmode( _fileno(stdout), _O_BINARY);
-	  if (i == -1)
-	    fprintf(stderr,"%s: ERROR - Cannot set binary mode for STDOUT\n", prgname);
 #endif
           for (y= 0; y<height; y++) /* for every image row 0..height-1 */
           {

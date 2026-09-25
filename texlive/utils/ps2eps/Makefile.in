@@ -529,8 +529,8 @@ bbox_SOURCES = \
 	@PS2EPS_TREE@/src/C/bbox.c
 
 man1_MANS = \
-	$(PS2EPS_TREE)/doc/man/man1/bbox.1 \
-	$(PS2EPS_TREE)/doc/man/man1/ps2eps.1
+	$(PS2EPS_TREE)/doc/bbox.1 \
+	$(PS2EPS_TREE)/doc/ps2eps.1
 
 perl_scripts = ps2eps
 scriptsdir = texmf-dist/scripts/ps2eps
@@ -539,7 +539,7 @@ all_scripts = $(lua_scripts) $(perl_scripts) $(shell_scripts)
 @WIN32_TRUE@@WIN32_WRAP_TRUE@wrappers = $(all_scripts:=.exe)
 @WIN32_TRUE@@WIN32_WRAP_TRUE@runscript = $(top_srcdir)/../../texk/texlive/$(WIN_WRAPPER)/runscript.exe
 texmfdir = $(datarootdir)/$(scriptsdir)
-nodist_texmf_SCRIPTS = $(PS2EPS_TREE)/bin/ps2eps.pl
+nodist_texmf_SCRIPTS = $(PS2EPS_TREE)/src/perl/ps2eps.pl
 CLEANFILES = $(nodist_bin_SCRIPTS)
 TESTS = bbox.test
 DISTCLEANFILES = plot.out

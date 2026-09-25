@@ -1,15 +1,17 @@
+dnl $Id: configure.ac 80362 2026-09-23 21:45:20Z karl $
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl   Copyright (C) 2009-2013 Peter Breitenlohner <tex-live@tug.org>
+dnl   Copyright 2014-2026 Karl Berry <tex-live@tug.org>
+dnl   Copyright 2009-2013 Peter Breitenlohner <tex-live@tug.org>
 dnl
 dnl   This file is free software; the copyright holder
 dnl   gives unlimited permission to copy and/or distribute it,
 dnl   with or without modifications, as long as this notice is preserved.
 dnl
-m4_define([ps2eps_version], [1.70])[]dnl using unmodified ps2eps source tree
+m4_define([ps2eps_version], [1.71])[]dnl using unmodified ps2eps source tree
 AC_INIT([ps2eps (TeX Live)], ps2eps_version, [tex-k@tug.org])
 AC_PREREQ([2.65])
-AC_CONFIG_SRCDIR([ps2eps-src/bin/ps2eps.pl])
+AC_CONFIG_SRCDIR([ps2eps-src/src/perl/ps2eps.pl])
 AC_CONFIG_AUX_DIR([../../build-aux])
 AC_CONFIG_MACRO_DIR([../../m4])
 

@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>bbox</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><H1
+><A
+NAME="AEN1"
+></A
+>bbox</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN15"
+></A
+><H2
+>Name</H2
+>bbox&nbsp;--&nbsp;      prints out the bounding box of a rawppm or rawpbm image
+    </DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN18"
+></A
+><H2
+>Synopsis</H2
+><P
+><B
+CLASS="COMMAND"
+>bbox</B
+>  [<CODE
+CLASS="OPTION"
+>-l</CODE
+>] [<CODE
+CLASS="OPTION"
+>-r</CODE
+>] [<CODE
+CLASS="OPTION"
+>-h</CODE
+>] [<CODE
+CLASS="OPTION"
+>-V</CODE
+>] [<TT
+CLASS="REPLACEABLE"
+><I
+>rawpbmfile</I
+></TT
+>]</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN31"
+></A
+><H2
+>DESCRIPTION</H2
+><P
+><B
+CLASS="COMMAND"
+>bbox</B
+> reads a rawppm or rawpbm file
+      and prints out the bounding box of the image (as postscript comment and
+      in postscript points, i.e. 1/72dpi) as well as the high resolution
+      bounding box. Input is read from standard input if no filename is
+	  specified.
+	  Example output:
+	  <PRE
+CLASS="SCREEN"
+>	  %%BoundingBox: 12 253 829 837
+	  %%HiResBoundingBox: 12.500000 253.000000 828.500000 837.00000
+	  </PRE
+>
+    </P
+><P
+><B
+CLASS="COMMAND"
+>bbox</B
+> has only very limited memory requirements
+    as it reads the input line by line and thus needs to store only one picture
+    line in memory.
+    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN38"
+></A
+><H2
+>OPTIONS</H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><CODE
+CLASS="OPTION"
+>-h | --help</CODE
+></DT
+><DD
+><P
+>Show summary of options.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-V</CODE
+></DT
+><DD
+><P
+>Show version of program.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-r</CODE
+></DT
+><DD
+><P
+>resolution of picture in dpi</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-l</CODE
+></DT
+><DD
+><P
+>loose bounding box (integer bounding box is expanded by 1
+	    point, hires bounding box is expanded by 0.5 points)</P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN61"
+></A
+><H2
+>SEE ALSO</H2
+><P
+>ps2eps (1)</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN64"
+></A
+><H2
+>AUTHOR</H2
+><P
+><B
+CLASS="COMMAND"
+>bbox</B
+> was written by Roland Bless. </P
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN68"
+></A
+><H3
+>ACKNOWLEDGMENTS</H3
+><P
+>Special thanks goes to Michael Sharpe from UCSD who suggested a lot of improvements for 
+    bbox to become more precise and robust, especially for small drawings.</P
+><P
+>An earlier version of this manual page was originally written by 
+      Rafael Laboissiere <CODE
+CLASS="EMAIL"
+>&#60;<A
+HREF="mailto:rafael@debian.org"
+>rafael@debian.org</A
+>&#62;</CODE
+> for
+      the <SPAN
+CLASS="PRODUCTNAME"
+>Debian</SPAN
+> system. Thank you Rafael! Permission is
+      granted to copy, distribute and/or modify this document under
+      the terms of the <ACRONYM
+CLASS="ACRONYM"
+>GNU</ACRONYM
+> Free Documentation
+      License, Version 1.1 or any later version published by the Free
+      Software Foundation; with no Invariant Sections, no Front-Cover
+      Texts and no Back-Cover Texts.</P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="BUGS"
+></A
+><H2
+>BUGS</H2
+><P
+>    Though the code is quite small and the probability for bugs
+    is now small, there may be some left somewhere between the lines.
+    In case you find one, please send a short description with
+    <B
+CLASS="COMMAND"
+>bbox</B
+> version number to <CODE
+CLASS="EMAIL"
+>&#60;<A
+HREF="mailto:roland@bless.de"
+>roland@bless.de</A
+>&#62;</CODE
+> (please allow some time
+    to reply).
+    </P
+></DIV
+></BODY
+></HTML
+>

@@ -160,6 +160,7 @@ extern void set_bitfile(const char *s, int mode);
 extern void vertical_in_hps(void);
 extern void end_current_box(void);
 extern void start_new_box(void);
+extern void set_hps_origin(void);
 #endif /* HPS */
 
 /* prototypes for functions from loadfont.c */
@@ -558,6 +559,7 @@ extern Boolean flib;
 extern Boolean inHTMLregion;
 extern integer HREF_COUNT;
 extern int current_pushcount;
+extern Boolean NEED_ORIGIN;
 extern Boolean noprocset;
 #endif
 

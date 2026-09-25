@@ -1,0 +1,1239 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>ps2eps</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><H1
+><A
+NAME="AEN1"
+></A
+>ps2eps</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN15"
+></A
+><H2
+>Name</H2
+>ps2eps&nbsp;--&nbsp;      convert PostScript to EPS (Encapsulated PostScript) files
+    </DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN18"
+></A
+><H2
+>Synopsis</H2
+><P
+><B
+CLASS="COMMAND"
+>ps2eps</B
+>  [<CODE
+CLASS="OPTION"
+>-f</CODE
+>] [<CODE
+CLASS="OPTION"
+>-q</CODE
+>] [<CODE
+CLASS="OPTION"
+>-N</CODE
+>] [<CODE
+CLASS="OPTION"
+>-O</CODE
+>] [<CODE
+CLASS="OPTION"
+>-X</CODE
+>] [<CODE
+CLASS="OPTION"
+>-n</CODE
+>] [<CODE
+CLASS="OPTION"
+>-P</CODE
+>] [<CODE
+CLASS="OPTION"
+>-c</CODE
+>] [<CODE
+CLASS="OPTION"
+>-C</CODE
+>] [<CODE
+CLASS="OPTION"
+>-m</CODE
+>] [<CODE
+CLASS="OPTION"
+>-B</CODE
+>] [<CODE
+CLASS="OPTION"
+>-E</CODE
+>] [<CODE
+CLASS="OPTION"
+>-s <TT
+CLASS="REPLACEABLE"
+><I
+>pagedim</I
+></TT
+></CODE
+>] [<CODE
+CLASS="OPTION"
+>-t <TT
+CLASS="REPLACEABLE"
+><I
+>offset</I
+></TT
+></CODE
+>] [<CODE
+CLASS="OPTION"
+>-r <TT
+CLASS="REPLACEABLE"
+><I
+>resolution</I
+></TT
+></CODE
+>] [<CODE
+CLASS="OPTION"
+>-R <TT
+CLASS="REPLACEABLE"
+><I
+>+|-|^</I
+></TT
+></CODE
+>] [<CODE
+CLASS="OPTION"
+>-l</CODE
+>] [<CODE
+CLASS="OPTION"
+>-g</CODE
+>] [<CODE
+CLASS="OPTION"
+>-H</CODE
+>] [<CODE
+CLASS="OPTION"
+>-d</CODE
+>] [<CODE
+CLASS="OPTION"
+>-h|--help</CODE
+>] [<CODE
+CLASS="OPTION"
+>-a</CODE
+>] [<CODE
+CLASS="OPTION"
+>-W</CODE
+>] [<CODE
+CLASS="OPTION"
+>-L</CODE
+>] [<CODE
+CLASS="OPTION"
+>-V|--version</CODE
+>] [<CODE
+CLASS="OPTION"
+>--</CODE
+>] [<TT
+CLASS="REPLACEABLE"
+><I
+>psfile1</I
+></TT
+>] [<TT
+CLASS="REPLACEABLE"
+><I
+>psfile2</I
+></TT
+>] [<TT
+CLASS="REPLACEABLE"
+><I
+>...</I
+></TT
+>]</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN83"
+></A
+><H2
+>DESCRIPTION</H2
+><P
+>This manual page documents <B
+CLASS="COMMAND"
+>ps2eps</B
+> version 1.70.</P
+><P
+><B
+CLASS="COMMAND"
+>ps2eps</B
+> is a tool (written in Perl) to produce 
+      Encapsulated PostScript Files (EPS/EPSF) from usual one-paged Postscript
+      documents. It calculates correct Bounding Boxes for those EPS files and
+      filters some special postscript command sequences that can produce
+      erroneous results on printers. EPS files are often needed for including
+      (scalable) graphics of high quality into TeX/LaTeX (or even Word) documents.
+      It can also be used to calculate correct BoundingBoxes for PDF files by
+      using the option <CODE
+CLASS="OPTION"
+>--BBonly</CODE
+>. However, it cannot produce
+      a PDF file, but it can be used together with <B
+CLASS="COMMAND"
+>pdfcrop</B
+>.
+    </P
+><P
+>Without any argument, ps2eps reads from standard input
+      and writes to standard output.
+      If filenames are given as arguments they are processed
+      one by one and output files are written to filenames
+      with extension <TT
+CLASS="FILENAME"
+>.eps</TT
+>. If input filenames have the 
+      extension <TT
+CLASS="FILENAME"
+>.ps</TT
+> or <TT
+CLASS="FILENAME"
+>.prn</TT
+>, this extension is replaced with <TT
+CLASS="FILENAME"
+>.eps</TT
+>.
+      In all other cases <TT
+CLASS="FILENAME"
+>.eps</TT
+> is appended to the input filename.
+      Please note that PostScript files for input should contain
+      only one single page (you can possibly use the <B
+CLASS="COMMAND"
+>psselect</B
+> from the
+      psutils package to extract a single page from a document that
+      contains multiple pages).</P
+><P
+>      If BoundingBox in output seems to be wrong, please try options <CODE
+CLASS="OPTION"
+>--size</CODE
+> or
+      <CODE
+CLASS="OPTION"
+>--ignoreBB</CODE
+>. See also section TROUBLESHOOTING. 
+      
+    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN101"
+></A
+><H2
+>OPTIONS</H2
+><P
+>      <B
+CLASS="COMMAND"
+>ps2eps</B
+> follows the usual <ACRONYM
+CLASS="ACRONYM"
+>GNU</ACRONYM
+> command line syntax,
+      with long options starting with two dashes (`-').  A summary of
+      options is included below.
+    </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><CODE
+CLASS="OPTION"
+>-h</CODE
+>, <CODE
+CLASS="OPTION"
+>--help</CODE
+></DT
+><DD
+><P
+>Show summary of options.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-V</CODE
+>, <CODE
+CLASS="OPTION"
+>--version</CODE
+></DT
+><DD
+><P
+>Show version of program.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-f</CODE
+>, <CODE
+CLASS="OPTION"
+>--force</CODE
+></DT
+><DD
+><P
+>Force overwriting existing files. <B
+CLASS="COMMAND"
+>ps2eps</B
+> 
+	  will not overwrite files by default to avoid deleting original EPS
+	  files accidently.
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-q</CODE
+>, <CODE
+CLASS="OPTION"
+>--quiet</CODE
+></DT
+><DD
+><P
+>quiet operation (no output while processing files, except errors).</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-N</CODE
+>, <CODE
+CLASS="OPTION"
+>--noinsert</CODE
+></DT
+><DD
+><P
+>do not insert any postscript code. Normally a few postscript
+	    instructions are added around the original postscript code by
+	    <B
+CLASS="COMMAND"
+>ps2eps</B
+> which can be turned off by this option.
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-O</CODE
+>, <CODE
+CLASS="OPTION"
+>--preserveorientation</CODE
+></DT
+><DD
+><P
+>do not filter %%Orientation: header comment.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-X</CODE
+>, <CODE
+CLASS="OPTION"
+>--BBonly</CODE
+></DT
+><DD
+><P
+>Just print the resulting bounding box(es) to standard error, no output file is written.
+	    <B
+CLASS="COMMAND"
+>ps2eps</B
+> will perform a read-only operation. This is highly useful to calculate bounding boxes of
+	    PDF files. Can be used with option <CODE
+CLASS="OPTION"
+>--quiet</CODE
+> to suppress other output and
+	    also with <CODE
+CLASS="OPTION"
+>--nohires</CODE
+> to suppress output of the HiResBoundingBox.
+	    It can be used with <B
+CLASS="COMMAND"
+>pdfcrop</B
+> as follows:
+	    <B
+CLASS="COMMAND"
+>pdfcrop --gscmd 'gswrap-ps2eps.sh' file.pdf</B
+>
+	    where <B
+CLASS="COMMAND"
+>gswrap-ps2eps.sh</B
+> containts something like
+	    <B
+CLASS="COMMAND"
+>ps2eps -l -X -q $BASH_ARGV</B
+>
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-n</CODE
+>, <CODE
+CLASS="OPTION"
+>--nofix</CODE
+></DT
+><DD
+><P
+>do not try to fix postscript code by filtering some instructions.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-P</CODE
+>, <CODE
+CLASS="OPTION"
+>--removepreview</CODE
+></DT
+><DD
+><P
+>remove preview image (smaller file, but no preview anymore).</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-F</CODE
+>, <CODE
+CLASS="OPTION"
+>--fixps</CODE
+></DT
+><DD
+><P
+>fix postscript code unconditionally. Otherwise, filtering is
+	    usually triggered by detection of certain drivers only.
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-c</CODE
+>, <CODE
+CLASS="OPTION"
+>--comments</CODE
+></DT
+><DD
+><P
+>preserve document structure comments.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-C</CODE
+>, <CODE
+CLASS="OPTION"
+>--clip</CODE
+></DT
+><DD
+><P
+>insert postscript code for clipping. Unless
+	    <CODE
+CLASS="OPTION"
+>--nohires</CODE
+> is specified, the HiResBoundingBox
+	    (enlarged by 0.1 points) is used for clipping. </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-m</CODE
+>, <CODE
+CLASS="OPTION"
+>--mono</CODE
+></DT
+><DD
+><P
+>use black/white bitmap as base for calculation (default: off).</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-s</CODE
+>, <CODE
+CLASS="OPTION"
+>--size</CODE
+>=<CODE
+CLASS="VARNAME"
+>pagedim</CODE
+></DT
+><DD
+><P
+>where <CODE
+CLASS="VARNAME"
+>pagedim</CODE
+> is a pre-defined standard page size
+	  (e.g., a4,a0,b0,letter,...) or explicitly specified in a 
+	  format <CODE
+CLASS="VARNAME"
+>pagedim</CODE
+>:=<TT
+CLASS="REPLACEABLE"
+><I
+>X</I
+></TT
+>x<TT
+CLASS="REPLACEABLE"
+><I
+>Y</I
+></TT
+>[cm|in],
+          where <TT
+CLASS="REPLACEABLE"
+><I
+>X</I
+></TT
+> and <TT
+CLASS="REPLACEABLE"
+><I
+>Y</I
+></TT
+> are numbers (floating points are accepted) followed by
+	  units centimeter (cm) or inch (in), (default: cm). 
+	  Use <CODE
+CLASS="OPTION"
+>--size=list</CODE
+> to list pre-defined pagesizes. 
+	  See also environment variable <CODE
+CLASS="VARNAME"
+>PS2EPS_SIZE</CODE
+>.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-t</CODE
+>, <CODE
+CLASS="OPTION"
+>--translate=x,y</CODE
+></DT
+><DD
+><P
+>specify an x,y offset (may be negative) in postscript points
+	    (1/72 dpi) for drawing. This option may be required
+	    if your drawing has negative coordinates which usually lets ghostscript 
+	    cut the negative part of your picture, because it starts to render
+	    at positive coordinates. The resulting output will
+	    also be shifted.
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-r</CODE
+>, <CODE
+CLASS="OPTION"
+>--resolution=dpi</CODE
+></DT
+><DD
+><P
+>specify a resolution in dpi (dots per inch) for drawing under
+            ghostscript. Default
+	    resolution is 144 dpi which is the double of the typical 72 dpi.
+	    This option may help if there is a hardware dependent resolution
+            encoded in the postscript, e.g., 600dpi. Example:
+            <KBD
+CLASS="USERINPUT"
+>ps2eps -l -r 600 test.ps</KBD
+>
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-R</CODE
+>, <CODE
+CLASS="OPTION"
+>--rotate=direction</CODE
+></DT
+><DD
+><P
+>	    This option rotates the resulting EPS output. 
+	    The parameter <CODE
+CLASS="VARNAME"
+>direction</CODE
+> determines the direction of
+	    rotation: + means +90 degrees (clockwise),- means -90 degrees
+	    (counter-clockwise), and  ^ means 180 degrees (up-side down).
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-l</CODE
+>, <CODE
+CLASS="OPTION"
+>--loose</CODE
+></DT
+><DD
+><P
+>expand the original tight bounding box by one point in each
+            direction.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-B</CODE
+>, <CODE
+CLASS="OPTION"
+>--ignoreBB</CODE
+></DT
+><DD
+><P
+>do not use existing bounding box as page size for
+            rendering.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-E</CODE
+>, <CODE
+CLASS="OPTION"
+>--ignoreEOF</CODE
+></DT
+><DD
+><P
+>do not use %%EOF as hint for end of file. Otherwise, <B
+CLASS="COMMAND"
+>ps2eps</B
+> assumes
+	     that postscript code ends after the last %%EOF comment, because
+	    some drivers add trailing binary <SPAN
+CLASS="QUOTE"
+>"garbage"</SPAN
+> code which gets deleted 
+	    by <B
+CLASS="COMMAND"
+>ps2eps</B
+> by default. 
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-g</CODE
+>, <CODE
+CLASS="OPTION"
+>--gsbbox</CODE
+></DT
+><DD
+><P
+>use internal bbox device of ghostscript instead of the external C
+	  program <B
+CLASS="COMMAND"
+>bbox</B
+>. The internal bbox device of ghostscript
+	  generates different values (sometimes even incorrect), 
+	  so using the provided <B
+CLASS="COMMAND"
+>bbox</B
+> should be more robust.
+	  See also environment variable <CODE
+CLASS="VARNAME"
+>PS2EPS_GSBBOX</CODE
+>.
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-H</CODE
+>, <CODE
+CLASS="OPTION"
+>--nohires</CODE
+></DT
+><DD
+><P
+>	    do not generate a %%HiResBoundingBox comment for output.
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-a</CODE
+>, <CODE
+CLASS="OPTION"
+>--accuracy</CODE
+></DT
+><DD
+><P
+>	    increase the accuracy by turning subsample antialiasing on (may be slower) 
+	  </P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-L</CODE
+>, <CODE
+CLASS="OPTION"
+>--license</CODE
+></DT
+><DD
+><P
+>show licensing information.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-d</CODE
+>, <CODE
+CLASS="OPTION"
+>--debuggs</CODE
+></DT
+><DD
+><P
+>show ghostscript call. This may be helpful for solving problems that
+	    occur during a ghostscript call.</P
+></DD
+><DT
+><CODE
+CLASS="OPTION"
+>-W</CODE
+>, <CODE
+CLASS="OPTION"
+>--warnings</CODE
+></DT
+><DD
+><P
+>show warnings about sanity of generated EPS file. Certain
+	    postscript commands should not be contained in an EPS file.
+	    With this option set <B
+CLASS="COMMAND"
+>ps2eps</B
+> will issue a warning if it 
+	    detects at least one of them.
+	  </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="TROUBLESHOOTING"
+></A
+><H2
+>TROUBLESHOOTING</H2
+><P
+>Based on the given postscript source code (in most cases generated by
+      some postscript printer driver) there are many potential obstacles or
+      problems that may occur when trying to create proper EPS files. Please
+      read this section carefully to be aware of common pitfalls.</P
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN294"
+></A
+><H3
+>Incomplete/Clipped Images</H3
+><P
+>or how to determine the right size for ghostscript.</P
+><P
+>If you have documents that are larger than your
+	ghostscript default (usually A4 or US letter), you have to
+	specify the page dimensions explicitly using the 
+	<CODE
+CLASS="OPTION"
+>-s</CODE
+> option. Otherwise your EPS
+	might be cut off during rasterizing by ghostscript resulting
+	in a wrongly calculated bounding box. You can pass 
+        all pre-defined page sizes to <CODE
+CLASS="OPTION"
+>-s</CODE
+> that ghostscript understands. These are
+	currently: 11x17, ledger, legal, letter, lettersmall, archA, archB, archC, archD, archE
+	a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, isob0, isob1, isob2, isob3, isob4, isob5, isob6, 
+	b0, b1, b2, b3, b4, b5, c0, c1, c2, c3, c4, c5, c6, jisb0, jisb1,
+	jisb2, jisb3, jisb4, jisb5, jisb6, flsa, flse, halfletter.
+	Unfortunately, all sizes are currently only available in portrait
+	orientation (not landscape).
+	</P
+><P
+>	By default, <B
+CLASS="COMMAND"
+>ps2eps</B
+> uses an already given %%BoundingBox
+	from the source file, which often corresponds to the size of
+	the physical page format for which the document was
+	printed. However, you should be aware that this already
+	specified bounding box may be not correct, thus resulting in a
+	wrongly cropped (or even no usable) <TT
+CLASS="FILENAME"
+>.eps</TT
+>-file. 
+	<B
+CLASS="COMMAND"
+>ps2eps</B
+> can only do as good as ghostscript does in rendering the original
+	postscript file (though <B
+CLASS="COMMAND"
+>ps2eps</B
+> even works with negative and
+	fractional values are contained in the original bounding box by using
+	automatic translation). Therefore, if the given bounding box is to
+	small or incorrect anyway, you can ignore the existing bounding box with the <CODE
+CLASS="OPTION"
+>-B</CODE
+>
+	option, which will cause ghostscript to use its internal
+	default size (or use <CODE
+CLASS="OPTION"
+>-s</CODE
+>). However, if the
+	BoundingBox has negative coordinates, which is not allowed by
+	the specification, <B
+CLASS="COMMAND"
+>ps2eps</B
+> will shift the output to positive values.
+	</P
+><P
+>Hint: to avoid rotating the picture
+	if you have the original drawing in landscape format, you may
+	use the <SPAN
+CLASS="QUOTE"
+>"Encapsulated Postscript"</SPAN
+> option in the printer driver
+	which should generate an EPS file (but with a bounding box of
+	the sheet size!). But some Windows printer drivers are drawing
+	the image with an offset from the bottom of the portrait page,
+	so that a part of it is drawn outside the landscape oriented
+	page.  In this case, you'll have to specify a square size of
+	the page using the maximum length, e.g., 29.7cm x 29.7cm for
+	an A4 page.</P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN310"
+></A
+><H3
+>Clipping</H3
+><P
+>or why gets some of my text deleted above the included <TT
+CLASS="FILENAME"
+>.eps</TT
+> file?</P
+><P
+>    Some postscript drivers draw a white rectangle from the top left
+    corner of the page to the right lower corner of the object. This may
+    erase some or even all text above your imported/included EPS file,
+    which is very annoying. In order to prevent this, most programs have a
+    clipping option for imported <TT
+CLASS="FILENAME"
+>.eps</TT
+> files (within LaTeX you can use
+    \includegraphics*{}) for this purpose. If this is unfortunately not
+    the case, you can use the <CODE
+CLASS="OPTION"
+>-C</CODE
+> option of <B
+CLASS="COMMAND"
+>ps2eps</B
+> which will (hopefully)
+    do it for you. Unfortunately, PScript.dll 5.2 (Windows XP) introduced
+    new very badly behaving Postscript code (initclip) which will even
+    override the outer clipping! Thus, a new filter had to be installed
+    in <B
+CLASS="COMMAND"
+>ps2eps</B
+> which will fix it.
+    </P
+><P
+>    However, because most programs clip directly on the bounding box,
+    you still may loose some pixels of your image, because the bounding
+    box is described in the coarse resolution of postscript points,
+    i.e. 72 dpi.  In order to prevent this, you can use the <CODE
+CLASS="OPTION"
+>-l</CODE
+>
+    option or <CODE
+CLASS="OPTION"
+>-C</CODE
+> option (for the latter, clipping by the importing program
+    should be disabled then) to allow for a 1 point larger bounding box.
+    <CODE
+CLASS="OPTION"
+>-C</CODE
+> clips around a 1 point enlarged bounding box and <CODE
+CLASS="OPTION"
+>-l</CODE
+> enlarges the
+    bounding box values by 1 point (you can also combine both options).
+    </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN324"
+></A
+><H3
+>Included Filters</H3
+><P
+>    Some postscript sequences, e.g., for using specific printer
+    features (featurebegin ...), are not working well within an <TT
+CLASS="FILENAME"
+>.eps</TT
+>
+    file, so <B
+CLASS="COMMAND"
+>ps2eps</B
+> tries to filter them out. But please note that
+    filters for postscript code may not work properly for your printer
+    driver (<B
+CLASS="COMMAND"
+>ps2eps</B
+> was mainly tested with HP and Adobe printer
+    drivers, although it may work for all printers using the
+    PScript.dll). In this case you can try to turn of filtering by
+    using option <CODE
+CLASS="OPTION"
+>-n</CODE
+>, or try to find the bad sequence in the postscript
+    code and adapt the filter rule in the <B
+CLASS="COMMAND"
+>ps2eps</B
+> script (variables
+    $linefilter, $rangefilter_begin, $rangefilter_end; linefilter is
+    an expression for filtering single lines, rangefilter_... are
+    expressions that filter all lines between a pattern matching
+    $rangefilter_begin and $rangefilter_end; drop me an e-mail with
+    your modifications). However, things may change as the printer
+    drivers (e.g., PScript.dll) or postscript language evolve.
+    </P
+><P
+>    Some applications or drivers generate postscript code with leading
+    or trailing binary code, which often confuses older postscript
+    interpreters. <B
+CLASS="COMMAND"
+>ps2eps</B
+> tries to remove such code, but it may
+    sometimes make a wrong guess about start and end of the real
+    postscript code (drop me an e-mail with a zipped postscript
+    source, see section BUGS).  
+    </P
+><P
+>Comment lines or even blank lines are removed
+    (which is the default to make .eps files smaller), which may corrupt your
+	output. Please check the next section how to fix this.
+    <B
+CLASS="COMMAND"
+>ps2eps</B
+> removes blank lines and also &lt;CR&gt; (carriage ceturn
+    <SPAN
+CLASS="QUOTE"
+>"\r"</SPAN
+>) at the end of lines. However, nicely formatted postscript code
+    gives a hint by using <SPAN
+CLASS="QUOTE"
+>"%%BeginBinary"</SPAN
+> <SPAN
+CLASS="QUOTE"
+>"%%EndBinary"</SPAN
+> comments. When
+    <B
+CLASS="COMMAND"
+>ps2eps</B
+> detects these comments it will refrain from any filtering
+    action within the marked binary sections.
+    </P
+><P
+>    <B
+CLASS="COMMAND"
+>ps2eps</B
+> filters also %%Orientation: comments by
+    default (you can use option <CODE
+CLASS="OPTION"
+>-O</CODE
+> to turn off filtering),
+    because ghostscript may <SPAN
+CLASS="QUOTE"
+>"automagically"</SPAN
+> rotate images when generating PDF 
+    images, which is not desired in most cases. Hint: you can turn off that
+    feature in ghostscript unconditionally by specifying -dAutoRotatePages=/None.
+    </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN344"
+></A
+><H3
+>Corrupted Output</H3
+><P
+>    Some postscript code may get corrupted when comment lines or even blank 
+    lines are removed (which is the default to make .eps files smaller), 
+    because those files may contain encoded images
+    which also have a % as first character in a line or use a special
+    comment as end of image delimiter. If this is the case, use the <CODE
+CLASS="OPTION"
+>-c</CODE
+>
+    option to prevent filtering comments.
+    </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN348"
+></A
+><H3
+>Color and memory</H3
+><P
+><B
+CLASS="COMMAND"
+>ps2eps</B
+> supports colored postscript, consequently
+	letting ghostscript consume more resources for drawing its bitmap
+	(roughly 6MBytes for an A4 page). <B
+CLASS="COMMAND"
+>bbox</B
+> is reading
+	the bitmap line by line so it consumes only minimal memory. If you experience problems
+	with memory consumption of ghostscript, you may use the <CODE
+CLASS="OPTION"
+>-m</CODE
+> option
+	for using a monochrome image. But this will probably result in wrongly
+	determined bounding boxes with colored
+	images, because ghostscript has to do black/white dithering and may thus suppress
+	objects drawn in light colors.</P
+><P
+>Another option in case of memory problems and too long run times
+      is to use the much more memory efficient internal ghostscript bbox by using the
+      <CODE
+CLASS="OPTION"
+>-g</CODE
+> option.
+      </P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN356"
+></A
+><H2
+>ENVIRONMENT VARIABLES</H2
+><P
+>Please note that a command line option always takes precedence over
+    the related environment variable.</P
+><P
+>The environment variable <CODE
+CLASS="VARNAME"
+>PS2EPS_SIZE</CODE
+> can be used
+    to specify a default page size and take any argument that
+    <CODE
+CLASS="OPTION"
+>--size</CODE
+> accepts.  Examples: <KBD
+CLASS="USERINPUT"
+>export PS2EPS_SIZE=a0</KBD
+> (bash-like syntax)
+	    or <KBD
+CLASS="USERINPUT"
+>setenv PS2EPS_SIZE letter</KBD
+> (csh syntax). </P
+><P
+>If the environment variable <CODE
+CLASS="VARNAME"
+>PS2EPS_GSBBOX</CODE
+> is set
+    the internal bbox device of ghostscript will be used instead of the external 
+    command <B
+CLASS="COMMAND"
+>bbox</B
+>. Examples: <KBD
+CLASS="USERINPUT"
+>export PS2EPS_GSBBOX=true</KBD
+>  (bash-like syntax)
+	    or <KBD
+CLASS="USERINPUT"
+>setenv PS2EPS_GSBBOX 1</KBD
+> (csh syntax).</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN369"
+></A
+><H2
+>EXAMPLES</H2
+><P
+>The usual call is simply:
+      <KBD
+CLASS="USERINPUT"
+>ps2eps -l <TT
+CLASS="REPLACEABLE"
+><I
+>file</I
+></TT
+></KBD
+></P
+><P
+>A relatively failsafe call would be (if your postscript is smaller
+      than iso b0 [100cm x 141.4cm] and you have a fast computer with enough memory):
+      <KBD
+CLASS="USERINPUT"
+>ps2eps -l -B -s b0 -c -n <TT
+CLASS="REPLACEABLE"
+><I
+>file</I
+></TT
+></KBD
+></P
+><P
+>If output is not correct try:
+          <KBD
+CLASS="USERINPUT"
+>ps2eps -l -B -s b0 -F <TT
+CLASS="REPLACEABLE"
+><I
+>file</I
+></TT
+></KBD
+> </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN380"
+></A
+><H2
+>AUTHOR</H2
+><P
+><B
+CLASS="COMMAND"
+>ps2eps</B
+> was written by Roland Bless. </P
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN384"
+></A
+><H3
+>WHY?</H3
+><P
+>      Other programs like <B
+CLASS="COMMAND"
+>ps2epsi</B
+> do not calculate the
+      bounding box always correctly (because the values are put on the
+      postscript stack which may get corrupted by bad postscript code) or
+      rounded it off so that clipping the EPS cut off some part of the
+      image. <B
+CLASS="COMMAND"
+>ps2eps</B
+> uses a double precision resolution 
+      of 144 dpi and appropriate rounding to get a proper bounding 
+      box. The internal bbox device of ghostscript generates different values
+      (sometimes even incorrect), so using the provided	<B
+CLASS="COMMAND"
+>bbox</B
+>
+	should be more robust.
+	However, because normal clipping has only a resolution of 1/72dpi
+      (postscript point), the clipping process may still erase parts of your
+      EPS image. In this case please use the <CODE
+CLASS="OPTION"
+>-l</CODE
+> option to add 
+      an additional point of white space around the tight bounding box.
+    </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN391"
+></A
+><H3
+>ACKNOWLEDGMENTS</H3
+><P
+>Some people contributed code or suggestions to improve <B
+CLASS="COMMAND"
+>ps2eps</B
+>. Here
+    are at least some names (sorry if I forgot your name):
+    Christophe Druet, Hans Ecke, Berend Hasselman, Erik Joergensen, Koji Nakamaru, Hans Fredrik Nordhaug, Michael Sharpe.
+    Special thanks goes to Michael Sharpe from UCSD who suggested a lot of useful features for ps2eps and
+    who fixed bbox to become more precise and robust.
+    </P
+><P
+>An earlier version of this manual page was originally written by 
+      Rafael Laboissiere <CODE
+CLASS="EMAIL"
+>&#60;<A
+HREF="mailto:rafael at debian.org"
+>rafael at debian.org</A
+>&#62;</CODE
+> for
+      the <SPAN
+CLASS="PRODUCTNAME"
+>Debian</SPAN
+> system. Thank you Rafael! </P
+><P
+>      Permission is granted to copy, distribute and/or modify this document under
+      the terms of the <ACRONYM
+CLASS="ACRONYM"
+>GNU</ACRONYM
+> Free Documentation
+      License, Version 1.1 or any later version published by the Free
+      Software Foundation; with no Invariant Sections, no Front-Cover
+      Texts and no Back-Cover Texts.</P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="BUGS"
+></A
+><H2
+>BUGS</H2
+><P
+>    If you experience problems, please check carefully all hints in the section 
+      TROUBLESHOOTING
+     
+    first. Otherwise, check for an updated
+    version at <A
+HREF="https://github.com/roland-bless/ps2eps"
+TARGET="_top"
+>https://github.com/roland-bless/ps2eps</A
+>
+    or send a gzipped file of
+    relevant postscript source code with your error description 
+    and <B
+CLASS="COMMAND"
+>ps2eps</B
+> version number to <CODE
+CLASS="EMAIL"
+>&#60;<A
+HREF="mailto:roland at bless.de"
+>roland at bless.de</A
+>&#62;</CODE
+> (please allow some time
+    to reply).
+    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN406"
+></A
+><H2
+>SEE ALSO</H2
+><P
+>bbox (1), gs (1), ps2epsi (1)</P
+></DIV
+></BODY
+></HTML
+>

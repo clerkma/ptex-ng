@@ -1,0 +1,46 @@
+% Test of hypertex html: specials, in particular when the opening special
+% is given in vertical mode.  The link rectangle must cover the link text,
+% and a link broken across lines must get one rectangle per line.
+% Public domain.
+\nopagenumbers
+\parskip=1pc
+\font\rm=cmr10 \rm
+
+% --- single-line anchors ---
+
+% opened in vertical mode, at the very start of the page
+\special{html:<a href="https://tug.org/">}vmode top\special{html:</a>}
+
+Click:\par
+% opened in vertical mode, after a \par
+\special{html:<a href="https://tug.org/">}vmode\special{html:</a>}
+
+% opened in horizontal mode; this case was always correct
+Click: \special{html:<a href="https://tug.org/">}hmode\special{html:</a>}
+
+\vbox{% opened in vertical mode, at the start of a \vbox
+\special{html:<a href="https://tug.org/">}vbox\special{html:</a>}
+}
+
+\hbox{% opened in horizontal mode, at the start of an \hbox
+\special{html:<a href="https://tug.org/">}hbox\special{html:</a>}
+}
+
+% --- anchors whose text is broken across lines ---
+
+\hsize=2.5in
+
+hmode start, wraps.
+\special{html:<a href="https://tug.org/">}anchor text long enough to be
+broken by TeX across two lines\special{html:</a>} done.
+
+vmode start, wraps.\par
+\special{html:<a href="https://tug.org/">}anchor text long enough to be
+broken by TeX across two lines\special{html:</a>} done.
+
+vmode start in a vbox, wraps.\par
+\noindent\vbox{\hsize=2.5in
+\special{html:<a href="https://tug.org/">}anchor text long enough to be
+broken by TeX across two lines\special{html:</a>} done.}
+
+\bye

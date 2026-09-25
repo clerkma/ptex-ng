@@ -1,3 +1,11 @@
+2026-09-19  Karl Berry  <karl@freefriends.org>
+
+	* hps.c,
+	* dopage.c,
+	* protos.h: propagate fix from Tom Rokicki (committed in (r80313)
+	so that dvipsk recognizes hypertex specials emitted in vertical
+	mode. See dvipsk/ChangeLog for details and a new test
+
 2026-09-16  Karl Berry  <karl@freefriends.org>
 
 	* configure.ac (KPSE_KPATHSEA_PATHS_H): call new macro.

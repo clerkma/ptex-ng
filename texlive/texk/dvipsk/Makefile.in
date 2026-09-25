@@ -743,10 +743,10 @@ info_TEXINFOS = dvips.texi
 dvips_TEXINFOS = contrib/config.proto dvips.help
 DISTCLEANFILES = $(DVIS) $(PSS) beginfontk1.ps eepic-nan.ps pfbincl.ps \
 	*badnews* same-name.out afmtest.tfm dvipstst.ps missfont.log \
-	mtest.ps missing-image.ps overflow-color-push.ps \
-	overflow-epsfile.ps overflow-psbox.ps upjf.vf upjv.vf \
-	upjf-*.ofm upjv-*.ofm upjf-*.tfm upjv-*.tfm upjf*_full.ps \
-	upjf*_omit*.ps lmr0*.ps
+	mtest.ps hyperlink.ps hyperlink.out head.tmp body.tmp \
+	missing-image.ps overflow-color-push.ps overflow-epsfile.ps \
+	overflow-psbox.ps upjf.vf upjv.vf upjf-*.ofm upjv-*.ofm \
+	upjf-*.tfm upjv-*.tfm upjf*_full.ps upjf*_omit*.ps lmr0*.ps
 enc_DATA = dvips-all.enc
 prolog_DATA = $(prologues)
 dist_prologues = \
@@ -777,12 +777,14 @@ EXTRA_DIST = $(dist_prologues) texc.script $(TESTS) testdata/8r.enc \
 	testdata/pfbincl.xps testdata/quotecmd.dvi \
 	testdata/quotecmd.tex testdata/dvipstst.tex \
 	testdata/dvipstst.xdv testdata/dvipstst.xps \
-	testdata/missing-image.tex testdata/missing-image.dvi \
-	overflow-color-push.dvi overflow-color-push.tex \
-	overflow-epsfile.dvi overflow-epsfile.tex overflow-psbox.dvi \
-	overflow-psbox.tex testdata/Makefile_upjf testdata/upjf.tex \
-	testdata/upjf.dvi testdata/upjf.map testdata/upjf.tfm \
-	testdata/upjf-g.tfm testdata/upjf-r.tfm testdata/upjf_full.vf \
+	testdata/hyperlink.dvi testdata/hyperlink.rects \
+	testdata/hyperlink.tex testdata/missing-image.tex \
+	testdata/missing-image.dvi overflow-color-push.dvi \
+	overflow-color-push.tex overflow-epsfile.dvi \
+	overflow-epsfile.tex overflow-psbox.dvi overflow-psbox.tex \
+	testdata/Makefile_upjf testdata/upjf.tex testdata/upjf.dvi \
+	testdata/upjf.map testdata/upjf.tfm testdata/upjf-g.tfm \
+	testdata/upjf-r.tfm testdata/upjf_full.vf \
 	testdata/upjf_omit.vf testdata/upjv.tfm testdata/upjv-g.tfm \
 	testdata/upjv-r.tfm testdata/upjv_full.vf \
 	testdata/upjv_omit.vf testdata/upjf-g00.opl \
@@ -810,8 +812,9 @@ CLEANFILES = $(prologues) texc.lpro
 TEST_EXTENSIONS = .pl .test
 TESTS = test-afm2tfm.test beginfontk1.test eepic-nan.test pfbincl.test \
 	quotecmd-test.pl same-name.test test-dvips.test \
-	test-missing-image.test test-overflow-buffers.test \
-	uptex-vf.test uptex-upjf2.test ofm-lmr.test
+	test-hyperlink.test test-missing-image.test \
+	test-overflow-buffers.test uptex-vf.test uptex-upjf2.test \
+	ofm-lmr.test
 AM_TESTS_ENVIRONMENT = TEXMFCNF=$(srcdir)/../kpathsea; export \
 	TEXMFCNF; TEXCONFIG=$(srcdir)/testdata; export TEXCONFIG; \
 	TEXFONTS=$(srcdir)/testdata; export TEXFONTS; \
@@ -2116,7 +2119,7 @@ squeeze/stamp-squeeze:
 	cd squeeze && $(MAKE) $(AM_MAKEFLAGS) stamp-squeeze
 test-afm2tfm-test.log: afm2tfm$(EXEEXT)
 beginfontk1.log eepic-nan.log pfbincl.log \
-	quotecmd-test.log same-name.log test-dvips.log \
+	quotecmd-test.log same-name.log test-dvips.log test-hyperlink.log \
 	test-missing-image.log test-overflow-buffers.log \
 	uptex-vf.log uptex-upjf2.log ofm-lmr.log \
 	: dvips$(EXEEXT)

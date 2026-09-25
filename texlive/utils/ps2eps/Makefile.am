@@ -1,7 +1,7 @@
-## $Id: Makefile.am 43567 2017-03-21 17:43:10Z karl $
+## $Id: Makefile.am 80354 2026-09-23 00:15:28Z karl $
 ## Makefile.am for the TeX Live subdirectory utils/ps2eps/
 ##
-## Copyright 2017 Karl Berry <tex-live@tug.org>
+## Copyright 2017-2026 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 
@@ -23,8 +23,8 @@ bbox_SOURCES = \
 	@PS2EPS_TREE@/src/C/bbox.c
 
 man1_MANS = \
-	$(PS2EPS_TREE)/doc/man/man1/bbox.1 \
-	$(PS2EPS_TREE)/doc/man/man1/ps2eps.1
+	$(PS2EPS_TREE)/doc/bbox.1 \
+	$(PS2EPS_TREE)/doc/ps2eps.1
 
 perl_scripts = ps2eps
 scriptsdir = texmf-dist/scripts/ps2eps
@@ -33,7 +33,7 @@ nodist_bin_SCRIPTS =
 include $(srcdir)/../../am/script_links.am
 
 texmfdir = $(datarootdir)/$(scriptsdir)
-nodist_texmf_SCRIPTS = $(PS2EPS_TREE)/bin/ps2eps.pl
+nodist_texmf_SCRIPTS = $(PS2EPS_TREE)/src/perl/ps2eps.pl
 
 install-data-hook: install-perl-links
 uninstall-hook: uninstall-links

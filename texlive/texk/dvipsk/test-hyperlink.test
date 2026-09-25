@@ -1,0 +1,32 @@
+#! /bin/sh -vx
+# $Id$
+# Public domain.
+# hypertex link rectangles must cover the link text, and a link broken
+# across lines must get one rectangle per line, also when the opening
+# html: special is seen in vertical mode.
+# Report from Karl Berry to tex-k, 15 Oct 2025.
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_dvips=$BinDir/dvips$ExeExt
+
+tst=hyperlink
+
+rm -f $tst.ps $tst.out
+
+# hps.pro is generated into the build directory, not shipped in testdata.
+TEXPSHEADERS=.:$TEXPSHEADERS; export TEXPSHEADERS
+
+$_dvips -z -D 600 $srcdir/testdata/$tst.dvi -o $tst.ps || exit 1
+
+# The link rectangles, in page order.  They are not necessarily at the
+# start of a line, and there may be more than one on a line.
+awk '{ s = $0
+       while (match(s, /\[\[[^(]*\([^)]*\) pdfm/)) {
+         print substr(s, RSTART, RLENGTH)
+         s = substr(s, RSTART + RLENGTH)
+       } }' $tst.ps >$tst.out || exit 1
+
+diff $srcdir/testdata/$tst.rects $tst.out || exit 1
+
+exit 0

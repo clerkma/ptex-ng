@@ -151,6 +151,7 @@ dochar:
        vertical_in_hps();
        NEED_NEW_BOX = 0;
        }
+   if (HPS_FLAG && inHTMLregion && NEED_ORIGIN) set_hps_origin();
 #endif
 #ifndef XDVIPSK
    if (mychar<curfnt->maxchars)
@@ -335,6 +336,9 @@ case 132: case 137: /* rules */
       if (ry > rx) {
         hh = PixRound(h);
       }
+#ifdef HPS
+      if (HPS_FLAG && inHTMLregion && NEED_ORIGIN) set_hps_origin();
+#endif
       drawrule(rxx, ryy);
    } else
       rxx = 0;

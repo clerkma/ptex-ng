@@ -1,12 +1,32 @@
-Changes applied to the ps2eps-1.70 tree as obtained from:
-	http://tm.uka.de/~bless/ps2eps-1.70.tar.gz
+Changes applied to the ps2eps-1.71 tree as obtained from:
+	https://github.com/roland-bless/ps2eps
 
-Rename:
-	bin/ps2eps => bin/ps2eps.pl
+# update ../README (== Build/source/utils/README) for version and url.
+# update version in ./configure.ac.
+tar tf ps2eps-1*.tar.gz | sed 4q # check that it unpacks into ps2eps-*
+tar xf ps2eps-1*.tar.gz
+mv ps2eps-src prev
+mv ps2eps-1* ps2eps-src
+cd ps2eps-src
+mv src/perl/ps2eps{,pl} # because script_links.am requires an extension.
 
-Remove:
-	bin/linux/
-	bin/win32/
-	doc/html/
-	doc/pdf/
-	src/C/Makefile
+# files to add:
+svn status | sed -n 's/^\?//p'
+svn add `!!`                    # if looks reasonable
+svn status | sed -n 's/^\?//p'  # rerun, should be empty now
+#
+# files to remove:
+svn status | sed -n 's/^\!//p'
+svn rm `!!`                     # if looks reasonable
+svn status | sed -n 's/^\!//p'  # rerun, should be empty now
+#
+svn status # should have no ? or !
+
+# update our own ./Makefile.am here, as needed.
+
+# autoreconf in the TL source directory (Build/source/utils/ps2eps),
+# then make, make check, make install, etc., in build directory.
+
+# for ps2eps[.pl], might as well update runtime files by hand,
+# since it's just a script.
+cp ps2eps-src/doc/ps2eps.1 /u/texlive/karl/Master/texmf-dist/doc/man/man1/ps2eps.1

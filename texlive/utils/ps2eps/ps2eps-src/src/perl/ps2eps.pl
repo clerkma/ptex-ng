@@ -1,9 +1,10 @@
-#!/usr/bin/env perl
+eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $argv:q' # -*-perl-*-
+        if 0;
 # The expression in the previous line replaces the unix specific line 
 # {#!/usr/bin/perl}.   
 # ps2eps - convert PostScript to EPS (Encapsulated PostScript) files
 # -------------------------------------------------------------------
-# (C)opyright 1998-2018 Roland Bless
+# (C)opyright 1998-2026 Roland Bless
 #
 # This program is free software; you can redistribute it and/or modify     
 # it under the terms of the GNU General Public License as published by     
@@ -55,7 +56,7 @@ else
 
 $bboxver=`bbox >$NULLDEV -V`;
 $bboxname= ($?== -1) ? "" : "bbox";
-$version= '$Id: ps2eps,v 1.70 2018-01-09 18:00:00 bless Exp $'; #'
+$version= '$Id: ps2eps,v 1.71 2026-08-23 23:00:00 bless Exp $'; #'
 $insertPScode= 1;     # Insert surrounding Postscript code
 $infhandle = STDIN;   # Standard input is the default input file
 $outfhandle = STDOUT; # Standard output is default output if STDIN is input
@@ -146,7 +147,7 @@ $licensetxt= "\
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n";
 
 @prgidtxt= ( "$prgname - convert PostScript to EPS (Encapsulated PostScript) files\n",
-	     "(C)opyright 1998-2018 Roland Bless\n\n" );
+	     "(C)opyright 1998-2026 Roland Bless\n\n" );
 
 @helptxt= ("Version: $ver[2]\n",
           "Operation:\n",
@@ -533,7 +534,7 @@ while ($infname= (shift @filenames))
   if ($translate_x!=0 || $translate_y!=0)
   {
     $translation="$translate_x $translate_y translate";
-    $translatecmd="-c \'$translation\'";
+    $translatecmd="-c \"$translation\"";
   }
   else
   {
@@ -632,7 +633,7 @@ while ($infname= (shift @filenames))
     $hiresboundingbox="%%HiResBoundingBox: $hcBBllx $hcBBlly $hcBBurx $hcBBury\n";
 
     $translation="$translate_x $translate_y translate";
-    $translatecmd="-c \'$translation\'";
+    $translatecmd="-c \"$translation\"";
   }
   $boundingbox = "%%BoundingBox: $cBBllx $cBBlly $cBBurx $cBBury\n";
 

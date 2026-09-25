@@ -2,7 +2,7 @@
 @setfilename tlbuild.info
 
 @set version 2026
-@set month-year May 2026
+@set month-year September 2026
 
 @set mytitle Building @TeX{} Live (@value{version})
 @settitle @value{mytitle}
@@ -239,15 +239,12 @@ alleviated by laborious editing, but since there's no way to avoid GNU
 trouble.}
 
 @item
-@cindex C++11, required
-@cindex @code{dvisvgm}, requires C++11
-@cindex HarfBuzz, requires C++11
-@cindex ICU, requires C++11
-A C++11 compiler is similarly required because of the third-party
-libraries ICU and HarfBuzz (at least); the program @code{dvisvgm} also
-requires C++11.  It is possible to build what remains with older
-compilers, but you have to remove the C++11-dependent sources.
-@xref{Build one package}.
+The ICU and HarfBuzz libraries, as well as the @code{dvisvgm} program,
+generally require newer compilers than the rest of the tree (@pxref{C
+standards}). ICU is generally the most aggressive here: see
+@url{https://unicode-org.github.io/icu/userguide/icu4c/build.html}. It
+is possible to build other parts of TL with older compilers, but you
+have to remove these sources; @pxref{Build one package}.
 
 @item
 @cindex Python, required by ICU
@@ -262,6 +259,7 @@ A few programs in the tree have additional requirements:
 @item web2c
 @cindex @code{perl}, required by @code{web2c}, etc.
 requires @code{perl} for some tests run by @code{make check}.
+(Patches to change these tests to be shell scripts would be welcome.)
 Incidentally, the @TeX{} Live installer (@code{install-tl}) and
 manager (@code{tlmgr}) are also written in Perl, but this does not
 matter for compiling the sources.
@@ -317,10 +315,10 @@ discussion.
 
 If you haven't modified any source files, and infrastructure tools
 such as @code{autoconf} or @code{makeinfo} are still being run, check
-your timestamps---notably, @code{use-commit-times} must be set to
+your timestamps: notably, @code{use-commit-times} must be set to
 @code{yes} in your Subversion configuration (@pxref{Build system
-tools}).  No infrastructure tools are needed to do a normal build
-(barring bugs).
+tools}).  No such infrastructure tools are needed to do a normal
+build, barring bugs.
 
 @node Building
 @chapter Building
@@ -554,11 +552,11 @@ and @code{configure} will terminate even with @code{--disable-xetex}.
 To proceed without such dependencies, specify @code{--enable-missing}
 also.
 
-As of 2022, HarfBuzz also requires C++11.  Therefore even more would
-have to be disabled and removed, notably including @code{luahbtex},
-the standard engine used for Lua@LaTeX{}.  Removing that would not
-be acceptable for builds intended for distribution; but perhaps for
-testing the above information could still be useful.
+HarfBuzz also requires C++11 (or perhaps newer).  Therefore even more
+would have to be disabled and removed, notably including
+@code{luahbtex}, the standard engine used for Lua@LaTeX{}.  Removing
+that would not be acceptable for builds intended for distribution; but
+perhaps for testing the above information could still be useful.
 
 @cindex removing build directories
 @cindex @code{configure} problems, work around by removing
@@ -2560,50 +2558,59 @@ commands used, e.g., to build the @code{xindy} documentation.
 @cindex coding conventions
 @cindex conventions, coding
 
-Ideally, building all of @TL{} with
-@code{--enable-compiler-warnings=max} should produce no (GCC) compiler
-warnings at all.  In spite of considerable efforts into that direction
-we are still far from that goal and there are reasons that we may
-never fully reach it.  Below are some rules about declarations of
-functions or variables and the use of @code{const}.  These rules
-should be applied to the code maintained in the @TL{} tree and for
-other packages whose maintainers are willing to accept patches.
+This chapter gives some information about C and C++ coding for @TeX{}
+Live: standards applicability, static vs.@: extern declarations, and
+use of @code{const}.  These conventions should be applied to code
+maintained in the @TL{} tree.
 
 @menu
-* Declarations and definitions::
+* C standards::
+* Static vs.@: extern declarations::
 * Const::
 @end menu
 
-@node Declarations and definitions
-@section Declarations and definitions
+@node C standards
+@section C standards
 
-@cindex declarations and definitions, in source code
-@cindex source code declarations
-@cindex ANSI C
-@cindex declarations before statements, avoiding
+@cindex C and C++standards versions
+@cindex standards, C and C++
+@cindex C99, required by Lua@TeX{}
+@cindex @code{dvisvgm}, compiler requirements
+@cindex HarfBuzz, compiler requirements
+@cindex ICU, compiler requirements
+In general, @TL{} should be compilable with a wide range of C and C++
+standards (no other compiled programming languages are currently used
+in TL). C99 is required to compile Lua@TeX{} (at least), and ICU,
+HarfBuzz, and @code{dvisvgm} (at least) require considerably newer
+compilers; we won't try to list their constantly-changing requirements
+here, but see
+@url{https://unicode-org.github.io/icu/userguide/icu4c/build.html} for
+ICU, or the respective source code in @file{libs/icu}, etc.
+
+Since some people compile smaller subsets of TL, these are not overall
+requirements for the entire code base.  On the other hand, TL must
+stay compilable with (but not require) the newest compilers and
+standards, since some people will work with those.
+
+@cindex ANSI C compilers required
 @cindex C, ANSI, required
-@cindex C99, avoided
-
-@subsubheading C standards
-
-The @TL{} build system no longer supports pre-ANSI C compilers.  Thus
-all function prototypes and definitions must conform to the ANSI C
-standard (including @code{void} in the declaration of C functions with
-no parameters).  On the other hand, TL is built for a wide variety of
-systems, not all of which support the C99 standard.  Therefore using
-C99 features should be avoided if that can easily be done.  In
-particular, C code must not contain declarations after statements or
-C++-style comments.
+@cindex declarations before statements, avoiding
+@cindex C++ comments in C code, avoiding
+Since most of TL can be compiled with any ANSI C compiler, it is best
+not to gratuitously use features of later standards versions.  For
+example, avoid declarations after statements and C++-style @code{//}
+comments in C code wherever possible. Pre-ANSI compilers are not
+supported.
 
 @pindex chktex
 @findex stpcpy
-If some C99 (or later) constructs must be used, the module should
-verify that they are available and otherwise provide an alternative.
-For example, the module @file{texk/chktex} uses the C99 function
-@code{stpcpy()} that may or may not be available on a particular
-system.  It uses @code{AC_CHECK_DECLS([stpcpy])} in
-@file{configure.ac} to test this, and provides a perhaps
-less efficient alternative (in the file @file{Utility.h}):
+@cindex alternative implementations
+Ideally, alternatives for functions not available on all systems
+should be provided.  For example, the module @file{texk/chktex} uses
+the C99 function @code{stpcpy()} that may or may not be available on a
+particular system.  It uses @code{AC_CHECK_DECLS([stpcpy])} in
+@file{configure.ac} to test this, and provides a perhaps less
+efficient alternative (in the file @file{Utility.h}):
 
 @example
 #if !(defined HAVE_DECL_STPCPY && HAVE_DECL_STPCPY)
@@ -2614,26 +2621,24 @@ static inline char *stpcpy(char *dest, const char *src)
 #endif
 @end example
 
-@subsubheading Static functions
+@node Static vs.@: extern declarations
+@section Static vs.@: extern declarations
 
-@cindex @code{static} functions
+@cindex function declarations
+@cindex @code{static} declarations
 Functions used in only one file should be declared @code{static}; they
 require no prototype except in forward declarations.
 
-@subsubheading Extern functions
-
-@cindex @code{extern} functions
+@cindex @code{extern} declarations
 Functions not declared @code{static}, usually because they are used in
 several files, require an (@code{extern}) prototype in exactly one
 header file, which is included in the file defining the function and
-in all files using that function---this is the only way to guarantee
-consistency between definition and use.  There should be no
+in all files using that function---this is the only reliable way to
+guarantee consistency between definition and use.  There should be no
 @code{extern} declarations sprinkled throughout the C code (with or
 without comments as to where that function is defined).
 
-@subsubheading Variable declarations
-
-@cindex variable declarations, in source code
+@cindex variable declarations
 The declaration of global variables follows analogous rules: they are
 either declared @code{static} if used in only one file or declared
 @code{extern} in exactly one header and instantiated in exactly one
@@ -2690,19 +2695,18 @@ cause the modification of quantities supposed to be constant.
 @chapter Continuous integration
 
 @cindex continuous integration
-@cindex Travis-CI
+@cindex GitHub, @TL{} on
 
-The @TL{} sources are subjected to continuous integration testing on
-Travis-CI (@url{https://travis-ci.org/TeX-Live/texlive-source}) via a
-git-svn mirror of the sources that is pushed to Github
+The @TL{} sources are subjected to continuous integration (CI) testing
+via a git-svn mirror of the sources that is pushed to Github
 (@url{https://github.com/TeX-Live/texlive-source}). The git-svn mirror
-is updated (currently) at 30 minute intervals, and only the last
-commit pushed is tested on Travis-CI.
+operates on the host @code{texlive.info}, and is updated at
+five-minute intervals. Details below.
 
 @menu
 * Transfer from Subversion to Github::
 * Automatic update of the Git mirror::
-* CI testing on Travis-CI::
+* CI testing::
 * Releases on Github::
 @end menu
 
@@ -2714,9 +2718,6 @@ The git-svn program (@url{https://git-scm.com/docs/git-svn}) is used
 to check out the subtree @code{Build/source} of the canonical
 Subversion repository.  The author index file used is not maintained
 in either Git or Subversion but can be provided on request.
-
-@c TODO what should we do here with the author index file? It contains a
-@c mapping from subversion names to name/email as shown in git.
 
 The initial checkout was done by invoking
 @example
@@ -2764,42 +2765,42 @@ there to Github.
 @section Automatic update of the Git mirror
 
 @emph{admin} has installed a cron job on @code{texlive.info} running
-every 30 minute which essentially runs @code{git svn rebase} and
+every few minutes, which essentially does @code{git svn rebase} and
 @code{git push} in the @code{master} branch of the checkout. The first
 command fetches the changes from the Subversion repository and updates
 the @code{master} branch with them, and the second pushes changes (if
 any) to Github.
 
-@node CI testing on Travis-CI
-@section CI testing on Travis-CI
+@node CI testing
+@section CI testing
 
-@pindex travis.yml
-The @code{source} tree of @TL{} contains a top-level file
-@code{.travis.yml} which controls the automatic testing on
-Travis-CI. @emph{admin} has registered with Travis-CI and allowed
-access to the Github's @code{TeX-Live} organization's
-@code{texlive-source} repository. The default settings are to build
-the last commit of each push. No further action is necessary on
-Travis-CI.
+@cindex CI testing
+The @code{source} tree of @TL{} contains a top-level directory
+@code{.github} which contains the files that control the automatic
+building and testing on Github. There are both YAML files (under
+@code{workflows/} to do the checkouts and shell scripts (under
+@code{scripts/} to do the building.
 
-If changes have been pushed via the cron job above, Travis-CI will
+For the main tree, the default setting is to build the last commit of
+each push. There are additional scripts to build Asymptote and (for
+testing) Xdvipsk; these must be invoked manually through the Github
+interface. See the script @code{Master/tlpkg/bin/tl-update-bindir} for
+more.
+
+When changes are pushed via the cron job above, Github will
 automatically checkout the last pushed commit and try building it.
 
 @node Releases on Github
 @section Releases on Github
 
-Given a git checkout of @code{texlive-source}:
+@cindex releases on Github, not made
+@cindex pre-releases on Github
+We never make official releases of @TL{} on Github, only pre-releases
+of the binary sets, which appear at
+@url{https://github.com/TeX-Live/texlive-source/releases}. We then
+import the binaries into the Subversion tree. Again, see
+@code{Master/tlpkg/bin/tl-update-bindir}.
 
-@example
-git pull
-git tag build-svnNNNN
-git push --tags
-@end example
-
-@noindent and the result will appear at
-@url{https://github.com/TeX-Live/texlive-source/releases}.
-Releases can also be made manually from that web page (see
-@code{tl-update-bindir} for hints).
 
 @c made from pod doc.
 @include tlbuild-incl/install-tl.texi

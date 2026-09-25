@@ -1,7 +1,7 @@
-## $Id: Makefile.am 72602 2024-10-20 06:53:40Z takuji $
+## $Id: Makefile.am 80313 2026-09-19 21:50:34Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/dvipsk/
 ##
-## Copyright 2017-2021 Karl Berry <tex-live@tug.org>
+## Copyright 2017-2026 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##
@@ -116,11 +116,11 @@ TEST_EXTENSIONS = .pl .test
 TESTS = test-afm2tfm.test
 test-afm2tfm-test.log: afm2tfm$(EXEEXT)
 TESTS += beginfontk1.test eepic-nan.test pfbincl.test \
-	quotecmd-test.pl same-name.test test-dvips.test \
+	quotecmd-test.pl same-name.test test-dvips.test test-hyperlink.test \
 	test-missing-image.test test-overflow-buffers.test \
 	uptex-vf.test uptex-upjf2.test ofm-lmr.test
 beginfontk1.log eepic-nan.log pfbincl.log \
-	quotecmd-test.log same-name.log test-dvips.log \
+	quotecmd-test.log same-name.log test-dvips.log test-hyperlink.log \
 	test-missing-image.log test-overflow-buffers.log \
 	uptex-vf.log uptex-upjf2.log ofm-lmr.log \
 	: dvips$(EXEEXT)
@@ -180,6 +180,9 @@ DISTCLEANFILES += afmtest.tfm
 ## test-dvips.test
 EXTRA_DIST += testdata/dvipstst.tex testdata/dvipstst.xdv testdata/dvipstst.xps
 DISTCLEANFILES += dvipstst.ps missfont.log mtest.ps
+## test-hyperlink.test
+EXTRA_DIST += testdata/hyperlink.dvi testdata/hyperlink.rects testdata/hyperlink.tex
+DISTCLEANFILES += hyperlink.ps hyperlink.out head.tmp body.tmp
 ## test-missing-image.test
 EXTRA_DIST += testdata/missing-image.tex testdata/missing-image.dvi
 DISTCLEANFILES += missing-image.ps

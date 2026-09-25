@@ -1,3 +1,15 @@
+2026-09-23  Karl Berry  <karl@freefriends.org>
+
+	* configure.ac (AC_CONFIG_SRCDIR): need .pl, renamed script (again).
+
+2026-09-22  Karl Berry  <karl@freefriends.org>
+
+	Import ps2eps-1.71 from:
+	  https://github.com/roland-bless/ps2eps/releases/tag/v1.71
+	* configure.ac: version 1.71.
+	Fixing report:
+	  https://tug.org/pipermail/tex-live/2026-July/052525.html
+
 2021-07-03  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
 
 	Import ps2eps-1.70.

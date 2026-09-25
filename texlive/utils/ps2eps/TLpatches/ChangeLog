@@ -1,3 +1,7 @@
+2026-09-22  Karl Berry  <karl@freefriends.org>
+
+	* patch-*: remove all; unneeded or fixed upstream.
+
 2021-07-03  Hironobu Yamashita  <h.y.acetaminophen@gmail.com>
 
 	Import ps2eps-1.70, patches adapted.
@@ -34,4 +38,3 @@
 	* src/C/bbox.c (readppm_and_calcbb): Add missing fprintf arg.
 	
 	* patch-03-PERL: For TeX Live we prefer '#!/usr/bin/env perl'.
-

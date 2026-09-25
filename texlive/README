@@ -1,4 +1,4 @@
-$Id: README 78957 2026-05-10 15:56:01Z karl $
+$Id: README 80317 2026-09-20 16:14:33Z karl $
 Public domain.  Originally written 2005 by Karl Berry.
 
 For a high-level overview of building TeX Live, see
@@ -83,4 +83,4 @@ x86_64-linuxmusl,
 and others noted above for github:
   built at https://github.com/TeX-Live/texlive-source/releases.
   see ./github/scripts/build-tl.sh and workflows/main.yml.
-  Most asy binaries are also built here; see */build-asy.*.
+  Most asy binaries are also built here; see .github/*/build-asy.*.
