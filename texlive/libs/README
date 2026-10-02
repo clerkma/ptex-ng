@@ -1,4 +1,4 @@
-$Id: README 80345 2026-09-22 02:21:28Z kakuto $
+$Id: README 80468 2026-10-01 03:50:47Z kakuto $
 Public domain.  Originally created by Karl Berry, 2005.
 
 Libraries we compile for TeX Live.
@@ -28,7 +28,7 @@ graphite2 1.3.14 - checked 10apr20
   https://sourceforge.net/projects/silgraphite/files/graphite2/
   (requires C++11)
 
-harfbuzz 14.5.0 - checked 22sep26
+harfbuzz 14.5.1 - checked 01oct26
   https://github.com/harfbuzz/harfbuzz/releases/latest
 
 icu 78.2 - checked 21jan26
@@ -37,7 +37,7 @@ icu 78.2 - checked 21jan26
 libpaper 1.1.29 - checked 07jan24
   https://ftp.debian.org/debian/pool/main/libp/libpaper/
 
-libpng 1.6.58 - checked 17apr26
+libpng 1.6.59 - checked 01oct26
   https://sourceforge.net/projects/libpng/files/ - used by many
 
 lua 5.3.6 - checked 04oct20
