@@ -14,18 +14,16 @@ jobs:
   set-tag:
     runs-on: ubuntu-latest
     outputs:
-      tag_date: ${{ steps.date.outputs.date }}
       tag_name: ${{ steps.date.outputs.name }}
     steps:
       - id: date
         run: |
           DATE=$(date +'%Y%m%d-%H%M%S')
-          echo "date=$DATE" >> $GITHUB_OUTPUT
           echo "name=v$DATE" >> $GITHUB_OUTPUT
 
   build-unix:
+    needs: set-tag
     env:
-      TAG_DATE: ${{ needs.set-tag.outputs.tag_date }}
       TAG_NAME: ${{ needs.set-tag.outputs.tag_name }}
     strategy:
       fail-fast: false
@@ -112,8 +110,8 @@ jobs:
           prerelease: true
 
   build-windows:
+    needs: set-tag
     env:
-      TAG_DATE: ${{ needs.set-tag.outputs.tag_date }}
       TAG_NAME: ${{ needs.set-tag.outputs.tag_name }}
     runs-on: windows-latest
     steps:
