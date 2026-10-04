@@ -10,16 +10,24 @@ on:
 permissions:
   contents: write
 
-name: Set tag name
-run: echo "TAG_NAME=v$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
-
-name: Use it anywhere after this step
-run: |
-    echo "Current tag: $TAG_NAME"
-    echo "Also available as: ${{ env.TAG_NAME }}"
+jobs:
+  set-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_date: ${{ steps.date.outputs.date }}
+      tag_name: ${{ steps.date.outputs.name }}
+    steps:
+      - id: date
+        run: |
+          DATE=$(date +'%Y%m%d-%H%M%S')
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+          echo "name=v$DATE" >> $GITHUB_OUTPUT
 
 jobs:
   build-unix:
+    env:
+      TAG_DATE: ${{ needs.set-tag.outputs.tag_date }}
+      TAG_NAME: ${{ needs.set-tag.outputs.tag_name }}
     strategy:
       fail-fast: false
       matrix:
@@ -100,11 +108,14 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: blade-bin/src/aptex
           asset_name: aptex-${{ matrix.platform }}
-          tag: ${{ github.ref }}-${{ github.run_id }}
+          tag: ${{ github.ref }}-${{ env.TAG_NAME }}
           overwrite: true
           prerelease: true
 
   build-windows:
+    env:
+      TAG_DATE: ${{ needs.set-tag.outputs.tag_date }}
+      TAG_NAME: ${{ needs.set-tag.outputs.tag_name }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
@@ -136,6 +147,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build-msvc/aptex.exe
           asset_name: aptex-windows-x64.exe
-          tag: ${{ github.ref }}-${{ github.run_id }}
+          tag: ${{ github.ref }}-${{ env.TAG_NAME }}
           overwrite: true
           prerelease: true
