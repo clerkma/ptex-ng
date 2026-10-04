@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write
 
-tag-jobs:
+jobs:
   set-tag:
     runs-on: ubuntu-latest
     outputs:
@@ -23,7 +23,6 @@ tag-jobs:
           echo "date=$DATE" >> $GITHUB_OUTPUT
           echo "name=v$DATE" >> $GITHUB_OUTPUT
 
-jobs:
   build-unix:
     env:
       TAG_DATE: ${{ needs.set-tag.outputs.tag_date }}
