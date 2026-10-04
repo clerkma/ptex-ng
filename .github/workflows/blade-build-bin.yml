@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write
 
-jobs:
+tag-jobs:
   set-tag:
     runs-on: ubuntu-latest
     outputs:
