@@ -10,6 +10,14 @@ on:
 permissions:
   contents: write
 
+name: Set tag name
+run: echo "TAG_NAME=v$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+
+name: Use it anywhere after this step
+run: |
+    echo "Current tag: $TAG_NAME"
+    echo "Also available as: ${{ env.TAG_NAME }}"
+
 jobs:
   build-unix:
     strategy:
