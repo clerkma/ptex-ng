@@ -1,5 +1,5 @@
 /* afm2pl
- * Copyright (C) 2002, 2005, 2009 Siep Kroonenberg
+ * Copyright (C) 2002, 2005, 2009, 2026 Siep Kroonenberg
  * ntg-afm2pl@ntg.nl
  * based on afm2tfm.
  */
@@ -723,7 +723,7 @@ handlechar(void)
   expect (";");
   expect ("N");
   ai->adobename = paramnewstring ();
-  if ((ai->adobenum) >= 0)
+  if ((ai->adobenum) >= 0 && (ai->adobenum) < 256)
     afmencoding->vec[ai->adobenum] = newstring (ai->adobename);
   expect (";");
   expect ("B");
@@ -959,7 +959,7 @@ changeadobe(void)
  * reading encodings
  */
 
-char smbuffer[100];             /* for tokens */
+char smbuffer[buflen];          /* for tokens, at most one input line */
 
 /*   Here we get a token from the encoding file.  We parse just as
  *   much PostScript as we expect to find in an encoding file.  We
@@ -1772,7 +1772,7 @@ plname(int c)
   if (!forceoctal && ISALNUM (c)) {
     plnamebuf[0] = 0;
   } else if (c >= 0 && c < 256) {
-    sprintf (plnamebuf, " (comment %s)", tfmptrs[c]->adobename);
+    sprintf (plnamebuf, " (comment %.88s)", tfmptrs[c]->adobename);
   }
   return (char *) plnamebuf;
 }

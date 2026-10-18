@@ -1,3 +1,38 @@
+2026-10-13  Norbert Preining  <norbert@preining.info>
+
+	* bmpimage.c (bmp_include_image): reject non-positive sizes and
+	sizes whose raster size overflows int; the buffer was allocated
+	too small and the rows read past it.
+	* dvipdfmx-bmp.test, tests/badbmp-size.bmp, Makefile.am: test.
+
+	* bmpimage.c (bmp_include_image): accept RLE8 only with 8 and RLE4
+	only with 4 bits per pixel; the decoders assume that row size.
+	(read_raster_rle8, read_raster_rle4): reject a delta that moves
+	past the last row.
+	(read_raster_rle4): do not write past the last nibble of an
+	absolute run starting at an odd pixel.
+	Report by Stephan Lipp (Ada Logics) and Anthropic, ANT-2026-QT5FYZWT.
+	* dvipdfmx-bmp.test, tests/badbmp-rle*.bmp, Makefile.am: test.
+
+	* bmpimage.c (read_header): check the info header size before
+	reading it into the fixed-size stack buffer.
+	Report by Stephan Lipp (Ada Logics) and Anthropic, ANT-2026-8R159DVS.
+	* dvipdfmx-bmp.test, tests/badbmp.{tex,dvi}, tests/badbmp-hdr.bmp,
+	Makefile.am: regression test.
+
+2026-09-27  Munehiro Yamamoto <munepixyz@gmail.com>
+
+	* pdfdraw.c (pdf_dev_clip, pdf_dev_eoclip): emit "n" after W/W*.
+	PostScript clip/eoclip keeps the current path, and MetaPost
+	output may continue with setrgbcolor, fshow, etc. after clip,
+	which produced invalid sequences such as "h W BT".  PDF requires
+	W to be followed by a path-painting operator.  The internal
+	current path is kept, as in PostScript.
+	Reported by Thomas (Chingatome),
+	https://tug.org/pipermail/dvipdfmx/2026-September/.
+	* dvipdfmx-mpclip.test, tests/mpclip.{mp,mps,tex,dvi},
+	Makefile.am: regression test.
+
 2026-06-05  Karl Berry  <karl@freefriends.org>
 
 	* man/dvipdfmx.1: some font updates and others, per Bjarni Ingi

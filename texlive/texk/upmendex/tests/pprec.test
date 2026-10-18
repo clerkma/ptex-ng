@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: pprec.test 80678 2026-10-17 17:47:32Z karl $
 # Copyright 2021-2024 TANAKA Takuji <ttk@t-lab.opal.ne.jp>
 # Copyright 2017-2022 Karl Berry <tex-live@tug.org>
 # Copyright 2013 Peter Breitenlohner <tex-live@tug.org>

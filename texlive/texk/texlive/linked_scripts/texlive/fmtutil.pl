@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-# $Id: fmtutil.pl 78589 2026-04-04 06:31:27Z preining $
+# $Id: fmtutil.pl 80658 2026-10-16 10:08:14Z preining $
 # fmtutil - utility to maintain format files.
 # (Maintained in TeX Live:Master/texmf-dist/scripts/texlive.)
 # 
-# Copyright 2014-2025 Norbert Preining
+# Copyright 2014-2026 Norbert Preining
 # This file is licensed under the GNU General Public License version 2
 # or any later version.
 #
@@ -42,11 +42,11 @@ BEGIN {
   TeX::Update->import();
 }
 
-my $svnid = '$Id: fmtutil.pl 78589 2026-04-04 06:31:27Z preining $';
-my $lastchdate = '$Date: 2026-04-04 08:31:27 +0200 (Sat, 04 Apr 2026) $';
+my $svnid = '$Id: fmtutil.pl 80658 2026-10-16 10:08:14Z preining $';
+my $lastchdate = '$Date: 2026-10-16 12:08:14 +0200 (Fri, 16 Oct 2026) $';
 $lastchdate =~ s/^\$Date:\s*//;
 $lastchdate =~ s/ \(.*$//;
-my $svnrev = '$Revision: 78589 $';
+my $svnrev = '$Revision: 80658 $';
 $svnrev =~ s/^\$Revision:\s*//;
 $svnrev =~ s/\s*\$$//;
 my $version = "r$svnrev ($lastchdate)";
@@ -61,6 +61,7 @@ use Cwd;
 # call functions with TeXLive::TLUtils prefix, and makes it easier to
 # find and if necessary remove references to TLUtils
 use TeXLive::TLUtils qw(wndws);
+use TeXLive::TLConfig;
 
 require TeXLive::TLWinGoo if wndws();
 
@@ -83,6 +84,7 @@ my $first_time_usermode_warning = 1; # give lengthy warning if warranted?
 
 my $DRYRUN = "";
 my $STATUS_FH;
+my %running; # engines currently running: pid => job
 
 (our $prg = basename($0)) =~ s/\.pl$//;
 
@@ -128,9 +130,9 @@ our %opts = ( quiet => 0 , strict => 1 );
 my @cmdline_cmds = (  # in same order as help message
   "all",
   "missing",
-  "byengine=s",
-  "byfmt=s",
-  "byhyphen=s",
+  "byengine=s@",
+  "byfmt=s@",
+  "byhyphen=s@",
   "enablefmt=s",
   "disablefmt=s",
   "listcfg",
@@ -147,6 +149,8 @@ our @cmdline_options = (  # in same order as help message
   "no-error-if-no-engine=s",
   "no-error-if-no-format",
   "nohash",
+  "parallel:s",
+  "no-parallel",
   "recorder",
   "refresh",
   "status-file=s",
@@ -205,11 +209,11 @@ sub main {
 
     if ($ARGV[0]) {
       if ($ARGV[0] =~ m/^(.*)\.(fmt|mem|base?)$/) {
-        $opts{'byfmt'} = $1;
+        $opts{'byfmt'} = [$1];
       } elsif ($ARGV[0] =~ m/\./) {
         die "unknown format type: $ARGV[0]";
       } else {
-        $opts{'byfmt'} = $ARGV[0];
+        $opts{'byfmt'} = [$ARGV[0]];
       }
     } else {
       die "missing argument to mktexfmt";
@@ -232,8 +236,11 @@ sub main {
 
   { # if two commands were given, complain and give up.
     my @cmds = ();
+    my $nby = 0;
     for my $c (@cmdline_cmds) {
       $c =~ s,=.*$,,;                       # remove =s getopt spec
+      # --byengine, --byfmt, --byhyphen can be combined, as one command
+      next if ($c =~ m/^by/ && exists $opts{$c} && $nby++);
       push(@cmds, $c) if exists $opts{$c};  # remember if getopt found it
       # we could save/report the specified arg too, but maybe not worth it.
     }
@@ -257,10 +264,16 @@ sub main {
 
   $DRYRUN = "echo " if ($opts{'dry-run'});
 
+  # write each line when it happens, so that a caller reading our output
+  # and the status file as we go (tlmgr) can report each format as it is
+  # done, rather than all of them at the end
+  STDOUT->autoflush(1);
   if ($opts{'status-file'} && ! $opts{'dry-run'}) {
     if (! open($STATUS_FH, '>>', $opts{'status-file'})) {
       print_error("cannot open status file >>$opts{'status-file'}: $!\n");
       print_error("not writing status information!\n");
+    } else {
+      $STATUS_FH->autoflush(1);
     }
   }
   
@@ -339,22 +352,23 @@ sub main {
   } elsif ($opts{'enablefmt'}) {
     return callback_enable_disable_format($changes_config_file, 
                                           $opts{'enablefmt'}, 'enabled');
-  } elsif ($opts{'byengine'}) {
-    return callback_build_formats('byengine', $opts{'byengine'});
-
-  } elsif ($opts{'byfmt'}) {
-    # for this option, allow/ignore an extension.
-    (my $fmtname = $opts{'byfmt'}) =~ s,\.(fmt|mem|base?)$,,;
-    return callback_build_formats('byfmt', $fmtname);
-
-  } elsif ($opts{'byhyphen'}) {
-    return callback_build_formats('byhyphen', $opts{'byhyphen'});
+  } elsif ($opts{'byengine'} || $opts{'byfmt'} || $opts{'byhyphen'}) {
+    # all of them in one run, so that --parallel can overlap the builds
+    # and no format is built twice
+    my @sel = map { ['byengine', $_] } @{$opts{'byengine'} || []};
+    for my $f (@{$opts{'byfmt'} || []}) {
+      # for this option, allow/ignore an extension.
+      (my $fmtname = $f) =~ s,\.(fmt|mem|base?)$,,;
+      push(@sel, ['byfmt', $fmtname]);
+    }
+    push(@sel, map { ['byhyphen', $_] } @{$opts{'byhyphen'} || []});
+    return callback_build_formats(@sel);
 
   } elsif ($opts{'missing'}) {
-    return callback_build_formats('missing');
+    return callback_build_formats(['missing']);
 
   } elsif ($opts{'all'}) {
-    return callback_build_formats('all');
+    return callback_build_formats(['all']);
 
   } elsif ($opts{'_dumpdata'}) {
     dump_data();
@@ -400,12 +414,17 @@ sub log_to_status {
 # (presumably always less than 256 :).
 #
 sub callback_build_formats {
-  my ($what, $whatarg) = @_;
+  # @sel are the selections, [what, whatarg] each; a format is built if
+  # any of them selects it.  Only the by* ones come more than one at a time.
+  my (@sel) = @_;
 
   # sometimes (missing, all) there is no argument passed.
   # Avoid warning from undef value being logged.
   # https://tug.org/pipermail/tex-live/2023-September/049526.html
-  $whatarg = "" if ! defined $whatarg;
+  $_->[1] = "" for grep { !defined($_->[1]) } @sel;
+  # for the status file and messages; as before with a single selection
+  my $what = join(",", map { $_->[0] } @sel);
+  my $whatarg = join(",", map { $_->[1] } @sel);
 
   # set up a tmp dir
   # On W32 it seems that File::Temp creates restrictive permissions (ok)
@@ -469,9 +488,10 @@ sub callback_build_formats {
   $ENV{'TEXINPUTS'} ||= "";
   $ENV{'TEXINPUTS'} = "$tmpdir$sep$ENV{TEXINPUTS}";
   #
-  # for formats that load other formats (e.g., jadetex loads latex.fmt),
-  # add the current directory to TEXFORMATS, too.  Currently unnecessary
-  # for MFBASES.
+  # for formats that load other formats, add the current directory to
+  # TEXFORMATS, too.  As of 2026, no format in fmtutil.cnf does so
+  # (jadetex, xmltex, etc., \input latex.ini instead of loading
+  # latex.fmt), but keep it to be safe.  Currently unnecessary for MFBASES.
   $ENV{'TEXFORMATS'} ||= "";
   $ENV{'TEXFORMATS'} = "$tmpdir$sep$ENV{TEXFORMATS}";
   #
@@ -488,7 +508,7 @@ sub callback_build_formats {
   # round 1: only formats with the same name as engine (pdftex/pdftex)
   # round 2: all other formats
   # reason: later formats might need earlier formats to be already
-  # initialized, e.g., xmltex.
+  # initialized (none currently do, see TEXFORMATS above).
   my $suc = 0;
   my $err = 0;
   my @err = ();
@@ -496,37 +516,117 @@ sub callback_build_formats {
   my $nobuild = 0;
   my $notavail = 0;
   my $total = 0;
+  my $stdo = ($mktexfmtMode ? \*STDERR : \*STDOUT);
+  my $record = sub {
+    my ($val, $fmt, $eng) = @_;
+    if ($val == $FMT_DISABLED)    {
+      log_to_status("DISABLED", $fmt, $eng, $what, $whatarg);
+      $disabled++;
+    } elsif ($val == $FMT_NOTSELECTED) {
+      log_to_status("NOTSELECTED", $fmt, $eng, $what, $whatarg);
+      $nobuild++;
+    } elsif ($val == $FMT_FAILURE)  {
+      log_to_status("FAILURE", $fmt, $eng, $what, $whatarg);
+      $err++;
+      push (@err, "$fmt/$eng");
+    } elsif ($val == $FMT_SUCCESS)  {
+      log_to_status("SUCCESS", $fmt, $eng, $what, $whatarg);
+      $suc++;
+    } elsif ($val == $FMT_NOTAVAIL) {
+      log_to_status("NOTAVAIL", $fmt, $eng, $what, $whatarg);
+      $notavail++; 
+    }
+    else {
+      log_to_status("UNKNOWN", $fmt, $eng, $what, $whatarg);
+      print_error("callback_build_format (round 1): unknown return "
+       . "from select_and_rebuild.\n");
+    }
+  };
+  #
+  # with --parallel, each format is built in its own subdirectory of
+  # $tmpdir, with at most $jobs engines running at the same time.
+  # Everything except running the engine happens here, serially; the
+  # output of each engine run is shown as a whole once it has finished.
+  my $jobs = parallel_jobs();
+  print_info("building up to $jobs formats in parallel\n") if ($jobs > 1);
+  # when interrupted, stop the running engines and remove the temporary
+  # directory (exiting by a signal skips the File::Temp cleanup), then
+  # die by the same signal.
+  local @SIG{qw(INT TERM HUP)} = (sub {
+    my ($sig) = @_;
+    kill('TERM', keys(%running));
+    1 while (waitpid(-1, 0) > 0);
+    chdir($thisdir);
+    TeXLive::TLUtils::rmtree($tmpdir) if ($tmpdir);
+    $SIG{$sig} = 'DEFAULT';
+    kill($sig, $$);
+    exit(1); # in case the signal does not terminate us (Windows)
+  }) x 3;
+  my $reap = sub {
+    my $pid = waitpid(-1, 0);
+    my $status = $?;
+    if ($pid <= 0) { # should not happen, but avoid looping forever
+      print_error("waitpid failed: $!\n");
+      for my $job (values %running) {
+        chdir($job->{'dir'});
+        $record->(finish_one_format($job, -1), $job->{'fmt'}, $job->{'eng'});
+      }
+      %running = ();
+      return;
+    }
+    my $job = delete $running{$pid};
+    return if (!$job);
+    chdir($job->{'dir'}) || die "Cannot change to directory $job->{dir}: $!";
+    print_info("--- output of $job->{fmt} with $job->{eng}\n");
+    for my $out (["job.out", $stdo], ["job.err", \*STDERR]) {
+      last if ($opts{'quiet'}); # only in the log file then
+      if (open(my $fh, "<", $out->[0])) {
+        my $text = do { local $/; <$fh> };
+        close($fh);
+        # keep the next header on its own line.
+        $text .= "\n" if (defined($text) && $text ne "" && $text !~ /\n\z/);
+        print { $out->[1] } $text if (defined($text));
+        # flush, so that stdout and stderr blocks are not mixed when
+        # both go to the same file (as system() does in the serial case).
+        $out->[1]->flush();
+      }
+    }
+    my $val = finish_one_format($job, $status);
+    # make the format available to later formats, as in the serial case.
+    rename($job->{'fmtfile'}, "$tmpdir/$job->{fmtfile}") if (-f $job->{'fmtfile'});
+    chdir($tmpdir) || die "Cannot change to directory $tmpdir: $!";
+    $record->($val, $job->{'fmt'}, $job->{'eng'});
+  };
   for my $swi (qw/format=engine format!=engine/) {
     for my $fmt (keys %{$alldata->{'merged'}}) {
       for my $eng (keys %{$alldata->{'merged'}{$fmt}}) {
         next if ($swi eq "format=engine" && $fmt ne $eng);
         next if ($swi eq "format!=engine" && $fmt eq $eng);
         $total++;
-        my $val = select_and_rebuild_format($fmt, $eng, $what, $whatarg);
-        if ($val == $FMT_DISABLED)    {
-          log_to_status("DISABLED", $fmt, $eng, $what, $whatarg);
-          $disabled++;
-        } elsif ($val == $FMT_NOTSELECTED) {
-          log_to_status("NOTSELECTED", $fmt, $eng, $what, $whatarg);
-          $nobuild++;
-        } elsif ($val == $FMT_FAILURE)  {
-          log_to_status("FAILURE", $fmt, $eng, $what, $whatarg);
-          $err++;
-          push (@err, "$fmt/$eng");
-        } elsif ($val == $FMT_SUCCESS)  {
-          log_to_status("SUCCESS", $fmt, $eng, $what, $whatarg);
-          $suc++;
-        } elsif ($val == $FMT_NOTAVAIL) {
-          log_to_status("NOTAVAIL", $fmt, $eng, $what, $whatarg);
-          $notavail++; 
+        if ($jobs <= 1) {
+          my $val = select_and_rebuild_format($fmt, $eng, @sel);
+          $val = finish_one_format($val, run_one_format($val)) if (ref($val));
+          $record->($val, $fmt, $eng);
+          next;
         }
-        else {
-          log_to_status("UNKNOWN", $fmt, $eng, $what, $whatarg);
-          print_error("callback_build_format (round 1): unknown return "
-           . "from select_and_rebuild.\n");
+        $reap->() while (keys(%running) >= $jobs);
+        my $dir = "$tmpdir/$fmt.$eng";
+        mkdir($dir) || die "Cannot create directory $dir: $!";
+        chdir($dir) || die "Cannot change to directory $dir: $!";
+        my $val = select_and_rebuild_format($fmt, $eng, @sel);
+        if (ref($val)) {
+          $val->{'dir'} = $dir;
+          if (!run_one_format($val, 1)) {
+            print_deferred_error("cannot start \`$val->{cmdline}': $!\n");
+            $val = finish_one_format($val, -1);
+          }
         }
+        chdir($tmpdir) || die "Cannot change to directory $tmpdir: $!";
+        $record->($val, $fmt, $eng) if (!ref($val));
       }
     }
+    # round 2 may need formats from round 1
+    $reap->() while (%running);
   }
 
   # if the user asked to rebuild something, but we did nothing, report
@@ -536,11 +636,11 @@ sub callback_build_formats {
       if ($what eq "all") {
         print_warning("You seem to have no formats defined in your fmtutil.cnf files!\n");
       } else {
-        print_info("Did not find entry for $what=" . ($whatarg?$whatarg:"") . " skipped\n");
+        print_info("Did not find entry for "
+                   . join(" ", map { "$_->[0]=$_->[1]" } @sel) . " skipped\n");
       }
     }
   }
-  my $stdo = ($mktexfmtMode ? \*STDERR : \*STDOUT);
   for (@deferred_stdout) { print $stdo $_; }
   for (@deferred_stderr) { print STDERR $_; }
   #
@@ -590,68 +690,100 @@ Run $prg --help for full documentation of fmtutil.
   return $opts{"strict"} ? $err : 0;
 }
 
+#  parallel_jobs
+# number of formats to build at the same time, from --parallel[=N] or
+# FMTUTIL_PARALLEL envvar.
+#
+sub parallel_jobs {
+  TeXLive::TLUtils::setup_prefetch_parallel_env_var(
+    'FMTUTIL_PARALLEL', 'parallel', 'no-parallel', \%opts,
+    $TeXLive::TLConfig::DefaultFmtutilParallelPolicy
+  );
+  my $n = $ENV{'FMTUTIL_PARALLEL'};
+  # 0 and 1 both are the same, no parallel
+  return 1 if (!defined($n) || $n eq '' || $n eq '0' || $n eq '1'
+               || $opts{'dry-run'} || $mktexfmtMode);
+  if ($n eq 'auto') {
+    if (wndws()) {
+      $n = $ENV{'NUMBER_OF_PROCESSORS'};
+    } else {
+      chomp($n = `getconf _NPROCESSORS_ONLN 2>$nul`);
+    }
+    $n = 4 if (!$n || $n !~ m/^[0-9]+$/); # cannot determine
+    $n = 8 if ($n > 8);
+  } elsif ($n !~ /^[0-9]+$/) {
+    die "$prg: Unsupported value for FMTUTIL_PARALLEL / --parallel: $n";
+  }
+  # Windows Perl can wait for at most 64 processes.
+  $n = 60 if (wndws() && $n > 60);
+  return $n;
+}
+
 #  select_and_rebuild_format
-# check condition and rebuild the format if selected
-# return values: $FMT_*
+# check condition and prepare the format build if selected
+# return values: $FMT_*, or a job (hash ref) from prepare_one_format
+# that still has to be run (run_one_format) and finished
+# (finish_one_format)
 # 
 sub select_and_rebuild_format {
-  my ($fmt, $eng, $what, $whatarg) = @_;
+  # build the format if any of the selections @sel picks it
+  my ($fmt, $eng, @sel) = @_;
   return $FMT_DISABLED
       if ($alldata->{'merged'}{$fmt}{$eng}{'status'} eq 'disabled');
 
   my ($kpsefmt, $destdir, $fmtfile, $logfile) = compute_format_destination($fmt, $eng);
 
   my $doit = 0;
-  # we just identify 'all', 'refresh', 'missing'
-  # I don't see much point in keeping all of them
-  $doit = 1 if ($what eq 'all');
-  $doit = 1 if ($what eq 'refresh' && -r "$destdir/$fmtfile");
-  $doit = 1 if ($what eq 'missing' && ! -r "$destdir/$fmtfile");
-  $doit = 1 if ($what eq 'byengine' && $eng eq $whatarg);
-  $doit = 1 if ($what eq 'byfmt' && $fmt eq $whatarg);
+  my $fmthyplong;    # expanded hyphen file, looked up at most once
+  for my $s (@sel) {
+    my ($what, $whatarg) = @$s;
+    # we just identify 'all', 'refresh', 'missing'
+    # I don't see much point in keeping all of them
+    $doit = 1 if ($what eq 'all');
+    $doit = 1 if ($what eq 'refresh' && -r "$destdir/$fmtfile");
+    $doit = 1 if ($what eq 'missing' && ! -r "$destdir/$fmtfile");
+    $doit = 1 if ($what eq 'byengine' && $eng eq $whatarg);
+    $doit = 1 if ($what eq 'byfmt' && $fmt eq $whatarg);
+    #
+    # TODO
+    # original fmtutil.sh was stricter about existence of the hyphen file
+    # not sure how we proceed here; let's implicitly ignore.
+    #
+    # original fmtutil.sh seemed to have accepted full path to the hyphen
+    # file, so that one could give
+    #   --byhyphen /full/path/to/the/hyphen/file
+    # but this does not work anymore (see Debian bug report #815416)
+    if ($what eq 'byhyphen') {
+      my $fmthyp = (split(/,/ , $alldata->{'merged'}{$fmt}{$eng}{'hyphen'}))[0];
+      next if ($fmthyp eq '-');
+      if ($whatarg =~ m!^/!) {
+        # $whatarg is a full path, we need to expand $fmthyp, too
+        if (!defined($fmthyplong)) {
+          chomp ($fmthyplong =
+                   `kpsewhich -progname=$fmt -engine=$eng $fmthyp`) ;
+          if (!$fmthyplong) {
+            # we might have searched language.dat --engine=tex --progname=tex
+            # which will not work. Search again without engine/format
+            chomp ($fmthyplong = `kpsewhich $fmthyp`) ;
+          }
+          # don't give warnings or errors, it might be that the hyphen
+          # file is not existing at all. See TODO above
+          #print_deferred_warning("hyphen $fmthyp for $fmt/$eng cannot be expanded.\n");
+          $fmthyplong = $fmthyp if (!$fmthyplong);
+        }
+        $fmthyp = $fmthyplong;
+      }
+      $doit = 1 if ($whatarg eq $fmthyp);
+    }
+  }
   #
   # Deal with the --refresh option
   # 2021 changed behavior that --refresh can be used with all other format
   # selection cmd line args.
   $doit = 0 if ($opts{'refresh'} && ! -r "$destdir/$fmtfile");
-  #
-  # TODO
-  # original fmtutil.sh was stricter about existence of the hyphen file
-  # not sure how we proceed here; let's implicitly ignore.
-  #
-  # original fmtutil.sh seemed to have accepted full path to the hyphen
-  # file, so that one could give
-  #   --byhyphen /full/path/to/the/hyphen/file
-  # but this does not work anymore (see Debian bug report #815416)
-  if ($what eq 'byhyphen') {
-    my $fmthyp = (split(/,/ , $alldata->{'merged'}{$fmt}{$eng}{'hyphen'}))[0];
-    if ($fmthyp ne '-') {
-      if ($whatarg =~ m!^/!) {
-        # $whatarg is a full path, we need to expand $fmthyp, too
-        chomp (my $fmthyplong = `kpsewhich -progname=$fmt -engine=$eng $fmthyp`) ;
-        if ($fmthyplong) {
-          $fmthyp = $fmthyplong;
-        } else {
-          # we might have searched language.dat --engine=tex --progname=tex
-          # which will not work. Search again without engine/format
-          chomp ($fmthyplong = `kpsewhich $fmthyp`) ;
-          if ($fmthyplong) {
-            $fmthyp = $fmthyplong;
-          } else {
-            # don't give warnings or errors, it might be that the hyphen
-            # file is not existing at all. See TODO above
-            #print_deferred_warning("hyphen $fmthyp for $fmt/$eng cannot be expanded.\n");
-          }
-        }
-      }
-      if ($whatarg eq $fmthyp) {
-        $doit = 1;
-      }
-    }
-  }
   if ($doit) {
     check_and_warn_on_user_format($fmt,$eng);
-    return rebuild_one_format($fmt,$eng,$kpsefmt,$destdir,$fmtfile,$logfile);
+    return prepare_one_format($fmt,$eng,$kpsefmt,$destdir,$fmtfile,$logfile);
   } else {
     return $FMT_NOTSELECTED;
   }
@@ -707,12 +839,13 @@ sub compute_format_destination {
 }
 
 
-#  rebuild_one_format
-# takes fmt/eng and rebuilds it, irrelevant of any setting;
-# copies generated log file
-# return value FMT_*
+#  prepare_one_format
+# takes fmt/eng and prepares the rebuild, irrelevant of any setting;
+# works in the current directory.
+# return value: $FMT_* if the format cannot be built, otherwise a job
+# (hash ref) to pass to run_one_format and finish_one_format.
 #
-sub rebuild_one_format {
+sub prepare_one_format {
   my ($fmt,$eng,$kpsefmt,$destdir,$fmtfile,$logfile) = @_;
   print_info("--- remaking $fmt with $eng\n");
 
@@ -850,15 +983,87 @@ END_ENGINE_IN_CWD
                   . "$prgswitch $texargs";
   print_verbose("running \`$cmdline' ...\n");
 
-  my $texpool = $ENV{'TEXPOOL'};
+  my $texpool;
   if ($localpool) {
-    $ENV{'TEXPOOL'} = cwd() . $sep . ($texpool ? $texpool : "");
+    $texpool = cwd() . $sep . ($ENV{'TEXPOOL'} ? $ENV{'TEXPOOL'} : "");
   }
 
   # in mktexfmtMode we must redirect *all* output to stderr
   $cmdline .= " >&2" if $mktexfmtMode;
   $cmdline .= " <$nul";
-  my $retval = system("$DRYRUN$cmdline");
+
+  return { fmt => $fmt, eng => $eng, destdir => $destdir,
+           fmtfile => $fmtfile, logfile => $logfile,
+           cmdline => $cmdline, texpool => $texpool };
+}
+
+
+#  run_one_format
+# runs the engine for a job from prepare_one_format in the current
+# directory. Synchronously, returning the exit status as from system(),
+# or, if $async is true, in the background with output redirected to
+# job.out and job.err, returning the process id (undef on failure).
+# Either way, the engine is in %running while it runs, so that the
+# signal handler in callback_build_formats can stop it.
+#
+sub run_one_format {
+  my ($job, $async) = @_;
+  return system("$DRYRUN$job->{cmdline}") if ($DRYRUN);
+  local %ENV = %ENV;
+  $ENV{'TEXPOOL'} = $job->{'texpool'} if (defined($job->{'texpool'}));
+  my $cmdline = $job->{'cmdline'};
+  if ($async) {
+    # parallel jobs each run in their own directory, which has to be
+    # searched like the shared temporary directory in the serial case.
+    my $dir = cwd();
+    $ENV{'TEXINPUTS'} = "$dir$sep$ENV{TEXINPUTS}";
+    $ENV{'TEXFORMATS'} = "$dir$sep$ENV{TEXFORMATS}";
+  }
+  # the engine writes its terminal output to the log file anyway, so with
+  # --quiet it is discarded; stderr is added to the log in finish_one_format.
+  unlink("job.err");
+  if ($opts{'quiet'}) {
+    $cmdline .= " >$nul 2>job.err";
+  } elsif ($async) {
+    $cmdline .= " >job.out 2>job.err";
+  }
+  my $pid;
+  if (wndws()) {
+    # system(1, ...) spawns a process in the background, only on Windows.
+    $pid = system(1, $cmdline);
+  } else {
+    $pid = fork();
+    if (defined($pid) && $pid == 0) {
+      # exec, so that the process we wait for (and may kill) is the
+      # engine itself; not all shells (e.g., bash 3.2 as /bin/sh on
+      # macOS) do this by themselves for a command with redirections.
+      { exec("/bin/sh", "-c", "exec $cmdline"); }
+      require POSIX;
+      POSIX::_exit(127);
+    }
+  }
+  if (!$pid || $pid < 0) {
+    return ($async ? undef : -1);
+  }
+  $running{$pid} = $job;
+  return $pid if ($async);
+  waitpid($pid, 0);
+  my $status = $?;
+  delete $running{$pid};
+  return $status;
+}
+
+
+#  finish_one_format
+# checks the result of running a job from prepare_one_format, given
+# the exit status from system() or waitpid(); works in the directory
+# the job was run in. Copies generated log file and installs the format.
+# return value FMT_*
+#
+sub finish_one_format {
+  my ($job, $retval) = @_;
+  my ($fmt, $eng, $destdir, $fmtfile, $logfile, $cmdline)
+    = @{$job}{qw(fmt eng destdir fmtfile logfile cmdline)};
 
   # report error if it failed.
   if ($retval != 0) {
@@ -873,8 +1078,17 @@ END_ENGINE_IN_CWD
   if ($opts{"dry-run"}) {
     print_info("would copy log file to: $destdir/$logfile\n");
   } else {
-    # Add the actual invocation to the end of the log file
+    # Add the engine's stderr, if captured (it is not in the log file
+    # otherwise), and the actual invocation to the end of the log file
     if (open(my $fd, ">>", $logfile)) {
+      if (open(my $err, "<", "job.err")) {
+        my $text = do { local $/; <$err> };
+        close($err);
+        if (defined($text) && $text ne "") {
+          $text .= "\n" if ($text !~ /\n\z/);
+          print $fd "# error output of the engine during this run\n$text";
+        }
+      }
       print $fd "# actual command line used during this run\n# $cmdline\n";
       close($fd);
     } else {
@@ -898,14 +1112,6 @@ END_ENGINE_IN_CWD
   if ($retval != 0 && $opts{'strict'}) {
     print_deferred_error("returning error due to option --strict\n");
     return $FMT_FAILURE;
-  }
-
-  if ($localpool) {
-    if ($texpool) {
-      $ENV{'TEXPOOL'} = $texpool;
-    } else {
-      delete $ENV{'TEXPOOL'};
-    }
   }
 
   # if this was a dry run, we don't expect anything to have been
@@ -1525,10 +1731,19 @@ Options:
                            is missing, if it is included in the list.
   --no-strict             exit successfully even if a format fails to build
   --nohash                don't update ls-R files
+  --parallel[=auto|N]     build up to N formats concurrently; with "auto"
+                            or with no value given, use the number of CPUs
+                            or 8, whichever is smaller.
+                          Specifying "0" disables concurrent building.
+                          Can also be configured with the environment
+                            variable FMTUTIL_PARALLEL; if that is 
+                            set to the empty string, concurrent building
+                            is disabled.
   --recorder              pass the -recorder option and save .fls files
   --refresh               recreate only existing format files
   --status-file FILE      append status information about built formats to FILE
-  --quiet                 be silent
+  --quiet                 be silent; the output of the engines only goes
+                           to the log files
   --catcfg                (does nothing, exists for compatibility)
   --dolinks               (does nothing, exists for compatibility)
   --force                 (does nothing, exists for compatibility)
@@ -1540,6 +1755,8 @@ Commands (exactly one must be specified):
   --byengine ENGINE       (re)create formats built with ENGINE
   --byfmt FORMAT          (re)create format FORMAT
   --byhyphen HYPHENFILE   (re)create formats that depend on HYPHENFILE
+                          These three can be repeated and combined; each
+                           format selected by any of them is built once.
   --enablefmt  FORMAT[/ENGINE]  enable FORMAT, as built with ENGINE
   --disablefmt FORMAT[/ENGINE]  disable FORMAT, as built with ENGINE
                           If multiple formats have the same name and
@@ -1683,4 +1900,4 @@ EOF
 ### tab-width: 2
 ### indent-tabs-mode: nil
 ### End:
-# vim:set tabstop=2 expandtab: #
+# vim:set tabstop=2 shiftwidth=2 softtabstop=-1 expandtab: #

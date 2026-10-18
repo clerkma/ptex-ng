@@ -1,0 +1,40 @@
+#! /bin/sh -vx
+# $Id: dvipdfmx-bmp.test 80678 2026-10-17 17:47:32Z karl $
+# Copyright 2026 Norbert Preining <tex-live@tug.org>
+# You may freely use, modify and/or distribute this file.
+
+# Malformed BMP files must be rejected with a fatal error, not crash.
+
+BinDir=${BinDir:-.}
+ExeExt=${ExeExt:-}
+_xdvipdfmx=$BinDir/xdvipdfmx$ExeExt
+
+TEXMFCNF=$srcdir/../kpathsea
+DVIPDFMXINPUTS=$srcdir/tests
+TEXPICTS=.
+export TEXMFCNF DVIPDFMXINPUTS TEXPICTS
+
+failed=
+
+for f in badbmp-hdr badbmp-rle4delta badbmp-rle8delta \
+	badbmp-rle4bits badbmp-rle8bits badbmp-size; do
+	echo "*** xdvipdfmx badbmp ($f.bmp)" && echo
+	cp $srcdir/tests/$f.bmp badbmp.bmp
+	$_xdvipdfmx -o badbmp.pdf $srcdir/tests/badbmp >badbmp.log 2>&1
+	cat badbmp.log
+	grep 'Image inclusion failed' badbmp.log >/dev/null \
+		&& echo && echo "xdvipdfmx-$f tests OK" && echo \
+		|| failed="$failed xdvipdfmx-$f"
+done
+
+# valid RLE4 with an absolute run starting at an odd pixel
+echo "*** xdvipdfmx badbmp (badbmp-rle4odd.bmp)" && echo \
+	&& cp $srcdir/tests/badbmp-rle4odd.bmp badbmp.bmp \
+	&& $_xdvipdfmx -o badbmp.pdf $srcdir/tests/badbmp \
+	&& echo && echo "xdvipdfmx-badbmp-rle4odd tests OK" && echo \
+	|| failed="$failed xdvipdfmx-badbmp-rle4odd"
+
+test -z "$failed" && exit 0
+echo
+echo "failed tests:$failed"
+exit 1

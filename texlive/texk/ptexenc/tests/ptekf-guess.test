@@ -1,5 +1,5 @@
 #! /bin/sh -v
-# $Id$
+# $Id: ptekf-guess.test 80678 2026-10-17 17:47:32Z karl $
 # Copyright 2024 Japanese TeX Development Community <issue@texjp.org>
 # You may freely use, modify and/or distribute this file.
 

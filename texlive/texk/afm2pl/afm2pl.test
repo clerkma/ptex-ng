@@ -1,6 +1,6 @@
 #! /bin/sh -vx
-# $Id: afm2pl.test 68029 2023-08-23 14:53:00Z takuji $
-# Copyright 2017 Karl Berry <tex-live@tug.org>
+# $Id: afm2pl.test 80678 2026-10-17 17:47:32Z karl $
+# Copyright 2017-2026 Karl Berry <tex-live@tug.org>
 # Copyright 2009, 2011 Peter Breitenlohner <tex-live@tug.org>
 # You may freely use, modify and/or distribute this file.
 
@@ -15,3 +15,16 @@ TEXMFCNF=$srcdir/../kpathsea \
 	&& diff $srcdir/tests/logo10.map logo10.map \
 	|| exit 1
 
+# overlong glyph name in a kern comment, character code above 255
+rm -f badafm.*
+TEXMFCNF=$srcdir/../kpathsea \
+	$_afm2pl -l $srcdir/tests/badafm.lig $srcdir/tests/badafm ./badafm.pl \
+	&& diff $srcdir/tests/badafm.pl badafm.pl \
+	|| exit 2
+
+# overlong glyph name in an encoding file
+rm -f badafm.*
+TEXMFCNF=$srcdir/../kpathsea \
+	$_afm2pl -p $srcdir/tests/badafm.enc -l $srcdir/tests/badafm.lig \
+	$srcdir/tests/badafm ./badafm.pl \
+	|| exit 3

@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: test-hyperlink.test 80678 2026-10-17 17:47:32Z karl $
 # Public domain.
 # hypertex link rectangles must cover the link text, and a link broken
 # across lines must get one rectangle per line, also when the opening
