@@ -9586,18 +9586,18 @@ void flush_node_list (pointer p)
         case accent_noad:
           {
             if ((math_type(nucleus(p)) >= sub_box)
-              && (math_type(nucleus(p)) != math_jchar)
-              && (math_type(nucleus(p) != math_text_jchar)))
+                && (math_type(nucleus(p)) != math_jchar)
+                && (math_type(nucleus(p)) != math_text_jchar))
               flush_node_list(info(nucleus(p)));
 
             if ((math_type(supscr(p)) >= sub_box)
-              && (math_type(supscr(p)) != math_jchar)
-              && (math_type(supscr(p) != math_text_jchar)))
+                && (math_type(supscr(p)) != math_jchar)
+                && (math_type(supscr(p)) != math_text_jchar))
               flush_node_list(info(supscr(p)));
 
             if ((math_type(subscr(p)) >= sub_box)
-              && (math_type(subscr(p)) != math_jchar)
-              && (math_type(subscr(p) != math_text_jchar)))
+                && (math_type(subscr(p)) != math_jchar)
+                && (math_type(subscr(p)) != math_text_jchar))
               flush_node_list(info(subscr(p)));
 
             if (type(p) == radical_noad)
@@ -20501,13 +20501,14 @@ static internal_font_number tfm_lookup (str_number s, scaled fs)
 {
   internal_font_number k;
 
-  if (fs != 0)
+  if (fs != 0) {
     for (k = font_base + 1; k <= font_ptr; k++)
       if (str_eq_str(font_name[k], s) && (font_size[k] == fs))
       {
         flush_str(s);
         return k;
       }
+  }
   else
     for (k = font_base + 1; k <= font_ptr; k++)
       if (str_eq_str(font_name[k], s))
@@ -20649,12 +20650,12 @@ static void read_expand_font (void)
     if (pdf_font_step[f] != font_step)
       aptex_error("font expansion", "font has been expanded with different expansion step");
 
-    if (((pdf_font_stretch[f] = null_font) && (stretch_limit != 0)) ||
+    if (((pdf_font_stretch[f] == null_font) && (stretch_limit != 0)) ||
         ((pdf_font_stretch[f] != null_font) &&
          (pdf_font_expand_ratio[pdf_font_stretch[f]] != stretch_limit)))
       aptex_error("font expansion", "font has been expanded with different stretch limit");
 
-    if (((pdf_font_shrink[f] = null_font) && (shrink_limit != 0)) ||
+    if (((pdf_font_shrink[f] == null_font) && (shrink_limit != 0)) ||
         ((pdf_font_shrink[f] != null_font) &&
          (-pdf_font_expand_ratio[pdf_font_shrink[f]] != shrink_limit)))
       aptex_error("font expansion", "font has been expanded with different shrink limit");
