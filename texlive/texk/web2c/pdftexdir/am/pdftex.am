@@ -1,4 +1,4 @@
-## $Id: pdftex.am 73613 2025-01-27 22:01:50Z karl $
+## $Id: pdftex.am 80895 2026-10-31 20:28:34Z preining $
 ## texk/web2c/pdftexdir/am/pdftex.am: Makefile fragment for pdfTeX.
 ##
 ## Copyright 2016-2025 Karl Berry <tex-live@tug.org>
@@ -106,14 +106,20 @@ EXTRA_DIST += \
 # pdfTeX tests
 #
 pdftex_tests = pdftexdir/wprob.test pdftexdir/pdftex.test \
-  pdftexdir/pdfimage.test pdftexdir/expanded.test \
+  pdftexdir/pdfimage.test pdftexdir/jpgcopy.test pdftexdir/pdfobjfile.test \
+  pdftexdir/expanded.test \
   pdftexdir/tests/cnfline.test pdftexdir/tests/partoken.test \
-  pdftexdir/wcfname.test
+  pdftexdir/wcfname.test pdftexdir/tests/pdfreuse.test
+pdftex_tests += pdftexdir/tests/fileread.test
+pdftex_tests += pdftexdir/tests/mapnumber.test
 
 pdftexdir/wprob.log pdftexdir/pdftex.log \
-  pdftexdir/pdfimage.log pdftexdir/expanded.log \
+  pdftexdir/pdfimage.log pdftexdir/jpgcopy.log pdftexdir/pdfobjfile.log \
+  pdftexdir/expanded.log \
   pdftexdir/tests/cnfline.log pdftexdir/tests/partoken.log \
-  pdftexdir/wcfname.log: pdftex$(EXEEXT)
+  pdftexdir/wcfname.log pdftexdir/tests/pdfreuse.log: pdftex$(EXEEXT)
+pdftexdir/tests/fileread.log: pdftex$(EXEEXT)
+pdftexdir/tests/mapnumber.log: pdftex$(EXEEXT)
 
 EXTRA_DIST += $(pdftex_tests)
 
@@ -130,6 +136,16 @@ EXTRA_DIST += pdftexdir/tests/pdfimage.tex \
 	tests/1-4.jpg tests/B.pdf tests/basic.tex tests/lily-ledger-broken.png
 DISTCLEANFILES += pdfimage.fmt pdfimage.log pdfimage.pdf
 
+## jpgcopy.test
+EXTRA_DIST += pdftexdir/tests/jpgcopy.tex
+DISTCLEANFILES += jpgcopy.fmt jpgcopy.log jpgcopy.pdf
+
+## pdfobjfile.test
+EXTRA_DIST += pdftexdir/tests/pdfobjfile.tex
+DISTCLEANFILES += pdfobjfile.fmt pdfobjfile.log pdfobjfile.pdf \
+	pdfobjfile-empty.bin pdfobjfile-noeol.bin \
+	pdfobjfile-eol.bin pdfobjfile-data.bin
+
 ## expanded.test
 EXTRA_DIST += tests/expanded.tex tests/expanded.txt
 DISTCLEANFILES += expanded.log
@@ -144,5 +160,19 @@ DISTCLEANFILES += partoken-ok.log partoken-xfail.log
 
 ## wcfname.test
 DISTCLEANFILES += pdftests/fn*.*
+
+## fileread.test
+EXTRA_DIST += pdftexdir/tests/fileread.tex tests/cmr10.pfb tests/lmr10.pfb \
+	tests/lm-texnansi.enc tests/texnansi-lmr10.tfm
+DISTCLEANFILES += fileread-eol.tex fileread.map fileread.exp fileread.out \
+	fileread.log fileread.pdf
+
+## pdfreuse.test
+EXTRA_DIST += pdftexdir/tests/pdfreuse.tex
+DISTCLEANFILES += pdfreuse.fmt pdfreuse.log pdfreuse-*
+
+## mapnumber.test
+EXTRA_DIST += pdftexdir/tests/mapnumber.tex tests/cmr10.pfb
+DISTCLEANFILES += mapnumber.map mapnumber.log mapnumber.pdf
 
 # (end of pdftex.am)

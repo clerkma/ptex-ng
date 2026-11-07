@@ -1,3 +1,79 @@
+2026-10-31  Norbert Preining  <norbert@preining.info>
+
+	* tests/mapnumber.test, tests/mapnumber.tex: new test for the
+	numbers before SlantFont and ExtendFont in a map file, including
+	"0.5ExtendFont", which was ignored with glibc's sscanf.
+	* am/pdftex.am (pdftex_tests): add it.
+
+2026-10-31  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* mapfile.c (fm_scan_line): parse the numbers in the quoted part
+	of a map line with strtod instead of sscanf("%f %n"). The E/e
+	back-up for "0.5ExtendFont" is no longer needed, since strtod
+	does not consume an "e" that does not start an exponent.
+	Suggested by hth2,
+	https://github.com/TeX-Live/texlive-source/issues/97#issuecomment-6541751910
+
+2026-10-29  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* pdftex.web (pdf_write_obj): read each byte of a file object
+	once, instead of testing eof (which reads ahead and pushes the
+	byte back) before each getc.
+	* pdfobjfile.test, tests/pdfobjfile.tex: new test.
+	* am/pdftex.am (pdftex_tests): add it.
+
+2026-10-29  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* writejpg.c (write_jpg): copy the JPEG data into the PDF output
+	buffer in chunks instead of one byte at a time; after a short
+	read, finish one byte at a time as before.
+	* jpgcopy.test, tests/jpgcopy.tex: new test.
+	* am/pdftex.am (pdftex_tests): add it.
+
+2026-10-30  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* pdftoepdf.cc [_WIN32] (stat): define as _stat, as lib/texmfmp.c
+	does, since fsyscp_stat fills a struct _stat. With MinGW-w64 and
+	_FILE_OFFSET_BITS=64, struct stat has another layout, so the size
+	and time read back were wrong and a rewritten file was not
+	noticed (pdfreuse.test failed).
+
+2026-10-29  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* pdftoepdf.cc (find_add_document): also compare st_dev and
+	st_ino, so that a file replaced by rename is read again even if
+	its size and modification time are the same.
+	(stat_file): new function, using fsyscp_stat on Windows so that
+	file names in the file system code page (e.g., UTF-8) work.
+	* tests/pdfreuse.test, tests/pdfreuse.tex: new test, from
+	Norbert Preining.
+	* am/pdftex.am (pdftex_tests): add it.
+
+2026-10-28  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* pdftoepdf.cc (epdf_delete): keep the most recently released
+	document open instead of deleting it, forgetting its copied
+	objects, so that including the pages of a file one at a time
+	does not make xpdf read its whole page tree for every page.
+	(find_add_document): reuse the released document only if the
+	file's modification time and size are unchanged.
+	(free_in_obj_list): new function, split from delete_document.
+	(epdf_check_mem): reset releasedDocument.
+
+2026-10-29  Norbert Preining  <norbert@preining.info>
+
+	* tests/fileread.test, tests/fileread.tex: new test for reading
+	input lines with LF, CR and CRLF line ends, and map, encoding
+	and Type 1 font files.
+	* am/pdftex.am (pdftex_tests): add it.
+
+2026-10-28  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* ptexmac.h (GETC): new macro, getc_unlocked or equivalent,
+	as in XeTeX_ext.c.
+	* utils.c (xgetc): use it.
+	* writet1.c (t1_getchar, enc_getchar): likewise.
+
 2026-10-04  Karl Berry  <karl@freefriends.org>
 
 	* writettf.c (ttf_write_dirtab): when computing checkSumAdjustment,

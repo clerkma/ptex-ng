@@ -1,3 +1,41 @@
+2026-10-29  Norbert Preining  <norbert@preining.info>
+
+	* tests/hashdup.test: new test for keys with several values:
+	texmf.cnf variables and aliases are used in insertion order,
+	and all copies of a file name in ls-R are found.
+	* Makefile.am (TESTS): add it.
+
+2026-10-28  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* hash.c (hash, hash_normalized): take the modulus only once,
+	at the end, instead of dividing for every character; multiply
+	by 31 instead of 2 so that all characters affect the result.
+
+2026-10-28  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* hash.c (hash_insert, hash_insert_normalized): insert new
+	elements at the beginning of the bucket instead of walking to
+	the end. ls-R has thousands of identical names (README, etc.),
+	which all land in the same bucket, so building the db was
+	quadratic in the number of duplicates.
+	(hash_lookup): reverse the result, so values are still
+	returned in insertion order.
+
+2026-10-29  Norbert Preining  <norbert@preining.info>
+
+	* tests/lsrparse.test: new test for reading ls-R: line ends,
+	null bytes, hidden directories, and a file larger than the
+	initial read buffer.
+	* Makefile.am (TESTS): add it.
+
+2026-10-28  Ben Spitz  <1844060+diracdeltafunk@users.noreply.github.com>
+
+	* db.c (read_all): new function.
+	(db_build): read ls-R with read_all and split it into lines in
+	place, instead of calling read_line for each line; the keys now
+	point into the buffer instead of being copied. Saves three
+	malloc/free calls and a stream lock per entry.
+
 2026-06-28  Karl Berry  <karl@freefriends.org>
 
 	* texmf.cnf (TEXMFHOME, TEXMFVAR, TEXMFCONFIG): mention
