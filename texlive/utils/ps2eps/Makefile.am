@@ -1,4 +1,4 @@
-## $Id: Makefile.am 80354 2026-09-23 00:15:28Z karl $
+## $Id: Makefile.am 81014 2026-11-07 18:15:28Z karl $
 ## Makefile.am for the TeX Live subdirectory utils/ps2eps/
 ##
 ## Copyright 2017-2026 Karl Berry <tex-live@tug.org>
@@ -23,8 +23,8 @@ bbox_SOURCES = \
 	@PS2EPS_TREE@/src/C/bbox.c
 
 man1_MANS = \
-	$(PS2EPS_TREE)/doc/bbox.1 \
-	$(PS2EPS_TREE)/doc/ps2eps.1
+	$(PS2EPS_TREE)/doc/man/man1/bbox.1 \
+	$(PS2EPS_TREE)/doc/man/man1/ps2eps.1
 
 perl_scripts = ps2eps
 scriptsdir = texmf-dist/scripts/ps2eps

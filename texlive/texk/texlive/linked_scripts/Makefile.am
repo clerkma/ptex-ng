@@ -1,4 +1,4 @@
-## $Id: Makefile.am 80975 2026-11-04 21:35:25Z karl $
+## $Id: Makefile.am 81043 2026-11-09 20:39:59Z karl $
 ## Makefile.am for the TeX Live subdirectory texk/texlive/linked_scripts/
 ##
 ## Copyright 2016-2026 Karl Berry <tex-live@tug.org>
@@ -166,6 +166,7 @@ texmf_other_scripts = \
 	glossaries/makeglossaries \
 	glossaries/makeglossaries-lite.lua \
 	hyperxmp/hyperxmp-add-bytecount.pl \
+	import-citation-cff/cfflatexpand \
 	jfmutil/jfmutil.pl \
 	ketcindy/ketcindy.pl \
 	kotex-utils/jamo-normalize.pl \

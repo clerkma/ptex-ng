@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: jpgcopy.test 81013 2026-11-07 17:31:07Z karl $
 # Public domain.
 # Check that a JPEG spanning several PDF output buffers is copied intact.
 

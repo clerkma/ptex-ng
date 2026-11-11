@@ -1,5 +1,5 @@
 #! /bin/sh -vx
-# $Id$
+# $Id: hashdup.test 81013 2026-11-07 17:31:07Z karl $
 # Public domain.
 # Check that a hash lookup returns all values of a key, in insertion
 # order: the first definition of a texmf.cnf variable wins, aliases are
