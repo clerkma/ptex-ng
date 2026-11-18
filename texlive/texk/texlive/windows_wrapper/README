@@ -35,7 +35,7 @@ Normally, icons are added during compilation. But for the 2023
 release, Akira Kakuto already provided the [w]runscript binaries
 along with the bulk of TL binaries. Therefore I opted for adding
 icons after the fact.  This can be done with ResourceHacker
-(http://angusj.com/resourcehacker/), even from the command-line:
+(http://angusj.com/resourcehacker/ or [Resource Cracker](https://www.pelock.com/products/resource-cracker)), even from the command-line:
 
 rename name.exe name-bk.exe
 rem create a resource script:
